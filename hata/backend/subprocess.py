@@ -145,24 +145,36 @@ class UnixReadPipeTransport(object):
         
         No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
         called.
+        
+        Returns
+        -------
+        reading_paused : `bool`
+            Whether reading was paused.
         """
         if self.closing or self._paused:
-            return
+            return False
         
         self._paused = True
         self.loop.remove_reader(self.fileno)
+        return True
     
     def resume_reading(self):
         """
         Resumes the receiving end.
         
         Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        
+        Returns
+        -------
+        reading_resume : `bool`
+            Whether reading was resumed.
         """
         if self.closing or not self._paused:
-            return
+            return False
         
         self._paused = False
         self.loop.add_reader(self.fileno, self._read_ready)
+        return True
     
     def set_protocol(self, protocol):
         """
@@ -281,12 +293,12 @@ class UnixWritePipeTransport(object):
     ----------
     _buffer : `bytearray`
         Data ensured to be written on the wrapped pipe as it becomes readable again.
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
     _high_water : `int`
         The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
     _low_water : `int`
         The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to `16384`.
-    _extra : `dict` of (`str`, `Any`) items
-        Optional transport information.
     closing : `bool`
         Whether the transport ic closing.
     fileno : `int`
@@ -640,7 +652,7 @@ class UnixWritePipeTransport(object):
     
     def _maybe_pause_protocol(self):
         """
-        Called after data was ensured to be written into the transfer to check whether it's protocol should be paused.
+        Called after data was ensured to be written into the pipe to check whether it's protocol should be paused.
         """
         size = self.get_write_buffer_size()
         if size <= self._high_water:
@@ -797,13 +809,13 @@ class SubprocessStreamWriter(object):
         """
         self.transport.write(data)
     
-    def writelines(self, data):
+    def writelines(self, lines):
         """
         Writes the given lines to the subprocess pipe's transport.
         
         Parameters
         ----------
-        data : `iterable` of `bytes-like`
+        lines : `iterable` of `bytes-like`
             The lines to write.
         
         Raises
@@ -811,7 +823,7 @@ class SubprocessStreamWriter(object):
         RuntimeError
             Protocol has no attached transport.
         """
-        self.transport.writelines(data)
+        self.transport.writelines(lines)
     
     def write_eof(self):
         """
@@ -1386,15 +1398,10 @@ class AsyncProcess(object):
         Kills the child process.
         
         This method is a coroutine.
-        
-        Raises
-        ------
-        ProcessLookupError
-            The underlying process is already dead.
         """
         process = self.process
         if process is None:
-            raise ProcessLookupError()
+            return
         
         process.kill()
         

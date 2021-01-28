@@ -13,6 +13,8 @@ from .helpers import content_disposition_header, CHAR, TOKEN
 from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
 from .exceptions import ContentEncodingError
 
+from . import protocol as module_protocol
+
 BIG_CHUNK_LIMIT = 1<<16
 DEFAULT_CONTENT_TYPE = 'application/octet-stream'
     
@@ -338,11 +340,9 @@ class IOBasePayload(PayloadBase):
         PayloadBase.__init__(self, data, kwargs)
         
         try:
-            disposition  = kwargs['disposition']
+            disposition = kwargs['disposition']
         except KeyError:
             disposition = 'attachment'
-        else:
-            disposition = None
         
         if (disposition is not None):
             filename = self.filename
@@ -1327,6 +1327,7 @@ class MultipartPayloadWriter(object):
         else:
             raise ContentEncodingError(f'Can not decode content-encoding: {content_encoding!r}.')
         
+        
         if transfer_encoding is None:
             transfer_encoding = TRANSFER_ENCODING_NONE
             encoding_buffer   = None
@@ -1412,4 +1413,5 @@ class MultipartPayloadWriter(object):
         
         await self.writer.write(chunk)
 
-
+module_protocol.MimeType = MimeType
+del module_protocol

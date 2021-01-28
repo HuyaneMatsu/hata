@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import re, zlib
+import re, zlib, binascii, base64
 from random import getrandbits
 from struct import Struct
 from collections import deque
@@ -7,7 +7,8 @@ from collections import deque
 from .utils import imultidict, DOCS_ENABLED
 from .futures import Future, CancelledError, Task, future_or_timeout
 
-from .headers import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METHOD_CONNECT
+from .headers import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METHOD_CONNECT, CONTENT_TYPE, \
+    CONTENT_TRANSFER_ENCODING
 from .exceptions import PayloadError, WebSocketProtocolError, ContentEncodingError
 from .helpers import HttpVersion, HttpVersion11
 
@@ -42,6 +43,8 @@ else:
             
             def compress(self, value):
                 return self._compressor.process(value)
+
+MimeType = NotImplemented
 
 ZLIB_DECOMPRESSOR = zlib.decompressobj
 ZLIB_COMPRESSOR = zlib.compressobj
@@ -422,20 +425,20 @@ class HTTPStreamWriter(object):
     
     Attributes
     ----------
+    _at_eof : `bool`
+        Whether ``.write_eof`` was called.
     size : `int`
         The amount of written data in bytes. If reaches a limit, drain lock is awaited.
     chunked : `bool`
         Whether the http message's content is chunked.
     compressor : `None` or `lib.compressobj`
         Decompressor used to compress the sent data. Defaults to `None` if no compression is given.
-    eof : `bool`
-        Whether ``.write_eof`` was called.
     protocol : `Any`
         Asynchronous transport implementation.
     transport : `None` or `Any`
         Asynchronous transport implementation. Set as `None` if at eof.
     """
-    __slots__ = ('size', 'chunked', 'compressor', 'eof', 'protocol', 'transport', )
+    __slots__ = ('_at_eof', 'size', 'chunked', 'compressor', 'protocol', 'transport', )
     def __init__(self, protocol, compression, chunked):
         """
         Creates a new ``HTTPStreamWriter`` with the given parameter.
@@ -466,7 +469,7 @@ class HTTPStreamWriter(object):
         self.chunked = chunked
         self.size = 0
         
-        self.eof = False
+        self._at_eof = False
     
     def _write(self, chunk):
         """
@@ -541,7 +544,7 @@ class HTTPStreamWriter(object):
         chunk : `bytes-like`
             The data to write.
         """
-        if self.eof:
+        if self._at_eof:
             return
         
         compressor = self.compressor
@@ -568,7 +571,7 @@ class HTTPStreamWriter(object):
         if protocol.transport is not None:
             await protocol._drain_helper()
         
-        self.eof = True
+        self._at_eof = True
         self.transport = None
     
     async def drain(self):
@@ -589,10 +592,10 @@ class ReadProtocolBase(object):
     
     Attributes
     ----------
+    _at_eof : `bool`
+        Whether the protocol received end of file.
     _chunks : `deque` of `bytes`
         Right feed, left pop queue, used to store the received data chunks.
-    _eof : `bool`
-        Whether the protocol received end of file.
     _offset : `int`
         Byte offset, of the used up data of the most-left chunk.
     _paused : `bool`
@@ -612,7 +615,7 @@ class ReadProtocolBase(object):
     transport : `None` or `Any`
         Asynchronous transport implementation. Is set meanwhile the protocol is alive.
     """
-    __slots__ = ('_chunks', '_eof', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter',
+    __slots__ = ('_at_eof', '_chunks', '_offset', '_paused', 'exception', 'loop', 'payload_reader',  'payload_waiter',
         'transport', )
     
     def __init__(self, loop):
@@ -629,7 +632,7 @@ class ReadProtocolBase(object):
         self.exception = None
         self._chunks = deque()
         self._offset = 0
-        self._eof = False
+        self._at_eof = False
         self.payload_reader = None
         self.payload_waiter = None
         self._paused = False
@@ -641,7 +644,7 @@ class ReadProtocolBase(object):
             self.__class__.__name__,
                 ]
         
-        if self._eof:
+        if self._at_eof:
             result.append(' at eof')
             add_comma = True
         else:
@@ -693,7 +696,7 @@ class ReadProtocolBase(object):
         if (self.exception is not None):
             return True
         
-        if (not self._eof) and (self._offset or self._chunks):
+        if (not self._at_eof) and (self._offset or self._chunks):
             return True
         
         return False
@@ -780,7 +783,7 @@ class ReadProtocolBase(object):
         -------
         at_eof : `bool`
         """
-        if not self._eof:
+        if not self._at_eof:
             return False
         
         if (self.payload_reader is not None):
@@ -826,7 +829,7 @@ class ReadProtocolBase(object):
             
             Always returns `False`.
         """
-        self._eof = True
+        self._at_eof = True
         
         payload_reader = self.payload_reader
         if payload_reader is None:
@@ -1149,7 +1152,7 @@ class ReadProtocolBase(object):
         if chunks:
             chunk = chunks[0]
         else:
-            if self._eof:
+            if self._at_eof:
                 raise EOFError(b'')
             
             chunk = yield from self._wait_for_data()
@@ -1193,7 +1196,7 @@ class ReadProtocolBase(object):
                 if chunks:
                     chunk = chunks[0]
                 else:
-                    if self._eof:
+                    if self._at_eof:
                         chunks.clear()
                         self._offset = 0
                         raise EOFError(b''.join(collected))
@@ -1219,7 +1222,7 @@ class ReadProtocolBase(object):
                 if chunks:
                     chunk = chunks[0]
                 else:
-                    if self._eof:
+                    if self._at_eof:
                         chunks.clear()
                         self._offset = 0
                         raise EOFError(b''.join(collected))
@@ -1291,7 +1294,7 @@ class ReadProtocolBase(object):
             chunk = chunks[0]
             offset = self._offset
         else:
-            if self._eof:
+            if self._at_eof:
                 raise EOFError(b'')
             
             chunk = yield from self._wait_for_data()
@@ -1332,7 +1335,7 @@ class ReadProtocolBase(object):
             if chunks:
                 chunk = chunks[0]
             else:
-                if self._eof:
+                if self._at_eof:
                     self._offset = 0
                     raise EOFError(b''.join(collected))
                 
@@ -1356,6 +1359,251 @@ class ReadProtocolBase(object):
             offset = self._offset = chunk_size+n
             collected.append(memoryview(chunk)[:offset])
             return b''.join(collected)
+    
+    def _read_until(self, boundary):
+        """
+        Payload reader task, what reads until `boundary` is hit.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        boundary : `bytes`
+            The amount of bytes to read.
+        
+        Returns
+        -------
+        collected : `bytes` or `bytearray`
+        
+        Raises
+        ------
+        EofError
+            Connection lost before `n` bytes were received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
+        # This method is mainly used for multipart reading, and we can forget optimizations usually.
+        boundary_length = len(boundary)
+        chunks = self._chunks
+        if chunks:
+            chunk = chunks[0]
+            offset = self._offset
+        else:
+            if self._at_eof:
+                raise EOFError(b'')
+            
+            chunk = yield from self._wait_for_data()
+            offset = 0
+        
+        # Optimal case is when we instantly hit boundary.
+        if len(chunk) > boundary_length:
+            index = chunk.find(boundary, offset)
+            if index != -1:
+                # Barrier found
+                data = chunk[offset:index]
+                offset += boundary
+                if offset == len(chunk):
+                    del chunks[0]
+                    offset = 0
+                self._offset = offset
+                return data
+            
+            offset = len(chunk) - boundary_length
+        
+        # Second case, we create a bytearray and push the data to it.
+        data = bytearray(chunk)
+        while True:
+            if chunks:
+                chunk = chunks[0]
+            else:
+                if self._at_eof:
+                    raise EOFError(b'')
+                
+                chunk = yield from self._wait_for_data()
+            
+            data.extend(chunk)
+            index = chunk.find(boundary, offset)
+            if index != -1:
+                # Barrier found
+                offset = len(chunk)-len(data)+index+boundary_length
+                if offset == len(chunk):
+                    del chunks[0]
+                    offset = 0
+                
+                self._offset = offset
+                del data[index:]
+                return data
+            
+            offset = len(data) - boundary_length
+            del chunks[0]
+    
+    def _read_multipart(self, boundary, is_first):
+        """
+        Payload reader task, which reads an http response's status line and headers.
+        
+        This method is a generator.
+        
+        Returns
+        -------
+        is_more : `bool`
+            Whether the payload contains more multipart field.
+        headers : `None` or ``imultidict`` of (`str`, `str`)
+            Received response headers.
+        chunk : `None`, `bytes` or `bytearray`
+            The field content.
+        
+        Raises
+        ------
+        EOFError
+            Connection lost before enough data was received.
+        PayloadError
+            Invalid data received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        """
+        if is_first:
+            yield from self._read_until(b'--' + boundary)
+            try:
+                maybe_end_1 = yield from self._read_exactly(2)
+            except EOFError:
+                # End of payload? Ok i guess.
+                return False, None, None
+            else:
+                if maybe_end_1 == b'\r\n':
+                    pass
+                elif maybe_end_1 == b'--':
+                    # End of payload?
+                    try:
+                        maybe_end_2 = yield from self._read_exactly(2)
+                    except EOFError:
+                        return False, None, None
+                    else:
+                        if maybe_end_2 == b'\r\n':
+                            return False, None, None
+                        else:
+                            raise PayloadError(f'Multipart boundary not ended with b\'--\'+b\'\r\n\', got '
+                                f'b\'--\'+{maybe_end_2!r}')
+                else:
+                    raise PayloadError(f'Multipart boundary not ended either with b\'--\' or b\'\r\n\', got '
+                        f'{maybe_end_1!r}')
+        
+        chunk, offset = yield from self._read_http_helper()
+        headers = yield from self._read_http_headers(chunk, offset)
+        
+        length = headers.get(CONTENT_LENGTH)
+        if length is None:
+            part = yield from self._read_until(b'\r\n--'+boundary)
+        else:
+            length = int(length)
+            part = yield from self._read_exactly(length)
+            try:
+                maybe_boundary = yield from self._read_exactly(len(boundary)+4)
+            except EOFError:
+                return False, None, part
+            
+            if maybe_boundary != b'\r\n--'+boundary:
+                raise PayloadError(f'Multipart payload not ended with boundary, expected: b\'\r\n\' + b\'--\' + '
+                    f'{boundary!r}, got {maybe_boundary!r}.')
+            
+            
+        try:
+            maybe_end_1 = yield from self._read_exactly(2)
+        except EOFError:
+            return False, headers, part
+        
+        if maybe_end_1 == b'\r\n':
+            return True, headers, part
+        
+        if maybe_end_1 == b'--':
+            try:
+                maybe_end_2 = yield from self._read_exactly(2)
+            except EOFError:
+                return False, headers, part
+            
+            if maybe_end_2 == b'\r\n':
+                return False, headers, part
+            
+            raise PayloadError(f'Multipart boundary not ended with b\'--\'+b\'\r\n\', got '
+                f'b\'--\'+{maybe_end_2!r}')
+        
+        raise PayloadError(f'Multipart boundary not ended either with  b\'--\' or b\'\r\n\', got '
+            f'{maybe_end_1!r}')
+    
+    async def read_multipart(self, headers):
+        """
+        Reads multipart data from the protocol
+        
+        This method is an asynchronous generator.
+        
+        Parameters
+        ----------
+        headers : ``imultidict``
+            The response's or the request's headers.
+        
+        Yields
+        ------
+        headers : `imultidict`
+            The multipart's headers.
+        data : `bytes` or `bytes-like`
+            The multipart's data.
+        
+        Raises
+        ------
+        EOFError
+            Connection lost before enough data was received.
+        PayloadError
+            Invalid data received.
+        CancelledError
+            If the reader task is cancelled not by receiving eof.
+        ContentEncodingError
+            - `'content_encoding'` was given as `'br'` meanwhile brotli or brotlipy are not installed.
+            - `'content_encoding'` is not an from the expected values.
+        StopAsyncIteration
+            The payload contains no more fields.
+        """
+        content_type = headers[CONTENT_TYPE]
+        mime = MimeType(content_type)
+        boundary = mime.params['boundary']
+        
+        is_first = True
+        while True:
+            is_more, headers, data = await self.set_payload_reader(self._read_multipart(boundary, is_first))
+            if data is not None:
+                try:
+                    transfer_encoding = headers[CONTENT_TRANSFER_ENCODING]
+                except KeyError:
+                    pass
+                else:
+                    transfer_encoding = transfer_encoding.lower()
+                    if transfer_encoding == 'base64':
+                        data = base64.b64decode(data)
+                    elif transfer_encoding == 'quoted-printable':
+                        data = binascii.a2b_qp(data)
+                    elif transfer_encoding in ('binary', '8bit', '7bit'):
+                        pass
+                    else:
+                        raise PayloadError(f'Unknown transfer encoding: {transfer_encoding!r}')
+                
+                try:
+                    content_encoding = headers[CONTENT_ENCODING]
+                except KeyError:
+                    pass
+                else:
+                    content_encoding = content_encoding.lower()
+                    decompressobj = self._decompressor_for(content_encoding)
+                    if (decompressobj is not None):
+                        try:
+                            data = decompressobj.decompress(data)
+                        except COMPRESSION_ERRORS:
+                            raise PayloadError('Cannot decompress data.') from None
+                
+                yield headers, data
+            
+            if not is_more:
+                return
+            
+            is_first = False
+            continue
     
     def _read_http_helper(self):
         """
@@ -1382,7 +1630,7 @@ class ReadProtocolBase(object):
             chunk = chunks[0]
             offset = self._offset
         else:
-            if self._eof:
+            if self._at_eof:
                 raise EOFError(b'')
             
             chunk = yield from self._wait_for_data()
@@ -1567,7 +1815,7 @@ class ReadProtocolBase(object):
                 chunk = chunks[0]
                 offset = self._offset
             else:
-                if self._eof:
+                if self._at_eof:
                     raise EOFError(b'')
                 
                 chunk = yield from self._wait_for_data()
@@ -1593,7 +1841,7 @@ class ReadProtocolBase(object):
                             if chunks:
                                 chunk = chunks[0]
                             else:
-                                if self._eof:
+                                if self._at_eof:
                                     raise EOFError(b'')
                                 
                                 chunk = yield from self._wait_for_data()
@@ -1628,7 +1876,7 @@ class ReadProtocolBase(object):
                         chunk = chunks[0]
                         offset = self._offset
                     else:
-                        if self._eof:
+                        if self._at_eof:
                             raise EOFError(b'')
                         
                         chunk = yield from self._wait_for_data()
@@ -1666,7 +1914,7 @@ class ReadProtocolBase(object):
                     if chunks:
                         chunk = chunks[0]
                     else:
-                        if self._eof:
+                        if self._at_eof:
                             raise EOFError(b'')
                         
                         chunk = yield from self._wait_for_data()
@@ -1694,7 +1942,7 @@ class ReadProtocolBase(object):
                 if chunks:
                     chunk = chunks[0]
                 else:
-                    if self._eof:
+                    if self._at_eof:
                         raise EOFError(b'')
                     
                     chunk = yield from self._wait_for_data()
@@ -1720,7 +1968,7 @@ class ReadProtocolBase(object):
                         if chunks:
                             chunk = chunks[0]
                         else:
-                            if self._eof:
+                            if self._at_eof:
                                 raise EOFError(b'')
                         
                             chunk = yield from self._wait_for_data()
@@ -1765,7 +2013,7 @@ class ReadProtocolBase(object):
                         chunk = chunks[0]
                         offset = self._offset
                     else:
-                        if self._eof:
+                        if self._at_eof:
                             raise EOFError(b'')
                         
                         chunk = yield from self._wait_for_data()
@@ -1796,7 +2044,7 @@ class ReadProtocolBase(object):
                     chunk = chunks[0]
                     offset = self._offset
                 else:
-                    if self._eof:
+                    if self._at_eof:
                         raise EOFError(b'')
                     
                     chunk = yield from self._wait_for_data()
@@ -1853,7 +2101,6 @@ class ReadProtocolBase(object):
         frame = object.__new__(Frame)
         frame.data = data
         frame.head1 = head1
-        
         return frame
     
     def get_payload_reader_task(self, message):
@@ -1864,7 +2111,7 @@ class ReadProtocolBase(object):
         ----------
         message : ``RawMessage`` instance
             Raw http message. Can be either request or response.
-
+        
         Returns
         -------
         payload_reader_task : `None` or `generator`
@@ -1892,11 +2139,11 @@ class ReadProtocolBase(object):
                 else:
                     return self._read_exactly_encoded(length, decompressor)
         
-        if (type(message) is RawRequestMessage) and (message.method == METHOD_CONNECT):
+        if isinstance(message, RawRequestMessage) and (message.method == METHOD_CONNECT):
             message.upgraded = True
             return self._read_until_eof()
         
-        if (type(message) is RawResponseMessage) and message.status >= 199 and (length is None):
+        if isinstance(message, RawResponseMessage) and message.status >= 199 and (length is None):
             if message.chunked:
                 decompressor = self._decompressor_for(message.encoding)
                 if decompressor is None:
@@ -1927,8 +2174,6 @@ class ReadProtocolBase(object):
         ContentEncodingError
             - `'content_encoding'` was given as `'br'` meanwhile brotli or brotlipy are not installed.
             - `'content_encoding'` is not an from the expected values.
-        CancelledError
-            If the reader task is cancelled not by receiving eof.
         """
         if (content_encoding is None):
             decompressor = None
@@ -1984,13 +2229,13 @@ class ReadProtocolBase(object):
             if chunk_length == 0:
                 end = yield from self._read_exactly(2)
                 if end != b'\r\n':
-                    raise PayloadError(f'received chunk does not end with b\'\\r\\n\', instead with: {end}.')
+                    raise PayloadError(f'Received chunk does not end with b\'\\r\\n\', instead with: {end}.')
                 break
             
             chunk = yield from self._read_exactly(chunk_length)
             end = yield from self._read_exactly(2)
             if end != b'\r\n':
-                raise PayloadError(f'received chunk does not end with b\'\\r\\n\', instead with: {end}.')
+                raise PayloadError(f'Received chunk does not end with b\'\\r\\n\', instead with: {end}.')
             
             collected.append(chunk)
         
@@ -2013,12 +2258,12 @@ class ReadProtocolBase(object):
         """
         chunks = self._chunks
         
-        if not self._eof:
+        if not self._at_eof:
             while True:
                 try:
                     yield from self._wait_for_data()
                 except (CancelledError, GeneratorExit):
-                    if self._eof:
+                    if self._at_eof:
                         break
                     
                     raise
@@ -2123,7 +2368,7 @@ class ReadProtocolBase(object):
             try:
                 chunk = decompressobj.decompress(chunk)
             except COMPRESSION_ERRORS:
-                raise PayloadError('Cannot decompress chunk') from None
+                raise PayloadError('Cannot decompress chunk.') from None
             
             collected.append(chunk)
         
@@ -2150,7 +2395,7 @@ class ReadProtocolBase(object):
             try:
                 yield from self._wait_for_data()
             except (CancelledError, GeneratorExit):
-                if self._eof:
+                if self._at_eof:
                     return b''
                 
                 raise
@@ -2373,10 +2618,10 @@ class DatagramMergerReadProtocol(ReadProtocolBase):
     
     Attributes
     ----------
+    _at_eof : `bool`
+        Whether the protocol received end of file.
     _chunks : `deque` of `bytes`
         Right feed, left pop queue, used to store the received data chunks.
-    _eof : `bool`
-        Whether the protocol received end of file.
     _offset : `int`
         Byte offset, of the used up data of the most-left chunk.
     _paused : `bool`
@@ -2433,10 +2678,10 @@ class ProtocolBase(ReadProtocolBase):
     
     Attributes
     ----------
+    _at_eof : `bool`
+        Whether the protocol received end of file.
     _chunks : `deque` of `bytes`
         Right feed, left pop queue, used to store the received data chunks.
-    _eof : `bool`
-        Whether the protocol received end of file.
     _offset : `int`
         Byte offset, of the used up data of the most-left chunk.
     _paused : `bool`
@@ -2474,7 +2719,7 @@ class ProtocolBase(ReadProtocolBase):
         self.exception = None
         self._chunks = deque()
         self._offset = 0
-        self._eof = False
+        self._at_eof = False
         self.payload_reader = None
         self.payload_waiter = None
         self._paused = False
@@ -2496,7 +2741,7 @@ class ProtocolBase(ReadProtocolBase):
         other.exception = self.exception
         other._chunks = self._chunks
         other._offset = self._offset
-        other._eof = self._eof
+        other._at_eof = self._at_eof
         other.payload_reader = self.payload_reader
         other.payload_waiter = self.payload_waiter
         other._paused = self._paused
@@ -2592,13 +2837,13 @@ class ProtocolBase(ReadProtocolBase):
         
         transport.write(data)
     
-    def writelines(self, data):
+    def writelines(self, lines):
         """
         Writes the given lines to the protocol's transport.
         
         Parameters
         ----------
-        data : `iterable` of `bytes-like`
+        lines : `iterable` of `bytes-like`
             The lines to write.
         
         Raises
@@ -2610,7 +2855,7 @@ class ProtocolBase(ReadProtocolBase):
         if transport is None:
             raise RuntimeError('Protocol has no attached transport.')
         
-        transport.writelines(data)
+        transport.writelines(lines)
     
     def write_http_request(self, method, path, headers, version=HttpVersion11):
         """

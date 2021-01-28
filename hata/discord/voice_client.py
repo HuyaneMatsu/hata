@@ -1107,7 +1107,7 @@ class VoiceClient(object):
         """
         transport = self._transport
         if (transport is not None):
-            transport.sendto(packet, (self._endpoint_ip, self._audio_port))
+            transport.send_to(packet, (self._endpoint_ip, self._audio_port))
     
     def __del__(self):
         """Stops and unallocates the resources by the voice client, if was not done already."""

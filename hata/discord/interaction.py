@@ -927,7 +927,7 @@ class ApplicationCommandOption(object):
         
         new.default = self.default
         new.description = self.description
-        new.name = self.description
+        new.name = self.name
         
         options = self.options
         if (options is not None):
@@ -936,6 +936,7 @@ class ApplicationCommandOption(object):
         
         new.required = self.required
         new.type = self.type
+        return new
     
     def __eq__(self, other):
         """Returns whether the two options are equal."""

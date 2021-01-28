@@ -37,7 +37,7 @@ setup(
     license = 'Apache 2.0',
     author = 'HuyaneMatsu',
     author_email = 're.ism.tm@gmail.com',
-    description = 'Discord API wrapper in Python',
+    description = 'A powerful asynchronous library for creating Discord bots in Python.',
     long_description = README,
     long_description_content_type = 'text/markdown',
     classifiers = [

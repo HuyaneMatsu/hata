@@ -501,20 +501,35 @@ class _SSLProtocolTransport(object):
         
         No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
         called.
+        
+        Returns
+        -------
+        reading_paused : `bool`
+            Whether reading was paused.
         """
         transport = self.ssl_protocol.transport
-        if (transport is not None):
-            transport.pause_reading()
-
+        if transport is None:
+            return False
+        
+        return transport.pause_reading()
+    
     def resume_reading(self):
         """
         Resumes the receiving end.
         
         Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        
+        Returns
+        -------
+        reading_resume : `bool`
+            Whether reading was resumed.
         """
         transport = self.ssl_protocol.transport
-        if (transport is not None):
-            transport.resume_reading()
+        if transport is None:
+            return False
+            
+        transport.resume_reading()
+        return True
     
     def set_write_buffer_limits(self, low=None, high=None):
         """
@@ -582,13 +597,13 @@ class _SSLProtocolTransport(object):
         if data:
             self.ssl_protocol._write_application_data(data)
     
-    def writelines(self, list_of_data):
+    def writelines(self, lines):
         """
         Writes an `iterable` of `bytes-like` to the transport.
         
         Parameters
         ----------
-        list_of_data : `iterable` of `bytes-like`
+        lines : `iterable` of `bytes-like`
             An iterable of data to send.
         
         Raises
@@ -596,7 +611,7 @@ class _SSLProtocolTransport(object):
         TypeError
             If `list_of_data` was not given as `iterable` of `bytes-like`.
         """
-        self.write(b''.join(list_of_data))
+        self.write(b''.join(lines))
     
     def can_write_eof(self):
         """
@@ -1051,17 +1066,68 @@ class SSLProtocol(object):
 
 
 class _SelectorSocketTransport(object):
-    __slots__ = ('_extra', 'loop', 'protocol', '_low_water', '_high_water', '_protocol_paused', 'socket', '_socket_fd',
-        '_protocol_connected', 'server', 'buffer', '_conn_lost', 'closing', 'eof', 'paused',)
+    """
+    Socket transport for selector based event loops.
+    
+    Attributes
+    ----------
+    _at_eof : `bool`
+        Whether ``.write_eof`` was called.
+    _connection_lost : `bool`
+        Set as `True`, when ``._call_connection_lost`` is scheduled.
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
+    _high_water : `int`
+        The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+    _low_water : `int`
+        The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to `16384`.
+    _paused : `bool`
+        Whether the transport's reading is paused by the protocol.
+    _socket_fd : `int`
+        The transport's socket's file descriptor identifier.
+    closing : `bool`
+        Whether the transport ic closing.
+    loop : ``EventThread``
+        The event loop to what the transport is bound to.
+    protocol : `None`, ``SSLProtocol, ``ReadProtocolBase`` or `Any`
+        Asynchronous protocol implementation used by the transport.
+        
+        After closing the transport is set to `None`.
+    protocol_paused : `bool`
+        Whether ``.protocol`` is paused writing.
+    server : `None` or ``Server``
+        If the transport is server side, it's server is set as this attribute.
+    socket : `socket.socket`
+        The socket used by the transport.
+    """
+    __slots__ = ('_at_eof', '_buffer', '_connection_lost', '_extra', '_high_water', '_low_water', '_paused',
+        '_socket_fd', 'closing',  'loop', 'protocol', 'protocol_paused', 'server', 'socket')
     
     def __init__(self, loop, socket, protocol, waiter=None, extra=None, server=None):
+        """
+        Creates a ``_SelectorSocketTransport`` instance with the given parameters.
         
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The event loop to what the transport is bound to.
+        socket : `socket.socket`
+            The socket used by the transport.
+        protocol : ``SSLProtocol, ``ReadProtocolBase`` or `Any`
+            Asynchronous protocol implementation used by the transport.
+        waiter : `None` or ``Future`, Optional
+            Waiter, what's result is set, when the transport connected. Defaults to `None`.
+        extra : `None` or `dict` of (`str`, `Any`) items, Optional
+            Optional transport information.
+        server : `None` or ``Server``, Optional
+            If the transport is server side, it's server is set as this attribute. Defaults to `None`.
+        """
         if extra is None:
             extra = {}
         
         self._extra = extra
         self.loop = loop
-        self._protocol_paused = False
+        self.protocol_paused = False
         self._set_write_buffer_limits()
         
         extra['socket'] = socket
@@ -1083,17 +1149,16 @@ class _SelectorSocketTransport(object):
         self._socket_fd = socket.fileno()
         
         self.protocol = protocol
-        self._protocol_connected = True
         
         self.server = server
-        self.buffer = bytearray()
-        self._conn_lost = 0  # Set when call to connection_lost scheduled.
+        self._buffer = bytearray()
+        self._connection_lost = False  # Set when call to connection_lost scheduled.
         self.closing = False  # Set when close() called.
         if server is not None:
             server._attach()
         
-        self.eof = False
-        self.paused = False
+        self._at_eof = False
+        self._paused = False
         
         # Disable the Nagle algorithm -- small writes will be sent without waiting for the TCP ACK.  This generally
         # decreases the latency (in some cases significantly.)
@@ -1108,11 +1173,15 @@ class _SelectorSocketTransport(object):
             loop.call_soon(Future.set_result_if_pending, waiter, None)
     
     def __del__(self):
+        """
+        Closes the ``._SelectorSocketTransport``'s ``.socket`` if not yet closed.
+        """
         socket = self.socket
         if socket is not None:
             socket.close()
     
     def __repr__(self):
+        """Returns the selector socket transport's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -1168,24 +1237,54 @@ class _SelectorSocketTransport(object):
         
         return ''.join(result)
     
-    def writelines(self, list_of_data):
-        self.write(b''.join(list_of_data))
+    def writelines(self, lines):
+        """
+        Writes the given lines to the transport's socket.
+        
+        Parameters
+        ----------
+        lines : `iterable` of `bytes-like`
+            The lines to write.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
+        self.write(b''.join(lines))
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self._extra.get(name, default)
     
     def _maybe_pause_protocol(self):
+        """
+        Called after data was ensured to be written into the socket to check whether it's protocol should be paused.
+        """
         size = self.get_write_buffer_size()
         if size <= self._high_water:
             return
         
-        if self._protocol_paused:
+        if self.protocol_paused:
             return
         
-        self._protocol_paused = True
+        self.protocol_paused = True
         try:
             self.protocol.pause_writing()
-        except Exception as err:
+        except BaseException as err:
             self.loop.render_exc_async(err, [
                 'Exception occurred at:\n',
                 repr(self),
@@ -1193,12 +1292,15 @@ class _SelectorSocketTransport(object):
                     ])
     
     def _maybe_resume_protocol(self):
-        if (not self._protocol_paused) or (self.get_write_buffer_size() > self._low_water):
+        """
+        Called after successful writing to the socket to check whether the protocol should be resumed.
+        """
+        if (not self.protocol_paused) or (self.get_write_buffer_size() > self._low_water):
             return
-        self._protocol_paused = False
+        self.protocol_paused = False
         try:
             self.protocol.resume_writing()
-        except Exception as err:
+        except BaseException as err:
             self.loop.render_exc_async(err, [
                 'Exception occurred at:\n',
                 repr(self),
@@ -1206,52 +1308,147 @@ class _SelectorSocketTransport(object):
                     ])
     
     def get_write_buffer_limits(self):
+        """
+        Returns the low and the high water of the transport.
+        
+        Returns
+        -------
+        low_water : `int`
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high_water : `int`
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+        """
         return self._low_water, self._high_water
     
     def _set_write_buffer_limits(self, high=None, low=None):
+        """
+        Sets the write buffer limits of the transport.
+        
+        Parameters
+        ----------
+        low : None` or `int`, Optional
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high : `None` or `int`, Optional
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+
+        Raises
+        ------
+        ValueError
+            If `high` is lower than `low` or if `low` is lower than `0`.
+        """
         if high is None:
             if low is None:
                 high = 65536
+                low = 16384
             else:
                 high = low<<2
+        else:
+            if low is None:
+                low = high>>2
         
-        if low is None:
-            low = high>>2
-        
-        if not high >= low >= 0:
-            raise ValueError(f'`high` ({high}) must be `>= low` ({low}) must be `>= 0`.')
+        if low < 0 or high < low:
+            raise ValueError(f'High water must be greater or equal than low, what must be greater than equal than `0`, '
+                f'got high={high!r}; low={low!r}.')
         
         self._high_water = high
         self._low_water = low
 
     def set_write_buffer_limits(self, high=None, low=None):
+        """
+        Set the high- and low-water limits for write flow control.
+        
+        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
+        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
+        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
+        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
+        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
+        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
+        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
+        
+        Parameters
+        ----------
+        high : `None` or `int`, Optional
+            High limit to stop reading if reached.
+        low : `None` or `int`, Optional
+            Low limit to start reading if reached.
+        
+        Raises
+        ------
+        ValueError
+            If `low` is lower than `0` or if `low` is higher than `high`.
+        """
         self._set_write_buffer_limits(high=high, low=low)
         self._maybe_pause_protocol()
     
     def abort(self):
+        """
+        Closes the transport immediately.
+        
+        The buffered data will be lost.
+        """
         self._force_close(None)
     
     def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         self.protocol = protocol
     
     def get_protocol(self):
+        """
+        Gets the transport's actual protocol.
+        
+        Returns
+        -------
+        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
+            Asynchronous protocol implementation.
+        """
         return self.protocol
     
     def is_closing(self):
+        """
+        Returns whether the transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.closing
     
     def close(self):
+        """
+        Starts the shutdown process of the transport.
+        
+        If the transport is already closing, does nothing.
+        """
         if self.closing:
             return
         
         self.closing = True
         self.loop.remove_reader(self._socket_fd)
-        if not self.buffer:
-            self._conn_lost += 1
+        if not self._buffer:
+            self._connection_lost = True
             self.loop.remove_writer(self._socket_fd)
             self.loop.call_soon(self._call_connection_lost, None)
     
     def _fatal_error(self, exception, message='Fatal error on transport'):
+        """
+        If a fatal error occurs on the transport, renders its traceback and closes itself.
+        
+        Parameters
+        ----------
+        exception : `BaseException`
+            The occurred exception.
+        message : `str`, Optional
+            Additional error message to render.
+        """
         if not isinstance(exception, (BrokenPipeError, ConnectionResetError, ConnectionAbortedError)):
             self.loop.render_exc_async(exception, [
                 message,
@@ -1263,24 +1460,50 @@ class _SelectorSocketTransport(object):
         self._force_close(exception)
     
     def _force_close(self, exception):
-        if self._conn_lost:
+        """
+        Closes the transport immediately.
+        
+        The buffered data will be lost.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
+        if self._connection_lost:
             return
         
-        if self.buffer:
-            self.buffer.clear()
+        buffer = self._buffer
+        if buffer:
+            buffer.clear()
             self.loop.remove_writer(self._socket_fd)
         
         if not self.closing:
             self.closing = True
             self.loop.remove_reader(self._socket_fd)
         
-        self._conn_lost += 1
+        self._connection_lost = True
         self.loop.call_soon(self._call_connection_lost, exception)
     
     def _call_connection_lost(self, exception):
+        """
+        Calls the transport's connection lost method-
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         try:
-            if self._protocol_connected:
-                self.protocol.connection_lost(exception)
+            protocol = self.protocol
+            if (protocol is not None):
+                protocol.connection_lost(exception)
         finally:
             self.socket.close()
             self.socket = None
@@ -1292,34 +1515,67 @@ class _SelectorSocketTransport(object):
                 self.server = None
     
     def get_write_buffer_size(self):
-        return len(self.buffer)
+        """
+        Return the current size of the write buffer.
+        
+        Returns
+        -------
+        get_write_buffer_size : `int`
+        """
+        return len(self._buffer)
     
     def pause_reading(self):
-        if self.closing:
-            raise RuntimeError('Cannot pause_reading() when closing')
-        if self.paused:
-            raise RuntimeError('Already paused')
-        self.paused = True
+        """
+        Pauses the receiving end.
+        
+        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
+        called.
+        
+        Returns
+        -------
+        reading_paused : `bool`
+            Whether reading was paused.
+        """
+        if self.closing or self._paused:
+            return False
+        
+        self._paused = True
         self.loop.remove_reader(self._socket_fd)
+        return True
     
     def resume_reading(self):
-        if not self.paused:
-            raise RuntimeError('Not paused')
+        """
+        Resumes the receiving end.
         
-        self.paused = False
-        if self.closing:
-            return
+        Data received will once again be passed to the respective protocol's ``.data_received`` method.
         
-        self.loop.add_reader(self._socket_fd, self._read_ready)
+        Returns
+        -------
+        reading_resume : `bool`
+            Whether reading was resumed.
+        """
+        if not self._paused:
+            return False
+        
+        self._paused = False
+        if not self.closing:
+            self.loop.add_reader(self._socket_fd, self._read_ready)
+        
+        return True
     
     def _read_ready(self):
-        if self._conn_lost:
+        """
+        Added as a read callback on the respective event loop to be called when the data is received on the pipe.
+        
+        If this happens, since it is a write only pipe, means it should be closed, so we do like that.
+        """
+        if self._connection_lost:
             return
         try:
             data = self.socket.recv(MAX_SIZE)
         except (BlockingIOError, InterruptedError):
             pass
-        except Exception as err:
+        except BaseException as err:
             self._fatal_error(err, 'Fatal read error on socket transport')
         else:
             if data:
@@ -1333,24 +1589,41 @@ class _SelectorSocketTransport(object):
                 self.close()
     
     def write(self, data):
+        """
+        Write the given `data` to the transport.
+        
+        Do not blocks, but queues up the data instead to be sent as can.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The data to send.
+        
+        Raises
+        ------
+        TypeError
+            If `data` was not given as `bytes-like`.
+        RuntimeError : `bool`
+            If ``.write_eof`` was already called.
+        """
         if not isinstance(data, (bytes, bytearray, memoryview)):
-            raise TypeError(f'data argument must be a bytes-like object, got {data.__class__.__name__}')
-        if self.eof:
-            raise RuntimeError('Cannot call write() after write_eof()')
+            raise TypeError(f'data parameter must should be `bytes-like`, got {data.__class__.__name__}.')
+        if self._at_eof:
+            raise RuntimeError('Cannot call `.write` after `.write_eof`')
+        
         if not data:
             return
         
-        if self._conn_lost:
-            self._conn_lost += 1
+        if self._connection_lost:
             return
         
-        if not self.buffer:
+        if not self._buffer:
             # Optimization: try to send now.
             try:
                 n = self.socket.send(data)
             except (BlockingIOError, InterruptedError):
                 pass
-            except Exception as err:
+            except BaseException as err:
                 self._fatal_error(err, 'Fatal write error on socket transport')
                 return
             else:
@@ -1361,60 +1634,130 @@ class _SelectorSocketTransport(object):
             self.loop.add_writer(self._socket_fd, self._write_ready)
         
         # Add it to the buffer.
-        self.buffer.extend(data)
+        self._buffer.extend(data)
         self._maybe_pause_protocol()
 
     def _write_ready(self):
-        if self._conn_lost:
+        """
+        Added as a write callback on the respective event loop when the transport has unsent data. Called when the
+        respective socket becomes writable.
+        """
+        if self._connection_lost:
             return
         
         try:
-            n = self.socket.send(self.buffer)
+            n = self.socket.send(self._buffer)
         except (BlockingIOError, InterruptedError):
             pass
-        except Exception as err:
+        except BaseException as err:
             self.loop.remove_writer(self._socket_fd)
-            self.buffer.clear()
+            self._buffer.clear()
             self._fatal_error(err, 'Fatal write error on socket transport')
         else:
             if n:
-                del self.buffer[:n]
+                del self._buffer[:n]
             
             self._maybe_resume_protocol()  # May append to buffer.
-            if not self.buffer:
+            if not self._buffer:
                 self.loop.remove_writer(self._socket_fd)
                 
                 if self.closing:
                     self._call_connection_lost(None)
                 
-                elif self.eof:
+                elif self._at_eof:
                     self.socket.shutdown(module_socket.SHUT_WR)
     
     def write_eof(self):
-        if self.eof:
+        """
+        Writes eof to the subprocess pipe's transport's protocol if applicable.
+        
+        By default ``SubprocessStreamWriter``'s transport is ``UnixWritePipeTransport``, what will call connection lost
+        as well when the write buffer is empty.
+        """
+        if self._at_eof:
             return
         
-        self.eof = True
+        self._at_eof = True
         
-        if not self.buffer:
+        if not self._buffer:
             self.socket.shutdown(module_socket.SHUT_WR)
     
     def can_write_eof(self):
+        """
+        Return whether the transport supports ``.write_eof``.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+            ``_SelectorSocketTransport`` instances always return `True`.
+        """
         return True
 
 
 class _SelectorDatagramTransport(object):
-    __slots__ = ('_extra', 'loop', '_protocol_paused', '_high_water', '_low_water', 'protocol', '_socket_fd',
-        'buffer', '_conn_lost', 'socket', '_protocol_connected', 'closing', 'address')
+    """
+    Asynchronous transport implementation for datagram sockets.
+    
+    _buffer : `deque` of `tuple` (`bytes`, `tuple` (`str`, `int`))
+        A queue of received data-s, each in `data-address` tuples.
+    _connection_lost : `bool`
+        Set as `True`, when ``._call_connection_lost`` is scheduled.
+    _extra : `dict` of (`str`, `Any`) items
+        Optional transport information.
+    _high_water : `int`
+        The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+    _low_water : `int`
+        The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to `16384`.
+    _paused : `bool`
+        Whether the transport's reading is paused by the protocol.
+    _socket_fd : `int`
+        The transport's socket's file descriptor identifier.
+    address : `None` or (`str`, `int`)
+        The last address, where the transport sent data. Defaults to `None`. The send target address should not differ
+        from the last, where the transport sent data.
+    closing : `bool`
+        Whether the transport ic closing.
+    loop : ``EventThread``
+        The event loop to what the transport is bound to.
+    protocol : `None`, ``DatagramAddressedReadProtocol``, ``DatagramMergerReadProtocol`` or `Any`
+        Asynchronous protocol implementation used by the transport.
+        
+        After closing the transport is set to `None`.
+    protocol_paused : `bool`
+        Whether ``.protocol`` is paused writing.
+    socket : `socket.socket`
+        The socket used by the transport.
+    """
+    __slots__ = ('_buffer', '_connection_lost', '_extra', '_high_water', '_low_water', '_socket_fd', 'address',
+        'closing', 'loop', 'protocol', 'protocol_paused', 'socket')
     
     def __init__(self, loop, socket, protocol, address=None, waiter=None, extra=None):
+        """
+        Creates a ``_SelectorDatagramTransport`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        loop : ``EventThread``
+            The event loop to what the transport is bound to.
+        socket : `socket.socket`
+            The socket used by the transport.
+        protocol : ``SSLProtocol, ``ReadProtocolBase`` or `Any`
+            Asynchronous protocol implementation used by the transport.
+        address : `None` or `tuple` (`str`, `int`), Optional
+            The last address, where the transport sent data. Defaults to `None`. The send target address should not
+            differ from the last, where the transport sent data.
+        waiter : `None` or ``Future`, Optional
+            Waiter, what's result is set, when the transport connected. Defaults to `None`.
+        extra : `None` or `dict` of (`str`, `Any`) items, Optional
+            Optional transport information.
+        """
         if extra is None:
             extra = {}
         
         self._extra = extra
         
         self.loop = loop
-        self._protocol_paused = False
+        self.protocol_paused = False
         self._set_write_buffer_limits()
         
         extra['socket'] = socket
@@ -1436,59 +1779,125 @@ class _SelectorDatagramTransport(object):
         self.socket = socket
         self._socket_fd = socket.fileno()
         
-        self._protocol_connected = False
         self.protocol = protocol
         
-        self.buffer = deque()
-        self._conn_lost = 0 # Set when call to connection_lost scheduled.
+        self._buffer = deque()
+        self._connection_lost = 0 # Set when call to connection_lost scheduled.
         self.closing = False # Set when close() called.
         
         self.address = address
-        self.loop.call_soon(self.protocol.connection_made, self)
+        loop.call_soon(self.protocol.connection_made, self)
         # only start reading when connection_made() has been called
-        self.loop.call_soon(self._add_reader, self._socket_fd, self._read_ready)
+        loop.call_soon(self._add_reader)
         
         if waiter is not None:
             # only wake up the waiter when connection_made() has been called
-            self.loop.call_soon(Future.set_result_if_pending, waiter, None)
+            loop.call_soon(Future.set_result_if_pending, waiter, None)
     
     def get_extra_info(self, name, default=None):
+        """
+        Gets optional transport information.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extra information's name to get.
+        default : `Any`, Optional
+            Default value to return if `name` could not be matched. Defaults to `None`.
+        
+        Returns
+        -------
+        info : `default`, `Any`
+        """
         return self._extra.get(name, default)
-    
-    def is_reading(self):
-        raise NotImplementedError
-    
+
     def pause_reading(self):
-        raise NotImplementedError
+        """
+        Pauses the receiving end.
+        
+        ``_SelectorDatagramTransport``-s do not support this operation.
+        
+        Returns
+        -------
+        reading_paused : `bool`
+            Whether reading was paused. Always returns `False`.
+        """
+        return False
     
     def resume_reading(self):
-        raise NotImplementedError
+        """
+        Resumes the receiving end.
+        
+        ``_SelectorDatagramTransport``-s do not support this operation.
+        
+        Returns
+        -------
+        reading_resume : `bool`
+            Whether reading was resumed. Always returns `False`.
+        """
+        return False
     
     def write(self, data):
-        raise NotImplementedError
+        """
+        Write the given data to transport.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The bytes data to be sent.
+        """
+        return
     
-    def writelines(self, list_of_data):
-        data = b''.join(list_of_data)
-        self.write(data)
+    def writelines(self, lines):
+        """
+        Writes the given lines to the protocol's transport. 
+        
+        ``_SelectorDatagramTransport`` do not support writing, use ``.send_to`` instead.
+        
+        Parameters
+        ----------
+        lines : `iterable` of `bytes-like`
+            The lines to write.
+        """
+        pass
+        # Do not bother to join:
+        # data = b''.join(lines)
+        # self.write(data)
     
     def write_eof(self):
-        raise NotImplementedError
+        """
+        Writes eof to the transport's protocol if applicable.
+        
+        ``_SelectorDatagramTransport`` instances do not support this operation.
+        """
+        pass
     
     def can_write_eof(self):
-        raise NotImplementedError
+        """
+        Return whether the transport supports ``.write_eof``.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+            ``_SelectorDatagramTransport`` do not support this operation, so this method will always return `False`.
+        """
+        return False
     
     def _maybe_pause_protocol(self):
+        """
+        Called after data was ensured to be written into the socket to check whether it's protocol should be paused.
+        """
         size = self.get_write_buffer_size()
         if size <= self._high_water:
             return
         
-        if self._protocol_paused:
+        if self.protocol_paused:
             return
             
-        self._protocol_paused = True
+        self.protocol_paused = True
         try:
             self.protocol.pause_writing()
-        except Exception as err:
+        except BaseException as err:
             self.loop.render_exc_async(err, [
                 'Exception occurred at:\n',
                 repr(self),
@@ -1496,13 +1905,16 @@ class _SelectorDatagramTransport(object):
                     ])
     
     def _maybe_resume_protocol(self):
-        if (not self._protocol_paused) or (self.get_write_buffer_size() > self._low_water):
+        """
+        Called after successful writing to the socket to check whether the protocol should be resumed.
+        """
+        if (not self.protocol_paused) or (self.get_write_buffer_size() > self._low_water):
             return
         
-        self._protocol_paused = False
+        self.protocol_paused = False
         try:
             self.protocol.resume_writing()
-        except Exception as err:
+        except BaseException as err:
             self.loop.render_exc_async(err, [
                 'Exception occurred at:\n',
                 repr(self),
@@ -1510,9 +1922,36 @@ class _SelectorDatagramTransport(object):
                     ])
     
     def get_write_buffer_limits(self):
-        return (self._low_water, self._high_water)
+        """
+        Returns the low and the high water of the transport.
+        
+        Returns
+        -------
+        low_water : `int`
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high_water : `int`
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+        """
+        return self._low_water, self._high_water
     
     def _set_write_buffer_limits(self, high=None, low=None):
+        """
+        Sets the write buffer limits of the transport.
+        
+        Parameters
+        ----------
+        low : None` or `int`, Optional
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
+        high : `None` or `int`, Optional
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+
+        Raises
+        ------
+        ValueError
+            If `high` is lower than `low` or if `low` is lower than `0`.
+        """
         if high is None:
             if low is None:
                 high = 65536
@@ -1529,10 +1968,42 @@ class _SelectorDatagramTransport(object):
         self._low_water = low
     
     def set_write_buffer_limits(self, high=None, low=None):
+        """
+        Set the high- and low-water limits for write flow control.
+        
+        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
+        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
+        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
+        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
+        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
+        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
+        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
+        
+        Parameters
+        ----------
+        high : `None` or `int`, Optional
+            High limit to stop reading if reached.
+        low : `None` or `int`, Optional
+            Low limit to start reading if reached.
+        
+        Raises
+        ------
+        ValueError
+            If `low` is lower than `0` or if `low` is higher than `high`.
+        """
         self._set_write_buffer_limits(high=high, low=low)
         self._maybe_pause_protocol()
     
+    def __del__(self):
+        """
+        Closes the ``._SelectorSocketTransport``'s ``.socket`` if not yet closed.
+        """
+        socket = self.socket
+        if socket is not None:
+            socket.close()
+    
     def __repr__(self):
+        """Returns the transport's representation."""
         result = [
             '<',
             self.__class__.__name__,
@@ -1588,35 +2059,72 @@ class _SelectorDatagramTransport(object):
         return ''.join(result)
     
     def abort(self):
+        """
+        Closes the transport immediately.
+        
+        The buffered data will be lost.
+        """
         self._force_close(None)
     
     def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
         self.protocol = protocol
-        self._protocol_connected = True
     
     def get_protocol(self):
+        """
+        Gets the transport's actual protocol.
+        
+        Returns
+        -------
+        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
+            Asynchronous protocol implementation.
+        """
         return self.protocol
     
     def is_closing(self):
+        """
+        Returns whether the transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
         return self.closing
     
     def close(self):
+        """
+        Starts the shutdown process of the transport.
+        
+        If the transport is already closing, does nothing.
+        """
         if self.closing:
             return
         
         self.closing = True
         self.loop.remove_reader(self._socket_fd)
-        if not self.buffer:
-            self._conn_lost += 1
+        if not self._buffer:
+            self._connection_lost += 1
             self.loop.remove_writer(self._socket_fd)
             self.loop.call_soon(self._call_connection_lost, None)
     
-    def __del__(self):
-        socket = self.socket
-        if socket is not None:
-            socket.close()
-    
     def _fatal_error(self, exception, message='Fatal error on transport'):
+        """
+        If a fatal error occurs on the transport, renders its traceback and closes itself.
+        
+        Parameters
+        ----------
+        exception : `BaseException`
+            The occurred exception.
+        message : `str`, Optional
+            Additional error message to render.
+        """
         if not isinstance(exception, OSError):
             self.loop.render_exc_async(exception, [
                 message,
@@ -1628,23 +2136,48 @@ class _SelectorDatagramTransport(object):
         self._force_close(exception)
     
     def _force_close(self, exception):
-        if self._conn_lost:
+        """
+        Closes the transport immediately.
+        
+        The buffered data will be lost.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
+        if self._connection_lost:
             return
         
-        if self.buffer:
-            self.buffer.clear()
+        if self._buffer:
+            self._buffer.clear()
             self.loop.remove_writer(self._socket_fd)
         
         if not self.closing:
             self.closing = True
             self.loop.remove_reader(self._socket_fd)
         
-        self._conn_lost += 1
+        self._connection_lost += 1
         self.loop.call_soon(self._call_connection_lost, exception)
     
     def _call_connection_lost(self, exception):
+        """
+        Calls the transport's connection lost method-
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Defines whether the connection is closed, or an exception was received.
+            
+            If the connection was closed, then `exception` is given as `None`. This can happen at the case, when eof is
+            received as well.
+        """
         try:
-            if self._protocol_connected:
+            protocol = self.protocol
+            if (protocol is not None):
                 self.protocol.connection_lost(exception)
         finally:
             self.socket.close()
@@ -1652,21 +2185,37 @@ class _SelectorDatagramTransport(object):
             self.protocol = None
             self.loop = None
     
-    def _add_reader(self, fd, callback, *args):
+    def _add_reader(self):
+        """
+        Call soon callback added by ``.__init__` to add reader to the event loop.
+        """
+        
         if self.closing:
             return
         
-        self.loop.add_reader(fd, callback, *args)
+        self.loop.add_reader(self._socket_fd, self._read_ready)
     
     def get_write_buffer_size(self):
+        """
+        Return the current size of the write buffer.
+        
+        Returns
+        -------
+        get_write_buffer_size : `int`
+        """
         size = 0
-        for data, address in self.buffer:
+        for data, address in self._buffer:
             size += len(data)
         
         return size
     
     def _read_ready(self):
-        if self._conn_lost:
+        """
+        Added as a read callback on the respective event loop to be called when the data is received on the pipe.
+        
+        If this happens, since it is a write only pipe, means it should be closed, so we do like that.
+        """
+        if self._connection_lost:
             return
         try:
             data, address = self.socket.recvfrom(MAX_SIZE)
@@ -1681,7 +2230,24 @@ class _SelectorDatagramTransport(object):
         else:
             self.protocol.datagram_received(data, address)
     
-    def sendto(self, data, maybe_address=None):
+    def send_to(self, data, maybe_address=None):
+        """
+        Sends the given data to the target address. If target is already set, can be the parameter can be ignored.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The data to send.
+        maybe_address : `None` or `tuple` (`str`, `int`), Optional
+            The address to send the data to.
+        
+        Raises
+        ------
+        TypeError
+            If `data` was not given as `bytes-like`.
+        ValueError
+            If `address` was given but it is different from the currently set one.
+        """
         if not isinstance(data, (bytes, bytearray, memoryview)):
             raise TypeError(f'data argument must be a bytes-like object, not {type(data).__name__!r}')
         
@@ -1694,11 +2260,10 @@ class _SelectorDatagramTransport(object):
                 raise ValueError(f'Invalid address: must be `None` or `{address!r}`, got {maybe_address!r}.')
             maybe_address = address
         
-        if self._conn_lost and (address is not None):
-            self._conn_lost += 1
+        if self._connection_lost:
             return
         
-        buffer = self.buffer
+        buffer = self._buffer
         if not buffer:
             # Attempt to send it right away first.
             try:
@@ -1707,7 +2272,7 @@ class _SelectorDatagramTransport(object):
                 else:
                     self.socket.send(data)
             except (BlockingIOError, InterruptedError):
-                self.loop.add_writer(self._socket_fd, self._sendto_ready)
+                self.loop.add_writer(self._socket_fd, self._send_to_ready)
             except OSError as err:
                 self.protocol.error_received(err)
                 return
@@ -1721,8 +2286,13 @@ class _SelectorDatagramTransport(object):
         buffer.append((bytes(data), maybe_address))
         self._maybe_pause_protocol()
     
-    def _sendto_ready(self):
-        buffer = self.buffer
+    def _send_to_ready(self):
+        """
+        Added callback by `.send_to` to the respective event loop, when the socket is not ready for writing.
+        
+        This method tries to send the data again.
+        """
+        buffer = self._buffer
         while buffer:
             data, address = buffer.popleft()
             try:

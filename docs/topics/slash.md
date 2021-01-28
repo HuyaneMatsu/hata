@@ -561,7 +561,7 @@ async def flandre(client, event):
 async def remilia(client, event):
     """Remilia!"""
     yield # Yield one to acknowledge the interaction
-    yield await get_image_embed(client, 'remilia_scarlet', 'Remilia Flandre', 0x9400d3)
+    yield await get_image_embed(client, 'remilia_scarlet', 'Scarlet Remilia', 0x9400d3)
 ```
 
 ## Manual Responding

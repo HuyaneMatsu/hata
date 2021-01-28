@@ -7,12 +7,15 @@ Work in progress.
 from ...backend.futures import Task
 from ...discord.client_core import KOKORO
 
-from .command import Slasher
+from .command import *
 from .utils import _do_initial_sync, _application_command_create_watcher, _application_command_delete_watcher, \
     delay_immediate_start_initial_sync
 from .client_wrapper_extension import *
 
-__all__ = command.__all__
+__all__ = (
+    'setup_ext_slash',
+    *command.__all__,
+        )
 
 def setup_ext_slash(client, *, immediate_sync=False):
     """

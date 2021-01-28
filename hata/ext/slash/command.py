@@ -894,6 +894,8 @@ class SlashCommand(object):
         Application command description. It\'s length can be in range [2:100].
     guild_ids : `None` or `set` of `int`
         The ``Guild``'s id to which the command is bound to.
+    is_default : `bool`
+        Whether the command is the default command in it's category.
     is_global : `bool`
         Whether the command is a global command.
         
@@ -906,7 +908,7 @@ class SlashCommand(object):
     ``SlashCommand`` instances are weakreferable.
     """
     __slots__ = ('__weakref__', '_command', '_registered_application_command_ids', '_schema', '_sub_commands',
-        'description', 'guild_ids', 'is_global', 'name', )
+        'description', 'guild_ids', 'is_default', 'is_global', 'name', )
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -1052,6 +1054,8 @@ class SlashCommand(object):
                 If was not defined, or was defined as `None`, the class's name will be used.
             - show_source : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether when responding the source message should be shown. Defaults to `True`.
+            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+                Whether the slash command is the default command in it's category.
         
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
             Additional parameters arguments. Defaults to `None`.
@@ -1062,6 +1066,7 @@ class SlashCommand(object):
             - is_global
             - name
             - show_source
+            - is_default
         
         Returns
         -------
@@ -1094,6 +1099,7 @@ class SlashCommand(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -1125,6 +1131,7 @@ class SlashCommand(object):
         is_global = getattr(klass, 'is_global', None)
         guild = getattr(klass, 'guild', None)
         show_source = getattr(klass, 'show_source', None)
+        is_default = getattr(klass, 'is_default', None)
         
         if (kwargs is not None) and kwargs:
             if (description is None):
@@ -1159,10 +1166,18 @@ class SlashCommand(object):
                 except KeyError:
                     pass
             
+            if (is_default is None):
+                is_default = kwargs.pop('is_default', None)
+            else:
+                try:
+                    del kwargs['is_default']
+                except KeyError:
+                    pass
+            
             if kwargs:
                 raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
         
-        return cls(command, name, description, show_source, is_global, guild)
+        return cls(command, name, description, show_source, is_global, guild, is_default)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
@@ -1186,6 +1201,7 @@ class SlashCommand(object):
             - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
             - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
         
         Returns
         -------
@@ -1217,6 +1233,7 @@ class SlashCommand(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -1234,16 +1251,18 @@ class SlashCommand(object):
             show_source = None
             is_global = None
             guild = None
+            is_default = None
         else:
             description = kwargs.pop('description', None)
             show_source = kwargs.pop('show_source', None)
             is_global = kwargs.pop('is_global', None)
             guild = kwargs.pop('checks', None)
+            is_default = kwargs.pop('is_default', None)
             
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
         
-        return cls(command, name, description, show_source, is_global, guild)
+        return cls(command, name, description, show_source, is_global, guild, is_default)
     
     @classmethod
     def _check_maybe_route(cls, variable_name, variable_value, route_to, validator):
@@ -1485,6 +1504,33 @@ class SlashCommand(object):
         return name
     
     @staticmethod
+    def _validate_is_default(is_default):
+        """
+        Validates the given `is_default` value.
+        
+        Parameters
+        ----------
+        is_default : `None` or `bool`
+            The `is_default` value to validate.
+        
+        Returns
+        -------
+        is_default : `bool`
+            The validated `is_default` value.
+        
+        Raises
+        ------
+        TypeError
+            If `is_default` was not given as `None` nor as `bool` instance.
+        """
+        if is_default is None:
+            is_default = False
+        else:
+            is_default = preconvert_bool(is_default, 'is_default')
+        
+        return is_default
+    
+    @staticmethod
     def _generate_description_from(command, description):
         """
         Generates description from the command and it's maybe given description.
@@ -1531,7 +1577,7 @@ class SlashCommand(object):
         
         return description
     
-    def __new__(cls, command, name, description, show_source, is_global, guild):
+    def __new__(cls, command, name, description, show_source, is_global, guild, is_default):
         """
         Creates a new ``SlashCommand`` instance with the given parameters.
         
@@ -1551,6 +1597,8 @@ class SlashCommand(object):
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
             To which guild(s) the command is bound to.
+        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            Whether the slash command is the default command in it's category.
         
         Returns
         -------
@@ -1580,6 +1628,7 @@ class SlashCommand(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -1599,6 +1648,7 @@ class SlashCommand(object):
         show_source, route_to = cls._check_maybe_route('show_source', show_source, route_to, cls._validate_show_source)
         is_global, route_to = cls._check_maybe_route('is_global', is_global, route_to, cls._validate_is_global)
         guild_ids, route_to = cls._check_maybe_route('guild', guild, route_to, cls._validate_guild)
+        is_default, route_to = cls._check_maybe_route('is_default', is_default, route_to, cls._validate_is_default)
         
         if route_to:
             name = route_name(command, name, route_to)
@@ -1607,6 +1657,7 @@ class SlashCommand(object):
             show_source = route_value(show_source, route_to)
             is_global = route_value(is_global, route_to)
             guild_ids = route_value(guild_ids, route_to)
+            is_default = route_value(is_default, route_to)
             
             description = [
                 cls._generate_description_from(command, description)
@@ -1631,8 +1682,8 @@ class SlashCommand(object):
         if route_to:
             router = []
             
-            for name, description, show_source, is_global, guild_ids in zip(
-                name, description, show_source, is_global, guild_ids):
+            for name, description, show_source, is_global, guild_ids, is_default in zip(
+                name, description, show_source, is_global, guild_ids, is_default):
                 
                 if is_global and (guild_ids is not None):
                     raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
@@ -1644,7 +1695,8 @@ class SlashCommand(object):
                     command_function = None
                     sub_commands = {}
                 else:
-                    command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source)
+                    command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source,
+                        is_default)
                     sub_commands = None
                 
                 self = object.__new__(cls)
@@ -1656,6 +1708,7 @@ class SlashCommand(object):
                 self.name = name
                 self._schema = None
                 self._registered_application_command_ids = None
+                self.is_default = is_default
                 router.append(self)
             
             return Router(router)
@@ -1670,7 +1723,8 @@ class SlashCommand(object):
                 sub_commands = {}
                 command_function = None
             else:
-                command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source)
+                command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source,
+                    is_default)
                 sub_commands = None
             
             self = object.__new__(cls)
@@ -1682,6 +1736,7 @@ class SlashCommand(object):
             self.name = name
             self._schema = None
             self._registered_application_command_ids = None
+            self.is_default = is_default
             return self
     
     def __repr__(self):
@@ -1702,7 +1757,7 @@ class SlashCommand(object):
         if (guild_ids is not None):
             result.append(', guild_ids=')
             result.append(repr(guild_ids))
-            
+        
         result.append('>')
         
         return ''.join(result)
@@ -1851,7 +1906,7 @@ class SlashCommand(object):
         
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None):
+    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None, is_default=None):
         """
         Adds a sub-command under the slash command.
         
@@ -1871,6 +1926,8 @@ class SlashCommand(object):
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
+        is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the command is the default command in it's category.
         
         Returns
         -------
@@ -1899,6 +1956,7 @@ class SlashCommand(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -1913,6 +1971,7 @@ class SlashCommand(object):
         RuntimeError
             - The ``SlashCommand`` is not a category.
             - The ``SlashCommand`` reached the maximal amount of children.
+            - If the command to add is a default sub-command meanwhile the category already has one.
         """
         if self._command is not None:
             raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
@@ -1924,7 +1983,7 @@ class SlashCommand(object):
             self._add_command(func)
             return self
         
-        command = type(self)(func, name, description, show_source, is_global, guild)
+        command = type(self)(func, name, description, show_source, is_global, guild, is_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -1955,6 +2014,8 @@ class SlashCommand(object):
                 If was not defined, or was defined as `None`, the class's name will be used.
             - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether when responding the source message should be shown. Defaults to `True`.
+            - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the command is the default command in it's category.
         
         Returns
         -------
@@ -1986,6 +2047,7 @@ class SlashCommand(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -2000,6 +2062,7 @@ class SlashCommand(object):
         RuntimeError
             - The ``SlashCommand`` is not a category.
             - The ``SlashCommand`` reached the maximal amount of children.
+            - If the command to add is a default sub-command meanwhile the category already has one.
         """
         command = type(self).from_class(klass)
         if isinstance(command, Router):
@@ -2020,11 +2083,17 @@ class SlashCommand(object):
         Raises
         ------
         RuntimeError
-            The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlashCommand`` reached the maximal amount of children.
+            - If the command to add is a default sub-command meanwhile the category already has one.
         """
         sub_commands = self._sub_commands
         if len(sub_commands) == 10 and (command.name not in sub_commands):
             raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children (10).')
+        
+        if command.is_default:
+            for sub_command in sub_commands.values():
+                if sub_command.is_default:
+                    raise RuntimeError(f'The category can have only 1 default command.')
         
         sub_commands[command.name] = command.as_sub()
         self._schema = None
@@ -2041,14 +2110,16 @@ class SlashCommandFunction(object):
         The command's function to call.
     description : `str`
         The slash command's description.
+    is_default : `bool`
+        Whether the command is the default command in it's category.
     name : `str`
         The name of the slash command. It's length can be in range [1:32].
     show_source : `bool`
         Whether the source message should be shown when using the command.
     """
-    __slots__ = ('_argument_parsers', '_command', 'category', 'description', 'name', 'show_source')
+    __slots__ = ('_argument_parsers', '_command', 'category', 'description', 'is_default', 'name', 'show_source')
     
-    def __new__(cls, command, argument_parsers, name, description, show_source):
+    def __new__(cls, command, argument_parsers, name, description, show_source, is_default):
         """
         Creates a new ``SlashCommandFunction`` instance with the given parameters-
         
@@ -2064,6 +2135,8 @@ class SlashCommandFunction(object):
             The slash command's description.
         show_source : `bool`
             Whether the source message should be shown when using the command.
+        is_default : `bool`
+            Whether the source message should be shown when using the command.
         """
         self = object.__new__(cls)
         self._command = command
@@ -2071,6 +2144,7 @@ class SlashCommandFunction(object):
         self.show_source = show_source
         self.description = description
         self.name = name
+        self.is_default = is_default
         return self
     
     async def __call__(self, client, interaction_event, options):
@@ -2122,7 +2196,7 @@ class SlashCommandFunction(object):
             options = None
         
         return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.SUB_COMMAND,
-            options=options)
+            options=options, default=self.is_default)
     
     def copy(self):
         """
@@ -2149,10 +2223,12 @@ class SlashCommandCategory(object):
         The parent slash command of the category if any.
     description : `str`
         The slash command's description.
+    is_default : `bool`
+        Whether the command is the default command in it's category.
     name : `str`
         The name of the slash sub-category.
     """
-    __slots__ = ('_sub_commands', '_parent_reference', 'description', 'name')
+    __slots__ = ('_sub_commands', '_parent_reference', 'description', 'is_default', 'name')
     
     def __new__(cls, slash_command):
         """
@@ -2168,6 +2244,7 @@ class SlashCommandCategory(object):
         self.description = slash_command.description
         self._sub_commands = {}
         self._parent_reference = WeakReferer(slash_command)
+        self.is_default = slash_command.is_default
         return self
     
     async def __call__(self, client, interaction_event, options):
@@ -2212,7 +2289,7 @@ class SlashCommandCategory(object):
             options = None
         
         return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.SUB_COMMAND_GROUP,
-            options=options)
+            options=options, default=self.is_default)
     
     def copy(self):
         """
@@ -2242,7 +2319,7 @@ class SlashCommandCategory(object):
         """
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None):
+    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None, is_default=True):
         """
         Adds a sub-command under the slash category.
         
@@ -2262,6 +2339,8 @@ class SlashCommandCategory(object):
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
+        is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the command is the default command in it's category.
         
         Returns
         -------
@@ -2290,6 +2369,7 @@ class SlashCommandCategory(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -2304,6 +2384,7 @@ class SlashCommandCategory(object):
         RuntimeError
             - The ``SlashCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
+            - If the command to add is a default sub-command meanwhile the category already has one.
         """
         if isinstance(func, Router):
             func = func[0]
@@ -2312,7 +2393,7 @@ class SlashCommandCategory(object):
             self._add_command(func)
             return self
         
-        command = SlashCommand(func, name, description, show_source, is_global, guild)
+        command = SlashCommand(func, name, description, show_source, is_global, guild, is_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2343,6 +2424,8 @@ class SlashCommandCategory(object):
                 If was not defined, or was defined as `None`, the class's name will be used.
             - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether when responding the source message should be shown. Defaults to `True`.
+            - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the command is the default command in it's category.
         
         Returns
         -------
@@ -2374,6 +2457,7 @@ class SlashCommandCategory(object):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -2388,6 +2472,7 @@ class SlashCommandCategory(object):
         RuntimeError
             - The ``SlashCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
+            - If the command to add is a default sub-command meanwhile the category already has one.
         """
         command = SlashCommand.from_class(klass)
         if isinstance(command, Router):
@@ -2410,6 +2495,7 @@ class SlashCommandCategory(object):
         RuntimeError
             - The ``SlashCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
+            - If the command to add is a default sub-command meanwhile the category already has one.
         """
         sub_commands = self._sub_commands
         if len(sub_commands) == 10 and (command.name not in sub_commands):
@@ -2418,6 +2504,11 @@ class SlashCommandCategory(object):
         as_sub = command.as_sub()
         if isinstance(as_sub, type(self)):
             raise RuntimeError('Cannot add anymore sub-category under sub-categories.')
+        
+        if command.is_default:
+            for sub_command in sub_commands.values():
+                if sub_command.is_default:
+                    raise RuntimeError(f'The category can have only 1 default command.')
         
         sub_commands[command.name] = as_sub
         
@@ -2510,7 +2601,7 @@ class Slasher(EventHandlerBase):
             await command(client, interaction_event)
     
     
-    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None):
+    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None, is_default=None):
         """
         Adds a slash command.
         
@@ -2530,6 +2621,8 @@ class Slasher(EventHandlerBase):
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
+        is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the command is the default command in it's category.
         
         Returns
         -------
@@ -2559,6 +2652,7 @@ class Slasher(EventHandlerBase):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -2578,7 +2672,7 @@ class Slasher(EventHandlerBase):
             self._add_command(func)
             return func
         
-        command = SlashCommand(func, name, description, show_source, is_global, guild)
+        command = SlashCommand(func, name, description, show_source, is_global, guild, is_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2609,6 +2703,8 @@ class Slasher(EventHandlerBase):
                 If was not defined, or was defined as `None`, the class's name will be used.
             - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether when responding the source message should be shown. Defaults to `True`.
+            - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the command is the default command in it's category.
         
         Returns
         -------
@@ -2641,6 +2737,7 @@ class Slasher(EventHandlerBase):
             - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
+            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].

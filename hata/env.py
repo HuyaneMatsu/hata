@@ -1,12 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Before loading hata, it checks for related envirnormental variables, which are:
+Before loading hata, it checks for related environmental variables, which are:
 
 HATA_BACKEND_ONLY : `bool` = `False`
     Whether `hata.discord` should be imported as well.
 
 HATA_ALLOW_DEAD_EVENTS : `bool` = `False`
-    Whether events of non cached entities should be handled. Affetcs the following events right now:
+    Whether events of non cached entities should be handled. Affects the following events right now:
     
     - `Client.events.message_edit`
     - `Client.events.message_delete`
@@ -51,7 +51,7 @@ def get_bool_env(name, default):
     Parameters
     ----------
     name : `str`
-        The name of an enviromental variable.
+        The name of an environmental variable.
     default : `bool`
         The default value of the respective variable.
     
@@ -81,7 +81,7 @@ def get_str_env(name, default=None):
     Parameters
     ----------
     name : `str`
-        The name of an enviromental variable.
+        The name of an environmental variable.
     default : `Any`, Optional
         The default value of the respective variable. Defaults to `None`
     
@@ -108,7 +108,7 @@ def get_int_env(name, default):
     Parameters
     ----------
     name : `str`
-        The name of an enviromental variable.
+        The name of an environmental variable.
     default : `int`
     
     Returns

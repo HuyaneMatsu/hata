@@ -1439,7 +1439,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         Should be given as an `async-callable` accepting `1` parameter the respective asynchronous server side
         websocket protocol implementations.
     handler_task : `None` or ``Task`` of ``.lifetime_handler``
-    
+        Handles the connected websocket meanwhile it is alive.
     origin : `None` or `str`, Optional
         Value of the Origin header.
     request_processor : `None` or `callable`, Optional
@@ -1784,6 +1784,10 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 status = BAD_REQUEST
                 headers = imultidict()
                 body = f'Failed to open a WebSocket connection: {err}.\n'.encode()
+            elif isinstance(err, PayloadError):
+                status = BAD_REQUEST
+                headers = imultidict()
+                body = f'Invalid request body: {err}.\n'.encode()
             else:
                 status = INTERNAL_SERVER_ERROR
                 headers = imultidict()

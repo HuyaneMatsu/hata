@@ -15,7 +15,7 @@ stuff:
 - No more member objects associated with guilds, if there is a user in more guilds, then there is only ONE user.
 - Optimized dispatch event parsers depending on intents, client count and on handled events as well.
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
-- Command and extension loader extension.
+- Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.
 - Can interacting with the Discord API without gateway connection.
 
@@ -81,6 +81,7 @@ async def ready(client):
 
 @Seija.interactions(guild=GUILD)
 async def ping(client, event):
+    \"\"\"ping-pong\"\"\"
     return 'pong'
 
 Seija.start()
@@ -92,7 +93,7 @@ Hata leaves the main thread free, `client.start()` blocks it only till the clien
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.1.37'
+__version__ = '1.1.38'
 
 from .env import BACKEND_ONLY
 

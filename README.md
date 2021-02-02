@@ -15,7 +15,7 @@ real stuff:
     cross-guild features more easily.
 - Optimized dispatch event parsers depending on intents, client count and on handled events as well.
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
-- Command and extension loader extension.
+- Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.
 - Can interacting with the Discord API without gateway connection.
 - Switching between api version with environmental variable.
@@ -81,6 +81,7 @@ async def ready(client):
 
 @Seija.interactions(guild=GUILD)
 async def ping(client, event):
+    """ping-pong"""
     return 'pong'
 
 Seija.start()
@@ -128,7 +129,7 @@ If you have issues, suggestions, want to contribute, or just want to send cute n
 Shout-Outs for our brave testers, who are helping the most improving the library:
 
 - `Nekosia#1359` \[Grammar\]
-- [`Elizabeth Afton#3506`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
+- [`Charlotte|💻⭐#3506`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
 - [`๖ۣۜひめ・エスト✧ 「Hime・Esuto」#5167`](https://github.com/HimeEsuto) \[Bug hunting\]
 - [`BrainDead#6105`](https://github.com/albertopoljak) \[Documentation improvements\]
 - [`Zeref Draganeel#9897`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]

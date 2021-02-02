@@ -1694,7 +1694,7 @@ class ReadProtocolBase(object):
         
         Returns
         -------
-        response_message : ``RawResponseMessage``
+        request_message : ``RawRequestMessage``
         
         Raises
         ------

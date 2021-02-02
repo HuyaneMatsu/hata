@@ -1543,7 +1543,7 @@ class ChooseMenu(object):
             # We definitely do not want to silence `ERROR_CODES.invalid_form_body`
             await client.events.error(client, f'{self!r}.__call__', err)
             return
-
+        
         if self.task_flag == GUI_STATE_CANCELLING:
             self.task_flag = GUI_STATE_CANCELLED
             try:

@@ -4,11 +4,13 @@
 import functools, http, re
 from uuid import UUID
 
-from .utils import imultidict
+from .utils import imultidict, methodize
 from .futures import WaitTillAll, Future, Task, CancelledError
 from .protocol import ProtocolBase
 from .exceptions import PayloadError
 from .helpers import HttpVersion11
+from .headers import METHOD_ALL, METHOD_GET
+from .url import URL
 
 INTERNAL_SERVER_ERROR      = http.HTTPStatus.INTERNAL_SERVER_ERROR
 BAD_REQUEST                = http.HTTPStatus.BAD_REQUEST
@@ -333,23 +335,30 @@ class Route(object):
     
     Attributes
     ----------
-    func : `None` or `callable`
-        Function found by the route or `None` if nothing found.
+    view_func : `callable`
+        Function found by the route.
     parameters : `None` or `dict` of (`str`, `str`) items
         Dynamic parameter queried from the urls.
     """
-    __slots__ = ('func', 'parameters', 'state')
-    def __init__(self, func):
+    __slots__ = ('parameters', 'view_func', )
+    def __init__(self, view_func, parameters):
         """
         Creates a new ``Route`` instance with the given `func`.
         
         Parameters
         ----------
-        func : `None` or `callable`
-            Function found by the route or `None` if nothing found.
+        view_func : `async-callable`
+            Function found by the router.
+        parameters : `None` or `list` of `tuple` (`str`, `Any`)
+            Initial parameters to add to the route.
         """
-        self.func = func
-        self.parameters = None
+        self.view_func = view_func
+        if parameters is None:
+            parameters = None
+        else:
+            parameters = dict(parameters)
+        self.parameters = parameters
+        
     
     def add_parameter(self, name, value):
         """
@@ -675,13 +684,21 @@ class PathRouter(object):
         Generic string paths to route to. Set as `None` if empty.
     route_step_validated : `None` or `list` of ``ParameterValidatorPathStep``
         Contains `parameter-name`, `validator`, `router` elements to route dynamic names.
-    route_end : `None` or `dict` of (`str`, `Any`) items
+    route_end : `None` or `dict` of (`str`, `tuple` (`async-callable`, `list` of  `tuple` \
+            (`str`, `tuple` (`str`, `Any`))) items
         If the url ends at the point of this router, then the handler function from ``.route_ends`` is chosen if
         applicable. The functions are stored in `method` - `handler` relation.
-    route_end_path : `None` or `dict` of  (`str`, `tuple` (`str`, `async-callable`)) items
+    route_end_all : `None` or `tuple` (`async-callable, `None` or `list` of `tuple` (`str`, `Any`)))
+        If the url ends at this point of the router and non of the `route-end`-s were matched, the the view function
+        of this slot is chosen.
+    route_end_path : `None` or `dict` of (`str`, `tuple` \
+            (`async-callable`, `str`, `list` of  `tuple` (`str`, `tuple` (`str`, `Any`)))
         Paths, which have dynamic route ends.
+    route_end_path_all : `None` or `tuple` (`async-callable`, `str`, `list` of  `tuple` (`str`, `tuple` (`str`, `Any`)))
+        ``.route_end_path`` version, what accepts accepts all type of request methods.
     """
-    __slots__ = ('route_end', 'route_end_path', 'route_step_paths', 'route_step_validated')
+    __slots__ = ('route_end', 'route_end_all', 'route_end_path', 'route_end_path_all', 'route_step_paths',
+        'route_step_validated')
     def __init__(self):
         """
         Creates a new ``PathRouter`` instance.
@@ -689,9 +706,11 @@ class PathRouter(object):
         self.route_step_paths = None
         self.route_step_validated = None
         self.route_end = None
+        self.route_end_all = None
         self.route_end_path = None
+        self.route_end_path_all = None
     
-    def dispatch_url(self, path, index, request_method):
+    def dispatch_route(self, path, index, request_method):
         """
         Dispatches the given url, getting it's router.
         
@@ -714,7 +733,19 @@ class PathRouter(object):
             if route_end is None:
                 return None
             
-            return Route(route_end.get(request_method, _handler_method_not_allowed))
+            try:
+                view_func, parameters = route_end[request_method]
+            except KeyError:
+                pass
+            else:
+                return Route(view_func, parameters)
+            
+            route_end_all = self.route_end_all
+            if route_end_all is None:
+                return Route(_handler_method_not_allowed, None)
+            
+            view_func, parameters = route_end_all
+            return Route(view_func, parameters)
         
         path_part = path[index]
         index += 1
@@ -726,7 +757,7 @@ class PathRouter(object):
             except KeyError:
                 pass
             else:
-                route = path_router.dispatch_url(path, index, request_method)
+                route = path_router.dispatch_route(path, index, request_method)
                 if (route is not None):
                     return route
         
@@ -738,7 +769,7 @@ class PathRouter(object):
                     continue
                 
                 for parameter_name, path_router in parameter_validator_path_step.path_routers:
-                    route = path_router.dispatch_url(path, index, request_method)
+                    route = path_router.dispatch_route(path, index, request_method)
                     if (route is None):
                         continue
                     
@@ -746,23 +777,29 @@ class PathRouter(object):
                     return route
         
         route_end_path = self.route_end_path
-        if (route_end_path is not None):
-            parameter_name_and_handler = route_end_path.get(request_method, None)
-            if parameter_name_and_handler is None:
-                handler = _handler_method_not_allowed
-            else:
-                handler = parameter_name_and_handler[1]
+        route_end_path_all = self.route_end_path_all
+        if (route_end_path is not None) or (route_end_path_all is not None):
+            if (route_end_path is not None):
+                try:
+                    view_func, parameter_name, parameters = route_end_path[request_method]
+                except KeyError:
+                    pass
+                else:
+                    route = Route(view_func, parameters)
+                    route.add_parameter(parameter_name, '/'.join(path[index:]))
+                    return route
             
-            route = Route(handler)
+            if route_end_path_all is None:
+                return Route(_handler_method_not_allowed, None)
             
-            if (parameter_name_and_handler is not None):
-                route.add_parameter(parameter_name_and_handler[0], '/'.join(path[index:]))
-            
+            view_func, parameter_name, parameters = route_end_path_all
+            route = Route(view_func, parameters)
+            route.add_parameter(parameter_name, '/'.join(path[index:]))
             return route
         
         return None
     
-    def register_url(self, path_type_and_url, index, request_method, handler):
+    def register_route(self, path_type_and_url, index, request_methods, view_func, parameters):
         """
         Registers a new handler to the path router.
         
@@ -772,17 +809,24 @@ class PathRouter(object):
             The path to register.
         index : `int`
             The index of the part of the path to process by this router.
-        request_method : `str`
-            The method of the request to register.
-        handler : `async-callable`
-            The handler to register.
+        request_methods : `None` or `set` of `str`
+            The methods of the request to registered `view_func`. Can be given as `None` to handle all type of requests.
+        view_func : `async-callable`
+            The function to call when serving a request to the provided endpoint.
+        parameters : `None` or `list` of `tuple` (`str`, `Any`)
+            Parameters to pass to the `view_func`.
         """
         if index == len(path_type_and_url):
-            route_end = self.route_end
-            if route_end is None:
-                route_end = self.route_end = {}
-            
-            route_end[request_method] = handler
+            view_func_parameter_tuple = (view_func, parameters)
+            if view_func is None:
+                self.route_end_all = view_func_parameter_tuple
+            else:
+                route_end = self.route_end
+                if route_end is None:
+                    route_end = self.route_end = {}
+                
+                for request_method in request_methods:
+                    route_end[request_method] = view_func_parameter_tuple
             
             return
         
@@ -799,15 +843,20 @@ class PathRouter(object):
             except KeyError:
                 path_router = route_step_paths[path_part] = PathRouter()
             
-            path_router.register_url(path_type_and_url, index, request_method, handler)
+            path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
             return
         
         if path_part_type == PARAMETER_TYPE_PATH:
-            route_end_path = self.route_end_path
-            if route_end_path is None:
-                route_end_path = self.route_end_path = {}
-            
-            route_end_path[request_method] = (path_part, handler)
+            view_func_path_part_parameters_tuple = (view_func, path_part, parameters)
+            if request_methods is None:
+                self.route_end_path_all = view_func_path_part_parameters_tuple
+            else:
+                route_end_path = self.route_end_path
+                if route_end_path is None:
+                    route_end_path = self.route_end_path = {}
+                
+                for request_method in request_methods:
+                    route_end_path[request_method] = view_func_path_part_parameters_tuple
             return
         
         route_step_validated = self.route_step_validated
@@ -815,7 +864,7 @@ class PathRouter(object):
             route_step_validated = self.route_step_validated = []
             
             parameter_validator_path_step, path_router = ParameterValidatorPathStep(path_part_type, path_part)
-            path_router.register_url(path_type_and_url, index, request_method, handler)
+            path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
             
             route_step_validated.append(parameter_validator_path_step)
             return
@@ -823,11 +872,11 @@ class PathRouter(object):
         for parameter_validator_path_step in route_step_validated:
             if parameter_validator_path_step.parameter_type == path_part_type:
                 path_router = parameter_validator_path_step.get_path_router(path_part)
-                path_router.register_url(path_type_and_url, index, request_method, handler)
+                path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
                 return
         
         parameter_validator_path_step, path_router = ParameterValidatorPathStep(path_part_type, path_part)
-        path_router.register_url(path_type_and_url, index, request_method, handler)
+        path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
         
         route_step_validated.append(parameter_validator_path_step)
 
@@ -840,14 +889,27 @@ class AbortRequest(BaseException):
     ----------
     response_code : `int`
         The request abortion code.
-    message : `None` or `str`
-        Abortion message to send.
+    reason : `None` or `str`
+        Abortion reason to send.
     """
-    def __init__(self, response_code, message=None):
+    def __init__(self, response_code, reason=None):
         
         self.response_code = response_code
-        self.message = message
+        self.reason = reason
         BaseException.__init__(self)
+
+def abort(response_code, reason=None):
+    """
+    Aborts the request when.
+    
+    Attributes
+    ----------
+    response_code : `int`
+        The request abortion code.
+    reason : `None` or `str`
+        Abortion reason to send.
+    """
+    raise AbortRequest(response_code, reason)
 
 
 async def _handler_method_not_allowed():
@@ -873,19 +935,196 @@ async def _handler_not_found():
     raise AbortRequest(NOT_FOUND)
 
 
+class _RouteAdder(object):
+    """
+    Route adder returned by ``WebApp.route`` to add a route to it as a decorator.
+    
+    Attributes
+    ----------
+    parent : ``WebApp``
+        The parent webapp.
+    rule : `str`
+        The url rule as string.
+    endpoint  : `None` or `str`
+        The internal endpoint of the url. Defaults to the name of the added function.
+    options : `dict` of (`str`, `Any`) items.
+        Additional options to be forward to the underlying ``Rule`` object.
+    """
+    def __new__(cls, parent, rule, endpoint, options):
+        """
+        Creates a new ``_RouteAdder object with the given parameters.
+        
+        Parameters
+        ----------
+        parent : ``WebApp``
+            The parent webapp.
+        rule : `str`
+            The url rule as string.
+        endpoint  : `None` or `str`
+            The internal endpoint of the url. Defaults to the name of the added function.
+        options : `dict` of (`str`, `Any`) items.
+            Additional options to be forward to the underlying ``Rule`` object.
+        """
+        self = object.__new__(cls)
+        self.parent = parent
+        self.rule = rule
+        self.endpoint = endpoint
+        self.options = options
+        return self
+    
+    def __call__(self, view_func):
+        """
+        Adds the given `view_func` and the stored parameters to the parent ``WebApp`` calling it's `.add_url_rule`
+        method.
+        
+        Parameters
+        ----------
+        view_func : `async-callable`
+            The function to call when serving a request to the provided endpoint.
+        
+        Returns
+        -------
+        rule : ``Rule``
+            The added rule object.
+        """
+        return self.parent.add_url_rule(rule=self.rule, endpoint=self.endpoint, view_func=view_func,
+            provide_automatic_options=None, **self.options)
+
+def _validate_options(options):
+    """
+    Validates the given options.
+    
+    Parameters
+    ----------
+    options : `dict` of (`str`, `Any`) items.
+        Additional options forward to the underlying ``Rule`` object.
+    
+    Returns
+    -------
+    request_methods : `set` of `str`
+        A set of teh validated http methods. If none is given, `'GET'` is auto added to it.
+    parameters : `None` or `list` of `tuple` (`str`, `Any`)
+        Defaults parameters to the dispatched router.
+    
+    Raises
+    ------
+    TypeError
+        - If `method` element is neither `None` or `str` instance.
+        - Unused option.
+        - If `methods` is neither `None`, `list`, `tuple` or `set` instance.
+        - If `methods` contains a non `str` element.
+        - If `defaults` is neither `None`, `dict`, `list`, `set` or `tuple`.
+        - If `defaults` contains a non `tuple` element.
+        - If 0th element of an element of `defaults` is not `str` instance.
+    ValueError
+        - If `method` is not an http request method.
+        - If `methods` contains a non http request method element.
+        - If `defaults` contains an element with length of not `2`.
+    """
+    request_methods = set()
+    
+    method = options.pop('method', None)
+    if (method is not None):
+        if type(method) is str:
+            pass
+        elif isinstance(method, str):
+            method = str(method)
+        else:
+            raise TypeError(f'`method` can be given as `None` or `str` instance, got {method.__class__.__name__}.')
+        
+        method = method.upper()
+        if method not in METHOD_ALL:
+            raise ValueError(f'`method` can be given any of `{METHOD_ALL!r}`, got {method!r}.')
+        
+        request_methods.add(method)
+    
+    methods = options.pop('methods', None)
+    if (methods is not None):
+        if not isinstance(methods, (list, tuple, set)):
+            raise TypeError(f'`methods` can be either given as `None`, `list`, `tuple`, `set` instance, got '
+                f'{methods.__class__.__name__}.')
+        
+        for index, method in enumerate(methods):
+            if type(method) is str:
+                pass
+            elif isinstance(method, str):
+                method = str(method)
+            else:
+                raise TypeError(f'`methods` element `{index}` should have be given as `None` or `str` instance, got '
+                    f'{method.__class__.__name__}.')
+            
+            method = method.upper()
+            if method not in METHOD_ALL:
+                raise ValueError(f'`method` element `{index}` should have be given any of `{METHOD_ALL!r}`, got '
+                    f'{method!r}.')
+            
+            request_methods.add(method)
+    
+    defaults = options.get('defaults', None)
+    if defaults is None:
+        parameters = None
+    else:
+        if isinstance(defaults, dict):
+            defaults = list(defaults.items())
+        elif type(defaults) is list:
+            pass
+        elif isinstance(defaults, (list, set, tuple)):
+            defaults = list(defaults)
+        else:
+            raise TypeError(f'`defaults` should have be given as `dict`, `list`, `set` or `tuple`, got '
+                f'{defaults.__class__.__name__}.')
+        
+        if defaults:
+            parameters = []
+            
+            for index, item in enumerate(defaults):
+                if not isinstance(item, tuple):
+                    raise TypeError(f'`defaults` element `{index}` should have be `tuple` instance, got '
+                        f'{item.__class__.__name__}.')
+                
+                item_length = len(item)
+                if item_length != 2:
+                    raise ValueError(f'`defaults` element `{index}` length is not the expected `2`, got {item_length}; '
+                        f'{item!r}.')
+                
+                parameter_name, parameter_value = item
+                
+                if type(parameter_name) is str:
+                    pass
+                elif isinstance(parameter_name, str):
+                    parameter_name = str(parameter_name)
+                else:
+                    raise TypeError(f'`defaults` element `{index}`\'s 0th element can be only `str` instance, got '
+                        f'{parameter_name.__class__.__name__}.')
+                
+                parameters.append((parameter_name, parameter_value))
+        else:
+            parameters = None
+    
+    if options:
+        raise TypeError(f'options contains unused parameters: {options!r}.')
+    
+    if request_methods:
+        request_methods.add(METHOD_GET)
+    
+    return request_methods, parameters
+
+
 class WebApp(object):
     """
     _server : `None` or ``WebServer``
-    
+        The running web-server of the webapp
     _router : ``PathRouter``
         Path router to decide which function should be called when receiving a request.
     """
     __slots__ = ('_server', '_router')
-    def __init__(self):
+    def __new__(cls):
+        self = object.__new__(cls)
         self._server = None
         self._router = PathRouter()
+        return self
     
-    def _dispatch_url(self, url, request_method):
+    def _dispatch_route(self, url, request_method):
         """
         Gets handler for the given `url` and `request_method` combination.
         
@@ -897,13 +1136,13 @@ class WebApp(object):
             The method to request.
         """
         path = url.path
-        route = self._router.dispatch_url(path, 0, request_method)
+        route = self._router.dispatch_route(path, 0, request_method)
         if route is None:
-            route = Route(_handler_not_found)
+            route = Route(_handler_not_found, None)
         
         return route
     
-    def _register_url(self, url, request_method, handler):
+    def _register_route(self, url, request_method, handler):
         """
         Registers an url and handler to the http server.
         
@@ -917,4 +1156,71 @@ class WebApp(object):
             The handler to call when the given url and method I requested.
         """
         path_type_and_value = tuple(maybe_type_part(path_part) for path_part in url.path)
-        self._router.register_url(path_type_and_value, 0, request_method, handler)
+        self._router.register_route(path_type_and_value, 0, request_method, handler)
+    
+    def route(self, rule, endpoint=None, **options):
+        """
+        A decorator, what can be used to registers rules. Does the same thing as ``.add_url_rule``, but it is intended
+        to be used as a decorator.
+        
+        Parameters
+        ----------
+        rule : `str`
+            The url rule as string.
+        endpoint  : `None` or `str`, Optional
+            The internal endpoint of the url. Defaults to the name of the added function.
+        **options : keyword arguments
+            Additional options to be forward to the underlying ``Rule`` object.
+        
+        Returns
+        -------
+        route_adder : ``_RouteAdder``
+        """
+        return _RouteAdder(self, rule, endpoint, options)
+    
+    def add_url_rule(self, rule, endpoint=None, view_func=None, *, provide_automatic_options=None, **options):
+        """
+        Method to add a route to the application.
+        
+        If you want to subclass the type, subclassing this method is enough, because ``.route`` calls ``.add_url_rule``.
+        
+        Parameters
+        ----------
+        rule : `str`
+            The url rule as string.
+        endpoint  : `None` or `str`, Optional
+            The internal endpoint of the url. Defaults to the name of the added function.
+        **options : keyword arguments
+            Additional options to be forward to the underlying ``Rule`` object.
+        view_func : `async-callable`
+            The function to call when serving a request to the provided endpoint.
+        provide_automatic_options : `None` or `bool`, Optional
+            Controls whether `options` should be handled manually.
+        **options : keyword arguments
+                    Additional options to be forward to the underlying ``Rule`` object.
+        
+        Returns
+        -------
+        rule : ``Rule``
+            The added rule object.
+        """
+        if provide_automatic_options is None:
+            provide_automatic_options = getattr(view_func, 'provide_automatic_options', None)
+        
+        if provide_automatic_options is None:
+            provide_automatic_options = True
+        else:
+            if not isinstance(provide_automatic_options, bool):
+                raise TypeError(f'`provide_automatic_options` can be given either as `None` or `bool` instance, got '
+                    f'{provide_automatic_options.__class__.__name__}.`')
+        
+        if endpoint is None:
+            if type(endpoint) is str:
+                pass
+            elif isinstance(endpoint, str):
+                endpoint = str(endpoint)
+            else:
+                raise TypeError()
+        
+        url = URL(rule)
+        

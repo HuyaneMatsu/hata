@@ -8,8 +8,10 @@ from ...backend.futures import Task
 from ...discord.client_core import KOKORO
 
 from .command import *
-from .utils import _do_initial_sync, _application_command_create_watcher, _application_command_delete_watcher, \
-    delay_immediate_start_initial_sync
+
+import warnings
+
+from .utils import _do_initial_sync, _application_command_create_watcher, _application_command_delete_watcher
 from .client_wrapper_extension import *
 
 __all__ = (
@@ -17,7 +19,7 @@ __all__ = (
     *command.__all__,
         )
 
-def setup_ext_slash(client, *, immediate_sync=False):
+def setup_ext_slash(client, *, immediate_sync=None):
     """
     Setups the slash extension on client.
     
@@ -45,17 +47,19 @@ def setup_ext_slash(client, *, immediate_sync=False):
         if hasattr(client, attr_name):
             raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
     
+    if (immediate_sync is not None):
+        warnings.warn(
+            f'`setup_ext_slash`\'s `immediate_sync` parameter is deprecated, and will be removed in 2021 April.',
+            FutureWarning)
+    
     slasher = Slasher()
     
     client.events(slasher)
     client.slasher = slasher
     client.interactions = slasher.shortcut
-    client.events(_do_initial_sync, name='ready')
+    client.events(_do_initial_sync, name='launch')
     client.events(_application_command_create_watcher, name='application_command_create')
     client.events(_application_command_delete_watcher, name='application_command_delete')
-    
-    if immediate_sync:
-        Task(delay_immediate_start_initial_sync(client, slasher), KOKORO)
     
     return slasher
 

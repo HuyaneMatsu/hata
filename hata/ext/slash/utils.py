@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from ...backend.futures import sleep
-from ...discord.client_core import KOKORO
-
 from .command import Slasher
 
 async def _do_initial_sync(client):
@@ -24,7 +21,7 @@ async def _do_initial_sync(client):
             return
     
     # If the client's extension disappeared or if initial sync passed, remove the event handler.
-    client.events.remove(_do_initial_sync, 'ready', count=1)
+    client.events.remove(_do_initial_sync, 'launch', count=1)
 
 
 async def _application_command_create_watcher(client, guild, application_command):
@@ -69,20 +66,4 @@ async def _application_command_delete_watcher(client, guild, application_command
     slasher = getattr(client, 'slasher', None)
     if (slasher is not None) and isinstance(slasher, Slasher):
         slasher._maybe_unregister_guild_command(application_command, guild.id)
-
-
-async def delay_immediate_start_initial_sync(client, slasher):
-    await sleep(0.3, KOKORO)
-    changes = slasher._estimate_pending_changes()
-    while True:
-        await sleep(0.3, KOKORO)
-        new_changes = slasher._estimate_pending_changes()
-        if changes == new_changes:
-            break
-        
-        changes = new_changes
-        continue
-    
-    await slasher._do_main_sync(client)
-    # Ignore method return, will be called by ``.Slasher_do_main_sync`` anyways.
 

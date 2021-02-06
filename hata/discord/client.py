@@ -3163,9 +3163,9 @@ class Client(UserBase):
         --------
         - ``.message_get_chunk_from_zero`` : Familiar to this method, but it requests only the newest messages of the channel
             and makes sure they are chained up with the channel's message history.
-        - ``.message_at_index`` : A top-level method to get a message at the specified index at the given channel.
+        - ``.message_get_at_index`` : A top-level method to get a message at the specified index at the given channel.
             Usually used to load the channel's message history to that point.
-        - ``.messages_in_range`` : A top-level method to get all the messages till the specified index at the given
+        - ``.message_get_all_in_range`` : A top-level method to get all the messages till the specified index at the given
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
@@ -5443,7 +5443,21 @@ class Client(UserBase):
         channel._turn_message_keep_limit_on_at += index
         return result_state
     
-    async def message_at_index(self, channel, index):
+    
+    async def message_at_index(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.message_get_at_index`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.messages_in_range` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.message_get_at_index` instead.',
+            FutureWarning)
+        
+        return await self.message_get_at_index(*args, **kwargs)
+    
+    async def message_get_at_index(self, channel, index):
         """
         Returns the message at the given channel at the specific index. Can be used to load `index` amount of messages
         at the channel.
@@ -5515,7 +5529,21 @@ class Client(UserBase):
         
         return messages[index]
     
-    async def messages_in_range(self, channel, start=0, end=100):
+    
+    async def messages_in_range(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.message_get_all_in_range`` instead. Will be removed in 2021 April.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.messages_in_range` is deprecated, and will be removed in 2021 April. '
+            f'Please use `{self.__class__.__name__}.message_get_all_in_range` instead.',
+            FutureWarning)
+        
+        return await self.message_get_all_in_range(*args, **kwargs)
+    
+    async def message_get_all_in_range(self, channel, start=0, end=100):
         """
         Returns a list of the message between the `start` - `end` area. If the client has no permission to request
         messages, or there are no messages at the given area returns an empty list.
@@ -12512,6 +12540,8 @@ class Client(UserBase):
             if application_command_id is None:
                 raise TypeError(f'`old_application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
                     f'instance, got {old_application_command.__class__.__name__}.')
+            
+            old_application_command = None
         
         application_id = self.application.id
         if __debug__:
@@ -12524,6 +12554,11 @@ class Client(UserBase):
                     f'{new_application_command.__class__.__name__}.')
         
         data = new_application_command.to_data()
+        
+        # Handle https://github.com/discord/discord-api-docs/issues/2525
+        if (old_application_command is not None) and (old_application_command.name == data['name']):
+            del data['name']
+        
         await self.http.application_command_global_edit(application_id, application_command_id, data)
         return ApplicationCommand._from_edit_data(data, application_command_id, application_id)
     
@@ -12757,6 +12792,8 @@ class Client(UserBase):
             if application_command_id is None:
                 raise TypeError(f'`old_application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
                     f'instance, got {old_application_command.__class__.__name__}.')
+            
+            old_application_command = None
         
         application_id = self.application.id
         if __debug__:
@@ -12777,6 +12814,11 @@ class Client(UserBase):
                     f'{new_application_command.__class__.__name__}.')
         
         data = new_application_command.to_data()
+        
+        # Handle https://github.com/discord/discord-api-docs/issues/2525
+        if (old_application_command is not None) and (old_application_command.name == data['name']):
+            del data['name']
+        
         await self.http.application_command_guild_edit(application_id, guild_id, application_command_id, data)
     
     async def application_command_guild_delete(self, guild, application_command):

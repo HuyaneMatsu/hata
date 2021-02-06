@@ -951,6 +951,23 @@ class EventBase(object):
         return
         yield # This is intentional. Python stuff... Do not ask, just accept.
 
+def maybe_ensure_launch(client):
+    """
+    Calls `client.events.launch` if not yet called.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    """
+    events = client.events
+    if not events._launch_called:
+        events._launch_called = True
+        
+        event_handler = client.events.launch
+        if (event_handler is not DEFAULT_EVENT):
+            Task(event_handler(client), KOKORO)
+
 # we don't call ready from this function directly
 def READY(client, data):
     ready_state = client.ready_state
@@ -991,6 +1008,8 @@ def READY(client, data):
     client.application._create_update(data['application'], True)
     
     # ignore `'user_settings'`
+    
+    maybe_ensure_launch(client)
     
     # 'client.events.ready' gonna be called by _delay_ready at the end
     
@@ -4689,6 +4708,7 @@ del APPLICATION_COMMAND_DELETE_CAL, \
 EVENTS = EVENT_SYSTEM_CORE()
 
 EVENTS.add_default('error'                      , 3 , ()                                        , )
+EVENTS.add_default('launch'                     , 1 , ()                                        , )
 
 EVENTS.add_default('ready'                      , 1 , 'READY'                                   , )
 EVENTS.add_default('client_edit'                , 2 , 'USER_UPDATE'                             , )
@@ -5161,7 +5181,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
                                     f'`{element!r}`')
                             
                             if not kwargs:
-                                kwargs=None
+                                kwargs = None
             
             elif isinstance(element, dict):
                 try:
@@ -5175,7 +5195,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
                 if element:
                     kwargs = element
                 else:
-                    kwargs=None
+                    kwargs = None
             
             else:
                 func = element
@@ -7335,6 +7355,7 @@ class EventDescriptor(object):
     client_reference : ``WeakReferer``
         Weak reference to the parent client to avoid reference loops.
     
+    
     Additional Event Attributes
     --------------------------
     application_command_create(client : ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
@@ -7632,6 +7653,9 @@ class EventDescriptor(object):
     invite_delete(client: ``Client``, invite: Invite):
         Called when an invite is deleted at a guild.
     
+    launch(client : ``Client``):
+        called when the client is launched up and the first ready dispatch event is received.
+    
     message_create(client: ``Client``, message: ``Message``):
         Called when a message is sent to any of the client's text channels.
     
@@ -7844,7 +7868,7 @@ class EventDescriptor(object):
     webhook_update(client: ``Client``, channel: ``ChannelGuildBase``):
         Called when a webhook of a channel is updated. Discord not provides further details tho.
     """
-    __slots__ = ('client_reference', *sorted(EVENTS.defaults))
+    __slots__ = ('client_reference', '_launch_called', *sorted(EVENTS.defaults))
     
     def __init__(self, client):
         """
@@ -7859,6 +7883,7 @@ class EventDescriptor(object):
         for name in EVENTS.defaults:
             object.__setattr__(self, name, DEFAULT_EVENT)
         object.__setattr__(self, 'error', default_error_event)
+        object.__setattr__(self, '_launch_called', False)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
     
     def __call__(self, func=None, name=None, overwrite=False):

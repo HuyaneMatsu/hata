@@ -566,7 +566,7 @@ class Pagination(object):
         self.task_flag = GUI_STATE_READY
         self.timeouter.set_timeout(self.timeout)
     
-    async def _canceller(self, exception,):
+    async def _canceller(self, exception):
         """
         Used when the ``Pagination`` is cancelled.
         
@@ -624,7 +624,7 @@ class Pagination(object):
         timeouter = self.timeouter
         if (timeouter is not None):
             timeouter.cancel()
-        #we do nothing
+        # We do nothing.
     
     def cancel(self, exception=None):
         """

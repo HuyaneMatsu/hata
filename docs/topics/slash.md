@@ -57,24 +57,6 @@ Nitori = Client(TOKEN)
 setup_ext_slash(Nitori)
 ```
 
-`setup_ext_slash` has 1 parameter, `immediate_sync` what is `False` by default.
-
-If given as `True` then the client will start syncing it's slash commands with Discord as no more commands are
-added or removed within a threshold time. An important note, that the application commands can be synced only with
-their client's application's id, what is set only when the client receives a ready event. So if you are passing
-`immediate_sync` as `True`, make sure to pass `application_id` parameter to the client as well.
-
-```py
-from hata import Client
-from hata.ext.slash import setup_ext_slash
-
-Nitori = Client(TOKEN, application_id=APPLICATION_ID)
-setup_ext_slash(Nitori, immediate_sync=True)
-```
-
-For newer clients' application id is same as their bots' id, what in most of the cases you should also pass to the
-client's constructor, so getting the application id should be pretty straightforward.
-
 ## Adding commands & responding
 
 After the extension is setuped, commands can be added using the `client.interaction` decorator.

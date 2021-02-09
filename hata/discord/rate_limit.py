@@ -1786,6 +1786,24 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `2.0`
     
+    - GROUP_APPLICATION_COMMAND_CREATE
+        - Used by: `application_command_global_create`, `application_command_guild_create`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Rested after : `20.0`
+    
+    - GROUP_APPLICATION_COMMAND_DELETE
+        - Used by: `application_command_global_delete`, `application_command_guild_delete`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Rested after : `20.0`
+    
+    - GROUP_APPLICATION_COMMAND_EDIT
+        - Used by: `application_command_global_edit`, `application_command_guild_edit`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Rested after : `20.0`
+    
     Group Details
     -----------
     - oauth2_token
@@ -1865,25 +1883,25 @@ class RATE_LIMIT_GROUPS:
         - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
         - Method : `DELETE`
         - Required auth : `bot`
-        - Limiter : `UNLIMITED`
-        - Limit : `N/A`
-        - Resets after : `N/A`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
     
     - application_command_global_create
         - Endpoint : `/applications/{application_id}/commands`
         - Method : `POST`
         - Required auth : `bot`
-        - Limiter : `UNLIMITED`
-        - Limit : `N/A`
-        - Resets after : `N/A`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
     
     - application_command_global_edit
         - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
         - Method : `PATCH`
         - Required auth : `bot`
-        - Limiter : `UNLIMITED`
-        - Limit : `N/A`
-        - Resets after : `N/A`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
     
     - application_command_guild_get_all
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
@@ -1905,25 +1923,25 @@ class RATE_LIMIT_GROUPS:
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `DELETE`
         - Required auth : `bot`
-        - Limiter : `UNLIMITED`
-        - Limit : `N/A`
-        - Resets after : `N/A`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
     
     - application_command_guild_create
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
         - Method : `POST`
         - Required auth : `bot`
-        - Limiter : `UNLIMITED`
-        - Limit : `N/A`
-        - Resets after : `N/A`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
     
     - application_command_guild_edit
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `PATCH`
         - Required auth : `bot`
-        - Limiter : `UNLIMITED`
-        - Limit : `N/A`
-        - Resets after : `N/A`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
     
     - application_get_all_detectable
         - Endpoint : `/applications/detectable`
@@ -3134,6 +3152,9 @@ class RATE_LIMIT_GROUPS:
     GROUP_USER_ROLE_MODIFY      = RateLimitGroup(LIMITER_GUILD)
     GROUP_WEBHOOK_EXECUTE       = RateLimitGroup(LIMITER_WEBHOOK)
     GROUP_INTERACTION_EXECUTE   = RateLimitGroup(LIMITER_INTERACTION)
+    GROUP_APPLICATION_COMMAND_CREATE = RateLimitGroup()
+    GROUP_APPLICATION_COMMAND_DELETE = RateLimitGroup()
+    GROUP_APPLICATION_COMMAND_EDIT = RateLimitGroup()
     
     oauth2_token                = RateLimitGroup(optimistic=True)
     application_get             = RateLimitGroup(optimistic=True) # untested
@@ -3144,14 +3165,14 @@ class RATE_LIMIT_GROUPS:
     achievement_edit            = RateLimitGroup()
     application_command_global_get_all = RateLimitGroup.unlimited()
     application_command_global_get = RateLimitGroup.unlimited()
-    application_command_global_delete = RateLimitGroup.unlimited()
-    application_command_global_create = RateLimitGroup.unlimited()
-    application_command_global_edit = RateLimitGroup.unlimited()
+    application_command_global_delete = GROUP_APPLICATION_COMMAND_DELETE
+    application_command_global_create = GROUP_APPLICATION_COMMAND_CREATE
+    application_command_global_edit = GROUP_APPLICATION_COMMAND_EDIT
     application_command_guild_get_all = RateLimitGroup.unlimited()
     application_command_guild_get = RateLimitGroup.unlimited()
-    application_command_guild_delete = RateLimitGroup.unlimited()
-    application_command_guild_create = RateLimitGroup.unlimited()
-    application_command_guild_edit = RateLimitGroup.unlimited()
+    application_command_guild_delete = GROUP_APPLICATION_COMMAND_DELETE
+    application_command_guild_create = GROUP_APPLICATION_COMMAND_CREATE
+    application_command_guild_edit = GROUP_APPLICATION_COMMAND_EDIT
     application_get_all_detectable = RateLimitGroup(optimistic=True)
     client_logout               = RateLimitGroup() # untested
     channel_delete              = RateLimitGroup.unlimited()

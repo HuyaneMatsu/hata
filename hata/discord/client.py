@@ -36,7 +36,7 @@ from .gateway import DiscordGateway, DiscordGatewaySharder
 from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent
 from .audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
 from .invite import Invite
-from .message import Message, MessageRepr, MessageReference, Attachment
+from .message import Message, MessageRepr, MessageReference, Attachment, Sticker
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
@@ -3340,8 +3340,8 @@ class Client(UserBase):
         
         return channel._create_unknown_message(message_data)
     
-    async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=..., tts=False,
-            nonce=None):
+    async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=...,
+            sticker=None, reply_fail_fallback=False, tts=False, nonce=None):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
         
@@ -3366,8 +3366,12 @@ class Client(UserBase):
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
+        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
+            Sticker or stickers to send within the message.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+        reply_fail_fallback : `bool`, Optional
+            Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
         nonce : `str`, Optional
@@ -3386,6 +3390,8 @@ class Client(UserBase):
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `channel`'s type is incorrect.
+            - If `sticker` was not given nither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
+                (``Sticker``, `int).
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -3393,6 +3399,10 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            - If `tts` was not given as `bool` instance.
+            - If `nonce` was not given neither as `None` nor as `str` instance.
+            - If `reply_fail_fallback` was not given as `bool` instance.
         
         See Also
         --------
@@ -3514,6 +3524,56 @@ class Client(UserBase):
                 if not content:
                     content = None
         
+        # Sticker check order:
+        # 1.: None -> None
+        # 2.: Sticker -> [sticker.id]
+        # 3.: int (str) -> [sticker]
+        # 4.: (`list`, `tuple`, `set`) of (Sticker, int (str)) -> [sticker.id / sticker, ...] / None
+        # 5.: raise
+        if sticker is None:
+            sticker_ids = None
+        else:
+            sticker_ids = set()
+            if isinstance(sticker, Sticker):
+                sticker_id = Sticker.id
+                sticker_ids.add(sticker_id)
+            else:
+                sticker_id = maybe_snowflake(sticker)
+                if sticker_id is None:
+                    if isinstance(sticker, (list, tuple, set)):
+                        for sticker in sticker:
+                            if isinstance(sticker, Sticker):
+                                sticker_id = Sticker.id
+                            else:
+                                sticker_id = maybe_snowflake(sticker)
+                                if sticker_id is None:
+                                    raise TypeError(f'`sticker` contains a non `{Sticker.__name__}` nor `int` element, '
+                                        f'got {sticker.__class__.__name__}')
+                            
+                            sticker_ids.add(sticker_id)
+                        
+                        if not sticker_ids:
+                            sticker_ids = None
+                    else:
+                        raise TypeError(f'`sticker` can be given as `None`, `{Sticker.__name__}`, `int` or '
+                            f'(`list`, `set`, `tuple`) of (`{Sticker.__name__}`, `int`), got '
+                            f'{sticker.__class__.__name__}')
+                else:
+                    sticker_ids.add(sticker_id)
+        
+        if __debug__:
+            if not isinstance(tts, bool):
+                raise AssertionError(f'`tts` can be given as `bool` instance, got {tts.__class__.__name__}.')
+            
+            if (nonce is not None) and (not isinstance(nonce, str)):
+                raise AssertionError(f'`nonce` can be given either as `None` or as `str` instance, got '
+                    f'{nonce.__class__.__name__}.')
+            
+            if not isinstance(reply_fail_fallback, bool):
+                raise AssertionError(f'`reply_fail_fallback` can be given as `bool` instance, got '
+                    f'{reply_fail_fallback.__class__.__name__}.')
+        
+        
         # Build payload
         message_data = {}
         contains_content = False
@@ -3526,6 +3586,10 @@ class Client(UserBase):
             message_data['embed'] = embed.to_data()
             contains_content = True
         
+        if (sticker_ids is not None):
+            message_data['sticker_ids'] = sticker_ids
+            contains_content = True
+        
         if tts:
             message_data['tts'] = True
         
@@ -3536,7 +3600,12 @@ class Client(UserBase):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
         if (message_id is not None):
-            message_data['message_reference'] = {'message_id': message_id}
+            message_reference_data = {'message_id': message_id}
+            
+            if reply_fail_fallback:
+                message_reference_data['fail_if_not_exists'] = False
+            
+            message_data['message_reference'] = message_reference_data
         
         if file is None:
             to_send = message_data

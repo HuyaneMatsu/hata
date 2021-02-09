@@ -273,6 +273,7 @@ class Sticker(DiscordEntity):
         
         self._set_asset(data)
         self._set_preview_asset(data)
+        return self
     
     def __str__(self):
         """Returns the sticker's name."""

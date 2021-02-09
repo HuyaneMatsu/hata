@@ -375,7 +375,7 @@ def str_sticker(sticker, index=None, **kwargs):
     result.append(f'{start}Sticker:')
     result.append(f'- id : {sticker.id}', 1)
     type_ = sticker.type
-    result.append(f'- type: {type_.name} ({type_.value})')
+    result.append(f'- type: {type_.name} ({type_.value})', 1)
     result.append(f'- name : {sticker.name}', 1)
     result.append(f'- pack_id : {sticker.pack_id}', 1)
     result.append(f'- description : {sticker.description!r}', 1)

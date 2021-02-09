@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 # Experimenting with web servers, nothing worthy
 # WORK IN PROGRESS
-import functools, http, re
+import functools, http, re, sys, os, ntpath
+
 from uuid import UUID
+from importlib.util import find_spec
 
 from .utils import imultidict, methodize
 from .futures import WaitTillAll, Future, Task, CancelledError
@@ -11,6 +13,7 @@ from .exceptions import PayloadError
 from .helpers import HttpVersion11
 from .headers import METHOD_ALL, METHOD_GET
 from .url import URL
+from .analyzer import CallableAnalyzer
 
 INTERNAL_SERVER_ERROR      = http.HTTPStatus.INTERNAL_SERVER_ERROR
 BAD_REQUEST                = http.HTTPStatus.BAD_REQUEST
@@ -335,31 +338,27 @@ class Route(object):
     
     Attributes
     ----------
-    view_func : `callable`
-        Function found by the route.
+    rule : ``Rule``
+        Rule object found by a route.
     parameters : `None` or `dict` of (`str`, `str`) items
         Dynamic parameter queried from the urls.
     """
-    __slots__ = ('parameters', 'view_func', )
-    def __init__(self, view_func, parameters):
+    __slots__ = ('parameters', 'rule', )
+    def __init__(self, rule):
         """
         Creates a new ``Route`` instance with the given `func`.
         
         Parameters
         ----------
-        view_func : `async-callable`
+        rule : ``Rule``
             Function found by the router.
-        parameters : `None` or `list` of `tuple` (`str`, `Any`)
-            Initial parameters to add to the route.
         """
-        self.view_func = view_func
-        if parameters is None:
-            parameters = None
-        else:
+        self.rule = rule
+        parameters = rule.parameters
+        if (parameters is not None):
             parameters = dict(parameters)
         self.parameters = parameters
         
-    
     def add_parameter(self, name, value):
         """
         Adds a new parameter to the route.
@@ -400,7 +399,7 @@ PARAMETER_NAME_TYPE_RELATION = {
     'uuid'  : PARAMETER_TYPE_UUID   ,
         }
 
-def maybe_type_part(part):
+def maybe_typed_rule_part(part):
     """
     Checks whether the given url part is maybe a dynamic one.
     
@@ -597,7 +596,7 @@ class ParameterValidatorPathStep(object):
         ----------
         parameter_name : `str`
             The parameter's name.
-
+        
         Returns
         -------
         path_router : ``PathRouter``
@@ -673,7 +672,6 @@ class ParameterValidatorPathStep(object):
         
         return False
 
-
 class PathRouter(object):
     """
     Path router for getting which handler function should run for a pre-defined route.
@@ -684,17 +682,15 @@ class PathRouter(object):
         Generic string paths to route to. Set as `None` if empty.
     route_step_validated : `None` or `list` of ``ParameterValidatorPathStep``
         Contains `parameter-name`, `validator`, `router` elements to route dynamic names.
-    route_end : `None` or `dict` of (`str`, `tuple` (`async-callable`, `list` of  `tuple` \
-            (`str`, `tuple` (`str`, `Any`))) items
+    route_end : `None` or `dict` of (`str`, ``Rule``) items
         If the url ends at the point of this router, then the handler function from ``.route_ends`` is chosen if
         applicable. The functions are stored in `method` - `handler` relation.
-    route_end_all : `None` or `tuple` (`async-callable, `None` or `list` of `tuple` (`str`, `Any`)))
+    route_end_all : `None` or ``Rule``)
         If the url ends at this point of the router and non of the `route-end`-s were matched, the the view function
         of this slot is chosen.
-    route_end_path : `None` or `dict` of (`str`, `tuple` \
-            (`async-callable`, `str`, `list` of  `tuple` (`str`, `tuple` (`str`, `Any`)))
+    route_end_path : `None` or `dict` of (`str`, ``Rule``) items
         Paths, which have dynamic route ends.
-    route_end_path_all : `None` or `tuple` (`async-callable`, `str`, `list` of  `tuple` (`str`, `tuple` (`str`, `Any`)))
+    route_end_path_all : `None` or `tuple` (``Rule``, `str`)
         ``.route_end_path`` version, what accepts accepts all type of request methods.
     """
     __slots__ = ('route_end', 'route_end_all', 'route_end_path', 'route_end_path_all', 'route_step_paths',
@@ -734,26 +730,26 @@ class PathRouter(object):
                 return None
             
             try:
-                view_func, parameters = route_end[request_method]
+                rule = route_end[request_method]
             except KeyError:
                 pass
             else:
-                return Route(view_func, parameters)
+                return Route(rule)
             
             route_end_all = self.route_end_all
             if route_end_all is None:
-                return Route(_handler_method_not_allowed, None)
+                return Route(ROUTE_METHOD_NOT_ALLOWED)
             
-            view_func, parameters = route_end_all
-            return Route(view_func, parameters)
+            rule = route_end_all
+            return Route(rule)
         
-        path_part = path[index]
+        rule_part = path[index]
         index += 1
         
         route_step_paths = self.route_step_paths
         if (route_step_paths is not None):
             try:
-                path_router = route_step_paths[path_part]
+                path_router = route_step_paths[rule_part]
             except KeyError:
                 pass
             else:
@@ -764,7 +760,7 @@ class PathRouter(object):
         route_step_validated = self.route_step_validated
         if (route_step_validated is not None):
             for parameter_validator_path_step in route_step_validated:
-                value = parameter_validator_path_step.validator(path_part)
+                value = parameter_validator_path_step.validator(rule_part)
                 if value is None:
                     continue
                 
@@ -781,102 +777,98 @@ class PathRouter(object):
         if (route_end_path is not None) or (route_end_path_all is not None):
             if (route_end_path is not None):
                 try:
-                    view_func, parameter_name, parameters = route_end_path[request_method]
+                    rule, parameter_name = route_end_path[request_method]
                 except KeyError:
                     pass
                 else:
-                    route = Route(view_func, parameters)
+                    route = Route(rule)
                     route.add_parameter(parameter_name, '/'.join(path[index:]))
                     return route
             
             if route_end_path_all is None:
-                return Route(_handler_method_not_allowed, None)
+                return Route(ROUTE_METHOD_NOT_ALLOWED)
             
-            view_func, parameter_name, parameters = route_end_path_all
-            route = Route(view_func, parameters)
+            rule, parameter_name = route_end_path_all
+            route = Route(rule)
             route.add_parameter(parameter_name, '/'.join(path[index:]))
             return route
         
         return None
     
-    def register_route(self, path_type_and_url, index, request_methods, view_func, parameters):
+    def register_route(self, rule, index, request_methods):
         """
         Registers a new handler to the path router.
         
         Parameters
         ----------
-        path_type_and_url : `tuple` of (`int`, `str`)
-            The path to register.
+        rule : ``rule``
+            The rule of the endpoint
         index : `int`
             The index of the part of the path to process by this router.
         request_methods : `None` or `set` of `str`
-            The methods of the request to registered `view_func`. Can be given as `None` to handle all type of requests.
-        view_func : `async-callable`
-            The function to call when serving a request to the provided endpoint.
-        parameters : `None` or `list` of `tuple` (`str`, `Any`)
-            Parameters to pass to the `view_func`.
+            The methods of the request to registered `rule`. Can be given as `None` to handle all type of requests.
         """
-        if index == len(path_type_and_url):
-            view_func_parameter_tuple = (view_func, parameters)
-            if view_func is None:
-                self.route_end_all = view_func_parameter_tuple
+        url_rule = rule.rule
+        if index == len(url_rule):
+            if request_methods is None:
+                self.route_end_all = rule
             else:
                 route_end = self.route_end
                 if route_end is None:
                     route_end = self.route_end = {}
                 
                 for request_method in request_methods:
-                    route_end[request_method] = view_func_parameter_tuple
+                    route_end[request_method] = rule
             
             return
         
-        path_part_type, path_part = path_type_and_url[index]
+        rule_part_type, rule_part = url_rule[index]
         index += 1
         
-        if path_part_type == PARAMETER_TYPE_STATIC:
+        if rule_part_type == PARAMETER_TYPE_STATIC:
             route_step_paths = self.route_step_paths
             if route_step_paths is None:
                 route_step_paths = self.route_step_paths = {}
             
             try:
-                path_router = route_step_paths[path_part]
+                path_router = route_step_paths[rule_part]
             except KeyError:
-                path_router = route_step_paths[path_part] = PathRouter()
+                path_router = route_step_paths[rule_part] = PathRouter()
             
-            path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
+            path_router.register_route(rule, index, request_methods)
             return
         
-        if path_part_type == PARAMETER_TYPE_PATH:
-            view_func_path_part_parameters_tuple = (view_func, path_part, parameters)
+        if rule_part_type == PARAMETER_TYPE_PATH:
+            rule_rule_part_tuple = (rule, rule_part)
             if request_methods is None:
-                self.route_end_path_all = view_func_path_part_parameters_tuple
+                self.route_end_path_all = rule_rule_part_tuple
             else:
                 route_end_path = self.route_end_path
                 if route_end_path is None:
                     route_end_path = self.route_end_path = {}
                 
                 for request_method in request_methods:
-                    route_end_path[request_method] = view_func_path_part_parameters_tuple
+                    route_end_path[request_method] = rule_rule_part_tuple
             return
         
         route_step_validated = self.route_step_validated
         if route_step_validated is None:
             route_step_validated = self.route_step_validated = []
             
-            parameter_validator_path_step, path_router = ParameterValidatorPathStep(path_part_type, path_part)
-            path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
+            parameter_validator_path_step, path_router = ParameterValidatorPathStep(rule_part_type, rule_part)
+            path_router.register_route(rule, index, request_methods)
             
             route_step_validated.append(parameter_validator_path_step)
             return
         
         for parameter_validator_path_step in route_step_validated:
-            if parameter_validator_path_step.parameter_type == path_part_type:
-                path_router = parameter_validator_path_step.get_path_router(path_part)
-                path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
+            if parameter_validator_path_step.parameter_type == rule_part_type:
+                path_router = parameter_validator_path_step.get_path_router(rule_part)
+                path_router.register_route(rule, index, request_methods)
                 return
         
-        parameter_validator_path_step, path_router = ParameterValidatorPathStep(path_part_type, path_part)
-        path_router.register_route(path_type_and_url, index, request_methods, view_func, parameters)
+        parameter_validator_path_step, path_router = ParameterValidatorPathStep(rule_part_type, rule_part)
+        path_router.register_route(rule, index, request_methods)
         
         route_step_validated.append(parameter_validator_path_step)
 
@@ -990,40 +982,145 @@ class _RouteAdder(object):
         return self.parent.add_url_rule(rule=self.rule, endpoint=self.endpoint, view_func=view_func,
             provide_automatic_options=None, **self.options)
 
-def _validate_options(options):
+def _validate_subdomain(subdomain):
     """
-    Validates the given options.
+    Validates the given subdomain.
     
     Parameters
     ----------
-    options : `dict` of (`str`, `Any`) items.
-        Additional options forward to the underlying ``Rule`` object.
+    subdomain : `None` or `str`
+        Subdomain value.
     
     Returns
     -------
-    request_methods : `set` of `str`
-        A set of teh validated http methods. If none is given, `'GET'` is auto added to it.
-    parameters : `None` or `list` of `tuple` (`str`, `Any`)
-        Defaults parameters to the dispatched router.
+    subdomain : `None` or `str`
+        The validated subdomain.
     
     Raises
     ------
     TypeError
-        - If `method` element is neither `None` or `str` instance.
-        - Unused option.
-        - If `methods` is neither `None`, `list`, `tuple` or `set` instance.
-        - If `methods` contains a non `str` element.
-        - If `defaults` is neither `None`, `dict`, `list`, `set` or `tuple`.
-        - If `defaults` contains a non `tuple` element.
-        - If 0th element of an element of `defaults` is not `str` instance.
-    ValueError
-        - If `method` is not an http request method.
-        - If `methods` contains a non http request method element.
-        - If `defaults` contains an element with length of not `2`.
+        If `subdomain` was not given neither as `None` or `str` instance.
     """
-    request_methods = set()
+    if (subdomain is not None):
+        if type(subdomain) is str:
+            pass
+        elif isinstance(subdomain, str):
+            subdomain = str(subdomain)
+        else:
+            raise TypeError(f'`subdomain` can be as `None` or as `str` instance, got {subdomain.__class__.__name__}.')
+        
+        if not subdomain:
+            subdomain = None
     
-    method = options.pop('method', None)
+    return subdomain
+
+def _validate_parameters(parameters, parameters_name):
+    """
+    Validates the given subdomain.
+    
+    Parameters
+    ----------
+    parameters : `None` or `dict` of (`str`, `Any`) items or (`set`, `tuple`, `list`) of `tuple` (`str`, `Any`)
+        Initial parameters to add to the route.
+    
+    Returns
+    -------
+    parameters : `None` or `tuple` of `tuple` (`str`, `int`)
+        The validated parameters.
+    
+    Raises
+    ------
+    TypeError
+        - If `parameters` is neither `None`, `dict`, `list`, `set` or `tuple`.
+        - If `parameters` contains a non `tuple` element.
+    ValueError
+        If `parameters` contains an element with length of not `2`.
+    """
+    if parameters is None:
+        parameters_validated = None
+    else:
+        if isinstance(parameters, dict):
+            parameters = list(parameters.items())
+        elif type(parameters) is list:
+            pass
+        elif isinstance(parameters, (list, set, tuple)):
+            parameters = list(parameters)
+        else:
+            raise TypeError(f'`{parameters_name}` should have be given as `dict`, `list`, `set` or `tuple`, got '
+                f'{parameters.__class__.__name__}.')
+        
+        parameters_validated = []
+        
+        for index, item in enumerate(parameters):
+            if not isinstance(item, tuple):
+                raise TypeError(f'`{parameters_name}` element `{index}` should have be `tuple` instance, got '
+                    f'{item.__class__.__name__}.')
+            
+            item_length = len(item)
+            if item_length != 2:
+                raise ValueError(f'`{parameters_name}` element `{index}` length is not the expected `2`, got '
+                    f'{item_length}; {item!r}.')
+            
+            parameter_name, parameter_value = item
+            
+            if type(parameter_name) is str:
+                pass
+            elif isinstance(parameter_name, str):
+                parameter_name = str(parameter_name)
+            else:
+                raise TypeError(f'`{parameters_name}` element `{index}`\'s 0th element can be only `str` instance, '
+                    f'got {parameter_name.__class__.__name__}.')
+            
+            parameters_validated.append((parameter_name, parameter_value))
+        
+        if parameters_validated:
+            # Check for dupe parameters.
+            parameter_names = set()
+            for item in parameters_validated:
+                parameter_names.add(item[0])
+            
+            if len(parameter_names) != len(parameters_validated):
+                # There are dupe parameters, remove them
+                index = 0
+                limit = len(parameters_validated)
+                
+                while index < limit:
+                    item = parameters_validated[index]
+                    try:
+                        parameter_names.remove(item[0])
+                    except KeyError:
+                        del parameters_validated[index]
+                        limit -= 1
+                    else:
+                        index += 1
+            
+            parameters_validated = tuple(parameters_validated)
+        else:
+            parameters_validated = None
+    
+    return parameters_validated
+
+def _validate_method(method):
+    """
+    Validates the given method.
+    
+    Parameters
+    ----------
+    method : `None` or `str`
+        Request method to validate.
+    
+    Returns
+    -------
+    method : `None` or `str`
+        The validated request method.
+    
+    Raises
+    ------
+    TypeError
+        - If `method` is neither `None` nor `str`.
+    ValueError
+        If `method` is not  a request method.
+    """
     if (method is not None):
         if type(method) is str:
             pass
@@ -1035,11 +1132,36 @@ def _validate_options(options):
         method = method.upper()
         if method not in METHOD_ALL:
             raise ValueError(f'`method` can be given any of `{METHOD_ALL!r}`, got {method!r}.')
-        
-        request_methods.add(method)
     
-    methods = options.pop('methods', None)
-    if (methods is not None):
+    return method
+
+def _validate_methods(methods):
+    """
+    Validates the given methods.
+    
+    Parameters
+    ----------
+    methods : `None` or (`tuple`, `list`, `set`) of `str`
+        Request method to validate.
+    
+    Returns
+    -------
+    methods : `None` or `list`
+        The validated request methods.
+    
+    Raises
+    ------
+    TypeError
+        - If `methods` is neither `None`, `list`, `set` nor `tuple`.
+        - If `methods` contains a non `str` element.
+    ValueError
+        If `methods` contains a non request method element.
+    """
+    if (methods is None):
+        methods_validated = None
+    else:
+        methods_validated = []
+        
         if not isinstance(methods, (list, tuple, set)):
             raise TypeError(f'`methods` can be either given as `None`, `list`, `tuple`, `set` instance, got '
                 f'{methods.__class__.__name__}.')
@@ -1058,105 +1180,605 @@ def _validate_options(options):
                 raise ValueError(f'`method` element `{index}` should have be given any of `{METHOD_ALL!r}`, got '
                     f'{method!r}.')
             
-            request_methods.add(method)
-    
-    defaults = options.get('defaults', None)
-    if defaults is None:
-        parameters = None
-    else:
-        if isinstance(defaults, dict):
-            defaults = list(defaults.items())
-        elif type(defaults) is list:
-            pass
-        elif isinstance(defaults, (list, set, tuple)):
-            defaults = list(defaults)
-        else:
-            raise TypeError(f'`defaults` should have be given as `dict`, `list`, `set` or `tuple`, got '
-                f'{defaults.__class__.__name__}.')
+            methods_validated.append(method)
         
-        if defaults:
-            parameters = []
-            
-            for index, item in enumerate(defaults):
-                if not isinstance(item, tuple):
-                    raise TypeError(f'`defaults` element `{index}` should have be `tuple` instance, got '
-                        f'{item.__class__.__name__}.')
-                
-                item_length = len(item)
-                if item_length != 2:
-                    raise ValueError(f'`defaults` element `{index}` length is not the expected `2`, got {item_length}; '
-                        f'{item!r}.')
-                
-                parameter_name, parameter_value = item
-                
-                if type(parameter_name) is str:
-                    pass
-                elif isinstance(parameter_name, str):
-                    parameter_name = str(parameter_name)
-                else:
-                    raise TypeError(f'`defaults` element `{index}`\'s 0th element can be only `str` instance, got '
-                        f'{parameter_name.__class__.__name__}.')
-                
-                parameters.append((parameter_name, parameter_value))
-        else:
-            parameters = None
+        if not methods_validated:
+            methods_validated = None
+    
+    return methods_validated
+
+
+def _validate_options(options):
+    """
+    Validates the given options.
+    
+    Parameters
+    ----------
+    options : `dict` of (`str`, `Any`) items.
+        Additional options forward to the underlying ``Rule`` object.
+    
+    Returns
+    -------
+    request_methods : `set` of `str`
+        A set of teh validated http methods. If none is given, `'GET'` is auto added to it.
+    parameters : `None` or `list` of `tuple` (`str`, `Any`)
+        Defaults parameters to the dispatched router.
+    subdomain : `None` or `str`
+        Whether the respective route should match the specified subdomain.
+    
+    Raises
+    ------
+    TypeError
+        - If `method` element is neither `None` or `str` instance.
+        - Extra option was given.
+        - If `methods` is neither `None`, `list`, `tuple` or `set` instance.
+        - If `methods` contains a non `str` element.
+        - If `defaults` is neither `None`, `dict`, `list`, `set` or `tuple`.
+        - If `defaults` contains a non `tuple` element.
+        - If 0th element of an element of `defaults` is not `str` instance.
+        - If `subdomain` was not given neither as `None` or `str` instance.
+    ValueError
+        - If `method` is not an http request method.
+        - If `methods` contains a non http request method element.
+        - If `defaults` contains an element with length of not `2`.
+    """
+    request_methods = None
+    
+    method = options.pop('method', None)
+    method = _validate_method(method)
+    if (method is not None):
+        if (request_methods is None):
+            request_methods = set()
+        request_methods.add(method)
+    
+    methods = options.pop('methods', None)
+    if (methods is not None):
+        if (request_methods is None):
+            request_methods = set()
+        request_methods.union(methods)
+    
+    parameters = options.pop('defaults', None)
+    parameters = _validate_parameters(parameters, 'defaults')
+    
+    subdomain = options.pop('subdomain', None)
+    subdomain = _validate_subdomain(subdomain)
     
     if options:
-        raise TypeError(f'options contains unused parameters: {options!r}.')
+        raise TypeError(f'`options` contains unused parameters: {options!r}.')
     
     if request_methods:
         request_methods.add(METHOD_GET)
     
-    return request_methods, parameters
+    return request_methods, parameters, subdomain
+
+def _validate_import_name(import_name):
+    """
+    Validates the given `import_name` value.
+    
+    Parameters
+    ----------
+    import_name : `str`
+        The import name's value.
+    
+    Returns
+    -------
+    import_name : `str`
+        The validated import name.
+    
+    Raises
+    ------
+    TypeError
+        If `import_name` was not given as `str` instance.
+    ValueError
+        If `import_name` is an empty string.
+    """
+    if type(import_name) is str:
+        pass
+    elif isinstance(import_name, str):
+        import_name = str(import_name)
+    else:
+        raise TypeError(f'`import_name` can be given as `str` instance, got {import_name.__class__.__name__}.')
+    
+    if not import_name:
+        raise ValueError(f'`import_name` cannot be given as empty string.')
+    
+    return import_name
+
+def _validate_template_folder(template_folder):
+    """
+    Validates the given `template_folder` value.
+    
+    Parameters
+    ----------
+    template_folder : `str` or `None`
+        The template folder's value.
+    
+    Returns
+    -------
+    template_folder : `str` or `None`
+        The template folder's validated value.
+    
+    Raises
+    ------
+    TypeError
+        If `template_folder` was not given neither as `None` or `str` instance.
+    """
+    if (template_folder is not None):
+        if type(template_folder) is str:
+            pass
+        elif isinstance(template_folder, str):
+            template_folder = str(template_folder)
+        else:
+            raise TypeError(f'`template_folder` can be given as `str` instance, got '
+                f'{template_folder.__class__.__name__}.')
+        
+        if not template_folder:
+            template_folder = None
+    
+    return template_folder
+
+def _validate_root_path(root_path, import_name):
+    """
+    Validates the given `root_path` value. If `root_oath` is `None`, will try to detect it from `import_name`.
+    
+    Parameters
+    ----------
+    root_path : `str` or `None`
+        The given root path.
+    
+    Returns
+    -------
+    root_path : `str` or `None`
+        The validated root path.
+    
+    Raises
+    ------
+    ImportError
+        If `route_path` refers to a module, but error occurred meanwhile importing it.
+    TypeError
+        If `root_path` was not given neither as `None` or `str` instance.
+    ValueError
+        If `root_path` was given as empty string.
+    """
+    if root_path is None:
+        try:
+            maybe_module = sys.modules[import_name]
+        except KeyError:
+            pass
+        else:
+            maybe_file_name = getattr(maybe_module, '__file__')
+            if (maybe_file_name is not None):
+                return os.path.dirname(os.path.abspath(maybe_file_name))
+        
+        # Find importable file if applicable.
+        try:
+            spec = find_spec(import_name)
+        except BaseException as err:
+            raise ImportError(f'Exception occurred while finding loader for {import_name!r} ({type(err)}{err})') \
+                from err
+        
+        if spec is None:
+            loader = None
+        else:
+            loader = spec.loader
+        
+        # Not found, probably the main file?
+        if (loader is None) or (import_name == '__main__'):
+            return os.getcwd()
+       
+        # Get file name from loader.
+        path = loader.get_filename(import_name)
+        return os.path.dirname(os.path.abspath(path))
+        
+    else:
+        if type(root_path) is str:
+            pass
+        elif isinstance(root_path, str):
+            root_path = str(root_path)
+        else:
+            raise TypeError(f'`root_path` can be given as `str` instance, got {root_path.__class__.__name__}.')
+        
+        if not root_path:
+            raise ValueError(f'`root_path` cannot be given as empty string.')
+    
+    return root_path
+
+def _validate_static_folder(static_folder):
+    """
+    Validates the given static folder value.
+    
+    Parameters
+    ----------
+    static_folder : `str` or `None`
+        Static folder value to validate.
+    
+    Returns
+    -------
+    static_folder : `str` or `None`
+        The validated static folder value.
+    
+    Raises
+    ------
+    TypeError
+        If `static_folder` was not given neither as `None` nor `str` instance.
+    ValueError
+        If `static_folder` was given as empty string.
+    """
+    if (static_folder is not None):
+        if type(static_folder) is str:
+            pass
+        elif isinstance(static_folder, str):
+            static_folder = str(static_folder)
+        else:
+            raise TypeError(f'`static_folder` can be given as `str` instance, got {static_folder.__class__.__name__}.')
+        
+        if not static_folder:
+            raise ValueError(f'`static_folder` cannot be given as empty string.')
+    
+    return static_folder
+
+def _validate_static_url_path(static_url_path):
+    """
+    Validates the given static folder value.
+    
+    Parameters
+    ----------
+    static_url_path : `str`
+        Static url path value to validate.
+    
+    Returns
+    -------
+    static_url_path : `str` or `None`
+        The validated static url path value.
+    
+    Raises
+    ------
+    TypeError
+        If `static_url_path` was not given either as `None` or `str` instance.
+    """
+    if (static_url_path is not None):
+        if type(static_url_path) is str:
+            pass
+        elif isinstance(static_url_path, str):
+            static_url_path = str(static_url_path)
+        else:
+            raise TypeError(f'`static_url_path` can be given as `str` instance, got '
+                f'{static_url_path.__class__.__name__}.')
+        
+    return static_url_path
+
+def _validate_url_prefix(url_prefix):
+    """
+    Validates the given url prefix converting it into url route parts.
+    
+    Parameters
+    ---------
+    url_prefix : `str` or `None`
+        Url prefix for a blueprint.
+    
+    Returns
+    -------
+    url_prefix_processed : `None` or `tuple` of `tuple` (`str`, `int`)
+        The processed url prefix.
+    
+    Raises
+    ------
+    TypeError
+        - If `url_prefix` was neither given as `None` or as `str` instance.
+        - If `url_prefix` contains a `path` rule part.
+    """
+    if url_prefix is None:
+        url_prefix_processed = None
+    else:
+        if type(url_prefix) is str:
+            pass
+        elif isinstance(url_prefix, str):
+            url_prefix = str(url_prefix)
+        else:
+            raise TypeError(f'`url_prefix` can be given as `str` instance, got {url_prefix.__class__.__name__}.')
+        
+        url_prefix_processed = tuple(maybe_typed_rule_part(rule_part) for rule_part in URL(url_prefix).path)
+        if url_prefix_processed:
+            for parameter_type, parameter_name in url_prefix_processed:
+                if parameter_type == PARAMETER_TYPE_PATH:
+                    raise TypeError(f'Only last rule part can be `path` type, got {url_prefix!r}.')
+        else:
+            url_prefix_processed = None
+    
+    return url_prefix_processed
+
+DUMMY_RULE_PART = ('/', PARAMETER_TYPE_STATIC)
+
+class Rule(object):
+    """
+    A registered rule.
+    
+    Attributes
+    ----------
+    endpoint : `str`
+        The endpoint's internal name.
+    parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Default parameters to pass to the `view_func`.
+    request_methods : `None` or `set` of `str`
+        Request methods to call `view_func` when received.
+    rule : `tuple` or `tuple` of (`int`, `str`)
+        The url's path part.
+    subdomain : `None` or `str`
+        Whether the route should match the specified subdomain.
+    view_func : `async-callable`
+        The function to call when serving a request to the provided endpoint.
+    """
+    __slots__ = ('endpoint', 'parameters', 'request_methods', 'rule', 'subdomain', 'view_func')
+    
+    def __init__(self, rule, view_func, endpoint, request_methods, parameters, subdomain):
+        """
+        Creates a new ``Rule`` instance.
+        
+        Parameters
+        ----------
+        rule : `tuple` of `tuple` (`int`, `str`)
+            The url rule to register.
+        view_func : `async-callable`
+            The function to call when serving a request to the provided endpoint.
+        endpoint : `str`
+            The endpoint's internal name.
+        request_methods : `None` or `set` of `str`
+            Request methods to call `view_func` when received.
+        parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+            Default parameters to pass to the `view_func`.
+        subdomain : `None` or `str`
+            Whether the route should match the specified subdomain.
+        """
+        self.rule = rule
+        self.view_func = view_func
+        self.endpoint = endpoint
+        self.request_methods = request_methods
+        self.parameters = parameters
+        self.subdomain = subdomain
+    
+    def copy(self):
+        """
+        Copies the rule.
+        
+        Returns
+        -------
+        new : ``Rule``
+        """
+        new = object.__new__(type(self))
+        
+        new.endpoint = self.endpoint
+        new.parameters = self.parameters
+        new.request_methods = self.request_methods
+        new.rule = self.rule
+        new.subdomain = self.subdomain
+        new.view_func = self.view_func
+        
+        return new
+    
+    def set_subdomain(self, subdomain):
+        """
+        Sets subdomain to the rule if it has non set yet.
+        
+        Parameters
+        ----------
+        subdomain : `None` or `str`
+            Subdomain, what the rule of the blueprint gonna match.
+        """
+        if (subdomain is not None) and (self.subdomain is None):
+            self.subdomain = subdomain
+
+    def set_parameters(self, parameters):
+        """
+        Sets parameters to the rule.
+        
+        Parameters
+        ----------
+        parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        """
+        if (parameters is not None):
+            self_parameters = self.parameters
+            if self_parameters is None:
+                self.parameters = parameters.copy()
+            else:
+                to_add = []
+                for item in parameters:
+                    parameter_name = item[0]
+                    for self_item in self_parameters:
+                        if self_item[0] == parameter_name:
+                            break
+                    else:
+                        to_add.append(item)
+                
+                if to_add:
+                    self.parameters = (*self_parameters, *to_add)
+    
+    def set_rule_prefix(self, rule):
+        """
+        Extends the rule parts of the rule.
+        
+        Parameters
+        ----------
+        rule : `None` or `tuple` of `tuple` (`str`, `int`)
+            The rule parts to extend the ``Rule``'s with.
+        """
+        if (rule is not None):
+            self_rule = self.rule
+            if self_rule[0] == DUMMY_RULE_PART:
+                self_rule = self_rule[1:]
+            
+            self.rule = (*rule, *self_rule)
+
+ROUTE_METHOD_NOT_ALLOWED = Rule((), _handler_method_not_allowed, 'method_not_allowed', None, None, None)
+ROUTE_NOT_FOUND_NOT_ALLOWED = Rule((), _handler_not_found, 'not found', None, None, None)
 
 
-class WebApp(object):
+class AppBase(object):
     """
-    _server : `None` or ``WebServer``
-        The running web-server of the webapp
-    _router : ``PathRouter``
-        Path router to decide which function should be called when receiving a request.
+    Base class for ``BluePrint``-s and for ``WebApp``-s.
+    
+    Attributes
+    ----------
+    import_name : `str`
+        The name of the package or module that this app belongs to.
+    template_folder : `None` or `str`
+        The folder from where the templates should be loaded from.
+    root_path : `str`
+        Absolute path to the package on the filesystem.
+    static_folder : `str` or `None`
+        Absolute path to the static file's folder.
+    static_url_path : `str` or `None`
+        Url path to static files. By defaults relates to `static_folder`.
+    rules : `dict` of (`str`, `Any`)
+        The added rules to the application or blueprint. The keys are their endpoint name.
+    error_handler_functions : `None` or `dict` of (`int`, `async-callable`)
+        Global error handlers of the application or blueprint.
+    error_handler_functions_by_blueprint : `None` or `dict` of (`str`, `dict` of (`int`, `async-callable`))
+        Error handlers for the application, where the keys are the blueprint's names.
     """
-    __slots__ = ('_server', '_router')
-    def __new__(cls):
+    __slots__ = ('import_name', 'template_folder', 'root_path', 'static_folder', 'static_url_path', 'rules',
+        'error_handler_functions', 'error_handler_functions_by_blueprint')
+    
+    def __new__(cls, import_name, template_folder, root_path, static_folder, static_url_path):
+        """
+        Parameters
+        ----------
+        import_name : `str`
+            The name of the package or module that this app belongs to.
+        template_folder : `None` or `str`
+            The folder from where the templates should be loaded from.
+        root_path : `None` or `str`
+            Absolute path to the package on the filesystem.
+        static_folder : `None` or `str`
+            Path on top of the application route path for static files, which can be accessed trough the
+            `static_url_path`.
+        static_url_path : `None` or `str`
+            Url path to static files. Defaults to `static_folder`'s value.
+        
+        Raises
+        ------
+        ImportError
+            Exception occurred meanwhile finding route path from import name.
+        TypeError
+            - If `import_name` was not given as `st` instance.
+            - If `template_folder` was not given neither as `None` or `str` instance.
+            - If `root_path` was not given neither as `None` or `str` instance.
+            - If `static_folder` was not given neither as `None` nor `str` instance.
+            - If `static_url_path` was not given either as `None` or `str` instance.
+        ValueError
+            - If `import_name` was given as an empty string.
+            - If `root_path` was given as an empty string.
+        """
+        import_name = _validate_import_name(import_name)
+        template_folder = _validate_template_folder(template_folder)
+        static_folder = _validate_static_folder(static_folder)
+        static_url_path = _validate_static_url_path(static_url_path)
+        
+        if (static_url_path is None) and (static_folder is not None):
+            if os.path.isabs(static_folder):
+                static_folder_head, static_folder_tail = ntpath.split(static_folder)
+                if not static_folder_tail:
+                    static_folder_tail = ntpath.basename(static_folder_head)
+                
+                static_url_path = static_folder_tail
+            else:
+                static_url_path = '/'.join(os.path.normpath(static_folder).split(os.path.sep))
+        
+        if (template_folder is not None) and (not os.path.isabs(template_folder)):
+            template_folder = os.path.join(root_path, template_folder)
+            
+        if (static_folder is not None) and (not os.path.isabs(static_folder)):
+            static_folder = os.path.join(root_path, static_folder)
+        
         self = object.__new__(cls)
-        self._server = None
-        self._router = PathRouter()
+        self.import_name = import_name
+        self.template_folder = template_folder
+        self.root_path = root_path
+        self.static_folder = static_folder
+        self.static_url_path = static_url_path
+        
+        self.rules = {}
+        
+        self.error_handler_functions = None
+        self.error_handler_functions_by_blueprint = None
+        
         return self
+
+class BluePrint(AppBase):
+    """
+    Represents a blueprint, a collection of routes and other app-related functions that can be registered on a real
+    application later.
     
-    def _dispatch_route(self, url, request_method):
+    Attributes
+    ----------
+    import_name : `str`
+        The name of the package or module that this app belongs to.
+    template_folder : `None` or `str`
+        The folder from where the templates should be loaded from.
+    root_path : `str`
+        Absolute path to the package on the filesystem.
+    static_folder : `str` or `None`
+        Absolute path to the static file's folder.
+    static_url_path : `str` or `None`
+        Url path to static files. By defaults relates to `static_folder`.
+    url_prefix : `None` or `tuple` of `tuple` (`str`, `int`)
+        Url prefix for all the routes of the blueprint. Set as `None` if not applicable.
+    subdomain : `str` or `None`
+        Subdomain, what the routes of the blueprint gonna match.
+    parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Parameters which the routes of the blueprint will get by default.
+    """
+    __slots__ = ('url_prefix', 'subdomain', 'parameters')
+    def __new__(cls, import_name, *, template_folder=None, root_path=None, static_folder=None,
+            static_url_path=None, url_prefix=None, subdomain=None, url_defaults=None):
         """
-        Gets handler for the given `url` and `request_method` combination.
+        Creates a new ``BluePrint`` instance.
         
         Parameters
         ----------
-        url : ``URL`` instance
-            The received request url.
-        request_method : `str`
-            The method to request.
-        """
-        path = url.path
-        route = self._router.dispatch_route(path, 0, request_method)
-        if route is None:
-            route = Route(_handler_not_found, None)
+        import_name : `str`
+            The name of the package or module that this app belongs to.
+        template_folder : `None` or `str`, Optional
+            The folder from where the templates should be loaded from.
+        root_path : `None` or `str`, Optional
+            Absolute path to the package on the filesystem.
+        static_folder : `None` or `str`, Optional
+            Path on top of the application route path for static files, which can be accessed trough the
+            `static_url_path`. Defaults to `None`.
+        static_url_path : `None` or `str`, Optional
+            Url path to static files. Defaults to `static_folder`'s value.
+        url_prefix : `str` or `None`, Optional
+            Url prefix for all the routes registered to teh blueprint.
+        subdomain : `str` or `None`
+            Subdomain, what the routes of the blueprint gonna match.
+        url_defaults : `None`, `dict` of (`str`, `Any`) items or (`set`, `list`, `tuple`) of (`str`, `Any`) items
+            Parameters which the routes of the blueprint will get by default.
         
-        return route
-    
-    def _register_route(self, url, request_method, handler):
+        Raises
+        ------
+        ImportError
+            Exception occurred meanwhile finding route path from import name.
+        TypeError
+            - If `import_name` was not given as `st` instance.
+            - If `template_folder` was not given neither as `None` or `str` instance.
+            - If `root_path` was not given neither as `None` or `str` instance.
+            - If `static_folder` was not given neither as `None` nor `str` instance.
+            - If `static_url_path` was not given either as `None` or `str` instance.
+            - If `url_prefix` was neither given as `None` or as `str` instance.
+            - If `url_prefix` contains a `path` rule part.
+            - If `subdomain` was not given neither as `None` or `str` instance.
+        ValueError
+            - If `import_name` was given as an empty string.
+            - If `root_path` was given as an empty string.
         """
-        Registers an url and handler to the http server.
+        url_prefix = _validate_url_prefix(url_prefix)
+        subdomain = _validate_subdomain(subdomain)
+        parameters = _validate_parameters(url_defaults, 'url_defaults')
         
-        Parameters
-        ----------
-        url : ``URL`` instance
-            The url to register.
-        request_method : `str`
-            The method to request.
-        handler : `async-callable`
-            The handler to call when the given url and method I requested.
-        """
-        path_type_and_value = tuple(maybe_type_part(path_part) for path_part in url.path)
-        self._router.register_route(path_type_and_value, 0, request_method, handler)
+        self = AppBase.__new__(cls, import_name, template_folder, root_path, static_folder, static_url_path)
+        self.url_prefix = url_prefix
+        self.subdomain = subdomain
+        self.parameters = parameters
+        return self
     
     def route(self, rule, endpoint=None, **options):
         """
@@ -1178,7 +1800,7 @@ class WebApp(object):
         """
         return _RouteAdder(self, rule, endpoint, options)
     
-    def add_url_rule(self, rule, endpoint=None, view_func=None, *, provide_automatic_options=None, **options):
+    def add_url_rule(self, rule, *args, provide_automatic_options=None, **options):
         """
         Method to add a route to the application.
         
@@ -1188,22 +1810,70 @@ class WebApp(object):
         ----------
         rule : `str`
             The url rule as string.
+        *args : arguments
+            `endpoint` and `view_func` depending 1 or 2 parameters were given.
         endpoint  : `None` or `str`, Optional
             The internal endpoint of the url. Defaults to the name of the added function.
-        **options : keyword arguments
-            Additional options to be forward to the underlying ``Rule`` object.
         view_func : `async-callable`
             The function to call when serving a request to the provided endpoint.
         provide_automatic_options : `None` or `bool`, Optional
             Controls whether `options` should be handled manually.
         **options : keyword arguments
-                    Additional options to be forward to the underlying ``Rule`` object.
+            Additional options to be forward to the underlying ``Rule`` object.
         
         Returns
         -------
         rule : ``Rule``
             The added rule object.
+        
+        Raises
+        ------
+        TypeError
+            - If `provide_automatic_options` was not given neither as `None` or `bool`.
+            - If `view_func` was not given as `async-callable`
+            - If `rule` was not given as `str` instance.
+            - If `endpoint` was not given as `str` instance.
+            - If `view_func` parameter is missing from `*args`.
+            - Extra positional only parameter.
+            - If `method` element is neither `None` or `str` instance.
+            - Extra option was given.
+            - If `methods` is neither `None`, `list`, `tuple` or `set` instance.
+            - If `methods` contains a non `str` element.
+            - If `defaults` is neither `None`, `dict`, `list`, `set` or `tuple`.
+            - If `defaults` contains a non `tuple` element.
+            - If 0th element of an element of `defaults` is not `str` instance.
+            - If `subdomain` was not given neither as `None` or `str` instance.
+        ValueError
+            - If `method` is not an http request method.
+            - If `methods` contains a non http request method element.
+            - If `defaults` contains an element with length of not `2`.
         """
+        args_length = len(args)
+        if args_length == 0:
+            raise TypeError(f'`view_func` positional only parameter is missing.')
+        elif args_length == 1:
+            endpoint = None
+            view_func = args[0]
+        elif args_length == 2:
+            endpoint = args[0]
+            view_func = args[1]
+        else:
+            raise TypeError(f'`Extra positional parameters: {args[2:]!r}.')
+        
+        if view_func is None:
+            raise TypeError('`view_func` can be `async-callable`, got `None`.')
+        
+        analyzed = CallableAnalyzer(view_func)
+        if not analyzed.is_async():
+            raise TypeError(f'`view_func` can be given as `async-callable`, got {analyzed.__class__.__name__}; '
+                f'{analyzed!r}.')
+        
+        for parameter_name in ('method', 'methods', 'defaults'):
+            if options.get(parameter_name) is None:
+                parameter_value = getattr(endpoint, parameter_name, None)
+                if (parameter_value is not None):
+                    options[parameter_name] = parameter_value
+        
         if provide_automatic_options is None:
             provide_automatic_options = getattr(view_func, 'provide_automatic_options', None)
         
@@ -1215,12 +1885,129 @@ class WebApp(object):
                     f'{provide_automatic_options.__class__.__name__}.`')
         
         if endpoint is None:
-            if type(endpoint) is str:
-                pass
-            elif isinstance(endpoint, str):
-                endpoint = str(endpoint)
-            else:
-                raise TypeError()
+            endpoint = analyzed.__name__
         
-        url = URL(rule)
+        if type(endpoint) is str:
+            pass
+        elif isinstance(endpoint, str):
+            endpoint = str(endpoint)
+        else:
+            raise TypeError(f'`endpoint` can be given as `str` instance, got {endpoint.__class__.__name__}.')
         
+        
+        rule_processed = tuple(maybe_typed_rule_part(rule_part) for rule_part in URL(rule).path)
+        
+        for parameter_type, parameter_name in rule_processed[:-1]:
+            if parameter_type == PARAMETER_TYPE_PATH:
+                raise TypeError(f'Only last rule part can be `path` type, got {rule!r}.')
+        
+        if provide_automatic_options:
+            request_methods, parameters, subdomain = _validate_options(options)
+            if request_methods is None:
+                request_methods = set()
+                request_methods.add(METHOD_GET)
+        
+        else:
+            request_methods = None
+            parameters = None
+            subdomain = None
+        
+        rule = Rule(rule_processed, view_func, endpoint, request_methods, parameters, subdomain)
+        self._add_rule(rule)
+        return rule
+
+class WebApp(AppBase):
+    """
+    Central registry for the view functions, the URL rules, and for blueprints.
+    
+    Attributes
+    ----------
+    import_name : `str`
+        The name of the package or module that this app belongs to.
+    template_folder : `None` or `str`
+        The folder from where the templates should be loaded from.
+    root_path : `str`
+        Absolute path to the package on the filesystem.
+    static_folder : `str` or `None`
+        Absolute path to the static file's folder.
+    static_url_path : `str` or `None`
+        Url path to static files. By defaults relates to `static_folder`.
+    
+    _server : `None` or ``WebServer``
+        The running web-server of the webapp.
+    _router : ``PathRouter``
+        Path router to decide which function should be called when receiving a request.
+    """
+    __slots__ = ('_server', '_router')
+    def __new__(cls, import_name, *, template_folder=None, root_path=None, static_folder='static',
+            static_url_path=None):
+        """
+        Creates a new ``WebApp`` instance.
+        
+        Parameters
+        ----------
+        import_name : `str`
+            The name of the package or module that this app belongs to.
+        template_folder : `None` or `str`, Optional
+            The folder from where the templates should be loaded from.
+        root_path : `None` or `str`, Optional
+            Absolute path to the package on the filesystem.
+        static_folder : `None` or `str`, Optional
+            Path on top of the application route path for static files, which can be accessed trough the
+            `static_url_path`. Defaults to `'static'`.
+        static_url_path : `None` or `str`, Optional
+            Url path to static files. Defaults to `static_folder`'s value.
+        
+        Raises
+        ------
+        ImportError
+            Exception occurred meanwhile finding route path from import name.
+        TypeError
+            - If `import_name` was not given as `st` instance.
+            - If `template_folder` was not given neither as `None` or `str` instance.
+            - If `root_path` was not given neither as `None` or `str` instance.
+            - If `static_folder` was not given neither as `None` nor `str` instance.
+            - If `static_url_path` was not given either as `None` or `str` instance.
+        ValueError
+            - If `import_name` was given as an empty string.
+            - If `root_path` was given as an empty string.
+        """
+        self = AppBase.__new__(cls, import_name, template_folder, root_path, static_folder, static_url_path)
+        
+        
+        self._server = None
+        self._router = PathRouter()
+        return self
+    
+    def _dispatch_route(self, url, request_method):
+        """
+        Gets handler for the given `url` and `request_method` combination.
+        
+        Parameters
+        ----------
+        url : ``URL`` instance
+            The received request url.
+        request_method : `str`
+            The method to request.
+        """
+        path = url.path
+        route = self._router.dispatch_route(path, 0, request_method)
+        if route is None:
+            route = Route(ROUTE_NOT_FOUND_NOT_ALLOWED)
+        
+        return route
+    
+    def _register_route(self, rule, request_methods, parameters):
+        """
+        Registers an url and handler to the http server.
+        
+        Parameters
+        ----------
+        rule : ``Rule``
+            The url rule to register.
+        request_methods : `None` or `set of `str`
+            The method to request.
+        parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+            Default parameters to call `view_func` with.
+        """
+        self._router.register_route(rule, 0, request_methods, parameters)

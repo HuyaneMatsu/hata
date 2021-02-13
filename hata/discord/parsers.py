@@ -4410,7 +4410,7 @@ PARSER_DEFAULTS(
 del CHANNEL_UNREAD_UPDATE
 
 
-class InteractionEvent(EventBase, DiscordEntity):
+class InteractionEvent(DiscordEntity, EventBase):
     """
     Represents a processed `INTERACTION_CREATE` dispatch event.
     

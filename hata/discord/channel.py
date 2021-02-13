@@ -459,6 +459,71 @@ class ChannelBase(DiscordEntity, immortal=True):
             return False
         
         return True
+    
+    def permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the channel.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        See Also
+        --------
+        ``.cached_permissions_for`` : Cached permission calculator.
+        
+        Notes
+        -----
+        Always return empty permissions. Subclasses should implement this method.
+        """
+        return Permission.permission_none
+    
+    def cached_permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the channel. If the user's permissions are not cached, calculates
+        and stores them first.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Mainly designed for getting clients' permissions and stores only their as well. Do not caches other user's
+        permissions.
+        
+        Always return empty permissions. Subclasses should implement this method.
+        """
+        return Permission.permission_none
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        
+        Always return empty permissions. Subclasses should implement this method.
+        """
+        return Permission.permission_none
 
 # sounds funny, but this is a class
 # the chunk_size is 97, because it means 1 request for _load_messages_till
@@ -1395,13 +1460,16 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return Permission.permission_none
         
-        default_role =  guild.roles[guild.id]
-        base = default_role.permissions
+        default_role =  guild.roles.get(guild.id)
+        if default_role is None:
+            base = 0
+        else:
+            base = default_role.permissions
         
         try:
-            roles = user.guild_profiles[guild].roles
+            guild_profile = user.guild_profiles[guild]
         except KeyError:
-            if type(user) in (Webhook, WebhookRepr) and user.channel is self:
+            if isinstance(user, (Webhook, WebhookRepr)) and user.channel is self:
                 
                 overwrites = self.overwrites
                 if overwrites:
@@ -1414,6 +1482,7 @@ class ChannelGuildBase(ChannelBase):
             
             return Permission.permission_none
         
+        roles = guild_profile.roles
         if (roles is not None):
             roles.sort()
             for role in roles:
@@ -1471,7 +1540,7 @@ class ChannelGuildBase(ChannelBase):
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            return Permission.permission_none
+            result = Permission.permission_none
         
         return result
     
@@ -1508,6 +1577,85 @@ class ChannelGuildBase(ChannelBase):
         permissions = self.permissions_for(user)
         cache_perm[user.id] = permissions
         return permissions
+    
+    def _permissions_for_roles(self, roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles. This method is called
+        first by subclasses to apply their own related permissions on it.
+        
+        Parameters
+        ----------
+        roles : `tuple` of ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        guild = self.guild
+        if guild is None:
+            return Permission.permission_none
+        
+        default_role =  guild.roles.get(guild.id)
+        if default_role is None:
+            base = 0
+        else:
+            base = default_role.permissions
+        
+        for role in sorted(roles):
+            if role.guild is self:
+                base |= role.permissions
+        
+        if Permission.can_administrator(base):
+            return Permission.permission_all
+        
+        roles = set(roles)
+        
+        overwrites = self.overwrites
+        if overwrites:
+            overwrite = overwrites[0]
+            
+            if overwrite.target_role is default_role:
+                base = (base&~overwrite.deny)|overwrite.allow
+            
+            for overwrite in overwrites:
+                overwrite_target_role = overwrite.target_role
+                if (overwrite_target_role is None):
+                    continue
+                
+                if overwrite_target_role not in roles:
+                    continue
+                
+                base = (base&~overwrite.deny)|overwrite.allow
+        
+        return Permission(base)
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        result = self._permissions_for_roles(roles)
+        if not result.can_view_channel:
+            result = Permission.permission_none
+        
+        return result
     
     def _parse_overwrites(self, data):
         """
@@ -2060,7 +2208,40 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         if not result.can_view_channel:
             return Permission.permission_none
         
-        #text channels don't have voice permissions
+        # text channels don't have voice permissions
+        result &= Permission.permission_deny_voice
+        
+        if self.type and (not Permission.can_manage_messages(result)):
+            result = result&Permission.permission_deny_text
+            return Permission(result)
+        
+        if not Permission.can_send_messages(result):
+            result = result&Permission.permission_deny_text
+        
+        return Permission(result)
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        result = self._permissions_for_roles(roles)
+        if not result.can_view_channel:
+            return Permission.permission_none
+        
+        # text channels don't have voice permissions
         result &= Permission.permission_deny_voice
         
         if self.type and (not Permission.can_manage_messages(result)):
@@ -2712,7 +2893,7 @@ class ChannelVoice(ChannelGuildBase):
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``              |
+        | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -2774,6 +2955,35 @@ class ChannelVoice(ChannelGuildBase):
             return Permission.permission_none
         
         #voice channels don't have text permissions
+        result &= Permission.permission_deny_text
+        
+        if not Permission.can_connect(result):
+            result &= Permission.permission_deny_voice_con
+        
+        return Permission(result)
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        result = self._permissions_for_roles(roles)
+        if not result.can_view_channel:
+            return Permission.permission_none
+        
+        # voice channels don't have text permissions
         result &= Permission.permission_deny_text
         
         if not Permission.can_connect(result):
@@ -3433,7 +3643,7 @@ class ChannelCategory(ChannelGuildBase):
         +===============+===================================+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``              |
+        | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -3800,11 +4010,35 @@ class ChannelStore(ChannelGuildBase):
         if not result.can_view_channel:
             return Permission.permission_none
         
-        #store channels do not have text and voice related permissions
+        # store channels do not have text and voice related permissions
         result &= Permission.permission_deny_both
         
         return Permission(result)
-
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        result = self._permissions_for_roles(roles)
+        if not result.can_view_channel:
+            return Permission.permission_none
+        
+        # store channels do not have text and voice related permissions
+        result &= Permission.permission_deny_both
+    
     @classmethod
     def precreate(cls, channel_id, **kwargs):
         """
@@ -4049,7 +4283,7 @@ class ChannelThread(ChannelGuildBase):
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``              |
+        | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+

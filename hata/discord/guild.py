@@ -1858,15 +1858,20 @@ class Guild(DiscordEntity, immortal=True):
         if user.id == self.owner_id:
             return Permission.permission_all
         
-        base = self.roles[self.id].permissions
+        default_role = self.roles.get(self.id)
+        if default_role is None:
+            base = 0
+        else:
+            base = default_role.permissions
         
         try:
-            roles = user.guild_profiles[self].roles
+            guild_profile = user.guild_profiles[self]
         except KeyError:
-            if type(user) in (Webhook, WebhookRepr) and user.guild is self:
+            if isinstance(user, (Webhook, WebhookRepr)) and user.guild is self:
                 return base
             return Permission.permission_none
         
+        roles = guild_profile.roles
         if (roles is not None):
             roles.sort()
             for role in roles:
@@ -1910,6 +1915,38 @@ class Guild(DiscordEntity, immortal=True):
         permissions = self.permissions_for(user)
         cache_perm[user.id] = permissions
         return permissions
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        default_role = self.roles.get(self.id)
+        if default_role is None:
+            base = 0
+        else:
+            base = default_role.permissions
+        
+        for role in sorted(roles):
+            if role.guild is self:
+                base |= role.permissions
+        
+        if Permission.can_administrator(base):
+            return Permission.permission_all
+        
+        return Permission(base)
     
     def _update(self, data):
         """

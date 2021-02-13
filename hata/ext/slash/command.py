@@ -901,7 +901,7 @@ class SlashCommand(object):
         
         Guild commands have ``.guild_ids`` set as `None`.
     name : `str`
-        Application command name. It's length can be in range [3:32].
+        Application command name. It's length can be in range [1:32].
     
     Notes
     -----
@@ -2663,7 +2663,7 @@ class Slasher(EventHandlerBase):
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [3:32].
+            - If `name` length is out of the expected range [1:32].
         """
         if isinstance(func, Router):
             func = func[0]
@@ -2748,7 +2748,7 @@ class Slasher(EventHandlerBase):
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [3:32].
+            - If `name` length is out of the expected range [1:32].
         """
         command = SlashCommand.from_class(klass)
         if isinstance(command, Router):

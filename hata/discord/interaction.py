@@ -51,7 +51,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ------
         AssertionError
             - If `name` was not given as `str` instance.
-            - If `name` length is out of range [3:32].
+            - If `name` length is out of range [1:32].
             - If `name` contains unexpected character.
             - If `description` was not given as `str` instance.
             - If `description` length is out of range [1:100].
@@ -64,8 +64,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
             name_ln = len(name)
-            if name_ln < 3 or name_ln > 32:
-                raise AssertionError(f'`name` length can be in range [3:32], got {name_ln!r}; {name!r}.')
+            if name_ln < 1 or name_ln > 32:
+                raise AssertionError(f'`name` length can be in range [1:32], got {name_ln!r}; {name!r}.')
             
             if not is_valid_application_command_name(name):
                 raise AssertionError(f'`name` contains an unexpected character; Expected pattern: '

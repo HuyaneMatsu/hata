@@ -13,7 +13,7 @@ we cannot overpass.
 Discord sets the following limitations:
 
 - Parameter count to [0:10].
-- Command name length to [3:32].
+- Command name length to [1:32].
 - Command description length to [2:100].
 - Choice amount to [1:10].
 - Choice name length to [1:100].

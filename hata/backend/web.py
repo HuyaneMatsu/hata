@@ -1632,11 +1632,111 @@ class AppBase(object):
         The added rules to the application or blueprint. The keys are their endpoint name.
     error_handler_functions : `None` or `dict` of (`int`, `async-callable`)
         Global error handlers of the application or blueprint.
+        
+        To register an error handler use the ``.errorhandler`` decorator.
     error_handler_functions_by_blueprint : `None` or `dict` of (`str`, `dict` of (`int`, `async-callable`))
-        Error handlers for the application, where the keys are the blueprint's names.
+        Error handlers for each blue print fo teh application.
+        
+        To register an error handler use the ``.errorhandler`` decorator.
+    before_request_functions : `None` or `list` of `async-callable`
+        Functions which should run before a request is done.
+        
+        To register a before request function use the ``.before_request`` decorator.
+    before_request_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `async-callable`)
+        Functions which should be called before a respective blue print's request is dispatched.
+        
+        To register a before request function use the ``.before_request`` decorator.
+    
+    after_request_functions : `None` or `list` of `async-callable`
+        Functions which should run after a request is done.
+        
+        To register a after request function use the ``.after_request`` decorator.
+    after_request_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `async-callable`)
+        Functions which should be called before a respective blue print's request is dispatched.
+        
+        To register a before request function use the ``.after_request`` decorator.
+    
+    teardown_request_functions : `None` or `list` of `async-callable`
+        Functions which should run after a request is done even if exception occurs.
+        
+        To register a teardown request function use the ``.teardown_request`` decorator.
+    teardown_request_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `async_callable`)
+        Functions which should be called before a respective blue print's request is dispatched even if exception
+        occurs.
+        
+        To register a teardown request function use the ``.teardown_request`` decorator.
+    template_context_processors : `None` or `list of `async-callable`
+        Functions which are called to populate template context without passing them any parameter. Each should return
+        a dictionary with what the template dictionary is updated with.
+        
+        To register template context processor, use the ``.context_processor`` decorator.
+    template_context_processors_by_blueprint : `None` or `dict` of (`str`, `Any`)
+        A dictionary of functions for each template which are called to populate template context without passing them
+        any parameter. Each should return a dictionary with what the template dictionary is updated with.
+        
+        To register template context processor, use the ``.context_processor`` decorator.
+    url_value_preprocessors : `None` or `list` of `async-callable`
+        Preprocessors, which can modify the parameters matched from the url.
+        
+        To registered them use the ``.url_value_preprocessor`` decorator.
+        
+        The following parameters are passed to each url value preprocessor:
+        +-------------------+---------------------------+-----------------------------------------------+
+        | Respective name   | Type                      | Description                                   |
+        +===================+===========================+===============================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.    |
+        |                   |                           | Set as `None` if exception occurred.          |
+        +-------------------+---------------------------+-----------------------------------------------+
+        | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
+        +-------------------+---------------------------+-----------------------------------------------+
+        
+    url_value_preprocessors_by_blueprint : `None` or `dict` of (`str`, list` of `async-callable`) items
+        Preprocessors by blueprint which can modify the parameters matched from the url.
+        
+        To registered them use the ``.url_value_preprocessor`` decorator.
+        
+        The following parameters are passed to each url value preprocessor:
+        +-------------------+---------------------------+-----------------------------------------------+
+        | Respective name   | Type                      | Description                                   |
+        +===================+===========================+===============================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.    |
+        |                   |                           | Set as `None` if exception occurred.          |
+        +-------------------+---------------------------+-----------------------------------------------+
+        | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
+        +-------------------+---------------------------+-----------------------------------------------+
+    url_default_functions : `None` or `dict` of (`str` of `callable`)
+        Keyword argument preprocessors when calling ``url_for`` on it's parameters.
+        
+        To register them use the ``.url_defaults`` method.
+        
+        The following parameters are passed to the url default functions:
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | Respective name   | type                      | Description                                           |
+        +===================+===========================+=======================================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
+        +-------------------+---------------------------+-------------------------------------------------------+
+    url_default_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `callable`) items
+        Keyword argument preprocessors by blueprint name when calling ``url_for`` on it's parameters.
+        
+        To register them use the ``.url_defaults`` method.
+        
+        The following parameters are passed to the url default functions:
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | Respective name   | type                      | Description                                           |
+        +===================+===========================+=======================================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
+        +-------------------+---------------------------+-------------------------------------------------------+
     """
     __slots__ = ('import_name', 'template_folder', 'root_path', 'static_folder', 'static_url_path', 'rules',
-        'error_handler_functions', 'error_handler_functions_by_blueprint')
+        'error_handler_functions', 'error_handler_functions_by_blueprint', 'before_request_functions',
+        'before_request_functions_by_blueprint', 'after_request_functions', 'after_request_functions_by_blueprint',
+        'teardown_request_functions', 'teardown_request_functions_by_blueprint', 'template_context_processors',
+        'template_context_processors_by_blueprint', 'url_value_preprocessors', 'url_value_preprocessors_by_blueprint',
+        'url_default_functions', 'url_default_functions_by_blueprint')
     
     def __new__(cls, import_name, template_folder, root_path, static_folder, static_url_path):
         """
@@ -1701,6 +1801,23 @@ class AppBase(object):
         self.error_handler_functions = None
         self.error_handler_functions_by_blueprint = None
         
+        self.before_request_functions = None
+        self.before_request_functions_by_blueprint = None
+        
+        self.after_request_functions = None
+        self.after_request_functions_by_blueprint = None
+        
+        self.teardown_request_functions = None
+        self.teardown_request_functions_by_blueprint = None
+        
+        self.template_context_processors = None
+        self.template_context_processors_by_blueprint = None
+        
+        self.url_value_preprocessors = None
+        self.url_value_preprocessors_by_blueprint = None
+        
+        self.url_default_functions = None
+        self.url_default_functions_by_blueprint = None
         return self
 
 class BluePrint(AppBase):

@@ -44,12 +44,19 @@ class DiscordEntityMeta(type):
         
         parent_count = len(class_parents)
         if parent_count > 0:
-            parent = class_parents[0]
-            final_slots.update(getattr(parent, '__slots__', ()))
-            
-            #Sublasses might miss hash!
+            direct_parent = class_parents[0]
+        else:
+            direct_parent = None
+        
+        for class_parent in class_parents[1:]:
+            if isinstance(class_parent, DiscordEntity):
+                raise RuntimeError(f'`{class_name}` wanted to inherit `{DiscordEntity.__name__}` not as it\'s direct '
+                    f'(1st) parent type.')
+        
+        if (direct_parent is not None):
+            # Subclasses might miss hash!
             if class_attributes.get('__hash__', None) is None:
-                class_attributes['__hash__'] = parent.__hash__
+                class_attributes['__hash__'] = direct_parent.__hash__
             
             # Remove weakref to avoid error
             try:
@@ -59,8 +66,8 @@ class DiscordEntityMeta(type):
             
             index = 1
             while index < parent_count:
-                parent = class_parents[index]
-                final_slots.update(getattr(parent, f'_{parent.__name__}__slots', ()))
+                class_parent = class_parents[index]
+                final_slots.update(getattr(class_parent, f'_{class_parent.__name__}__slots', ()))
                 index += 1
         
         slots = class_attributes.get('__slots__',)
@@ -68,13 +75,13 @@ class DiscordEntityMeta(type):
             final_slots.update(slots)
         
         if immortal:
-            for parent in class_parents:
-                if hasattr(parent, '__weakref__'):
+            for class_parent in class_parents:
+                if hasattr(class_parent, '__weakref__'):
                     break
             else:
                 final_slots.add('__weakref__')
         
-        if 'id' not in class_attributes:
+        if (direct_parent is not None) and ('id' not in class_attributes) and (direct_parent.id is DiscordEntity.id):
             final_slots.add('id')
         
         slotters = []
@@ -103,7 +110,7 @@ class DiscordEntityMeta(type):
         
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
-class DiscordEntity(object, metaclass = DiscordEntityMeta):
+class DiscordEntity(object, metaclass=DiscordEntityMeta):
     """
     Base class for Discord entities.
     
@@ -118,7 +125,7 @@ class DiscordEntity(object, metaclass = DiscordEntityMeta):
         
         Returns
         -------
-        id . `int`
+        id : `int`
         """
         return 0
     

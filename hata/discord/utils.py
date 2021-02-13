@@ -627,10 +627,7 @@ if (relativedelta is not None):
             parts.append(str(value))
             parts.append(' ')
             
-            if value == 1:
-                name = name_pair[0]
-            else:
-                name = name_pair[1]
+            name = name_pair[value!=1]
             
             parts.append(name)
             parts.append(', ')

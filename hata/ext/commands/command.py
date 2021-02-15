@@ -1947,7 +1947,7 @@ def test_name_rule(rule, rule_name, nullable):
     
     non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
     if non_reserved_positional_argument_count != 1:
-        raise TypeError(f'`{rule_name}` should accept `2` non reserved positional arguments, meanwhile it expects '
+        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional arguments, meanwhile it expects '
             f'{non_reserved_positional_argument_count}.')
     
     if analyzed.accepts_args():

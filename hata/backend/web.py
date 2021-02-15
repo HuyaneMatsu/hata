@@ -113,7 +113,7 @@ class HTTPRequestHandler(ProtocolBase):
         Returns
         -------
         request_message : ``RawRequestMessage`` or `None`
-            Returns `None` if reading teh request fails.
+            Returns `None` if reading the request fails.
         """
         try:
             request_message = await self.set_payload_reader(self._read_http_request())
@@ -929,26 +929,27 @@ async def _handler_not_found():
 
 class _RouteAdder(object):
     """
-    Route adder returned by ``WebApp.route`` to add a route to it as a decorator.
+    Route adder returned by ``WebBase.route`` to add a route to it as a decorator.
     
     Attributes
     ----------
-    parent : ``WebApp``
-        The parent webapp.
-    rule : `str`
-        The url rule as string.
     endpoint  : `None` or `str`
         The internal endpoint of the url. Defaults to the name of the added function.
     options : `dict` of (`str`, `Any`) items.
         Additional options to be forward to the underlying ``Rule`` object.
+    parent : ``AppBase``
+        The parent webapp.
+    rule : `str`
+        The url rule as string.
     """
+    __slots__ = ('endpoint', 'options', 'parent', 'rule')
     def __new__(cls, parent, rule, endpoint, options):
         """
         Creates a new ``_RouteAdder object with the given parameters.
         
         Parameters
         ----------
-        parent : ``WebApp``
+        parent : ``AppBase``
             The parent webapp.
         rule : `str`
             The url rule as string.
@@ -966,7 +967,7 @@ class _RouteAdder(object):
     
     def __call__(self, view_func):
         """
-        Adds the given `view_func` and the stored parameters to the parent ``WebApp`` calling it's `.add_url_rule`
+        Adds the given `view_func` and the stored parameters to the parent ``AppBase`` calling it's `.add_url_rule`
         method.
         
         Parameters
@@ -981,6 +982,58 @@ class _RouteAdder(object):
         """
         return self.parent.add_url_rule(rule=self.rule, endpoint=self.endpoint, view_func=view_func,
             provide_automatic_options=None, **self.options)
+
+
+class _ErrorHandlerAdder(object):
+    """
+    Error handler adder returned by ``WebBase.error_handler`` to add an error handler to it as a decorator.
+    
+    Attributes
+    ----------
+    error_code : `int`
+        Respective http error code for th/e request.
+    parent : ``AppBase``
+        The parent webapp.
+    """
+    __slots__ = ('error_code', 'parent',)
+    
+    def __new__(cls, parent, error_code):
+        """
+        Creates a new ``_ErrorHandlerAdder`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        parent : ``AppBase``
+            The parent webapp.
+        error_code : `int`
+            Respective http error code for th/e request.
+        """
+        self = object.__new__(cls)
+        self.parent = parent
+        self.error_code = error_code
+        return self
+    
+    def __call__(self, error_handler_function):
+        """
+        Adds an `error_handler` with the stored parent ``AppBase`` to it.
+        
+        Parameters
+        ----------
+        error_handler_function : `async-callable`
+            An async function to call when an http exception is raised.
+            
+            Should accept following parameters:
+            +-------------------+-------------------+---------------------------+
+            | Respective name   | Type              | Description               |
+            +===================+===================+===========================+
+            | exception         | ``AbortRequest``  | The occurred exception.   |
+            +-------------------+-------------------+---------------------------+
+        
+        Returns
+        -------
+        error_handler_function : `async-callable`
+        """
+        return self.parent._error_handler(self.error_code, error_handler_function)
 
 def _validate_subdomain(subdomain):
     """
@@ -1290,12 +1343,12 @@ def _validate_template_folder(template_folder):
     
     Parameters
     ----------
-    template_folder : `str` or `None`
+    template_folder : `None` or `str`
         The template folder's value.
     
     Returns
     -------
-    template_folder : `str` or `None`
+    template_folder : `None` or `str`
         The template folder's validated value.
     
     Raises
@@ -1323,12 +1376,12 @@ def _validate_root_path(root_path, import_name):
     
     Parameters
     ----------
-    root_path : `str` or `None`
+    root_path : `None` or `str`
         The given root path.
     
     Returns
     -------
-    root_path : `str` or `None`
+    root_path : `None` or `str`
         The validated root path.
     
     Raises
@@ -1389,12 +1442,12 @@ def _validate_static_folder(static_folder):
     
     Parameters
     ----------
-    static_folder : `str` or `None`
+    static_folder : `None` or `str`
         Static folder value to validate.
     
     Returns
     -------
-    static_folder : `str` or `None`
+    static_folder : `None` or `str`
         The validated static folder value.
     
     Raises
@@ -1428,7 +1481,7 @@ def _validate_static_url_path(static_url_path):
     
     Returns
     -------
-    static_url_path : `str` or `None`
+    static_url_path : `None` or `str`
         The validated static url path value.
     
     Raises
@@ -1453,7 +1506,7 @@ def _validate_url_prefix(url_prefix):
     
     Parameters
     ---------
-    url_prefix : `str` or `None`
+    url_prefix : `None` or `str`
         Url prefix for a blueprint.
     
     Returns
@@ -1612,71 +1665,141 @@ ROUTE_METHOD_NOT_ALLOWED = Rule((), _handler_method_not_allowed, 'method_not_all
 ROUTE_NOT_FOUND_NOT_ALLOWED = Rule((), _handler_not_found, 'not found', None, None, None)
 
 
+def _analyze_handler(handler, handler_name, expected_parameter_count):
+    """
+    Analyzes a handler.
+    
+    Parameters
+    ----------
+    handler : `async-callable`
+        The handler to analyze.
+    handler_name : `str`
+        The handler's name.
+    expected_parameter_count : `int`
+        The parameter amount what the handler
+    
+    Raises
+    ------
+    TypeError
+        - If `handler` is not `callable`.
+        - If `handler` is not `async-callable`.
+        - If `handler` accepts bad amount of parameters.
+    """
+    analyzed = CallableAnalyzer(handler)
+    if not analyzed.is_async():
+        raise TypeError(f'`{handler_name}` can be given as `async-callable`, got {analyzed.__class__.__name__}; '
+            f'{analyzed!r}.')
+    
+    non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
+    if non_reserved_positional_argument_count != expected_parameter_count:
+        raise TypeError(f'`{handler_name}` should accept `{expected_parameter_count}` non reserved positional '
+            f'arguments, meanwhile it expects {non_reserved_positional_argument_count}.')
+    
+    if analyzed.accepts_args():
+        raise TypeError(f'`{handler_name}` should accept not expect args, meanwhile it does.')
+    
+    if analyzed.accepts_kwargs():
+        raise TypeError(f'`{handler_name}` should accept not expect kwargs, meanwhile it does.')
+    
+    non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
+    if non_default_keyword_only_argument_count:
+        raise TypeError(f'`{handler_name}` should accept `0` keyword only arguments, meanwhile it expects '
+            f'{non_default_keyword_only_argument_count}.')
+
+
 class AppBase(object):
     """
-    Base class for ``BluePrint``-s and for ``WebApp``-s.
+    Base class for ``Blueprint``-s and for ``WebApp``-s.
     
     Attributes
     ----------
-    import_name : `str`
-        The name of the package or module that this app belongs to.
-    template_folder : `None` or `str`
-        The folder from where the templates should be loaded from.
-    root_path : `str`
-        Absolute path to the package on the filesystem.
-    static_folder : `str` or `None`
-        Absolute path to the static file's folder.
-    static_url_path : `str` or `None`
-        Url path to static files. By defaults relates to `static_folder`.
-    rules : `dict` of (`str`, `Any`)
-        The added rules to the application or blueprint. The keys are their endpoint name.
-    error_handler_functions : `None` or `dict` of (`int`, `async-callable`)
-        Global error handlers of the application or blueprint.
+    after_request_functions : `None` or `list` of `async-callable`
+        Functions which are ensured to modify the response object.
         
-        To register an error handler use the ``.errorhandler`` decorator.
-    error_handler_functions_by_blueprint : `None` or `dict` of (`str`, `dict` of (`int`, `async-callable`))
-        Error handlers for each blue print fo teh application.
+        To register a after request function use the ``.after_request`` decorator.
         
-        To register an error handler use the ``.errorhandler`` decorator.
+        The following parameters are passed to each after request function:
+        +-------------------+-----------------------+-----------------------+
+        | Respective name   | Type                  | Description           |
+        +===================+=======================+=======================+
+        | response          | ``ServerResponse``    | The response object.  |
+        +-------------------+-----------------------+-----------------------+
+    
     before_request_functions : `None` or `list` of `async-callable`
         Functions which should run before a request is done.
         
         To register a before request function use the ``.before_request`` decorator.
-    before_request_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `async-callable`)
-        Functions which should be called before a respective blue print's request is dispatched.
         
-        To register a before request function use the ``.before_request`` decorator.
+        If any before request processor returns a non `None` value, then the request processing will stop and that
+        return will be sent as response.
+        
+        No parameters are passed to before request functions.
     
-    after_request_functions : `None` or `list` of `async-callable`
-        Functions which should run after a request is done.
+    blueprints : `None` or `dict` of (`str`, `tuple` (``BlueprintState``, ``Blueprint``)
+        Registered blueprints to the app.
+    
+    error_handler_functions : `None` or `dict` of (`int`, `async-callable`) items
+        Error handlers which run when an http exception is raised from a view.
         
-        To register a after request function use the ``.after_request`` decorator.
-    after_request_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `async-callable`)
-        Functions which should be called before a respective blue print's request is dispatched.
-        
-        To register a before request function use the ``.after_request`` decorator.
+        To register an error handler use the ``.error_handler`` decorator.
+    
+        The following parameters are passed to each error handler:
+        +-------------------+-------------------+---------------------------+
+        | Respective name   | Type              | Description               |
+        +===================+===================+===========================+
+        | exception         | ``AbortRequest``  | The occurred exception.   |
+        +-------------------+-------------------+---------------------------+
+    
+    import_name : `str`
+        The name of the package or module that this app belongs to.
+    root_path : `str`
+        Absolute path to the package on the filesystem.
+    rules : `dict` of (`str`, `Any`)
+        The added rules to the application or blueprint. The keys are their endpoint name.
+    static_folder : `None` or `str`
+        Absolute path to the static file's folder.
+    static_url_path : `None` or `str`
+        Url path to static files. By defaults relates to `static_folder`.
     
     teardown_request_functions : `None` or `list` of `async-callable`
         Functions which should run after a request is done even if exception occurs.
         
         To register a teardown request function use the ``.teardown_request`` decorator.
-    teardown_request_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `async_callable`)
-        Functions which should be called before a respective blue print's request is dispatched even if exception
-        occurs.
         
-        To register a teardown request function use the ``.teardown_request`` decorator.
+        The following parameters are passed to each teardown request:
+        +-------------------+---------------------------+-----------------------------------+
+        | Respective name   | Type                      | Description                       |
+        +===================+===========================+===================================+
+        | exception         | `None` or `BaseException` | The occurred exception if any.    |
+        +-------------------+---------------------------+-----------------------------------+
+        
     template_context_processors : `None` or `list of `async-callable`
-        Functions which are called to populate template context without passing them any parameter. Each should return
-        a dictionary with what the template dictionary is updated with.
+        Functions which are called to populate template context. Each should return a dictionary with what the template
+        dictionary is updated with.
         
         To register template context processor, use the ``.context_processor`` decorator.
-    template_context_processors_by_blueprint : `None` or `dict` of (`str`, `Any`)
-        A dictionary of functions for each template which are called to populate template context without passing them
-        any parameter. Each should return a dictionary with what the template dictionary is updated with.
         
-        To register template context processor, use the ``.context_processor`` decorator.
+        No parameters are passed to template context processors.
+    
+    template_folder : `None` or `str`
+        The folder from where the templates should be loaded from.
+    
+    url_default_functions : `None` or `list` of `async-callable`
+        Keyword argument preprocessors for ``url_for``.
+        
+        To register them use the ``.url_defaults`` method.
+        
+        The following parameters are passed to the url default functions:
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | Respective name   | type                      | Description                                           |
+        +===================+===========================+=======================================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
+        +-------------------+---------------------------+-------------------------------------------------------+
+    
     url_value_preprocessors : `None` or `list` of `async-callable`
-        Preprocessors, which can modify the parameters matched from the url.
+        Preprocessors which can modify the parameters matched from the url.
         
         To registered them use the ``.url_value_preprocessor`` decorator.
         
@@ -1689,54 +1812,10 @@ class AppBase(object):
         +-------------------+---------------------------+-----------------------------------------------+
         | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
         +-------------------+---------------------------+-----------------------------------------------+
-        
-    url_value_preprocessors_by_blueprint : `None` or `dict` of (`str`, list` of `async-callable`) items
-        Preprocessors by blueprint which can modify the parameters matched from the url.
-        
-        To registered them use the ``.url_value_preprocessor`` decorator.
-        
-        The following parameters are passed to each url value preprocessor:
-        +-------------------+---------------------------+-----------------------------------------------+
-        | Respective name   | Type                      | Description                                   |
-        +===================+===========================+===============================================+
-        | endpoint          | `None` or `str`           | The endpoint what matched the request url.    |
-        |                   |                           | Set as `None` if exception occurred.          |
-        +-------------------+---------------------------+-----------------------------------------------+
-        | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
-        +-------------------+---------------------------+-----------------------------------------------+
-    url_default_functions : `None` or `dict` of (`str` of `callable`)
-        Keyword argument preprocessors when calling ``url_for`` on it's parameters.
-        
-        To register them use the ``.url_defaults`` method.
-        
-        The following parameters are passed to the url default functions:
-        +-------------------+---------------------------+-------------------------------------------------------+
-        | Respective name   | type                      | Description                                           |
-        +===================+===========================+=======================================================+
-        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
-        +-------------------+---------------------------+-------------------------------------------------------+
-        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
-        +-------------------+---------------------------+-------------------------------------------------------+
-    url_default_functions_by_blueprint : `None` or `dict` of (`str`, `list` of `callable`) items
-        Keyword argument preprocessors by blueprint name when calling ``url_for`` on it's parameters.
-        
-        To register them use the ``.url_defaults`` method.
-        
-        The following parameters are passed to the url default functions:
-        +-------------------+---------------------------+-------------------------------------------------------+
-        | Respective name   | type                      | Description                                           |
-        +===================+===========================+=======================================================+
-        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
-        +-------------------+---------------------------+-------------------------------------------------------+
-        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
-        +-------------------+---------------------------+-------------------------------------------------------+
     """
-    __slots__ = ('import_name', 'template_folder', 'root_path', 'static_folder', 'static_url_path', 'rules',
-        'error_handler_functions', 'error_handler_functions_by_blueprint', 'before_request_functions',
-        'before_request_functions_by_blueprint', 'after_request_functions', 'after_request_functions_by_blueprint',
-        'teardown_request_functions', 'teardown_request_functions_by_blueprint', 'template_context_processors',
-        'template_context_processors_by_blueprint', 'url_value_preprocessors', 'url_value_preprocessors_by_blueprint',
-        'url_default_functions', 'url_default_functions_by_blueprint')
+    __slots__ = ('after_request_functions', 'before_request_functions', 'blueprints', 'error_handler_functions',
+        'import_name', 'root_path', 'rules', 'static_folder', 'static_url_path', 'teardown_request_functions',
+        'template_context_processors', 'template_folder', 'url_default_functions', 'url_value_preprocessors',)
     
     def __new__(cls, import_name, template_folder, root_path, static_folder, static_url_path):
         """
@@ -1797,104 +1876,16 @@ class AppBase(object):
         self.static_url_path = static_url_path
         
         self.rules = {}
+        self.blueprints = None
         
         self.error_handler_functions = None
-        self.error_handler_functions_by_blueprint = None
-        
         self.before_request_functions = None
-        self.before_request_functions_by_blueprint = None
-        
         self.after_request_functions = None
-        self.after_request_functions_by_blueprint = None
-        
         self.teardown_request_functions = None
-        self.teardown_request_functions_by_blueprint = None
-        
         self.template_context_processors = None
-        self.template_context_processors_by_blueprint = None
-        
         self.url_value_preprocessors = None
-        self.url_value_preprocessors_by_blueprint = None
-        
         self.url_default_functions = None
-        self.url_default_functions_by_blueprint = None
-        return self
-
-class BluePrint(AppBase):
-    """
-    Represents a blueprint, a collection of routes and other app-related functions that can be registered on a real
-    application later.
-    
-    Attributes
-    ----------
-    import_name : `str`
-        The name of the package or module that this app belongs to.
-    template_folder : `None` or `str`
-        The folder from where the templates should be loaded from.
-    root_path : `str`
-        Absolute path to the package on the filesystem.
-    static_folder : `str` or `None`
-        Absolute path to the static file's folder.
-    static_url_path : `str` or `None`
-        Url path to static files. By defaults relates to `static_folder`.
-    url_prefix : `None` or `tuple` of `tuple` (`str`, `int`)
-        Url prefix for all the routes of the blueprint. Set as `None` if not applicable.
-    subdomain : `str` or `None`
-        Subdomain, what the routes of the blueprint gonna match.
-    parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
-        Parameters which the routes of the blueprint will get by default.
-    """
-    __slots__ = ('url_prefix', 'subdomain', 'parameters')
-    def __new__(cls, import_name, *, template_folder=None, root_path=None, static_folder=None,
-            static_url_path=None, url_prefix=None, subdomain=None, url_defaults=None):
-        """
-        Creates a new ``BluePrint`` instance.
         
-        Parameters
-        ----------
-        import_name : `str`
-            The name of the package or module that this app belongs to.
-        template_folder : `None` or `str`, Optional
-            The folder from where the templates should be loaded from.
-        root_path : `None` or `str`, Optional
-            Absolute path to the package on the filesystem.
-        static_folder : `None` or `str`, Optional
-            Path on top of the application route path for static files, which can be accessed trough the
-            `static_url_path`. Defaults to `None`.
-        static_url_path : `None` or `str`, Optional
-            Url path to static files. Defaults to `static_folder`'s value.
-        url_prefix : `str` or `None`, Optional
-            Url prefix for all the routes registered to teh blueprint.
-        subdomain : `str` or `None`
-            Subdomain, what the routes of the blueprint gonna match.
-        url_defaults : `None`, `dict` of (`str`, `Any`) items or (`set`, `list`, `tuple`) of (`str`, `Any`) items
-            Parameters which the routes of the blueprint will get by default.
-        
-        Raises
-        ------
-        ImportError
-            Exception occurred meanwhile finding route path from import name.
-        TypeError
-            - If `import_name` was not given as `st` instance.
-            - If `template_folder` was not given neither as `None` or `str` instance.
-            - If `root_path` was not given neither as `None` or `str` instance.
-            - If `static_folder` was not given neither as `None` nor `str` instance.
-            - If `static_url_path` was not given either as `None` or `str` instance.
-            - If `url_prefix` was neither given as `None` or as `str` instance.
-            - If `url_prefix` contains a `path` rule part.
-            - If `subdomain` was not given neither as `None` or `str` instance.
-        ValueError
-            - If `import_name` was given as an empty string.
-            - If `root_path` was given as an empty string.
-        """
-        url_prefix = _validate_url_prefix(url_prefix)
-        subdomain = _validate_subdomain(subdomain)
-        parameters = _validate_parameters(url_defaults, 'url_defaults')
-        
-        self = AppBase.__new__(cls, import_name, template_folder, root_path, static_folder, static_url_path)
-        self.url_prefix = url_prefix
-        self.subdomain = subdomain
-        self.parameters = parameters
         return self
     
     def route(self, rule, endpoint=None, **options):
@@ -2032,6 +2023,481 @@ class BluePrint(AppBase):
         rule = Rule(rule_processed, view_func, endpoint, request_methods, parameters, subdomain)
         self._add_rule(rule)
         return rule
+    
+    def after_request(self, after_request_function):
+        """
+        Registers an after request function. After request functions are ensured to modify the response object.
+        
+        Parameters
+        ----------
+        after_request_function : `async-callable`
+            Should accept the following parameters
+            +-------------------+-----------------------+-----------------------+
+            | Respective name   | Type                  | Description           |
+            +===================+=======================+=======================+
+            | response          | ``ServerResponse``    | The response object.  |
+            +-------------------+-----------------------+-----------------------+
+        
+        Returns
+        -------
+        after_request_function : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `after_request_function` was not given as `callable`.
+            - If `after_request_function` was not given as `async-callable`.
+            - If `after_request_function` accepts less or more than 1 positional parameters.
+        """
+        _analyze_handler(after_request_function, 'after_request_function', 1)
+        after_request_functions = self.after_request_functions
+        if after_request_functions is None:
+            self.after_request_functions = after_request_functions = []
+        
+        after_request_functions.append(after_request_function)
+        
+        return after_request_function
+    
+    def before_request(self, before_request_function):
+        """
+        Registers a function which should run before a request is done.
+        
+        If any before request processor returns a non `None` value, then the request processing will stop and that
+        return will be sent as response.
+        
+        Parameters
+        ----------
+        before_request_function : `async-callable`
+            No parameters are passed to before request functions.
+        
+        Returns
+        -------
+        before_request_function : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `before_request_function` was not given as `callable`.
+            - If `before_request_function` was not given as `async-callable`.
+            - If `before_request_function` accepts less or more than 1 positional parameters.
+        """
+        _analyze_handler(before_request_function, 'before_request_function', 0)
+        before_request_functions = self.before_request_functions
+        if before_request_functions is None:
+            self.after_request_functions = before_request_functions = []
+        
+        before_request_functions.append(before_request_function)
+        
+        return before_request_function
+    
+    def error_handler(self, error_code):
+        """
+        Registers an error handler which run when an http exception is raised from a view.
+        
+        Parameters
+        ----------
+        error_code : `int`
+            Http error code.
+        
+        Raises
+        ------
+        TypeError
+            If `error_code` was nto given as `int` instance.
+        
+        Returns
+        -------
+        route_adder : ``_ErrorHandlerAdder``
+        """
+        if type(error_code) is int:
+            pass
+        elif isinstance(error_code, int):
+            error_code = int(error_code)
+        else:
+            raise TypeError(f'`error_code` can be given as `int` instance, got {error_code.__class__.__name__}.')
+        
+        return _ErrorHandlerAdder(self, error_code)
+    
+    def _error_handler(self, error_code, error_handler_function):
+        """
+        Registers an error handler to the webapp. Called by ``_ErrorHandlerAdder``, what is returned by
+        ``.error_handler``.
+        
+        Parameters
+        ----------
+        error_code : `int`
+            Http error code. Should be already validated.
+        error_handler_function : `async-callable`
+            An async function to call when an http exception is raised.
+            
+            Should accept following parameters:
+            +-------------------+-------------------+---------------------------+
+            | Respective name   | Type              | Description               |
+            +===================+===================+===========================+
+            | exception         | ``AbortRequest``  | The occurred exception.   |
+            +-------------------+-------------------+---------------------------+
+        
+        Returns
+        -------
+        error_handler_function : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `error_handler_function` was not given as `callable`.
+            - If `error_handler_function` was not given as `async-callable`.
+            - If `error_handler_function` accepts less or more than 1 positional parameters.
+        """
+        _analyze_handler(error_handler_function, 'error_handler_function', 0)
+        error_handler_functions = self.error_handler_functions
+        if error_handler_functions is None:
+            self.error_handler_functions = error_handler_functions = {}
+        
+        error_handler_functions[error_code] = error_handler_function
+        
+        return error_handler_function
+    
+    def url_defaults(self, url_default_function):
+        """
+        Registers a keyword argument processor for ``url_for``.
+        
+        Parameters
+        ----------
+        url_default_function : `async-callable`
+            Should accept teh following parameters
+            +-------------------+---------------------------+-------------------------------------------------------+
+            | Respective name   | type                      | Description                                           |
+            +===================+===========================+=======================================================+
+            | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
+            +-------------------+---------------------------+-------------------------------------------------------+
+            | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
+            +-------------------+---------------------------+-------------------------------------------------------+
+        
+        Returns
+        -------
+        url_default_function : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `url_default_function` was not given as `callable`.
+            - If `url_default_function` was not given as `async-callable`.
+            - If `url_default_function` accepts less or more than 2 positional parameters.
+        """
+        _analyze_handler(url_default_function, 'url_default_function', 2)
+        url_default_functions = self.url_default_functions
+        if url_default_functions is None:
+            self.url_default_functions = url_default_functions = []
+        
+        url_default_functions.append(url_default_function)
+        
+        return url_default_function
+    
+    def url_value_preprocessor(self, url_value_preprocessor):
+        """
+        Registers a preprocessor which can modify the parameters matched from the url.
+        
+        Parameters
+        ----------
+        url_value_preprocessor : `async-callable`
+            Should accept the following parameters
+            +-------------------+---------------------------+-----------------------------------------------+
+            | Respective name   | Type                      | Description                                   |
+            +===================+===========================+===============================================+
+            | endpoint          | `None` or `str`           | The endpoint what matched the request url.    |
+            |                   |                           | Set as `None` if exception occurred.          |
+            +-------------------+---------------------------+-----------------------------------------------+
+            | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
+            +-------------------+---------------------------+-----------------------------------------------+
+        
+        Returns
+        -------
+        url_value_preprocessor : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `url_value_preprocessor` was not given as `callable`.
+            - If `url_value_preprocessor` was not given as `async-callable`.
+            - If `url_value_preprocessor` accepts less or more than 2 positional parameters.
+        """
+        _analyze_handler(url_value_preprocessor, 'url_value_preprocessor', 2)
+        url_value_preprocessors = self.url_value_preprocessors
+        if url_value_preprocessors is None:
+            self.url_value_preprocessors = url_value_preprocessors = []
+        
+        url_value_preprocessors.append(url_value_preprocessor)
+        
+        return url_value_preprocessor
+    
+    def register_blueprint(self, blueprint, **options):
+        """
+        Registers a blueprint into the application.
+        
+        Parameters
+        ----------
+        parent : ``Blueprint``
+            The parent blueprint or webapp to register self to.
+        **options : Keyword arguments
+            Extra options to overwrite the blueprint's.
+        
+        Other Parameters
+        ----------------
+        url_prefix : `None` or `str`
+            Url prefix for a blueprint.
+        subdomain : `None` or `str`
+            Subdomain for the blueprint.
+        url_defaults : `None`, `dict` of (`str`, `Any`) items or (`set`, `list`, `tuple`) of (`str`, `Any`) items
+            Parameters which the routes of the blueprint will get by default.
+        
+        Raises
+        ------
+        TypeError
+            - If `blueprint was not given as ``Blueprint`` instance.
+            - If `url_prefix` was neither given as `None` or as `str` instance.
+            - If `url_prefix` contains a `path` rule part.
+            - If `subdomain` was not given neither as `None` or `str` instance.
+            - If `parameters` is neither `None`, `dict`, `list`, `set` or `tuple`.
+            - If `parameters` contains a non `tuple` element.
+            - If `options` contains extra parameters.
+        ValueError
+            - If `parameters` contains an element with length of not `2`.
+        """
+        blueprint_state = BlueprintState(self, options)
+        
+        blueprints = self.blueprints
+        if blueprints is None:
+            self.blueprints = blueprints = set()
+        
+        blueprints.add(blueprint_state)
+
+
+class BlueprintState(object):
+    """
+    Represents options with what an a blueprint is added, since a blueprint's options can be overwritten.
+    
+    Attributes
+    ----------
+    blueprint : ``BluePrint``
+        The wrapped blueprint.
+    url_prefix : `None` or `tuple` of `tuple` (`str`, `int`)
+        Url prefix for all the routes of the blueprint. Set as `None` if not applicable.
+    subdomain : `None` or `str`
+        Subdomain, what the routes of the blueprint gonna match.
+    parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Parameters which the routes of the blueprint will get by default.
+    """
+    __slots__ = ('blueprint', 'url_prefix', 'subdomain', 'parameters')
+    def __new__(cls, blueprint, options):
+        """
+        Creates a new blueprint state form the given blueprint and extra options.
+        
+        Raises
+        ------
+        TypeError
+            - If `blueprint was not given as ``Blueprint`` instance.
+            - If `url_prefix` was neither given as `None` or as `str` instance.
+            - If `url_prefix` contains a `path` rule part.
+            - If `subdomain` was not given neither as `None` or `str` instance.
+            - If `parameters` is neither `None`, `dict`, `list`, `set` or `tuple`.
+            - If `parameters` contains a non `tuple` element.
+            - If `options` contains extra parameters.
+        ValueError
+            - If `parameters` contains an element with length of not `2`.
+        """
+        if not isinstance(blueprint, Blueprint):
+            raise TypeError(f'`blueprint` can be only as `{Blueprint.__name__}` instance, got '
+                f'{blueprint.__class__.__name__}.')
+        
+        subdomain = options.pop('subdomain', None)
+        subdomain = _validate_subdomain(subdomain)
+        
+        url_prefix = options.pop('url_prefix', None)
+        url_prefix = _validate_url_prefix(url_prefix)
+        
+        parameters = options.pop('url_defaults', None)
+        parameters = _validate_parameters(parameters, 'url_defaults')
+        
+        if options:
+            raise TypeError(f'`options` contains unexpected parameters: {options!r}.')
+        
+        self = object.__new__(cls)
+        self.blueprint = blueprint
+        self.subdomain = subdomain
+        self.url_prefix = url_prefix
+        self.parameters = parameters
+        return self
+
+
+class Blueprint(AppBase):
+    """
+    Represents a blueprint, a collection of routes and other app-related functions that can be registered on a real
+    application later.
+    
+    Attributes
+    ----------
+    after_request_functions : `None` or `list` of `async-callable`
+        Functions which are ensured to modify the response object.
+        
+        To register a after request function use the ``.after_request`` decorator.
+        
+        The following parameters are passed to each after request function:
+        +-------------------+-----------------------+-----------------------+
+        | Respective name   | Type                  | Description           |
+        +===================+=======================+=======================+
+        | response          | ``ServerResponse``    | The response object.  |
+        +-------------------+-----------------------+-----------------------+
+    
+    before_request_functions : `None` or `list` of `async-callable`
+        Functions which should run before a request is done.
+        
+        To register a before request function use the ``.before_request`` decorator.
+        
+        If any before request processor returns a non `None` value, then the request processing will stop and that
+        return will be sent as response.
+        
+        No parameters are passed to before request functions.
+    
+    blueprints : `None` or `set` of ``BlueprintState``
+        Registered blueprints to the app.
+    
+    error_handler_functions : `None` or `dict` of (`int`, `async-callable`) items
+        Error handlers which run when an http exception is raised from a view.
+        
+        To register an error handler use the ``.error_handler`` decorator.
+    
+        The following parameters are passed to each error handler:
+        +-------------------+-------------------+---------------------------+
+        | Respective name   | Type              | Description               |
+        +===================+===================+===========================+
+        | exception         | ``AbortRequest``  | The occurred exception.   |
+        +-------------------+-------------------+---------------------------+
+    
+    import_name : `str`
+        The name of the package or module that this app belongs to.
+    root_path : `str`
+        Absolute path to the package on the filesystem.
+    rules : `dict` of (`str`, `Any`)
+        The added rules to the application or blueprint. The keys are their endpoint name.
+    static_folder : `None` or `str`
+        Absolute path to the static file's folder.
+    static_url_path : `None` or `str`
+        Url path to static files. By defaults relates to `static_folder`.
+    
+    teardown_request_functions : `None` or `list` of `async-callable`
+        Functions which should run after a request is done even if exception occurs.
+        
+        To register a teardown request function use the ``.teardown_request`` decorator.
+        
+        The following parameters are passed to each teardown request:
+        +-------------------+---------------------------+-----------------------------------+
+        | Respective name   | Type                      | Description                       |
+        +===================+===========================+===================================+
+        | exception         | `None` or `BaseException` | The occurred exception if any.    |
+        +-------------------+---------------------------+-----------------------------------+
+        
+    template_context_processors : `None` or `list of `async-callable`
+        Functions which are called to populate template context. Each should return a dictionary with what the template
+        dictionary is updated with.
+        
+        To register template context processor, use the ``.context_processor`` decorator.
+        
+        No parameters are passed to template context processors.
+    
+    template_folder : `None` or `str`
+        The folder from where the templates should be loaded from.
+    
+    url_default_functions : `None` or `list` of `async-callable`
+        Keyword argument preprocessors for ``url_for``.
+        
+        To register them use the ``.url_defaults`` method.
+        
+        The following parameters are passed to the url default functions:
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | Respective name   | type                      | Description                                           |
+        +===================+===========================+=======================================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
+        +-------------------+---------------------------+-------------------------------------------------------+
+    
+    url_value_preprocessors : `None` or `list` of `async-callable`
+        Preprocessors which can modify the parameters matched from the url.
+        
+        To registered them use the ``.url_value_preprocessor`` decorator.
+        
+        The following parameters are passed to each url value preprocessor:
+        +-------------------+---------------------------+-----------------------------------------------+
+        | Respective name   | Type                      | Description                                   |
+        +===================+===========================+===============================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.    |
+        |                   |                           | Set as `None` if exception occurred.          |
+        +-------------------+---------------------------+-----------------------------------------------+
+        | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
+        +-------------------+---------------------------+-----------------------------------------------+
+    
+    url_prefix : `None` or `tuple` of `tuple` (`str`, `int`)
+        Url prefix for all the routes of the blueprint. Set as `None` if not applicable.
+    subdomain : `None` or `str`
+        Subdomain, what the routes of the blueprint gonna match.
+    parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Parameters which the routes of the blueprint will get by default.
+    """
+    __slots__ = ('url_prefix', 'subdomain', 'parameters')
+    def __new__(cls, import_name, *, template_folder=None, root_path=None, static_folder=None,
+            static_url_path=None, url_prefix=None, subdomain=None, url_defaults=None):
+        """
+        Creates a new ``Blueprint`` instance.
+        
+        Parameters
+        ----------
+        import_name : `str`
+            The name of the package or module that this app belongs to.
+        template_folder : `None` or `str`, Optional
+            The folder from where the templates should be loaded from.
+        root_path : `None` or `str`, Optional
+            Absolute path to the package on the filesystem.
+        static_folder : `None` or `str`, Optional
+            Path on top of the application route path for static files, which can be accessed trough the
+            `static_url_path`. Defaults to `None`.
+        static_url_path : `None` or `str`, Optional
+            Url path to static files. Defaults to `static_folder`'s value.
+        url_prefix : `None` or `str`, Optional
+            Url prefix for all the routes registered to teh blueprint.
+        subdomain : `None` or `str`
+            Subdomain, what the routes of the blueprint gonna match.
+        url_defaults : `None`, `dict` of (`str`, `Any`) items or (`set`, `list`, `tuple`) of (`str`, `Any`) items
+            Parameters which the routes of the blueprint will get by default.
+        
+        Raises
+        ------
+        ImportError
+            Exception occurred meanwhile finding route path from import name.
+        TypeError
+            - If `import_name` was not given as `st` instance.
+            - If `template_folder` was not given neither as `None` or `str` instance.
+            - If `root_path` was not given neither as `None` or `str` instance.
+            - If `static_folder` was not given neither as `None` nor `str` instance.
+            - If `static_url_path` was not given either as `None` or `str` instance.
+            - If `url_prefix` was neither given as `None` or as `str` instance.
+            - If `url_prefix` contains a `path` rule part.
+            - If `subdomain` was not given neither as `None` or `str` instance.
+            - If `defaults` is neither `None`, `dict`, `list`, `set` or `tuple`.
+            - If `defaults` contains a non `tuple` element.
+        ValueError
+            - If `import_name` was given as an empty string.
+            - If `root_path` was given as an empty string.
+            - If `defaults` contains an element with length of not `2`.
+        """
+        url_prefix = _validate_url_prefix(url_prefix)
+        subdomain = _validate_subdomain(subdomain)
+        parameters = _validate_parameters(url_defaults, 'url_defaults')
+        
+        self = AppBase.__new__(cls, import_name, template_folder, root_path, static_folder, static_url_path)
+        self.url_prefix = url_prefix
+        self.subdomain = subdomain
+        self.parameters = parameters
+        return self
+
 
 class WebApp(AppBase):
     """
@@ -2039,16 +2505,105 @@ class WebApp(AppBase):
     
     Attributes
     ----------
+    after_request_functions : `None` or `list` of `async-callable`
+        Functions which are ensured to modify the response object.
+        
+        To register a after request function use the ``.after_request`` decorator.
+        
+        The following parameters are passed to each after request function:
+        +-------------------+-----------------------+-----------------------+
+        | Respective name   | Type                  | Description           |
+        +===================+=======================+=======================+
+        | response          | ``ServerResponse``    | The response object.  |
+        +-------------------+-----------------------+-----------------------+
+    
+    before_request_functions : `None` or `list` of `async-callable`
+        Functions which should run before a request is done.
+        
+        To register a before request function use the ``.before_request`` decorator.
+        
+        If any before request processor returns a non `None` value, then the request processing will stop and that
+        return will be sent as response.
+        
+        No parameters are passed to before request functions.
+    
+    blueprints : `None` or `dict` of (`str`, `tuple` (``BlueprintState``, ``Blueprint``)
+        Registered blueprints to the app.
+    
+    error_handler_functions : `None` or `dict` of (`int`, `async-callable`) items
+        Error handlers which run when an http exception is raised from a view.
+        
+        To register an error handler use the ``.error_handler`` decorator.
+    
+        The following parameters are passed to each error handler:
+        +-------------------+-------------------+---------------------------+
+        | Respective name   | Type              | Description               |
+        +===================+===================+===========================+
+        | exception         | ``AbortRequest``  | The occurred exception.   |
+        +-------------------+-------------------+---------------------------+
+    
     import_name : `str`
         The name of the package or module that this app belongs to.
-    template_folder : `None` or `str`
-        The folder from where the templates should be loaded from.
     root_path : `str`
         Absolute path to the package on the filesystem.
-    static_folder : `str` or `None`
+    rules : `dict` of (`str`, `Any`)
+        The added rules to the application or blueprint. The keys are their endpoint name.
+    static_folder : `None` or `str`
         Absolute path to the static file's folder.
-    static_url_path : `str` or `None`
+    static_url_path : `None` or `str`
         Url path to static files. By defaults relates to `static_folder`.
+    
+    teardown_request_functions : `None` or `list` of `async-callable`
+        Functions which should run after a request is done even if exception occurs.
+        
+        To register a teardown request function use the ``.teardown_request`` decorator.
+        
+        The following parameters are passed to each teardown request:
+        +-------------------+---------------------------+-----------------------------------+
+        | Respective name   | Type                      | Description                       |
+        +===================+===========================+===================================+
+        | exception         | `None` or `BaseException` | The occurred exception if any.    |
+        +-------------------+---------------------------+-----------------------------------+
+        
+    template_context_processors : `None` or `list of `async-callable`
+        Functions which are called to populate template context. Each should return a dictionary with what the template
+        dictionary is updated with.
+        
+        To register template context processor, use the ``.context_processor`` decorator.
+        
+        No parameters are passed to template context processors.
+    
+    template_folder : `None` or `str`
+        The folder from where the templates should be loaded from.
+    
+    url_default_functions : `None` or `list` of `async-callable`
+        Keyword argument preprocessors for ``url_for``.
+        
+        To register them use the ``.url_defaults`` method.
+        
+        The following parameters are passed to the url default functions:
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | Respective name   | type                      | Description                                           |
+        +===================+===========================+=======================================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.            |
+        +-------------------+---------------------------+-------------------------------------------------------+
+        | kwargs            | `dict` of (`str`, `Any`)  | Additional keyword parameters passed to ``url_for``.  |
+        +-------------------+---------------------------+-------------------------------------------------------+
+    
+    url_value_preprocessors : `None` or `list` of `async-callable`
+        Preprocessors which can modify the parameters matched from the url.
+        
+        To registered them use the ``.url_value_preprocessor`` decorator.
+        
+        The following parameters are passed to each url value preprocessor:
+        +-------------------+---------------------------+-----------------------------------------------+
+        | Respective name   | Type                      | Description                                   |
+        +===================+===========================+===============================================+
+        | endpoint          | `None` or `str`           | The endpoint what matched the request url.    |
+        |                   |                           | Set as `None` if exception occurred.          |
+        +-------------------+---------------------------+-----------------------------------------------+
+        | parameters        | `dict` of (`str`, `Any`)  | Parameters parsed from the request url.       |
+        +-------------------+---------------------------+-----------------------------------------------+
     
     _server : `None` or ``WebServer``
         The running web-server of the webapp.

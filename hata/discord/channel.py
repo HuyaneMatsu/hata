@@ -1086,7 +1086,10 @@ class ChannelTextBase:
         else:
             messages_ln = len(messages)
         
-        messages_index = message_relative_index(messages, delete_ids[0])
+        if messages is None:
+            messages_index = 0
+        else:
+            messages_index = message_relative_index(messages, delete_ids[0])
         delete_index = 0
         
         while True:

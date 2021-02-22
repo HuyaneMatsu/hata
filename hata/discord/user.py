@@ -1199,9 +1199,9 @@ class User(UserBase):
                 user_data = data['user']
             except KeyError:
                 user_data = data
-                member_data = data.get('member')
+                guild_profile_data = data.get('member')
             else:
-                member_data = data
+                guild_profile_data = data
             
             user_id = int(user_data['id'])
             
@@ -1224,14 +1224,14 @@ class User(UserBase):
                 user.is_bot = user_data.get('bot', False)
                 user._update_no_return(user_data)
             
-            if (member_data is not None) and (guild is not None):
+            if (guild_profile_data is not None) and (guild is not None):
                 try:
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
                 else:
-                    profile._set_joined(member_data)
+                    profile._set_joined(guild_profile_data)
             
             return user
             
@@ -1239,10 +1239,10 @@ class User(UserBase):
         def __new__(cls, data, guild=None):
             try:
                 user_data = data['user']
-                member_data = data
+                guild_profile_data = data
             except KeyError:
                 user_data = data
-                member_data = data.get('member')
+                guild_profile_data = data.get('member')
                 
             user_id = int(user_data['id'])
 
@@ -1262,14 +1262,14 @@ class User(UserBase):
                 user.is_bot = user_data.get('bot', False)
                 user._update_no_return(user_data)
 
-            if (member_data is not None) and (guild is not None):
+            if (guild_profile_data is not None) and (guild is not None):
                 try:
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
                 else:
-                    profile._set_joined(member_data)
+                    profile._set_joined(guild_profile_data)
                     
             return user
     
@@ -1277,10 +1277,10 @@ class User(UserBase):
         def __new__(cls, data, guild=None):
             try:
                 user_data = data['user']
-                member_data = data
+                guild_profile_data = data
             except KeyError:
                 user_data = data
-                member_data = data.get('member')
+                guild_profile_data = data.get('member')
             
             user_id = int(user_data['id'])
             
@@ -1297,8 +1297,8 @@ class User(UserBase):
             user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if (member_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(member_data, guild)
+            if (guild_profile_data is not None) and (guild is not None):
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
             
             return user
     
@@ -1339,7 +1339,7 @@ class User(UserBase):
                 guild member data as well.
             """
             user_data = data['user']
-            member_data = data
+            guild_profile_data = data
             
             user_id = int(user_data['id'])
             
@@ -1352,10 +1352,10 @@ class User(UserBase):
                 profile = user.guild_profiles[guild]
             except KeyError:
                 guild.users[user_id] = user
-                user.guild_profiles[guild] = GuildProfile(member_data, guild)
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
             else:
-                profile._set_joined(member_data)
-                profile._update_no_return(member_data, guild)
+                profile._set_joined(guild_profile_data)
+                profile._update_no_return(guild_profile_data, guild)
     
     @classmethod
     def precreate(cls, user_id, **kwargs):
@@ -1473,10 +1473,10 @@ class User(UserBase):
         def _create_and_update(cls, data, guild=None):
             try:
                 user_data = data['user']
-                member_data = data
+                guild_profile_data = data
             except KeyError:
                 user_data = data
-                member_data = None
+                guild_profile_data = None
             
             user_id = int(user_data['id'])
             
@@ -1496,15 +1496,15 @@ class User(UserBase):
             user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if (member_data is not None) and (guild is not None):
+            if (guild_profile_data is not None) and (guild is not None):
                 try:
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
                 else:
-                    profile._set_joined(member_data)
-                    profile._update_no_return(member_data, guild)
+                    profile._set_joined(guild_profile_data)
+                    profile._update_no_return(guild_profile_data, guild)
             
             return user
         
@@ -1513,10 +1513,10 @@ class User(UserBase):
         def _create_and_update(cls, data, guild=None):
             try:
                 user_data = data['user']
-                member_data = data
+                guild_profile_data = data
             except KeyError:
                 user_data = data
-                member_data = None
+                guild_profile_data = None
             
             user_id = int(user_data['id'])
             
@@ -1533,15 +1533,15 @@ class User(UserBase):
             user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if (member_data is not None) and (guild is not None):
+            if (guild_profile_data is not None) and (guild is not None):
                 try:
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(member_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
                 else:
-                    profile._set_joined(member_data)
-                    profile._update_no_return(member_data, guild)
+                    profile._set_joined(guild_profile_data)
+                    profile._update_no_return(guild_profile_data, guild)
             
             return user
         
@@ -1552,9 +1552,9 @@ class User(UserBase):
                 user_data = data['user']
             except KeyError:
                 user_data = data
-                member_data = None
+                guild_profile_data = None
             else:
-                member_data = data
+                guild_profile_data = data
             
             user_id = int(user_data['id'])
             
@@ -1571,8 +1571,8 @@ class User(UserBase):
             user.is_bot = user_data.get('bot', False)
             user._update_no_return(user_data)
             
-            if (member_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(member_data, guild)
+            if (guild_profile_data is not None) and (guild is not None):
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
             
             return user
     

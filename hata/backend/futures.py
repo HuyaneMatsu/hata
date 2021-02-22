@@ -5110,11 +5110,11 @@ class enter_executor(object):
         """
         thread = current_thread()
         if not isinstance(thread, EventThread):
-            raise RuntimeError(f'{self.__class__.__name__} used outside of {EventThread.__name__}, at {thread!r}')
+            raise RuntimeError(f'{self.__class__.__name__} used outside of {EventThread.__name__}, at {thread!r}.')
         
         task = thread.current_task
         if task is None:
-            raise RuntimeError(f'{self.__class__.__name__} used outside of a {Task.__name__}')
+            raise RuntimeError(f'{self.__class__.__name__} used outside of a {Task.__name__}.')
         
         self._task = task
         loop = task._loop

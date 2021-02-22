@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('SlashCommand', 'Slasher')
 from threading import current_thread
+import warnings
 
 from ...backend.futures import Task, is_coroutine_generator, WaitTillAll
 from ...backend.analyzer import CallableAnalyzer
@@ -9,7 +10,8 @@ from ...backend.utils import WeakReferer
 
 from ...discord.client_core import KOKORO, ROLES, CHANNELS
 from ...discord.parsers import route_value, EventHandlerBase, InteractionEvent, check_name, Router, route_name, \
-    _EventHandlerManager
+    _EventHandlerManager, INTERACTION_EVENT_RESPONSE_STATE_NONE, INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, \
+    INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
 from ...discord.guild import Guild
@@ -44,6 +46,7 @@ def is_only_embed(maybe_embeds):
     
     return True
 
+
 def raw_name_to_display(raw_name):
     """
     Converts the given raw application command name and converts it to it's display name.
@@ -61,7 +64,55 @@ def raw_name_to_display(raw_name):
     return raw_name.lower().replace('_', '-')
 
 
-async def process_command_coro(client, interaction_event, show_source, coro):
+def get_request_coro(client, interaction_event, show_for_invoking_user_only, response):
+    """
+    Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who will send the responses if applicable.
+    interaction_event : ``InteractionEvent``
+        The respective event to respond on.
+    show_for_invoking_user_only : `bool`
+        Whether the response message should only be shown for the invoking user.
+    response : `Any`
+        Any object yielded or returned by the command coroutine.
+    
+    Returns
+    -------
+    request_coro : `None` or `coroutine`
+    """
+    response_state = interaction_event._response_state
+    if (response is None):
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+            request_coro = client.interaction_response_message_create(interaction_event,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+        else:
+            request_coro = None
+    elif isinstance(response, (str, EmbedBase)) or is_only_embed(response):
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+            request_coro = client.interaction_response_message_create(interaction_event, response,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            request_coro = client.interaction_response_message_edit(interaction_event, response)
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            request_coro = client.interaction_followup_message_create(interaction_event, response,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+        else:
+            request_coro = None
+    
+    else:
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+            request_coro = client.interaction_response_message_create(interaction_event,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+        else:
+            request_coro = None
+    
+    return request_coro
+
+
+async def process_command_coro(client, interaction_event, show_for_invoking_user_only, coro):
     """
     Processes a slash command coroutine.
     
@@ -75,8 +126,8 @@ async def process_command_coro(client, interaction_event, show_source, coro):
         The client who will send the responses if applicable.
     interaction_event : ``InteractionEvent``
         The respective event to respond on.
-    show_source : `bool`
-        Whether the source message should be shown.
+    show_for_invoking_user_only : `bool`
+        Whether the response message should only be shown for the invoking user.
     coro : `coroutine`
         A coroutine with will send command response.
     
@@ -127,25 +178,7 @@ async def process_command_coro(client, interaction_event, show_source, coro):
                 raise
             
             else:
-                if (response is None):
-                    if interaction_event._responded:
-                        request_coro = None
-                    else:
-                        request_coro = client.interaction_response_message_create(interaction_event,
-                            show_source=show_source)
-                elif isinstance(response, (str, EmbedBase)) or is_only_embed(response):
-                    if interaction_event._responded:
-                        request_coro = client.interaction_followup_message_create(interaction_event, response)
-                    else:
-                        request_coro = client.interaction_response_message_create(interaction_event, response,
-                            show_source=show_source)
-                else:
-                    if interaction_event._responded:
-                        request_coro = None
-                    else:
-                        request_coro = client.interaction_response_message_create(interaction_event,
-                            show_source=show_source)
-                
+                request_coro = get_request_coro(client, interaction_event, show_for_invoking_user_only, response)
                 
                 if request_coro is None:
                     response_message = None
@@ -162,22 +195,7 @@ async def process_command_coro(client, interaction_event, show_source, coro):
     else:
         response = await coro
     
-    if (response is None):
-        if interaction_event._responded:
-            request_coro = None
-        else:
-            request_coro = client.interaction_response_message_create(interaction_event, show_source=show_source)
-    elif isinstance(response, (str, EmbedBase)) or is_only_embed(response):
-        if interaction_event._responded:
-            request_coro = client.interaction_followup_message_create(interaction_event, response)
-        else:
-            request_coro = client.interaction_response_message_create(interaction_event, response,
-                show_source=show_source)
-    else:
-        if interaction_event._responded:
-            request_coro = None
-        else:
-            request_coro = client.interaction_response_message_create(interaction_event, show_source=show_source)
+    request_coro = get_request_coro(client, interaction_event, show_for_invoking_user_only, response)
     
     if (request_coro is not None):
         try:
@@ -199,7 +217,7 @@ async def process_command_coro(client, interaction_event, show_source, coro):
             raise
 
 
-async def converter_int(client, value):
+async def converter_int(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `int`.
     
@@ -207,8 +225,8 @@ async def converter_int(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -225,7 +243,7 @@ async def converter_int(client, value):
     return value
 
 
-async def converter_str(client, value):
+async def converter_str(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `str`.
     
@@ -233,8 +251,8 @@ async def converter_str(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -250,7 +268,7 @@ BOOL_TABLE = {
     str(False): False,
         }
 
-async def converter_bool(client, value):
+async def converter_bool(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `bool`.
     
@@ -258,8 +276,8 @@ async def converter_bool(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -271,7 +289,7 @@ async def converter_bool(client, value):
     return BOOL_TABLE.get(value)
 
 
-async def converter_snowflake(client, value):
+async def converter_snowflake(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to a snowflake.
     
@@ -279,8 +297,8 @@ async def converter_snowflake(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -300,7 +318,7 @@ async def converter_snowflake(client, value):
     return snowflake
 
 
-async def converter_user(client, value):
+async def converter_user(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
     
@@ -308,8 +326,8 @@ async def converter_user(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -318,25 +336,21 @@ async def converter_user(client, value):
     user : `None`, ``User`` or ``Client``
         If conversion fails, then returns `None`.
     """
-    user_id = await converter_snowflake(client, value)
+    user_id = await converter_snowflake(interaction_event, value)
     
     if user_id is None:
         user = None
     else:
-        try:
-            user = await client.user_get(user_id)
-        except ConnectionError:
-            user = 0
-        except DiscordException as err:
-            if err.code == ERROR_CODES.unknown_user:
-                user = None
-            else:
-                raise
+        resolved_users = interaction_event.resolved_users
+        if resolved_users is None:
+            user = None
+        else:
+            user = resolved_users.get(user_id)
     
     return user
 
 
-async def converter_role(client, value):
+async def converter_role(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
     
@@ -344,8 +358,8 @@ async def converter_role(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -354,17 +368,21 @@ async def converter_role(client, value):
     value : `None` or ``Role``
         If conversion fails, then returns `None`.
     """
-    role_id = await converter_snowflake(client, value)
+    role_id = await converter_snowflake(interaction_event, value)
     
     if role_id is None:
         role = None
     else:
-        role = ROLES.get(role_id)
+        resolved_roles = interaction_event.resolved_roles
+        if resolved_roles is None:
+            role = None
+        else:
+            role = resolved_roles.get(role_id)
     
     return role
 
 
-async def converter_channel(client, value):
+async def converter_channel(interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
     
@@ -372,8 +390,8 @@ async def converter_channel(client, value):
     
     Parameters
     ----------
-    client : ``Client``
-        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -382,14 +400,19 @@ async def converter_channel(client, value):
     value : `None` or ``ChannelBase`` instance
         If conversion fails, then returns `None`.
     """
-    channel_id = await converter_snowflake(client, value)
+    channel_id = await converter_snowflake(interaction_event, value)
     
     if channel_id is None:
         channel = None
     else:
-        channel = CHANNELS.get(channel_id)
+        resolved_channels = interaction_event.resolved_channels
+        if resolved_channels is None:
+            channel = None
+        else:
+            channel = resolved_channels.get(channel_id)
     
     return channel
+
 
 ANNOTATION_TYPE_STR        = 0
 ANNOTATION_TYPE_INT        = 1
@@ -659,7 +682,7 @@ class ArgumentConverter(object):
         self.type = annotation_type
         return self
     
-    async def __call__(self, client, value):
+    async def __call__(self, interaction_event, value):
         """
         Calls the argument converter to convert the given `value` to it's desired state.
         
@@ -667,8 +690,8 @@ class ArgumentConverter(object):
         
         Parameters
         ----------
-        client : ``Client``
-            The client who received the respective ``InteractionEvent``.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
         value : `str`
             ``ApplicationCommandInteractionOption.value``.
         
@@ -686,7 +709,7 @@ class ArgumentConverter(object):
                 passed = True
                 value = self.default
         else:
-            value = await self.converter(client, value)
+            value = await self.converter(interaction_event, value)
             if value is None:
                 if self.required:
                     passed = False
@@ -1052,8 +1075,8 @@ class SlashCommand(object):
                 Whether the slash command is global. Defaults to `False`.
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
                 If was not defined, or was defined as `None`, the class's name will be used.
-            - show_source : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether when responding the source message should be shown. Defaults to `True`.
+            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+                Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the slash command is the default command in it's category.
         
@@ -1064,8 +1087,7 @@ class SlashCommand(object):
             
             - guild
             - is_global
-            - name
-            - show_source
+            - show_for_invoking_user_only
             - is_default
         
         Returns
@@ -1078,7 +1100,7 @@ class SlashCommand(object):
             - If `klass` was not given as `type` instance.
             - If `kwargs` was not given as `None` and not all of it's items were used up.
             - If a value is routed but to a bad count amount.
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `tuple`, `set`) of
                 (`int`, ``Guild``)
@@ -1131,6 +1153,7 @@ class SlashCommand(object):
         is_global = getattr(klass, 'is_global', None)
         guild = getattr(klass, 'guild', None)
         show_source = getattr(klass, 'show_source', None)
+        show_for_invoking_user_only = getattr(klass, 'show_for_invoking_user_only', None)
         is_default = getattr(klass, 'is_default', None)
         
         if (kwargs is not None) and kwargs:
@@ -1158,6 +1181,14 @@ class SlashCommand(object):
                 except KeyError:
                     pass
             
+            if (show_for_invoking_user_only is None):
+                show_for_invoking_user_only = kwargs.pop('show_for_invoking_user_only', None)
+            else:
+                try:
+                    del kwargs['show_for_invoking_user_only']
+                except KeyError:
+                    pass
+            
             if (guild is None):
                 guild = kwargs.pop('guild', None)
             else:
@@ -1177,7 +1208,14 @@ class SlashCommand(object):
             if kwargs:
                 raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
         
-        return cls(command, name, description, show_source, is_global, guild, is_default)
+        if (show_source is not None):
+            warnings.warn(
+                f'`{cls.__name__}.from_class`\'s `show_source` parameter is '
+                f'deprecated, and will be removed in 2021 April. Reference: '
+                f'https://github.com/discord/discord-api-docs/pull/2615',
+                FutureWarning)
+        
+        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
@@ -1200,7 +1238,7 @@ class SlashCommand(object):
                     `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
             - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
             - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
         
         Returns
@@ -1212,7 +1250,7 @@ class SlashCommand(object):
         TypeError
             - If `kwargs` was not given as `None` and not all of it's items were used up.
             - If a value is routed but to a bad count amount.
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `tuple`, `set`) of
                 (`int`, ``Guild``)
@@ -1249,12 +1287,14 @@ class SlashCommand(object):
         if (kwargs is None) or (not kwargs):
             description = None
             show_source = None
+            show_for_invoking_user_only = None
             is_global = None
             guild = None
             is_default = None
         else:
             description = kwargs.pop('description', None)
             show_source = kwargs.pop('show_source', None)
+            show_for_invoking_user_only = kwargs.pop('show_for_invoking_user_only', None)
             is_global = kwargs.pop('is_global', None)
             guild = kwargs.pop('checks', None)
             is_default = kwargs.pop('is_default', None)
@@ -1262,7 +1302,14 @@ class SlashCommand(object):
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
         
-        return cls(command, name, description, show_source, is_global, guild, is_default)
+        if (show_source is not None):
+            warnings.warn(
+                f'`{cls.__name__}.from_kwargs`\'s `show_source` parameter is '
+                f'deprecated, and will be removed in 2021 April. Reference: '
+                f'https://github.com/discord/discord-api-docs/pull/2615',
+                FutureWarning)
+        
+        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default)
     
     @classmethod
     def _check_maybe_route(cls, variable_name, variable_value, route_to, validator):
@@ -1339,31 +1386,31 @@ class SlashCommand(object):
         return processed_value, route_to
     
     @staticmethod
-    def _validate_show_source(show_source):
+    def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
         """
-        Validates the given `show_source` value.
+        Validates the given `show_for_invoking_user_only` value.
         
         Parameters
         ----------
-        show_source : `None` or `bool`
-            The `show_source` value to validate.
+        show_for_invoking_user_only : `None` or `bool`
+            The `show_for_invoking_user_only` value to validate.
         
         Returns
         -------
-        show_source : `bool`
-            The validated `show_source` value.
+        show_for_invoking_user_only : `bool`
+            The validated `show_for_invoking_user_only` value.
         
         Raises
         ------
         TypeError
-            If `show_source` was not given as `None` nor as `bool` instance.
+            If `show_for_invoking_user_only` was not given as `None` nor as `bool` instance.
         """
-        if show_source is None:
-            show_source = True
+        if show_for_invoking_user_only is None:
+            show_for_invoking_user_only = False
         else:
-            show_source = preconvert_bool(show_source, 'show_source')
+            show_for_invoking_user_only = preconvert_bool(show_for_invoking_user_only, 'show_for_invoking_user_only')
         
-        return show_source
+        return show_for_invoking_user_only
     
     @staticmethod
     def _validate_is_global(is_global):
@@ -1577,7 +1624,7 @@ class SlashCommand(object):
         
         return description
     
-    def __new__(cls, command, name, description, show_source, is_global, guild, is_default):
+    def __new__(cls, command, name, description, show_for_invoking_user_only, is_global, guild, is_default):
         """
         Creates a new ``SlashCommand`` instance with the given parameters.
         
@@ -1590,8 +1637,8 @@ class SlashCommand(object):
             instead.
         description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
             Description to use instead of the function's docstring.
-        show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-            Whether when responding the source message should be shown. Defaults to `True`.
+        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+            Whether the response message should only be shown for the invoking user. Defaults to `False`.
         is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -1608,7 +1655,7 @@ class SlashCommand(object):
         ------
         TypeError
             - If a value is routed but to a bad count amount.
-            - If `show_source` was not given as `None` or `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `None` or `bool` instance.
             - If `is_global` was not given as 7None` or `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
@@ -1645,7 +1692,8 @@ class SlashCommand(object):
         route_to = 0
         name, route_to = cls._check_maybe_route('name', name, route_to, cls._validate_name)
         description, route_to = cls._check_maybe_route('description', description, route_to, None)
-        show_source, route_to = cls._check_maybe_route('show_source', show_source, route_to, cls._validate_show_source)
+        show_for_invoking_user_only, route_to = cls._check_maybe_route('show_for_invoking_user_only',
+            show_for_invoking_user_only, route_to, cls._validate_show_for_invoking_user_only)
         is_global, route_to = cls._check_maybe_route('is_global', is_global, route_to, cls._validate_is_global)
         guild_ids, route_to = cls._check_maybe_route('guild', guild, route_to, cls._validate_guild)
         is_default, route_to = cls._check_maybe_route('is_default', is_default, route_to, cls._validate_is_default)
@@ -1654,7 +1702,7 @@ class SlashCommand(object):
             name = route_name(command, name, route_to)
             
             default_description = cls._generate_description_from(command, None)
-            show_source = route_value(show_source, route_to)
+            show_for_invoking_user_only = route_value(show_for_invoking_user_only, route_to)
             is_global = route_value(is_global, route_to)
             guild_ids = route_value(guild_ids, route_to)
             is_default = route_value(is_default, route_to)
@@ -1682,8 +1730,8 @@ class SlashCommand(object):
         if route_to:
             router = []
             
-            for name, description, show_source, is_global, guild_ids, is_default in zip(
-                name, description, show_source, is_global, guild_ids, is_default):
+            for name, description, show_for_invoking_user_only, is_global, guild_ids, is_default in zip(
+                name, description, show_for_invoking_user_only, is_global, guild_ids, is_default):
                 
                 if is_global and (guild_ids is not None):
                     raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
@@ -1695,8 +1743,8 @@ class SlashCommand(object):
                     command_function = None
                     sub_commands = {}
                 else:
-                    command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source,
-                        is_default)
+                    command_function = SlashCommandFunction(command, argument_parsers, name, description,
+                        show_for_invoking_user_only, is_default)
                     sub_commands = None
                 
                 self = object.__new__(cls)
@@ -1723,8 +1771,8 @@ class SlashCommand(object):
                 sub_commands = {}
                 command_function = None
             else:
-                command_function = SlashCommandFunction(command, argument_parsers, name, description, show_source,
-                    is_default)
+                command_function = SlashCommandFunction(command, argument_parsers, name, description,
+                    show_for_invoking_user_only, is_default)
                 sub_commands = None
             
             self = object.__new__(cls)
@@ -1906,7 +1954,8 @@ class SlashCommand(object):
         
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None, is_default=None):
+    def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
+            is_global=None, guild=None, is_default=None):
         """
         Adds a sub-command under the slash command.
         
@@ -1919,8 +1968,8 @@ class SlashCommand(object):
             instead.
         description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether when responding the source message should be shown. Defaults to `True`.
+        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the response message should only be shown for the invoking user. Defaults to `False`.
         is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -1936,7 +1985,7 @@ class SlashCommand(object):
         Raises
         ------
         TypeError
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
@@ -1976,6 +2025,13 @@ class SlashCommand(object):
         if self._command is not None:
             raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
         
+        if (show_source is not None):
+            warnings.warn(
+                f'`{self.__class__.__name__}.__setevent__`\'s `show_source` parameter is '
+                f'deprecated, and will be removed in 2021 April. Reference: '
+                f'https://github.com/discord/discord-api-docs/pull/2615',
+                FutureWarning)
+        
         if isinstance(func, Router):
             func = func[0]
         
@@ -1983,7 +2039,7 @@ class SlashCommand(object):
             self._add_command(func)
             return self
         
-        command = type(self)(func, name, description, show_source, is_global, guild, is_default)
+        command = type(self)(func, name, description, show_for_invoking_user_only, is_global, guild, is_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2012,8 +2068,8 @@ class SlashCommand(object):
                 Whether the slash command is global. Defaults to `False`.
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
                 If was not defined, or was defined as `None`, the class's name will be used.
-            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether when responding the source message should be shown. Defaults to `True`.
+            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether the command is the default command in it's category.
         
@@ -2027,7 +2083,7 @@ class SlashCommand(object):
             - If `klass` was not given as `type` instance.
             - If `kwargs` was not given as `None` and not all of it's items were used up.
             - If a value is routed but to a bad count amount.
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
@@ -2114,12 +2170,13 @@ class SlashCommandFunction(object):
         Whether the command is the default command in it's category.
     name : `str`
         The name of the slash command. It's length can be in range [1:32].
-    show_source : `bool`
-        Whether the source message should be shown when using the command.
+    show_for_invoking_user_only : `bool`
+        Whether the response message should only be shown for the invoker user.
     """
-    __slots__ = ('_argument_parsers', '_command', 'category', 'description', 'is_default', 'name', 'show_source')
+    __slots__ = ('_argument_parsers', '_command', 'category', 'description', 'is_default', 'name',
+        'show_for_invoking_user_only')
     
-    def __new__(cls, command, argument_parsers, name, description, show_source, is_default):
+    def __new__(cls, command, argument_parsers, name, description, show_for_invoking_user_only, is_default):
         """
         Creates a new ``SlashCommandFunction`` instance with the given parameters-
         
@@ -2133,15 +2190,15 @@ class SlashCommandFunction(object):
             The name of the slash command.
         description : `str`
             The slash command's description.
-        show_source : `bool`
-            Whether the source message should be shown when using the command.
+        show_for_invoking_user_only : `bool`
+            Whether the response message should only be shown for the invoking user.
         is_default : `bool`
-            Whether the source message should be shown when using the command.
+            Whether the command is the default command in it's category.
         """
         self = object.__new__(cls)
         self._command = command
         self._argument_parsers = argument_parsers
-        self.show_source = show_source
+        self.show_for_invoking_user_only = show_for_invoking_user_only
         self.description = description
         self.name = name
         self.is_default = is_default
@@ -2172,14 +2229,14 @@ class SlashCommandFunction(object):
         for argument_parser in self._argument_parsers:
             value = parameter_relation.get(argument_parser.name)
             
-            passed, parameter = await argument_parser(client, value)
+            passed, parameter = await argument_parser(interaction_event, value)
             if not passed:
                 return
             
             parameters.append(parameter)
         
         coro = self._command(client, interaction_event, *parameters)
-        await process_command_coro(client, interaction_event, self.show_source, coro)
+        await process_command_coro(client, interaction_event, self.show_for_invoking_user_only, coro)
     
     def as_option(self):
         """
@@ -2319,7 +2376,8 @@ class SlashCommandCategory(object):
         """
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None, is_default=True):
+    def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
+            is_global=None, guild=None, is_default=True):
         """
         Adds a sub-command under the slash category.
         
@@ -2332,8 +2390,8 @@ class SlashCommandCategory(object):
             instead.
         description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether when responding the source message should be shown. Defaults to `True`.
+        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the response message should only be shown for the invoking user. Defaults to `False`.
         is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -2349,7 +2407,7 @@ class SlashCommandCategory(object):
         Raises
         ------
         TypeError
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
@@ -2386,6 +2444,13 @@ class SlashCommandCategory(object):
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
+        if (show_source is not None):
+            warnings.warn(
+                f'`{self.__class__.__name__}.__setevent__`\'s `show_source` parameter is '
+                f'deprecated, and will be removed in 2021 April. Reference: '
+                f'https://github.com/discord/discord-api-docs/pull/2615',
+                FutureWarning)
+        
         if isinstance(func, Router):
             func = func[0]
         
@@ -2393,7 +2458,7 @@ class SlashCommandCategory(object):
             self._add_command(func)
             return self
         
-        command = SlashCommand(func, name, description, show_source, is_global, guild, is_default)
+        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2422,8 +2487,8 @@ class SlashCommandCategory(object):
                 Whether the slash command is global. Defaults to `False`.
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
                 If was not defined, or was defined as `None`, the class's name will be used.
-            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether when responding the source message should be shown. Defaults to `True`.
+            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether the command is the default command in it's category.
         
@@ -2437,7 +2502,7 @@ class SlashCommandCategory(object):
             - If `klass` was not given as `type` instance.
             - If `kwargs` was not given as `None` and not all of it's items were used up.
             - If a value is routed but to a bad count amount.
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
@@ -2601,7 +2666,8 @@ class Slasher(EventHandlerBase):
             await command(client, interaction_event)
     
     
-    def __setevent__(self, func, name, description=None, show_source=None, is_global=None, guild=None, is_default=None):
+    def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
+            is_global=None, guild=None, is_default=None):
         """
         Adds a slash command.
         
@@ -2614,8 +2680,8 @@ class Slasher(EventHandlerBase):
             instead.
         description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether when responding the source message should be shown. Defaults to `True`.
+        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+            Whether the response message should only be shown for the invoking user. Defaults to `False`.
         is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -2632,7 +2698,7 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         TypeError
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
@@ -2665,6 +2731,13 @@ class Slasher(EventHandlerBase):
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
         """
+        if (show_source is not None):
+            warnings.warn(
+                f'`{self.__class__.__name__}.__setevent__`\'s `show_source` parameter is '
+                f'deprecated, and will be removed in 2021 April. Reference: '
+                f'https://github.com/discord/discord-api-docs/pull/2615',
+                FutureWarning)
+        
         if isinstance(func, Router):
             func = func[0]
         
@@ -2672,7 +2745,7 @@ class Slasher(EventHandlerBase):
             self._add_command(func)
             return func
         
-        command = SlashCommand(func, name, description, show_source, is_global, guild, is_default)
+        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2701,8 +2774,8 @@ class Slasher(EventHandlerBase):
                 Whether the slash command is global. Defaults to `False`.
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
                 If was not defined, or was defined as `None`, the class's name will be used.
-            - show_source : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether when responding the source message should be shown. Defaults to `True`.
+            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+                Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether the command is the default command in it's category.
         
@@ -2717,7 +2790,7 @@ class Slasher(EventHandlerBase):
             - If `klass` was not given as `type` instance.
             - If `kwargs` was not given as `None` and not all of it's items were used up.
             - If a value is routed but to a bad count amount.
-            - If `show_source` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.

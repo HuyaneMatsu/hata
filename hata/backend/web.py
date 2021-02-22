@@ -2,6 +2,7 @@
 # Experimenting with web servers, nothing worthy
 # WORK IN PROGRESS
 import functools, http, re, sys, os, ntpath
+from threading import current_thread
 
 from uuid import UUID
 from importlib.util import find_spec
@@ -14,12 +15,109 @@ from .helpers import HttpVersion11
 from .headers import METHOD_ALL, METHOD_GET
 from .url import URL
 from .analyzer import CallableAnalyzer
+from .event_loop import EventThread
 
 INTERNAL_SERVER_ERROR      = http.HTTPStatus.INTERNAL_SERVER_ERROR
 BAD_REQUEST                = http.HTTPStatus.BAD_REQUEST
 HTTP_VERSION_NOT_SUPPORTED = http.HTTPStatus.HTTP_VERSION_NOT_SUPPORTED
 METHOD_NOT_ALLOWED         = http.HTTPStatus.METHOD_NOT_ALLOWED
 NOT_FOUND                  = http.HTTPStatus.METHOD_NOT_ALLOWED
+
+TASK_LOCALS = {}
+
+class TaskLocal(object):
+    """
+    Allows instances's attributes to be accessed from the task where the ``TaskLocal`` is entered from.
+    
+    Attributes
+    ----------
+    _kwargs : `dict` of (`str`, `Any`) items
+        `name` - `object` pairs to add as task local.
+    _task : `None` or ``Task``
+        The entered task.
+    """
+    __slots__ = ('_kwargs', '_task', )
+    def __new__(cls, **kwargs):
+        """
+        Creates a new ``TaskLocal`` instance.
+        
+        Parameters
+        ----------
+        **kwargs : `Any`
+            `name` - `object` pairs to add as task local.
+        """
+        self = object.__new__(cls)
+        self._kwargs = kwargs
+        self._task = None
+        return self
+    
+    def __enter__(self):
+        """
+        Enables the task local on the current task.
+        
+        Raises
+        ------
+        RuntimeError
+            - If called from outside of an ``EventThread``.
+            - If called from outside of a ``Task``.
+            - If already entered.
+        """
+        task = self._task
+        if task is not None:
+            raise RuntimeError(f'{self.__class__.__name__} is already entered inside of {task!r}.')
+        
+        thread = current_thread()
+        if not isinstance(thread, EventThread):
+            raise RuntimeError(f'{self.__class__.__name__} used outside of {EventThread.__name__}, at {thread!r}.')
+        
+        task = thread.current_task
+        if task is None:
+            raise RuntimeError(f'{self.__class__.__name__} used outside of a {Task.__name__}.')
+        
+        self._task = task
+        
+        kwargs = self._kwargs
+        try:
+            locals_ = TASK_LOCALS[task]
+        except KeyError:
+            TASK_LOCALS[task] = kwargs.copy()
+        else:
+            locals_.update(kwargs)
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Disables the task local on the current task.
+        """
+        thread = current_thread()
+        if not isinstance(thread, EventThread):
+            return
+        
+        task = thread.current_task
+        if task is None:
+            return
+        
+        if task is self._task:
+            self._task = None
+        
+        kwargs = self._kwargs
+        try:
+            locals_ = TASK_LOCALS[task]
+        except KeyError:
+            return
+        
+        for key, value in kwargs.items():
+            try:
+                local_value = locals_[key]
+            except KeyError:
+                continue
+            
+            if local_value is not value:
+                continue
+            
+            del locals_[key]
+            continue
+
+
 
 class HTTPRequestHandler(ProtocolBase):
     """
@@ -522,6 +620,13 @@ PARAMETER_TYPE_TO_VALIDATOR = {
     PARAMETER_TYPE_STRING : validate_string ,
         }
 
+PARAMETER_TYPE_TO_NAME = {
+    PARAMETER_TYPE_PATH   : 'path'   ,
+    PARAMETER_TYPE_INT    : 'int'    ,
+    PARAMETER_TYPE_FLOAT  : 'float'  ,
+    PARAMETER_TYPE_UUID   : 'uuid'   ,
+    PARAMETER_TYPE_STRING : 'string' ,
+        }
 
 class ParameterValidatorPathStep(object):
     """
@@ -535,7 +640,7 @@ class ParameterValidatorPathStep(object):
         Identifier value representing the validator.
         
         Can be one of following:
-
+        
         +---------------------------+-------+
         | Respective name           | Value |
         +===========================+=======+
@@ -612,6 +717,24 @@ class ParameterValidatorPathStep(object):
         
         return path_router
     
+    def render_structure(self, route_prefix_parts, parts):
+        """
+        Renders the path router's structure to the given `parts` list.
+        
+        Parameters
+        ----------
+        route_prefix_parts : `list` of `str`
+            Prefix parts to th route to render.
+        parts : `list` of `str`
+            Rendered path parts.
+        """
+        parameter_type = self.parameter_type
+        for parameter_name, path_router in self.path_routers:
+            path_part = _rebuild_path_parameter(parameter_type, parameter_name)
+            route_prefix_parts.append(path_part)
+            path_router.render_structure(route_prefix_parts, parts)
+            del route_prefix_parts[-1]
+        
     def __ge__(self, other):
         """Returns whether self should be tested later or at the same time as the other."""
         if type(self) is not type(other):
@@ -672,6 +795,51 @@ class ParameterValidatorPathStep(object):
         
         return False
 
+def _render_route_prefix_into(route_prefix_parts, parts):
+    """
+    Renders the given route route prefix parts into the given `parts` list.
+    
+    Parameters
+    ----------
+    route_prefix_parts : `list` of `str`
+        Prefix parts to the route to render.
+    parts : `list` of `str`
+        Rendered path parts.
+    """
+    limit = len(route_prefix_parts)
+    if limit:
+        index = 0
+        while True:
+            element = route_prefix_parts[index]
+            parts.append(element)
+            
+            index += 1
+            if index == limit:
+                break
+            
+            parts.append('/')
+            continue
+
+
+def _rebuild_path_parameter(parameter_type, parameter_name):
+    """
+    Rebuilds a typed path part from it's type identifier and from it's name.
+    
+    Parameters
+    ----------
+    parameter_type : `int`
+        Parameter type identifier.
+    parameter_name : `str`
+        The parameter's name.
+    
+    Returns
+    -------
+    path_parameter : `str`
+    """
+    parameter_type_name = PARAMETER_TYPE_TO_NAME[parameter_type]
+    return f'<{parameter_type_name}:{parameter_name}>'
+
+
 class PathRouter(object):
     """
     Path router for getting which handler function should run for a pre-defined route.
@@ -685,10 +853,10 @@ class PathRouter(object):
     route_end : `None` or `dict` of (`str`, ``Rule``) items
         If the url ends at the point of this router, then the handler function from ``.route_ends`` is chosen if
         applicable. The functions are stored in `method` - `handler` relation.
-    route_end_all : `None` or ``Rule``)
+    route_end_all : `None` or ``Rule``
         If the url ends at this point of the router and non of the `route-end`-s were matched, the the view function
         of this slot is chosen.
-    route_end_path : `None` or `dict` of (`str`, ``Rule``) items
+    route_end_path : `None` or `dict` of (`str`, `tuple` (``Rule``, `str`)) items
         Paths, which have dynamic route ends.
     route_end_path_all : `None` or `tuple` (``Rule``, `str`)
         ``.route_end_path`` version, what accepts accepts all type of request methods.
@@ -795,7 +963,7 @@ class PathRouter(object):
         
         return None
     
-    def register_route(self, rule, index, request_methods):
+    def register_route(self, rule, index):
         """
         Registers a new handler to the path router.
         
@@ -805,11 +973,10 @@ class PathRouter(object):
             The rule of the endpoint
         index : `int`
             The index of the part of the path to process by this router.
-        request_methods : `None` or `set` of `str`
-            The methods of the request to registered `rule`. Can be given as `None` to handle all type of requests.
         """
         url_rule = rule.rule
         if index == len(url_rule):
+            request_methods = rule.request_methods
             if request_methods is None:
                 self.route_end_all = rule
             else:
@@ -835,11 +1002,12 @@ class PathRouter(object):
             except KeyError:
                 path_router = route_step_paths[rule_part] = PathRouter()
             
-            path_router.register_route(rule, index, request_methods)
+            path_router.register_route(rule, index)
             return
         
         if rule_part_type == PARAMETER_TYPE_PATH:
             rule_rule_part_tuple = (rule, rule_part)
+            request_methods = rule.request_methods
             if request_methods is None:
                 self.route_end_path_all = rule_rule_part_tuple
             else:
@@ -856,7 +1024,7 @@ class PathRouter(object):
             route_step_validated = self.route_step_validated = []
             
             parameter_validator_path_step, path_router = ParameterValidatorPathStep(rule_part_type, rule_part)
-            path_router.register_route(rule, index, request_methods)
+            path_router.register_route(rule, index)
             
             route_step_validated.append(parameter_validator_path_step)
             return
@@ -864,15 +1032,95 @@ class PathRouter(object):
         for parameter_validator_path_step in route_step_validated:
             if parameter_validator_path_step.parameter_type == rule_part_type:
                 path_router = parameter_validator_path_step.get_path_router(rule_part)
-                path_router.register_route(rule, index, request_methods)
+                path_router.register_route(rule, index)
                 return
         
         parameter_validator_path_step, path_router = ParameterValidatorPathStep(rule_part_type, rule_part)
-        path_router.register_route(rule, index, request_methods)
+        path_router.register_route(rule, index)
         
         route_step_validated.append(parameter_validator_path_step)
+    
+    def render_structure(self, route_prefix_parts, parts):
+        """
+        Renders the path router's structure to the given `parts` list.
+        
+        Parameters
+        ----------
+        route_prefix_parts : `list` of `str`
+            Prefix parts to the route to render.
+        parts : `list` of `str`
+            Rendered path parts.
+        """
+        route_step_paths = self.route_step_paths
+        if (route_step_paths is not None):
+            for path_part, path_router in route_step_paths:
+                route_prefix_parts.append(path_part)
+                path_router.render_structure(route_prefix_parts, parts)
+                del route_prefix_parts[-1]
+        
+        route_step_validated = self.route_step_validated
+        if (route_step_validated is not None):
+            for parameter_validator_path_step in route_step_validated:
+                parameter_validator_path_step.render_structure(route_prefix_parts, parts)
+        
+        route_end = self.route_end
+        if (route_end is not None):
+            _render_route_prefix_into(route_prefix_parts, parts)
+            parts.append(' ')
+            
+            methods = sorted(route_end.keys())
+            if len(methods) != 1:
+                methods_repr = repr(methods)
+            else:
+                methods_repr = methods[0]
+            
+            parts.append(methods_repr)
+            parts.append('\n')
+        
+        route_end_all = self.route_end_all
+        if (route_end_all is not None):
+            _render_route_prefix_into(route_prefix_parts, parts)
+            parts.append(' *\n')
+        
+        route_end_path = self.route_end_path
+        if (route_end_path is not None):
+            combinations = {}
+            
+            for request_method, (rule, parameter_name) in route_end_path.items():
+                try:
+                    methods = combinations[parameter_name]
+                except KeyError:
+                    combinations[parameter_name] = methods = []
+                
+                methods.append(request_method)
+            
+            for parameter_name, methods in combinations.items():
+                path_part = _rebuild_path_parameter(PARAMETER_TYPE_PATH, parameter_name)
+                route_prefix_parts.append(path_part)
+                _render_route_prefix_into(route_prefix_parts, parts)
+                del route_prefix_parts[-1]
+                parts.append(' ')
+                
+                methods = sorted(route_end.keys())
+                if len(methods) != 1:
+                    methods_repr = repr(methods)
+                else:
+                    methods_repr = methods[0]
+                
+                parts.append(methods_repr)
+                parts.append('\n')
+        
+        route_end_path_all = self.route_end_path_all
+        if (route_end_path_all is not None):
+            parameter_name = route_end_path_all[1]
+            
+            path_part = _rebuild_path_parameter(PARAMETER_TYPE_PATH, parameter_name)
+            route_prefix_parts.append(path_part)
+            _render_route_prefix_into(route_prefix_parts, parts)
+            del route_prefix_parts[-1]
+            parts.append(' *\n')
 
-
+            
 class AbortRequest(BaseException):
     """
     Exception raised when ``abort`` is called.
@@ -908,6 +1156,8 @@ async def _handler_method_not_allowed():
     """
     Aborts the request with error code 405.
     
+    This function is a coroutine.
+    
     Raises
     ------
     AbortRequest
@@ -918,6 +1168,8 @@ async def _handler_method_not_allowed():
 async def _handler_not_found():
     """
     Aborts the request with error code 404.
+    
+    This function is a coroutine.
     
     Raises
     ------
@@ -1497,7 +1749,7 @@ def _validate_static_url_path(static_url_path):
         else:
             raise TypeError(f'`static_url_path` can be given as `str` instance, got '
                 f'{static_url_path.__class__.__name__}.')
-        
+    
     return static_url_path
 
 def _validate_url_prefix(url_prefix):
@@ -1542,6 +1794,70 @@ def _validate_url_prefix(url_prefix):
 
 DUMMY_RULE_PART = ('/', PARAMETER_TYPE_STATIC)
 
+def _merge_url_rule(rule_before, rule_after):
+    """
+    Merges two url rule parts.
+    
+    Parameters
+    ----------
+    rule_before : `None` or `tuple` of `tuple` (`int`, `str`)
+        First url part if any to join `rule_after` to.
+    rule_after : `None` or `tuple` of `tuple` (`int`, `str`)
+        Second url part what's start is extended by `rule_before`.
+    
+    Returns
+    -------
+    merged_rule : `None` or `tuple` of `tuple` (`int`, `str`)
+        The merged rule.
+    """
+    if rule_before is None:
+        return rule_after
+    
+    if rule_after is None:
+        return rule_before
+    
+    if rule_after[0] == DUMMY_RULE_PART:
+        rule_after = rule_after[1:]
+    
+    return (*rule_before, *rule_after)
+
+def _merge_parameters(priority_parameters, secondary_parameters):
+    """
+    Merges two default parameters list,
+    
+    Parameters
+    ----------
+    priority_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Priority parameters, which element's wont be removed.
+    secondary_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Secondary parameters, which will be merged to `priority_parameters`.
+    
+    Returns
+    -------
+    merged_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        The merged parameters.
+    """
+    if priority_parameters is None:
+        return secondary_parameters
+    
+    if secondary_parameters is None:
+        return priority_parameters
+    
+    extend_parameters = []
+    for secondary_item in secondary_parameters:
+        parameter_name = secondary_item[0]
+        for priority_item in priority_parameters:
+            if priority_item[0] == parameter_name:
+                break
+        else:
+            extend_parameters.append(secondary_item)
+    
+    if not extend_parameters:
+        return priority_parameters
+    
+    return (*priority_parameters, *extend_parameters)
+
+
 class Rule(object):
     """
     A registered rule.
@@ -1560,8 +1876,17 @@ class Rule(object):
         Whether the route should match the specified subdomain.
     view_func : `async-callable`
         The function to call when serving a request to the provided endpoint.
+    blueprint_state_stack : `None` or `tuple` of ``Blueprint``
+        Blueprint stack for the rule.
+        
+        Only added when the rule is registered.
+    application : ``WebApp``
+        The parent application.
+        
+        Only added when the rule is registered.
     """
-    __slots__ = ('endpoint', 'parameters', 'request_methods', 'rule', 'subdomain', 'view_func')
+    __slots__ = ('application', 'blueprint_state_stack', 'endpoint', 'parameters', 'request_methods', 'rule',
+        'subdomain', 'view_func')
     
     def __init__(self, rule, view_func, endpoint, request_methods, parameters, subdomain):
         """
@@ -1588,6 +1913,8 @@ class Rule(object):
         self.request_methods = request_methods
         self.parameters = parameters
         self.subdomain = subdomain
+        self.application = None
+        self.blueprint_state_stack = None
     
     def copy(self):
         """
@@ -1628,22 +1955,7 @@ class Rule(object):
         ----------
         parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
         """
-        if (parameters is not None):
-            self_parameters = self.parameters
-            if self_parameters is None:
-                self.parameters = parameters.copy()
-            else:
-                to_add = []
-                for item in parameters:
-                    parameter_name = item[0]
-                    for self_item in self_parameters:
-                        if self_item[0] == parameter_name:
-                            break
-                    else:
-                        to_add.append(item)
-                
-                if to_add:
-                    self.parameters = (*self_parameters, *to_add)
+        self.parameters = _merge_parameters(self.parameters, parameters)
     
     def set_rule_prefix(self, rule):
         """
@@ -1654,12 +1966,28 @@ class Rule(object):
         rule : `None` or `tuple` of `tuple` (`str`, `int`)
             The rule parts to extend the ``Rule``'s with.
         """
-        if (rule is not None):
-            self_rule = self.rule
-            if self_rule[0] == DUMMY_RULE_PART:
-                self_rule = self_rule[1:]
-            
-            self.rule = (*rule, *self_rule)
+        self.rule = _merge_url_rule(rule, self.rule)
+    
+    def set_application(self, application):
+        """
+        Sets the rule's application.
+        
+        Parameters
+        ----------
+        application : ``WebApp``
+        """
+        self.application = application
+    
+    def set_blueprint_state_stack(self, blueprint_state_stack):
+        """
+        Sets the rule's blueprint stack.
+        
+        Parameters
+        ----------
+        blueprint_state_stack : `None` or `tuple` of ``BlueprintState``
+        """
+        self.blueprint_state_stack = blueprint_state_stack
+
 
 ROUTE_METHOD_NOT_ALLOWED = Rule((), _handler_method_not_allowed, 'method_not_allowed', None, None, None)
 ROUTE_NOT_FOUND_NOT_ALLOWED = Rule((), _handler_not_found, 'not found', None, None, None)
@@ -1955,6 +2283,8 @@ class AppBase(object):
             - If `method` is not an http request method.
             - If `methods` contains a non http request method element.
             - If `defaults` contains an element with length of not `2`.
+        RuntimeError
+            Overloading rules is not yet supported.
         """
         args_length = len(args)
         if args_length == 0:
@@ -1970,6 +2300,9 @@ class AppBase(object):
         
         if view_func is None:
             raise TypeError('`view_func` can be `async-callable`, got `None`.')
+        
+        if isinstance(view_func, Rule):
+            raise RuntimeError(f'Overloading rules is not yet supported.')
         
         analyzed = CallableAnalyzer(view_func)
         if not analyzed.is_async():
@@ -2002,6 +2335,12 @@ class AppBase(object):
         else:
             raise TypeError(f'`endpoint` can be given as `str` instance, got {endpoint.__class__.__name__}.')
         
+        if type(rule) is str:
+            pass
+        elif isinstance(rule, str):
+            rule = str(rule)
+        else:
+            raise TypeError(f'`rule` can be given as `str` instance, got {rule.__class__.__name__}.')
         
         rule_processed = tuple(maybe_typed_rule_part(rule_part) for rule_part in URL(rule).path)
         
@@ -2021,7 +2360,7 @@ class AppBase(object):
             subdomain = None
         
         rule = Rule(rule_processed, view_func, endpoint, request_methods, parameters, subdomain)
-        self._add_rule(rule)
+        self.rules[rule.endpoint] = rule
         return rule
     
     def after_request(self, after_request_function):
@@ -2260,15 +2599,15 @@ class AppBase(object):
             - If `parameters` contains a non `tuple` element.
             - If `options` contains extra parameters.
         ValueError
-            - If `parameters` contains an element with length of not `2`.
+            If `parameters` contains an element with length of not `2`.
         """
-        blueprint_state = BlueprintState(self, options)
+        blueprint_state = BlueprintState(blueprint, options)
         
         blueprints = self.blueprints
         if blueprints is None:
-            self.blueprints = blueprints = set()
+            self.blueprints = blueprints = []
         
-        blueprints.add(blueprint_state)
+        blueprints.append(blueprint_state)
 
 
 class BlueprintState(object):
@@ -2277,7 +2616,7 @@ class BlueprintState(object):
     
     Attributes
     ----------
-    blueprint : ``BluePrint``
+    blueprint : ``blueprint``
         The wrapped blueprint.
     url_prefix : `None` or `tuple` of `tuple` (`str`, `int`)
         Url prefix for all the routes of the blueprint. Set as `None` if not applicable.
@@ -2291,6 +2630,13 @@ class BlueprintState(object):
         """
         Creates a new blueprint state form the given blueprint and extra options.
         
+        Parameters
+        ----------
+        blueprint : ``AppBase``
+            The blueprint create overwrite state from.
+        options : `None` or `dict` of (`str`, `Any`) items
+            Extra options
+        
         Raises
         ------
         TypeError
@@ -2302,23 +2648,28 @@ class BlueprintState(object):
             - If `parameters` contains a non `tuple` element.
             - If `options` contains extra parameters.
         ValueError
-            - If `parameters` contains an element with length of not `2`.
+            If `parameters` contains an element with length of not `2`.
         """
         if not isinstance(blueprint, Blueprint):
             raise TypeError(f'`blueprint` can be only as `{Blueprint.__name__}` instance, got '
                 f'{blueprint.__class__.__name__}.')
         
-        subdomain = options.pop('subdomain', None)
-        subdomain = _validate_subdomain(subdomain)
-        
-        url_prefix = options.pop('url_prefix', None)
-        url_prefix = _validate_url_prefix(url_prefix)
-        
-        parameters = options.pop('url_defaults', None)
-        parameters = _validate_parameters(parameters, 'url_defaults')
-        
-        if options:
-            raise TypeError(f'`options` contains unexpected parameters: {options!r}.')
+        if options is None:
+            subdomain = None
+            url_prefix = None
+            parameters = None
+        else:
+            subdomain = options.pop('subdomain', None)
+            subdomain = _validate_subdomain(subdomain)
+            
+            url_prefix = options.pop('url_prefix', None)
+            url_prefix = _validate_url_prefix(url_prefix)
+            
+            parameters = options.pop('url_defaults', None)
+            parameters = _validate_parameters(parameters, 'url_defaults')
+            
+            if options:
+                raise TypeError(f'`options` contains unexpected parameters: {options!r}.')
         
         self = object.__new__(cls)
         self.blueprint = blueprint
@@ -2357,7 +2708,7 @@ class Blueprint(AppBase):
         
         No parameters are passed to before request functions.
     
-    blueprints : `None` or `set` of ``BlueprintState``
+    blueprints : `None` or `list` of ``BlueprintState``
         Registered blueprints to the app.
     
     error_handler_functions : `None` or `dict` of (`int`, `async-callable`) items
@@ -2607,10 +2958,8 @@ class WebApp(AppBase):
     
     _server : `None` or ``WebServer``
         The running web-server of the webapp.
-    _router : ``PathRouter``
-        Path router to decide which function should be called when receiving a request.
     """
-    __slots__ = ('_server', '_router')
+    __slots__ = ('_server',)
     def __new__(cls, import_name, *, template_folder=None, root_path=None, static_folder='static',
             static_url_path=None):
         """
@@ -2648,8 +2997,252 @@ class WebApp(AppBase):
         
         
         self._server = None
-        self._router = PathRouter()
+        
         return self
+
+def _registers_rules(application, blueprint_state_stack, rules, router, router_by_subdomain, subdomain, url_prefix,
+        parameters):
+    """
+    Registers more rules paths.
+    
+    Parameters
+    ----------
+    application : ``WebApp``
+        The parent application.
+    blueprint_state_stack : `None` or `tuple` of ``BluePrintState``
+        Blueprint stack of the rule.
+    rules : `list` of ``Rule``
+        Rules of a blueprint or of an application to register.
+    router : ``PathRouter``
+        Router where rules are registered without subdomain
+    router_by_subdomain : `dict` of (`str`, ``PathRouter``) items
+        Routers by subdomain name.
+    subdomain : `None` or `str`
+        Subdomain to overwrite the rules'.
+    url_prefix : `None` or `tuple` of `None` or `tuple` of `tuple` (`str`, `int`)
+        Additional url prefix for the rules.
+    parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+        Parameters which the routes of the blueprint will get by default.
+    """
+    for rule in rules:
+        rule = rule.copy()
+        rule.set_subdomain(subdomain)
+        rule.set_rule_prefix(url_prefix)
+        rule.set_parameters(parameters)
+        rule.set_application(application)
+        rule.set_blueprint_state_stack(blueprint_state_stack)
+        _register_route(rule, router, router_by_subdomain)
+
+def _register_route(rule, router, router_by_subdomain):
+    """
+    Registers an rule to the paths.
+    
+    Parameters
+    ----------
+    rule : ``Rule``
+        The url rule to register.
+    router : ``PathRouter``
+        Router where rules are registered without subdomain
+    router_by_subdomain : `dict` of (`str`, ``PathRouter``) items
+        Routers by subdomain name.
+    """
+    subdomain = rule.subdomain
+    if subdomain is None:
+        target_router = router
+    else:
+        try:
+            target_router = router_by_subdomain[subdomain]
+        except KeyError:
+            target_router = router_by_subdomain[subdomain] = PathRouter()
+    
+    target_router.register_route(rule, 0)
+
+def _registers_rules_from_state_stack(application, blueprint_state_stack, router, router_by_subdomain):
+    """
+    Registers the
+    
+    Parameters
+    ----------
+    application : ``WebApp``
+        The parent web application.
+    blueprint_state_stack : `list` of ``BlueprintState``
+        A list of blueprint stack.
+    router : ``PathRouter``
+        Router where rules are registered without subdomain
+    router_by_subdomain : `dict` of (`str`, ``PathRouter``) items
+        Routers by subdomain name.
+    """
+    blueprint_state_stack = tuple(blueprint_state_stack)
+    rules = list(blueprint_state_stack[-1].blueprint.rules.values())
+    
+    subdomain_final = None
+    url_prefix_final = None
+    parameters_final = None
+    
+    for blueprint_state in reversed(blueprint_state_stack):
+        blueprint = blueprint_state.blueprint
+        subdomain_overwrite = blueprint_state.subdomain
+        if subdomain_overwrite is None:
+            subdomain_overwrite = blueprint.subdomain
+        
+        if (subdomain_overwrite is not None):
+            subdomain_final = subdomain_overwrite
+        
+        url_prefix_overwrite = blueprint_state.url_prefix
+        if url_prefix_overwrite is None:
+            url_prefix_overwrite = blueprint.url_prefix
+        
+        if (url_prefix_overwrite is not None):
+            url_prefix_final = _merge_url_rule(url_prefix_overwrite, url_prefix_final)
+        
+        parameters_overwrite = blueprint_state.parameters
+        if parameters_overwrite is None:
+            parameters_overwrite = blueprint.parameters
+        
+        if (parameters_overwrite is not None):
+            parameters_final = _merge_parameters(parameters_final, parameters_overwrite)
+    
+    _registers_rules(application, blueprint_state_stack, rules, router, router_by_subdomain, subdomain_final,
+        url_prefix_final, subdomain_final)
+
+
+def _render_route_structure(prefix, router, parts):
+    """
+    Renders a ``PathRouter``'s structure to the given `parts` parameter. 
+    
+    Parameters
+    ----------
+    prefix
+    router
+    lines
+
+    Returns
+    -------
+
+    """
+    path_stack = [prefix]
+    router_stack = []
+    
+    pass
+
+class RequestHandler(object):
+    """
+    Dispatches a request.
+    
+    _router : ``PathRouter``
+        Path router to decide which function should be called when receiving a request.
+    _router_by_subdomain : `dict` of (`str`, ``PathRouter``)
+        Routers for each subdomain.
+    """
+    __slots__ = ('_router', '_router_by_subdomain')
+    def __new__(cls, application):
+        """
+        Creates a new ``RequestHandler`` instance.
+        
+        Parameters
+        ----------
+        application : ``WebApp``
+            The parent application.
+        
+        Raises
+        ------
+        RuntimeError
+            - If recursive blueprint hook was found.
+        """
+        # First scan for blueprints for recursive hooks and raise RuntimeError if any found.
+        # Do not use recursion when checking for recursion, lol.
+        blueprint_state_generator_stack = []
+        blueprint_stack = []
+        
+        next_stack_blueprints = application.blueprints
+        if (next_stack_blueprints is not None):
+            blueprint_state_generator_stack.append(iter(next_stack_blueprints))
+        
+        while blueprint_state_generator_stack:
+            blue_print_state_generator = blueprint_state_generator_stack[-1]
+            
+            try:
+                blueprint_state = next(blue_print_state_generator)
+            except StopIteration:
+                del blueprint_state_generator_stack[-1]
+                del blueprint_stack[-1]
+                continue
+            
+            blueprint = blueprint_state.blueprint
+            if blueprint in blueprint_stack:
+                raise RuntimeError(f'Recursive blueprint hook found: {blueprint_stack!r} is followed by {blueprint!r}.')
+            
+            next_stack_blueprints = blueprint.blueprints
+            if next_stack_blueprints is None:
+                continue
+            
+            blueprint_stack.append(blueprint)
+            blueprint_state_generator_stack.append(iter(next_stack_blueprints))
+            continue
+        
+        # No recursive blueprints found.
+        # Now we can add the rules.
+        router = PathRouter()
+        router_by_subdomain = {}
+        
+        blueprint_state_stack = []
+        
+        next_stack_blueprints = application.blueprints
+        if (next_stack_blueprints is not None):
+            blueprint_state_generator_stack.append(iter(next_stack_blueprints))
+        
+        _registers_rules(application, None, list(application.rules.values()), router, router_by_subdomain, None, None, None)
+        
+        while blueprint_state_generator_stack:
+            blue_print_state_generator = blueprint_state_generator_stack[-1]
+            
+            try:
+                blueprint_state = next(blue_print_state_generator)
+            except StopIteration:
+                _registers_rules_from_state_stack(application, blueprint_state_stack, router, router_by_subdomain)
+                
+                del blueprint_state_generator_stack[-1]
+                del blueprint_state_stack[-1]
+                continue
+            
+            blueprint_state_stack.append(blueprint_state)
+            continue
+        
+        
+        self = object.__new__(cls)
+        self._router = router
+        self._router_by_subdomain = router_by_subdomain
+        return self
+    
+    def render_structure(self):
+        """
+        Renders the ``RequestHandler``'s routing structure.
+        
+        Returns
+        -------
+        routing_structure : `str`
+        """
+        parts = []
+        _render_route_structure('.', self.router, parts)
+        for subdomain, router in self.router_by_subdomain:
+            _render_route_structure('.', self.router, parts)
+        
+        return ''.join(parts)
+    
+    async def __call__(self, raw_request_message):
+        """
+        Handles a request.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        raw_request_message : ``RawRequestMessage``
+            Received raw request.
+        """
+        url = URL(raw_request_message.path)
+        route = self._dispatch_route(url, raw_request_message.method)
+        # TODO
     
     def _dispatch_route(self, url, request_method):
         """
@@ -2668,18 +3261,3 @@ class WebApp(AppBase):
             route = Route(ROUTE_NOT_FOUND_NOT_ALLOWED)
         
         return route
-    
-    def _register_route(self, rule, request_methods, parameters):
-        """
-        Registers an url and handler to the http server.
-        
-        Parameters
-        ----------
-        rule : ``Rule``
-            The url rule to register.
-        request_methods : `None` or `set of `str`
-            The method to request.
-        parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
-            Default parameters to call `view_func` with.
-        """
-        self._router.register_route(rule, 0, request_methods, parameters)

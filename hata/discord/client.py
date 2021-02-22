@@ -33,10 +33,12 @@ from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDP
 from .role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
-from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent
+from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent, \
+    INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
+    INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
 from .audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
 from .invite import Invite
-from .message import Message, MessageRepr, MessageReference, Attachment, Sticker
+from .message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
@@ -69,6 +71,7 @@ _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 CHANNEL_MOVE_RESET_INDEXES = tuple(index for index, type_ in enumerate(CHANNEL_TYPES) if \
     (issubclass(type_, ChannelGuildBase) and type_ is not ChannelCategory))
 
+MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
 
 class Client(UserBase):
     """
@@ -3390,7 +3393,7 @@ class Client(UserBase):
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `channel`'s type is incorrect.
-            - If `sticker` was not given nither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
+            - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
                 (``Sticker``, `int).
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -11025,7 +11028,7 @@ class Client(UserBase):
             The emoji's name. It's length can be between `2` and `32`.
         image : `bytes-like`
             The emoji's icon.
-        roles : None` or (`list`, `set` or `tuple`) of (`Role` or `int`), Optional
+        roles : None` or (`list`, `set`, `tuple`) of (``Role`` or `int`), Optional
             Whether the created emoji should be limited only to users with any of the specified roles.
         reason : `None` or `str`, Optional
             Will show up at the guild's audit logs.
@@ -11153,7 +11156,7 @@ class Client(UserBase):
             The emoji to edit.
         name : `str`, Optional
             The emoji's new name. It's length can be in range [2:32].
-        roles : `None` or `list` of ``Role`` objects, Optional
+        roles : `None` or (`list`, `set`, `tuple`) of (``Role``, `int`), Optional
             The roles to what is the role limited. By passing it as `None`, or as an empty `list` you can remove the
             current ones.
         reason : `None` or `str`, Optional
@@ -12938,7 +12941,7 @@ class Client(UserBase):
     
     
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
-            tts=False, show_source=True):
+            tts=False, show_source=None, show_for_invoking_user_only=False):
         """
         Sends an interaction response. After receiving an ``InteractionEvent``, you should acknowledge it within
         `3` seconds to perform followup actions.
@@ -12948,8 +12951,9 @@ class Client(UserBase):
         ``.interaction_followup_message_create`` will. To edit or delete this message, you can use
         ``.interaction_response_message_edit`` and ``interaction_response_message_delete``.
         
-        When calling ``.interaction_response_message_create`` second time on the same `interaction`, will redirect to
-        ``.interaction_followup_message_create`` and drop a warning.
+        When calling ``.interaction_response_message_create`` multiple time on the same `interaction`, will redirect to
+        ``.interaction_followup_message_create`` or to ``.interaction_response_message_edit`` depending whether the
+        interaction event was just deferred, and drop a warning.
         
         This method is a coroutine.
         
@@ -12971,8 +12975,15 @@ class Client(UserBase):
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
-        show_source : `bool`, Optional
+        show_source : `bool`, Optional Deprecated
             Whether the source message should be shown as well. Defaults to `True`.
+            
+            Deprecates, the source message is always shown, will be merged to the response message in a future discord
+            update. Will be removed in 2021 April.
+        show_for_invoking_user_only : `bool`, Optional
+            Whether the sent message should only be shown to the invoking user. Defaults to `False`.
+            
+            If given as `True` only the message's content will be processed by Discord.
         
         Raises
         ------
@@ -12987,7 +12998,9 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `interaction` was not given an ``InteractionEvent`` instance.
+            - If `interaction` was not given an ``InteractionEvent`` instance.
+            - If `tts` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
         
         Notes
         -----
@@ -13004,7 +13017,20 @@ class Client(UserBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        if interaction._responded:
+        response_state = interaction._response_state
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+            # Expected state, nice
+            pass
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
+                f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_response_message_edit`.',
+                ResourceWarning)
+            
+            return await self.interaction_response_message_edit(interaction, content, embed=embed,
+                allowed_mentions=allowed_mentions)
+        
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
             warnings.warn(
                 f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
                 f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_followup_message_create`.',
@@ -13090,6 +13116,23 @@ class Client(UserBase):
                 if not content:
                     content = None
         
+        if (show_source is not None):
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_response_message_create`\'s `show_source` parameter is '
+                f'deprecated, and will be removed in 2021 April. Reference: '
+                f'https://github.com/discord/discord-api-docs/pull/2615',
+                FutureWarning)
+        
+        if __debug__:
+            if not isinstance(tts, bool):
+                raise AssertionError(f'`tts` can be given as `bool` instance, got {tts.__class__.__name__}.')
+        
+            if not isinstance(show_for_invoking_user_only, bool):
+                raise AssertionError(f'`show_for_invoking_user_only` can be given as `bool` instance, got '
+                    f'{show_for_invoking_user_only.__class__.__name__}.')
+        
+        # Build payload
+        
         message_data = {}
         contains_content = False
         
@@ -13107,32 +13150,47 @@ class Client(UserBase):
         if tts:
             message_data['tts'] = True
         
+        if message_data:
+            deferring = False
+        else:
+            deferring = True
+        
+        if show_for_invoking_user_only:
+            message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+        
         data = {}
         if contains_content:
             data['data'] = message_data
-            
-            if show_source:
-                response_type = InteractionResponseTypes.message_and_source
-            else:
-                response_type = InteractionResponseTypes.message
+        
+        if deferring:
+            response_type = InteractionResponseTypes.source
         else:
-            if show_source:
-                response_type = InteractionResponseTypes.source
-            else:
-                response_type = InteractionResponseTypes.acknowledge
+            response_type = InteractionResponseTypes.message_and_source
         
         data['type'] = response_type
         
         await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        
         # Mark the interaction as responded.
-        interaction._responded = True
-        # No message data is provided, return `None`.
+        
+        response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+        # if deferring:
+        #    response_state = INTERACTION_EVENT_RESPONSE_STATE_DEFERRED
+        # else:
+        #    response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+        interaction._response_state = response_state
+        
+        # No message data is returned by Discord, return `None`.
         return None
     
     
     async def interaction_response_message_edit(self, interaction, content=..., embed=..., allowed_mentions=...):
         """
-        Edits the given `interaction`'s source response.
+        Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
+        will send the message as well.
+        
+        When calling ``.interaction_response_message_edit`` before ``interaction_response_message_create`` will redirect
+        to ``.interaction_response_message_create`` and drop a warning.
         
         This method is a coroutine.
         
@@ -13171,6 +13229,14 @@ class Client(UserBase):
         AssertionError
             - If `interaction` was not given as ``InteractionEvent`` instance.
             - If the client's application is not yet synced.
+        
+        Notes
+        -----
+        Cannot editing interaction messages, which ware created with `show_for_invoking_user_only=True`:
+        
+        ```
+        DiscordException Not Found (404), code=10008: Unknown Message
+        ```
         """
         application_id = self.application.id
         if __debug__:
@@ -13181,6 +13247,30 @@ class Client(UserBase):
             if not isinstance(interaction, InteractionEvent):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
+        
+        response_state = interaction._response_state
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED or \
+                response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            # Expected state, nice
+            pass
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_response_message_edit` called before calling '
+                f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. Redirecting '
+                f'to `{self.__class__.__name__}.interaction_response_message_edit`.',
+                ResourceWarning)
+            
+            return await self.interaction_response_message_create(interaction, content, embed=embed,
+                allowed_mentions=allowed_mentions)
+        
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
+                f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_followup_message_create`.',
+                ResourceWarning)
+            
+            return await self.interaction_followup_message_create(interaction, content, embed=embed,
+                allowed_mentions=allowed_mentions, tts=tts)
         
         # Embed check order:
         # 1.: Ellipsis
@@ -13284,7 +13374,11 @@ class Client(UserBase):
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
         await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
             message_data)
-    
+        
+        # Mark the interaction as responded if deferred.
+        
+        #if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+        #    interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
     
     async def interaction_response_message_delete(self, interaction):
         """
@@ -13320,13 +13414,15 @@ class Client(UserBase):
         await self.http.interaction_response_message_delete(application_id, interaction.id, interaction.token)
     
     
-    async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
-            tts=False):
+    async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, file=None,
+            allowed_mentions=..., tts=False, show_for_invoking_user_only=False):
         """
         Sends a followup message with the given interaction.
         
         When calling ``.interaction_followup_message_create`` before calling ``.interaction_response_message_create``
-        on an interaction, will redirect to ``.interaction_followup_message_create``and drop a warning.
+        on an interaction, will redirect to ``.interaction_followup_message_create` `and drop a warning. If
+        ``.interaction_followup_message_create`` was called, but only to defer the interaction event, will redirect to
+        ``.interaction_followup_message_edit`` instead.
         
         This method is a coroutine.
         
@@ -13344,10 +13440,16 @@ class Client(UserBase):
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        file : `Any`, Optional
+            A file to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
+        show_for_invoking_user_only : `bool`, Optional
+            Whether the sent message should only be shown to the invoking user. Defaults to `False`.
+            
+            If given as `True` only the message's content will be processed by Discord.
         
         Returns
         -------
@@ -13371,7 +13473,8 @@ class Client(UserBase):
         AssertionError
             - If `interaction` was not given as ``InteractionEvent`` instance.
             - If the client's application is not yet synced.
-        
+            - If `tts` was not given as `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `bool` instance.
         Notes
         -----
         Can be used before calling ``.interaction_response_message_create``, tho it will be redirected manually with
@@ -13382,16 +13485,34 @@ class Client(UserBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        if (not interaction._responded):
+        
+        response_state = interaction._response_state
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            # Expected state, nice
+            pass
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
             warnings.warn(
                 f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
                 f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. Tho it is '
                 f'possible to call `.interaction_followup_message_create`` before, the request is still redirected to '
-                f'`.interaction_response_message_create` with `show_source` parameter as `False`.',
+                f'`.interaction_response_message_create`',
                 ResourceWarning)
             
             return await self.interaction_response_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions, tts=tts, show_source=False)
+                allowed_mentions=allowed_mentions, tts=tts)
+        
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
+                f'`{self.__class__.__name__}.interaction_response_message_edit` (deferred response was sent) with '
+                f'{interaction!r}. Tho it is possible to call `.interaction_followup_message_create`` before, the '
+                f'request is still redirected to `.interaction_response_message_edit`.',
+                ResourceWarning)
+            
+            return await self.interaction_response_message_edit(interaction, content, embed=embed,
+                allowed_mentions=allowed_mentions)
+        
+
         
         application_id = self.application.id
         if __debug__:
@@ -13475,6 +13596,16 @@ class Client(UserBase):
                 if not content:
                     content = None
         
+        if __debug__:
+            if not isinstance(tts, bool):
+                raise AssertionError(f'`tts` can be given as `bool` instance, got {tts.__class__.__name__}.')
+            
+            if not isinstance(show_for_invoking_user_only, bool):
+                raise AssertionError(f'`show_for_invoking_user_only` can be given as `bool` instance, got '
+                    f'{show_for_invoking_user_only.__class__.__name__}.')
+        
+        # Build payload
+        
         message_data = {}
         contains_content = False
         
@@ -13492,11 +13623,23 @@ class Client(UserBase):
         if tts:
             message_data['tts'] = True
         
+        if show_for_invoking_user_only:
+            message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+        
+        if file is None:
+            to_send = message_data
+        else:
+            to_send = self._create_file_form(message_data, file)
+            if to_send is None:
+                to_send = message_data
+            else:
+                contains_content = True
+        
         if not contains_content:
             return None
         
         data = await self.http.interaction_followup_message_create(application_id, interaction.id, interaction.token,
-            message_data)
+            to_send)
         
         return interaction.channel._create_new_message(data)
     
@@ -13547,6 +13690,14 @@ class Client(UserBase):
         AssertionError
             - If `interaction` was not given as ``InteractionEvent`` instance.
             - If the client's application is not yet synced.
+        
+        Notes
+        -----
+        Cannot editing interaction messages, which ware created with `show_for_invoking_user_only=True`:
+        
+        ```
+        DiscordException Not Found (404), code=10008: Unknown Message
+        ```
         """
         application_id = self.application.id
         if __debug__:

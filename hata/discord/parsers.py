@@ -1,6 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('EventBase', 'EventHandlerBase', 'EventWaitforBase', 'GuildUserChunkEvent', 'IntentFlag',
-    'ReactionAddEvent', 'ReactionDeleteEvent', 'eventlist', )
+__all__ = ('EventBase', 'EventHandlerBase', 'EventWaitforBase', 'GuildUserChunkEvent',
+    'INTERACTION_EVENT_RESPONSE_STATE_DEFERRED', 'INTERACTION_EVENT_RESPONSE_STATE_NONE',
+    'INTERACTION_EVENT_RESPONSE_STATE_RESPONDED', 'IntentFlag', 'InteractionEvent', 'ReactionAddEvent',
+    'ReactionDeleteEvent', 'eventlist', )
 
 import sys, datetime, warnings
 from datetime import datetime
@@ -19,7 +21,7 @@ from ..backend.event_loop import LOOP_TIME
 from .bases import FlagBase, DiscordEntity
 from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS
 from .user import User, create_partial_user, USERS
-from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelText
+from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelText, create_partial_channel
 from .utils import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
@@ -4409,6 +4411,9 @@ PARSER_DEFAULTS(
     CHANNEL_UNREAD_UPDATE)
 del CHANNEL_UNREAD_UPDATE
 
+INTERACTION_EVENT_RESPONSE_STATE_NONE = 0
+INTERACTION_EVENT_RESPONSE_STATE_DEFERRED = 1
+INTERACTION_EVENT_RESPONSE_STATE_RESPONDED = 2
 
 class InteractionEvent(DiscordEntity, EventBase):
     """
@@ -4418,11 +4423,23 @@ class InteractionEvent(DiscordEntity, EventBase):
     ----------
     id : `int`
         The interaction's id.
-    _responded : `bool`
-        Whether initial message was sent to answer the ``InteractionEvent``. Can be used for implementing higher level
-        slash command frameworks to check whether the user manually responded.
+    _cached_users : `None` or `list` of (``User`` or ``Client``)
+        A list of users, which are temporary cached.
+    _response_state : `bool`
+        The response order state of ``InteractionEvent``
         
-        Also used by the ``Client`` class to ensure correct flow order.
+        +--------------------------------------------+----------+---------------------------------------------------+
+        | Respective name                            | Value    | Description                                       |
+        +============================================+==========+===================================================+
+        | INTERACTION_EVENT_RESPONSE_STATE_NONE      | 0        | No response was yet sent.                         |
+        +--------------------------------------------+----------+---------------------------------------------------+
+        | INTERACTION_EVENT_RESPONSE_STATE_DEFERRED  | 1        | The event was acknowledged and response will be   |
+        |                                            |          | sent later. Shows loading screen for the user.    |
+        +--------------------------------------------+----------+---------------------------------------------------+
+        | INTERACTION_EVENT_RESPONSE_STATE_RESPONDED | 2        | Response was sent on the interaction.             |
+        +--------------------------------------------+----------+---------------------------------------------------+
+        
+        Can be used by extensions and is used by the the ``Client`` instances to ensure correct flow order.
     channel : ``ChannelText`` or ``ChannelPrivate``
         The channel from where the interaction was called. Might be a partial channel if not cached.
     guild : `None` or ``Guild`
@@ -4430,6 +4447,12 @@ class InteractionEvent(DiscordEntity, EventBase):
         channel.
     interaction : ``ApplicationCommandInteraction``
         The called interaction by it's route by the user.
+    resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
+        Resolved received channels stored by their identifier as keys if any.
+    resolved_roles : `None` or `dict` of (`int`, ``Role``) items
+        Resolved received roles stored by their identifier as keys if any.
+    resolved_users : `None` or `dict` of (`int`, ``User`` or ``Client``) items
+        Resolved received users stored by their identifier as keys if any.
     token : `str`
         Interaction's token used when responding on it.
     user : ``Client`` or ``User``
@@ -4452,7 +4475,8 @@ class InteractionEvent(DiscordEntity, EventBase):
     The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
     invalidated immediately.
     """
-    __slots__ = ('_responded', 'channel', 'guild', 'interaction', 'token', 'user', 'user_permissions')
+    __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'resolved_channels',
+        'resolved_roles', 'resolved_users', 'token', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -4475,7 +4499,12 @@ class InteractionEvent(DiscordEntity, EventBase):
             guild = Guild.precreate(guild_id)
         else:
             guild = None
-            
+        
+        if (guild is not None) and (not guild.partial):
+            cached_users = []
+        else:
+            cached_users = None
+        
         channel_id = int(data['channel_id'])
         if guild_id:
             channel = ChannelText.precreate(channel_id)
@@ -4487,7 +4516,9 @@ class InteractionEvent(DiscordEntity, EventBase):
         except KeyError:
             user_data = data['user']
         
-        user = User(user_data, guild)
+        invoker_user = User(user_data, guild)
+        if (cached_users is not None):
+            cached_users.append(invoker_user)
         
         try:
             user_permissions = user_data['permissions']
@@ -4496,29 +4527,107 @@ class InteractionEvent(DiscordEntity, EventBase):
         else:
             user_permissions = Permission(user_permissions)
         
+        interaction_data = data['data']
+        
+        try:
+            resolved_data = interaction_data['resolved']
+        except KeyError:
+            resolved_users = None
+            resolved_channels = None
+            resolved_roles = None
+        else:
+            try:
+                resolved_user_datas = resolved_data['users']
+            except KeyError:
+                resolved_users = None
+            else:
+                if resolved_user_datas:
+                    try:
+                        resolved_guild_profile_datas = resolved_data['members']
+                    except KeyError:
+                        resolved_guild_profile_datas = None
+                    
+                    resolved_users = {}
+                    
+                    for user_id, user_data in resolved_user_datas.items():
+                        if resolved_guild_profile_datas is None:
+                            guild_profile_data = None
+                        else:
+                            guild_profile_data = resolved_guild_profile_datas.get(user_id)
+                        
+                        if (guild_profile_data is not None):
+                            user_data['member'] = guild_profile_data
+                        
+                        user = User(user_data, guild)
+                        resolved_users[user.id] = user
+                        
+                        if (guild_profile_data is not None) and (cached_users is not None) and \
+                                (user not in cached_users):
+                            cached_users.append(user)
+                    
+                else:
+                    resolved_users = None
+            
+            try:
+                resolved_channel_datas = resolved_data['channels']
+            except KeyError:
+                resolved_channels = None
+            else:
+                if resolved_channel_datas:
+                    resolved_channels = {}
+                    
+                    for channel_data in resolved_channel_datas.values():
+                        channel = create_partial_channel(channel_data, guild)
+                        if (channel is not None):
+                            resolved_channels[channel.id] = channel
+                    
+                    if not resolved_channels:
+                        resolved_channels = None
+                else:
+                    resolved_channels = None
+            
+            try:
+                resolved_role_datas = resolved_data['roles']
+            except KeyError:
+                resolved_roles = None
+            else:
+                if resolved_role_datas:
+                    resolved_roles = {}
+                    for role_data in resolved_role_datas.values():
+                        role = Role(role_data, guild)
+                        resolved_roles[role.id] = role
+                else:
+                    resolved_roles = None
+        
+        interaction = ApplicationCommandInteraction(data['data'])
+        
         self = object.__new__(cls)
         self.id = int(data['id'])
         self.channel = channel
         self.guild = guild
-        self.interaction = ApplicationCommandInteraction(data['data'])
+        self.interaction = interaction
         self.token = data['token']
         # We ignore `type` field, since we always get only `InteractionType.application_command`.
-        self.user = user
+        self.user = invoker_user
         self.user_permissions = user_permissions
-        self._responded = False
+        self._response_state = INTERACTION_EVENT_RESPONSE_STATE_NONE
+        self._cached_users = cached_users
+        self.resolved_users = resolved_users
+        self.resolved_channels = resolved_channels
+        self.resolved_roles = resolved_roles
         
-        if (guild is not None) and (not guild.partial):
-            
-            key = (user, guild)
-            USER_GUILD_CACHE = cls._USER_GUILD_CACHE
-            try:
-                reference_count = USER_GUILD_CACHE[key]
-            except KeyError:
-                reference_count = 1
-            else:
-                reference_count += 1
-            
-            USER_GUILD_CACHE[key] = reference_count
+        if (cached_users is not None):
+            for user in cached_users:
+                key = (user, guild)
+                USER_GUILD_CACHE = cls._USER_GUILD_CACHE
+                try:
+                    reference_count = USER_GUILD_CACHE[key]
+                except KeyError:
+                    reference_count = 1
+                else:
+                    reference_count += 1
+                
+                USER_GUILD_CACHE[key] = reference_count
         
         return self
     
@@ -4526,46 +4635,59 @@ class InteractionEvent(DiscordEntity, EventBase):
         """
         Unregisters the user-guild pair from the interaction cache.
         """
+        cached_users = self._cached_users
+        if cached_users is None:
+            return
+        
         guild = self.guild
-        if (guild is None):
-            return
         
-        user = self.user
-        key = (user, guild)
-        USER_GUILD_CACHE = self._USER_GUILD_CACHE
-        
-        # A client meanwhile joined the guild?
-        if not guild.partial:
+        for user in cached_users:
+            key = (user, guild)
+            USER_GUILD_CACHE = self._USER_GUILD_CACHE
+            
+            # A client meanwhile joined the guild?
+            if not guild.partial:
+                try:
+                    del USER_GUILD_CACHE[key]
+                except KeyError:
+                    pass
+                return
+            
             try:
-                del USER_GUILD_CACHE[key]
+                reference_count = USER_GUILD_CACHE[key]
             except KeyError:
-                pass
-            return
-        
-        try:
-            reference_count = USER_GUILD_CACHE[key]
-        except KeyError:
-            reference_count = 0
-        else:
-            if reference_count == 1:
-                del USER_GUILD_CACHE[key]
                 reference_count = 0
             else:
-                reference_count -= 1
+                if reference_count == 1:
+                    del USER_GUILD_CACHE[key]
+                    reference_count = 0
+                else:
+                    reference_count -= 1
             
-        
-        if reference_count == 0:
-            try:
-                del user.guild_profiles[guild]
-            except KeyError:
-                pass
+            if reference_count == 0:
+                try:
+                    del user.guild_profiles[guild]
+                except KeyError:
+                    pass
     
     def __repr__(self):
         """Returns the representation of the event."""
         result = ['<', self.__class__.__name__]
         
-        if self._responded:
-            result.append(' (responded), ')
+        response_state = self._response_state
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+            response_state_name = None
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            response_state_name = 'deferred'
+        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            response_state_name = 'responded'
+        else:
+            response_state_name = None
+        
+        if (response_state_name is not None):
+            result.append(' (')
+            result.append(response_state_name)
+            result.append(') ')
         
         result.append(' channel=')
         result.append(repr(self.channel))

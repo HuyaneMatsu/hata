@@ -604,15 +604,15 @@ class Cycler(object):
                 ]
         
         funcs = self.funcs
-        if funcs:
+        limit = len(funcs)
+        if limit:
             priority = funcs[0].priority
             
             index = 1
-            limit = len(priority)
             while index < limit:
                 func = funcs[index]
                 if func.priority == priority:
-                    index +=1
+                    index += 1
                     continue
                 
                 for func in funcs:

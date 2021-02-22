@@ -52,6 +52,8 @@ class MessageFlag(FlagBase):
     +---------------------------+-------------------+
     | has_thread                | 5                 |
     +---------------------------+-------------------+
+    | invoking_user_only        | 6                 |
+    +---------------------------+-------------------+
     """
     __keys__ = {
         'crossposted'            : 0,
@@ -60,6 +62,7 @@ class MessageFlag(FlagBase):
         'source_message_deleted' : 3,
         'urgent'                 : 4,
         'has_thread'             : 5,
+        'invoking_user_only'     : 6,
             }
 
 class MessageActivity(object):

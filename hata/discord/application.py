@@ -14,11 +14,38 @@ class ApplicationFlag(FlagBase):
     
     The implemented user flags are the following:
     
-    +-------------------------------+-------------------+
-    | Respective name               | Bitwise position  |
-    +===============================+===================+
+    +-----------------------------------+-------------------+
+    | Respective name                   | Bitwise position  |
+    +===================================+===================+
+    | managed_emoji                     | 2                 |
+    +-----------------------------------+-------------------+
+    | group_dm_create                   | 4                 |
+    +-----------------------------------+-------------------+
+    | rpc_hash_connected                | 11                |
+    +-----------------------------------+-------------------+
+    | gateway_presence                  | 12                |
+    +-----------------------------------+-------------------+
+    | gateway_presence_limited          | 13                |
+    +-----------------------------------+-------------------+
+    | gateway_guild_members             | 14                |
+    +-----------------------------------+-------------------+
+    | gateway_guild_members_limited     | 15                |
+    +-----------------------------------+-------------------+
+    | verification_pending_guild_limit  | 16                |
+    +-----------------------------------+-------------------+
+    | embedded                          | 17                |
+    +-----------------------------------+-------------------+
     """
     __keys__ = {
+        'managed_emoji'                    :  2,
+        'group_dm_create'                  :  4,
+        'rpc_hash_connected'               : 11,
+        'gateway_presence'                 : 12,
+        'gateway_presence_limited'         : 13,
+        'gateway_guild_members'            : 14,
+        'gateway_guild_members_limited'    : 15,
+        'verification_pending_guild_limit' : 16,
+        'embedded'                         : 17,
             }
 
 class Application(DiscordEntity, immortal=True):
@@ -370,13 +397,13 @@ class Application(DiscordEntity, immortal=True):
         
         self.eula_id = eula_id
         
+        # Update data may not contain flags, so do not set if missing.
         try:
             flags = data['flags']
         except KeyError:
-            flags = ApplicationFlag()
+            pass
         else:
-            flags = ApplicationFlag(flags)
-        self.flags = flags
+            self.flags = ApplicationFlag(flags)
 
 class Team(DiscordEntity, immortal=True):
     """

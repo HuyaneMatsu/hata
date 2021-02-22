@@ -72,6 +72,8 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-----------------------+-------------------+
     | manage_emojis         | 30                |
     +-----------------------+-------------------+
+    | use_application_commands    | 31                |
+    +-----------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -134,10 +136,9 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_roles'          : 28,
         'manage_webhooks'       : 29,
         'manage_emojis'         : 30,
-        #'unused'               : 31,
-        #rest is unused
+        'use_application_commands'    : 31,
             }
-
+    
     def handle_overwrite(self, allow, deny):
         """
         Applies an allow and a deny operation on the permission.

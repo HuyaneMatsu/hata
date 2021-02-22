@@ -73,6 +73,7 @@ def create_partial_channel(data, partial_guild=None):
     """
     if (data is None) or (not data):
         return None
+    
     channel_id = int(data['id'])
     try:
         return CHANNELS[channel_id]

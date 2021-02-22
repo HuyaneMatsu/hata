@@ -25,6 +25,8 @@ Discord sets the following limitations:
 - Global commands are updated only after 1 hour.
 - Acknowledging must be done within 3 seconds.
 - Followup messages can be sent within 15 minutes after acknowledging.
+- Custom emojis only show up correctly in interaction responses when `@everyone` role has `use_external_emojis`
+    permission.
 
 The parameter types can be the following:
 
@@ -40,8 +42,8 @@ The parameter types can be the following:
 | channel       | Yes           | `'channel'`           | `ChannelBase`         | `Channelbase` instance    |
 | channel_id    | No            | `'channl_id'`         | N/A                   | `int`                     |
 
-If a parameter validating fails, then the command wont be called. This is especially true for cases when the parameter
-requires bot cache, or if the user gives invalid data (Discord does no validation).
+If validating a parameter fails, the command wont be called. This can be the case when the user mentions
+non-existing entities. To avoid this behaviour, you can use the `..._id` parameters instead.
 
 There are also choice parameters, but lets talk about those only later.
 
@@ -272,31 +274,26 @@ Defines whether the command is a global command. Accepts either `True` of `False
 Mutually exclusive with the `guild` parameter. If neither `guild` not `is_global` parameter is given, the command will
 become "non-global". More about them in the [Non-global](#non-global-commands) section.
 
-##### show_source
+##### show_for_invoking_user_only
 
-Whether the source message should be shown when responding. Defaults to `True`.
+Whether the source message should be shown only for the invoker user. Defaults to `False`.
 
-If you already tried the above examples, you might have notice that you probably wont want to send the source message
-at all the cases.
+This is a perfect time to change up our `/perms` command. Discord ignores everything except `content`, so we need to
+change up the command as well, to return just a simple string.
 
-Lets improve the `cookie` command example again!
- 
 ```py
 from hata import Embed
 
-@Nitori.interactions(guild=TEST_GUILD, show_source=False)
-async def cookie(client, event,
-        user : ('user', 'To who?') = None,
-            ):
-    """Gifts a cookie!"""
-    if user is None:
-        source_user = client
-        target_user = event.user
+@Nitori.interactions(guild=TEST_GUILD, show_for_invoking_user_only=True)
+async def perms(client, event):
+    """Shows your permissions."""
+    user_permissions = event.user_permissions
+    if user_permissions:
+        content = '\n'.join(permission_name.replace('_', '-') for permission_name in user_permissions)
     else:
-        source_user = event.user
-        target_user = user
+        content = '*none*'
     
-    return Embed(description=f'{source_user:f} just gifted a cookie to {target_user:f} !')
+    return content
 ```
 
 ##### name

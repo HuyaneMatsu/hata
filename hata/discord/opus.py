@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('OpusError', )
+__all__ = ('OpusDecoder', 'OpusEncoder', 'OpusError', )
 
 import ctypes, sys
 import ctypes.util

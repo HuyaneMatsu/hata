@@ -659,7 +659,7 @@ class ParameterValidatorPathStep(object):
     __slots__ = ('path_routers', 'parameter_type', 'validator',)
     def __new__(cls, parameter_type, parameter_name):
         """
-        Creates a new ``ParameterValidatorPathStep`` instance with teh given parameters.
+        Creates a new ``ParameterValidatorPathStep`` instance with the given parameters.
         
         Parameters
         ----------
@@ -1505,7 +1505,7 @@ def _validate_options(options):
     Returns
     -------
     request_methods : `set` of `str`
-        A set of teh validated http methods. If none is given, `'GET'` is auto added to it.
+        A set of the validated http methods. If none is given, `'GET'` is auto added to it.
     parameters : `None` or `list` of `tuple` (`str`, `Any`)
         Defaults parameters to the dispatched router.
     subdomain : `None` or `str`
@@ -2502,7 +2502,7 @@ class AppBase(object):
         Parameters
         ----------
         url_default_function : `async-callable`
-            Should accept teh following parameters
+            Should accept the following parameters
             +-------------------+---------------------------+-------------------------------------------------------+
             | Respective name   | type                      | Description                                           |
             +===================+===========================+=======================================================+
@@ -2813,7 +2813,7 @@ class Blueprint(AppBase):
         static_url_path : `None` or `str`, Optional
             Url path to static files. Defaults to `static_folder`'s value.
         url_prefix : `None` or `str`, Optional
-            Url prefix for all the routes registered to teh blueprint.
+            Url prefix for all the routes registered to the blueprint.
         subdomain : `None` or `str`
             Subdomain, what the routes of the blueprint gonna match.
         url_defaults : `None`, `dict` of (`str`, `Any`) items or (`set`, `list`, `tuple`) of (`str`, `Any`) items
@@ -3106,25 +3106,6 @@ def _registers_rules_from_state_stack(application, blueprint_state_stack, router
         url_prefix_final, subdomain_final)
 
 
-def _render_route_structure(prefix, router, parts):
-    """
-    Renders a ``PathRouter``'s structure to the given `parts` parameter. 
-    
-    Parameters
-    ----------
-    prefix
-    router
-    lines
-
-    Returns
-    -------
-
-    """
-    path_stack = [prefix]
-    router_stack = []
-    
-    pass
-
 class RequestHandler(object):
     """
     Dispatches a request.
@@ -3222,10 +3203,15 @@ class RequestHandler(object):
         -------
         routing_structure : `str`
         """
+        route_prefix_parts = ['.']
         parts = []
-        _render_route_structure('.', self.router, parts)
+        
+        self.router.render_structure(route_prefix_parts, parts)
+        
         for subdomain, router in self.router_by_subdomain:
-            _render_route_structure('.', self.router, parts)
+            route_prefix_parts.append(subdomain)
+            router.render_structure(route_prefix_parts, parts)
+            del route_prefix_parts[-1]
         
         return ''.join(parts)
     
@@ -3242,7 +3228,7 @@ class RequestHandler(object):
         """
         url = URL(raw_request_message.path)
         route = self._dispatch_route(url, raw_request_message.method)
-        # TODO
+        
     
     def _dispatch_route(self, url, request_method):
         """

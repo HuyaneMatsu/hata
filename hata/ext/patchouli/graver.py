@@ -786,3 +786,50 @@ class GravedListing(object):
     def __repr__(self):
         """Returns the graved listing's representation."""
         return f'<{self.__class__.__name__} elements={self.elements!r}>'
+
+
+class GravedBlockQuote(object):
+    """
+    Represents a graved block quote part of a docstring.
+    
+    Attributes
+    ----------
+    descriptions : `list` of `list` of (`str`, ``Grave``)
+        Graved description parts of the block quote.
+    """
+    __slots__ = ('descriptions', )
+    def __new__(cls, parent, path):
+        """
+        Creates a new graved block quote.
+        
+        Parameters
+        ----------
+        parent : ``TextBlockQuote``
+            The source block quote.
+        path : ``QualPath``
+            The path of the respective docstring.
+        
+        Returns
+        -------
+        self : `None` or ``GravedBlockQuote``
+            Returns `None`, if would have been creating an empty graved block quote,
+        """
+        graved_descriptions = []
+        for description in parent._descriptions:
+            graved_description = description.graved(path)
+            if graved_description is None:
+                continue
+            
+            graved_descriptions.append(graved_description)
+        
+        if not graved_descriptions:
+            DocWarning(path, 'Empty description would have been created.')
+            return None
+        
+        self = object.__new__(cls)
+        self.descriptions = graved_descriptions
+        return self
+    
+    def __repr__(self):
+        """Returns the graved block quote's representation."""
+        return f'<{self.__class__.__name__} descriptions={self.descriptions!r}>'

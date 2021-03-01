@@ -2,7 +2,7 @@
 from math import ceil
 import re
 
-from .graver import GRAMMAR_CHARS, GravedDescription, GravedCodeBlock, GravedTable, GravedListing, \
+from .graver import GRAMMAR_CHARS, GravedDescription, GravedCodeBlock, GravedTable, GravedListing, GravedBlockQuote, \
     GRAVE_TYPE_GLOBAL_REFERENCE, DO_NOT_ADD_SPACE_AFTER, GravedAttributeDescription
 
 INDENT_SIZE_DEFAULT = 4
@@ -1227,6 +1227,243 @@ class DescriptionConverter(object):
         to_extend.append('<<END>>')
         return ''.join(to_extend)
 
+
+class BlockQuoteConverter(object):
+    """
+    Converter class for descriptions when building text.
+    
+    Attributes
+    ----------
+    empty_line : `str`
+        Empty line inside of the block quote separating 2 paragraphs.
+    indent : `int`
+        The indent level of the block quote.
+    lines_by_paragraph : `list` of (`list` of `str`)
+        The lines of the block quote.
+    """
+    __slots__ = ('empty_line', 'indent', 'lines_by_paragraph', )
+    def __new__(cls, block_quote, indent_level, optimal_fit, builder_context):
+        """
+        Creates a new block quote to text converter.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        block_quote : ``GravedBlockQuote``
+            The source block quote.
+        indent_level : `int`
+            The number of how far is the block quote indented.
+        optimal_fit : `int`
+            The preferred maximal line length of the block quote.
+        builder_context : ``BuilderContext``
+            Context to define some building details.
+        
+        Yields
+        ------
+        self : ``BlockQuoteConverter``
+        """
+        lines_by_paragraph = []
+        indention = builder_context.indent*indent_level
+        
+        for description in block_quote.descriptions:
+            description_words = builder_context.word_converter(description)
+            description_lines = sizify(description_words, optimal_fit)
+            lines = [f'{indention}> {line}\n' for line in description_lines]
+            lines_by_paragraph.append(lines)
+        
+        self = object.__new__(cls)
+        self.lines_by_paragraph = lines_by_paragraph
+        self.indent = indent_level
+        self.empty_line = f'{indention}>\n'
+        yield self
+    
+    @property
+    def character_count(self):
+        """
+        Returns the block quote's characters' total length.
+        
+        Returns
+        -------
+        length : `int`
+        """
+        lines_by_paragraphs = self.lines_by_paragraph
+        length = (len(lines_by_paragraphs)-1)*len(self.empty_line)
+        
+        for lines in lines_by_paragraphs:
+            for line in lines:
+                length += len(line)
+        
+        return length
+    
+    @property
+    def line_count(self):
+        """
+        Returns the block quote's total line count.
+        
+        Returns
+        -------
+        length : `int`
+        """
+        lines_by_paragraphs = self.lines_by_paragraph
+        length = len(lines_by_paragraphs)-1
+        for lines in lines_by_paragraphs:
+            length += len(lines)
+        
+        return length
+    
+    def _do_break(self, number_of_rows):
+        """
+        Breaks the block quote after the given amount of rows.
+        
+        Parameters
+        ----------
+        number_of_rows : `int`
+            The number of rows before the block quote should be broken.
+        
+        Returns
+        -------
+        block_quote_1 : ``BlockQuoteConverter``
+        block_quote_2 : ``BlockQuoteConverter``
+        """
+        block_quote_1_lines_by_paragraph = []
+        block_quote_2_lines_by_paragraph = []
+        
+        break_found = False
+        for lines in self.lines_by_paragraph:
+            if break_found:
+                block_quote_2_lines_by_paragraph.append(lines)
+                continue
+            
+            lines_count = len(lines)
+            if lines_count > number_of_rows:
+                block_quote_1_lines_by_paragraph.append(lines)
+                number_of_rows -= lines_count
+                continue
+            
+            if lines_count == number_of_rows:
+                block_quote_1_lines_by_paragraph.append(lines)
+                break_found = True
+                continue
+            
+            block_quote_1_lines_by_paragraph.append(lines[:number_of_rows])
+            block_quote_2_lines_by_paragraph.append(lines[number_of_rows:])
+            break_found = True
+            continue
+        
+        
+        block_quote_1 = object.__new__(type(self))
+        block_quote_1.lines_by_paragraph = block_quote_1_lines_by_paragraph
+        block_quote_1.indent = self.indent
+        block_quote_1.empty_line = self.empty_line
+        block_quote_2 = object.__new__(type(self))
+        block_quote_2.lines_by_paragraph = block_quote_2_lines_by_paragraph
+        block_quote_1.indent = self.indent
+        block_quote_2.empty_line = self.empty_line
+        return block_quote_1, block_quote_2
+    
+    def _test_break(self):
+        """
+        Returns whether this block quote should be rendered alone as a broken part of a bigger one.
+        
+        Returns
+        -------
+        passed : `bool`
+        """
+        lines_by_paragraph = self.lines_by_paragraph
+        if lines_by_paragraph:
+            return True
+        
+        if len(self.line_count) < 4:
+            return False
+        
+        if len(self.character_count) < 300:
+            return False
+        
+        return True
+    
+    def do_break(self, number_of_chars):
+        """
+        Breaks the block quote to pats and returns the most optimal case for the given max chars.
+        
+        Parameters
+        ----------
+        number_of_chars : `int`
+            The maximal amount of chars, what the first block quote should contain.
+        
+        Returns
+        -------
+        best_fit : `None` or `tuple` (``BlockQuoteConverter``, ``BlockQuoteConverter``)
+            The best fitting 2 block quote shards, if there is any optimal case. If there is non, returns `None`
+            instead.
+        """
+        best_fit = None
+        
+        line_count_without_separators = 0
+        lines_by_paragraph = self.lines_by_paragraph
+        for lines in lines_by_paragraph:
+            line_count_without_separators += len(lines)
+        
+        lines = lines_by_paragraph[0]
+        start_index = len(lines)
+        if start_index > 4:
+            start_index = start_index
+        
+        end_index = lines_by_paragraph[-1]
+        if end_index > 4:
+            end_index = 4
+        
+        for x in range(start_index, line_count_without_separators-end_index):
+            block_quotes = self._do_break(x)
+            block_quote_1, block_quote_2 = block_quotes
+            
+            if block_quote_1.character_count > number_of_chars:
+                break
+            
+            if not block_quote_1._test_break():
+                continue
+            
+            if not block_quote_2._test_break():
+                continue
+            
+            best_fit = block_quotes
+            continue
+        
+        return best_fit
+    
+    def render_to(self, to_extend):
+        """
+        Renders the block quote's lines to the given `list`.
+        
+        Parameters
+        ----------
+        to_extend : `list` of `str`
+            A list to what the description should yield it's lines.
+        """
+        lines_by_paragraph = self.lines_by_paragraph
+        
+        index = 0
+        limit = len(lines_by_paragraph)
+        
+        while True:
+            lines = lines_by_paragraph[index]
+            index += 1
+            
+            to_extend.extend(lines)
+            
+            if index == limit:
+                break
+            
+            to_extend.append(self.lines)
+    
+    def __repr__(self):
+        """Returns the block quote's representation."""
+        to_extend = [self.__class__.__name__, ':\n']
+        self.render_to(to_extend)
+        to_extend.append('<<END>>')
+        return ''.join(to_extend)
+
+
 class AttributeDescriptionConverter(DescriptionConverter):
     """
     Converter class for attribute descriptions, when when building text.
@@ -1402,6 +1639,7 @@ CONVERTER_TABLE = {
     GravedAttributeDescription : AttributeDescriptionConverter,
     GravedTable : TableConverter,
     GravedCodeBlock : CodeBlockConverter,
+    GravedBlockQuote : BlockQuoteConverter,
         }
 
 

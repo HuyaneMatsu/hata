@@ -7,6 +7,10 @@ from .preinstanced import ApplicationCommandOptionType
 from .client_core import APPLICATION_COMMANDS
 from .preconverters import preconvert_preinstanced_type
 from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
+from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX, \
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
+    APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX
+
 
 from ..backend.utils import modulize
 
@@ -63,23 +67,26 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if not isinstance(name, str):
                 raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
-            name_ln = len(name)
-            if name_ln < 1 or name_ln > 32:
-                raise AssertionError(f'`name` length can be in range [1:32], got {name_ln!r}; {name!r}.')
+            name_length = len(name)
+            if name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
+                raise AssertionError(f'`name` length can be in range '
+                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
+                    f'{name_length!r}; {name!r}.')
             
             if not is_valid_application_command_name(name):
-                raise AssertionError(f'`name` contains an unexpected character; Expected pattern: '
-                    f'{APPLICATION_COMMAND_NAME_RP.pattern!r}; Got {name!r}.')
+                raise AssertionError(f'`name` contains an unexpected character; Got {name!r}.')
             
             if not isinstance(description, str):
                 raise AssertionError(f'`description` can be given as `str` instance, got '
                     f'{description.__class__.__name__}.')
             
-            description_ln = len(description)
-            if description_ln < 2 or description_ln > 100:
-                raise AssertionError(f'`description` length can be in range [2:100], got {description_ln!r}; '
-                    f'{description!r}.')
-            
+            description_length = len(description)
+            if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
+                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
+                raise AssertionError(f'`description` length can be in range '
+                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                    f'got {description_length!r}; {description!r}.')
+        
         if options is None:
             options_processed = None
         else:
@@ -92,9 +99,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             options_processed = list(options)
             if options_processed:
                 if __debug__:
-                    if len(options_processed) > 10:
-                        raise AssertionError(f'`options` length can be in range [0:10], got '
-                            f'{len(options_processed)!r}; {options!r}')
+                    if len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX:
+                        raise AssertionError(f'`options` length can be in range '
+                            f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}')
                     
                     for index, option in enumerate(options_processed):
                         if not isinstance(option, ApplicationCommandOption):
@@ -148,9 +155,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.options = options = []
         else:
             if __debug__:
-                if len(options) >= 10:
+                if len(options) >= APPLICATION_COMMAND_OPTIONS_MAX:
                     raise AssertionError(f'`option` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `10` options.')
+                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options.')
         
         options.append(option)
         return self
@@ -179,6 +186,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.application_id = int(data['application_id'])
             APPLICATION_COMMANDS[application_command_id] = self
         
+            # Discord might not include attributes in edit data, so we will set them first to avoid unset attributes.
+            self.description = ''
+            self.name = ''
+            self.options = None
+        
         self._update_no_return(data)
         return self
     
@@ -191,15 +203,26 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Received application command data.
         """
-        self.description = data['description']
-        self.name = data['name']
+        try:
+            self.description = data['description']
+        except KeyError:
+            pass
         
-        option_datas = data.get('options')
-        if (option_datas is None) or (not option_datas):
-            options = None
+        try:
+            self.name = data['name']
+        except KeyError:
+            pass
+        
+        try:
+            option_datas = data['options']
+        except KeyError:
+            pass
         else:
-            options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
-        self.options = options
+            if (option_datas is None) or (not option_datas):
+                options = None
+            else:
+                options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
+            self.options = options
     
     def _update(self, data):
         """
@@ -230,25 +253,37 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         """
         old_attributes = {}
         
-        description = data['description']
-        if self.description != description:
-            old_attributes['description'] = self.description
-            self.description = description
-        
-        name = data['name']
-        if self.name != name:
-            old_attributes['name'] = self.name
-            self.name = name
-        
-        option_datas = data.get('options')
-        if (option_datas is None) or (not option_datas):
-            options = None
+        try:
+            description = data['description']
+        except KeyError:
+            pass
         else:
-            options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
+            if self.description != description:
+                old_attributes['description'] = self.description
+                self.description = description
         
-        if self.options != options:
-            old_attributes['options'] = self.options
-            self.options = options
+        try:
+            name = data['name']
+        except KeyError:
+            pass
+        else:
+            if self.name != name:
+                old_attributes['name'] = self.name
+                self.name = name
+        
+        try:
+            option_datas = data['options']
+        except KeyError:
+            pass
+        else:
+            if (option_datas is None) or (not option_datas):
+                options = None
+            else:
+                options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
+            
+            if self.options != options:
+                old_attributes['options'] = self.options
+                self.options = options
         
         return old_attributes
     
@@ -338,7 +373,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         raise TypeError(f'Cannot hash partial {self.__class__.__name__} object.')
     
     @classmethod
-    def _from_edit_data(cls, data, id_, application_id):
+    def _from_edit_data(cls, data, interaction_id, application_id):
         """
         Creates an application command with the given parameters after an application command edition took place.
         
@@ -357,12 +392,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             The newly created or updated application command.
         """
         try:
-            self = APPLICATION_COMMANDS[id_]
+            self = APPLICATION_COMMANDS[interaction_id]
         except KeyError:
             self = object.__new__(cls)
-            self.id = id_
+            self.id = interaction_id
             self.application_id = application_id
-            APPLICATION_COMMANDS[id_] = self
+            APPLICATION_COMMANDS[interaction_id] = self
+            
+            # Discord might not include attributes in edit data, so we will set them first to avoid unset attributes.
+            self.description = ''
+            self.name = ''
+            self.options = None
         
         self._update_no_return(data)
         
@@ -536,7 +576,7 @@ class ApplicationCommandOption(object):
         required : `bool`, Optional
             Whether the parameter is required. Defaults to `False`.
         choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional
-            The choices of the command for string or integer types. It's length can be in range [0:10].
+            The choices of the command for string or integer types. It's length can be in range [0:25].
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional
             The parameters of the command. It's length can be in range [0:10]. Only applicable for sub command groups.
         
@@ -562,23 +602,30 @@ class ApplicationCommandOption(object):
             - If `required` was not given as `bool` instance.
             - If `choices` was not given neither as `None` nor as (`list` or `tuple`) of
                 ``ApplicationCommandOptionChoice`` instances.
+            - If `choices`'s length is out of range [0:10].
             - If an option is a sub command group option.
         """
         if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
-            name_ln = len(name)
-            if name_ln < 1 or name_ln > 32:
-                raise AssertionError(f'`name` length can be in range [1:32], got {name_ln!r}; {name!r}.')
+            name_length = len(name)
+            if name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or \
+                    name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
+                raise AssertionError(f'`name` length can be in range '
+                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
+                    f'{name_length!r}; {name!r}.')
         
             if not isinstance(description, str):
                 raise AssertionError(f'`description` can be given as `str` instance, got '
                     f'{description.__class__.__name__}.')
             
-            description_ln = len(description)
-            if description_ln < 2 or description_ln > 100:
-                raise AssertionError(f'`description` length can be in range [2:100], got {description_ln!r}; '
+            description_length = len(description)
+            if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
+                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
+                raise AssertionError(f'`description` length can be in range '
+                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:'
+                    f'{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got {description_length!r}; '
                     f'{description!r}.')
         
         type_ = preconvert_preinstanced_type(type_, 'type_', ApplicationCommandOptionType)
@@ -601,8 +648,9 @@ class ApplicationCommandOption(object):
             choices_processed = list(choices)
             
             if __debug__:
-                if len(choices_processed) > 10:
-                    raise AssertionError(f'`choices` length can be in range [0:10], got {len(choices_processed)!r}; '
+                if len(choices_processed) > APPLICATION_COMMAND_CHOICES_MAX:
+                    raise AssertionError(f'`choices` length can be in range '
+                        f'[0:{APPLICATION_COMMAND_CHOICES_MAX}], got {len(choices_processed)!r}; '
                         f'{choices!r}')
                 
                 for index, choice in enumerate(choices_processed):
@@ -626,9 +674,9 @@ class ApplicationCommandOption(object):
             options_processed = list(options)
             
             if __debug__:
-                if len(options_processed) > 10:
-                    raise AssertionError(f'`options` length can be in range [0:10], got {len(options_processed)!r}; '
-                        f'{options!r}')
+                if len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX:
+                    raise AssertionError(f'`options` length can be in range '
+                        f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}')
                 
                 for index, option in enumerate(options_processed):
                     if not isinstance(option, ApplicationCommandOption):
@@ -709,9 +757,9 @@ class ApplicationCommandOption(object):
             self.options = options = []
         else:
             if __debug__:
-                if len(options) >= 10:
+                if len(options) >= APPLICATION_COMMAND_OPTIONS_MAX:
                     raise AssertionError(f'`option` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `10` options.')
+                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options.')
         
         options.append(option)
         return self
@@ -770,9 +818,9 @@ class ApplicationCommandOption(object):
             self.choices = choices = []
         else:
             if __debug__:
-                if len(choices) >= 10:
+                if len(choices) >= APPLICATION_COMMAND_CHOICES_MAX:
                     raise AssertionError(f'`choice` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `10` choices.')
+                        f'already `{APPLICATION_COMMAND_CHOICES_MAX}` choices.')
         
         choices.append(choice)
         return self
@@ -1002,9 +1050,9 @@ class ApplicationCommandOptionChoice(object):
             if not isinstance(name, str):
                 raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
-            name_ln = len(name)
-            if name_ln < 1 or name_ln > 100:
-                raise AssertionError(f'`name` length can be in range [1:100], got {name_ln!r}; {name!r}.')
+            name_length = len(name)
+            if name_length < 1 or name_length > 100:
+                raise AssertionError(f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.')
             
             if not isinstance(value, (str, int)):
                 raise AssertionError(f'`value` type can be either `str` or `int`, got {value.__class__.__name__}.')
@@ -1166,15 +1214,17 @@ class ApplicationCommandInteractionOption(object):
     ----------
     name : `str`
         The option's name.
-    options : `None` or `list` of ApplicationCommandInteractionOption
+    options : `None` or `list` of ``ApplicationCommandInteractionOption``
         The parameters and values from the user. Present if a sub-command was used. Defaults to `None` if non is
         received.
         
         Mutually exclusive with the `value` attribute.
+    type : ``ApplicationCommandOptionType``
+        The option's type.
     value : `None`, `str`
         The given value by the user. Should be always converted to the expected type.
     """
-    __slots__ = ('name', 'options', 'value')
+    __slots__ = ('name', 'options', 'type', 'value')
     def __init__(self, data):
         """
         Creates a new ``ApplicationCommandInteractionOption`` instance from the data received from Discord.
@@ -1193,6 +1243,8 @@ class ApplicationCommandInteractionOption(object):
             options = [ApplicationCommandInteractionOption(option_data) for option_data in option_datas]
         self.options = options
         
+        self.type = ApplicationCommandOptionType.get(data.get('type', 0))
+        
         value = data.get('value')
         if value is not None:
             value = str(value)
@@ -1205,6 +1257,14 @@ class ApplicationCommandInteractionOption(object):
             '<', self.__class__.__name__,
             ', name=', repr(self.name),
                 ]
+        
+        type_ = self.type
+        if type_ is not ApplicationCommandOptionType.NONE:
+            result.append('type=')
+            result.append(type_.name)
+            result.append(' (')
+            result.append(repr(type_.value))
+            result.append(')')
         
         options = self.options
         if (options is not None):

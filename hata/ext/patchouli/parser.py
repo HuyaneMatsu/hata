@@ -3,7 +3,7 @@ __all__ = ('DocString', )
 import re, sys
 
 from .graver import build_graves_on_subsection, GravedListing, GravedListingElement, GravedTable, GravedDescription, \
-    GravedCodeBlock, DocWarning, GravedAttributeDescription
+    GravedCodeBlock, DocWarning, GravedAttributeDescription, GravedBlockQuote
 
 SECTION_NAME_RP = re.compile('(?:[A-Z][a-z]*)(?: [A-Z][a-z]*)*')
 SECTION_UNDERLINE_RP = re.compile('[\-]+')
@@ -30,6 +30,7 @@ def remove_indents(lines):
     Parameters
     ----------
     lines : `list` of `str`
+        Input lines.
     
     Returns
     -------
@@ -854,13 +855,14 @@ def parse_section(lines):
             break
         
         for detector, builder in (
-            (detect_void, build_void),
-            (detect_indent, build_indent),
-            (detect_table, TextTable),
-            (detect_listing, TextListing),
-            (detect_code_block, TextCodeBlock),
-            (detect_description, TextDescription),
-                ):
+                (detect_void, build_void),
+                (detect_indent, build_indent),
+                (detect_table, TextTable),
+                (detect_listing, TextListing),
+                (detect_code_block, TextCodeBlock),
+                (detect_block_quote, TextBlockQuote),
+                (detect_description, TextDescription),
+                    ):
             
             detected_end = detector(lines, index, limit)
             if detected_end == index:
@@ -875,7 +877,7 @@ def parse_section(lines):
             break
         else:
             sys.stderr.write(f'Could not detect anything, skipping. Line :{lines[index]}\n')
-            index +=1
+            index += 1
             continue
     
     if (not builts):
@@ -1202,6 +1204,162 @@ class TextListing(object):
         graved : ``GravedListing``
         """
         return GravedListing(self, path)
+
+
+def detect_block_quote(lines, index, limit):
+    """
+    Detects the lines of a block quote.
+    
+    Parameters
+    ----------
+    lines : `list` of `str`
+        The lines of the section.
+    index : `int`
+        The starting index of the block quote.
+    limit : `int`
+        The last element's index.
+    
+    Returns
+    -------
+    index : `int`
+        The index where the block quote is over. If there was no block quote, returns the initial index.
+    """
+    while True:
+        if index == limit:
+            return index
+        
+        line = lines[index]
+        if not line:
+            return index
+        
+        if line[0] not in '>':
+            return index
+        
+        index += 1
+        continue
+
+def remove_block_quote_indents(lines):
+    """
+    Removes the dedent from the given lines returning a new list with the lines without them.
+    
+    Parameters
+    ----------
+    lines : `list` of `str`
+        Input lines.
+    
+    Returns
+    -------
+    lines : `None` or (`list` of `str`)
+    """
+    if not lines:
+        return None
+    
+    for index in range(len(lines)):
+        lines[index] = lines[index][1:].lstrip()
+    
+    while True:
+        if lines[-1]:
+            break
+        
+        del lines[-1]
+        if not lines:
+            return None
+    
+    while True:
+        if lines[0]:
+            break
+        
+        del lines[0]
+        continue
+    
+    return lines
+
+
+class TextBlockQuote(object):
+    """
+    Represents a block quote of a docstring.
+    
+    Attributes
+    ----------
+    _descriptions : `list` of  ``TextDescription``
+        The description parts inside of the block quote.
+    """
+    __slots__ = ('_descriptions', )
+    def __new__(cls, lines, start, end):
+        """
+        Creates a new block quote from the given lines's start:end range.
+        
+        Parameters
+        ----------
+        lines : `list` of `str`
+            Lines to create the block quote from.
+        start : `int`
+            The first line's index, where the block quote starts.
+        end : `int`
+            The 1 after the last line's index of the block quote..
+        """
+        lines = lines[start:end]
+        lines = remove_block_quote_indents(lines)
+        if lines is None:
+            return None
+        
+        index = 0
+        limit = len(lines)
+        
+        builts = []
+        
+        while True:
+            if index == limit:
+                break
+        
+        
+            for detector, builder in (
+                    (detect_void, build_void),
+                    (detect_description, TextDescription),
+                        ):
+                
+                detected_end = detector(lines, index, limit)
+                if detected_end == index:
+                    continue
+                
+                built = builder(lines, index, detected_end)
+                index = detected_end
+                if built is None:
+                    break
+                
+                builts.append(built)
+                break
+            else:
+                sys.stderr.write(f'Could not detect anything, skipping. Line :{lines[index]}\n')
+                index += 1
+                continue
+        
+        if not builts:
+            return None
+        
+        self = object.__new__(cls)
+        self._descriptions = builts
+        return self
+    
+    def __repr__(self):
+        """Returns the description's representation."""
+        return f'<{self.__class__.__name__} descriptions={self._descriptions!r}>'
+    
+    def graved(self, path):
+        """
+        Returns a graved version of the block quote.
+        
+        Parameters
+        ----------
+        path : ``QualPath``
+            The path of the parent docstring.
+        
+        Returns
+        -------
+        graved : ``GravedBlockQuote``
+        """
+        return GravedBlockQuote(self, path)
+
 
 def parse_docstring(text, path):
     """

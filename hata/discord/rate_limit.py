@@ -44,68 +44,6 @@ def parse_date_to_datetime(data):
         date = datetime(*date_tuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
     return date
 
-class global_lock_canceller:
-    """
-    Cancels the global lock on a discord http session by setting it as `None` causing all the new requests to not be
-    globally locked.
-    
-    The already waiting requests are free'd up by the source `8Future``, what's callback this is.
-    
-    Attributes
-    ----------
-    session : ``DiscordHTTPClient``
-        The globally locked http session.
-    """
-    __slots__ = ('session',)
-    def __init__(self, session):
-        """
-        Creates a new global lock canceller.
-        
-        Parameters
-        ----------
-        session : ``DiscordHTTPClient``
-            The globally locked http session.
-        """
-        self.session = session
-    
-    def __call__(self, future):
-        """
-        Cancels the global lock of the respective discord http session by setting it as `None`.
-        
-        Parameters
-        ----------
-        future : ``Future``
-            The global locker of the session.
-        """
-        self.session.global_lock = None
-
-def rate_limit_global(session, retry_after):
-    """
-    Applies global lock on the given session.
-    
-    If the session is already globally locked, return it's waiter future.
-    
-    Parameters
-    ----------
-    session : ``DiscordHTTPClient``
-        The session to be globally locked.
-    retry_after : `float`
-        The time for what the session is locked for.
-    
-    Returns
-    -------
-    future : ``Future``
-        Waiter future till the global lock is over.
-    """
-    future = session.global_lock
-    if (future is None):
-        future = Future(KOKORO)
-        future.add_done_callback(global_lock_canceller(session))
-        session.global_lock = future
-        KOKORO.call_later(retry_after, Future.set_result_if_pending, future, None)
-    
-    return future
-
 GLOBALLY_LIMITED = 0x4000000000000000
 RATE_LIMIT_DROP_ROUND = 0.20
 MAXIMAL_UNLIMITED_PARARELLITY = -50
@@ -635,7 +573,7 @@ class RateLimitHandler(object):
                 if size is None:
                     if current_size < 0:
                         optimistic = True
-                        # A not so special case when the endpoint is not rate limit yet.
+                        # A not so special case when the endpoint is not rate limited yet.
                         # If this happens, we increase the maximal size.
                         size = current_size
                         if size > MAXIMAL_UNLIMITED_PARARELLITY:
@@ -664,22 +602,22 @@ class RateLimitHandler(object):
                 size = -size
             
             if size > current_size:
-                if current_size == -1:
+                if current_size == -1 or current_size == 0:
                     current_size = 1
                     # We might have cooldowns from before as well
                     allocates = size-int(headers[RATE_LIMIT_REMAINING])
                 
                 can_free = size-current_size
                 queue = self.queue
-                queue_ln = len(queue)
+                queue_length = len(queue)
                 
-                if can_free > queue_ln:
-                    can_free = queue_ln
+                if can_free > queue_length:
+                    can_free = queue_length
                 
                 while can_free > 0:
                     future = queue.popleft()
                     future.set_result(None)
-                    can_free -=1
+                    can_free -= 1
                     continue
         
         if optimistic:
@@ -737,8 +675,8 @@ class RateLimitHandler(object):
         self.wake_upper = wake_upper
         
         queue = self.queue
-        queue_ln = len(queue)
-        if queue_ln == 0:
+        queue_length = len(queue)
+        if queue_length == 0:
             return
         
         # if exception occurs, nothing is added to self.drops, but active is decreased by one, so lets check active
@@ -750,8 +688,8 @@ class RateLimitHandler(object):
         
         can_free = size-self.active-self.count_drops()
         
-        if can_free > queue_ln:
-            can_free = queue_ln
+        if can_free > queue_length:
+            can_free = queue_length
         
         while can_free > 0:
             future = queue.popleft()

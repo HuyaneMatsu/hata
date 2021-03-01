@@ -2739,7 +2739,7 @@ class Client(UserBase):
             - If `bitrate`'s value is out of the expected range.
             - If `user_limit` was given, but the channel is not ``ChannelVoice`` instance.
             - If `user_limit` was not given as `int` instance.
-            - If `user_limit`' was given, but is out of the expected [0:99] range.
+            - If `user_limit` was given, but is out of the expected [0:99] range.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2946,7 +2946,7 @@ class Client(UserBase):
             - If `bitrate`'s value is out of the expected range.
             - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
             - If `user_limit` was not given as `int` instance.
-            - If `user_limit`' was given, but is out of the expected [0:99] range.
+            - If `user_limit` was given, but is out of the expected [0:99] range.
             - If `category` was given, but the respective channel type cannot be put under other categories.
         ConnectionError
             No internet connection.
@@ -8781,7 +8781,7 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         AssertionError
             - If `limit` was not given as `int` instance.
-            - If `limit` is out of teh expected range [1:100].
+            - If `limit` is out of the expected range [1:100].
         """
         if isinstance(guild, Guild):
             guild_id = guild.id
@@ -9338,7 +9338,7 @@ class Client(UserBase):
             If any exception was received from the Discord API.
         AssertionError
             - If `query` was not given as `str` instance.
-            - If `query`'s length is out of teh expected range [1:32].
+            - If `query`'s length is out of the expected range [1:32].
             - If `limit` was not given as `str` instance.
             - If `limit` is out fo expected range [1:1000].
         """
@@ -9525,7 +9525,7 @@ class Client(UserBase):
         expire_grace_period : `None` or `int`, Optional
             The time in days, after the subscription will be ignored. Can be any of `(1, 3, 7, 14, 30)`.
         enable_emojis : `None` or `bool`, Optional
-            Whether teh users can use the integration's emojis in Discord.
+            Whether the users can use the integration's emojis in Discord.
         
         Raises
         ------
@@ -14925,7 +14925,7 @@ class Client(UserBase):
         ------
         AssertionError
             - If `name` was not given as `str` instance.
-            - If `name` length is out of teh expected range [2:100].
+            - If `name` length is out of the expected range [2:100].
         
         """
         if __debug__:

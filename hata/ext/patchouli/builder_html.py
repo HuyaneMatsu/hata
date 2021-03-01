@@ -4,7 +4,7 @@ from html import escape as html_escape
 from ...backend.quote import quote
 
 from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
-    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription
+    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription, GravedBlockQuote
 
 def create_relative_link(source, target):
     """
@@ -420,6 +420,32 @@ def listing_serializer(listing, object_, path, linker):
     
     yield '</ul>'
 
+def block_quote_serializer(block_quote, object_, path, linker):
+    """
+    Serializes the given block quote.
+    
+    This function is a generator.
+    
+    Parameters
+    ----------
+    block_quote : ``GravedBlockQuote``
+        The listing element to serialize.
+    object_ : ``UnitBase``
+        The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
+    
+    Yields
+    ------
+    html_part : `str`
+    """
+    yield '<blockquote>'
+    
+    for description in block_quote.descriptions:
+        yield from description_serializer(description, object_, path, linker)
+    yield '</blockquote>'
 
 def section_title_serializer(title):
     """
@@ -504,6 +530,7 @@ CONVERTER_TABLE = {
     GravedTable : table_serializer,
     GravedCodeBlock : code_block_serializer,
     GravedAttributeDescription : attribute_description_serializer,
+    GravedBlockQuote : block_quote_serializer,
         }
 
 

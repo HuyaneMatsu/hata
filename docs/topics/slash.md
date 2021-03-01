@@ -1,12 +1,16 @@
 # Slash
 
+### Introduction
+
 Slash refers to slash commands as probably known by the users or by interactions as mentioned by the api.
+
+You can also find Discord's API documentation
+[here](https://github.com/discord/discord-api-docs/blob/master/docs/interactions/Slash_Commands.md).
 
 Hata supports interactions with many methods and classes, but this topic is not about their raw usage, but about the
 inherent slash extension.
 
-The slash command API is familiar to the `commands` extension's one, but it has limitations by the Discord API, what
-we cannot overpass.
+Not like regular commands, slash commands' format is limited by the Discord API itself, what we cannot overpass.
 
 ## Limitations
 
@@ -39,13 +43,23 @@ The parameter types can be the following:
 | user_id       | No            | `'user_id'`           | N/A                   | `int`                     |
 | role          | Yes           | `'role'`              | `Role`                | `Role`                    |
 | role_id       | No            | `'role_id'`           | N/A                   | `int`                     |
-| channel       | Yes           | `'channel'`           | `ChannelBase`         | `Channelbase` instance    |
-| channel_id    | No            | `'channl_id'`         | N/A                   | `int`                     |
+| channel       | Yes           | `'channel'`           | `ChannelBase`         | `ChannelBase` instance    |
+| channel_id    | No            | `'channel_id'`        | N/A                   | `int`                     |
 
 If validating a parameter fails, the command wont be called. This can be the case when the user mentions
 non-existing entities. To avoid this behaviour, you can use the `..._id` parameters instead.
 
 There are also choice parameters, but lets talk about those only later.
+
+## Required oauth2 scopes
+
+When using slash commands, adding your bot to a guild with just the regular `bot` scope is not enough. Make sure you
+authorize it with `applications.commands` oauth2 scope as well. Just fill out your bot's application's id in the
+`<APPLICATION_ID>` part and add the bot to your guild;
+`https://discord.com/api/oauth2/authorize?client_id=<APPLICATION_ID>&scope=bot&applications.commands`.
+
+If this error pops ups as you launched your bot: `DiscordException Forbidden (403), code=50001: Missing access`
+Do not worry, you probably just need to authorize your bot with the `applications.commands` oauth2 scope.
 
 ## Setup
 
@@ -58,6 +72,18 @@ from hata.ext.slash import setup_ext_slash
 Nitori = Client(TOKEN)
 setup_ext_slash(Nitori)
 ```
+
+### Slasher Parameters
+
+`setup_ext_slash` has 1 required parameter, the client on who you setup it.
+
+#### delete_commands_on_unload
+
+Tells to the slasher whether it should delete the commands from Discord when they are removed. Defaults to `False` in
+favor of working with extensions.
+
+When unloading an extension, all of it's commands are deleted from Discord as well if set as `True`. This might be
+painful when reloading global commands, because it would need 1 hour for the changes to take place.
 
 ## Adding commands & responding
 
@@ -127,7 +153,7 @@ async def cookie(client, event,
 from hata import parse_emoji
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def showemoji(client, event,
+async def show_emoji(client, event,
         emoji : ('str', 'Yes?'),
             ):
     """Shows the given custom emoji."""
@@ -317,6 +343,20 @@ async def idtotime(client, event,
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
 
+You can resolve name conflicts in an other way as well. Trailing `_` characters are ignored.
+
+```py
+from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
+
+@Nitro.interactions(guild=TEST_GUILD)
+async def id_to_time_(client, event,
+        snowflake : ('int', 'Id please!'),
+            ):
+    """Converts the given Discord snowflake id to time."""
+    time = id_to_time(snowflake)
+    return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
+```
+
 ##### description
 
 Description can be passed instead of defining as docstring. As an example this feature can be used when auto-generating
@@ -352,6 +392,10 @@ for action_name, embed_color in (('pat', 0x325b34), ('hug', 0xa4b51b), ('lick', 
 # Cleanup
 del action_name, embed_color
 ```
+
+##### delete_on_unload
+
+Command specific setting, to overwrite the parent slasher's [delete_commands_on_unload](#delete_commands_on_unload).
 
 ## Responding multiple times & Tricks and recommendations
 
@@ -614,3 +658,51 @@ async def kaboom_mixed(client, event):
         await sleep(1.0)
         await client.interaction_followup_message_delete(event, message)
 ```
+
+## FAQ
+
+#### Commands not show up
+
+Slash commands might not show up after you launched your bot with them. This can be caused by many reasons:
+
+-  Lazy caching
+
+    When your Discord app (browser, desktop or mobile) is launched, the application commands are cached by it
+    correctly, but the commands meanwhile might not show up correctly.
+
+-  Global command sync time
+
+    Global commands have a shocking **1** hour sync time. This is applied after creating, updating and when removing
+    them as well.
+
+- Command is not global neither guild bound
+    
+    You may have forgot to specify that your command is either global or guild bound.
+    
+    > Note, that specifying whether the command is global or guild bound to a sub-commands does nothing.
+
+#### Commands are not removed
+
+Removed slash commands may not disappear after they are removed. This can have many reasons.
+
+- Guild bound command syncing
+    
+    Hata syncs global commands every time, but this is not true for guild bound commands.
+    
+    Only those guilds are synced initially, which have any command added bound them. The rest of the guilds are synced
+    only when the first interaction is received from them. This means, when you remove all the guild bound commands
+    from a guild, you need to call any of those commands to remove them from Discord as well. This behaviour is also
+    true for non-global commands, which are matched runtime.
+
+- Modifying command type
+    
+    When modifying a command's type from guild bound to non-global or from non-global to guild bound, the command wont
+    disappear, because the other command type will be able to still match the source command. This is not applicable
+    for guilds, which not have the command bound.
+
+- Unloading extension
+    
+    By default commands wont disappear when their extension is unloaded on favor to avoid 1 hour global command sync
+    time when reloading an extension. This behaviour can be altered (mentioned later).
+
+- Global command sync time & Lazy caching

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('DownloadError', 'LocalAudio', 'YTAudio')
+__all__ = ('AudioSource', 'DownloadError', 'LocalAudio', 'YTAudio')
 
 import os, sys, subprocess, shlex
 from time import perf_counter

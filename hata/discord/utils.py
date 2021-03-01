@@ -1,13 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift',  'Relationship', 'Unknown', 'cchunkify', 'chunkify',
-    'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_user_mention',
-    'now_as_id', 'random_id', 'time_to_id', )
+__all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift', 'Relationship', 'Unknown', 'cchunkify', 'chunkify',
+    'elapsed_time', 'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention',
+    'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id',
+    'sanitize_mentions', 'time_to_id',)
 
-import random, re, sys
-from datetime import datetime
+import random, sys
+from re import escape as re_escape, compile as re_compile
+from math import floor
+from datetime import datetime, timedelta
 from base64 import b64encode
 from time import time as time_now
 from json import dumps as dump_to_json, loads as from_json
+
 
 try:
     from dateutil.relativedelta import relativedelta
@@ -17,6 +21,7 @@ except ImportError:
 from ..backend.utils import istr, modulize
 
 from .bases import DiscordEntity
+from .client_core import USERS, CHANNELS, ROLES
 
 from . import bases as module_bases
 
@@ -111,7 +116,7 @@ DISCORD_EPOCH = 1420070400000
 # at desuppress:
 # "2019-07-17T18:52:50.758000+00:00"
 
-PARSE_TIME_RP = re.compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
+PARSE_TIME_RP = re_compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
 
 def parse_time(timestamp):
     """
@@ -275,20 +280,20 @@ def log_time_converter(value):
     raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')
 
-APPLICATION_COMMAND_NAME_RP = re.compile('[a-zA-Z0-9_\-]{3,32}')
+APPLICATION_COMMAND_NAME_RP = re_compile('[a-zA-Z0-9_\-]{1,32}')
 
-ID_RP = re.compile('(\d{7,21})')
-IS_MENTION_RP = re.compile('@(?:everyone|here)|<(?:@[!&]?|#|/[a-zA-Z0-9_\-]{3,32}:)\d{7,21}>')
+ID_RP = re_compile('(\d{7,21})')
+IS_MENTION_RP = re_compile('@(?:everyone|here)|<(?:@[!&]?|#|/[a-zA-Z0-9_\-]{3,32}:)\d{7,21}>')
 
-USER_MENTION_RP = re.compile('<@!?(\d{7,21})>')
-CHANNEL_MENTION_RP = re.compile('<#(\d{7,21})>')
-ROLE_MENTION_RP = re.compile('<@&(\d{7,21})>')
-APPLICATION_COMMAND_MENTION_RP = re.compile('</([a-zA-Z0-9_\-]{3,32}):(\d{7,21})>')
+USER_MENTION_RP = re_compile('<@!?(\d{7,21})>')
+CHANNEL_MENTION_RP = re_compile('<#(\d{7,21})>')
+ROLE_MENTION_RP = re_compile('<@&(\d{7,21})>')
+APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\-]{3,32}):(\d{7,21})>')
 
-EMOJI_RP = re.compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
-EMOJI_NAME_RP = re.compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
-FILTER_RP = re.compile('("(.+?)"|\S+)')
-INVITE_CODE_RP = re.compile('([a-zA-Z0-9-]+)')
+EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
+EMOJI_NAME_RP = re_compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
+FILTER_RP = re_compile('("(.+?)"|\S+)')
+INVITE_CODE_RP = re_compile('([a-zA-Z0-9-]+)')
 
 def is_valid_application_command_name(name):
     """
@@ -574,8 +579,9 @@ def cchunkify(lines, lang='', limit=2000):
     
     return result
 
-if (relativedelta is not None):
-    __all__ = (*__all__, 'elapsed_time')
+if relativedelta is None:
+    elapsed_time = None
+else:
     def elapsed_time(delta, limit=3, names=(
             ('year', 'years',),
             ('month', 'months'),
@@ -641,6 +647,7 @@ if (relativedelta is not None):
             result = f'0 {names[5][0]}'
         
         return result
+
 
 class Relationship(object):
     """
@@ -861,9 +868,9 @@ def url_cutter(url):
     if position == -1:
         return f'{url[:28]}...{url[-19:]}'
     
-    position +=1
+    position += 1
     if url[position] == '/':
-        position +=1
+        position += 1
         if position == len(url):
             return f'{url[:28]}...{url[-19:]}'
         
@@ -872,7 +879,7 @@ def url_cutter(url):
         if position == 0 or position == len(url):
             return f'{url[:28]}...{url[-19:]}'
     
-    positions=[position]
+    positions = [position]
     
     while True:
         position = url.find('/', position)
@@ -930,9 +937,186 @@ def url_cutter(url):
         
     return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
 
+DELTA_RP = re_compile('([\+\-]?\d+)[ \t]*([a-zA-Z]+)')
+TDELTA_KEYS = ('weeks', 'days', 'hours', 'minutes', 'seconds', 'microseconds')
+RDELTA_KEYS = ('years', 'months', *TDELTA_KEYS)
+
+def parse_tdelta(text):
+    """
+    Tries to parse out a ``timedelta`` from the inputted text.
+    
+    Returns
+    -------
+    tdelta : `None` or `datetime.timedelta`
+    """
+    text = text.lower()
+    
+    result = {}
+    index = 0
+    limit = len(TDELTA_KEYS)
+    for amount, name in DELTA_RP.findall(text):
+        if index == limit:
+            break
+        
+        while True:
+            key = TDELTA_KEYS[index]
+            index += 1
+            if key.startswith(name):
+                result.setdefault(key, int(amount))
+                break
+            
+            if index == limit:
+                break
+    
+    if result:
+        return timedelta(**result)
+
+if relativedelta is None:
+    parse_rdelta = None
+else:
+    def parse_rdelta(text):
+        """
+        Tries to parse out a ``relativedelta`` from the inputted text.
+        
+        Returns
+        -------
+        rdelta : `None` or `dateutil.relativedelta.relativedelta`
+        """
+        text = text.lower()
+        
+        result = {}
+        index = 0
+        limit = len(RDELTA_KEYS)
+        for amount, name in DELTA_RP.findall(text):
+            if index == limit:
+                break
+            
+            while True:
+                key = RDELTA_KEYS[index]
+                index += 1
+                if key.startswith(name):
+                    result.setdefault(key, int(amount))
+                    break
+                
+                if index == limit:
+                    break
+        
+        if result:
+            return relativedelta(**result)
+
+CHANNEL_MESSAGE_RP = re_compile('(\d{7,21})-(\d{7,21})')
+MESSAGE_JUMP_URL_RP = re_compile('(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
+
+def parse_message_reference(text):
+    """
+    Tries the parse a ``Message``'s reference from the inputted text.
+    
+    Accepts the following formats:
+    - `{message.id}`
+    - `{channel.id}-{message.id}`
+    - `{message.url}`
+    
+    Returns
+    -------
+    reference : `None` or `tuple` (`int`, `int`, `int`)
+        On successful parsing returns a tuple of 3 elements:
+        +-------------------+-------------------+-------------------------------+-------------------+---------------+
+        | Respective name   | Parse-able from   | Parse-able from               | Parse-able from   | Default value |
+        |                   | `{message.id}`    | `{channel.id}-{message.id}`   | `{message.url}`   |               |
+        +===================+===================+===============================+=================+++===============+
+        | `guild.id`        | False             | False                         | True              | `0`           |
+        +-------------------+-------------------+-------------------------------+-------------------+---------------+
+        | `channel.id       | False             | True                          | True              | `0`           |
+        +-------------------+-------------------+-------------------------------+-------------------+---------------+
+        | `message.id`      | True              | True                          | True              | N/A           |
+        +-------------------+-------------------+-------------------------------+-------------------+---------------+
+    """
+    parsed = ID_RP.fullmatch(text)
+    if (parsed is not None):
+        message_id = int(parsed.group(1))
+        
+        guild_id = 0
+        channel_id = 0
+    else:
+        parsed = CHANNEL_MESSAGE_RP.fullmatch(text)
+        if (parsed is not None):
+            channel_id, message_id = parsed.groups()
+            channel_id = int(channel_id)
+            message_id = int(message_id)
+            
+            guild_id = 0
+        else:
+            parsed = MESSAGE_JUMP_URL_RP.fullmatch(text)
+            if (parsed is not None):
+                guild_id, channel_id, message_id = parsed.groups()
+                if guild_id == '@me':
+                    guild_id = 0
+                else:
+                    guild_id = int(guild_id)
+                channel_id = int(channel_id)
+                message_id = int(message_id)
+            else:
+                return None
+    
+    return guild_id, channel_id, message_id
+
+
+def sanitize_mentions(content, guild=None):
+    """
+    Sanitizes the given content, removing the mentions from it.
+    
+    Parameters
+    ----------
+    content : `str`
+        The content to validate.
+    guild : `None` or ``Guild``, Optional
+        Respective context to look up guild specific names of entities.
+    
+    Returns
+    -------
+    content : `str`
+    """
+    transformations = {
+        '@everyone':'@\u200beveryone',
+        '@here':'@\u200bhere',
+            }
+    
+    for id_ in USER_MENTION_RP.findall(content):
+        id_ = int(id_)
+        user = USERS.get(id_)
+        if (user is None) or user.partial:
+            sanitized_mention = '@deleted user'
+        else:
+            sanitized_mention = '@'+user.name_at(guild)
+        
+        transformations[f'<@{id_}>'] = sanitized_mention
+        transformations[f'<@!{id_}>'] = sanitized_mention
+        
+    for id_ in CHANNEL_MENTION_RP.findall(content):
+        id_ = int(id_)
+        channel = CHANNELS.get(id_)
+        if (channel is None) or channel.partial:
+            sanitized_mention = '@deleted channel'
+        else:
+            sanitized_mention = '#'+channel.name
+        
+        transformations[f'<#{id_}>'] = sanitized_mention
+    
+    for id_ in ROLE_MENTION_RP.findall(content):
+        id_ = int(id_)
+        role = ROLES.get(id_)
+        if (role is None) or role.partial:
+            sanitized_mention = '@deleted role'
+        else:
+            sanitized_mention = '@'+role.name
+        
+        transformations[f'<@&{id_}>'] = sanitized_mention
+    
+    return re_compile('|'.join(transformations)).sub(
+        lambda mention: transformations[re_escape(mention.group(0))], content)
+
 module_bases.id_to_time = id_to_time
 
-del re
 del istr
 del modulize
 del module_bases

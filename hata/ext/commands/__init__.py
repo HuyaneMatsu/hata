@@ -19,7 +19,7 @@ __all__ = (
 from ...discord.client import Client
 from ...discord.parsers import DEFAULT_EVENT, asynclist, EventWaitforBase
 
-def setup_ext_commands(client, prefix, **kwargs):
+def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     """
     Setups the commands extension of hata on the given client with the given parameters.
     
@@ -43,6 +43,9 @@ def setup_ext_commands(client, prefix, **kwargs):
         
         Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` argument,
         the respective ``Message`` instance and returns `str`.
+    lite : `bool`, Optional
+        Whether only the extensions utility feature should be setup. May be useful for example when the client uses
+        only slash commands. Defaults to `False`.
     **kwargs : Keyword arguments
         Additional keyword arguments to be passed to the created ``CommandProcesser``.
     
@@ -85,13 +88,14 @@ def setup_ext_commands(client, prefix, **kwargs):
         
     Returns
     -------
-    command_processer : ``CommandProcesser``
-        The created command processer.
+    command_processer : ``CommandProcesser`` or `None`
+        The created command processer. Returns `None` if `lite` is given as `True`.
     
     Raises
     ------
     TypeError
-        If `client` was not given as ``Client`` instance.
+        - If `client` was not given as ``Client`` instance.
+        - If `prefix` was not given meanwhile `lite` is `False`.
     RuntimeError
         - If the given `client` already has `command_processer` or `commands` attribute.
         - If the given `client` has a ``CommandProcesser`` instance added as `message_create` event,
@@ -103,6 +107,9 @@ def setup_ext_commands(client, prefix, **kwargs):
     for attr_name in ('command_processer', 'command_processor', 'commands'):
         if hasattr(client, attr_name):
             raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
+    
+    if (not lite) and (prefix is None):
+        raise TypeError(f'`prefix` parameter is required if `lite` is given as `False`.')
     
     event_message_create = client.events.message_create
     while True:
@@ -121,11 +128,15 @@ def setup_ext_commands(client, prefix, **kwargs):
         
         break
     
-    command_processer = CommandProcesser(prefix, **kwargs)
-    client.events(command_processer)
-    client.command_processer = command_processer
-    client.command_processor = command_processer
-    client.commands = command_processer.shortcut
+    if lite:
+        client.events(MessageCreateWaitfor)
+        command_processer = None
+    else:
+        command_processer = CommandProcesser(prefix, **kwargs)
+        client.events(command_processer)
+        client.command_processer = command_processer
+        client.command_processor = command_processer
+        client.commands = command_processer.shortcut
     
     event_reaction_add = client.events.reaction_add
     while True:

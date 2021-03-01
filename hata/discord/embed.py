@@ -8,82 +8,12 @@ from datetime import datetime
 
 from ..backend.utils import DOCS_ENABLED
 
-from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, url_cutter
+from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, url_cutter, sanitize_mentions
 from .color import Color
 
 from . import preinstanced as module_preinstanced
 
 EXTRA_EMBED_TYPES = ('application_news', 'article', 'gifv', 'image', 'link', 'video')
-
-def _convert_content(content, message):
-    """
-    Converts a content of a message by removing the reactions in it.
-    
-    Parameters
-    ----------
-    content : `str`
-        Content to convert.
-    message : ``Message``
-        The respective message of the content, based on what the reactions will be removed.
-    
-    Returns
-    -------
-    content : `str`
-    """
-    transformations = {
-        '@everyone':'@\u200beveryone',
-        '@here':'@\u200bhere',
-            }
-    
-    guild = message.channel.guild
-    
-    if guild is None:
-        users = message.channel.users
-        for id_ in USER_MENTION_RP.findall(content):
-            id_ = int(id_)
-            for user in users:
-                if user.id == id_:
-                    transformations[re_escape(f'<@{id_}>')] = f'@{user.name}'
-                    break
-    else:
-        channels = guild.channels
-        for id_ in CHANNEL_MENTION_RP.findall(content):
-            id_ = int(id_)
-            try:
-                channel = channels[id_]
-            except KeyError:
-                continue
-            transformations[re_escape(f'<#{id_}>')] = f'#{channel.name}'
-        
-        users = guild.users
-        for id_ in USER_MENTION_RP.findall(content):
-            id_ = int(id_)
-            try:
-                user = users[id_]
-            except KeyError:
-                continue
-            
-            profile = user.guild_profiles.get(guild,None)
-            if (profile is None) or (profile.nick is None):
-                name = f'@{user.name}'
-            else:
-                name = f'@{profile.nick}'
-                
-            transformations[re_escape(f'<@!{id_}>')] = name
-            transformations[re_escape(f'<@{id_}>')] = name
-
-        roles = guild.roles
-        for id_ in ROLE_MENTION_RP.findall(content):
-            id_ = int(id_)
-            try:
-                role = roles[id_]
-            except KeyError:
-                continue
-            
-            transformations[re_escape(f'<@&{id_}>')] = f'@{role.name}'
-        
-        return re_compile('|'.join(transformations)).sub(
-            lambda mention: transformations[re_escape(mention.group(0))], content)
 
 class EmbedThumbnail(object):
     """
@@ -1387,7 +1317,7 @@ class EmbedCore(EmbedBase):
         
         new.title = self.title
         description = self.description
-        new.description = None if (description is None) else _convert_content(description, message)
+        new.description = None if (description is None) else sanitize_mentions(description, message.guild)
         new.color = self.color
         new.url = self.url
         new.timestamp = self.timestamp
@@ -1400,7 +1330,7 @@ class EmbedCore(EmbedBase):
         new.provider = self.provider
         new.author = self.author
         new.fields = [
-            type(field)(field.name,_convert_content(field. value, message), inline=field.inline) \
+            type(field)(field.name, sanitize_mentions(field. value, message.guild), inline=field.inline) \
                 for field in self.fields]
         
         return new
@@ -2390,8 +2320,6 @@ class _EmbedFieldsReflection(object):
         for field_data in reversed(self.data):
             yield EmbedField.from_data(field_data)
 
-
-module_preinstanced._convert_content = _convert_content
 
 del DOCS_ENABLED
 del module_preinstanced

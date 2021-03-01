@@ -6,7 +6,7 @@ import warnings
 from ...backend.futures import Task, is_coroutine_generator, WaitTillAll
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.event_loop import EventThread
-from ...backend.utils import WeakReferer
+from ...backend.utils import WeakReferer, DOCS_ENABLED
 
 from ...discord.client_core import KOKORO, ROLES, CHANNELS
 from ...discord.parsers import route_value, EventHandlerBase, InteractionEvent, check_name, Router, route_name, \
@@ -22,7 +22,14 @@ from ...discord.role import Role
 from ...discord.channel import ChannelBase
 from ...discord.preinstanced import ApplicationCommandOptionType
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommand
+from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICES_MAX, \
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
+    APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
 
+
+UNLOADING_BEHAVIOUR_DELETE = 0
+UNLOADING_BEHAVIOUR_KEEP = 1
+UNLOADING_BEHAVIOUR_INHERIT = 2
 
 def is_only_embed(maybe_embeds):
     """
@@ -61,8 +68,7 @@ def raw_name_to_display(raw_name):
     display_name : `str`
         The converted name.
     """
-    return raw_name.lower().replace('_', '-')
-
+    return raw_name.strip('_').lower().replace('_', '-')
 
 def get_request_coro(client, interaction_event, show_for_invoking_user_only, response):
     """
@@ -217,7 +223,7 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
             raise
 
 
-async def converter_int(interaction_event, value):
+async def converter_int(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `int`.
     
@@ -225,6 +231,8 @@ async def converter_int(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -243,7 +251,7 @@ async def converter_int(interaction_event, value):
     return value
 
 
-async def converter_str(interaction_event, value):
+async def converter_str(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `str`.
     
@@ -251,6 +259,8 @@ async def converter_str(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -268,7 +278,7 @@ BOOL_TABLE = {
     str(False): False,
         }
 
-async def converter_bool(interaction_event, value):
+async def converter_bool(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `bool`.
     
@@ -276,6 +286,8 @@ async def converter_bool(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -289,7 +301,7 @@ async def converter_bool(interaction_event, value):
     return BOOL_TABLE.get(value)
 
 
-async def converter_snowflake(interaction_event, value):
+async def converter_snowflake(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to a snowflake.
     
@@ -297,6 +309,8 @@ async def converter_snowflake(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -318,7 +332,7 @@ async def converter_snowflake(interaction_event, value):
     return snowflake
 
 
-async def converter_user(interaction_event, value):
+async def converter_user(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
     
@@ -326,6 +340,8 @@ async def converter_user(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -336,7 +352,7 @@ async def converter_user(interaction_event, value):
     user : `None`, ``User`` or ``Client``
         If conversion fails, then returns `None`.
     """
-    user_id = await converter_snowflake(interaction_event, value)
+    user_id = await converter_snowflake(client, interaction_event, value)
     
     if user_id is None:
         user = None
@@ -346,11 +362,21 @@ async def converter_user(interaction_event, value):
             user = None
         else:
             user = resolved_users.get(user_id)
-    
+        
+        if user is None:
+            try:
+                user = await client.user_get(user_id)
+            except ConnectionError:
+                user = 0
+            except DiscordException as err:
+                if err.code == ERROR_CODES.unknown_user:
+                    user = None
+                else:
+                    raise
     return user
 
 
-async def converter_role(interaction_event, value):
+async def converter_role(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
     
@@ -358,6 +384,8 @@ async def converter_role(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -368,7 +396,7 @@ async def converter_role(interaction_event, value):
     value : `None` or ``Role``
         If conversion fails, then returns `None`.
     """
-    role_id = await converter_snowflake(interaction_event, value)
+    role_id = await converter_snowflake(client, interaction_event, value)
     
     if role_id is None:
         role = None
@@ -378,11 +406,14 @@ async def converter_role(interaction_event, value):
             role = None
         else:
             role = resolved_roles.get(role_id)
+        
+        if role is None:
+            role = ROLES.get(role_id)
     
     return role
 
 
-async def converter_channel(interaction_event, value):
+async def converter_channel(client, interaction_event, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
     
@@ -390,6 +421,8 @@ async def converter_channel(interaction_event, value):
     
     Parameters
     ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received interaction event.
     value : `str`
@@ -400,7 +433,7 @@ async def converter_channel(interaction_event, value):
     value : `None` or ``ChannelBase`` instance
         If conversion fails, then returns `None`.
     """
-    channel_id = await converter_snowflake(interaction_event, value)
+    channel_id = await converter_snowflake(client, interaction_event, value)
     
     if channel_id is None:
         channel = None
@@ -410,6 +443,9 @@ async def converter_channel(interaction_event, value):
             channel = None
         else:
             channel = resolved_channels.get(channel_id)
+        
+        if channel is None:
+            channel = CHANNELS.get(channel_id)
     
     return channel
 
@@ -499,7 +535,7 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
     ValueError
         - If `annotation_value` is `str` instance, but not any of the expected ones.
         - If `annotation_value` is `type` instance, but not any of the expected ones.
-        - If `choice` amount is out of the expected range [1:10].
+        - If `choice` amount is out of the expected range [1:25].
         - If a `choice` name is duped.
         - If a `choice` values are mixed types.
     """
@@ -535,9 +571,9 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
                 f'`list` or `dict`, got {annotation_value.__class__.__name__}.')
         
         choices_length = len(annotation_value)
-        if choices_length < 1 or choices_length > 10:
-            raise ValueError(f'Argument `{annotation_name}` choice length out of expected range [1:10], got '
-                f'{choices_length!r}.')
+        if choices_length < 1 or choices_length > APPLICATION_COMMAND_CHOICES_MAX:
+            raise ValueError(f'Argument `{annotation_name}` choice length out of expected range '
+                f'[1:{APPLICATION_COMMAND_CHOICES_MAX}], got {choices_length!r}.')
         
         names = []
         values = []
@@ -634,7 +670,7 @@ class ArgumentConverter(object):
             - If `annotation` is a `tuple`, but it's length is not 2.
             - If `annotation_value` is `str` instance, but not any of the expected ones.
             - If `annotation_value` is `type` instance, but not any of the expected ones.
-            - If `choice` amount is out of the expected range [1:10].
+            - If `choice` amount is out of the expected range [1:25].
             - If a `choice` name is duped.
             - If a `choice` values are mixed types.
             - If `annotation` 1st element's range is out of the expected range [2:100].
@@ -660,9 +696,11 @@ class ArgumentConverter(object):
                 f'{description.__class__.__name__}.')
         
         description_length = len(description)
-        if description_length < 2 or description_length > 100:
+        if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
+                description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
             raise ValueError(f'Argument `{name}` has annotation description\'s length is out of the expected range '
-                f'[2:100], got {description_length}; {description!r}.')
+                f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:'
+                f'{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got {description_length}; {description!r}.')
         
         if argument.has_default:
             default = argument.default
@@ -682,7 +720,7 @@ class ArgumentConverter(object):
         self.type = annotation_type
         return self
     
-    async def __call__(self, interaction_event, value):
+    async def __call__(self, client, interaction_event, value):
         """
         Calls the argument converter to convert the given `value` to it's desired state.
         
@@ -690,6 +728,8 @@ class ArgumentConverter(object):
         
         Parameters
         ----------
+        client : ``Client``
+            The client who received the respective ``InteractionEvent``.
         interaction_event : ``InteractionEvent``
             The received interaction event.
         value : `str`
@@ -709,7 +749,7 @@ class ArgumentConverter(object):
                 passed = True
                 value = self.default
         else:
-            value = await self.converter(interaction_event, value)
+            value = await self.converter(client, interaction_event, value)
             if value is None:
                 if self.required:
                     passed = False
@@ -786,7 +826,7 @@ def generate_argument_parsers(func):
         - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
         - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
         - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-        - If an argument's `choice` amount is out of the expected range [1:10].
+        - If an argument's `choice` amount is out of the expected range [1:25].
         - If an argument's `choice` name is duped.
         - If an argument's `choice` values are mixed types.
     """
@@ -909,6 +949,21 @@ class SlashCommand(object):
         command id.
     _schema : `None` or ``ApplicationCommand``
         Internal slot used by the ``.get_schema`` method.
+    _unloading_behaviour : `int`
+        Behaviour what describes what should happen when the command is removed from the slasher.
+        
+        Can be any of the following:
+        
+        +-------------------------------+-------+
+        | Respective name               | Value |
+        +-------------------------------+-------+
+        | UNLOADING_BEHAVIOUR_DELETE    | 0     |
+        +-------------------------------+-------+
+        | UNLOADING_BEHAVIOUR_KEEP      | 1     |
+        +-------------------------------+-------+
+        | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
+        +-------------------------------+-------+
+    
     _sub_commands  : `None` or `dict` of (`str`, ``SlashCommandFunction`` or ``SlashSubCommand``) items
         Sub-commands of the slash command.
         
@@ -931,7 +986,7 @@ class SlashCommand(object):
     ``SlashCommand`` instances are weakreferable.
     """
     __slots__ = ('__weakref__', '_command', '_registered_application_command_ids', '_schema', '_sub_commands',
-        'description', 'guild_ids', 'is_default', 'is_global', 'name', )
+        '_unloading_behaviour', 'description', 'guild_ids', 'is_default', 'is_global', 'name', )
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -1079,6 +1134,8 @@ class SlashCommand(object):
                 Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the slash command is the default command in it's category.
+            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+                Whether the command should be deleted from Discord when removed.
         
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
             Additional parameters arguments. Defaults to `None`.
@@ -1122,12 +1179,13 @@ class SlashCommand(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -1155,6 +1213,7 @@ class SlashCommand(object):
         show_source = getattr(klass, 'show_source', None)
         show_for_invoking_user_only = getattr(klass, 'show_for_invoking_user_only', None)
         is_default = getattr(klass, 'is_default', None)
+        delete_on_unload = getattr(klass, 'delete_on_unload', None)
         
         if (kwargs is not None) and kwargs:
             if (description is None):
@@ -1205,6 +1264,14 @@ class SlashCommand(object):
                 except KeyError:
                     pass
             
+            if (delete_on_unload is None):
+                delete_on_unload = kwargs.pop('delete_on_unload', None)
+            else:
+                try:
+                    del kwargs['delete_on_unload']
+                except KeyError:
+                    pass
+            
             if kwargs:
                 raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
         
@@ -1215,7 +1282,8 @@ class SlashCommand(object):
                 f'https://github.com/discord/discord-api-docs/pull/2615',
                 FutureWarning)
         
-        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default)
+        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
+            delete_on_unload)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
@@ -1239,7 +1307,8 @@ class SlashCommand(object):
             - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
             - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - is_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
         
         Returns
         -------
@@ -1272,12 +1341,13 @@ class SlashCommand(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -1291,6 +1361,7 @@ class SlashCommand(object):
             is_global = None
             guild = None
             is_default = None
+            delete_on_unload = None
         else:
             description = kwargs.pop('description', None)
             show_source = kwargs.pop('show_source', None)
@@ -1298,6 +1369,7 @@ class SlashCommand(object):
             is_global = kwargs.pop('is_global', None)
             guild = kwargs.pop('checks', None)
             is_default = kwargs.pop('is_default', None)
+            delete_on_unload = kwargs.pop('delete_on_unload', None)
             
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
@@ -1309,7 +1381,8 @@ class SlashCommand(object):
                 f'https://github.com/discord/discord-api-docs/pull/2615',
                 FutureWarning)
         
-        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default)
+        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
+            delete_on_unload)
     
     @classmethod
     def _check_maybe_route(cls, variable_name, variable_value, route_to, validator):
@@ -1544,9 +1617,11 @@ class SlashCommand(object):
                     f'{name!r}.')
             
             name_length = len(name)
-            if name_length < 1 or name_length > 32:
-                raise ValueError(f'`name` length is out of the expected range [1:32], got '
-                    f'{name_length!r}; {name!r}.')
+            if name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or \
+                    name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
+                raise ValueError(f'`name` length is out of the expected range '
+                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:'
+                    f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {name_length!r}; {name!r}.')
         
         return name
     
@@ -1576,6 +1651,37 @@ class SlashCommand(object):
             is_default = preconvert_bool(is_default, 'is_default')
         
         return is_default
+    
+    @staticmethod
+    def _validate_delete_on_unload(delete_on_unload):
+        """
+        Validates the given `delete_on_unload` value.
+        
+        Parameters
+        ----------
+        delete_on_unload : `None` or `bool`
+            The `delete_on_unload` value to validate.
+        
+        Returns
+        -------
+        unloading_behaviour : `int`
+            The validated `delete_on_unload` value.
+        
+        Raises
+        ------
+        TypeError
+            If `delete_on_unload` was not given as `None` nor as `bool` instance.
+        """
+        if delete_on_unload is None:
+            unloading_behaviour = UNLOADING_BEHAVIOUR_INHERIT
+        else:
+            delete_on_unload = preconvert_bool(delete_on_unload, 'delete_on_unload')
+            if delete_on_unload:
+                unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
+            else:
+                unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
+        
+        return unloading_behaviour
     
     @staticmethod
     def _generate_description_from(command, description):
@@ -1609,7 +1715,7 @@ class SlashCommand(object):
             description = getattr(command, '__doc__', None)
         
         if (description is None) or (not isinstance(description, str)):
-            raise TypeError(f'`description` or `command.__doc__` is not given or is given as `None`')
+            raise TypeError(f'`description` or `command.__doc__` is not given or is given as `None`.')
             
         description = normalize_description(description)
         
@@ -1618,13 +1724,16 @@ class SlashCommand(object):
         else:
             description_length = len(description)
         
-        if description_length < 2 or description_length > 100:
-            raise ValueError(f'`description` length is out of the expected range [2:100], got {description_length!r}; '
-                f'{description!r}.')
+        if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
+                description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
+            raise ValueError(f'`description` length is out of the expected range '
+                f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got '
+                f'{description_length!r}; {description!r}.')
         
         return description
     
-    def __new__(cls, command, name, description, show_for_invoking_user_only, is_global, guild, is_default):
+    def __new__(cls, command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
+            delete_on_unload):
         """
         Creates a new ``SlashCommand`` instance with the given parameters.
         
@@ -1646,7 +1755,9 @@ class SlashCommand(object):
             To which guild(s) the command is bound to.
         is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             Whether the slash command is the default command in it's category.
-        
+        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            Whether the command should be deleted from Discord when removed.
+            
         Returns
         -------
         self : ``SlashCommand``
@@ -1676,12 +1787,13 @@ class SlashCommand(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -1697,6 +1809,8 @@ class SlashCommand(object):
         is_global, route_to = cls._check_maybe_route('is_global', is_global, route_to, cls._validate_is_global)
         guild_ids, route_to = cls._check_maybe_route('guild', guild, route_to, cls._validate_guild)
         is_default, route_to = cls._check_maybe_route('is_default', is_default, route_to, cls._validate_is_default)
+        unloading_behaviour, route_to = cls._check_maybe_route('delete_on_unload', delete_on_unload, route_to,
+            cls._validate_delete_on_unload)
         
         if route_to:
             name = route_name(command, name, route_to)
@@ -1706,6 +1820,7 @@ class SlashCommand(object):
             is_global = route_value(is_global, route_to)
             guild_ids = route_value(guild_ids, route_to)
             is_default = route_value(is_default, route_to)
+            unloading_behaviour = route_value(unloading_behaviour, route_to)
             
             description = [
                 cls._generate_description_from(command, description)
@@ -1716,9 +1831,11 @@ class SlashCommand(object):
             name = check_name(command, name)
             
             sub_name_length = len(name)
-            if sub_name_length < 1 or sub_name_length > 32:
-                raise ValueError(f'`name` length is out of the expected range [1:32], '
-                    f'got {sub_name_length!r}; {name!r}.')
+            if sub_name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or \
+                    sub_name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
+                raise ValueError(f'`name` length is out of the expected range '
+                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:'
+                    f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {sub_name_length!r}; {name!r}.')
             
             description = cls._generate_description_from(command, description)
         
@@ -1730,8 +1847,9 @@ class SlashCommand(object):
         if route_to:
             router = []
             
-            for name, description, show_for_invoking_user_only, is_global, guild_ids, is_default in zip(
-                name, description, show_for_invoking_user_only, is_global, guild_ids, is_default):
+            for name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour \
+                    in zip(name, description, show_for_invoking_user_only, is_global, guild_ids, is_default,
+                        unloading_behaviour):
                 
                 if is_global and (guild_ids is not None):
                     raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
@@ -1757,6 +1875,7 @@ class SlashCommand(object):
                 self._schema = None
                 self._registered_application_command_ids = None
                 self.is_default = is_default
+                self._unloading_behaviour = unloading_behaviour
                 router.append(self)
             
             return Router(router)
@@ -1785,6 +1904,7 @@ class SlashCommand(object):
             self._schema = None
             self._registered_application_command_ids = None
             self.is_default = is_default
+            self._unloading_behaviour = unloading_behaviour
             return self
     
     def __repr__(self):
@@ -1805,6 +1925,16 @@ class SlashCommand(object):
         if (guild_ids is not None):
             result.append(', guild_ids=')
             result.append(repr(guild_ids))
+        
+        unloading_behaviour = self._unloading_behaviour
+        if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
+            result.append(', unloading_behaviour=')
+            if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
+                unloading_behaviour_name = 'delete'
+            else:
+                unloading_behaviour_name = 'keep'
+            
+            result.append(unloading_behaviour_name)
         
         result.append('>')
         
@@ -1924,6 +2054,7 @@ class SlashCommand(object):
         new.guild_ids = guild_ids
         new.is_global = self.is_global
         new.name = self.name
+        new._unloading_behaviour = self._unloading_behaviour
         
         if (sub_commands is not None):
             parent_reference = None
@@ -1955,7 +2086,7 @@ class SlashCommand(object):
         return _EventHandlerManager(self)
     
     def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None):
+            is_global=None, guild=None, is_default=None, delete_on_unload=None):
         """
         Adds a sub-command under the slash command.
         
@@ -1977,6 +2108,8 @@ class SlashCommand(object):
             To which guild(s) the command is bound to.
         is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the command is the default command in it's category.
+        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+            Whether the command should be deleted from Discord when removed.
         
         Returns
         -------
@@ -2006,12 +2139,13 @@ class SlashCommand(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -2039,7 +2173,8 @@ class SlashCommand(object):
             self._add_command(func)
             return self
         
-        command = type(self)(func, name, description, show_for_invoking_user_only, is_global, guild, is_default)
+        command = type(self)(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
+            delete_on_unload)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2072,6 +2207,8 @@ class SlashCommand(object):
                 Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether the command is the default command in it's category.
+            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+                Whether the command should be deleted from Discord when removed.
         
         Returns
         -------
@@ -2104,12 +2241,13 @@ class SlashCommand(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -2143,8 +2281,9 @@ class SlashCommand(object):
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         sub_commands = self._sub_commands
-        if len(sub_commands) == 10 and (command.name not in sub_commands):
-            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children (10).')
+        if len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX and (command.name not in sub_commands):
+            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children '
+                f'({APPLICATION_COMMAND_OPTIONS_MAX}).')
         
         if command.is_default:
             for sub_command in sub_commands.values():
@@ -2229,14 +2368,30 @@ class SlashCommandFunction(object):
         for argument_parser in self._argument_parsers:
             value = parameter_relation.get(argument_parser.name)
             
-            passed, parameter = await argument_parser(interaction_event, value)
+            passed, parameter = await argument_parser(client, interaction_event, value)
             if not passed:
                 return
             
             parameters.append(parameter)
         
         coro = self._command(client, interaction_event, *parameters)
-        await process_command_coro(client, interaction_event, self.show_for_invoking_user_only, coro)
+        try:
+            await process_command_coro(client, interaction_event, self.show_for_invoking_user_only, coro)
+        except BaseException as err:
+            await client.events.error(client, f'{self!r}.__call__', err)
+    
+    def __repr__(self):
+        """Returns the application command option's representation."""
+        result = ['<', self.__class__.__name__, 'name=', repr(self.name), ', description=', repr(self.description)]
+        if self.is_default:
+            result.append(', is_default=True')
+        
+        if self.show_for_invoking_user_only:
+            result.append(', show_for_invoking_user_only=True')
+        
+        result.append('>')
+        
+        return ''.join(result)
     
     def as_option(self):
         """
@@ -2377,7 +2532,7 @@ class SlashCommandCategory(object):
         return _EventHandlerManager(self)
     
     def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=True):
+            is_global=None, guild=None, is_default=None, delete_on_unload=None):
         """
         Adds a sub-command under the slash category.
         
@@ -2399,6 +2554,8 @@ class SlashCommandCategory(object):
             To which guild(s) the command is bound to.
         is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the command is the default command in it's category.
+        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+            Whether the command should be deleted from Discord when removed.
         
         Returns
         -------
@@ -2428,12 +2585,13 @@ class SlashCommandCategory(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -2458,7 +2616,8 @@ class SlashCommandCategory(object):
             self._add_command(func)
             return self
         
-        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default)
+        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
+            delete_on_unload)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2491,6 +2650,8 @@ class SlashCommandCategory(object):
                 Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether the command is the default command in it's category.
+            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+                Whether the command should be deleted from Discord when removed.
         
         Returns
         -------
@@ -2523,12 +2684,13 @@ class SlashCommandCategory(object):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -2563,8 +2725,9 @@ class SlashCommandCategory(object):
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         sub_commands = self._sub_commands
-        if len(sub_commands) == 10 and (command.name not in sub_commands):
-            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children (10).')
+        if len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX and (command.name not in sub_commands):
+            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children '
+                f'({APPLICATION_COMMAND_OPTIONS_MAX}).')
         
         as_sub = command.as_sub()
         if isinstance(as_sub, type(self)):
@@ -2593,6 +2756,19 @@ class Slasher(EventHandlerBase):
     
     Attributes
     ----------
+    _command_unloading_behaviour : `int`
+        Behaviour to describe what should happen when a command is unloaded.
+        
+        Can be any of the following:
+        
+        +-------------------------------+-------+
+        | Respective name               | Value |
+        +-------------------------------+-------+
+        | UNLOADING_BEHAVIOUR_DELETE    | 0     |
+        +-------------------------------+-------+
+        | UNLOADING_BEHAVIOUR_KEEP      | 1     |
+        +-------------------------------+-------+
+    
     _sync_should : `set` of `int`
         Set of guild id-s to sync.
     _sync_tasks : `dict` of (`int, `Task`) items
@@ -2604,10 +2780,10 @@ class Slasher(EventHandlerBase):
         bound commands.
     _sync_should_commands : `dict` of (`int`, `tuple` (`bool`, `list` of ``SlashCommand``)) items
         The synced commands, where the dictionary keys are their respective guild's id and the values are a tuple of 2
-        elements, where the 0th is whether the command was added and the 1th is the command itself.
+        elements, where the 0th element is whether the command was added and the 1th is the command itself.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
-        
+    
     Class Attributes
     ----------------
     __event_name__ : `str` = 'interaction_create'
@@ -2619,18 +2795,42 @@ class Slasher(EventHandlerBase):
     -----
     ``Slasher`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_sync_should', '_sync_tasks', '_sync_done', '_sync_done_commands',
-        '_sync_should_commands', 'command_id_to_command')
+    __slots__ = ('__weakref__', '_command_unloading_behaviour', '_sync_should', '_sync_tasks', '_sync_done',
+        '_sync_done_commands', '_sync_should_commands', 'command_id_to_command')
     
     __event_name__ = 'interaction_create'
     
     SUPPORTED_TYPES = (SlashCommand, )
     
-    def __new__(cls):
+    def __new__(cls, delete_commands_on_unload=False):
         """
         Creates a new slash command processer.
+        
+        Parameters
+        ----------
+        delete_commands_on_unload : `bool`, Optional
+            Whether commands should be deleted when unloaded.
+        
+        Raises
+        ------
+        TypeError
+            If `delete_commands_on_unload` was not given as `bool` instance.
         """
+        if type(delete_commands_on_unload) is bool:
+            pass
+        elif isinstance(delete_commands_on_unload, bool):
+            delete_commands_on_unload = bool(delete_commands_on_unload)
+        else:
+            raise TypeError(f'`delete_commands_on_unload` can be given as `bool` instance, got '
+                f'{delete_commands_on_unload.__class__.__name__}.')
+        
+        if delete_commands_on_unload:
+            command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
+        else:
+            command_unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
+        
         self = object.__new__(cls)
+        self._command_unloading_behaviour = command_unloading_behaviour
         self._sync_should = set()
         self._sync_tasks = {}
         self._sync_done = set()
@@ -2667,7 +2867,7 @@ class Slasher(EventHandlerBase):
     
     
     def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None):
+            is_global=None, guild=None, is_default=None, delete_on_unload=None):
         """
         Adds a slash command.
         
@@ -2689,6 +2889,8 @@ class Slasher(EventHandlerBase):
             To which guild(s) the command is bound to.
         is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the command is the default command in it's category.
+        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+            Whether the command should be deleted from Discord when removed.
         
         Returns
         -------
@@ -2719,12 +2921,13 @@ class Slasher(EventHandlerBase):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -2745,7 +2948,8 @@ class Slasher(EventHandlerBase):
             self._add_command(func)
             return func
         
-        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default)
+        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
+            delete_on_unload)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2778,6 +2982,8 @@ class Slasher(EventHandlerBase):
                 Whether the response message should only be shown for the invoking user. Defaults to `False`.
             - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
                 Whether the command is the default command in it's category.
+            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+                Whether the command should be deleted from Discord when removed.
         
         Returns
         -------
@@ -2811,12 +3017,13 @@ class Slasher(EventHandlerBase):
             - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
             - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
             - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:10].
+            - If an argument's `choice` amount is out of the expected range [1:25].
             - If an argument's `choice` name is duped.
             - If an argument's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
@@ -3139,8 +3346,8 @@ class Slasher(EventHandlerBase):
         
         if not synced_commands:
             del self._sync_done_commands[sync_id]
-            
-        
+    
+    
     def __delevent__(self, func, name, **kwargs):
         """
         A method to remove a command by itself, or by it's function and name combination if defined.
@@ -3712,19 +3919,20 @@ class Slasher(EventHandlerBase):
         success : `bool`
             Whether the command was deleted successfully.
         """
-        try:
-            await client.application_command_guild_delete(guild_id, application_command)
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
-                # No internet connection
-                return False
-            
-            if isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_application_command:
-                # Already deleted, lul, ok, I guess.
-                pass
-            else:
-                await client.events.error(client, f'{self!r}._edit_guild_command', err)
-                return False
+        if self._should_delete_command_helper(guild_command):
+            try:
+                await client.application_command_guild_delete(guild_id, application_command)
+            except BaseException as err:
+                if isinstance(err, ConnectionError):
+                    # No internet connection
+                    return False
+                
+                if isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_application_command:
+                    # Already deleted, lul, ok, I guess.
+                    pass
+                else:
+                    await client.events.error(client, f'{self!r}._edit_guild_command', err)
+                    return False
         
         self._unregister_helper(guild_command, guild_id)
         self._mark_command_sync_done(guild_command, guild_id)
@@ -3857,19 +4065,20 @@ class Slasher(EventHandlerBase):
         success : `bool`
             Whether the command was deleted successfully.
         """
-        try:
-            await client.application_command_global_delete(application_command)
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
-                # No internet connection
-                return False
-            
-            if isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_application_command:
-                # Already deleted, lul, ok, I guess.
-                pass
-            else:
-                await client.events.error(client, f'{self!r}._edit_global_command', err)
-                return False
+        if self._should_delete_command_helper(global_command):
+            try:
+                await client.application_command_global_delete(application_command)
+            except BaseException as err:
+                if isinstance(err, ConnectionError):
+                    # No internet connection
+                    return False
+                
+                if isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_application_command:
+                    # Already deleted, lul, ok, I guess.
+                    pass
+                else:
+                    await client.events.error(client, f'{self!r}._edit_global_command', err)
+                    return False
         
         self._unregister_helper(global_command, SYNC_ID_GLOBAL)
         self._mark_command_sync_done(global_command, SYNC_ID_GLOBAL)
@@ -4084,5 +4293,73 @@ class Slasher(EventHandlerBase):
     def __repr__(self):
         """Returns the slasher's representation."""
         return f'<{self.__class__.__name__} sync_should={len(self._sync_should)}, sync_done={len(self._sync_done)}>'
+    
+    def _should_delete_command_helper(self, slash_command):
+        """
+        Returns whether the slash command should be deleted from Discord.
+        
+        Parameters
+        ----------
+        slash_command : `None` or ``SlashCommand``
+            The slash command to delete
+
+        Returns
+        -------
+        should_delete : `bool`
+        """
+        if slash_command is None:
+            return True
+        
+        unloading_behaviour = slash_command._unloading_behaviour
+        if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
+            return True
+        
+        if unloading_behaviour == UNLOADING_BEHAVIOUR_KEEP:
+            return False
+        
+        # if unloading_behaviour == UNLOADING_BEHAVIOUR_INHERIT:
+        
+        unloading_behaviour = self._command_unloading_behaviour
+        if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
+            return True
+        
+        # if unloading_behaviour == UNLOADING_BEHAVIOUR_KEEP:
+        return False
+    
+    
+    def _get_delete_commands_on_unload(self):
+        command_unloading_behaviour = self._command_unloading_behaviour
+        if command_unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
+            delete_commands_on_unload = True
+        else:
+            delete_commands_on_unload = False
+        
+        return delete_commands_on_unload
+    
+    def _set_delete_commands_on_unload(self, delete_commands_on_unload):
+        if type(delete_commands_on_unload) is bool:
+            pass
+        elif isinstance(delete_commands_on_unload, bool):
+            delete_commands_on_unload = bool(delete_commands_on_unload)
+        else:
+            raise TypeError(f'`delete_commands_on_unload` can be given as `bool` instance, got '
+                f'{delete_commands_on_unload.__class__.__name__}.')
+        
+        if delete_commands_on_unload:
+            command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
+        else:
+            command_unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
+        
+        self._command_unloading_behaviour = command_unloading_behaviour
+    
+    delete_commands_on_unload = property(_get_delete_commands_on_unload, _set_delete_commands_on_unload)
+    del _get_delete_commands_on_unload, _set_delete_commands_on_unload
+    if DOCS_ENABLED:
+        delete_commands_on_unload.__doc__ = ("""
+        A get-set property for changing the slasher's command unloading behaviour.
+        
+        Accepts and returns any `bool` instance.
+        """)
+    
 
 del EventHandlerBase

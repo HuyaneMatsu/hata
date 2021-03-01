@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('ChooseMenu', 'Closer', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
     'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue',
-    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', )
+    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', 'MessageCreateWaitfor',)
 
 from ...backend.futures import Task, Future
 from ...backend.event_loop import LOOP_TIME
@@ -49,6 +49,24 @@ class ReactionDeleteWaitfor(EventWaitforBase):
     """
     __slots__ = ()
     __event_name__ = 'reaction_delete'
+
+class MessageCreateWaitfor(EventWaitforBase):
+    """
+    Implements waiting for `message_create` events.
+    
+    Attributes
+    ----------
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+        An auto-added container to store `entity` - `async-callable` pairs.
+    
+    Class Attributes
+    ----------------
+    __event_name__ : `str` = `'message_create'`
+        Predefined name to what the event handler will be added.
+    """
+    __slots__ = ()
+    __event_name__ = 'message_create'
+
 
 class multievent(object):
     """

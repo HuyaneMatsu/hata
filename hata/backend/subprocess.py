@@ -1611,7 +1611,7 @@ class AsyncProcess(object):
         Parameters
         ----------
         timeout : `None` or `float`
-            The maximal amount of time to wait for teh process to close in seconds.
+            The maximal amount of time to wait for the process to close in seconds.
 
         Returns
         -------
@@ -1759,7 +1759,7 @@ class AsyncProcess(object):
         input_ : `None` or `bytes-like`, Optional
             Optional data to be sent to the sub-process.
         timeout : `None` or `float`, Optional
-            The maximal amount of time to wait for teh process to close in seconds.
+            The maximal amount of time to wait for the process to close in seconds.
         
         Returns
         -------

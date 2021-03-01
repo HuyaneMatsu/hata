@@ -693,10 +693,10 @@ class VoiceClient(object):
         if player.done:
             return False
         
-        if player.resumed_waiter.is_set():
-            return True
+        if not player.resumed_waiter.is_set():
+            return False
         
-        return False
+        return True
     
     def is_paused(self):
         """
@@ -713,7 +713,7 @@ class VoiceClient(object):
         if player.done:
             return True
         
-        if player.resumed_waiter.is_set():
+        if not player.resumed_waiter.is_set():
             return True
         
         return False

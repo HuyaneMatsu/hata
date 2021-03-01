@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Hata extension for controlling slash commands.
-
-Work in progress.
+Hata extensions for supporting interactions.
 """
 from ...backend.futures import Task
 from ...discord.client_core import KOKORO
@@ -19,7 +17,7 @@ __all__ = (
     *command.__all__,
         )
 
-def setup_ext_slash(client, *, immediate_sync=None):
+def setup_ext_slash(client, *, immediate_sync=None, **kwargs):
     """
     Setups the slash extension on client.
     
@@ -32,6 +30,13 @@ def setup_ext_slash(client, *, immediate_sync=None):
     immediate_sync : `bool`, Optional
         Whether application command sync task should be started immediately as it is detected that no more features
         are added to the slasher. Defaults to `False`.
+    **kwargs : Keyword parameters
+        Additional keyword parameter to be passed to the created ``Slasher``.
+    
+    Other Parameters
+    ----------------
+    delete_commands_on_unload: `bool`, Optional
+        Whether commands should be deleted when unloaded.
     
     Returns
     -------
@@ -42,6 +47,9 @@ def setup_ext_slash(client, *, immediate_sync=None):
     ------
     RuntimeError
         If the client has an attribute set what the slasher would use.
+    
+    TypeError
+        If `delete_commands_on_unload` was not given as `bool` instance.
     """
     for attr_name in ('slasher', 'interactions'):
         if hasattr(client, attr_name):
@@ -52,7 +60,7 @@ def setup_ext_slash(client, *, immediate_sync=None):
             f'`setup_ext_slash`\'s `immediate_sync` parameter is deprecated, and will be removed in 2021 April.',
             FutureWarning)
     
-    slasher = Slasher()
+    slasher = Slasher(**kwargs)
     
     client.events(slasher)
     client.slasher = slasher

@@ -4,20 +4,21 @@ __all__ = ('DiscordHTTPClient', )
 import sys, re
 
 from ..backend.utils import imultidict, modulize, WeakMap, WeakKeyDictionary
-from ..backend.futures import sleep
+from ..backend.futures import sleep, Future
 from ..backend.http import HTTPClient, RequestCM
 from ..backend.connector import TCPConnector
 from ..backend.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_POST, METHOD_PUT, CONTENT_TYPE, USER_AGENT, \
     AUTHORIZATION
 from ..backend.quote import quote
+from ..backend.event_loop import LOOP_TIME
 
 from .. env import API_VERSION
 
 from .exceptions import DiscordException
 from .utils import to_json, from_json
 from .utils.DISCORD_HEADERS import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION
-from .rate_limit import rate_limit_global, RATE_LIMIT_GROUPS, RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, \
-    StackedStaticRateLimitHandler
+from .rate_limit import RATE_LIMIT_GROUPS, RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
+from .client_core import KOKORO
 
 
 @modulize
@@ -37,6 +38,7 @@ class URLS:
     del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
     
     from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
+    from .utils import MESSAGE_JUMP_URL_RP
     
     STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
     
@@ -60,10 +62,6 @@ class URLS:
             guild_id = '@me'
         
         return f'{DIS_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
-    
-    MESSAGE_JUMP_URL_RP = re.compile(
-        '(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})'
-            )
     
     def guild_icon_url(guild):
         """
@@ -1117,8 +1115,8 @@ class DiscordHTTPClient(HTTPClient):
         TCP connector of the session. Each Discord Http client shares the same.
     cookie_jar : ``CookieJar``
         Cookie storage of the session.
-    global_lock : `None` or ``Future``
-        Waiter for Discord requests, set when the respective client gets limited globally.
+    global_rate_limit_expires_at : `float`
+        The time when global rate limit will expire in monotonic time.
     handlers : ``WeakMap`` of ``RateLimitHandler``
         Rate limit handlers of the Discord requests.
     headers : `imultidict`
@@ -1129,14 +1127,15 @@ class DiscordHTTPClient(HTTPClient):
         Proxy authorization.
     proxy_url : `str` or `None`
         Proxy url.
-        
+    
     Class Attributes
     ----------------
     CONNECTOR_REFERENCE_COUNTS : ``WeakKeyDictionary`` of (``EventThread``, ``_ConnectorRefCounter``) items
         Container to store the connector(s) for Discord http clients. One connector is used by each Discord http client
         running on the same loop.
     """
-    __slots__ = ('connector', 'cookie_jar', 'global_lock', 'handlers', 'headers', 'loop', 'proxy_auth', 'proxy_url',)
+    __slots__ = ('connector', 'cookie_jar', 'global_rate_limit_expires_at', 'handlers', 'headers', 'loop',
+        'proxy_auth', 'proxy_url',)
     
     CONNECTOR_REFERENCE_COUNTS = WeakKeyDictionary()
     
@@ -1175,7 +1174,7 @@ class DiscordHTTPClient(HTTPClient):
             headers[RATE_LIMIT_PRECISION] = 'millisecond'
         
         self.headers = headers
-        self.global_lock = None
+        self.global_rate_limit_expires_at = 0.0
         self.handlers = WeakMap()
     
     __aenter__ = None
@@ -1267,9 +1266,11 @@ class DiscordHTTPClient(HTTPClient):
         
         try_again = 4
         while True:
-            global_lock = self.global_lock
-            if (global_lock is not None):
-                await global_lock
+            global_rate_limit_expires_at = self.global_rate_limit_expires_at
+            if global_rate_limit_expires_at > LOOP_TIME():
+                future = Future(KOKORO)
+                KOKORO.call_at(global_rate_limit_expires_at, Future.set_result_if_pending, future, None)
+                await future
             
             await handler.enter()
             with handler.ctx() as lock:
@@ -1300,9 +1301,13 @@ class DiscordHTTPClient(HTTPClient):
                     if 'code' in response_data: # Can happen at the case of rate limit ban
                         raise DiscordException(response, response_data)
                     
-                    retry_after = response_data.get('retry_after', 0)/1000.
+                    retry_after = response_data.get('retry_after', 0.0)
                     if response_data.get('global', False):
-                        await rate_limit_global(self, retry_after)
+                        global_rate_limit_expires_at = LOOP_TIME() + retry_after
+                        self.global_rate_limit_expires_at = global_rate_limit_expires_at
+                        future = Future(KOKORO)
+                        KOKORO.call_at(global_rate_limit_expires_at, Future.set_result_if_pending, future, None)
+                        await future
                     else:
                         await sleep(retry_after, self.loop)
                     continue

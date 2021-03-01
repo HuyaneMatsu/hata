@@ -10,11 +10,11 @@ from ..backend.utils import DOCS_ENABLED, any_to_any
 from .bases import PreinstancedBase
 from .color import Color
 from .http import URLS
+from .utils import sanitize_mentions
 
 from . import utils as module_utils
 
 ActivityTypes = NotImplemented
-_convert_content = NotImplemented
 
 class VerificationLevel(PreinstancedBase):
     """
@@ -1093,7 +1093,7 @@ class MessageType(PreinstancedBase):
         """
         content = self.content
         if content:
-            content = _convert_content(content, self)
+            content = sanitize_mentions(content, self.guild)
         
         return content
     

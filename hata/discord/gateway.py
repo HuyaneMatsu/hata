@@ -443,14 +443,14 @@ class DiscordGateway(object):
         """
         # return True if we should reconnect
         message = from_json(message)
-
+        
         operation = message['op']
         data = message['d']
         sequence = message['s']
-
+        
         if sequence is not None:
             self.sequence = sequence
-            
+        
         if operation:
             return await self._special_operation(operation, data)
         
@@ -949,9 +949,9 @@ class DiscordGatewayVoice(object):
             kokoro = await Kokoro(self)
         
         if operation == self.HELLO:
-            #sowwy, but we need to ignore these or we will keep getting timeout
-            #kokoro.interval=data['heartbeat_interval']/100.
-            #send a heartbeat immediately
+            # sowwy, but we need to ignore these or we will keep getting timeout
+            # kokoro.interval=data['heartbeat_interval']/100.
+            # send a heartbeat immediately
             await kokoro.beat_now()
             return
         
@@ -960,7 +960,7 @@ class DiscordGatewayVoice(object):
             return
         
         if operation == self.SESSION_DESCRIPTION:
-            #data['mode'] is same as our default every time?
+            # data['mode'] is same as our default every time?
             self.client._secret_box = SecretBox(bytes(data['secret_key']))
             if kokoro.beater is None: # Discord order bug ?
                 kokoro.start_beating()

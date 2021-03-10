@@ -53,7 +53,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
-    MessageNotificationLevel, HypesquadHouse, RelationshipType
+    MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
     BanEntry, maybe_snowflake_pair
@@ -63,7 +63,7 @@ from .color import Color
 
 from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
     channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
-    guild as module_guild, audit_logs as module_audit_logs
+    guild as module_guild, audit_logs as module_audit_logs, application as module_application
 
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
@@ -2688,7 +2688,7 @@ class Client(UserBase):
         await self.http.channel_move(guild.id, data, reason)
     
     async def channel_edit(self, channel, *, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
-            bitrate=None, type_=None, reason=None):
+            bitrate=None, region=..., type_=None, reason=None):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
         out of place parameters. Only the passed parameters will be edited of the channel.
@@ -2713,13 +2713,18 @@ class Client(UserBase):
             The new bitrate of the `channel`.
         type_ : `int`, Optional
             The `channel`'s new type value.
+        region: `None`, ``VoiceRegion``, `str`, Optional
+            The channel's new voice region.
+            
+            > By giving as `None`, you can remove the old value.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
         Raises
         ------
         TypeError
-            If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
+            - If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
+            - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name`'s length is under `2` or over `100`.
@@ -2740,6 +2745,7 @@ class Client(UserBase):
             - If `user_limit` was given, but the channel is not ``ChannelVoice`` instance.
             - If `user_limit` was not given as `int` instance.
             - If `user_limit` was given, but is out of the expected [0:99] range.
+            - If `region` was given, but the respective channel type is not ``ChannelVoice``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2876,6 +2882,25 @@ class Client(UserBase):
             data['user_limit'] = user_limit
         
         
+        if (region is not ...):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelVoice):
+                        raise AssertionError(f'`region` is a valid parameter only for `{ChannelVoice.__name__}` '
+                            f'instances, but got {channel.__class__.__name__}.')
+            
+            if region is None:
+                region_value = None
+            elif isinstance(region, VoiceRegion):
+                region_value = region.value
+            elif isinstance(region, str):
+                region_value = region
+            else:
+                raise TypeError(f'`region` can be given either as `None`, `str` or as `{VoiceRegion.__name__}` '
+                    f'instance, {region.__class__.__name__}.')
+            
+            data['rtc_region'] = region_value
+        
         await self.http.channel_edit(channel_id, data, reason)
     
     
@@ -2915,6 +2940,8 @@ class Client(UserBase):
             The channel's user limit.
         category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
             The channel's category. If the category is under a guild, leave it empty.
+        category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
+            The channel's category. If the category is under a guild, leave it empty.
         
         Returns
         -------
@@ -2927,6 +2954,7 @@ class Client(UserBase):
             - If `guild` was not given as ``Guild`` or `int` instance.
             - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
             - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
+            - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
         AssertionError
             - If `type_` was given as `int`, and is less than `0`.
             - If `type_` was given as `int` and exceeds the defined channel type limit.
@@ -2948,6 +2976,7 @@ class Client(UserBase):
             - If `user_limit` was not given as `int` instance.
             - If `user_limit` was given, but is out of the expected [0:99] range.
             - If `category` was given, but the respective channel type cannot be put under other categories.
+            - If `region` was given, but the respective channel type is not ``ChannelVoice``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3368,7 +3397,7 @@ class Client(UserBase):
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional
-            A file to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``._create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
@@ -6312,7 +6341,7 @@ class Client(UserBase):
         data = {'limit': 100, 'after': 0}
         users = []
         reaction = emoji.as_reaction
-            
+        
         while True:
             user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
             users.extend(User(user_data) for user_data in user_datas)
@@ -10498,7 +10527,7 @@ class Client(UserBase):
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         file : `Any`, Optional
-            A file to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
@@ -10673,7 +10702,7 @@ class Client(UserBase):
         
         return channel._create_new_message(data)
     
-    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., allowed_mentions=...):
+    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=None, allowed_mentions=...):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.
         
@@ -10696,6 +10725,8 @@ class Client(UserBase):
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        file : `Any`, Optional
+            A file or files to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
@@ -10840,24 +10871,37 @@ class Client(UserBase):
         # Build payload
         message_data = {}
         
+        contains_content = False
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
             message_data['content'] = content
+            contains_content = True
         
         if (embed is not ...):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embed
+            contains_content = True
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            contains_content = True
         
-        if not message_data:
+        if file is None:
+            to_send = message_data
+        else:
+            to_send = self._create_file_form(message_data, file)
+            if to_send is None:
+                to_send = message_data
+            else:
+                contains_content = True
+        
+        if not contains_content:
             return
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.webhook_message_edit(webhook, message_id, message_data)
+        await self.http.webhook_message_edit(webhook, message_id, to_send)
     
     async def webhook_message_delete(self, webhook, message):
         """
@@ -11374,7 +11418,7 @@ class Client(UserBase):
         ------
         TypeError
             If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-            ``ChannelStore``, neither as `int` instance.
+                ``ChannelStore``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11422,10 +11466,10 @@ class Client(UserBase):
     # 'target_user_id' :
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
     #     target_user_type.GUILD_INVITE_INVALID_TARGET_USER_TYPE('Invalid target user type')
-    # 'target_user_type', as 0:
+    # 'target_type', as 0:
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
     #     target_user_type.BASE_TYPE_CHOICES('Value must be one of (1,).')
-    # 'target_user_type', as 1:
+    # 'target_type', as 1:
     #     DiscordException BAD REQUEST (400), code=50035: Invalid Form Body
     #     target_user_type.GUILD_INVITE_INVALID_TARGET_USER_TYPE('Invalid target user type')
     # 'target_user_id' and 'target_user_type' together:
@@ -11445,7 +11489,7 @@ class Client(UserBase):
         Parameters
         ----------
         guild : ``Guild``
-            The guild where the user streams
+            The guild where the user streams.
         user : ``Client``, ``User`` or `int`
             The streaming user.
         max_age : `int`, Optional
@@ -11514,16 +11558,110 @@ class Client(UserBase):
                     f'{temporary.__class__.__name__}.')
         
         data = {
-            'max_age'          : max_age,
-            'max_uses'         : max_uses,
-            'temporary'        : temporary,
-            'unique'           : unique,
-            'target_user_id'   : user_id,
-            'target_user_type' : 1,
+            'max_age'        : max_age,
+            'max_uses'       : max_uses,
+            'temporary'      : temporary,
+            'unique'         : unique,
+            'target_user_id' : user_id,
+            'target_type'    : InviteTargetType.STREAM.value,
                 }
         
         data = await self.http.invite_create(voice_state.channel.id, data)
         return Invite(data, False)
+    
+    # Could not find correct application:
+    #    DiscordException Bad Request (400), code=50035: Invalid Form Body
+    #    target_application_id.GUILD_INVITE_INVALID_APPLICATION('The specified application is not embedded')
+    
+    async def application_invite_create(self, channel, application, *, max_age=0, max_uses=0, unique=True,
+            temporary=False):
+        """
+        Creates an EMBEDDED_APPLICATION invite to the specified voice channel. The application must have must have
+        `embedded` flag.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
+            The target channel of the invite.
+        application : ``Application`` or `int`
+            The embedded application to open in the voice channel.
+            
+            > The application must have `EMBEDDED_APPLICATION` flag.
+        max_age : `int`, Optional
+            After how much time (in seconds) will the invite expire. Defaults is never.
+        max_uses : `int`, Optional
+            How much times can the invite be used. Defaults to unlimited.
+        unique : `bool`, Optional
+            Whether the created invite should be unique. Defaults to `True`.
+        temporary : `bool`, Optional
+            Whether the invite should give only temporary membership. Defaults to `False`.
+        
+        Returns
+        -------
+        invite : ``Invite``
+        
+        Raises
+        ------
+        TypeError
+            - If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
+                ``ChannelStore``, neither as `int` instance.
+            - If `application` was not given neither as ``Application`` nor as`int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `guild` was not given as ``Guild`` instance.
+            - If `max_age` was not given as `int` instance.
+            - If `max_uses` was not given as `int` instance.
+            - If `unique` was not given as `bool` instance.
+            - If `temporary` was not given as `bool` instance.
+        """
+        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelText.__name__}`, `{ChannelText.__name__}`, '
+                    f'`{ChannelText.__name__}`, `{ChannelText.__name__}` or as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
+        if isinstance(application, Application):
+            application_id = application.id
+        else:
+            application_id = maybe_snowflake(application)
+            if application_id is None:
+                raise TypeError(f'`application` can be given as `{Application.__name__}` or as `int` instance, got '
+                    f'{application.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(max_age, int):
+                raise AssertionError(f'`max_age` can be given as `int` instance, got {max_age.__class__.__name__}.')
+            
+            if not isinstance(max_uses, int):
+                raise AssertionError(f'`max_uses` can be given as `int` instance, got {max_uses.__class__.__name__}.')
+            
+            if not isinstance(unique, bool):
+                raise AssertionError(f'`unique` can be given as `bool` instance, got {unique.__class__.__name__}.')
+            
+            if not isinstance(temporary, bool):
+                raise AssertionError(f'`temporary` can be given as `bool` instance, got '
+                    f'{temporary.__class__.__name__}.')
+        
+        data = {
+            'max_age'               : max_age,
+            'max_uses'              : max_uses,
+            'temporary'             : temporary,
+            'unique'                : unique,
+            'target_application_id' : application_id,
+            'target_type'           : InviteTargetType.EMBEDDED_APPLICATION.value,
+                }
+        
+        data = await self.http.invite_create(channel_id, data)
+        return Invite(data, False)
+    
     
     async def invite_create_pref(self, *args, **kwargs):
         """
@@ -13183,8 +13321,8 @@ class Client(UserBase):
         # No message data is returned by Discord, return `None`.
         return None
     
-    
-    async def interaction_response_message_edit(self, interaction, content=..., embed=..., allowed_mentions=...):
+    async def interaction_response_message_edit(self, interaction, content=..., embed=..., file=None,
+            allowed_mentions=...):
         """
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
         will send the message as well.
@@ -13207,6 +13345,8 @@ class Client(UserBase):
             By passing it as empty string, you can remove the message's content.
             
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
+        file : `Any`, Optional
+            A file or files to send. Check ``._create_file_form`` for details.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
@@ -13232,7 +13372,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Cannot editing interaction messages, which ware created with `show_for_invoking_user_only=True`:
+        Cannot editing interaction messages, which were created with `show_for_invoking_user_only=True`:
         
         ```
         DiscordException Not Found (404), code=10008: Unknown Message
@@ -13355,25 +13495,37 @@ class Client(UserBase):
         # Build payload
         message_data = {}
         
+        contains_content = False
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
             message_data['content'] = content
+            contains_content = True
         
         if (embed is not ...):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embed
+            contains_content = True
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            contains_content = True
         
-        if not message_data:
+        if file is None:
+            to_send = message_data
+        else:
+            to_send = self._create_file_form(message_data, file)
+            if to_send is None:
+                to_send = message_data
+            else:
+                contains_content = True
+        
+        if not contains_content:
             return
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
-            message_data)
+        await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token, to_send)
         
         # Mark the interaction as responded if deferred.
         
@@ -13445,7 +13597,7 @@ class Client(UserBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
-            Whether the message is text-to-speech.
+            Whether the message is text-to-speech. Defaults to `False`.
         show_for_invoking_user_only : `bool`, Optional
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
@@ -13644,7 +13796,7 @@ class Client(UserBase):
         return interaction.channel._create_new_message(data)
     
     
-    async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=...,
+    async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=None,
             allowed_mentions=...):
         """
         Edits the given interaction followup message.
@@ -13670,6 +13822,8 @@ class Client(UserBase):
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        file : `Any`, Optional
+            A file or files to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
@@ -13693,7 +13847,7 @@ class Client(UserBase):
         
         Notes
         -----
-        Cannot editing interaction messages, which ware created with `show_for_invoking_user_only=True`:
+        Cannot editing interaction messages, which were created with `show_for_invoking_user_only=True`:
         
         ```
         DiscordException Not Found (404), code=10008: Unknown Message
@@ -13810,25 +13964,38 @@ class Client(UserBase):
         # Build payload
         message_data = {}
         
+        contains_content = False
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
             message_data['content'] = content
+            contains_content = True
         
         if (embed is not ...):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embed
+            contains_content = True
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            contains_content = True
         
-        if not message_data:
+        if file is None:
+            to_send = message_data
+        else:
+            to_send = self._create_file_form(message_data, file)
+            if to_send is None:
+                to_send = message_data
+            else:
+                contains_content = True
+        
+        if not contains_content:
             return
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
         await self.http.interaction_followup_message_edit(application_id, interaction.id, interaction.token, message_id,
-            message_data)
+            to_send)
     
     
     async def interaction_followup_message_delete(self, interaction, message):
@@ -14957,7 +15124,7 @@ class Client(UserBase):
         owner : ``User``, ``Client``
         """
         application_owner = self.application.owner
-        if type(application_owner) is Team:
+        if isinstance(application_owner, Team):
             owner = application_owner.owner
         else:
             owner = application_owner
@@ -14978,7 +15145,7 @@ class Client(UserBase):
         is_owner : `bool`
         """
         application_owner = self.application.owner
-        if type(application_owner) is Team:
+        if isinstance(application_owner, Team):
             if user in application_owner.accepted:
                 return True
         else:
@@ -15339,11 +15506,11 @@ class Client(UserBase):
         -------
         gateway : ``DiscordGateway``
         """
+        gateway = self.gateway
         shard_count = self.shard_count
         if shard_count:
-            gateway = self.gateway.gateways[(guild_id>>22)%shard_count]
-        else:
-            gateway = self.gateway
+            gateway = gateway.gateways[(guild_id>>22)%shard_count]
+        
         return gateway
 
 
@@ -15356,6 +15523,7 @@ module_parsers.Client = Client
 module_client_utils.Client = Client
 module_guild.Client = Client
 module_audit_logs.Client = Client
+module_application.Client = Client
 
 del module_client_core
 del re
@@ -15371,3 +15539,4 @@ del module_client_utils
 del module_channel
 del module_guild
 del module_audit_logs
+del module_application

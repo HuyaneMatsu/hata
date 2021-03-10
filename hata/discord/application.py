@@ -7,6 +7,9 @@ from .http import URLS
 from .user import ZEROUSER, User
 from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
 from .preinstanced import TeamMembershipState
+from .preconverters import preconvert_snowflake, preconvert_bool, preconvert_str, preconvert_flag
+
+Client = NotImplemented
 
 class ApplicationFlag(FlagBase):
     """
@@ -113,7 +116,7 @@ class Application(DiscordEntity, immortal=True):
     splash_type : ``IconType``
         The application's splash image's type.
     summary : `str`
-        if this application is a game sold on Discord, this field will be the summary field for the store page of its
+        If this application is a game sold on Discord, this field will be the summary field for the store page of its
         primary sku. Defaults to empty string.
     third_party_skus : `None` or `list` of ``ThirdPartySKU``
          A list of the application's third party stock keeping units. Defaults to `None`.
@@ -234,6 +237,7 @@ class Application(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = application_id
+            self.flags = ApplicationFlag()
             self._update_no_return(data, set_owner=True)
         else:
             self._update_no_return(data)
@@ -404,6 +408,153 @@ class Application(DiscordEntity, immortal=True):
             pass
         else:
             self.flags = ApplicationFlag(flags)
+    
+    @classmethod
+    def precreate(cls, application_id, **kwargs):
+        """
+        Precreates an application with the given parameters.
+        
+        Parameters
+        ----------
+        application_id : `int` or `str`
+            The application's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the application.
+        
+        Other parameters
+        ----------------
+        bot_public : `bool`, Optional
+            Whether not only the application's owner can join the application's bot to guilds.
+        bot_require_code_grant : `bool`, Optional
+            Whether the application's bot will only join a guild, when completing the full `oauth2` code grant flow.
+        description : `str`, Optional
+            The description of the application.
+        flags : `int` or ``ApplicationFlag``, Optional
+            The application's public flags. If not given as ``ApplicationFlag`` instance, then is converted to it.
+        icon : `None`, ``Icon`` or `str`, Optional
+            The application's icon.
+            
+            > Mutually exclusive with `icon_type` and `icon_hash`.
+        icon_type : ``IconType``, Optional
+            The application's icon's type.
+            
+            > Mutually exclusive with `icon`.
+        icon_hash : `int`, Optional
+            The application's icon's hash.
+            
+            > Mutually exclusive with `icon`.
+        owner : ``User``, ``Client`` or ``Team``
+            The application's owner. Defaults to `ZEROUSER`.
+            
+            This field cannot be given as `snowflake`, because it might represent both ``UserBase`` instances  and
+            ``Team``-s as well.
+        slug : `str` or `None`
+            If this application is a game sold on Discord, this field will be the url slug that links to the store page.
+        splash : `None`, ``Icon`` or `str`, Optional
+            The application's splash.
+            
+            > Mutually exclusive with `icon_type` and `icon_hash`.
+        splash_type : ``IconType``, Optional
+            The application's icon's type.
+            
+            > Mutually exclusive with `icon`.
+        splash_hash : `int`, Optional
+            The application's icon's hash.
+            
+            > Mutually exclusive with `icon`.
+        
+        summary : `str`, Optional
+            If this application is a game sold on Discord, this field will be the summary field for the store page of
+            its primary sku.
+        
+        Returns
+        -------
+        application : `Application``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
+        """
+        application_id = preconvert_snowflake(application_id, 'application_id')
+        
+        if kwargs:
+            processable = []
+            
+            for key in ('bot_public', 'bot_require_code_grant'):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    continue
+                
+                value = preconvert_bool(value, key)
+                processable.append((key, value))
+            
+            for key in ('description', 'summary'):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    continue
+                
+                value = preconvert_str(value, key, 0, 1024)
+                processable.append((key, value))
+            
+            try:
+                flags = kwargs.pop('flags')
+            except KeyError:
+                pass
+            else:
+                flags = preconvert_flag(flags, 'flags', ApplicationFlag)
+                processable.append(('flags', flags))
+            
+            cls.icon.preconvert(kwargs, processable)
+            
+            try:
+                owner = kwargs.pop('owner')
+            except KeyError:
+                pass
+            else:
+                if not isinstance(owner, (User, Client, Team)):
+                    raise TypeError(f'`owner` can be given as {User.__name__}, {Client.__name__}  or as '
+                        f'{Team.__name__} instance, got {owner.__class__.__name__}.')
+                
+                processable.append(('owner', owner))
+            
+            try:
+                slug = kwargs.pop('slug')
+            except KeyError:
+                pass
+            else:
+                if (slug is not None):
+                    slug = preconvert_str(slug, 'slug', 0, 1024)
+                    if slug:
+                        processable.append(('slug', slug))
+            
+            cls.splash.preconvert(kwargs, processable)
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+            
+        else:
+            processable = None
+        
+        try:
+            application = APPLICATIONS[application_id]
+        except KeyError:
+            application = cls._create_empty()
+            application.id = application_id
+            is_partial = True
+        else:
+            is_partial = application.partial
+        
+        if is_partial and (processable is not None):
+            for item in processable:
+                setattr(application, *item)
+        
+        return application
+
 
 class Team(DiscordEntity, immortal=True):
     """
@@ -812,6 +963,7 @@ class EULA(DiscordEntity, immortal=True):
     def __repr__(self):
         """Returns the eula's representation"""
         return f'<{self.__class__.__name__} {self.name!r}, id={self.id}>'
+
 
 del URLS
 del DiscordEntity

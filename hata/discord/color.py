@@ -10,7 +10,7 @@ class Color(int):
     
     Examples
     --------
-    ```py
+    ```
     >>> # Colors are just int instances, so they can be freely converted between each other.
     >>> color = Color(0x022587)
     >>> color

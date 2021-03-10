@@ -14,7 +14,7 @@ from .player import AudioPlayer, AudioSource
 from .reader import AudioReader, AudioStream
 from .gateway import DiscordGatewayVoice, SecretBox
 from .channel import ChannelVoice
-from .exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
+from .exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from .user import User
 
 from . import guild as module_guild
@@ -49,6 +49,8 @@ class VoiceClient(object):
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
     _protocol : `None` or ``DatagramMergerReadProtocol``
         Asynchronous protocol of the voice client to communicate with it's socket.
+    _reconnecting : `bool`
+        Whether the voice client plans to reconnect and it's reader and player should nto be stopped.
     _secret_box : `None` or `nacl.secret.SecretBox`
         Data encoder of the voice client.
     _sequence : `int`
@@ -108,15 +110,17 @@ class VoiceClient(object):
         A list of the scheduled audios.
     reader : `None` or ``AudioReader``
         Meanwhile the received audio is collected, this attribute is set to a running ``AudioReader`` instance.
+    region : ``VoiceRegion``
+        The actual voice region of the voice client.
     speaking : `int`
         Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be
         modified, with the ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
     """
     __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
-        '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_secret_box', '_sequence',
-        '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token', '_transport', '_video_source',
-        '_video_sources', 'call_after', 'channel', 'client', 'connected', 'gateway', 'guild', 'lock', 'player', 'queue',
-        'reader', 'speaking',)
+        '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_reconnecting',
+        '_secret_box', '_sequence', '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token',
+        '_transport', '_video_source', '_video_sources', 'call_after', 'channel', 'client', 'connected', 'gateway',
+        'guild', 'lock', 'player', 'queue', 'reader', 'region', 'speaking',)
     
     def __new__(cls, client, channel):
         """
@@ -161,10 +165,15 @@ class VoiceClient(object):
         else:
             raise TypeError(f'Can join only to {ChannelVoice.__name__}, got {channel_type.__name__}.')
         
+        region = channel.region
+        if region is None:
+            region = guild.region
+        
         self = object.__new__(cls)
         
         self.guild = guild
         self.channel = channel
+        self.region = region
         self.gateway = DiscordGatewayVoice(self)
         self._socket = None
         self._protocol = None
@@ -195,6 +204,7 @@ class VoiceClient(object):
         self._audio_sources = {}
         self._video_sources = {}
         self._audio_streams = None
+        self._reconnecting = True
         
         client.voice_clients[guild.id] = self
         waiter = Future(KOKORO)
@@ -769,11 +779,22 @@ class VoiceClient(object):
                 
                 except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
                         InvalidHandshake, ValueError) as err:
-                    if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE):
-                        await self.disconnect(force=False)
-                        return
+                    print(str(err), repr(err))
+                    self._maybe_close_socket()
                     
-                    await sleep(1+(tries<<1), KOKORO)
+                    if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE):
+                        # If we are getting disconnected and voice region changed, then Discord disconnects us, not
+                        # user nor us, so reconnect.
+                        if not self._maybe_change_voice_region():
+                            self._reconnecting = False
+                            await self.disconnect(force=False)
+                            return
+                    
+                    if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
+                        await sleep(1+(tries<<1), KOKORO)
+                    
+                    self._maybe_change_voice_region()
+                    
                     tries += 1
                     await self._terminate_handshake()
                     continue
@@ -793,21 +814,38 @@ class VoiceClient(object):
                         future_or_timeout(task, 60.)
                         await task
                     except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
+                        print(str(err), repr(err))
+                        self._maybe_close_socket()
+                        
                         if isinstance(err, ConnectionClosed):
+                            # If we are getting disconnected and voice region changed, then Discord disconnects us, not
+                            # user nor us, so reconnect.
                             code = err.code
-                            if code in (1000, 1006) or (code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE):
+                            if code == 1000 or (
+                                     (code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE) and
+                                     (not self._maybe_change_voice_region())
+                                        ):
+                                self._reconnecting = False
                                 await self.disconnect(force=False)
                                 return
                         
                         self.connected.clear()
-                        await sleep(5., KOKORO)
+                        
+                        if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
+                            await sleep(5., KOKORO)
+                        
+                        self._maybe_change_voice_region()
+                        
                         await self._terminate_handshake()
                         break
                     
                     except:
+                        self._reconnecting = False
                         await self.disconnect(force=True)
                         raise
         finally:
+            self._reconnecting = False
+            
             try:
                 del self.client.voice_clients[self.guild.id]
             except KeyError:
@@ -832,24 +870,27 @@ class VoiceClient(object):
         If you want to disconnect a voice client, then you should let the method to use it's default arguments. Passing
         bad arguments can cause misbehaviour.
         """
+        
         if not (force or self.connected.is_set()):
             return
         
         self.queue.clear()
-        player = self.player
-        if (player is not None):
-            self.player = None
-            player.stop()
-            
-            # skip 1 full loop
-            waiter = Future(KOKORO)
-            KOKORO.call_later(0.0, Future.set_result_if_pending, waiter, None)
-            await waiter
         
-        reader = self.reader
-        if (reader is not None):
-            self.reader = None
-            reader.stop()
+        if not self._reconnecting:
+            player = self.player
+            if (player is not None):
+                self.player = None
+                player.stop()
+                
+                # skip 1 full loop
+                waiter = Future(KOKORO)
+                KOKORO.call_later(0.0, Future.set_result_if_pending, waiter, None)
+                await waiter
+            
+            reader = self.reader
+            if (reader is not None):
+                self.reader = None
+                reader.stop()
         
         self.connected.clear()
         
@@ -1140,6 +1181,25 @@ class VoiceClient(object):
         if socket is not None:
             self._socket = None
             socket.close()
+    
+    def _maybe_change_voice_region(self):
+        """
+        Resets the voice region of the voice client.
+        
+        Returns
+        -------
+        changed: `bool`
+            Whether voice region changed.
+        """
+        region = self.channel.region
+        if region is None:
+            region = self.guild.region
+        
+        if region is self.region:
+            return False
+        
+        self.region = region
+        return True
     
     def __repr__(self):
         """Returns the voice client's representation."""

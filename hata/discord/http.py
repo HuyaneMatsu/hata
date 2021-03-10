@@ -1067,13 +1067,22 @@ class URLS:
 
 from .http.URLS import API_ENDPOINT, CDN_ENDPOINT, DIS_ENDPOINT
 
-implement=sys.implementation
-version_l=['Discord-client (HuyaneMatsu) Python (',implement.name,' ',str(implement.version[0]),'.',str(implement.version[1]),' ']
+implement = sys.implementation
+version_l = [
+    'Discord-client (HuyaneMatsu) Python (',
+    implement.name,
+    ' ',
+    str(implement.version[0]),
+    '.',
+    str(implement.version[1]),
+    ' '
+        ]
+
 if implement.version[3] != 'final':
     version_l.append(implement.version[3])
 
 version_l.append(')')
-LIB_USER_AGENT=''.join(version_l)
+LIB_USER_AGENT = ''.join(version_l)
 
 del implement
 del version_l

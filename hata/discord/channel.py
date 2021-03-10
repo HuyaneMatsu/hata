@@ -18,10 +18,12 @@ from .user import User, ZEROUSER
 from .role import PermissionOverwrite
 from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
-from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
+    preconvert_preinstanced_type
 from .utils import DATETIME_FORMAT_CODE
 from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
+from .preinstanced import VoiceRegion
 
 from . import webhook as module_webhook, message as module_message, rate_limit as module_rate_limit
 
@@ -2727,6 +2729,8 @@ class ChannelVoice(ChannelGuildBase):
         The channel's position.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
+    region : `None` or ``VoiceRegion``
+        The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
     
@@ -2740,7 +2744,7 @@ class ChannelVoice(ChannelGuildBase):
     type : `int` = `2`
         The channel's Discord side type.
     """
-    __slots__ = ('bitrate',  'user_limit') # Voice channel related
+    __slots__ = ('bitrate',  'region', 'user_limit') # Voice channel related
     
     ORDER_GROUP = 2
     INTERCHANGE = (2,)
@@ -2786,6 +2790,11 @@ class ChannelVoice(ChannelGuildBase):
         self.bitrate = data['bitrate']
         self.user_limit = data['user_limit']
         
+        region = data.get('rtc_region')
+        if (region is not None):
+            region = VoiceRegion.get(region)
+        self.region = region
+        
         return self
     
     @classmethod
@@ -2818,6 +2827,7 @@ class ChannelVoice(ChannelGuildBase):
         self.overwrites = []
         self.position = 0
         self.user_limit = 0
+        self.region = None
         
         return self
     
@@ -2870,6 +2880,12 @@ class ChannelVoice(ChannelGuildBase):
         self.name = data['name']
         self.bitrate = data['bitrate']
         self.user_limit = data['user_limit']
+        
+        region = data.get('rtc_region')
+        if (region is not None):
+            region = VoiceRegion.get(region)
+        self.region = region
+        
     
     def _update(self, data):
         """
@@ -2901,6 +2917,8 @@ class ChannelVoice(ChannelGuildBase):
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
+        | region        | `None` or ``VoiceRegion``         |
+        +---------------+-----------------------------------+
         | user_limit    | `int`                             |
         +---------------+-----------------------------------+
         """
@@ -2926,6 +2944,14 @@ class ChannelVoice(ChannelGuildBase):
         if self.overwrites != overwrites:
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
+        
+        region = data.get('rtc_region')
+        if (region is not None):
+            region = VoiceRegion.get(region)
+        
+        if self.region is not region:
+            old_attributes['region'] = region
+            self.region = region
         
         self._update_category_and_position(data, old_attributes)
         
@@ -3036,6 +3062,8 @@ class ChannelVoice(ChannelGuildBase):
             The channel's ``.bitrate``.
         user_limit : `int`, Optional
             The channel's ``.user_limit``.
+        region : `None`, ``VoiceRegion`` or `str`, Optional
+            The channel's voice region.
         
         Returns
         -------
@@ -3073,6 +3101,15 @@ class ChannelVoice(ChannelGuildBase):
                     value = preconvert_int(value, key, *details)
                     processable.append((key,value))
             
+            try:
+                region = kwargs.pop('region')
+            except KeyError:
+                pass
+            else:
+                if (region is not None):
+                    region = preconvert_preinstanced_type(region, 'type_', VoiceRegion)
+                    processable.append(('region', region))
+            
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
@@ -3083,18 +3120,19 @@ class ChannelVoice(ChannelGuildBase):
             channel = CHANNELS[channel_id]
         except KeyError:
             channel = object.__new__(cls)
-
+            
             channel.id = channel_id
-
+            
             channel._cache_perm = None
             channel.category = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
             channel.name = ''
-
+            
             channel.bitrate = 64000
             channel.user_limit = 0
+            channel.region = None
             
             CHANNELS[channel_id] = channel
         
@@ -4807,7 +4845,7 @@ CHANNEL_TYPES = (
         )
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
-        category=None, user_limit=None, guild=None):
+        user_limit=None, region=None, category=None, guild=None):
     """
     Creates a json serializable object representing a ``GuildChannelBase`` instance.
     
@@ -4830,6 +4868,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         The channel's bitrate.
     user_limit : `int`, Optional
         The channel's user limit.
+    region : `None`, ``VoiceRegion`` or `str`, Optional
+        The channel's voice region.
     category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
         The channel's category. If the category is under a guild, leave it empty.
     guild : `None` or ``Guild``, Optional
@@ -4844,6 +4884,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     TypeError
         - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
         - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
+        - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
     AssertionError
         - if `guild` is given, but not as `None` nor ``Guild`` instance.
         - If `type_` was given as `int`, and is less than `0`.
@@ -4866,6 +4907,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `user_limit` was not given as `int` instance.
         - If `user_limit`' was given, but is out of the expected [0:99] range.
         - If `category` was given, but the respective channel type cannot be put under other categories.
+        - If `region` was given, but the respective channel type is not ``ChannelVoice``.
     """
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
@@ -5005,6 +5047,22 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         
         channel_data['user_limit'] = user_limit
     
+    
+    if (region is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelVoice):
+                raise AssertionError(f'`region` is a valid parameter only for `{ChannelVoice.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+        
+        if isinstance(region, VoiceRegion):
+            region_value = region.value
+        elif isinstance(region, str):
+            region_value = region
+        else:
+            raise TypeError(f'`region` can be given either as `None`, `str` or as `{VoiceRegion.__name__}` instance, '
+                f'{region.__class__.__name__}.')
+        
+        data['rtc_region'] = region_value
     
     if category is None:
         category_id = 0

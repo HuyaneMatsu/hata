@@ -1120,17 +1120,14 @@ class UserBase(DiscordEntity, immortal=True):
             try:
                 other_profile = user.guild_profiles[guild]
             except KeyError:
-                # Is the other user a Webhook?
-                webhook_guild = getattr(user, 'guild', None)
-                if (webhook_guild is not guild):
-                    # Not webhook or partial webhook, or a webhook of a different guild
-                    return False
-                
-                # If we have any roles, we have more role than a webhook with 0
-                if (own_profile.roles is not None):
-                    return True
-                
-                return False
+                # We always have higher permissions if the other user is not in the guild or if it is a webhook.
+                # webhook_guild = getattr(user, 'guild', None)
+                # if (webhook_guild is not guild):
+                #     return True
+                #
+                # if (own_profile.roles is not None):
+                #    return True
+                return True
             
             if guild.owner_id == user.id:
                 return False
@@ -1378,11 +1375,17 @@ class User(UserBase):
         discriminator : `int` or `str` instance, Optional
             The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
         avatar : `None`, ``Icon`` or `str`, Optional
-            The user's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
+            The user's avatar.
+            
+            > Mutually exclusive with `avatar_type` and `avatar_hash`.
         avatar_type : ``IconType``, Optional
-            The user's avatar's type. Mutually exclusive with `avatar_type`.
+            The user's avatar's type.
+            
+            > Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional
-            The user's avatar hash. Mutually exclusive with `avatar`.
+            The user's avatar's hash.
+            
+            > Mutually exclusive with `avatar`.
         flags : ``UserFlag`` or `int` instance, Optional
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
@@ -1408,7 +1411,7 @@ class User(UserBase):
                 pass
             else:
                 name = preconvert_str(name, 'name', 2, 32)
-                processable.append(('name',name))
+                processable.append(('name', name))
             
             try:
                 discriminator = kwargs.pop('discriminator')
@@ -1416,7 +1419,7 @@ class User(UserBase):
                 pass
             else:
                 discriminator = preconvert_discriminator(discriminator)
-                processable.append(('discriminator',discriminator))
+                processable.append(('discriminator', discriminator))
             
             cls.avatar.preconvert(kwargs, processable)
             

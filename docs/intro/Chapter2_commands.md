@@ -44,7 +44,7 @@ start_clients()
 | default_category_name | `None` or `str`                               | `None`    | The `CommandProcesser` default `Category` name.                                                       |
 | category_name_rule    | `None` or `function`                          | `None`    | Function to generate display names for categories.                                                    |
 | command_name_rule     | `None` or `function`                          | `None`    | Function to generate display names for commands.                                                      |
-| precheck              | `None` or `function`                          | `None`    | Desides whether a message should be processed.                                                        |
+| precheck              | `None` or `function`                          | `None`    | Decides whether a message should be processed.                                                        |
 
 ## Command Arguments
 
@@ -587,4 +587,4 @@ async def default_event(client, message):
 The advantage of using `default_event` over adding a new `message_create` event handler that at this point bot 
 authors/developers (as message authors) and channels where the bot cannot reply are already filtered out 
 (those messages will not trigger `default_event`).
-To see the actual flow of the command handler and when the default_event will trigger see [here](https://github.com/HuyaneMatsu/hata/blob/master/hata/ext/commands/command.py#L2951)
+To see the actual flow of the command handler and when the default_event will trigger see [here](https://huyanematsu.pythonanywhere.com/docs/hata/ext/commands/command/CommandProcesser#flow)

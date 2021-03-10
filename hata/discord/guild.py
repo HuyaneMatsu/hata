@@ -627,11 +627,11 @@ class Guild(DiscordEntity, immortal=True):
     - ``.widget_enabled``
     """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'available', 'booster_count', 'channels',
-        'clients', 'content_filter', 'description', 'emojis', 'features', 'has_animated_icon', 'is_large',
-        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner_id',
-        'preferred_locale', 'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel',
-        'system_channel', 'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level',
-        'voice_states', 'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
+        'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large', 'max_presences', 'max_users',
+        'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner_id', 'preferred_locale',
+        'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel',
+        'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'webhooks',
+        'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner', URLS.guild_banner_url, URLS.guild_banner_url_as)
     icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
@@ -799,18 +799,59 @@ class Guild(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional
             The guild's ``.name``.
-        banner : `int`
-            The guild's ``.banner``.
-        invite_splash : `int`
-            The guild's ``.invite_splash``.
-        discovery_splash : `int`
-            The guild's ``.discovery_splash``.
-        icon : `int`
-            The guild's ``.icon``.
-        has_animated_icon : `bool`
-            Whether the guild's icon is animated.
+        banner : `None`, ``Icon`` or `str`, Optional
+            The guild's banner.
+            
+            > Mutually exclusive with `banner_type` and `banner_hash` parameters.
+        banner_type : ``IconType``, Optional
+            The guild's banner's type.
+            
+            > Mutually exclusive with the `banner` parameter.
+        banner_hash : `int`, Optional
+            The guild's banner's hash.
+            
+            > Mutually exclusive with the `banner` parameter.
+        invite_splash : `None`, ``Icon`` or `str`, Optional
+            The guild's invite splash.
+            
+            > Mutually exclusive with the `invite_splash_type` and `invite_splash_hash` parameters.
+        invite_splash_type : `IconType``, Optional
+            The guild's invite splash's type.
+            
+            > Mutually exclusive with the `invite_splash` parameter.
+        invite_splash_hash : `int`, Optional
+            The guild's invite splash's hash.
+            
+            > Mutually exclusive with the `invite_splash` parameter.
+        discovery_splash : `None`, ``Icon`` or `str`, Optional
+            The guild's discovery splash.
+            
+            Mutually exclusive with the `discovery_splash_type` and  `discovery_splash_hash` parameters.
+        discovery_splash_type : `IconType``, Optional
+            The guild's discovery splash's type.
+            
+            > Mutually exclusive with the `discovery_splash` parameter.
+        discovery_splash_hash : `int`, Optional
+            The guild's discovery splash's hash.
+            
+            > Mutually exclusive with the `discovery_splash` parameter.
+        icon : `None`, ``Icon`` or `str`, Optional
+            The guild's icon.
+            
+            > Mutually exclusive with `icon_type` and `icon_hash`.
+        icon_type : ``IconType``, Optional
+            The guild's icon's type.
+            
+            > Mutually exclusive with `icon`.
+        icon_hash : `int`, Optional
+            The guild's icon's hash.
+            
+            > Mutually exclusive with `icon`.
+        
+        region : ``VoiceRegion`` or `str`, Optional
+            The guild's voice region.
         
         Returns
         -------
@@ -841,9 +882,17 @@ class Guild(DiscordEntity, immortal=True):
             cls.invite_splash.preconvert(kwargs, processable)
             cls.discovery_splash.preconvert(kwargs, processable)
             
+            try:
+                region = kwargs.pop('region')
+            except KeyError:
+                pass
+            else:
+                region = preconvert_preinstanced_type(region, 'type_', VoiceRegion)
+                processable.append(('region', region))
+            
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
-        
+            
         else:
             processable = None
         
@@ -868,7 +917,6 @@ class Guild(DiscordEntity, immortal=True):
             guild.discovery_splash_type = ICON_TYPE_NONE
             guild.emojis = {}
             guild.features = []
-            guild.has_animated_icon = False
             guild.icon_hash = 0
             guild.icon_type = ICON_TYPE_NONE
             guild.id = guild_id
@@ -928,7 +976,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : `str`
+        guild : `str`
         
         Raises
         ------
@@ -947,7 +995,7 @@ class Guild(DiscordEntity, immortal=True):
         'GrassGrass'
         >>> # 'c' stands for created at.
         >>> f'{guild:c}'
-        '2020.05.23-11:44:02'
+        '2020-05-23 11:44:02'
         ```
         """
         if not code:

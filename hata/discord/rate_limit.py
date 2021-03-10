@@ -3215,7 +3215,7 @@ class RATE_LIMIT_GROUPS:
     guild_widget_get            = RateLimitGroup.unlimited()
     hypesquad_house_leave       = RateLimitGroup() # untested
     hypesquad_house_change      = RateLimitGroup() # untested
-    interaction_response_message_create = RateLimitGroup.unlimited() # untested
+    interaction_response_message_create = RateLimitGroup.unlimited()
     invite_delete               = RateLimitGroup.unlimited()
     invite_get                  = RateLimitGroup()
     client_application_get      = RateLimitGroup(optimistic=True)

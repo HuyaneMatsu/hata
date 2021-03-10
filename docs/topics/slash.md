@@ -16,38 +16,49 @@ Not like regular commands, slash commands' format is limited by the Discord API 
 
 Discord sets the following limitations:
 
-- Parameter count to [0:10].
-- Command name length to [1:32].
-- Command description length to [2:100].
-- Choice amount to [1:10].
-- Choice name length to [1:100].
-- Parameter name length to [1:32].
-- Parameter description length to [1:32].
-- A command can have 10 sub-commands or sub-categories.
-- A sub-category can have 10 sub-commands.
+- Parameter count to `[0:25]`.
+- Command name length to `[1:32]`.
+- Command description length to `[2:100]`.
+- Choice amount to `[1:25]`.
+- Choice name length to `[1:100]`.
+- Parameter name length to `[1:32]`.
+- Parameter description length to `[1:32]`.
+- A command can have `25` sub-commands or sub-categories.
+- A sub-category can have `25` sub-commands.
 - A sub-category cannot have sub-category under itself.
-- Global commands are updated only after 1 hour.
-- Acknowledging must be done within 3 seconds.
+- Global commands are updated only after `1` hour.
+- Acknowledging must be done within `3` seconds.
 - Followup messages can be sent within 15 minutes after acknowledging.
 - Custom emojis only show up correctly in interaction responses when `@everyone` role has `use_external_emojis`
     permission.
 
 The parameter types can be the following:
 
-| Name          | Requires bot  | String representation | Type representation   | Output type               |
-|---------------|---------------|-----------------------|-----------------------|---------------------------|
-| string        | No            | `'str'`               | `str`                 | `str`                     |
-| integer       | No            | `'int'`               | `int`                 | `int`                     |
-| boolean       | No            | `'bool'`              | `bool`                | `bool`                    |
-| user          | No            | `'user'`              | `User`, `UserBase`    | `User`, `Client`          |
-| user_id       | No            | `'user_id'`           | N/A                   | `int`                     |
-| role          | Yes           | `'role'`              | `Role`                | `Role`                    |
-| role_id       | No            | `'role_id'`           | N/A                   | `int`                     |
-| channel       | Yes           | `'channel'`           | `ChannelBase`         | `ChannelBase` instance    |
-| channel_id    | No            | `'channel_id'`        | N/A                   | `int`                     |
+| Name          | Requires bot  | Discord field | String representation | Type representation   | Output type               |
+|---------------|---------------|---------------|-----------------------|-----------------------|---------------------------|
+| string        | No            | string        | `'str'`               | `str`                 | `str`                     |
+| integer       | No            | string        | `'int'`               | `int`                 | `int`                     |
+| boolean       | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
+| user          | No            | user          | `'user'`              | `User`, `UserBase`    | `User`, `Client`          |
+| user_id       | No            | user          | `'user_id'`           | N/A                   | `int`                     |
+| role          | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
+| role_id       | No            | role          | `'role_id'`           | N/A                   | `int`                     |
+| channel       | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase` instance    |
+| channel_id    | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
+| number        | No            | integer       | `'number'`            | N/A                   | `int`                     |
 
-If validating a parameter fails, the command wont be called. This can be the case when the user mentions
-non-existing entities. To avoid this behaviour, you can use the `..._id` parameters instead.
+##### Parameter notes
+
+`user`, `channel` and `role` data may not be included within the interaction. However users can be requested from
+Discord, but channels and roles can not be. It means `role` and `channel` conversions can fail and the command wont be
+called. To avoid this case, you may use `role_id` or `channel_id` parameter types instead.
+
+In hata there is 2 numeric input option available, one is `int` and the other one is `number`. Both has it's pros and
+cons. `int` field is converted to `string` by the extension, then when receiving an interaction is converted back to
+`int`. It means, when the user not gives a valid integer, the payload validation will fail and the interaction command 
+might wont be called. On other hand `number` field is inaccurate. Discord uses javascript `number` type
+(that's from the name comes from as well), what equals to float64. It means integers over 53 bit will lose from their
+precision.
 
 There are also choice parameters, but lets talk about those only later.
 
@@ -386,7 +397,6 @@ for action_name, embed_color in (('pat', 0x325b34), ('hug', 0xa4b51b), ('lick', 
         name = action_name,
         description = f'Do you want some {action_name}s, or to {action_name} someone?',
         guild = TEST_GUILD,
-        show_source = False,
             )
 
 # Cleanup
@@ -397,7 +407,28 @@ del action_name, embed_color
 
 Command specific setting, to overwrite the parent slasher's [delete_commands_on_unload](#delete_commands_on_unload).
 
-## Responding multiple times & Tricks and recommendations
+## Tricks and Tips
+
+##### Sending rich response
+
+With `return` and `yield` statements, you can only send either `content` or `embed` fields. Using these statements is
+still way more comfy than typing out the whole client method, so there is a middle way, called `SlashResponse`.
+
+```py
+@Marisa.interactions(guild=GUILD__NEKO_DUNGEON)
+async def repeat(client, event,
+        text : ('str', 'The content to repeat')
+            ):
+    """What should I exactly repeat?"""
+    if not text:
+        text = 'nothing to repeat'
+    
+    return SlashResponse(text, allowed_mentions=None)
+```
+
+Note, that `SlashResponse` accepts every fields, but only those will be delivered, what the actual endpoints supports.
+
+##### Responding multiple times
 
 Sometimes you might wanna respond multiple times on an event. At this case use `yield` instead of `return`.
 
@@ -417,7 +448,7 @@ IMPROVISATION_CHOICES = [
     'Marisa's underskirt shrooms are poggers'
         ]
 
-@Nitori.interactions(guild=TEST_GUILD, show_source=False)
+@Nitori.interactions(guild=TEST_GUILD)
 async def improvise(client, event):
     """Imrpovises some derpage"""
     yield '*Thinks*'
@@ -427,10 +458,12 @@ async def improvise(client, event):
 
 > Python limitation, you cannot `return` any value if you use `yield` inside of an `async def`.
 
+##### Acknowledge the interaction event
+
 The first response can be also empty just to acknowledge the event.
 
 ```py
-@Nitori.interactions(guild=TEST_GUILD, show_source=False)
+@Nitori.interactions(guild=TEST_GUILD)
 async def ping(client, event):
     """HTTP ping-pong."""
     start = perf_counter()
@@ -443,6 +476,8 @@ async def ping(client, event):
 Acknowledging can be useful if you do an additional request to an other site, because the event need to be acknowledged
 within 3 seconds to send followup messages. If the event is acknowledged, followup messages can be sent within an
 additional 15 minutes!
+
+##### Capturing messages & exceptions
 
 Acknowledging will never return a message object (Discord side), so it cannot be captured either, but followup messages
 will do. You can do the following them:
@@ -460,6 +495,60 @@ try:
 except BaseException as err:
     # Do things.
 ```
+
+##### Giving away control flow
+
+Sometimes you have more commands calling the same coroutine function, which executes shared code among more commands.
+This is all good, till the function is not a coroutine generator function. As we know you can yield from a generator
+inside of one, but this is not exactly true at the case of coroutine generators.
+
+```py
+NEKO_LIFE = 'https://nekos.life/api/v2'
+
+async def get_neko_life(client, keyword):
+    yield
+    url = f'{NEKO_LIFE}/{keyword}'
+    
+    async with client.http.get(url) as response:
+        if response.status == 200:
+            data = await response.json()
+            content = data[keyword]
+        else:
+            content = 'Couldn\'t contact the API right now... OwO'
+    
+    yield content
+
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def text_cat(client, event):
+    """I will send text cats :3"""
+    async for content in get_neko_life(client, 'cat')
+        yield content
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def why(client, event):
+    """why are you using this commands?"""
+    async for content in get_neko_life(client, 'why')
+        yield content
+```
+
+Python misses asynchronous version of `yield from`, so you need to write out a full `async for` loop, making your code
+loop derpy, or `yield` or `return` it, because having regard to this case, it is allowed to `yield` and `return`
+`coroutine generator` object as well.
+
+```py
+@Nitori.interactions(guild=TEST_GUILD)
+async def text_cat(client, event):
+    """I will send text cats :3"""
+    return get_neko_life(client, 'cat')
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def why(client, event):
+    """why are you using this commands?"""
+    yield get_neko_life(client, 'why')
+```
+
+Both works completely fine.
 
 ## Non-global commands
 
@@ -601,7 +690,7 @@ async def repeat(client, event,
         text: ('str', 'Uhum?')
             ):
     """What should I exactly repeat?"""
-    await client.interaction_response_message_create(event, text, allowed_mentions=None, show_source=True)
+    await client.interaction_response_message_create(event, text, allowed_mentions=None)
 ```
 
 Not like `Client.message_create`, this endpoint can be called without any content to still acknowledge the

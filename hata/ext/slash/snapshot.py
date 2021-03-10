@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..extension_loader.snapshot import SNAPSHOT_TAKERS
-from .command import Slasher
+from .command import Slasher, SYNC_ID_NON_GLOBAL
 
 def take_slasher_snapshot(client):
     """
@@ -13,14 +13,35 @@ def take_slasher_snapshot(client):
     
     Returns
     -------
-    collected : `None` or `set` of ``SlashCommand``
+    collected : `None` or `dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is None) or (not isinstance(slasher, Slasher)):
         collected = None
     
     else:
-        collected = slasher._get_commands()
+        command_states = slasher._command_states
+        
+        collected = None
+        for guild_id, command_state in command_states.items():
+            if guild_id == SYNC_ID_NON_GLOBAL:
+                active_commands = command_state._active
+                if (active_commands is None):
+                    continue
+                
+                command_changes = [(True, command) for command in active_commands]
+                
+            else:
+                changes = command_state._changes
+                if changes is None:
+                    continue
+                
+                command_changes = [tuple(change) for change in changes]
+            
+            if collected is None:
+                collected = {}
+            
+            collected[guild_id] = command_changes
     
     return collected
 
@@ -32,9 +53,9 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     ----------
     client : ``Client``
         The respective client.
-    snapshot_old : `None` of `set` of ``SlashCommand``
+    snapshot_old :  `None` or `dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items
         An old snapshot taken.
-    snapshot_new : `None` of `set` of ``SlashCommand``
+    snapshot_new :  `None` or `dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items
         A new snapshot.
     
     Returns
@@ -44,18 +65,47 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     if (snapshot_old is None) or (snapshot_new is None):
         return None
     
+    # Keep the order!
+    added_commands = []
     removed_commands = []
     
-    while snapshot_old:
-        old_command = snapshot_old.pop()
+    guild_ids = set(snapshot_old.keys())
+    guild_ids.update(snapshot_new.keys())
+    
+    for guild_id in guild_ids:
+        local_added_commands = []
+        local_removed_commands = []
         
         try:
-            snapshot_new.remove(snapshot_new)
+            new_changes = snapshot_new[guild_id]
         except KeyError:
-            removed_commands.append(old_command)
-    
-    added_commands = snapshot_new-snapshot_old
-    removed_commands = snapshot_old-snapshot_new
+            pass
+        else:
+            for added, command in new_changes:
+                if added:
+                    local_added_commands.append(command)
+                else:
+                    local_removed_commands.remove(command)
+        
+        try:
+            old_changes = snapshot_old[guild_id]
+        except KeyError:
+            pass
+        else:
+            for added, command in old_changes:
+                if added:
+                    try:
+                        local_added_commands.remove(command)
+                    except ValueError:
+                        local_removed_commands.append(command)
+                else:
+                    try:
+                        local_removed_commands.remove(command)
+                    except ValueError:
+                        local_added_commands.append(command)
+        
+        added_commands.extend(local_added_commands)
+        removed_commands.extend(local_removed_commands)
     
     if (not added_commands) and (not removed_commands):
         return None

@@ -182,6 +182,10 @@ def str_message(message, index=None, **kwargs):
     if (application is not None):
         result.append(str_message_application(application, 1))
     
+    interaction = message.interaction
+    if (interaction is not None):
+        result.append(str_message_interaction(interaction, 1))
+    
     activity = message.activity
     if (activity is not None):
         line = ['- activity: ', activity.type.name]
@@ -700,6 +704,10 @@ def str_channel_voice(channel, index=None, write_parents=True, overwrites=False,
     if channel.user_limit:
         result.append(f'- user limit : {channel.user_limit}', 1)
     
+    region = channel.region
+    if (region is not None):
+        result.append(f'- region: {channel.value}', 1)
+    
     write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
     
     return result
@@ -848,6 +856,7 @@ def str_guild(guild, index=None, **kwargs):
     result.append(f'- max presences : {guild.max_presences}', 1)
     result.append(f'- max video channel users : {guild.max_video_channel_users}', 1)
     result.append(f'- preferred locale : {guild.preferred_locale}', 1)
+    result.append(f'- region: {guild.region.value}', 1)
     
     description = guild.description
     if (description is not None):
@@ -1770,6 +1779,24 @@ def str_user_guild_permission(user_guild_permission, index=None, **kwargs):
     
     return result
 
+def str_message_interaction(message_interaction, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}MessageInteraction:')
+    result.append(f'- id: {message_interaction.id}')
+    result.append(f'- name: {message_interaction.name}')
+    message_interaction_type = message_interaction.type
+    result.append(f'- type: {message_interaction_type.name} ({message_interaction_type.value})')
+    user = message_interaction.user
+    result.append(f'- user: {user.full_name} ({user.id})')
+    
+    return result
+
+
 PRETTY_PRINTERS['Message'] = str_message
 PRETTY_PRINTERS['reaction_mapping'] = str_reaction_mapping
 PRETTY_PRINTERS['reaction_mapping_line'] = str_reaction_mapping_line
@@ -1818,3 +1845,4 @@ PRETTY_PRINTERS['MessageRepr'] = str_message_repr
 PRETTY_PRINTERS['IntegrationDetail'] = str_integration_detail
 PRETTY_PRINTERS['tuple'] = str_list
 PRETTY_PRINTERS['UserGuildPermission'] = str_user_guild_permission
+PRETTY_PRINTERS['MessageInteraction'] = str_message_interaction

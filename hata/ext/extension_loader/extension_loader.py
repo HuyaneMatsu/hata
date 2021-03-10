@@ -1649,8 +1649,10 @@ class ExtensionLoader(object):
             # loading blocks, but unloading does not
             lib = await KOKORO.run_in_executor(extension._load)
         except BaseException as err:
-            message = self._render_exc(err,[
-                'Exception occurred meanwhile loading an extension: `',extension.name,'`.\n\n',])
+            message = await KOKORO.run_in_executor(alchemy_incendiary(
+                self._render_exc, (err, [
+                'Exception occurred meanwhile loading an extension: `', extension.name, '`.\n\n',],
+                    )))
             
             raise ExtensionError(message) from None
         
@@ -1737,7 +1739,7 @@ class ExtensionLoader(object):
             except BaseException as err:
                 message = await KOKORO.run_in_executor(alchemy_incendiary(
                     self._render_exc, (err, [
-                    'Exception occurred meanwhile exiting an extension: `',extension.name,
+                    'Exception occurred meanwhile unloading an extension: `', extension.name,
                     '`.\nAt exit_point:', repr(exit_point), '\n\n',],
                         )))
                 

@@ -9,7 +9,9 @@ from .preconverters import preconvert_preinstanced_type
 from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
 from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
-    APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX
+    APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN, \
+    APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN, \
+    APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
 
 
 from ..backend.utils import modulize
@@ -29,7 +31,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     name : `str`
         The name of the command. It's length can be in range [1:32].
     options : `None` or `list` of ``ApplicationCommandOption``
-        The parameters of the command. It's length can be in range [0:10]. If would be set as empty list, instead is
+        The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
     
     Notes
@@ -49,7 +51,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         description : `str`
             The command's description. It's length can be in range [2:100].
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional
-            The parameters of the command. It's length can be in range [0:10].
+            The parameters of the command. It's length can be in range [0:25].
         
         Raises
         ------
@@ -61,7 +63,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
-            - If `options`'s length is out of range [0:10].
+            - If `options`'s length is out of range [0:25].
         """
         if __debug__:
             if not isinstance(name, str):
@@ -138,7 +140,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         AssertionError
             - If the entity is not partial.
             - If `option` is not ``ApplicationCommandOption`` instance.
-            - If the ``ApplicationCommand`` has already `10` options.
+            - If the ``ApplicationCommand`` has already `25` options.
         """
         if __debug__:
             if self.id != 0:
@@ -381,7 +383,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Application command data returned by it's ``.to_data`` method.
-        id_ : `int`
+        interaction_id : `int`
             The unique identifier number of the newly created application command.
         application_id : `int`
             The new application identifier number of the newly created application command.
@@ -432,7 +434,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def __eq__(self, other):
         """Returns whether the two application commands are equal."""
-        if not isinstance(other, ApplicationCommand):
+        if type(self) is not type(other):
             return NotImplemented
         
         # If both entity is not partial, leave instantly by comparing id.
@@ -454,6 +456,30 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return False
         
         return True
+    
+    def __ne__(self, other):
+        """Returns whether the two application commands are different."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        self_id = self.id
+        other_id = other.id
+        if self_id and other_id:
+            if self_id == other_id:
+                return False
+            
+            return True
+        
+        if self.description != other.description:
+            return True
+        
+        if self.name != other.name:
+            return True
+        
+        if self.options != other.options:
+            return True
+        
+        return False
     
     @property
     def mention(self):
@@ -533,6 +559,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
+    def __len__(self):
+        """Returns the application command's length."""
+        length = len(self.name) + len(self.description)
+        
+        options = self.options
+        if (options is not None):
+            for option in options:
+                length += len(option)
+        
+        return length
 
 
 class ApplicationCommandOption(object):
@@ -551,7 +588,7 @@ class ApplicationCommandOption(object):
         The name of the application command option. It's length can be in range [1:32].
     options : `None` or `list` of ``ApplicationCommandOption``
         If the command's type is sub-command group type, then this nested option will be the parameters of the
-        sub-command. It's length can be in range [0:10]. If would be set as empty list, instead is set as `None`.
+        sub-command. It's length can be in range [0:25]. If would be set as empty list, instead is set as `None`.
     required : `bool`
         Whether the parameter is required. Defaults to `False`.
     type : ``ApplicationCommandOptionType``
@@ -578,7 +615,7 @@ class ApplicationCommandOption(object):
         choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional
             The choices of the command for string or integer types. It's length can be in range [0:25].
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional
-            The parameters of the command. It's length can be in range [0:10]. Only applicable for sub command groups.
+            The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
         Raises
         ------
@@ -597,12 +634,12 @@ class ApplicationCommandOption(object):
             - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
-            - If `options`'s length is out of range [0:10].
+            - If `options`'s length is out of range [0:25].
             - If `default` was not given as `bool` instance.
             - If `required` was not given as `bool` instance.
             - If `choices` was not given neither as `None` nor as (`list` or `tuple`) of
                 ``ApplicationCommandOptionChoice`` instances.
-            - If `choices`'s length is out of range [0:10].
+            - If `choices`'s length is out of range [0:25].
             - If an option is a sub command group option.
         """
         if __debug__:
@@ -736,7 +773,7 @@ class ApplicationCommandOption(object):
             If the source application command's type is not a sub-command group type.
         AssertionError
             - If `option` is not ``ApplicationCommandOption`` instance.
-            - If the ``ApplicationCommandOption`` has already `10` options.
+            - If the ``ApplicationCommandOption`` has already `25` options.
             - If `option` is a sub command group option.
         """
         if self.type is not ApplicationCommandOptionType.SUB_COMMAND_GROUP:
@@ -785,7 +822,7 @@ class ApplicationCommandOption(object):
             - If `choice`'s type is neither ``ApplicationCommandOptionChoice`` nor a `tuple` representing it's `.name`
                 nad `.value`.
         AssertionError
-            If the application command option has already 10 choices.
+            If the application command option has already `25` choices.
         """
         if isinstance(choice, ApplicationCommandOptionChoice):
             pass
@@ -988,7 +1025,7 @@ class ApplicationCommandOption(object):
     
     def __eq__(self, other):
         """Returns whether the two options are equal."""
-        if not isinstance(other, ApplicationCommandOption):
+        if type(self) is not type(other):
             return NotImplemented
         
         if self.choices != other.choices:
@@ -1013,6 +1050,22 @@ class ApplicationCommandOption(object):
             return False
         
         return True
+    
+    def __len__(self):
+        """Returns the application command option's length."""
+        length = len(self.name) + len(self.description)
+        
+        choices = self.choices
+        if (choices is not None):
+            for choice in choices:
+                length += len(choice)
+        
+        options = self.options
+        if (options is not None):
+            for option in options:
+                length += len(option)
+        
+        return length
 
 
 class ApplicationCommandOptionChoice(object):
@@ -1045,16 +1098,29 @@ class ApplicationCommandOptionChoice(object):
             - If `name` is not `str` instance.
             - If `name`'s length is out of range [1:100].
             - If `value` is neither `str` nor `int` instance.
+            - If `value` is `str` and it's length is out of range [0:100].
         """
         if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
             name_length = len(name)
-            if name_length < 1 or name_length > 100:
-                raise AssertionError(f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.')
+            if name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN or \
+                    name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX:
+                raise AssertionError(f'`name` length can be in range '
+                    f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}], '
+                    f'got {name_length!r}; {name!r}.')
             
-            if not isinstance(value, (str, int)):
+            if isinstance(value, int):
+                pass
+            elif isinstance(value, str):
+                value_length = len(value)
+                if value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or \
+                        value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX:
+                    raise AssertionError(f'`value` length` can be in range '
+                        f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
+                        f'got {value_length!r}; {value!r}.')
+            else:
                 raise AssertionError(f'`value` type can be either `str` or `int`, got {value.__class__.__name__}.')
         
         self = object.__new__(cls)
@@ -1101,7 +1167,7 @@ class ApplicationCommandOptionChoice(object):
     
     def __eq__(self, other):
         """Returns whether the two choices are equal."""
-        if not isinstance(other, ApplicationCommandOptionChoice):
+        if type(self) is not type(other):
             return NotImplemented
         
         if self.name != other.name:
@@ -1111,27 +1177,37 @@ class ApplicationCommandOptionChoice(object):
             return False
         
         return True
+    
+    def __len__(self):
+        """Returns the application command choice's length."""
+        length = len(self.name)
+        value = self.value
+        if isinstance(value, str):
+            length += len(value)
+        
+        return length
+
 
 @modulize
 class InteractionResponseTypes:
     """
     Contains the interaction response type's, which are the following:
     
-    +-----------------------+-------+
-    | Respective name       | Value |
-    +=======================+=======+
-    | none                  | 0     |
-    +-----------------------+-------+
-    | pong                  | 1     |
-    +-----------------------+-------+
-    | acknowledge           | 2     |
-    +-----------------------+-------+
-    | message               | 3     |
-    +-----------------------+-------+
-    | message_and_source    | 4     |
-    +-----------------------+-------+
-    | source                | 5     |
-    +-----------------------+-------+
+    +-----------------------+-------+---------------+
+    | Respective name       | Value | Notes         |
+    +=======================+=======+===============+
+    | none                  | 0     | -             |
+    +-----------------------+-------+---------------+
+    | pong                  | 1     | -             |
+    +-----------------------+-------+---------------+
+    | acknowledge           | 2     | Deprecated.   |
+    +-----------------------+-------+---------------+
+    | message               | 3     | Deprecated.   |
+    +-----------------------+-------+---------------+
+    | message_and_source    | 4     | -             |
+    +-----------------------+-------+---------------+
+    | source                | 5     | -             |
+    +-----------------------+-------+---------------+
     """
     none = 0
     pong = 1

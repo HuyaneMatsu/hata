@@ -348,14 +348,14 @@ class Command(object):
             - If A value is routed but to a bad count amount.
             - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
             - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`,
+            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
             - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - if an empty string was given as an alias.
             - If `separator` is given as `str`, but it's length is not 1.
@@ -477,14 +477,14 @@ class Command(object):
             - A value is routed but to a bad count amount.
             - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
             - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`,
+            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
             - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - if an empty string was given as an alias.
             - If `separator` is given as `str`, but it's length is not 1.
@@ -2065,7 +2065,7 @@ class CommandProcesser(EventWaitforBase):
         | command           | `str`         | The command's name.                       |
         +-------------------+---------------+-------------------------------------------+
         | content           | `str`         | The message'"s content after the prefix.  |
-        +-------------------+---------------+-------------------------------------------|
+        +-------------------+---------------+-------------------------------------------+
     
     - `mention_prefix`
         If a message starts with the mention of the client, then the command processor will act, like it was a command
@@ -2199,7 +2199,7 @@ class CommandProcesser(EventWaitforBase):
         
         Parameters
         ----------
-        prefix :  `str`, ((tuple`, `list`) of `str`), `callable`
+        prefix :  `str`, ((`tuple`, `list`) of `str`), `callable`
             Prefix for the command processer.
             
             Can be given as normal or as `async` `callable` as well, what should accept `1` argument:
@@ -2246,8 +2246,8 @@ class CommandProcesser(EventWaitforBase):
         TypeError
             - If `default_category_name` was not passed as `None`, or as `str` instance.
             - If `prefix` was given as a `callable`, but accepts bad amount of arguments.
-            - If `prefix` was given as `tuple`or `list`, but contains a non `str`.
-            - If `prefix` was not given as `str`, (tuple`, `list`) of `str` or as `callable`.
+            - If `prefix` was given as `tuple` or `list`, but contains a non `str`.
+            - If `prefix` was not given as `str`, (`tuple`, `list`) of `str` or as `callable`.
             - If `category_name_rule` is not `None` or `function` instance.
             - If `category_name_rule` is `async` `function`.
             - If `category_name_rule` accepts bad amount of arguments.
@@ -2337,9 +2337,8 @@ class CommandProcesser(EventWaitforBase):
         TypeError
             If `category_name` was not given as `None` and neither as `str` instance.
         """
-        # category name can be None, but when we wanna use `.get` we need to
-        # use comparable data-types, so whenever we get we need to convert
-        # `None` to empty `str` at every case
+        # category name can be None, but when we wanna use `.get` we need to use comparable data-types, so whenever we
+        # get we need to convert `None` to empty `str` at every case
         if category_name is None:
             category_name = self._default_category_name
             if category_name is None:
@@ -2541,7 +2540,7 @@ class CommandProcesser(EventWaitforBase):
         
         Parameters
         ----------
-        prefix :  `str`, ((tuple`, `list`, `set`) of `str`), `callable`
+        prefix :  `str`, ((`tuple`, `list`, `set`) of `str`), `callable`
             Prefix for the command processer.
             
             Can be given as normal or as `async` `callable` as well, what should accept `1` argument:
@@ -2559,7 +2558,7 @@ class CommandProcesser(EventWaitforBase):
         TypeError
             - If `prefix` was given as a `callable`, but accepts bad amount of arguments.
             - If `prefix` was given as `tuple`or `list`, but contains a non `str`.
-            - If `prefix` was not given as `str`, (tuple`, `list`) of `str` or as `callable`.
+            - If `prefix` was not given as `str`, (`tuple`, `list`) of `str` or as `callable`.
         ValueError
             - If `prefix` was given as an empty `str`.
         """
@@ -2750,7 +2749,7 @@ class CommandProcesser(EventWaitforBase):
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`)
+        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
             The aliases of the command.
         category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
             The category of the command. Can be given as the category itself, or as a category's name. If given as
@@ -2792,14 +2791,14 @@ class CommandProcesser(EventWaitforBase):
             - A value is routed but to a bad count amount.
             - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
             - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`,
+            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
             - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If the added command's `.name` would overwrite an alias of an other command.
             - If the added command would overwrite more than `1` already added command.
@@ -2872,7 +2871,7 @@ class CommandProcesser(EventWaitforBase):
                 If no `command` attribute was defined, then a attribute of the `name`'s value be checked as well.
             - description : `Any`
                 If no description was provided, then the class's `.__doc__` will be picked up.
-            - aliases : `None` or (`iterable` of str`)
+            - aliases : `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
             - category : `None`, ``Category`` or `str`
             - checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances
                 If no checks were provided, then the class's `.checks_` attribute will be checked as well.
@@ -2889,14 +2888,14 @@ class CommandProcesser(EventWaitforBase):
             - If `klass` was not given as `type` instance.
             - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
             - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`,
+            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
             - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `.command` attribute is missing of the class.
             - If the added command's `.name` would overwrite an alias of an other command.

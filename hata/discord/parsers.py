@@ -33,6 +33,7 @@ from .message import EMBED_UPDATE_NONE, Message, MessageRepr
 from .interaction import ApplicationCommandInteraction, ApplicationCommand
 from .integration import Integration
 from .permission import Permission
+from .preinstanced import InteractionType
 
 from . import rate_limit as module_rate_limit
 
@@ -136,6 +137,7 @@ INTENT_EVENTS = {
         'GUILD_MEMBER_ADD',
         'GUILD_MEMBER_UPDATE',
         'GUILD_MEMBER_REMOVE',
+        'GUILD_JOIN_REQUEST_DELETE',
             ),
     INTENT_GUILD_BANS : (
         'GUILD_BAN_ADD',
@@ -268,6 +270,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     | INTENT_GUILD_USERS        | 1             | guild_users           | GUILD_MEMBER_ADD                  |
     |                           |               |                       | GUILD_MEMBER_UPDATE               |
     |                           |               |                       | GUILD_MEMBER_REMOVE               |
+    |                           |               |                       | GUILD_JOIN_REQUEST_DELETE         |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_BANS         | 2             | guild_bans            | GUILD_BAN_ADD                     |
     |                           |               |                       | GUILD_BAN_REMOVE                  |
@@ -3001,10 +3004,10 @@ if CACHE_USER:
         except KeyError:
             guild_sync(client, data, None)
             return
-
+        
         if first_client(guild.clients, INTENT_GUILD_USERS) is not client:
             return
-
+        
         User(data, guild)
         guild.user_count +=1
 else:
@@ -3066,7 +3069,7 @@ if CACHE_USER:
         guild.user_count -= 1
         
         Task(client.events.guild_user_delete(client, guild, user,profile), KOKORO)
-
+    
     def GUILD_MEMBER_REMOVE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
         try:
@@ -3150,7 +3153,7 @@ else:
             return
         
         user = User(data['user'])
-        guild.user_count -=1
+        guild.user_count -= 1
         
         Task(client.events.guild_user_delete(client, guild, user, None), KOKORO)
 
@@ -3181,7 +3184,7 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        guild.user_count -=1
+        guild.user_count -= 1
     
     def GUILD_MEMBER_REMOVE__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -3194,7 +3197,7 @@ else:
         if first_client(guild.clients, INTENT_GUILD_USERS) is not client:
             return
         
-        guild.user_count -=1
+        guild.user_count -= 1
 
 PARSER_DEFAULTS(
     'GUILD_MEMBER_REMOVE',
@@ -3206,6 +3209,36 @@ del GUILD_MEMBER_REMOVE__CAL_SC, \
     GUILD_MEMBER_REMOVE__CAL_MC, \
     GUILD_MEMBER_REMOVE__OPT_SC, \
     GUILD_MEMBER_REMOVE__OPT_MC
+
+# This is a low priority event. Is called after `GUILD_MEMBER_REMOVE`, so we should have everything cached.
+
+def GUILD_JOIN_REQUEST_DELETE__CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
+    
+    user_id = int(data['user_id'])
+    try:
+        user = USERS[user_id]
+    except KeyError:
+        return
+    
+    Task(client.events.guild_join_reject(client, guild, user), KOKORO)
+
+def GUILD_JOIN_REQUEST_DELETE__OPT(client, data):
+    pass
+
+
+PARSER_DEFAULTS(
+    'GUILD_JOIN_REQUEST_DELETE',
+    GUILD_JOIN_REQUEST_DELETE__CAL,
+    GUILD_JOIN_REQUEST_DELETE__CAL,
+    GUILD_JOIN_REQUEST_DELETE__OPT,
+    GUILD_JOIN_REQUEST_DELETE__OPT)
+del GUILD_JOIN_REQUEST_DELETE__CAL, \
+    GUILD_JOIN_REQUEST_DELETE__OPT
 
 if CACHE_PRESENCE:
     def GUILD_CREATE__CAL(client, data):
@@ -4455,6 +4488,8 @@ class InteractionEvent(DiscordEntity, EventBase):
         Resolved received users stored by their identifier as keys if any.
     token : `str`
         Interaction's token used when responding on it.
+    type : ``InteractionType``
+        The interaction's type.
     user : ``Client`` or ``User``
         The user who called the interaction.
     user_permissions : ``Permission``
@@ -4476,7 +4511,7 @@ class InteractionEvent(DiscordEntity, EventBase):
     invalidated immediately.
     """
     __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'resolved_channels',
-        'resolved_roles', 'resolved_users', 'token', 'user', 'user_permissions')
+        'resolved_roles', 'resolved_users', 'token', 'type', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -4603,6 +4638,7 @@ class InteractionEvent(DiscordEntity, EventBase):
         
         self = object.__new__(cls)
         self.id = int(data['id'])
+        self.type = InteractionType.get(data['type'])
         self.channel = channel
         self.guild = guild
         self.interaction = interaction
@@ -4687,7 +4723,14 @@ class InteractionEvent(DiscordEntity, EventBase):
         if (response_state_name is not None):
             result.append(' (')
             result.append(response_state_name)
-            result.append(') ')
+            result.append('),')
+        
+        result.append(' type=')
+        interaction_type = self.type
+        result.append(interaction_type.name)
+        result.append(' (')
+        result.append(repr(interaction_type.value))
+        result.append(')')
         
         result.append(' channel=')
         result.append(repr(self.channel))
@@ -4856,6 +4899,7 @@ EVENTS.add_default('emoji_delete'               , 3 , 'GUILD_EMOJIS_UPDATE'     
 EVENTS.add_default('emoji_edit'                 , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
 EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                        , )
 EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'                     , )
+EVENTS.add_default('guild_join_reject'          , 3 , 'GUILD_JOIN_REQUEST_DELETE'               , )
 EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                            , )
 EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'                            , )
 EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                            , )
@@ -5331,7 +5375,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
             
         result.append(element)
         continue
-        
+    
     return result
 
 class _EventHandlerManager(object):
@@ -7474,9 +7518,10 @@ class EventDescriptor(object):
     
     Attributes
     ----------
+    _launch_called : `bool`
+        Whether The respective client's `.events.launch` was called already.
     client_reference : ``WeakReferer``
         Weak reference to the parent client to avoid reference loops.
-    
     
     Additional Event Attributes
     --------------------------
@@ -7515,7 +7560,7 @@ class EventDescriptor(object):
     channel_create(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is created.
         
-        At hata wrapper this event is called only the first time when a private (or group) channel is created.
+        > This event is not called when a private channel is created.
     
     channel_delete(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is deleted.
@@ -7544,6 +7589,8 @@ class EventDescriptor(object):
         | owner_id      | `int`                                 |
         +---------------+---------------------------------------+
         | position      | `int`                                 |
+        +---------------+---------------------------------------+
+        | region        | `None` or ``VoiceRegion``             |
         +---------------+---------------------------------------+
         | slowmode      | `int`                                 |
         +---------------+---------------------------------------+
@@ -7649,7 +7696,8 @@ class EventDescriptor(object):
         The `name` argument should be a `str` what tell where the error occurred, and `err` should be a `BaseException`
         instance or an error message (can be other as type `str` as well.)
         
-        This event has a default handler called ``default_error_event``, what writes an error message to `sys.stderr`.
+        > This event has a default handler called ``default_error_event``, which writes the error message to
+        > `sys.stderr`.
     
     gift_update(client: ``Client``, gift: ``Gift``):
         Called when a gift code is sent to a channel.
@@ -7735,6 +7783,11 @@ class EventDescriptor(object):
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
     
+    guild_join_reject(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
+        Called when a user leaves from a guild before completing it's verification screen.
+        
+        > ``.guild_user_delete`` is called as well.
+    
     guild_user_add(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
         Called when a user joins a guild.
     
@@ -7763,8 +7816,8 @@ class EventDescriptor(object):
     integration_update(client: ``Client``, guild: ``Guild``):
         Called when an ``Integration`` of a guild is updated.
         
-        No integration data is included with the received dispatch event, so it cannot be passed to the event
-        handler either.
+        > No integration data is included with the received dispatch event, so it cannot be passed to the event
+        > handler either.
     
     interaction_create(client: ``Client``, event: ``InteractionEvent``)
         Called when a user interacts with an application command.
@@ -7784,8 +7837,8 @@ class EventDescriptor(object):
     message_delete(client: ``Client``, message: Union[``Message``, ``MessageRepr``]):
         Called when a loaded message is deleted.
         
-        Note, `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is deleted,
-        then `message` is given as ``MessageRepr`` instance.
+        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is deleted,
+        > then `message` is given as ``MessageRepr`` instance.
     
     message_edit(client: ``Client``, message: ``Message``, old_attributes: Union[`None`, `dict`]):
         Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
@@ -7825,22 +7878,22 @@ class EventDescriptor(object):
         not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
         
-        Note, if `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is updated,
-        then `old_attributes` is given as `None`.
+        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is updated,
+        > then `old_attributes` is given as `None`.
     
     reaction_add(client: ``Client``, event: ``ReactionAddEvent``):
         Called when a user reacts on a message with the given emoji.
         
-        Note, if `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reaction is added on an
-        uncached message, then `message` is given as ``MessageRepr``.
+        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reaction is added on an
+        > uncached message, then `message` is given as ``MessageRepr``.
     
     reaction_clear(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
             old_reactions: Union[`None`, ``reaction_mapping``]):
         Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
         of the message.
     
-        Note, if `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
-        and uncached message, then `message` is given as ``MessageRepr`` and `old_reactions` as `None`.
+        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
+        > and uncached message, then `message` is given as ``MessageRepr`` and `old_reactions` as `None`.
     
     reaction_delete(client: ``Client``, event: ``ReactionDeleteEvent``):
         Called when a user removes it's reaction from a message.
@@ -7853,8 +7906,8 @@ class EventDescriptor(object):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` argument
         are the old reactor users of the given emoji.
         
-        Note, if `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
-        and uncached message, then `message` is given as ``MessageRepr`` and `users` as `None`.
+        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
+        > and uncached message, then `message` is given as ``MessageRepr`` and `users` as `None`.
     
     ready(client: ``Client``):
         Called when the client finishes logging in. The event might be called more times, because the clients might

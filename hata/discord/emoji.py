@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('BUILTIN_EMOJIS', 'Emoji', 'parse_emoji', 'parse_custom_emojis', 'reaction_mapping',
+__all__ = ('BUILTIN_EMOJIS', 'UNICODE_TO_EMOJI', 'Emoji', 'parse_emoji', 'parse_custom_emojis', 'reaction_mapping',
     'reaction_mapping_line',)
 
 from ..backend.utils import DOCS_ENABLED
@@ -390,7 +390,7 @@ class Emoji(DiscordEntity, immortal=True):
     @property
     def as_emoji(self):
         """
-        Returns the emoji's emoji form. Should be used when sending an emoji within  a ``Message``.
+        Returns the emoji's emoji form. Should be used when sending an emoji within a ``Message``.
         
         Returns
         -------

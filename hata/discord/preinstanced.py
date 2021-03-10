@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ApplicationCommandOptionType', 'AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag',
-    'GuildFeature', 'HypesquadHouse', 'InviteTargetType', 'MFA', 'VerificationScreenStepType',
+    'GuildFeature', 'HypesquadHouse', 'InteractionType', 'InviteTargetType', 'MFA', 'VerificationScreenStepType',
     'MessageActivityType', 'MessageNotificationLevel', 'MessageType', 'PremiumType', 'RelationshipType',
     'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme', 'VerificationLevel', 'VoiceRegion',
     'WebhookType', )
@@ -1123,7 +1123,7 @@ class MessageType(PreinstancedBase):
     
     def __init__(self, value, name, convert):
         """
-        Creates an ``InviteTargetType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
         
         Parameters
         ----------
@@ -2005,7 +2005,7 @@ class InviteTargetType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `list` of ``InviteTargetType``
+    INSTANCES : `dict` of (`int`, ``InviteTargetType``) items
         Stores the predefined ``InviteTargetType`` instances. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The invite target types' values' type.
@@ -2014,13 +2014,15 @@ class InviteTargetType(PreinstancedBase):
     
     Every predefined invite target type can be accessed as class attribute as well:
     
-    +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
-    +=======================+===========+=======+
-    | NONE                  | NONE      | 0     |
-    +-----------------------+-----------+-------+
-    | STREAM                | STREAM    | 1     |
-    +-----------------------+-----------+-------+
+    +-----------------------+-----------------------+-------+
+    | Class attribute name  | name                  | value |
+    +=======================+=======================+=======+
+    | NONE                  | NONE                  | 0     |
+    +-----------------------+-----------------------+-------+
+    | STREAM                | STREAM                | 1     |
+    +-----------------------+-----------------------+-------+
+    | EMBEDDED_APPLICATION  | EMBEDDED_APPLICATION  | 2     |
+    +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -2028,11 +2030,13 @@ class InviteTargetType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    NONE   = NotImplemented
-    STREAM = NotImplemented
+    NONE                 = NotImplemented
+    STREAM               = NotImplemented
+    EMBEDDED_APPLICATION = NotImplemented
 
-InviteTargetType.NONE   = InviteTargetType(0, 'NONE')
-InviteTargetType.STREAM = InviteTargetType(1, 'STREAM')
+InviteTargetType.NONE                 = InviteTargetType(0, 'NONE'                , )
+InviteTargetType.STREAM               = InviteTargetType(1, 'STREAM'              , )
+InviteTargetType.EMBEDDED_APPLICATION = InviteTargetType(2, 'EMBEDDED_APPLICATION', )
 
 
 class StickerType(PreinstancedBase):
@@ -2048,7 +2052,7 @@ class StickerType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `list` of ``StickerType``
+    INSTANCES : `dict` of (`int`, ``StickerType``) items
         Stores the predefined ``StickerType`` instances. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The message sticker format types' values' type.
@@ -2100,7 +2104,7 @@ class RoleManagerType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `list` of ``RoleManagerType``
+    INSTANCES : `dict` of (`int`, ``RoleManagerType``) items
         Stores the predefined ``RoleManagerType`` instances. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The role manager types' values' type.
@@ -2162,13 +2166,13 @@ class ApplicationCommandOptionType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of the role manager type.
+        The name of the application command option type.
     value : `int`
-        The identifier value the role manager type.
+        The identifier value the application command option type.
     
     Class Attributes
     ----------------
-    INSTANCES : `list` of ``ApplicationCommandOptionType``
+    INSTANCES : `dict` of (`int`, ``ApplicationCommandOptionType``) items
         Stores the predefined ``ApplicationCommandOptionType`` instances. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
@@ -2225,6 +2229,50 @@ ApplicationCommandOptionType.BOOLEAN           = ApplicationCommandOptionType(5 
 ApplicationCommandOptionType.USER              = ApplicationCommandOptionType(6 , 'USER'              ,)
 ApplicationCommandOptionType.CHANNEL           = ApplicationCommandOptionType(7 , 'CHANNEL'           ,)
 ApplicationCommandOptionType.ROLE              = ApplicationCommandOptionType(8 , 'ROLE'              ,)
+
+
+class InteractionType(PreinstancedBase):
+    """
+    The type of an interaction.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the interaction type.
+    value : `int`
+        The identifier value the interaction type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``InteractionType``) items
+        Stores the predefined ``InteractionType`` instances. These can be accessed with their `value` as
+        key.
+    VALUE_TYPE : `type` = `int`
+        The application command option types' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the interaction types.
+    
+    Every predefined interaction type. can be accessed as class attribute as well:
+    
+    +-----------------------+-----------------------+-------+
+    | Class attribute name  | Name                  | Value |
+    +=======================+=======================+=======+
+    | ping                  | ping                  | 0     |
+    +-----------------------+-----------------------+-------+
+    | application_command   | application_command   | 1     |
+    +-----------------------+-----------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    ping                = NotImplemented
+    application_command = NotImplemented
+
+InteractionType.ping                = InteractionType(0, 'ping')
+InteractionType.application_command = InteractionType(1, 'application_command')
 
 
 class VerificationScreenStepType(PreinstancedBase):

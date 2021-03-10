@@ -405,7 +405,7 @@ class URL(object):
     @property
     def raw_host(self):
         """
-        Returns the encoded host part of the URL. Returns `None` if the host par is missing or if the URL is relative.
+        Returns the encoded host part of the URL. Returns `None` if the host part is missing or if the URL is relative.
         
         Returns
         -------
@@ -429,6 +429,50 @@ class URL(object):
             host = raw_host.encode('ascii').decode('idna')
         
         return host
+    
+    @property
+    def raw_subdomain(self):
+        """
+        Returns the encoded subdomain part of the URL if it has. Als returns `None` if the host part is missing or if
+        the URL is relative.
+        
+        Returns
+        -------
+        raw_subdomain : `None` or `str`
+        """
+        host_name = self._value.hostname
+        if host_name is None:
+            subdomain = None
+        else:
+            back_index = host_name.rfind('.')
+            if back_index == -1:
+                subdomain = None
+            else:
+                back_index = host_name.rfind('.', back_index)
+                if back_index == -1:
+                    subdomain = None
+                else:
+                    subdomain = host_name[:back_index]
+        
+        return subdomain
+        
+    @cached_property
+    def subdomain(self):
+        """
+        Returns the decoded subdomain of the URL if it has. Also returns `None` if the host part is missing or if the
+        Url is relative.
+        
+        Returns
+        -------
+        subdomain : `None` or `str`
+        """
+        raw_subdomain = self.raw_subdomain
+        if raw_subdomain is None:
+            subdomain = None
+        else:
+            subdomain = raw_subdomain.encode('ascii').decode('idna')
+        
+        return subdomain
     
     @property
     def port(self):

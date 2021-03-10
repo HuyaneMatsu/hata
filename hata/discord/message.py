@@ -19,7 +19,7 @@ from .webhook import WebhookRepr, create_partial_webhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
     preconvert_preinstanced_type
-from .preinstanced import MessageType, MessageActivityType, StickerType
+from .preinstanced import MessageType, MessageActivityType, StickerType, InteractionType
 
 from . import rate_limit as module_rate_limit
 
@@ -252,7 +252,7 @@ class Sticker(DiscordEntity):
     
     def __new__(cls, data):
         """
-        Creates a new ``MessageSticker`` from the given received data.
+        Creates a new ``MessageSticker`` from the received data.
         
         Parameters
         ----------
@@ -285,6 +285,60 @@ class Sticker(DiscordEntity):
     def __repr__(self):
         """Returns the sticker's representation."""
         return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'
+
+class MessageInteraction(DiscordEntity):
+    """
+    Sent with a ``Message``, when the it is a response to an ``InteractionEvent``.
+    
+    Attributes
+    ----------
+    id : `int`
+        The interaction's identifier.
+    name : `str`
+        The invoked interaction's name.
+    type : ``InteractionType``
+        The interaction's type.
+    user : ``User`` or ``Client``
+        Who invoked the interaction.
+    """
+    __slots__ = ('name', 'type', 'user')
+    def __new_(cls, data):
+        """
+        Creates a new ``MessageInteraction`` instance from the received data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message interaction data.
+        """
+        self = object.__new__(cls)
+        self.id = int(data['id'])
+        self.name = data['name']
+        self.type = InteractionType.get(data['type'])
+        self.user = User(data['user'])
+        
+        return self
+    
+    def __str__(self):
+        """Returns the used interaction's name."""
+        return self.name
+    
+    def __repr__(self):
+        """Returns the message interaction's representation."""
+        result = ['<', self.__class__.__name__, ' id=', repr(self.id), ', type=']
+        
+        interaction_type = self.type
+        result.append(interaction_type.name)
+        result.append(' (')
+        result.append(repr(interaction_type.value))
+        result.append(')')
+        
+        result.append(', name=')
+        result.append(repr(self.name))
+        result.append('>')
+        
+        return ''.join(result)
+
 
 class MessageReference(object):
     """
@@ -788,6 +842,8 @@ class Message(DiscordEntity, immortal=True):
         Whether the message contains `@everyone` or `@here`.
     flags : ``MessageFlag``
         The message's flags.
+    interaction : `None` or ``MessageInteraction``
+        Present if the message is a response to an ``InteractionEvent``.
     nonce : `str` or `None`
         A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
         be shown up at the message's received payload as well.
@@ -809,8 +865,8 @@ class Message(DiscordEntity, immortal=True):
         The mentioned users by the message if any.
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
-        'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'nonce', 'pinned', 'reactions',
-        'referenced_message', 'role_mentions', 'stickers', 'tts', 'type', 'user_mentions',)
+        'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'interaction', 'nonce', 'pinned',
+        'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts', 'type', 'user_mentions',)
     
     def __new__(cls, data, channel):
         """
@@ -972,6 +1028,13 @@ class Message(DiscordEntity, immortal=True):
         self.nonce = data.get('nonce')
         self.content = data['content']
         self.flags = MessageFlag(data.get('flags', 0))
+        
+        interaction_data = data.get('interaction')
+        if interaction_data is None:
+            interaction = None
+        else:
+            interaction = MessageInteraction(interaction_data)
+        self.interaction = interaction
         
         sticker_datas = data.get('stickers')
         if sticker_datas is  None:
@@ -1782,12 +1845,12 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         """
         old_attributes = {}
-
+        
         pinned = data['pinned']
         if self.pinned != pinned:
             old_attributes['pinned'] = self.pinned
             self.pinned = pinned
-
+        
         flags = data.get('flags', 0)
         flag_difference = self.flags^flags
         if flag_difference:
@@ -1838,15 +1901,15 @@ class Message(DiscordEntity, immortal=True):
         if self.activity != activity:
             old_attributes['activity'] = self.activity
             self.activity = activity
-                    
+        
         everyone_mention = data.get('mention_everyone', False)
         if self.everyone_mention != everyone_mention:
             old_attributes['everyone_mention'] = self.everyone_mention
             self.everyone_mention = everyone_mention
-
-        #ignoring tts
-        #ignoring type
-        #ignoring nonce
+        
+        # ignoring tts
+        # ignoring type
+        # ignoring nonce
         
         attachment_datas = data['attachments']
         if attachment_datas:
@@ -1867,7 +1930,7 @@ class Message(DiscordEntity, immortal=True):
         if self.embeds != embeds:
             old_attributes['embeds'] = self.embeds
             self.embeds = embeds
-            
+        
         content = data['content']
         if self.content != content:
             old_attributes['content'] = self.content

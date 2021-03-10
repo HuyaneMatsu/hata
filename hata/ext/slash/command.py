@@ -4579,9 +4579,9 @@ class Slasher(EventHandlerBase):
         try:
             schema = command.get_schema()
             if guild_id == SYNC_ID_GLOBAL:
-                coroutine = client.application_command_guild_edit(guild_id, application_command, schema)
-            else:
                 coroutine = client.application_command_global_edit(application_command, schema)
+            else:
+                coroutine = client.application_command_guild_edit(guild_id, application_command, schema)
             await coroutine
         except BaseException as err:
             if isinstance(err, ConnectionError):
@@ -4625,7 +4625,7 @@ class Slasher(EventHandlerBase):
         """
         try:
             if guild_id == SYNC_ID_GLOBAL:
-                coroutine = client.application_command_global_delete(guild_id)
+                coroutine = client.application_command_global_delete(application_command)
             else:
                 coroutine = client.application_command_guild_delete(guild_id, application_command)
             await coroutine

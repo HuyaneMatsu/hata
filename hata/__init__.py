@@ -93,7 +93,7 @@ Hata leaves the main thread free, `client.start()` blocks it only till the clien
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.1.46'
+__version__ = '1.1.47'
 
 from .env import BACKEND_ONLY
 

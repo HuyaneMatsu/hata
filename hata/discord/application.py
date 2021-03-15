@@ -104,6 +104,8 @@ class Application(DiscordEntity, immortal=True):
     primary_sku_id : `int`
         If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
         Defaults to `0`.
+    privacy_policy_url : `str` or 7None`
+        The url of the application's privacy policy. Defaults to `None`.
     publishers : `None` or `list` of ``ApplicationSubEntity``
         A list of the application's games' publishers. Defaults to `None`.
     rpc_origins : `None` or `list` of `str`
@@ -118,6 +120,8 @@ class Application(DiscordEntity, immortal=True):
     summary : `str`
         If this application is a game sold on Discord, this field will be the summary field for the store page of its
         primary sku. Defaults to empty string.
+    terms_of_service_url : `str` or `None`
+        The url of the application's terms of service. Defaults to `None`.
     third_party_skus : `None` or `list` of ``ThirdPartySKU``
          A list of the application's third party stock keeping units. Defaults to `None`.
     verify_key : `str`
@@ -129,7 +133,8 @@ class Application(DiscordEntity, immortal=True):
     """
     __slots__ = ('aliases', 'bot_public', 'bot_require_code_grant', 'description', 'developers', 'eula_id',
         'executables', 'flags', 'guild_id', 'hook', 'name', 'overlay', 'overlay_compatibility_hook', 'owner',
-        'primary_sku_id', 'publishers', 'rpc_origins', 'slug', 'summary', 'third_party_skus', 'verify_key', )
+        'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'summary', 'terms_of_service_url',
+        'third_party_skus', 'verify_key')
     
     cover = IconSlot('cover', 'cover_image', URLS.application_cover_url, URLS.application_cover_url_as, add_updater=False)
     icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as, add_updater=False)
@@ -169,6 +174,8 @@ class Application(DiscordEntity, immortal=True):
         self.aliases = None
         self.eula_id = 0
         self.flags = ApplicationFlag()
+        self.privacy_policy_url = None
+        self.terms_of_service_url = None
         
         self.cover_hash = 0
         self.cover_type = ICON_TYPE_NONE
@@ -408,7 +415,17 @@ class Application(DiscordEntity, immortal=True):
             pass
         else:
             self.flags = ApplicationFlag(flags)
-    
+        
+        privacy_policy_url = data.get('privacy_policy_url')
+        if (privacy_policy_url is not None) and (not privacy_policy_url):
+            privacy_policy_url = None
+        self.privacy_policy_url = privacy_policy_url
+        
+        terms_of_service_url = data.get('terms_of_service_url')
+        if (terms_of_service_url is not None) and (not terms_of_service_url):
+            terms_of_service_url = None
+        self.terms_of_service_url = terms_of_service_url
+        
     @classmethod
     def precreate(cls, application_id, **kwargs):
         """
@@ -448,6 +465,8 @@ class Application(DiscordEntity, immortal=True):
             
             This field cannot be given as `snowflake`, because it might represent both ``UserBase`` instances  and
             ``Team``-s as well.
+        privacy_policy_url : `None` or `str`, Optional
+            The url of the application's privacy policy.
         slug : `str` or `None`
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         splash : `None`, ``Icon`` or `str`, Optional
@@ -466,6 +485,8 @@ class Application(DiscordEntity, immortal=True):
         summary : `str`, Optional
             If this application is a game sold on Discord, this field will be the summary field for the store page of
             its primary sku.
+        terms_of_service_url : `str` or `None`, Optional
+            The url of the application's terms of service.
         
         Returns
         -------
@@ -522,15 +543,20 @@ class Application(DiscordEntity, immortal=True):
                 
                 processable.append(('owner', owner))
             
-            try:
-                slug = kwargs.pop('slug')
-            except KeyError:
-                pass
-            else:
-                if (slug is not None):
-                    slug = preconvert_str(slug, 'slug', 0, 1024)
-                    if slug:
-                        processable.append(('slug', slug))
+            for key in ('slug', 'privacy_policy_url', 'terms_of_service_url'):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    continue
+                
+                if (value is None):
+                    continue
+                
+                value = preconvert_str(value, key, 0, 1024)
+                if not value:
+                    continue
+                
+                processable.append((key, value))
             
             cls.splash.preconvert(kwargs, processable)
             

@@ -2257,9 +2257,11 @@ class InteractionType(PreinstancedBase):
     +-----------------------+-----------------------+-------+
     | Class attribute name  | Name                  | Value |
     +=======================+=======================+=======+
-    | ping                  | ping                  | 0     |
+    | none                  | none                  | 0     |
     +-----------------------+-----------------------+-------+
-    | application_command   | application_command   | 1     |
+    | ping                  | ping                  | 1     |
+    +-----------------------+-----------------------+-------+
+    | application_command   | application_command   | 2     |
     +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
@@ -2268,11 +2270,13 @@ class InteractionType(PreinstancedBase):
     
     __slots__ = ()
     
+    none                = NotImplemented
     ping                = NotImplemented
     application_command = NotImplemented
 
-InteractionType.ping                = InteractionType(0, 'ping')
-InteractionType.application_command = InteractionType(1, 'application_command')
+InteractionType.none                = InteractionType(0, 'none')
+InteractionType.ping                = InteractionType(1, 'ping')
+InteractionType.application_command = InteractionType(2, 'application_command')
 
 
 class VerificationScreenStepType(PreinstancedBase):

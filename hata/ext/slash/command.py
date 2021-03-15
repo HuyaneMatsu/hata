@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('SlashCommand', 'Slasher', 'SlashResponse')
+__all__ = ('abort', 'SlashCommand', 'Slasher', 'SlashResponse')
 from threading import current_thread
 import warnings
 
@@ -20,12 +20,14 @@ from ...discord.client import Client
 from ...discord.user import UserBase, User
 from ...discord.role import Role
 from ...discord.channel import ChannelBase
-from ...discord.preinstanced import ApplicationCommandOptionType
+from ...discord.preinstanced import ApplicationCommandOptionType, InteractionType
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommand
 from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICES_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
     APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
 
+
+INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 
 UNLOADING_BEHAVIOUR_DELETE = 0
 UNLOADING_BEHAVIOUR_KEEP = 1
@@ -68,14 +70,14 @@ def raw_name_to_display(raw_name):
     display_name : `str`
         The converted name.
     """
-    return raw_name.strip('_').lower().replace('_', '-')
+    return '-'.join([w for w in raw_name.strip('_ ').lower().replace(' ', '-').replace('_', '-').split('-') if w])
 
 
-async def get_request_coro(client, interaction_event, show_for_invoking_user_only, response):
+async def get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
     """
     Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
     
-    This function is a coroutine.
+    This function is a coroutine generator, which should be ued inside of an async for loop.
     
     Parameters
     ----------
@@ -95,38 +97,50 @@ async def get_request_coro(client, interaction_event, show_for_invoking_user_onl
     response_state = interaction_event._response_state
     if (response is None):
         if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-            request_coro = client.interaction_response_message_create(interaction_event,
+            yield client.interaction_response_message_create(interaction_event,
                 show_for_invoking_user_only=show_for_invoking_user_only)
-        else:
-            request_coro = None
+        
+        return
     
-    elif isinstance(response, (str, EmbedBase)) or is_only_embed(response):
+    if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
         if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-            request_coro = client.interaction_response_message_create(interaction_event, response,
+            yield client.interaction_response_message_create(interaction_event, response,
                 show_for_invoking_user_only=show_for_invoking_user_only)
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-            request_coro = client.interaction_response_message_edit(interaction_event, response)
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
-            request_coro = client.interaction_followup_message_create(interaction_event, response,
+            return
+        
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            yield client.interaction_response_message_edit(interaction_event, response)
+            return
+        
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            yield client.interaction_followup_message_create(interaction_event, response,
                 show_for_invoking_user_only=show_for_invoking_user_only)
-        else:
-            request_coro = None
-    
-    elif is_coroutine_generator(response):
+            return
+        
+        # No more cases
+        return
+        
+    if is_coroutine_generator(response):
         response = await process_command_gen(client, interaction_event, show_for_invoking_user_only, response)
-        request_coro = await get_request_coro(client, interaction_event, show_for_invoking_user_only, response)
+        async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
+            yield request_coro
+        
+        return
     
-    elif isinstance(response, SlashResponse):
-        request_coro = response.get_request_coro(client, interaction_event, show_for_invoking_user_only)
+    if isinstance(response, SlashResponse):
+        for request_coro in response.get_request_coros(client, interaction_event, show_for_invoking_user_only):
+            yield request_coro
+        
+        return
     
-    else:
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-            request_coro = client.interaction_response_message_create(interaction_event,
-                show_for_invoking_user_only=show_for_invoking_user_only)
-        else:
-            request_coro = None
+    if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+        yield client.interaction_response_message_create(interaction_event,
+            show_for_invoking_user_only=show_for_invoking_user_only)
+        
+        return
     
-    return request_coro
+    # No more cases
+    return
 
 
 async def process_command_gen(client, interaction_event, show_for_invoking_user_only, coro):
@@ -177,6 +191,11 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
             else:
                 response = None
             break
+        
+        except InteractionAbortedError as err:
+            response = err.response
+            break
+        
         except BaseException as err:
             if (response_exception is None) or (response_exception is not err):
                 raise
@@ -197,19 +216,20 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
             raise
         
         else:
-            request_coro = await get_request_coro(client, interaction_event, show_for_invoking_user_only, response)
+            # We set it first, since if `get_request_coros` yields nothing, we would be meowed up.
+            response_message = None
+            response_exception = None
             
-            if request_coro is None:
-                response_message = None
-                response_exception = None
-            else:
+            async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only,
+                    response):
                 try:
                     response_message = await request_coro
                 except BaseException as err:
+                    # `response_message` may have be set before with an iteration, so reset it.
                     response_message = None
                     response_exception = err
-                else:
-                    response_exception = None
+                    break
+    
     
     return response
 
@@ -241,11 +261,12 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
     if is_coroutine_generator(coro):
         response = await process_command_gen(client, interaction_event, show_for_invoking_user_only, coro)
     else:
-        response = await coro
+        try:
+            response = await coro
+        except InteractionAbortedError as err:
+            response = err.response
     
-    request_coro = await get_request_coro(client, interaction_event, show_for_invoking_user_only, response)
-    
-    if (request_coro is not None):
+    async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
         try:
             await request_coro
         except BaseException as err:
@@ -289,7 +310,7 @@ class SlashResponse(object):
         - `'show_for_invoking_user_only'`
         - `'tts'`
     """
-    ___slots__ = ('_parameters',)
+    __slots__ = ('_parameters',)
     
     def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., tts=...,
             show_for_invoking_user_only=...,):
@@ -366,9 +387,11 @@ class SlashResponse(object):
         
         return response_parameters
     
-    def get_request_coro(self, client, interaction_event, show_for_invoking_user_only):
+    def get_request_coros(self, client, interaction_event, show_for_invoking_user_only):
         """
         Gets request coroutine buildable from the ``SlashResponse``.
+        
+        This method is a generator, which should be used inside of a `for` loop.
         
         client : ``Client``
             The client who will send the responses if applicable.
@@ -377,34 +400,42 @@ class SlashResponse(object):
         show_for_invoking_user_only : `bool`
             Whether the response message should only be shown for the invoking user.
         
-        Returns
+        Yields
         -------
         request_coro : `None` or `coroutine`
         """
         response_state = interaction_event._response_state
         if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'tts'))
-            response_parameters['show_for_invoking_user_only'] = \
-                self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+            if 'file' in self._parameters:
+                show_for_invoking_user_only = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
+                yield client.interaction_response_message_create(interaction_event,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
             
-            request_coro = client.interaction_response_message_create(interaction_event, **response_parameters)
+            else:
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'tts'))
+                response_parameters['show_for_invoking_user_only'] = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
+                yield client.interaction_response_message_create(interaction_event, **response_parameters)
+            return
         
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed' 'file',))
             
-            request_coro = client.interaction_response_message_edit(interaction_event, **response_parameters)
+            yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+            return
         
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+        if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file', 'tts'))
             response_parameters['show_for_invoking_user_only'] = \
                 self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
             
-            request_coro = client.interaction_followup_message_create(interaction_event, **response_parameters)
-            
-        else:
-            request_coro = None
+            yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+            return
         
-        return request_coro
+        return
     
     def __repr__(self):
         """Returns the slash response's representation."""
@@ -423,8 +454,91 @@ class SlashResponse(object):
         
         return ''.join(result)
 
+def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., show_for_invoking_user_only=...,):
+    """
+    Aborts the slash response with sending the passed parameters as a response.
+    
+    The abortion auto detects `show_for_invoking_user_only` if not given. Not follows the command's preference.
+    If only a string `content` is given, `show_for_invoking_user_only` will become `True`, else `False`. The reason of
+    becoming `False` at that case is, Discord ignores every other field except string content.
+    
+    Parameters
+    ----------
+    content : `str`, ``EmbedBase``, `Any`, Optional
+        The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
+        if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+        
+        If given as ``EmbedBase`` instance, then is sent as the message's embed.
+    embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        The embedded content of the message.
+        
+        If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+    file : `Any`, Optional
+        A file to send. Check ``Client._create_file_form`` for details.
+    allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
+    tts : `bool`, Optional
+        Whether the message is text-to-speech.
+    show_for_invoking_user_only : `bool`, Optional
+        Whether the sent message should only be shown to the invoking user.
+        
+        If given as `True`, only the message's content will be processed by Discord.
+    
+    Raises
+    ------
+    InteractionAbortedError
+        The exception which aborts the interaction, then yields the response.
+    """
+    if show_for_invoking_user_only is ...:
+        if (embed is not ...):
+            show_for_invoking_user_only = False
+        elif (file is not ...):
+            show_for_invoking_user_only = False
+        elif (allowed_mentions is not ...):
+            show_for_invoking_user_only = False
+        elif (tts is not ...):
+            show_for_invoking_user_only = False
+        elif (content is ...):
+            show_for_invoking_user_only = True
+        elif is_only_embed(content):
+            show_for_invoking_user_only = False
+        else:
+            show_for_invoking_user_only = True
+    
+    response = SlashResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, tts=tts,
+        show_for_invoking_user_only=show_for_invoking_user_only)
+    
+    raise InteractionAbortedError(response)
 
-async def converter_int(client, interaction_event, value):
+
+class InteractionAbortedError(BaseException):
+    """
+    An ``InteractionAbortedError`` is raised when a slash command is aborted. This class holds the response to send to
+    the client.
+    
+    Attributes
+    ----------
+    response : ``SlashResponse``
+        The response to send.
+    """
+    def __init__(self, response):
+        """
+        Creates a new ``InteractionAbortedError`` instance with the given response.
+        
+        Parameters
+        ----------
+        response : ``SlashResponse``
+            The response to send.
+        """
+        self.response = response
+        BaseException.__init__(self, response)
+    
+    def __repr__(self):
+        """Returns the exception's representation."""
+        return f'{self.__class__.__name__}({self.response!r})'
+
+
+async def converter_int(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `int`.
     
@@ -434,8 +548,8 @@ async def converter_int(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -452,7 +566,7 @@ async def converter_int(client, interaction_event, value):
     return value
 
 
-async def converter_str(client, interaction_event, value):
+async def converter_str(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `str`.
     
@@ -462,8 +576,8 @@ async def converter_str(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -479,7 +593,7 @@ BOOL_TABLE = {
     str(False): False,
         }
 
-async def converter_bool(client, interaction_event, value):
+async def converter_bool(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to `bool`.
     
@@ -489,8 +603,8 @@ async def converter_bool(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -502,7 +616,7 @@ async def converter_bool(client, interaction_event, value):
     return BOOL_TABLE.get(value)
 
 
-async def converter_snowflake(client, interaction_event, value):
+async def converter_snowflake(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to a snowflake.
     
@@ -512,8 +626,8 @@ async def converter_snowflake(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -533,7 +647,7 @@ async def converter_snowflake(client, interaction_event, value):
     return snowflake
 
 
-async def converter_user(client, interaction_event, value):
+async def converter_user(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
     
@@ -543,8 +657,8 @@ async def converter_user(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -553,12 +667,12 @@ async def converter_user(client, interaction_event, value):
     user : `None`, ``User`` or ``Client``
         If conversion fails, then returns `None`.
     """
-    user_id = await converter_snowflake(client, interaction_event, value)
+    user_id = await converter_snowflake(client, interaction, value)
     
     if user_id is None:
         user = None
     else:
-        resolved_users = interaction_event.resolved_users
+        resolved_users = interaction.resolved_users
         if resolved_users is None:
             user = None
         else:
@@ -577,7 +691,7 @@ async def converter_user(client, interaction_event, value):
     return user
 
 
-async def converter_role(client, interaction_event, value):
+async def converter_role(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
     
@@ -587,8 +701,8 @@ async def converter_role(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -597,12 +711,12 @@ async def converter_role(client, interaction_event, value):
     value : `None` or ``Role``
         If conversion fails, then returns `None`.
     """
-    role_id = await converter_snowflake(client, interaction_event, value)
+    role_id = await converter_snowflake(client, interaction, value)
     
     if role_id is None:
         role = None
     else:
-        resolved_roles = interaction_event.resolved_roles
+        resolved_roles = interaction.resolved_roles
         if resolved_roles is None:
             role = None
         else:
@@ -614,7 +728,7 @@ async def converter_role(client, interaction_event, value):
     return role
 
 
-async def converter_channel(client, interaction_event, value):
+async def converter_channel(client, interaction, value):
     """
     Converter ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
     
@@ -624,8 +738,8 @@ async def converter_channel(client, interaction_event, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction_event : ``InteractionEvent``
-        The received interaction event.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
     
@@ -634,12 +748,12 @@ async def converter_channel(client, interaction_event, value):
     value : `None` or ``ChannelBase`` instance
         If conversion fails, then returns `None`.
     """
-    channel_id = await converter_snowflake(client, interaction_event, value)
+    channel_id = await converter_snowflake(client, interaction, value)
     
     if channel_id is None:
         channel = None
     else:
-        resolved_channels = interaction_event.resolved_channels
+        resolved_channels = interaction.resolved_channels
         if resolved_channels is None:
             channel = None
         else:
@@ -925,7 +1039,7 @@ class ArgumentConverter(object):
         self.type = annotation_type
         return self
     
-    async def __call__(self, client, interaction_event, value):
+    async def __call__(self, client, interaction, value):
         """
         Calls the argument converter to convert the given `value` to it's desired state.
         
@@ -935,8 +1049,8 @@ class ArgumentConverter(object):
         ----------
         client : ``Client``
             The client who received the respective ``InteractionEvent``.
-        interaction_event : ``InteractionEvent``
-            The received interaction event.
+        interaction : ``ApplicationCommandInteraction``
+            The received application command interaction.
         value : `str`
             ``ApplicationCommandInteractionOption.value``.
         
@@ -954,7 +1068,7 @@ class ArgumentConverter(object):
                 passed = True
                 value = self.default
         else:
-            value = await self.converter(client, interaction_event, value)
+            value = await self.converter(client, interaction, value)
             if value is None:
                 if self.required:
                     passed = False
@@ -2618,7 +2732,7 @@ class SlashCommandFunction(object):
         for argument_parser in self._argument_parsers:
             value = parameter_relation.get(argument_parser.name)
             
-            passed, parameter = await argument_parser(client, interaction_event, value)
+            passed, parameter = await argument_parser(client, interaction_event.interaction, value)
             if not passed:
                 return
             
@@ -3791,6 +3905,9 @@ class Slasher(EventHandlerBase):
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
+        if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND:
+            return
+        
         try:
             command = await self._try_get_command_by_id(client, interaction_event)
         except ConnectionError:

@@ -14,7 +14,7 @@ from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
 from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, parse_time
 from .user import User, create_partial_user, VoiceState, UserBase, ZEROUSER
 from .role import Role
-from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase
+from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase, ChannelGuildUndefined
 from .http import URLS
 from .permission import Permission
 from .activity import ActivityUnknown
@@ -715,7 +715,7 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 later = []
                 for channel_data in channel_datas:
-                    channel_type = CHANNEL_TYPES[channel_data['type']]
+                    channel_type = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)
                     if channel_type is ChannelCategory:
                         channel_type(channel_data, client, guild)
                     else:
@@ -1427,7 +1427,7 @@ class Guild(DiscordEntity, immortal=True):
         
         later = []
         for channel_data in data:
-            channel_type = CHANNEL_TYPES[channel_data['type']]
+            channel_type = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)
             if channel_type is ChannelCategory:
                 #categories
                 channel = channel_type(channel_data, None, self)

@@ -685,7 +685,7 @@ def detect_code_block(lines, index, limit):
             index += 1
             continue
         
-        if line == '```':
+        if line.endswith('```') if found_starter else line.startswith('```'):
             index += 1
             
             if found_starter:
@@ -706,9 +706,12 @@ class TextCodeBlock(object):
     
     Attributes
     ----------
+    _language : `None` or `str`
+        The code block's language's name if any. Always lower case.
     _lines : `list` of `str`
+        The internal lines of the code block.
     """
-    __slots__ = ('_lines', )
+    __slots__ = ('_language', '_lines',)
     def __new__(cls, lines, start, end):
         """
         Creates a new code block from the given lines's start:end range.
@@ -721,20 +724,58 @@ class TextCodeBlock(object):
             The first line's index, where the code block starts.
         end : `int`
             The 1 after the last line's index of the code block.
+
         
         Returns
         -------
         self : `None` or ``TextCodeBlock``
             Returns `None` if would create an empty code block.
         """
-        start += 1
-        if lines[end-1] == '```':
+        line = lines[0]
+        if len(line) == 3:
+            language = None
+            first_line = None
+        else:
+            first_line = line[3:]
+            break_index = first_line.find(' ')
+            if break_index == -1:
+                language = first_line
+                first_line = None
+            else:
+                language = first_line[:break_index]
+                if language:
+                    language = language.lower()
+                else:
+                    language = None
+                
+                first_line = first_line[break_index:].lstrip()
+                if not first_line:
+                    first_line = None
+        
+        if first_line is None:
+            start += 1
+        
+        line = lines[end-1]
+        if len(line) == 3:
+            last_line = None
+        else:
+            last_line = line[:-3]
+            last_line = last_line.rstrip(RIGHT_STRIP_IGNORE)
+            if not last_line:
+                last_line = None
+        
+        if last_line is None:
             end -= 1
         
         if start >= end:
             return None
         
         lines = lines[start:end]
+        if (first_line is not None):
+            lines[0] = first_line
+        
+        if (last_line is not None):
+            lines[-1] = last_line
         
         # Remove empty lines from the end
         while True:
@@ -760,11 +801,31 @@ class TextCodeBlock(object):
         
         self = object.__new__(cls)
         self._lines = lines
+        self._language = language
         return self
     
     def __repr__(self):
         """Returns the code blocks's representation."""
-        return f'<{self.__class__.__name__} lines={self._lines!r}>'
+        result = ['<', self.__class__.__name__]
+        
+        language = self._language
+        if language is None:
+            result.append(' language=')
+            result.append(repr(language))
+            
+            add_comma = True
+        else:
+            add_comma = False
+        
+        if add_comma:
+            result.append(', ')
+        
+        result.append(' lines=')
+        result.append(repr(self._lines))
+        
+        result.append('>')
+        
+        return ''.join(result)
     
     def graved(self, path):
         """

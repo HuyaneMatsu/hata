@@ -24,7 +24,8 @@ from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
-    message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice
+    message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
+    ChannelGuildUndefined
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
@@ -67,9 +68,6 @@ from . import client_core as module_client_core, message as module_message, webh
 
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
-
-CHANNEL_MOVE_RESET_INDEXES = tuple(index for index, type_ in enumerate(CHANNEL_TYPES) if \
-    (issubclass(type_, ChannelGuildBase) and type_ is not ChannelCategory))
 
 MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
 
@@ -2471,7 +2469,7 @@ class Client(UserBase):
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel = CHANNEL_TYPES[channel_data['type']](channel_data, self)
+                channel = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self)
                 channels.append(channel)
         
         return channels
@@ -2997,7 +2995,7 @@ class Client(UserBase):
         data = await self.http.channel_create(guild_id, data, reason)
         
         if (guild is not None):
-            return CHANNEL_TYPES[data['type']](data, self, guild)
+            return CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)(data, self, guild)
     
     
     async def channel_delete(self, channel, *, reason=None):
@@ -10131,7 +10129,7 @@ class Client(UserBase):
     
     async def webhook_get_all_channel(self, channel):
         """
-        Requests the webhooks of the channel.
+        Requests all the webhooks of the channel.
         
         This method is a coroutine.
         
@@ -10152,6 +10150,26 @@ class Client(UserBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+            
+            You may expect the following exceptions:
+            
+            +---------------+-----------------------+---------------------------------------------------------------+
+            | Error code    | Internal name         | Reason                                                        |
+            +===============+=======================+===============================================================+
+            | 50013         | invalid_permissions   | You need `manage_webhooks` permission.                        |
+            +---------------+-----------------------+---------------------------------------------------------------+
+            | 60003         | MFA_required          | You need to have multi-factor authorization to do this        |
+            |               |                       | operation (guild setting dependent). For bot accounts it      |
+            |               |                       | means their owner needs mfa.                                  |
+            +---------------+-----------------------+---------------------------------------------------------------+
+            | 10003         | unknown_channel       | The channel not exists.                                       |
+            +---------------+-----------------------+---------------------------------------------------------------+
+            | 50001         | invalid_access        | The bot is not in the channel's guild.                        |
+            +---------------+-----------------------+---------------------------------------------------------------+
+            
+            > Discord drops `Forbidden (403), code=50013: Missing Permissions` instead of
+            > `Forbidden (403), code=50001: Missing Access`. Reference: `discord-api-docs/issues/2709`.
+        
         AssertionError
             If `channel` was given as a channel's identifier but it detectably not refers to a ``ChannelText`` instance.
         

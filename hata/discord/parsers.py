@@ -21,7 +21,7 @@ from ..backend.event_loop import LOOP_TIME
 from .bases import FlagBase, DiscordEntity
 from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS
 from .user import User, create_partial_user, USERS
-from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelText, create_partial_channel
+from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGuildUndefined
 from .utils import Relationship, Gift
 from .guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
@@ -30,7 +30,7 @@ from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
-from .interaction import ApplicationCommandInteraction, ApplicationCommand
+from .interaction import ApplicationCommand, INTERACTION_TYPE_TABLE
 from .integration import Integration
 from .permission import Permission
 from .preinstanced import InteractionType
@@ -256,35 +256,35 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     | Intent flag position's    | Shift value   | Intent name           | Corresponding parser              |
     | respective name           |               |                       |                                   |
     +===========================+===============+=======================+===================================+
-    | INTENT_GUILDS             | 0             | guilds                | GUILD_CREATE                      |
-    |                           |               |                       | GUILD_DELETE                      |
-    |                           |               |                       | GUILD_UPDATE                      |
-    |                           |               |                       | GUILD_ROLE_CREATE                 |
-    |                           |               |                       | GUILD_ROLE_UPDATE                 |
-    |                           |               |                       | GUILD_ROLE_DELETE                 |
-    |                           |               |                       | CHANNEL_CREATE                    |
-    |                           |               |                       | CHANNEL_UPDATE                    |
-    |                           |               |                       | CHANNEL_DELETE                    |
+    | INTENT_GUILDS             | 0             | guilds                | GUILD_CREATE,                     |
+    |                           |               |                       | GUILD_DELETE,                     |
+    |                           |               |                       | GUILD_UPDATE,                     |
+    |                           |               |                       | GUILD_ROLE_CREATE,                |
+    |                           |               |                       | GUILD_ROLE_UPDATE,                |
+    |                           |               |                       | GUILD_ROLE_DELETE,                |
+    |                           |               |                       | CHANNEL_CREATE,                   |
+    |                           |               |                       | CHANNEL_UPDATE,                   |
+    |                           |               |                       | CHANNEL_DELETE,                   |
     |                           |               |                       | CHANNEL_PINS_UPDATE               |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_USERS        | 1             | guild_users           | GUILD_MEMBER_ADD                  |
-    |                           |               |                       | GUILD_MEMBER_UPDATE               |
-    |                           |               |                       | GUILD_MEMBER_REMOVE               |
+    | INTENT_GUILD_USERS        | 1             | guild_users           | GUILD_MEMBER_ADD,                 |
+    |                           |               |                       | GUILD_MEMBER_UPDATE,              |
+    |                           |               |                       | GUILD_MEMBER_REMOVE,              |
     |                           |               |                       | GUILD_JOIN_REQUEST_DELETE         |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_BANS         | 2             | guild_bans            | GUILD_BAN_ADD                     |
+    | INTENT_GUILD_BANS         | 2             | guild_bans            | GUILD_BAN_ADD,                    |
     |                           |               |                       | GUILD_BAN_REMOVE                  |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_EMOJIS       | 3             | guild_emojis          | GUILD_EMOJIS_UPDATE               |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | INTEGRATION_CREATE                |
-    |                           |               |                       | INTEGRATION_DELETE                |
-    |                           |               |                       | INTEGRATION_UPDATE                |
+    | INTENT_GUILD_INTEGRATIONS | 4             | guild_integrations    | INTEGRATION_CREATE,               |
+    |                           |               |                       | INTEGRATION_DELETE,               |
+    |                           |               |                       | INTEGRATION_UPDATE,               |
     |                           |               |                       | GUILD_INTEGRATIONS_UPDATE         |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_WEBHOOKS     | 5             | guild_webhooks        | WEBHOOKS_UPDATE                   |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_INVITES      | 6             | guild_invites         | INVITE_CREATE                     |
+    | INTENT_GUILD_INVITES      | 6             | guild_invites         | INVITE_CREATE,                    |
     |                           |               |                       | INVITE_DELETE                     |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_VOICE_STATES | 7             | guild_voice_states    | VOICE_STATE_UPDATE                |
@@ -293,26 +293,26 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_MESSAGES     | 9             | guild_messages        | MESSAGE_CREATE                    |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | N/A                       | N/A           | N/A                   | MESSAGE_UPDATE                    |
-    |                           |               |                       | MESSAGE_DELETE                    |
+    | N/A                       | N/A           | N/A                   | MESSAGE_UPDATE,                   |
+    |                           |               |                       | MESSAGE_DELETE,                   |
     |                           |               |                       | MESSAGE_DELETE_BULK               |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_GUILD_REACTIONS    | 10            | guild_reactions       | MESSAGE_REACTION_ADD              |
-    |                           |               |                       | MESSAGE_REACTION_REMOVE           |
-    |                           |               |                       | MESSAGE_REACTION_REMOVE_ALL       |
+    | INTENT_GUILD_REACTIONS    | 10            | guild_reactions       | MESSAGE_REACTION_ADD,             |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE,          |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE_ALL,      |
     |                           |               |                       | MESSAGE_REACTION_REMOVE_EMOJI     |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_GUILD_TYPINGS      | 11            | guild_typings         | TYPING_START                      |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_DIRECT_MESSAGES    | 12            | direct_messages       | CHANNEL_CREATE                    |
-    |                           |               |                       | CHANNEL_PINS_UPDATE               |
-    |                           |               |                       | MESSAGE_CREATE                    |
-    |                           |               |                       | MESSAGE_UPDATE                    |
+    | INTENT_DIRECT_MESSAGES    | 12            | direct_messages       | CHANNEL_CREATE,                   |
+    |                           |               |                       | CHANNEL_PINS_UPDATE,              |
+    |                           |               |                       | MESSAGE_CREATE,                   |
+    |                           |               |                       | MESSAGE_UPDATE,                   |
     |                           |               |                       | MESSAGE_DELETE                    |
     +---------------------------+---------------+-----------------------+-----------------------------------+
-    | INTENT_DIRECT_REACTIONS   | 13            | direct_reactions      | MESSAGE_REACTION_ADD              |
-    |                           |               |                       | MESSAGE_REACTION_REMOVE           |
-    |                           |               |                       | MESSAGE_REACTION_REMOVE_ALL       |
+    | INTENT_DIRECT_REACTIONS   | 13            | direct_reactions      | MESSAGE_REACTION_ADD,             |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE,          |
+    |                           |               |                       | MESSAGE_REACTION_REMOVE_ALL,      |
     |                           |               |                       | MESSAGE_REACTION_REMOVE_EMOJI     |
     +---------------------------+---------------+-----------------------+-----------------------------------+
     | INTENT_DIRECT_TYPINGS     | 14            | direct_typings        | TYPING_START                      |
@@ -1008,7 +1008,7 @@ def READY(client, data):
         pass
     else:
         for channel_private_data in channel_private_datas:
-            CHANNEL_TYPES[channel_private_data['type']](channel_private_data, client)
+            CHANNEL_TYPES.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client)
     
     client.application._create_update(data['application'], True)
     
@@ -2673,7 +2673,7 @@ del CHANNEL_UPDATE__CAL_SC, \
     CHANNEL_UPDATE__OPT_MC
 
 def CHANNEL_CREATE__CAL(client, data):
-    channel_type = CHANNEL_TYPES[data['type']]
+    channel_type = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
     
     guild_id = data.get('guild_id')
     if guild_id is None:
@@ -2692,7 +2692,7 @@ def CHANNEL_CREATE__CAL(client, data):
     Task(client.events.channel_create(client, channel), KOKORO)
 
 def CHANNEL_CREATE__OPT(client, data):
-    channel_type = CHANNEL_TYPES[data['type']]
+    channel_type = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
     
     guild_id = data.get('guild_id')
     if guild_id is None:
@@ -4478,14 +4478,8 @@ class InteractionEvent(DiscordEntity, EventBase):
     guild : `None` or ``Guild`
         The from where the interaction was called from. Might be `None` if the interaction was called from a private
         channel.
-    interaction : ``ApplicationCommandInteraction``
+    interaction : `None` or ``ApplicationCommandInteraction``
         The called interaction by it's route by the user.
-    resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
-        Resolved received channels stored by their identifier as keys if any.
-    resolved_roles : `None` or `dict` of (`int`, ``Role``) items
-        Resolved received roles stored by their identifier as keys if any.
-    resolved_users : `None` or `dict` of (`int`, ``User`` or ``Client``) items
-        Resolved received users stored by their identifier as keys if any.
     token : `str`
         Interaction's token used when responding on it.
     type : ``InteractionType``
@@ -4510,8 +4504,7 @@ class InteractionEvent(DiscordEntity, EventBase):
     The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
     invalidated immediately.
     """
-    __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'resolved_channels',
-        'resolved_roles', 'resolved_users', 'token', 'type', 'user', 'user_permissions')
+    __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'token', 'type', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -4562,83 +4555,16 @@ class InteractionEvent(DiscordEntity, EventBase):
         else:
             user_permissions = Permission(user_permissions)
         
-        interaction_data = data['data']
-        
-        try:
-            resolved_data = interaction_data['resolved']
-        except KeyError:
-            resolved_users = None
-            resolved_channels = None
-            resolved_roles = None
+        type_value = data['type']
+        interaction_type = INTERACTION_TYPE_TABLE.get(type_value)
+        if interaction_type is None:
+            interaction = None
         else:
-            try:
-                resolved_user_datas = resolved_data['users']
-            except KeyError:
-                resolved_users = None
-            else:
-                if resolved_user_datas:
-                    try:
-                        resolved_guild_profile_datas = resolved_data['members']
-                    except KeyError:
-                        resolved_guild_profile_datas = None
-                    
-                    resolved_users = {}
-                    
-                    for user_id, user_data in resolved_user_datas.items():
-                        if resolved_guild_profile_datas is None:
-                            guild_profile_data = None
-                        else:
-                            guild_profile_data = resolved_guild_profile_datas.get(user_id)
-                        
-                        if (guild_profile_data is not None):
-                            user_data['member'] = guild_profile_data
-                        
-                        user = User(user_data, guild)
-                        resolved_users[user.id] = user
-                        
-                        if (guild_profile_data is not None) and (cached_users is not None) and \
-                                (user not in cached_users):
-                            cached_users.append(user)
-                    
-                else:
-                    resolved_users = None
-            
-            try:
-                resolved_channel_datas = resolved_data['channels']
-            except KeyError:
-                resolved_channels = None
-            else:
-                if resolved_channel_datas:
-                    resolved_channels = {}
-                    
-                    for channel_data in resolved_channel_datas.values():
-                        channel = create_partial_channel(channel_data, guild)
-                        if (channel is not None):
-                            resolved_channels[channel.id] = channel
-                    
-                    if not resolved_channels:
-                        resolved_channels = None
-                else:
-                    resolved_channels = None
-            
-            try:
-                resolved_role_datas = resolved_data['roles']
-            except KeyError:
-                resolved_roles = None
-            else:
-                if resolved_role_datas:
-                    resolved_roles = {}
-                    for role_data in resolved_role_datas.values():
-                        role = Role(role_data, guild)
-                        resolved_roles[role.id] = role
-                else:
-                    resolved_roles = None
-        
-        interaction = ApplicationCommandInteraction(data['data'])
+            interaction, cached_users = interaction_type(data['data'], guild, cached_users)
         
         self = object.__new__(cls)
         self.id = int(data['id'])
-        self.type = InteractionType.get(data['type'])
+        self.type = InteractionType.get(type_value)
         self.channel = channel
         self.guild = guild
         self.interaction = interaction
@@ -4648,9 +4574,6 @@ class InteractionEvent(DiscordEntity, EventBase):
         self.user_permissions = user_permissions
         self._response_state = INTERACTION_EVENT_RESPONSE_STATE_NONE
         self._cached_users = cached_users
-        self.resolved_users = resolved_users
-        self.resolved_channels = resolved_channels
-        self.resolved_roles = resolved_roles
         
         if (cached_users is not None):
             for user in cached_users:

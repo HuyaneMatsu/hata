@@ -509,10 +509,12 @@ class GravedCodeBlock(object):
     
     Attributes
     ----------
+    language : `None` or `str`
+        The language of the code if applicable.
     lines : `list` of `str`
         The lines of the code-block
     """
-    __slots__ = ('lines', )
+    __slots__ = ('language', 'lines', )
     def __new__(cls, parent, path):
         """
         Creates a new graved code block..
@@ -536,12 +538,33 @@ class GravedCodeBlock(object):
             lines.append(line)
         
         self = object.__new__(cls)
+        self.language = parent._language
         self.lines = lines
         return self
     
     def __repr__(self):
         """Returns the graved code block's representation."""
-        return f'<{self.__class__.__name__} lines={self.lines!r}>'
+        result = ['<', self.__class__.__name__]
+        
+        language = self.language
+        if language is None:
+            result.append(' language=')
+            result.append(repr(language))
+            
+            add_comma = True
+        else:
+            add_comma = False
+        
+        if add_comma:
+            result.append(', ')
+        
+        result.append(' lines=')
+        result.append(repr(self.lines))
+        
+        result.append('>')
+        
+        return ''.join(result)
+
 
 class GravedTable(object):
     """

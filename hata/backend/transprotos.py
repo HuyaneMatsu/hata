@@ -42,11 +42,11 @@ class _SSLPipe(object):
         A Callback which will be called when handshake is completed. Set by ``.do_handshake``.
         
         Should accept the following parameters:
-        +-------------------+---------------------------+
-        | Respective name   | Value                     |
-        +===================+===========================+
-        | handshake_exception     | `None` or `BaseException` |
-        +-------------------+---------------------------+
+        +-----------------------+---------------------------+
+        | Respective name       | Value                     |
+        +=======================+===========================+
+        | handshake_exception   | `None` or `BaseException` |
+        +-----------------------+---------------------------+
         
         If the handshake is successful, then the `handshake_exception` is given as `None`, else as an exception instance.
     _incoming : `ssl.MemoryBIO`
@@ -365,7 +365,6 @@ class _SSLPipe(object):
         
         return ssl_data, offset
 
-
 class _SSLProtocolTransport(object):
     """
     Asynchronous ssl protocol's read-write  transport implementation.
@@ -374,12 +373,12 @@ class _SSLProtocolTransport(object):
     ----------
     app_protocol : `Any`
         Asynchronous protocol implementation.
-    closed : `bool`
-        Whether the ssl protocol transport is closed.
+    closing : `bool`
+        Whether the ssl protocol transport is closing.
     ssl_protocol : ``SSLProtocol``
         The respective ssl protocol, what's `.app_protocol` is the ``_SSLProtocolTransport`` instance.
     """
-    __slots__ = ('app_protocol', 'closed', 'ssl_protocol',)
+    __slots__ = ('app_protocol', 'closing', 'ssl_protocol',)
     def __init__(self, ssl_protocol, app_protocol):
         """
         Creates a  new ``_SSLProtocolTransport`` instance.
@@ -393,7 +392,7 @@ class _SSLProtocolTransport(object):
         """
         self.ssl_protocol = ssl_protocol
         self.app_protocol = app_protocol
-        self.closed = False
+        self.closing = False
     
     def __repr__(self):
         """Returns the ssl protocol transport's representation."""
@@ -403,8 +402,8 @@ class _SSLProtocolTransport(object):
             ' ',
                 ]
         
-        if self.closed:
-            result.append('closed')
+        if self.closing:
+            result.append('closing')
             add_comma = True
         else:
             add_comma = False
@@ -431,6 +430,12 @@ class _SSLProtocolTransport(object):
         
         return ''.join(result)
     
+    def __del__(self):
+        """
+        Closes the ssl protocol transport if not yet closed.
+        """
+        self.close()
+    
     def get_extra_info(self, name, default=None):
         """
         Gets optional transport information.
@@ -448,18 +453,6 @@ class _SSLProtocolTransport(object):
         """
         return self.ssl_protocol.get_extra_info(name, default)
     
-    def set_protocol(self, protocol):
-        """
-        Sets a new protocol to the transport.
-        
-        Parameters
-        ----------
-        protocol : `Any`
-            Asynchronous protocol implementation.
-        """
-        self.app_protocol = protocol
-        self.ssl_protocol.app_protocol = protocol
-     
     def get_protocol(self):
         """
         Gets the ssl protocol transport's actual protocol.
@@ -471,6 +464,18 @@ class _SSLProtocolTransport(object):
         """
         return self.app_protocol
     
+    def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
+        self.app_protocol = protocol
+        self.ssl_protocol.app_protocol = protocol
+    
     def is_closing(self):
         """
         Returns whether the ssl protocol transport is closing.
@@ -479,101 +484,27 @@ class _SSLProtocolTransport(object):
         -------
         is_closing : `bool`
         """
-        return self.closed
+        return self.closing
     
     def close(self):
         """
         Starts the shutdown process of the ssl protocol transport.
         """
-        self.closed = True
+        if self.closing:
+            return
+        
+        self.closing = True
         self.ssl_protocol._start_shutdown()
-
-    def __del__(self):
-        """
-        Closes the ssl protocol transport if not yet closed.
-        """
-        if not self.closed:
-            self.close()
-
-    def pause_reading(self):
-        """
-        Pauses the receiving end.
-        
-        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
-        called.
-        
-        Returns
-        -------
-        reading_paused : `bool`
-            Whether reading was paused.
-        """
-        transport = self.ssl_protocol.transport
-        if transport is None:
-            return False
-        
-        return transport.pause_reading()
     
-    def resume_reading(self):
+    def abort(self):
         """
-        Resumes the receiving end.
+        Close the transport immediately.
         
-        Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        Buffered data will be lost and no more data will be received.
         
-        Returns
-        -------
-        reading_resume : `bool`
-            Whether reading was resumed.
+        The respective protocol's `.connection_lost` will be eventually called with `None`.
         """
-        transport = self.ssl_protocol.transport
-        if transport is None:
-            return False
-            
-        transport.resume_reading()
-        return True
-    
-    def set_write_buffer_limits(self, low=None, high=None):
-        """
-        Set the high- and low-water limits for write flow control.
-        
-        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
-        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
-        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
-        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
-        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
-        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
-        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
-        
-        Parameters
-        ----------
-        high : `None` or `int`, Optional
-            High limit to stop reading if reached.
-        low : `None` or `int`, Optional
-            Low limit to start reading if reached.
-        
-        Raises
-        ------
-        ValueError
-            If `low` is lower than `0` or if `low` is higher than `high`.
-        """
-        transport = self.ssl_protocol.transport
-        if (transport is not None):
-            transport.set_write_buffer_limits(high, low)
-        
-    def get_write_buffer_size(self):
-        """
-        Return the current size of the write buffer.
-        
-        Returns
-        -------
-        get_write_buffer_size : `int`
-        """
-        transport = self.ssl_protocol.transport
-        if transport is None:
-            write_buffer_size = 0
-        else:
-            write_buffer_size = transport.get_write_buffer_size()
-        
-        return write_buffer_size
+        self.ssl_protocol._abort()
     
     def write(self, data):
         """
@@ -613,6 +544,12 @@ class _SSLProtocolTransport(object):
         """
         self.write(b''.join(lines))
     
+    def write_eof(self):
+        """
+        Writes eof to the transport if it supports it.
+        """
+        pass
+    
     def can_write_eof(self):
         """
         Return whether the transport supports ``.write_eof``.
@@ -624,15 +561,104 @@ class _SSLProtocolTransport(object):
         """
         return False
     
-    def abort(self):
+    def pause_reading(self):
         """
-        Close the transport immediately.
+        Pauses the receiving end.
         
-        Buffered data will be lost and no more data will be received.
+        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
+        called.
         
-        The respective protocol's `.connection_lost` will be eventually called with `None`.
+        Returns
+        -------
+        reading_paused : `bool`
+            Whether reading was paused.
         """
-        self.ssl_protocol._abort()
+        transport = self.ssl_protocol.transport
+        if transport is None:
+            return False
+        
+        return transport.pause_reading()
+    
+    def resume_reading(self):
+        """
+        Resumes the receiving end.
+        
+        Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        
+        Returns
+        -------
+        reading_resume : `bool`
+            Whether reading was resumed.
+        """
+        transport = self.ssl_protocol.transport
+        if transport is None:
+            return False
+            
+        transport.resume_reading()
+        return True
+    
+    def get_write_buffer_size(self):
+        """
+        Return the current size of the write buffer.
+        
+        Returns
+        -------
+        get_write_buffer_size : `int`
+        """
+        transport = self.ssl_protocol.transport
+        if transport is None:
+            write_buffer_size = 0
+        else:
+            write_buffer_size = transport.get_write_buffer_size()
+        
+        return write_buffer_size
+    
+    def get_write_buffer_limits(self):
+        """
+        Returns the low and the high water of the transport.
+        
+        Returns
+        -------
+        low_water : `int`
+            The ``.ssl_protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+        high_water : `int`
+            The ``.ssl_protocol`` is paused writing when the buffer size passes the high water mark. Defaults to
+            `65536`.
+        """
+        transport = self.ssl_protocol.transport
+        if transport is None:
+            return 16384, 65536
+        
+        return transport.get_write_buffer_limits()
+    
+    def set_write_buffer_limits(self, low=None, high=None):
+        """
+        Set the high- and low-water limits for write flow control.
+        
+        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
+        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
+        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
+        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
+        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
+        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
+        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
+        
+        Parameters
+        ----------
+        high : `None` or `int`, Optional
+            High limit to stop reading if reached.
+        low : `None` or `int`, Optional
+            Low limit to start reading if reached.
+        
+        Raises
+        ------
+        ValueError
+            If `low` is lower than `0` or if `low` is higher than `high`.
+        """
+        transport = self.ssl_protocol.transport
+        if (transport is not None):
+            transport.set_write_buffer_limits(high, low)
 
 
 class SSLProtocol(object):
@@ -1172,14 +1198,6 @@ class _SelectorSocketTransport(object):
             # only wake up the waiter when connection_made() has been called
             loop.call_soon(Future.set_result_if_pending, waiter, None)
     
-    def __del__(self):
-        """
-        Closes the ``._SelectorSocketTransport``'s ``.socket`` if not yet closed.
-        """
-        socket = self.socket
-        if socket is not None:
-            socket.close()
-    
     def __repr__(self):
         """Returns the selector socket transport's representation."""
         result = [
@@ -1237,21 +1255,13 @@ class _SelectorSocketTransport(object):
         
         return ''.join(result)
     
-    def writelines(self, lines):
+    def __del__(self):
         """
-        Writes the given lines to the transport's socket.
-        
-        Parameters
-        ----------
-        lines : `iterable` of `bytes-like`
-            The lines to write.
-        
-        Raises
-        ------
-        RuntimeError
-            Protocol has no attached transport.
+        Closes the ``._SelectorSocketTransport``'s ``.socket`` if not yet closed.
         """
-        self.write(b''.join(lines))
+        socket = self.socket
+        if socket is not None:
+            socket.close()
     
     def get_extra_info(self, name, default=None):
         """
@@ -1269,6 +1279,244 @@ class _SelectorSocketTransport(object):
         info : `default`, `Any`
         """
         return self._extra.get(name, default)
+    
+    def get_protocol(self):
+        """
+        Gets the transport's actual protocol.
+        
+        Returns
+        -------
+        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
+            Asynchronous protocol implementation.
+        """
+        return self.protocol
+    
+    def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
+        self.protocol = protocol
+    
+    def is_closing(self):
+        """
+        Returns whether the transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
+        return self.closing
+    
+    def close(self):
+        """
+        Starts the shutdown process of the transport.
+        
+        If the transport is already closing, does nothing.
+        """
+        if self.closing:
+            return
+        
+        self.closing = True
+        self.loop.remove_reader(self._socket_fd)
+        if not self._buffer:
+            self._connection_lost = True
+            self.loop.remove_writer(self._socket_fd)
+            self.loop.call_soon(self._call_connection_lost, None)
+    
+    def abort(self):
+        """
+        Closes the transport immediately.
+        
+        The buffered data will be lost.
+        """
+        self._force_close(None)
+    
+    def write(self, data):
+        """
+        Write the given `data` to the transport.
+        
+        Do not blocks, but queues up the data instead to be sent as can.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The data to send.
+        
+        Raises
+        ------
+        TypeError
+            If `data` was not given as `bytes-like`.
+        RuntimeError : `bool`
+            If ``.write_eof`` was already called.
+        """
+        if not isinstance(data, (bytes, bytearray, memoryview)):
+            raise TypeError(f'data parameter must should be `bytes-like`, got {data.__class__.__name__}.')
+        if self._at_eof:
+            raise RuntimeError('Cannot call `.write` after `.write_eof`')
+        
+        if not data:
+            return
+        
+        if self._connection_lost:
+            return
+        
+        if not self._buffer:
+            # Optimization: try to send now.
+            try:
+                n = self.socket.send(data)
+            except (BlockingIOError, InterruptedError):
+                pass
+            except BaseException as err:
+                self._fatal_error(err, 'Fatal write error on socket transport')
+                return
+            else:
+                data = data[n:]
+                if not data:
+                    return
+            # Not all was written; register write handler.
+            self.loop.add_writer(self._socket_fd, self._write_ready)
+        
+        # Add it to the buffer.
+        self._buffer.extend(data)
+        self._maybe_pause_protocol()
+    
+    def writelines(self, lines):
+        """
+        Writes the given lines to the transport's socket.
+        
+        Parameters
+        ----------
+        lines : `iterable` of `bytes-like`
+            The lines to write.
+        
+        Raises
+        ------
+        RuntimeError
+            Protocol has no attached transport.
+        """
+        self.write(b''.join(lines))
+    
+    def write_eof(self):
+        """
+        Writes eof to the subprocess pipe's transport's protocol if applicable.
+        
+        By default ``SubprocessStreamWriter``'s transport is ``UnixWritePipeTransport``, what will call connection lost
+        as well when the write buffer is empty.
+        """
+        if self._at_eof:
+            return
+        
+        self._at_eof = True
+        
+        if not self._buffer:
+            self.socket.shutdown(module_socket.SHUT_WR)
+    
+    def can_write_eof(self):
+        """
+        Return whether the transport supports ``.write_eof``.
+        
+        Returns
+        -------
+        can_write_eof : `bool`
+            ``_SelectorSocketTransport`` instances always return `True`.
+        """
+        return True
+    
+    def get_write_buffer_size(self):
+        """
+        Return the current size of the write buffer.
+        
+        Returns
+        -------
+        get_write_buffer_size : `int`
+        """
+        return len(self._buffer)
+    
+    def get_write_buffer_limits(self):
+        """
+        Returns the low and the high water of the transport.
+        
+        Returns
+        -------
+        low_water : `int`
+            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
+            `16384`.
+        high_water : `int`
+            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to
+            `65536`.
+        """
+        return self._low_water, self._high_water
+    
+    def set_write_buffer_limits(self, high=None, low=None):
+        """
+        Set the high- and low-water limits for write flow control.
+        
+        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
+        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
+        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
+        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
+        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
+        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
+        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
+        
+        Parameters
+        ----------
+        high : `None` or `int`, Optional
+            High limit to stop reading if reached.
+        low : `None` or `int`, Optional
+            Low limit to start reading if reached.
+        
+        Raises
+        ------
+        ValueError
+            If `low` is lower than `0` or if `low` is higher than `high`.
+        """
+        self._set_write_buffer_limits(high=high, low=low)
+        self._maybe_pause_protocol()
+    
+    def pause_reading(self):
+        """
+        Pauses the receiving end.
+        
+        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
+        called.
+        
+        Returns
+        -------
+        reading_paused : `bool`
+            Whether reading was paused.
+        """
+        if self.closing or self._paused:
+            return False
+        
+        self._paused = True
+        self.loop.remove_reader(self._socket_fd)
+        return True
+    
+    def resume_reading(self):
+        """
+        Resumes the receiving end.
+        
+        Data received will once again be passed to the respective protocol's ``.data_received`` method.
+        
+        Returns
+        -------
+        reading_resumed : `bool`
+            Whether reading was resumed.
+        """
+        if not self._paused:
+            return False
+        
+        self._paused = False
+        if not self.closing:
+            self.loop.add_reader(self._socket_fd, self._read_ready)
+        
+        return True
     
     def _maybe_pause_protocol(self):
         """
@@ -1307,20 +1555,6 @@ class _SelectorSocketTransport(object):
                 '._maybe_resume_protocol\n',
                     ])
     
-    def get_write_buffer_limits(self):
-        """
-        Returns the low and the high water of the transport.
-        
-        Returns
-        -------
-        low_water : `int`
-            The ``.protocol`` is paused writing when the buffer size passes the high water mark. Defaults to `65536`.
-        high_water : `int`
-            The ``.protocol`` is resumed writing when the buffer size goes under the low water mark. Defaults to
-            `16384`.
-        """
-        return self._low_water, self._high_water
-    
     def _set_write_buffer_limits(self, high=None, low=None):
         """
         Sets the write buffer limits of the transport.
@@ -1354,89 +1588,6 @@ class _SelectorSocketTransport(object):
         
         self._high_water = high
         self._low_water = low
-
-    def set_write_buffer_limits(self, high=None, low=None):
-        """
-        Set the high- and low-water limits for write flow control.
-        
-        These two values control when to call the protocol's ``.pause_writing`` and ``.resume_writing`` methods. If
-        specified, the low-water limit must be less than or equal to the high-water limit. Neither value can be
-        negative. The defaults are implementation-specific. If only the high-water limit is given, the low-water limit
-        defaults to an implementation-specific value less than or equal to the high-water limit. Setting high to zero
-        forces low to zero as well, and causes ``.pause_writing`` to be called whenever the buffer becomes non-empty.
-        Setting low to zero causes ``.resume_writing`` to be called only once the buffer is empty. Use of zero for
-        either limit is generally sub-optimal as it reduces opportunities for doing I/O and computation concurrently.
-        
-        Parameters
-        ----------
-        high : `None` or `int`, Optional
-            High limit to stop reading if reached.
-        low : `None` or `int`, Optional
-            Low limit to start reading if reached.
-        
-        Raises
-        ------
-        ValueError
-            If `low` is lower than `0` or if `low` is higher than `high`.
-        """
-        self._set_write_buffer_limits(high=high, low=low)
-        self._maybe_pause_protocol()
-    
-    def abort(self):
-        """
-        Closes the transport immediately.
-        
-        The buffered data will be lost.
-        """
-        self._force_close(None)
-    
-    def set_protocol(self, protocol):
-        """
-        Sets a new protocol to the transport.
-        
-        Parameters
-        ----------
-        protocol : `Any`
-            Asynchronous protocol implementation.
-        """
-        self.protocol = protocol
-    
-    def get_protocol(self):
-        """
-        Gets the transport's actual protocol.
-        
-        Returns
-        -------
-        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
-            Asynchronous protocol implementation.
-        """
-        return self.protocol
-    
-    def is_closing(self):
-        """
-        Returns whether the transport is closing.
-        
-        Returns
-        -------
-        is_closing : `bool`
-        """
-        return self.closing
-    
-    def close(self):
-        """
-        Starts the shutdown process of the transport.
-        
-        If the transport is already closing, does nothing.
-        """
-        if self.closing:
-            return
-        
-        self.closing = True
-        self.loop.remove_reader(self._socket_fd)
-        if not self._buffer:
-            self._connection_lost = True
-            self.loop.remove_writer(self._socket_fd)
-            self.loop.call_soon(self._call_connection_lost, None)
     
     def _fatal_error(self, exception, message='Fatal error on transport'):
         """
@@ -1514,55 +1665,6 @@ class _SelectorSocketTransport(object):
                 server._detach()
                 self.server = None
     
-    def get_write_buffer_size(self):
-        """
-        Return the current size of the write buffer.
-        
-        Returns
-        -------
-        get_write_buffer_size : `int`
-        """
-        return len(self._buffer)
-    
-    def pause_reading(self):
-        """
-        Pauses the receiving end.
-        
-        No data will be passed to the respective protocol's ``.data_received`` method until ``.resume_reading`` is
-        called.
-        
-        Returns
-        -------
-        reading_paused : `bool`
-            Whether reading was paused.
-        """
-        if self.closing or self._paused:
-            return False
-        
-        self._paused = True
-        self.loop.remove_reader(self._socket_fd)
-        return True
-    
-    def resume_reading(self):
-        """
-        Resumes the receiving end.
-        
-        Data received will once again be passed to the respective protocol's ``.data_received`` method.
-        
-        Returns
-        -------
-        reading_resume : `bool`
-            Whether reading was resumed.
-        """
-        if not self._paused:
-            return False
-        
-        self._paused = False
-        if not self.closing:
-            self.loop.add_reader(self._socket_fd, self._read_ready)
-        
-        return True
-    
     def _read_ready(self):
         """
         Added as a read callback on the respective event loop to be called when the data is received on the pipe.
@@ -1587,55 +1689,6 @@ class _SelectorSocketTransport(object):
                 self.loop.remove_reader(self._socket_fd)
             else:
                 self.close()
-    
-    def write(self, data):
-        """
-        Write the given `data` to the transport.
-        
-        Do not blocks, but queues up the data instead to be sent as can.
-        
-        Parameters
-        ----------
-        data : `bytes-like`
-            The data to send.
-        
-        Raises
-        ------
-        TypeError
-            If `data` was not given as `bytes-like`.
-        RuntimeError : `bool`
-            If ``.write_eof`` was already called.
-        """
-        if not isinstance(data, (bytes, bytearray, memoryview)):
-            raise TypeError(f'data parameter must should be `bytes-like`, got {data.__class__.__name__}.')
-        if self._at_eof:
-            raise RuntimeError('Cannot call `.write` after `.write_eof`')
-        
-        if not data:
-            return
-        
-        if self._connection_lost:
-            return
-        
-        if not self._buffer:
-            # Optimization: try to send now.
-            try:
-                n = self.socket.send(data)
-            except (BlockingIOError, InterruptedError):
-                pass
-            except BaseException as err:
-                self._fatal_error(err, 'Fatal write error on socket transport')
-                return
-            else:
-                data = data[n:]
-                if not data:
-                    return
-            # Not all was written; register write handler.
-            self.loop.add_writer(self._socket_fd, self._write_ready)
-        
-        # Add it to the buffer.
-        self._buffer.extend(data)
-        self._maybe_pause_protocol()
 
     def _write_ready(self):
         """
@@ -1666,32 +1719,6 @@ class _SelectorSocketTransport(object):
                 
                 elif self._at_eof:
                     self.socket.shutdown(module_socket.SHUT_WR)
-    
-    def write_eof(self):
-        """
-        Writes eof to the subprocess pipe's transport's protocol if applicable.
-        
-        By default ``SubprocessStreamWriter``'s transport is ``UnixWritePipeTransport``, what will call connection lost
-        as well when the write buffer is empty.
-        """
-        if self._at_eof:
-            return
-        
-        self._at_eof = True
-        
-        if not self._buffer:
-            self.socket.shutdown(module_socket.SHUT_WR)
-    
-    def can_write_eof(self):
-        """
-        Return whether the transport supports ``.write_eof``.
-        
-        Returns
-        -------
-        can_write_eof : `bool`
-            ``_SelectorSocketTransport`` instances always return `True`.
-        """
-        return True
 
 
 class _SelectorDatagramTransport(object):
@@ -1794,6 +1821,70 @@ class _SelectorDatagramTransport(object):
             # only wake up the waiter when connection_made() has been called
             loop.call_soon(Future.set_result_if_pending, waiter, None)
     
+    def __repr__(self):
+        """Returns the transport's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+                ]
+        
+        if self.socket is None:
+            result.append(' closed')
+        elif self.closing:
+            result.append(' closing')
+        
+        result.append(' fd=')
+        result.append(repr(self._socket_fd))
+        
+        loop = self.loop
+        #is the transport open?
+        if (loop is not None) and loop.running:
+            try:
+                key = loop.selector.get_key(self._socket_fd)
+            except KeyError:
+                polling = 0
+            else:
+                polling = key.events&selectors.EVENT_READ
+            
+            result.append(' read=')
+            if polling:
+                state = 'polling'
+            else:
+                state = 'idle'
+            result.append(state)
+            
+            try:
+                key = loop.selector.get_key(self._socket_fd)
+            except KeyError:
+                polling = 0
+            else:
+                polling = key.events&selectors.EVENT_WRITE
+            
+            result.append(' write=<')
+            if polling:
+                state = 'polling'
+            else:
+                state = 'idle'
+            result.append(state)
+            
+            result.append(', buffer_size=')
+            
+            buffer_size = self.get_write_buffer_size()
+            result.append(str(buffer_size))
+            result.append('>')
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
+    def __del__(self):
+        """
+        Closes the ``._SelectorSocketTransport``'s ``.socket`` if not yet closed.
+        """
+        socket = self.socket
+        if (socket is not None):
+            socket.close()
+    
     def get_extra_info(self, name, default=None):
         """
         Gets optional transport information.
@@ -1810,7 +1901,55 @@ class _SelectorDatagramTransport(object):
         info : `default`, `Any`
         """
         return self._extra.get(name, default)
-
+    
+    def get_protocol(self):
+        """
+        Gets the transport's actual protocol.
+        
+        Returns
+        -------
+        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
+            Asynchronous protocol implementation.
+        """
+        return self.protocol
+    
+    def set_protocol(self, protocol):
+        """
+        Sets a new protocol to the transport.
+        
+        Parameters
+        ----------
+        protocol : `Any`
+            Asynchronous protocol implementation.
+        """
+        self.protocol = protocol
+    
+    def is_closing(self):
+        """
+        Returns whether the transport is closing.
+        
+        Returns
+        -------
+        is_closing : `bool`
+        """
+        return self.closing
+    
+    def close(self):
+        """
+        Starts the shutdown process of the transport.
+        
+        If the transport is already closing, does nothing.
+        """
+        if self.closing:
+            return
+        
+        self.closing = True
+        self.loop.remove_reader(self._socket_fd)
+        if not self._buffer:
+            self._connection_lost += 1
+            self.loop.remove_writer(self._socket_fd)
+            self.loop.call_soon(self._call_connection_lost, None)
+    
     def pause_reading(self):
         """
         Pauses the receiving end.
@@ -1994,69 +2133,9 @@ class _SelectorDatagramTransport(object):
         self._set_write_buffer_limits(high=high, low=low)
         self._maybe_pause_protocol()
     
-    def __del__(self):
-        """
-        Closes the ``._SelectorSocketTransport``'s ``.socket`` if not yet closed.
-        """
-        socket = self.socket
-        if socket is not None:
-            socket.close()
+
     
-    def __repr__(self):
-        """Returns the transport's representation."""
-        result = [
-            '<',
-            self.__class__.__name__,
-                ]
-        
-        if self.socket is None:
-            result.append(' closed')
-        elif self.closing:
-            result.append(' closing')
-        
-        result.append(' fd=')
-        result.append(repr(self._socket_fd))
-        
-        loop = self.loop
-        #is the transport open?
-        if (loop is not None) and loop.running:
-            try:
-                key = loop.selector.get_key(self._socket_fd)
-            except KeyError:
-                polling = 0
-            else:
-                polling = key.events&selectors.EVENT_READ
-            
-            result.append(' read=')
-            if polling:
-                state = 'polling'
-            else:
-                state = 'idle'
-            result.append(state)
-            
-            try:
-                key = loop.selector.get_key(self._socket_fd)
-            except KeyError:
-                polling = 0
-            else:
-                polling = key.events&selectors.EVENT_WRITE
-            
-            result.append(' write=<')
-            if polling:
-                state = 'polling'
-            else:
-                state = 'idle'
-            result.append(state)
-            
-            result.append(', buffer_size=')
-            
-            buffer_size = self.get_write_buffer_size()
-            result.append(str(buffer_size))
-            result.append('>')
-        
-        result.append('>')
-        
-        return ''.join(result)
+
     
     def abort(self):
         """
@@ -2066,53 +2145,8 @@ class _SelectorDatagramTransport(object):
         """
         self._force_close(None)
     
-    def set_protocol(self, protocol):
-        """
-        Sets a new protocol to the transport.
-        
-        Parameters
-        ----------
-        protocol : `Any`
-            Asynchronous protocol implementation.
-        """
-        self.protocol = protocol
-    
-    def get_protocol(self):
-        """
-        Gets the transport's actual protocol.
-        
-        Returns
-        -------
-        protocol : `None`, ``SubprocessWritePipeProtocol` or  `Any`
-            Asynchronous protocol implementation.
-        """
-        return self.protocol
-    
-    def is_closing(self):
-        """
-        Returns whether the transport is closing.
-        
-        Returns
-        -------
-        is_closing : `bool`
-        """
-        return self.closing
-    
-    def close(self):
-        """
-        Starts the shutdown process of the transport.
-        
-        If the transport is already closing, does nothing.
-        """
-        if self.closing:
-            return
-        
-        self.closing = True
-        self.loop.remove_reader(self._socket_fd)
-        if not self._buffer:
-            self._connection_lost += 1
-            self.loop.remove_writer(self._socket_fd)
-            self.loop.call_soon(self._call_connection_lost, None)
+
+
     
     def _fatal_error(self, exception, message='Fatal error on transport'):
         """

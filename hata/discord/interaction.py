@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCo
     'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes')
 
 from .bases import DiscordEntity
-from .preinstanced import ApplicationCommandOptionType
+from .preinstanced import ApplicationCommandOptionType, InteractionType
 from .client_core import APPLICATION_COMMANDS
 from .preconverters import preconvert_preinstanced_type
 from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
@@ -12,7 +12,9 @@ from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAM
     APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
-
+from .channel import create_partial_channel
+from .user import User
+from .role import Role
 
 from ..backend.utils import modulize
 
@@ -529,18 +531,18 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         --------
         ```
         >>> from hata import ApplicationCommand
-        >>> application_command = ApplicationCommand('CakeLover', 'Sends a random cake recipe OwO')
+        >>> application_command = ApplicationCommand('cake-lover', 'Sends a random cake recipe OwO')
         >>> application_command
-        <ApplicationCommand partial name='CakeLover', description='Sends a random cake recipe OwO'>
+        <ApplicationCommand partial name='cake-lover', description='Sends a random cake recipe OwO'>
         >>> # no code stands for str(application_command).
         >>> f'{application_command}'
         'CakeLover'
         >>> # 'd' stands for display name.
         >>> f'{application_command:d}'
-        'cakelover'
+        'cake-lover'
         >>> # 'm' stands for mention.
         >>> f'{application_command:m}'
-        '</CakeLover:0>'
+        '</cake-lover:0>'
         >>> # 'c' stands for created at.
         >>> f'{application_command:c}'
         '2021-01-03 20:17:36'
@@ -1223,32 +1225,128 @@ class ApplicationCommandInteraction(DiscordEntity):
     
     Attributes
     ----------
-    id : int`
+    id : `int`
         The represented application command's identifier number.
     name : `str`
         The name of the command. It's length can be in range [1:32].
     options : `None` or `list` of ApplicationCommandInteractionOption
         The parameters and values from the user if any. Defaults to `None` if non is received.
+    resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
+        Resolved received channels stored by their identifier as keys if any.
+    resolved_roles : `None` or `dict` of (`int`, ``Role``) items
+        Resolved received roles stored by their identifier as keys if any.
+    resolved_users : `None` or `dict` of (`int`, ``User`` or ``Client``) items
+        Resolved received users stored by their identifier as keys if any.
     """
-    __slots__ = ('id', 'name', 'options')
-    def __init__(self, data):
+    __slots__ = ('id', 'name', 'options', 'resolved_channels', 'resolved_roles', 'resolved_users')
+    def __new__(cls, data, guild, cached_users):
         """
         Creates a new ``ApplicationCommandInteraction`` from the data received from Discord.
         
         Parameters
         ----------
-        data : `dict of (`str`, `Any`) items
+        data : `dict` of (`str`, `Any`) items
             The received application command interaction data.
+        guild : `None` or ``Guild``
+            The respective guild.
+        cached_users : `None` or `list` of (``User``, ``Client``)
+            Users, which might need temporary caching.
+        
+        Returns
+        -------
+        self : ``ApplicationCommandInteraction``
+            The created object.
+        cached_users : `None` or `list` of (``User``, ``Client``)
+            Users, which might need temporary caching.
         """
-        self.id = int(data['id'])
-        self.name = data['name']
+        try:
+            resolved_data = data['resolved']
+        except KeyError:
+            resolved_users = None
+            resolved_channels = None
+            resolved_roles = None
+        else:
+            try:
+                resolved_user_datas = resolved_data['users']
+            except KeyError:
+                resolved_users = None
+            else:
+                if resolved_user_datas:
+                    try:
+                        resolved_guild_profile_datas = resolved_data['members']
+                    except KeyError:
+                        resolved_guild_profile_datas = None
+                    
+                    resolved_users = {}
+                    
+                    for user_id, user_data in resolved_user_datas.items():
+                        if resolved_guild_profile_datas is None:
+                            guild_profile_data = None
+                        else:
+                            guild_profile_data = resolved_guild_profile_datas.get(user_id)
+                        
+                        if (guild_profile_data is not None):
+                            user_data['member'] = guild_profile_data
+                        
+                        user = User(user_data, guild)
+                        resolved_users[user.id] = user
+                        
+                        if (guild_profile_data is not None) and (cached_users is not None) and \
+                                (user not in cached_users):
+                            cached_users.append(user)
+                    
+                else:
+                    resolved_users = None
+            
+            try:
+                resolved_channel_datas = resolved_data['channels']
+            except KeyError:
+                resolved_channels = None
+            else:
+                if resolved_channel_datas:
+                    resolved_channels = {}
+                    
+                    for channel_data in resolved_channel_datas.values():
+                        channel = create_partial_channel(channel_data, guild)
+                        if (channel is not None):
+                            resolved_channels[channel.id] = channel
+                    
+                    if not resolved_channels:
+                        resolved_channels = None
+                else:
+                    resolved_channels = None
+            
+            try:
+                resolved_role_datas = resolved_data['roles']
+            except KeyError:
+                resolved_roles = None
+            else:
+                if resolved_role_datas:
+                    resolved_roles = {}
+                    for role_data in resolved_role_datas.values():
+                        role = Role(role_data, guild)
+                        resolved_roles[role.id] = role
+                else:
+                    resolved_roles = None
+        
+        id_ = int(data['id'])
+        name = data['name']
         
         option_datas = data.get('options')
         if (option_datas is None) or (not option_datas):
             options = None
         else:
             options = [ApplicationCommandInteractionOption(option_data) for option_data in option_datas]
+        
+        self = object.__new__(cls)
+        self.id = id_
+        self.name = name
         self.options = options
+        self.resolved_users = resolved_users
+        self.resolved_channels = resolved_channels
+        self.resolved_roles = resolved_roles
+        
+        return self, cached_users
     
     def __repr__(self):
         """Returns the application command interaction's representation."""
@@ -1301,7 +1399,7 @@ class ApplicationCommandInteractionOption(object):
         The given value by the user. Should be always converted to the expected type.
     """
     __slots__ = ('name', 'options', 'type', 'value')
-    def __init__(self, data):
+    def __new__(cls, data):
         """
         Creates a new ``ApplicationCommandInteractionOption`` instance from the data received from Discord.
         
@@ -1310,15 +1408,17 @@ class ApplicationCommandInteractionOption(object):
         data : `dict` of (`str`, `Any`) items
             The received application command interaction option data.
         """
-        self.name = data['name']
+        name = data['name']
         
         option_datas = data.get('options')
         if (option_datas is None) or (not option_datas):
             options = None
         else:
             options = [ApplicationCommandInteractionOption(option_data) for option_data in option_datas]
-        self.options = options
         
+        self = object.__new__(cls)
+        self.name = name
+        self.options = options
         self.type = ApplicationCommandOptionType.get(data.get('type', 0))
         
         value = data.get('value')
@@ -1326,6 +1426,8 @@ class ApplicationCommandInteractionOption(object):
             value = str(value)
         
         self.value = value
+        
+        return self
     
     def __repr__(self):
         """Returns the application command interaction option's representation."""
@@ -1370,6 +1472,12 @@ class ApplicationCommandInteractionOption(object):
         result.append('>')
         
         return ''.join(result)
+
+
+INTERACTION_TYPE_TABLE = {
+    InteractionType.ping.value: None,
+    InteractionType.application_command.value: ApplicationCommandInteraction,
+        }
 
 del DiscordEntity
 del modulize

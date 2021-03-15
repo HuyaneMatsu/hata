@@ -705,12 +705,14 @@ class CodeBlockConverter(object):
     
     Attributes
     ----------
+    ender : `str`
+        The last line of the code block.
     lines : `list` of `str`
         The lines of the code block.
-    parentheses : `str`
-        The starter and the ender line.
+    starter : `str`
+        The first line of the code block.
     """
-    __slots__ = ('lines', 'parentheses', )
+    __slots__ = ('ender', 'lines', 'starter')
     def __new__(cls, code_block, indent_level, optimal_fit, builder_context):
         """
         Creates a new code block to text converter.
@@ -735,7 +737,15 @@ class CodeBlockConverter(object):
         indent = builder_context.indent*indent_level
         self = object.__new__(cls)
         self.lines = [f'{indent}{line}\n' for line in code_block.lines]
-        self.parentheses = indent+'```'
+        ender = indent+'```'
+        language = code_block.language
+        if language is None:
+            starter = ender
+        else:
+            starter = ender+language
+        
+        self.starter = starter
+        self.ender = ender
         yield self
     
     @property
@@ -748,9 +758,9 @@ class CodeBlockConverter(object):
         length : `int`
         """
         lines = self.lines
-        length = len(self.parentheses)<<1
+        length = len(self.starter)+len(self.ender)
         for line in lines:
-            length +=len(line)
+            length += len(line)
         
         return length
     
@@ -766,7 +776,7 @@ class CodeBlockConverter(object):
         length = 0
         for line in self.lines:
             if line.startswith('>>>'):
-                length +=1
+                length += 1
         
         return length
     
@@ -806,7 +816,7 @@ class CodeBlockConverter(object):
         return 2+len(self.lines)
     
     @classmethod
-    def _create_remove_empty_lines(cls, lines, parentheses):
+    def _create_remove_empty_lines(cls, lines, starter, ender):
         """
         Creates a new code block from the given lines and indent level.
         
@@ -816,9 +826,11 @@ class CodeBlockConverter(object):
         ----------
         lines : `list` of `str`
             The code block's lines.
-        parentheses : `str`
-            The starter and the ender line.
-
+        starter : `str`
+            The first line of the code block.
+        ender : `str`
+            The last line of the code block
+        
         Returns
         -------
         self : ``CodeBlockConverter``
@@ -844,7 +856,8 @@ class CodeBlockConverter(object):
         
         self = object.__new__(cls)
         self.lines = lines
-        self.parentheses = parentheses
+        self.starter = starter
+        self.ender = ender
         return self
     
     def _do_interactive_break(self, number_of_rows):
@@ -869,7 +882,7 @@ class CodeBlockConverter(object):
         while True:
             if index == limit:
                 code_block_1 = self
-                self._create_remove_empty_lines([], self.parentheses)
+                self._create_remove_empty_lines([], self.starter, self.ender)
                 break
             
             line = lines[index]
@@ -882,8 +895,8 @@ class CodeBlockConverter(object):
                 index +=1
                 continue
             
-            code_block_1 = self._create_remove_empty_lines(lines[:index], self.parentheses)
-            code_block_2 = self._create_remove_empty_lines(lines[index:], self.parentheses)
+            code_block_1 = self._create_remove_empty_lines(lines[:index], self.starter, self.ender)
+            code_block_2 = self._create_remove_empty_lines(lines[index:], self.starter, self.ender)
             break
         
         return code_block_1, code_block_2
@@ -925,7 +938,7 @@ class CodeBlockConverter(object):
         while True:
             if index == limit:
                 code_block_1 = self
-                self._create_remove_empty_lines([], self.parentheses)
+                self._create_remove_empty_lines([], self.starter, self.ender)
                 break
             
             line = lines[index]
@@ -943,8 +956,8 @@ class CodeBlockConverter(object):
                 index +=1
                 continue
             
-            code_block_1 = self._create_remove_empty_lines(lines[:index], self.parentheses)
-            code_block_2 = self._create_remove_empty_lines(lines[index:], self.parentheses)
+            code_block_1 = self._create_remove_empty_lines(lines[:index], self.starter, self.ender)
+            code_block_2 = self._create_remove_empty_lines(lines[index:], self.starter, self.ender)
             break
         
         return code_block_1, code_block_2
@@ -963,8 +976,8 @@ class CodeBlockConverter(object):
         code_block_1 : ``CodeBlockConverter``
         code_block_2 : ``CodeBlockConverter``
         """
-        code_block_1 = self._create_remove_empty_lines(self.lines[:number_of_rows], self.parentheses)
-        code_block_2 = self._create_remove_empty_lines(self.lines[number_of_rows:], self.parentheses)
+        code_block_1 = self._create_remove_empty_lines(self.lines[:number_of_rows], self.starter, self.ender)
+        code_block_2 = self._create_remove_empty_lines(self.lines[number_of_rows:], self.starter, self.ender)
         return code_block_1, code_block_2
     
     def do_break(self, number_of_chars):
@@ -1057,10 +1070,9 @@ class CodeBlockConverter(object):
         to_extend : `list` of `str`
             A list to what the code block should yield it's lines.
         """
-        parentheses = self.parentheses
-        to_extend.append(parentheses)
+        to_extend.append(self.starter)
         to_extend.extend(self.lines)
-        to_extend.append(parentheses)
+        to_extend.append(self.ender)
     
     def __repr__(self):
         """Returns the code block's representation."""

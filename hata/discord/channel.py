@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelPrivate', 'ChannelStore',
-    'ChannelText', 'ChannelTextBase', 'ChannelThread', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object')
+    'ChannelText', 'ChannelTextBase', 'ChannelThread', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object',
+    'ChannelGuildUndefined',)
 
 import re
 from collections import deque
@@ -82,10 +83,7 @@ def create_partial_channel(data, partial_guild=None):
     except KeyError:
         pass
     
-    try:
-        cls = CHANNEL_TYPES[data['type']]
-    except IndexError:
-        return None
+    cls = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
     
     channel = cls._from_partial_data(data, channel_id, partial_guild)
     CHANNELS[channel_id] = channel
@@ -4795,7 +4793,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
             except KeyError:
                 pass
             else:
-                type_ = preconvert_int(type_, 'type', 0, len(CHANNEL_TYPES)-1)
+                type_ = preconvert_int(type_, 'type', 0, 255)
                 processable.append(('type', type_))
             
             if kwargs:
@@ -4831,18 +4829,16 @@ class ChannelGuildUndefined(ChannelGuildBase):
         
         return channel
 
-CHANNEL_TYPES = (
-    ChannelText,
-    ChannelPrivate,
-    ChannelVoice,
-    ChannelGroup,
-    ChannelCategory,
-    ChannelText,
-    ChannelStore,
-    ChannelGuildUndefined,
-    ChannelGuildUndefined,
-    ChannelThread,
-        )
+CHANNEL_TYPES = {
+    0: ChannelText,
+    1: ChannelPrivate,
+    2: ChannelVoice,
+    3: ChannelGroup,
+    4: ChannelCategory,
+    5: ChannelText,
+    6: ChannelStore,
+    9: ChannelThread,
+        }
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
         user_limit=None, region=None, category=None, guild=None):
@@ -4918,11 +4914,11 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         if __debug__:
             if type_ < 0:
                 raise AssertionError(f'`type_` cannot be negative value, got `{type_!r}`.')
-            if type_ >= len(CHANNEL_TYPES):
-                raise AssertionError(f'`type_` exceeded the defined channel type limit: `{len(CHANNEL_TYPES)-1!r}`, '
+            if type_ not in CHANNEL_TYPES:
+                raise AssertionError(f'`type_` is not in an of the existing channel types: {set(CHANNEL_TYPES)!r}, '
                     f'got `{type_}`.')
         
-        channel_type = CHANNEL_TYPES[type_]
+        channel_type = CHANNEL_TYPES.get(type_, ChannelGuildUndefined)
         channel_type_value = type_
     
     elif issubclass(type_, ChannelBase):

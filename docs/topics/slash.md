@@ -550,6 +550,56 @@ async def why(client, event):
 
 Both works completely fine.
 
+##### Aborting command
+
+Commands may be aborted using the `abort` function. It leaves from the command's execution and sends the passed
+content familiarly to `SlashResponse`. The one difference is, that abort should be mainly used to send end-command
+error message, so if only string `content` is passed to abort, it will show up only for the invoking user.
+
+```py
+from hata import DiscordException, ERROR_CODES, Embed
+from hata.ext.slash import abort
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def is_banned(client, event,
+        user: ('user', 'Who should I check?')
+            ):
+    """Checks whether the user is banned."""
+    if not event.user_permissions.can_ban_users:
+        abort('You need to have `ban users` permissions to do this.')
+    
+    if not event.channel.cached_permissions_for(client).can_ban_users:
+        abort('I need to have `ban users` permissions to do this.')
+    
+    yield # Acknowledge the event.
+    
+    try:
+        ban_entry = await client.guild_ban_get(event.guild, user)
+    except DiscordException as err:
+        if err.code == ERROR_CODES.unknown_ban:
+            ban_entry = None
+        else:
+            raise
+    
+    embed = Embed(f'Ban entry for {user:f}').add_thumbnail(user.avatar_url)
+    
+    if ban_entry is None:
+        embed.description = 'The user **NOT YET** banned.'
+    
+    else:
+        embed.description = 'The user is banned.'
+        
+        reason = ban_entry.reason
+        if reason is None:
+            reason = '*No reason was specified.*'
+        
+        embed.add_field('Reason:', reason)
+    
+    yield embed
+```
+
+> We need some iteration from Discord, till this feature will work at every case as expected.
+
 ## Non-global commands
 
 The slash extension supports non-global commands, which are neither global nor normal guild bound commands. These

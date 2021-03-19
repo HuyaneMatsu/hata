@@ -34,7 +34,7 @@ setup(
         'hata.ext.slash',
             ],
     url = 'https://github.com/HuyaneMatsu/hata',
-    license = 'Apache 2.0',
+    license = 'MIT',
     author = 'HuyaneMatsu',
     author_email = 're.ism.tm@gmail.com',
     description = 'A powerful asynchronous library for creating Discord bots in Python.',
@@ -43,7 +43,7 @@ setup(
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         
-        'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: MIT License',
         
         'Intended Audience :: Developers',
         

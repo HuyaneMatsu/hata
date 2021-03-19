@@ -228,7 +228,7 @@ class SubterraneanHelpCommand(object):
     -----
     After you did setup your client, just add the command to your client.
     
-    ```
+    ```py
     from hata import Client
     from hata.ext.commands import setup_ext_commands
     from hata.ext.commands.helps.subterranean import SubterraneanHelpCommand
@@ -275,7 +275,7 @@ class SubterraneanHelpCommand(object):
     +-------------------+-------------------+
     
     Here is an other example using `callable` color and `embed_postprocessor`:
-    ```
+    ```py
     from hata import Client
     from hata.ext.commands import setup_ext_commands
     from hata.ext.commands.helps.subterranean import SubterraneanHelpCommand

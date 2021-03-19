@@ -97,7 +97,7 @@ ahead and start python with `-i` option, then interact with the clients from you
 
 To install the package use:
 
-``` shell
+```shell
 # Linux/OS X
 $ python3 -m pip install hata
 

@@ -24,7 +24,7 @@ Usage
 
 The following example answers on `ping` message.
 
-```
+```py
 from hata import Client
 
 Nue = Client('TOKEN')
@@ -46,7 +46,7 @@ Nue.start()
 
 An improved example using the `commands` extension to handle common use cases.
 
-```
+```py
 from hata import Client
 from hata.ext.commands import setup_ext_commands
 
@@ -66,7 +66,7 @@ Saki.start()
 
 Or use slash commands!
 
-```
+```py
 from hata import Client, Guild
 from hata.ext.slash import setup_ext_slash
 

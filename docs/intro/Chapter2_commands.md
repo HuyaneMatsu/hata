@@ -91,7 +91,7 @@ additionally convert to user object inside our command.
 
 
 For example we'll annotate it as User and have its default value of None:
-```
+```py
 from hata import User
 
 @NekoBot.commands
@@ -135,7 +135,7 @@ If you do not give annotations for the extra parameters then every one of them (
 Although you can use `*args` to get as much object of the given as possible.
 If at the case of `*args` no annotation is given then instead of `rest` parser it will be picked up as `str`.
 
-```
+```py
 @NekoBot.commands
 async def separate(client, message, *args):
     if not args:
@@ -473,7 +473,7 @@ The thing is that checks can be added not only to commands and in such cases you
 In regular cases where check is added to a command then `command` will be instance of `Command`.
 
 Example of check handler with `owner_only` check:
-```
+```py
 async def owner_only_handler(client, message, command, check):
     await client.message_create(message.channel, f'You must be the owner of the bot to use the `{command}` command.')
 

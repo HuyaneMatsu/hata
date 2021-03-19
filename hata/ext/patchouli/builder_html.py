@@ -5,6 +5,7 @@ from ...backend.quote import quote
 
 from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
     GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription, GravedBlockQuote
+from .highlight import HighlightContext, PYTHON_IDENTIFIERS
 
 def create_relative_link(source, target):
     """
@@ -292,15 +293,23 @@ def code_block_serializer(code_block, object_, path, linker):
     """
     yield '<div class="code_block"><pre>'
     lines = code_block.lines
-    index = 0
-    limit = len(lines)
-    while True:
-        line = lines[index]
-        yield html_escape(line)
-        index += 1
-        if index == limit:
-            break
-        yield '<br>'
+    
+    language = code_block.language
+    if (language is None) or (language not in PYTHON_IDENTIFIERS):
+        index = 0
+        limit = len(lines)
+        while True:
+            line = lines[index]
+            yield html_escape(line)
+            index += 1
+            if index == limit:
+                break
+            yield '<br>'
+    else:
+        context = HighlightContext(lines)
+        context.match()
+        yield from context.generate_highlighted()
+    
     yield '</pre></div>'
 
 

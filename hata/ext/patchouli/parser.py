@@ -731,7 +731,7 @@ class TextCodeBlock(object):
         self : `None` or ``TextCodeBlock``
             Returns `None` if would create an empty code block.
         """
-        line = lines[0]
+        line = lines[start]
         if len(line) == 3:
             language = None
             first_line = None

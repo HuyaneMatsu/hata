@@ -10145,7 +10145,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `channel was not given neither as ``ChannelText``, neither as `int` instance.
+            If `channel` was not given neither as ``ChannelText``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -10156,15 +10156,15 @@ class Client(UserBase):
             +---------------+-----------------------+---------------------------------------------------------------+
             | Error code    | Internal name         | Reason                                                        |
             +===============+=======================+===============================================================+
+            | 10003         | unknown_channel       | The channel not exists.                                       |
+            +---------------+-----------------------+---------------------------------------------------------------+
+            | 50001         | invalid_access        | The bot is not in the channel's guild.                        |
+            +---------------+-----------------------+---------------------------------------------------------------+
             | 50013         | invalid_permissions   | You need `manage_webhooks` permission.                        |
             +---------------+-----------------------+---------------------------------------------------------------+
             | 60003         | MFA_required          | You need to have multi-factor authorization to do this        |
             |               |                       | operation (guild setting dependent). For bot accounts it      |
             |               |                       | means their owner needs mfa.                                  |
-            +---------------+-----------------------+---------------------------------------------------------------+
-            | 10003         | unknown_channel       | The channel not exists.                                       |
-            +---------------+-----------------------+---------------------------------------------------------------+
-            | 50001         | invalid_access        | The bot is not in the channel's guild.                        |
             +---------------+-----------------------+---------------------------------------------------------------+
             
             > Discord drops `Forbidden (403), code=50013: Missing Permissions` instead of

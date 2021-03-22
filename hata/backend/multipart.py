@@ -131,7 +131,7 @@ class PayloadBase(object):
         self.headers = headers
         self.content_type = content_type
     
-    def set_content_disposition(self, disposition_type, params, quote_fields=True):
+    def set_content_disposition(self, disposition_type, parameters, quote_fields=True):
         """
         Sets content disposition header to the payload.
         
@@ -139,14 +139,14 @@ class PayloadBase(object):
         ----------
         disposition_type : `str`
             The disposition's type.
-        params : `dict` of (`str`, `str`) items
+        parameters : `dict` of (`str`, `str`) items
             Additional parameters.
         quote_fields : `bool`
             Whether field values should be quoted.
         """
         headers = self.headers
         headers.pop_all(CONTENT_DISPOSITION, None)
-        headers[CONTENT_DISPOSITION] = content_disposition_header(disposition_type, params, quote_fields=quote_fields)
+        headers[CONTENT_DISPOSITION] = content_disposition_header(disposition_type, parameters, quote_fields=quote_fields)
     
     async def write(self, writer):
         """
@@ -254,7 +254,7 @@ class StringPayload(BytesPayload):
                 kwargs['content_type'] = content_type
             else:
                 mime_type = MimeType(content_type)
-                encoding = mime_type.params.get('charset', 'utf-8')
+                encoding = mime_type.parameters.get('charset', 'utf-8')
             
             kwargs['encoding'] = encoding
         
@@ -414,7 +414,7 @@ class TextIOPayload(IOBasePayload):
                 kwargs['content_type'] = content_type
             else:
                 mime_type = MimeType(content_type)
-                encoding = mime_type.params.get('charset', 'utf-8')
+                encoding = mime_type.parameters.get('charset', 'utf-8')
             
             kwargs['encoding'] = encoding
         else:
@@ -706,17 +706,17 @@ class BodyPartReaderPayload(PayloadBase):
         """
         PayloadBase.__init__(self, data, kwargs)
         
-        params = {}
+        parameters = {}
         name = data.name
         if (name is not None):
-            params['name'] = name
+            parameters['name'] = name
         
         filename = data.filename
         if (filename is not None):
-            params['filename'] = filename
+            parameters['filename'] = filename
         
-        if params:
-            self.set_content_disposition('attachment', params)
+        if parameters:
+            self.set_content_disposition('attachment', parameters)
     
     async def write(self, writer):
         """
@@ -740,18 +740,18 @@ class BodyPartReaderPayload(PayloadBase):
 class MimeType(object):
     # Parses a MIME type into its components
     
-    __slots__ = ('params', 'sub_type', 'suffix', 'type', )
+    __slots__ = ('parameters', 'sub_type', 'suffix', 'type', )
     def __init__(self, mime_type):
         
         if (mime_type is None) or (not mime_type):
             self.type = ''
             self.sub_type = ''
             self.suffix = ''
-            self.params = {}
+            self.parameters = {}
             return
         
         parts = mime_type.split(';')
-        params = multidict()
+        parameters = multidict()
         for item in parts[1:]:
             if not item:
                 continue
@@ -761,7 +761,7 @@ class MimeType(object):
                 key = item
                 value = ''
             
-            params[key.strip().lower()] = value.strip(' "')
+            parameters[key.strip().lower()] = value.strip(' "')
         
         
         full_type = parts[0].strip().lower()
@@ -782,72 +782,179 @@ class MimeType(object):
         self.type = type_
         self.sub_type = sub_type
         self.suffix = suffix
-        self.params = params
+        self.parameters = parameters
     
     def __repr__(self):
         return (f'<{self.__class__.__name__} type={self.type!r} sub_type={self.sub_type!r} suffix={self.suffix!r} '
-            f'params={self.params!r}>')
+            f'parameters={self.parameters!r}>')
 
     __str__ = __repr__
 
 
+def _is_continuous_parameter(string):
+    """
+    Returns whether the content disposition parameter is continuous.
+    
+    Parameters
+    ----------
+    string : `str`
+        The string to check.
+    
+    Returns
+    -------
+    is_continuous_parameter : `bool`
+    """
+    pos = string.find('*')
+    if pos == -1:
+        return False
+    
+    pos += 1
+    
+    if string.endswith('*'):
+        substring = string[pos:-1]
+    else:
+        substring = string[pos:]
+    
+    return substring.isdigit()
+
+def _is_token(string):
+    """
+    Returns whether the given string can be a token of a content disposition parameter.
+    
+    Parameters
+    ----------
+    string : `str`
+        The string to check.
+
+    Returns
+    -------
+    is_token : `bool`
+    """
+    if not string:
+        return False
+    
+    if TOKEN < set(string):
+        return False
+    
+    return True
+
+def _is_quoted(string):
+    """
+    Returns whether the given string is quoted inside of a content disposition parameter.
+    
+    Parameters
+    ----------
+    string : `str`
+        The string to check.
+
+    Returns
+    -------
+    is_quoted : `bool`
+    """
+    if (len(string) > 1) and (string[0] == '"') and (string[-1] == '"'):
+        return True
+    
+    return False
+
+def _is_extended_parameter(string):
+    """
+    Returns whether the given string is an extended parameter of a content disposition parameter.
+    
+    Parameters
+    ----------
+    string : `str`
+        The string to check.
+
+    Returns
+    -------
+    is_extended_parameter : `bool`
+    """
+    return string.endswith('*')
+
+def _is_rfc5987(string):
+    """
+    Returns whether the given string is an extended notation based on `rfc5987` using `'` signs to capture the language
+        parameter.
+    
+    Parameters
+    ----------
+    string : `str`
+        The string to check.
+
+    Returns
+    -------
+    is_rfc5987 : `bool`
+    """
+    return _is_token(string) and string.count("'") == 2
+    
+def _unescape(text, *, chars=''.join(map(re.escape, CHAR))):
+    """
+    Unescapes the given part of a content disposition parameter.
+    
+    Parameters
+    ----------
+    string : `str`
+        The string to check.
+
+    Returns
+    -------
+    is_rfc5987 : `bool`
+    """
+    return re.sub(f'\\\\([{chars}])', '\\1', text)
+
 def parse_content_disposition(header):
-    def is_token(string):
-        return string and TOKEN >= set(string)
-
-    def is_quoted(string):
-        return string[0] == string[-1] == '"'
-
-    def is_rfc5987(string):
-        return is_token(string) and string.count("'") == 2
-
-    def is_extended_param(string):
-        return string.endswith('*')
-
-    def is_continuous_param(string):
-        pos = string.find('*') + 1
-        if not pos:
-            return False
-        substring = string[pos:-1] if string.endswith('*') else string[pos:]
-        return substring.isdigit()
+    """
+    Parsers the content disposition headers.
     
-    def unescape(text, *, chars=''.join(map(re.escape, CHAR))):
-        return re.sub(f'\\\\([{chars}])', '\\1', text)
-    
+    Parameters
+    ----------
+    header : `str` header value.
+        The headers to pare content disposition headers from.
+
+    Returns
+    -------
+    disposition_type : `str` or `None`
+        The dispoisition's type if anything found.
+    parameters : `dict` of (`str`, `str`) items
+        The parsed out parameters.
+    """
+    # `aiohttp` does inline function definition, but since python every time redefines the function it causes big
+    # overhead. This is extremely true when using pypy, since pypy cannot optimize it.
     if not header:
         return None, {}
     
     disposition_type, *parts = header.split(';')
-    if not is_token(disposition_type):
+    if not _is_token(disposition_type):
         return None, {}
     
-    params = {}
+    parameters = {}
     while parts:
         item = parts.pop(0)
         
-        if '=' not in item:
-            return None, {}
+        if ('=' not in item):
+            return None, parameters
         
         key, value = item.split('=', 1)
         key = key.lower().strip()
         value = value.lstrip()
         
-        if key in params:
-            return None, {}
+        if key in parameters:
+            return None, parameters
         
-        if not is_token(key):
+        if not _is_token(key):
             continue
         
-        elif is_continuous_param(key):
-            if is_quoted(value):
-                value = unescape(value[1:-1])
-            elif not is_token(value):
+        elif _is_continuous_parameter(key):
+            if _is_quoted(value):
+                value = _unescape(value[1:-1])
+            elif not _is_token(value):
                 continue
         
-        elif is_extended_param(key):
-            if is_rfc5987(value):
+        elif _is_extended_parameter(key):
+            if _is_rfc5987(value):
                 encoding, _, value = value.split("'", 2)
-                encoding = encoding or 'utf-8'
+                if not encoding:
+                    encoding = 'utf-8'
             else:
                 continue
             
@@ -859,52 +966,77 @@ def parse_content_disposition(header):
         else:
             failed = True
             
-            if is_quoted(value):
-                value = unescape(value[1:-1].lstrip('\\/'))
-            elif is_token(value):
+            if _is_quoted(value):
+                value = _unescape(value[1:-1].lstrip('\\/'))
+            elif _is_token(value):
                 failed = False
             elif parts:
-                value_ = f'{value};{parts[0]}'
-                if is_quoted(value_):
+                joined_value = f'{value};{parts[0]}'
+                if _is_quoted(joined_value):
                     parts.pop(0)
-                    value = unescape(value_[1:-1].lstrip('\\/'))
+                    value = _unescape(joined_value[1:-1].lstrip('\\/'))
                     failed = False
             
             if failed:
                 return None, {}
         
-        params[key] = value
+        parameters[key] = value
     
-    return disposition_type.lower(), params
+    return disposition_type.lower(), parameters
 
 
-def content_disposition_filename(params, name='filename'):
-    name_suf = f'{name}*'
-    if not params:
+def content_disposition_filename(parameters, name='filename'):
+    """
+    Gets the file's name from content disposition parameters.
+    
+    Parameters
+    ----------
+    parameters : `dict` of (`str`, `str`) items
+        The content disposition parameters parsed from a header value.
+    name : `str`, Optional
+        File name to get. Defaults to `'filename'`.
+
+    Returns
+    -------
+    filename : `str` or `None`
+        The file's name if any.
+    """
+    if not parameters:
         return None
-    elif name_suf in params:
-        return params[name_suf]
-    elif name in params:
-        return params[name]
-    else:
-        parts = []
-        file_name_params = sorted((key, value) for key, value in params.items() if key.startswith('filename*'))
-        for index, (key, value) in enumerate(file_name_params):
-            _, tail = key.split('*', 1)
-            if tail.endswith('*'):
-                tail = tail[:-1]
-            if tail == str(index):
-                parts.append(value)
-            else:
-                break
-        if not parts:
-            return None
-        value = ''.join(parts)
-        if "'" in value:
-            encoding, _, value = value.split("'", 2)
-            encoding = encoding or 'utf-8'
-            return unquote(value, encoding, 'strict')
+    
+    name_suf = f'{name}*'
+    
+    try:
+        return parameters[name_suf]
+    except KeyError:
+        pass
+    
+    try:
+        return parameters[name]
+    except KeyError:
+        pass
+    
+    parts = []
+    file_name_parameters = sorted((key, value) for key, value in parameters.items() if key.startswith('filename*'))
+    for index, (key, value) in enumerate(file_name_parameters):
+        _, tail = key.split('*', 1)
+        if tail.endswith('*'):
+            tail = tail[:-1]
+        if tail == str(index):
+            parts.append(value)
+        else:
+            break
+    
+    if not parts:
+        return None
+    
+    value = ''.join(parts)
+    if "'" not in value:
         return value
+    
+    encoding, _, value = value.split("'", 2)
+    encoding = encoding or 'utf-8'
+    return unquote(value, encoding, 'strict')
 
 
 class MultipartWriter(PayloadBase):

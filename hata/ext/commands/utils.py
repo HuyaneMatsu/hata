@@ -1972,7 +1972,7 @@ class Cooldown(object):
     
     **Using a cooldown handler example:**
     
-    ```
+    ```py
     from hata import DiscordException, CancelledError, sleep, ERROR_CODES, KOKORO
     from hata.ext.commands import Cooldown
     
@@ -2066,7 +2066,7 @@ class Cooldown(object):
     
     **Using shared cooldowns:**
 
-    ```
+    ```py
     from hata import Embed
     from hata.ext.commands import Converter, ConverterFlag
     

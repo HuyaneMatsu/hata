@@ -526,7 +526,7 @@ class Lock(HataLock):
     
     Usage:
     
-        ```
+        ```py
         lock = Lock()
         ...
         await lock.acquire()
@@ -537,7 +537,7 @@ class Lock(HataLock):
         ```
     
     Context manager usage:
-        ```
+        ```py
         lock = Lock()
         ...
         async with lock:
@@ -546,7 +546,7 @@ class Lock(HataLock):
      
     Lock objects can be tested for locking state:
     
-        ```
+        ```py
         if not lock.locked():
            await lock.acquire()
         else:
@@ -813,7 +813,7 @@ def run(main, *, debug=None):
     
     Example:
     
-        ```
+        ```py
         async def main():
             await asyncio.sleep(1)
             print('hello')
@@ -871,7 +871,7 @@ async def staggered_race(coro_fns, delay, *, loop=None):
     * They should always raise an exception if they did not complete successfully. In particular, if they handle
     cancellation, they should probably reraise, like this::
     
-        ```
+        ```py
         try:
             # do work
         except asyncio.CancelledError:
@@ -1560,7 +1560,7 @@ async def wait(fs, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
     Returns two sets of Future: (done, pending).
     
     Usage:
-        ```
+        ```py
         done, pending = await asyncio.wait(fs)
         ```
     
@@ -1674,7 +1674,7 @@ def as_completed(fs, *, loop=None, timeout=None):
     coroutines), in the order in which and as soon as they complete.
     
     This differs from PEP 3148; the proper way to use this is:
-        ```
+        ```py
         for f in as_completed(fs):
             result = await f  # The 'await' may raise.
             # Use result.
@@ -1880,12 +1880,12 @@ def shield(arg, *, loop=None):
     Wait for a future, shielding it from cancellation.
     
     The statement
-        ```
+        ```py
         res = await shield(something())
         ```
     
     is exactly equivalent to the statement
-        ```
+        ```py
         res = await something()
         ```
         
@@ -1896,7 +1896,7 @@ def shield(arg, *, loop=None):
     
     If you want to completely ignore cancellation (not recommended) you can combine shield() with a try/except clause,
     as follows:
-        ```
+        ```py
         try:
             res = await shield(something())
         except CancelledError:
@@ -2169,7 +2169,7 @@ class AbstractChildWatcher:
     race condition in some implementations).
     
     Example:
-        ```
+        ```py
         with watcher:
             proc = subprocess.Popen("sleep 1")
             watcher.add_child_handler(proc.pid, callback)

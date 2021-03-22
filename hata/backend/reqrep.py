@@ -869,7 +869,7 @@ class ClientResponse(object):
         content_type = self.headers.get(CONTENT_TYPE, '').lower()
         mime_type = MimeType(content_type)
         
-        encoding = mime_type.params.get('charset')
+        encoding = mime_type.parameters.get('charset')
         if encoding is not None:
             try:
                 codecs.lookup(encoding)

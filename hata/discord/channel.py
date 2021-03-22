@@ -160,7 +160,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import ChannelText, now_as_id
         >>> channel = ChannelText.precreate(now_as_id(), name='GENERAL')
         >>> channel

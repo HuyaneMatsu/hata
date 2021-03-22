@@ -4690,7 +4690,7 @@ class Lock(object):
     
     The preferred way of using a hata lock is with `async with` statement:
     
-    ```
+    ```py
     lock = Lock(loop)
     
     async with lock:
@@ -4699,7 +4699,7 @@ class Lock(object):
     
     You can also manually acquire and release locks, like:
     
-    ```
+    ```py
     lock = Lock(loop)
     
     await lock.acquire()
@@ -5070,13 +5070,14 @@ class enter_executor(object):
     Async context manager for moving a ``Task``'s section's execution to an executor thread.
     
     Usage:
-    ```
+    ```py
     # Do async code
     async with enter_executor():
         # Do blocking stuff
         # Also async operation are still possible, but not recommended, because they cause my thread switch.
     
     # Do async code
+    ```
     
     Attributes
     ----------
@@ -5087,7 +5088,6 @@ class enter_executor(object):
     _fut_waiter : `None` or ``Future`` instance
         Blocking future used inside of the task, meanwhile it is in executor.
     _task : `None` or ``Task``
-    ```
     """
     __slots__ = ('_enter_future', '_exit_future', '_fut_waiter', '_task')
     def __init__(self):
@@ -5352,7 +5352,7 @@ class ScarletExecutor(object):
     
     Should be used, like:
     
-    ```
+    ```py
     from time import perf_counter
     from hata import ScarletExecutor, sleep
     
@@ -5366,6 +5366,7 @@ class ScarletExecutor(object):
         end = perf_counter()
         print(end-start)
     ```
+    
     Running showcase will take at least `25` seconds, because ``ScarletExecutor`` will allow only `2` sleeps to run
     at the same time, like:
     
@@ -5429,7 +5430,7 @@ class ScarletExecutor(object):
     
     By increasing parallelism to `3`, the showcase will take only `18` seconds to finish:
     
-    ```
+    ```py
     async def showcase():
         start = perf_counter()
         

@@ -1353,7 +1353,7 @@ class Embed(EmbedBase):
     --------
     Example of using local embed file:
         
-        ```
+        ```py
         # Imports
         from hata import Embed, ReuAsyncIO
         

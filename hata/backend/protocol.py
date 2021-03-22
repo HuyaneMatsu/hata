@@ -1563,7 +1563,7 @@ class ReadProtocolBase(object):
         """
         content_type = headers[CONTENT_TYPE]
         mime = MimeType(content_type)
-        boundary = mime.params['boundary']
+        boundary = mime.parameters['boundary']
         
         is_first = True
         while True:

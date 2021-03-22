@@ -1635,6 +1635,7 @@ class StackedStaticRateLimitHandler(object):
         """
         return RateLimitHandlerCTX(self)
 
+
 @modulize
 class RATE_LIMIT_GROUPS:
     """
@@ -1724,24 +1725,6 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `2.0`
     
-    - GROUP_APPLICATION_COMMAND_CREATE
-        - Used by: `application_command_global_create`, `application_command_guild_create`
-        - Limiter : `GLOBAL`
-        - Limit : `5`
-        - Rested after : `20.0`
-    
-    - GROUP_APPLICATION_COMMAND_DELETE
-        - Used by: `application_command_global_delete`, `application_command_guild_delete`
-        - Limiter : `GLOBAL`
-        - Limit : `5`
-        - Rested after : `20.0`
-    
-    - GROUP_APPLICATION_COMMAND_EDIT
-        - Used by: `application_command_global_edit`, `application_command_guild_edit`
-        - Limiter : `GLOBAL`
-        - Limit : `5`
-        - Rested after : `20.0`
-    
     Group Details
     -----------
     - oauth2_token
@@ -1809,6 +1792,22 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
+    - application_command_global_create
+        - Endpoint : `/applications/{application_id}/commands`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `20.0`
+    
+    - application_command_global_update_multiple
+        - Endpoint : `/applications/{application_id}/commands`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `2`
+        - Resets after : `60.0`
+    
     - application_command_global_get
         - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
         - Method : `GET`
@@ -1820,14 +1819,6 @@ class RATE_LIMIT_GROUPS:
     - application_command_global_delete
         - Endpoint : `/applications/{application_id}/commands/{application_command_id}`
         - Method : `DELETE`
-        - Required auth : `bot`
-        - Limiter : `GLOBAL`
-        - Limit : `5`
-        - Resets after : `20.0`
-    
-    - application_command_global_create
-        - Endpoint : `/applications/{application_id}/commands`
-        - Method : `POST`
         - Required auth : `bot`
         - Limiter : `GLOBAL`
         - Limit : `5`
@@ -1849,6 +1840,22 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
+    - application_command_guild_create
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `5`
+        - Resets after : `20.0`
+    
+    - application_command_guild_update_multiple
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `guild_id`
+        - Limit : `2`
+        - Resets after : `60.0`
+    
     - application_command_guild_get
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `GET`
@@ -1861,15 +1868,7 @@ class RATE_LIMIT_GROUPS:
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `DELETE`
         - Required auth : `bot`
-        - Limiter : `GLOBAL`
-        - Limit : `5`
-        - Resets after : `20.0`
-    
-    - application_command_guild_create
-        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands`
-        - Method : `POST`
-        - Required auth : `bot`
-        - Limiter : `GLOBAL`
+        - Limiter : `guild_id`
         - Limit : `5`
         - Resets after : `20.0`
     
@@ -1877,7 +1876,7 @@ class RATE_LIMIT_GROUPS:
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `PATCH`
         - Required auth : `bot`
-        - Limiter : `GLOBAL`
+        - Limiter : `guild_id`
         - Limit : `5`
         - Resets after : `20.0`
     
@@ -3102,15 +3101,17 @@ class RATE_LIMIT_GROUPS:
     achievement_get             = RateLimitGroup()
     achievement_edit            = RateLimitGroup()
     application_command_global_get_all = RateLimitGroup.unlimited()
+    application_command_global_delete = RateLimitGroup()
+    application_command_global_create = RateLimitGroup()
+    application_command_global_update_multiple = RateLimitGroup()
     application_command_global_get = RateLimitGroup.unlimited()
-    application_command_global_delete = GROUP_APPLICATION_COMMAND_DELETE
-    application_command_global_create = GROUP_APPLICATION_COMMAND_CREATE
-    application_command_global_edit = GROUP_APPLICATION_COMMAND_EDIT
+    application_command_global_edit = RateLimitGroup()
     application_command_guild_get_all = RateLimitGroup.unlimited()
+    application_command_guild_update_multiple = RateLimitGroup(LIMITER_GUILD)
+    application_command_guild_delete = RateLimitGroup(LIMITER_GUILD)
+    application_command_guild_create = RateLimitGroup(LIMITER_GUILD)
     application_command_guild_get = RateLimitGroup.unlimited()
-    application_command_guild_delete = GROUP_APPLICATION_COMMAND_DELETE
-    application_command_guild_create = GROUP_APPLICATION_COMMAND_CREATE
-    application_command_guild_edit = GROUP_APPLICATION_COMMAND_EDIT
+    application_command_guild_edit = RateLimitGroup(LIMITER_GUILD)
     application_get_all_detectable = RateLimitGroup(optimistic=True)
     client_logout               = RateLimitGroup() # untested
     channel_delete              = RateLimitGroup.unlimited()

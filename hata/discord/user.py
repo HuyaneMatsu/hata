@@ -448,7 +448,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import User, now_as_id
         >>> user = User.precreate(now_as_id(), name='Neko', discriminator=2012)
         >>> user

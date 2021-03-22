@@ -885,14 +885,14 @@ class ThreadSyncerCTX(object):
     
     Can be used as a context manager, like:
     
-    ```
+    ```py
     with ThreadSyncerCTX(LOOP):
         # The event loop is paused inside here.
     ```
     
     Or, can be used with ``EventThread.enter()`` as well, like:
     
-    ```
+    ```py
     with LOOP.enter():
         # The event loop is paused inside here.
     ```

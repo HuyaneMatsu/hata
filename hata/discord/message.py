@@ -1757,7 +1757,7 @@ class Message(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>>> from hata import Message, ChannelText, now_as_id
         >>>> message = Message.custom(content='Fluffy nekos', channel=ChannelText.precreate(now_as_id()))
         >>>> message

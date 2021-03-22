@@ -61,6 +61,7 @@ from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryR
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes
 from .color import Color
+from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD
 
 from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
     channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
@@ -566,7 +567,7 @@ class Client(UserBase):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import Client, GUILDS
         >>> import gc
         >>> TOKEN = 'a token goes here'
@@ -9567,7 +9568,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `integration` was not given as ``Integration``` instance.
+            - If `integration` was not given as ``Integration`` instance.
             - If `expire_behavior` was not given neither as `None` nor as `int` instance.
             - If `expire_grace_period` was not given neither as `None` nor as `int` instance.
             - If `expire_behavior` is not any of: `(0, 1)`.
@@ -9646,7 +9647,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `integration` was not given as ``Integration``` instance.
+            If `integration` was not given as ``Integration`` instance.
         """
         if __debug__:
             if not isinstance(integration, Integration):
@@ -9685,7 +9686,7 @@ class Client(UserBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `integration` was not given as ``Integration``` instance.
+            If `integration` was not given as ``Integration`` instance.
         """
         if __debug__:
             if not isinstance(integration, Integration):
@@ -12651,6 +12652,7 @@ class Client(UserBase):
         
         return application_command
     
+    
     async def application_command_global_get_all(self):
         """
         Requests the client's global application commands.
@@ -12684,6 +12686,10 @@ class Client(UserBase):
         """
         Creates a new global application command.
         
+        > If there is an application command with the given name, will overwrite that instead.
+        >
+        > Each day only maximum only 200 global application command can be created.
+        
         This method is a coroutine.
         
         Parameters
@@ -12708,8 +12714,6 @@ class Client(UserBase):
         
         Notes
         -----
-        Creating a global command with the same name as an already existing one, will overwrite the old command.
-        
         The command will be available in all guilds after 1 hour.
         """
         application_id = self.application.id
@@ -12790,6 +12794,7 @@ class Client(UserBase):
         await self.http.application_command_global_edit(application_id, application_command_id, data)
         return ApplicationCommand._from_edit_data(data, application_command_id, application_id)
     
+    
     async def application_command_global_delete(self, application_command):
         """
         Deletes the given application command.
@@ -12824,6 +12829,83 @@ class Client(UserBase):
                     f'instance, got {application_command.__class__.__name__}.')
         
         await self.http.application_command_global_delete(application_id, application_command_id)
+    
+    
+    async def application_command_global_update_multiple(self, application_commands):
+        """
+        Takes an iterable of application commands, and updates the actual global ones.
+        
+        If a command exists with the given name, edits it, if not, will creates a new one.
+        
+        > The created application commands count to the daily limit.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        application_commands : `iterable` of ``ApplicationCommand``
+            The application commands to update the existing ones with.
+        
+        Returns
+        -------
+        application_commands : `list` of ``ApplicationCommand``
+            The edited and created application commands.
+        
+        Raises
+        ------
+        ValueError
+            If more than `100` ``ApplicationCommand`` is given.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If an application command was not given as ``ApplicationCommand`` instance.
+            - If `application_commands` is not iterable.
+        
+        Notes
+        -----
+        The commands will be available in all guilds after 1 hour.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        application_command_datas = []
+        
+        if __debug__:
+            if getattr(type(application_commands), '__iter__', None) is None:
+                raise AssertionError(f'`application_command_datas` can be given as an `iterable`, got '
+                    f'{application_command_datas.__class__.__name__}.')
+        
+        application_command_count = 0
+        for application_command in application_commands:
+            if __debug__:
+                if not isinstance(application_command, ApplicationCommand):
+                    raise AssertionError(f'An application commands can be given as an `iterable` of '
+                        f'`{ApplicationCommand.__name__}`-s, but it contains at least 1 not '
+                        f'`{ApplicationCommand.__name__}` instance, got: {application_command.__class__.__name__}.')
+            
+            if application_command_count == APPLICATION_COMMAND_LIMIT_GLOBAL:
+                raise ValueError(f'Maximum {APPLICATION_COMMAND_LIMIT_GLOBAL} application command can be given, got '
+                    f'{application_commands!r}.')
+            
+            application_command_count += 1
+            application_command_datas.append(application_command.to_data())
+        
+        if application_command_datas:
+            application_command_datas = await self.http.application_command_global_update_multiple(application_id,
+                application_command_datas)
+            
+            application_command_datas = [ApplicationCommand.from_data(application_command_data) \
+                for application_command_data in application_command_datas]
+        else:
+            application_command_datas = []
+        
+        return application_command_datas
+    
     
     async def application_command_guild_get(self, guild, application_command):
         """
@@ -12932,6 +13014,10 @@ class Client(UserBase):
         """
         Creates a new guild application command.
         
+        > If there is an application command with the given name, will overwrite that instead.
+        >
+        > Each day only maximum only 200 guild application command can be created at each guild.
+        
         This method is a coroutine.
         
         Parameters
@@ -12957,10 +13043,6 @@ class Client(UserBase):
         AssertionError
             - If the client's application is not yet synced.
             - If `application_command` was not given as ``ApplicationCommand`` instance.
-        
-        Notes
-        -----
-        Creating a global command with the same name as an already existing one, will overwrite the old command.
         """
         application_id = self.application.id
         if __debug__:
@@ -13049,6 +13131,7 @@ class Client(UserBase):
         
         await self.http.application_command_guild_edit(application_id, guild_id, application_command_id, data)
     
+    
     async def application_command_guild_delete(self, guild, application_command):
         """
         Deletes the given application command.
@@ -13094,6 +13177,88 @@ class Client(UserBase):
                     f'instance, got {application_command.__class__.__name__}.')
         
         await self.http.application_command_guild_delete(application_id, guild_id, application_command_id)
+    
+    
+    async def application_command_guild_update_multiple(self, guild, application_commands):
+        """
+        Takes an iterable of application commands, and updates the guild's actual ones.
+        
+        If a command exists with the given name, edits it, if not, will creates a new one.
+        
+        > The created application commands count to the daily limit.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        application_commands : `iterable` of ``ApplicationCommand``
+            The application commands to update the existing ones with.
+        
+        Returns
+        -------
+        application_commands : `list` of ``ApplicationCommand``
+            The edited and created application commands.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as``Guild`` nor `int` instance.
+        ValueError
+            If more than `100` ``ApplicationCommand`` is given.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If an application command was not given as ``ApplicationCommand`` instance.
+            - If `application_commands` is not iterable.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        application_command_datas = []
+        
+        if __debug__:
+            if getattr(type(application_commands), '__iter__', None) is None:
+                raise AssertionError(f'`application_command_datas` can be given as an `iterable`, got '
+                    f'{application_command_datas.__class__.__name__}.')
+        
+        application_command_count = 0
+        for application_command in application_commands:
+            if __debug__:
+                if not isinstance(application_command, ApplicationCommand):
+                    raise AssertionError(f'An application commands can be given as an `iterable` of '
+                        f'`{ApplicationCommand.__name__}`-s, but it contains at least 1 not '
+                        f'`{ApplicationCommand.__name__}` instance, got: {application_command.__class__.__name__}.')
+            
+            if application_command_count == APPLICATION_COMMAND_LIMIT_GUILD:
+                raise ValueError(f'Maximum {APPLICATION_COMMAND_LIMIT_GUILD} application command can be given, got '
+                    f'{application_commands!r}.')
+            
+            application_command_count += 1
+            application_command_datas.append(application_command.to_data())
+        
+        if application_command_datas:
+            application_command_datas = await self.http.application_command_guild_update_multiple(application_id,
+                guild_id, application_command_datas)
+            
+            application_command_datas = [ApplicationCommand.from_data(application_command_data) \
+                for application_command_data in application_command_datas]
+        else:
+            application_command_datas = []
+        
+        return application_command_datas
     
     
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,

@@ -284,7 +284,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import Emoji, now_as_id, BUILTIN_EMOJIS
         >>> emoji = Emoji.precreate(now_as_id(), name='nice')
         >>> emoji
@@ -1432,7 +1432,6 @@ def generate_builtin_emojis():
             (b'\xf0\x9f\x8c\x8d', 'earth_africa', 'earth_africa'),
             (b'\xf0\x9f\x8c\x8e', 'earth_americas', 'earth_americas'),
             (b'\xf0\x9f\x8c\x8f', 'earth_asia', 'earth_asia'),
-            
             (b'\xf0\x9f\xa5\x9a', 'egg', 'egg'),
             (b'\xf0\x9f\x8d\x86', 'eggplant', 'eggplant'),
             (b'8\xe2\x83\xa3', 'eight', 'old_eight'),
@@ -4553,7 +4552,7 @@ def generate_builtin_emojis():
         limit = len(element)
         while True:
             name = element[index]
-            index +=1
+            index += 1
             
             BUILTIN_EMOJIS[name] = emoji
             

@@ -529,7 +529,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import ApplicationCommand
         >>> application_command = ApplicationCommand('cake-lover', 'Sends a random cake recipe OwO')
         >>> application_command

@@ -579,7 +579,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         
         Examples
         -------
-        ```
+        ```py
         >>> from hata import Permission
         >>> perm = Permission().update_by_keys(kick_users=True, ban_users=True)
         >>> list(perm)
@@ -717,7 +717,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import SystemChannelFlag
         >>> flags = SystemChannelFlag()
         >>> list(flags)

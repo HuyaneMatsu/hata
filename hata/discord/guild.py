@@ -985,7 +985,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import Guild, now_as_id
         >>> guild = Guild.precreate(now_as_id(), name='GrassGrass')
         >>> guild
@@ -2783,7 +2783,7 @@ class GuildPreview(DiscordEntity):
         
         Examples
         --------
-        ```
+        ```py
         >>> from hata import Client, KOKORO
         >>> TOKEN = 'a token goes here'
         >>> client = Client(TOKEN)

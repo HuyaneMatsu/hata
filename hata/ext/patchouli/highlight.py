@@ -45,7 +45,11 @@ The token types for coloring are the following:
 +-----------------------------------------------+-------+-------------------------------------------+
 | TOKEN_TYPE_STRING_UNICODE_FORMAT              | 123   | TOKEN_TYPE_STRING_UNICODE                 |
 +-----------------------------------------------+-------+-------------------------------------------+
-| TOKEN_TYPE_STRING_UNICODE_FORMAT_BRACKET      | 124   | TOKEN_TYPE_STRING_UNICODE_FORMAT          |
+| TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK         | 124   | TOKEN_TYPE_STRING_UNICODE_FORMAT          |
++-----------------------------------------------+-------+-------------------------------------------+
+| TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE         | 125   | TOKEN_TYPE_STRING_UNICODE_FORMAT          |
++-----------------------------------------------+-------+-------------------------------------------+
+| TOKEN_TYPE_STRING_UNICODE_FORMAT_POSTFIX      | 126   | TOKEN_TYPE_STRING_UNICODE_FORMAT          |
 +-----------------------------------------------+-------+-------------------------------------------+
 | TOKEN_TYPE_IDENTIFIER                         | 200   | TOKEN_TYPE_NON_SPACE                      |
 +-----------------------------------------------+-------+-------------------------------------------+
@@ -79,11 +83,37 @@ The token types for coloring are the following:
 +-----------------------------------------------+-------+-------------------------------------------+
 | TOKEN_TYPE_SPECIAL_OPERATOR_WORD              | 304   | TOKEN_TYPE_SPECIAL_OPERATOR               |
 +-----------------------------------------------+-------+-------------------------------------------+
+| TOKEN_TYPE_SPECIAL_CONSOLE_PREFIX             | 305   | TOKEN_TYPE_SPECIAL                        |
++-----------------------------------------------+-------+-------------------------------------------+
 
 To set a html class to a token, do:
 
 ```py
 set_highlight_html_class(token_type_identifier, html_class_name)
+```
+
+Testing
+-------
+To check highlights set some colors down and enjoy.
+
+```py
+TUMMY_REPR_ACCURACY = 2
+
+class CakeEater(object):
+    __slots__ = ('tummy_size', 'type')
+    
+    def __init__(self, type_, tummy_size):
+        self.type = type_
+        self.tummy_size = tummy_size
+    
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.type!r}, {self.tummy_size:.{TUMMY_REPR_ACCURACY}f})'
+    
+    async def throw(self):
+        # No one would ever expect this.
+        raise StopIteration()
+
+print(CakeEater('dream eater', 2.111))
 ```
 """
 __all__ = ('set_highlight_html_class', )
@@ -96,7 +126,7 @@ PYTHON_IDENTIFIERS = {'python', 'py', 'sage', 'python3', 'py3'}
 COMPLEX_RP = re.compile('((?:\d(?:_?\d)*\.\d(?:_?\d)*|\d(?:_?\d)*\.|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?[jJ])')
 FLOAT_RP = re.compile('((?:\d(?:_?\d)*\.\d(?:_?\d)*|\d(?:_?\d)*\.|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?)')
 INTEGER_HEXADECIMAL_RP =  re.compile('(0[xX](?:_?[0-9a-fA-F])+)')
-INTEGER_DECIMAL_RP = re.compile('((?:\d(?:_?\d)))')
+INTEGER_DECIMAL_RP = re.compile('(\d(?:_?\d)*)')
 INTEGER_OCTAL_RP =  re.compile('(0[oO](?:_?[0-7])+)')
 INTEGER_BINARY_RP =  re.compile('(0[bB](?:_?[01])+)')
 IDENTIFIER_RP = re.compile('([a-zA-Z_][a-zA-Z_0-9]*)')
@@ -107,9 +137,9 @@ ESCAPE = '\\'
 
 BUILTIN_CONSTANTS = {'Ellipsis', 'False', 'None', 'NotImplemented', 'True', KEYWORD_ELLIPSIS}
 
-KEYWORDS = ('as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
+KEYWORDS = {'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
     'finally', 'for', 'from', 'global', 'if', 'import', 'lambda', 'nonlocal', 'pass', 'raise', 'return', 'try',
-    'while', 'with', 'yield')
+    'while', 'with', 'yield'}
 
 BUILTIN_VARIABLES = {'__import__', 'abs', 'all', 'any', 'bin', 'bool', 'bytearray', 'bytes', 'chr', 'classmethod',
     'compile', 'complex', 'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'filter', 'float', 'format',
@@ -152,17 +182,23 @@ PUNCTUATIONS = {'(', ')', ',', ':', ';', '[', ']', '{', '}'}
 OPERATOR_WORDS = {'and', 'in', 'is', 'not', 'or'}
 
 OPERATORS = {'!=', '%', '%=', '&', '&=', '*', '**', '**=', '*=', '+', '+=', '-', '-=', '->', '.', '...', '/', '//',
-    '//=', '/=', '<', '<=', '=', '==', '>', '>=', '@', '@=', '\\', '^', '^=', '|', '|='}
+    '//=', '/=', '<', '<<', '<<=', '<=', '=', '==', '>', '>=', '>>', '>>=', '@', '@=', '\\', '^', '^=', '|', '|='}
 
 STRING_STARTER_RP = re.compile('(r[fb]?|[fb]r?|b|f)?(\'{3}|\"{3}|\'|\")')
-STRING_END_SINGLE_RP = re.compile('\'|(.*?[^\\\\])\'')
-STRING_END_DOUBLE_RP = re.compile('\'|(.*?[^\\\\])\"')
-STRING_MULTI_LINE_END_SINGLE_RP = re.compile('\'\'\'|(.*?[^\\\\])\'\'\'')
-STRING_MULTI_LINE_END_DOUBLE_RP = re.compile('\"\"\"|(.*?[^\\\\])\"\"\"')
+STRING_END_SINGLE_RP = re.compile('(.*?[^\\\\])\'|\'')
+STRING_END_DOUBLE_RP = re.compile('(.*?[^\\\\])\"|\'')
+STRING_MULTI_LINE_END_SINGLE_RP = re.compile('(.*?[^\\\\])\'\'\'|\'\'\'')
+STRING_MULTI_LINE_END_DOUBLE_RP = re.compile('(.*?[^\\\\])\"\"\"|\"\"\"')
 
 SPACE_MATCH_RP = re.compile('([ \t]+)')
 
 TOKEN_TYPE_NODES = {}
+
+FORMAT_STRING_MATCH_STRING = re.compile('(.*?)(\{\{|\{|\n|\}\}|\})')
+
+CONSOLE_PREFIX_RP = re.compile('(>>>>?)( [ \t]*)')
+
+FORMAT_STRING_POSTFIX_RP = re.compile('(![sraSRA])\}')
 
 class WordNode(object):
     """
@@ -318,6 +354,7 @@ class WordNode(object):
             return ''
         
         return None
+
 
 def create_word_pattern(words):
     """
@@ -516,7 +553,7 @@ def set_highlight_html_class(token_type_identifier, html_class):
     try:
         node = TOKEN_TYPE_NODES[token_type_identifier]
     except KeyError:
-        raise ValueError(f'`token_type_identifier` was not given as any of the predefined values, got:' \
+        raise ValueError(f'`token_type_identifier` was not given as any of the predefined values, got:'
             f'{token_type_identifier!r}.') from None
     
     node.set_html_class(html_class)
@@ -529,7 +566,7 @@ TOKEN_TYPE_NON_SPACE = 3
 TOKEN_TYPE_NON_SPACE_UNIDENTIFIED = 4
 TOKEN_TYPE_COMMENT = 5
 TOKEN_TYPE_LINEBREAK_ESCAPED = 6
-    
+
 TOKEN_TYPE_CONSTANT = 100
 TOKEN_TYPE_NUMERIC = 110
 TOKEN_TYPE_NUMERIC_FLOAT = 111
@@ -543,8 +580,10 @@ TOKEN_TYPE_STRING = 120
 TOKEN_TYPE_STRING_BINARY = 121
 TOKEN_TYPE_STRING_UNICODE = 122
 TOKEN_TYPE_STRING_UNICODE_FORMAT = 123
-TOKEN_TYPE_STRING_UNICODE_FORMAT_BRACKET = 124
-    
+TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK = 124
+TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE = 125
+TOKEN_TYPE_STRING_UNICODE_FORMAT_POSTFIX = 126
+
 TOKEN_TYPE_IDENTIFIER = 200
 TOKEN_TYPE_IDENTIFIER_VARIABLE = 201
 TOKEN_TYPE_IDENTIFIER_ATTRIBUTE = 202
@@ -562,6 +601,8 @@ TOKEN_TYPE_SPECIAL_OPERATOR = 301
 TOKEN_TYPE_SPECIAL_OPERATOR_ATTRIBUTE = 302
 TOKEN_TYPE_SPECIAL_PUNCTUATION = 303
 TOKEN_TYPE_SPECIAL_OPERATOR_WORD = 304
+TOKEN_TYPE_SPECIAL_CONSOLE_PREFIX = 305
+
 
 build_type_token_nodes({
     TOKEN_TYPE_ALL: {
@@ -586,7 +627,9 @@ build_type_token_nodes({
                     TOKEN_TYPE_STRING_BINARY : None,
                     TOKEN_TYPE_STRING_UNICODE : {
                         TOKEN_TYPE_STRING_UNICODE_FORMAT : {
-                            TOKEN_TYPE_STRING_UNICODE_FORMAT_BRACKET : None,
+                            TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK : None,
+                            TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE : None,
+                            TOKEN_TYPE_STRING_UNICODE_FORMAT_POSTFIX : None,
                                 },
                             },
                         },
@@ -612,6 +655,7 @@ build_type_token_nodes({
                 TOKEN_TYPE_SPECIAL_OPERATOR_WORD : None,
                     },
             TOKEN_TYPE_SPECIAL_PUNCTUATION : None,
+            TOKEN_TYPE_SPECIAL_CONSOLE_PREFIX : None,
                 },
             },
     TOKEN_TYPE_COMMENT : None,
@@ -619,9 +663,28 @@ build_type_token_nodes({
     },)
 
 
+MERGE_TOKEN_TYPES = {
+    # Strings are usually added as 3 parts, prefix+encapsulator | content | prefix+encapsulator
+    TOKEN_TYPE_STRING,
+    TOKEN_TYPE_STRING_BINARY,
+    TOKEN_TYPE_STRING_UNICODE,
+    TOKEN_TYPE_STRING_UNICODE_FORMAT,
+    TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK,
+    TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE,
+    # At the case of special characters it not really matters
+    TOKEN_TYPE_SPECIAL,
+    TOKEN_TYPE_SPECIAL_OPERATOR,
+    TOKEN_TYPE_SPECIAL_OPERATOR_ATTRIBUTE,
+    TOKEN_TYPE_SPECIAL_PUNCTUATION,
+    TOKEN_TYPE_SPECIAL_OPERATOR_WORD,
+    # Yes, space may be duped as well.
+    TOKEN_TYPE_SPACE,
+        }
+
+
 class Token(object):
     """
-    Represents a token parsed by ``HighlightContext``.
+    Represents a token parsed by ``HighlightContextBase``.
     
     Parameters
     ----------
@@ -652,120 +715,104 @@ class Token(object):
         """Returns the token's representation."""
         return f'{self.__class__.__name__}({self.type}, {self.value})'
 
-class HighlightContext(object):
+
+def _merge_tokens(tokens, start_index, end_index):
     """
-    Represents a context of highlighting any content.
+    Merges the tokens inside of the given range.
+    
+    Parameters
+    ----------
+    tokens : `list` of ``Token``
+        The tokens, which will have it's slice merged.
+    start_index : `int`
+        The first token's index to merge.
+    end_index : `int`
+        The last token's index +1 to merge.
+    """
+    values = []
+    
+    for token_index in range(start_index, end_index):
+        value = tokens[token_index].value
+        if (value is not None) and value:
+            values.append(value)
+    
+    value = ''.join(values)
+    
+    del tokens[start_index+1:end_index]
+    tokens[start_index].value = value
+
+
+class HighlightContextBase(object):
+    """
+    Base class for highlighting.
     
     Attributes
     ----------
-    lines : `list` of `str`
-        The lines to highlight.
-    line_index : `int`
-        The index of the line which is processed at the moment.
-    line_character_index : `int`
-        The index of the character of the processed line.
     done : `bool`
         Whether processing is done.
     tokens : `list` of ``Token``
         The generated tokens.
     """
-    __slots__ = ('lines', 'line_index', 'line_character_index', 'done', 'tokens')
-    def __new__(cls, lines):
-        if len(lines) == 0:
-            done = True
-        else:
-            done = False
+    __slots__ = ('done', 'tokens',)
+    
+    def __new__(cls):
+        """
+        Creates a new ``HighlightContextBase`` instance.
         
-        self = object.__new__(cls)
-        self.lines = lines
-        self.line_index = 0
-        self.line_character_index = 0
-        self.done = done
-        self.tokens = []
-        
-        return self
+        > Subclasses should overwrite it.
+        """
+        return object.__new__(cls)
     
     def get_line_index(self):
         """
         Returns the line's index where the context is at.
+        
+        > Subclasses should overwrite it.
+        
+        Returns
+        -------
+        line_index : `int`
         """
-        return self.line_index
-    
+        return 0
+
     def get_line(self):
         """
-        Returns the line index of the context.
+        Returns the actual line of the context.
         
-        line_index : `int`
-            The index of the line.
+        > Subclasses should overwrite it.
+        
+        Returns
+        -------
+        line : `str`
         """
-        return self.lines[self.line_index]
-    
+        return ''
+        
     def get_line_character_index(self):
         """
         Returns the character index of the context's actual line.
+        
+        > Subclasses should overwrite it.
+        
+        Returns
+        -------
+        line_character_index : `int`
         """
-        return self.line_character_index
-    
+        return 0
+
     def set_line_character_index(self, line_character_index):
         """
         Sets the actual line's character index.
+        
+        > Subclasses should overwrite it.
         
         Parameters
         ----------
         line_character_index : `int`
             The index to set of the actual line.
             
-            Pass it as `-1` to force end the line with linebreak or as `-` to force it without linebreak.
+            Pass it as `-1` to force end the line with linebreak or as `-2` to force it without linebreak.
         """
-        lines = self.lines
-        line_index = self.line_index
-        line = lines[line_index]
-        
-        if (line_character_index > 0) and (len(line) > line_character_index):
-            self.line_character_index = line_character_index
-        else:
-            self.line_character_index = 0
-            line_index += 1
-            
-            if len(lines) > line_index:
-                self.line_index = line_index
-            else:
-                self.line_index = line_index
-                self.done = True
-            
-            if line_character_index != -2:
-                self._add_linebreak_token()
-    
-    def _add_linebreak_token(self):
-        """
-        Adds a linebreak token to the context.
-        """
-        tokens = self.tokens
-        
-        for token in reversed(tokens):
-            token_type = token.type
-            if token_type == TOKEN_TYPE_SPACE:
-                continue
-            
-            if token_type == TOKEN_TYPE_COMMENT:
-                continue
-            
-            if (token_type == TOKEN_TYPE_SPECIAL_OPERATOR) and (token.value == '\\'):
-                last_token_is_escape = True
-                break
-            
-            last_token_is_escape = False
-            break
-        else:
-            last_token_is_escape = False
-        
-        if last_token_is_escape:
-            token_type = TOKEN_TYPE_LINEBREAK
-        else:
-            token_type = TOKEN_TYPE_LINEBREAK_ESCAPED
-        
-        token = Token(token_type, None)
-        tokens.append(token)
+        pass
     
     def add_token(self, token_type, token_value):
         """
@@ -780,6 +827,17 @@ class HighlightContext(object):
         """
         token = Token(token_type, token_value)
         self.tokens.append(token)
+
+    def add_tokens(self, tokens):
+        """
+        Adds tokens to the context.
+        
+        Parameters
+        ----------
+        tokens : `list` of ``Token``
+            The tokens to add.
+        """
+        self.tokens.extend(tokens)
     
     def get_last_related_token(self):
         """
@@ -813,9 +871,174 @@ class HighlightContext(object):
     def match(self):
         """
         Matches the content of the context.
+        
+        > Subclasses should overwrite it.
+        """
+        pass
+    
+    def generate_highlighted(self):
+        """
+        Generates highlighted content.
+        
+        This method is a generator.
+        
+        > Subclasses should overwrite it.
+        
+        Returns
+        -------
+        content : `str`
+            The generated content.
+        """
+        return
+        yield
+    
+    def _add_linebreak_token(self):
+        """
+        Adds a linebreak token to the context.
+        """
+        tokens = self.tokens
+        
+        for token in reversed(tokens):
+            token_type = token.type
+            if token_type == TOKEN_TYPE_SPACE:
+                continue
+            
+            if token_type == TOKEN_TYPE_COMMENT:
+                continue
+            
+            if (token_type == TOKEN_TYPE_SPECIAL_OPERATOR) and (token.value == '\\'):
+                last_token_is_escape = True
+                break
+            
+            last_token_is_escape = False
+            break
+        else:
+            last_token_is_escape = False
+        
+        if last_token_is_escape:
+            token_type = TOKEN_TYPE_LINEBREAK
+        else:
+            token_type = TOKEN_TYPE_LINEBREAK_ESCAPED
+        
+        token = Token(token_type, None)
+        tokens.append(token)
+
+
+class HighlightContext(HighlightContextBase):
+    """
+    Represents a context of highlighting any content.
+    
+    Attributes
+    ----------
+    done : `bool`
+        Whether processing is done.
+    tokens : `list` of ``Token``
+        The generated tokens.
+    line_character_index : `int`
+        The index of the character of the processed line.
+    line_index : `int`
+        The index of the line which is processed at the moment.
+    lines : `list` of `str`
+        The lines to highlight.
+    """
+    __slots__ = ('line_character_index', 'line_index', 'lines')
+    def __new__(cls, lines):
+        """
+        Creates a new ``HighlightContext`` instance.
+        
+        Parameters
+        ----------
+        lines : `list` of `str`
+            The lines what the highlight context should match.
+        """
+        if len(lines) == 0:
+            done = True
+        else:
+            done = False
+        
+        self = object.__new__(cls)
+        
+        self.lines = lines
+        self.line_index = 0
+        self.line_character_index = 0
+        self.done = done
+        self.tokens = []
+        
+        return self
+    
+    def get_line_index(self):
+        """
+        Returns the line's index where the context is at.
+        
+        Returns
+        -------
+        line_index : `int`
+        """
+        return self.line_index
+    
+    def get_line(self):
+        """
+        Returns the actual line of the context.
+        
+        Returns
+        -------
+        line : `str`
+        """
+        lines = self.lines
+        line_index = self.line_index
+        if len(lines) <= line_index:
+            line = ''
+        else:
+            line = lines[line_index]
+        
+        return line
+    
+    def get_line_character_index(self):
+        """
+        Returns the character index of the context's actual line.
+        
+        Returns
+        -------
+        line_character_index : `int`
+        """
+        return self.line_character_index
+    
+    def set_line_character_index(self, line_character_index):
+        """
+        Sets the actual line's character index.
+        
+        Parameters
+        ----------
+        line_character_index : `int`
+            The index to set of the actual line.
+            
+            Pass it as `-1` to force end the line with linebreak or as `-2` to force it without linebreak.
+        """
+        lines = self.lines
+        line_index = self.line_index
+        line = lines[line_index]
+        
+        if (line_character_index > 0) and (len(line) > line_character_index):
+            self.line_character_index = line_character_index
+        else:
+            self.line_character_index = 0
+            line_index += 1
+            
+            if len(lines) > line_index:
+                self.line_index = line_index
+            else:
+                self.line_index = line_index
+                self.done = True
+            
+            if line_character_index != -2:
+                self._add_linebreak_token()
+    
+    def match(self):
+        """
+        Matches the content of the context.
         """
         while not self.done:
-            for parser in PARSERS:
+            for parser in PYTHON_PARSERS:
                 if parser(self):
                     break
         
@@ -823,6 +1046,41 @@ class HighlightContext(object):
         tokens = self.tokens
         if tokens and (tokens[-1].type == TOKEN_TYPE_LINEBREAK):
             del tokens[-1]
+        
+        # Optimize tokens with merging sames into each other if applicable
+        same_count = 1
+        last_type = TOKEN_TYPE_ALL
+        token_index = len(tokens)-1
+        
+        while True:
+            if token_index <= 0:
+                if same_count > 1:
+                    # Merge tokens
+                    _merge_tokens(tokens, 0, same_count)
+                break
+            
+            token = tokens[token_index]
+            token_type = token.type
+            
+            if (token_type not in MERGE_TOKEN_TYPES):
+                last_type = token_type
+                same_count = 0
+                token_index -= 1
+                continue
+            
+            if (last_type == token_type):
+                token_index -= 1
+                same_count +=1
+                continue
+            
+            if same_count > 1:
+                # Merge tokens
+                _merge_tokens(tokens, token_index+1, token_index+same_count+1)
+            
+            same_count = 1
+            last_type = token_type
+            token_index -= 1
+            continue
     
     def generate_highlighted(self):
         """
@@ -853,13 +1111,173 @@ class HighlightContext(object):
             if (token_type == TOKEN_TYPE_LINEBREAK) or (token_type == TOKEN_TYPE_LINEBREAK_ESCAPED):
                 yield '<br>'
 
+
+class FormatStringContext(HighlightContextBase):
+    """
+    Highlighter used to highlight format strings.
+    
+    Attributes
+    ----------
+    done : `bool`
+        Whether processing is done.
+    tokens : `list` of ``Token``
+        The generated tokens.
+    brace_level : `int`
+        The internal brace level to un-match before entering a string.
+    is_in_code : `bool`
+        Whether we are parsing format code.
+    line : `str`
+        The internal content of the format string.
+    line_character_index : `int`
+        The index of the character of the processed line.
+    """
+    __slots__ = ('brace_level', 'is_in_code', 'line', 'line_character_index', )
+    def __new__(cls, line):
+        """
+        Creates a new ``FormatStringContext`` instance.
+        
+        Parameters
+        ----------
+        line : `str`
+            A format string's internal content to highlight.
+        """
+        if len(line) == 0:
+            done = True
+        else:
+            done = False
+        
+        self = object.__new__(cls)
+        
+        self.line = line
+        self.done = done
+        self.tokens = []
+        self.line_character_index = 0
+        self.brace_level = 0
+        self.is_in_code = False
+        
+        return self
+    
+    def get_line(self):
+        """
+        Returns the actual line of the context.
+        
+        Returns
+        -------
+        line_index : `str`
+        """
+        return self.line
+    
+    def get_line_character_index(self):
+        """
+        Returns the character index of the context's actual line.
+        
+        Returns
+        -------
+        line_character_index : `int`
+        """
+        return self.line_character_index
+    
+    def set_line_character_index(self, line_character_index):
+        """
+        Sets the actual line's character index.
+        
+        Parameters
+        ----------
+        line_character_index : `int`
+            The index to set of the actual line.
+            
+            Pass it as `-1` to force end the line with linebreak or as `-2` to force it without linebreak.
+        """
+        line = self.line
+        
+        if (line_character_index > 0) and (len(line) > line_character_index):
+            self.line_character_index = line_character_index
+        else:
+            self.line_character_index = 0
+            self.done = True
+    
+    def add_token(self, token_type, token_value):
+        """
+        Adds a token to the context.
+        
+        Parameters
+        ----------
+        token_type : `int`
+            The token's identifier.
+        token_value : `None` or `str`
+            The token's value.
+        """
+        if token_type == TOKEN_TYPE_LINEBREAK:
+            self._add_linebreak_token()
+            return
+        
+        # Check braces and such ~ Nya!
+        if token_type == TOKEN_TYPE_STRING_UNICODE_FORMAT:
+            if self.is_in_code:
+                token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE
+        elif token_type == TOKEN_TYPE_SPECIAL_PUNCTUATION and (token_value is not None):
+            brace_level = self.brace_level
+            if token_value == '{':
+                if brace_level == self.is_in_code:
+                    token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK
+                
+                brace_level += 1
+                self.brace_level = brace_level
+            
+            elif token_value == '}':
+                if brace_level == 0:
+                    # Random `}`- may be added as well, so if we are outside of f string internal, leave it alone.
+                    token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT
+                else:
+                    is_in_code = self.is_in_code
+                    if brace_level <= is_in_code+1:
+                        token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK
+                        if (brace_level == 1) and is_in_code:
+                            self.is_in_code = False
+                    
+                    brace_level -= 1
+                    self.brace_level = brace_level
+            
+            elif token_value == ':':
+                if (self.brace_level == 1) and (not self.is_in_code):
+                    self.is_in_code = True
+                    token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK
+        
+        HighlightContextBase.add_token(self, token_type, token_value)
+    
+    def match(self):
+        """
+        Matches the content of the context.
+        """
+        while True:
+            if self.done:
+                break
+            
+            if (self.brace_level == self.is_in_code):
+                _try_match_till_format_string_expression(self)
+            else:
+                while True:
+                    for parser in PYTHON_PARSERS_FORMAT_STRING:
+                        if parser(self):
+                            break
+                    
+                    # Need goto!
+                    if self.done:
+                        break
+                    
+                    # Need goto!
+                    if self.brace_level == self.is_in_code:
+                        break
+
+
+
 def _try_match_complex(context):
     """
     Tries to match a complex as the context's next token.
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -882,14 +1300,13 @@ def _try_match_complex(context):
     context.set_line_character_index(end)
     return True
 
-
 def _try_match_float(context):
     """
     Tries to match a float as the context's next token.
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -919,7 +1336,7 @@ def _try_match_integer_hexadecimal(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -949,7 +1366,7 @@ def _try_match_integer_decimal(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -978,7 +1395,7 @@ def _try_match_integer_octal(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1007,7 +1424,7 @@ def _try_match_integer_binary(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1036,7 +1453,7 @@ def _try_match_identifier(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1087,7 +1504,7 @@ def _try_match_punctuation(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1114,7 +1531,7 @@ def _try_match_operator(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1148,7 +1565,7 @@ def _try_match_string(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1156,7 +1573,6 @@ def _try_match_string(context):
     success : `bool`
         Whether a string could be matched.
     """
-    # TODO: Later come back to format strings.
     line = context.get_line()
     index = context.get_line_character_index()
     
@@ -1206,19 +1622,25 @@ def _try_match_string(context):
             break
         
         # Add content
-        limit = len(content_parts)
-        if limit:
-            index = 0
-            while True:
-                content = content_parts[index]
-                context.add_token(token_type, content)
-                
-                index += 1
-                if index == limit:
-                    break
-                
-                context.add_token(TOKEN_TYPE_LINEBREAK, None)
-                continue
+        if token_type == TOKEN_TYPE_STRING_UNICODE_FORMAT:
+            content = '\n'.join(content_parts)
+            format_string_context = FormatStringContext(content)
+            format_string_context.match()
+            context.add_tokens(format_string_context.tokens)
+        else:
+            limit = len(content_parts)
+            if limit:
+                index = 0
+                while True:
+                    content = content_parts[index]
+                    context.add_token(token_type, content)
+                    
+                    index += 1
+                    if index == limit:
+                        break
+                    
+                    context.add_token(TOKEN_TYPE_LINEBREAK, None)
+                    continue
     
     else:
         if len(line) == end:
@@ -1237,7 +1659,12 @@ def _try_match_string(context):
                 content = matched.group(1)
                 set_end_later = matched.end()
             
-            context.add_token(token_type, content)
+            if token_type == TOKEN_TYPE_STRING_UNICODE_FORMAT:
+                format_string_context = FormatStringContext(content)
+                format_string_context.match()
+                context.add_tokens(format_string_context.tokens)
+            else:
+                context.add_token(token_type, content)
     
     context.add_token(token_type, encapsuletor)
     
@@ -1252,7 +1679,7 @@ def _try_match_space(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1281,7 +1708,7 @@ def _try_match_comment(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1295,9 +1722,18 @@ def _try_match_comment(context):
     if line[index] != '#':
         return False
     
-    content = line[index:]
-    context.add_token(TOKEN_TYPE_COMMENT, content)
-    context.set_line_character_index(-1)
+    # In later joined contents we might meet line break, so check that as well!
+    line_break_index = line.find('\n')
+    if line_break_index == -1:
+        content = line[index:]
+        context.add_token(TOKEN_TYPE_COMMENT, content)
+        context.set_line_character_index(-1)
+    else:
+        content = line[index:line_break_index]
+        context.add_token(TOKEN_TYPE_COMMENT, content)
+        context.add_token(TOKEN_TYPE_LINEBREAK, None)
+        context.set_line_character_index(line_break_index+1)
+    
     return True
 
 def _try_match_anything(context):
@@ -1306,7 +1742,7 @@ def _try_match_anything(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1327,7 +1763,7 @@ def _try_match_empty_line(context):
     
     Parameter
     ---------
-    context : ``HighLightContext``
+    context : ``HighlightContextBase``
         The context to use.
     
     Returns
@@ -1345,8 +1781,190 @@ def _try_match_empty_line(context):
     context.set_line_character_index(-1)
     return True
 
-PARSERS = (
+def _try_match_console_prefix(context):
+    """
+    Tries to match a console prefix
+    
+    Parameter
+    ---------
+    context : ``HighlightContextBase``
+        The context to use.
+    
+    Returns
+    -------
+    success : `bool`
+        Whether console prefix could be matched.
+    """
+    index = context.get_line_character_index()
+    if index != 0:
+        return False
+    
+    line = context.get_line()
+    
+    matched = CONSOLE_PREFIX_RP.match(line)
+    if matched is None:
+        return False
+    
+    prefix, space = matched.groups()
+    context.add_token(TOKEN_TYPE_SPECIAL_CONSOLE_PREFIX, prefix)
+    context.add_token(TOKEN_TYPE_SPACE, space)
+    
+    end = matched.end()
+    context.set_line_character_index(end)
+    return True
+
+
+PYTHON_PARSERS = (
     _try_match_empty_line,
+    _try_match_space,
+    _try_match_comment,
+    _try_match_string,
+    _try_match_complex,
+    _try_match_float,
+    _try_match_integer_hexadecimal,
+    _try_match_integer_decimal,
+    _try_match_integer_octal,
+    _try_match_integer_binary,
+    _try_match_identifier,
+    _try_match_console_prefix,
+    _try_match_punctuation,
+    _try_match_operator,
+    _try_match_anything,
+      )
+
+def _try_match_till_format_string_expression(context):
+    """
+    Tries to match a format string's internal content, till reaches the first code part.
+    
+    Parameters
+    ----------
+    context : ``FormatStringContext``
+        The context to use.
+    
+    Returns
+    -------
+    success : `bool`
+        Whether anything was matched.
+        
+        Always returns `True`.
+    """
+    line = context.get_line()
+    line_length = len(line)
+    start_index = index = context.get_line_character_index()
+    
+    while True:
+        if index > line_length:
+            break
+        
+        matched = FORMAT_STRING_MATCH_STRING.match(line, index)
+        if matched is None:
+            # We are at the end, we done, yay.
+            content = line[start_index:]
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
+            context.set_line_character_index(-1)
+            break
+        
+        content, ender = matched.groups()
+        if ender == '{{':
+            # Escaped `{`
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, ender)
+            index += len(content)+2
+            continue
+        
+        if ender == '\n':
+            # Multi-line string line break, need to add a linebreak.
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
+            context.add_token(TOKEN_TYPE_LINEBREAK, None)
+            index += len(content)+1
+            continue
+        
+        if ender == '{':
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
+            context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, ender)
+            index += len(content)+1
+            context.set_line_character_index(index)
+            break
+        
+        if ender == '}}':
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, ender)
+            index += len(content)+2
+            context.set_line_character_index(index)
+            continue
+        
+        if ender == '}':
+            context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
+            context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, ender)
+            index += len(content)+1
+            context.set_line_character_index(index)
+            break
+    
+    return True
+
+def _try_match_linebreak(context):
+    """
+    Tries to match a linebreak.
+    
+    Parameters
+    ----------
+    context : ``HighlightContextBase``
+        The context to use.
+    
+    Returns
+    -------
+    success : `bool`
+        Whether a linebreak was matched.
+    """
+    line = context.get_line()
+    index = context.get_line_character_index()
+    
+    if line[index] != '\n':
+        return False
+    
+    context.add_token(TOKEN_TYPE_LINEBREAK, None)
+    context.set_line_character_index(index+1)
+    
+    return True
+
+def _try_match_format_string_postfix(context):
+    """
+    Tries to match format string postfix.
+    
+    Parameters
+    ----------
+    context : ``FormatStringContext``
+        The context to use.
+    
+    Returns
+    -------
+    success : `bool`
+        Whether postfix was matched.
+    """
+    if context.is_in_code:
+        return False
+    
+    if context.brace_level != 1:
+        return False
+    
+    line = context.get_line()
+    index = context.get_line_character_index()
+    
+    matched = FORMAT_STRING_POSTFIX_RP.match(line, index)
+    if matched is None:
+        return False
+    
+    postfix = matched.group(1)
+    end = matched.end()
+    
+    context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT_POSTFIX, postfix)
+    context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, '}')
+    context.set_line_character_index(end)
+    return True
+    
+PYTHON_PARSERS_FORMAT_STRING = (
+    _try_match_empty_line,
+    _try_match_linebreak,
     _try_match_space,
     _try_match_comment,
     _try_match_string,
@@ -1359,5 +1977,6 @@ PARSERS = (
     _try_match_identifier,
     _try_match_punctuation,
     _try_match_operator,
+    _try_match_format_string_postfix,
     _try_match_anything,
-        )
+      )

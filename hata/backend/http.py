@@ -829,12 +829,12 @@ class RequestCM(object):
     ``RequestCM`` instances are returned by ``HTTPClient`` request methods. Request context managers can be used as an
     asynchronous context manager or as a simple awaitable.
     
-    ```
+    ```py
     async with http_client.get('http://python.org') as response:
         data = await response.read()
     ```
     
-    ```
+    ```py
     response = await http_client.get('http://python.org')
     data = await response.read()
     ```
@@ -926,12 +926,12 @@ class WebsocketCM(object):
     ``WebsocketCM`` instances are returned by the ``HTTPClient.connect_ws`` method. Websocket context managers can be
     used as an asynchronous context manager or as a simple awaitable.
     
-    ```
+    ```py
     async with http_client.connect_ws('http://ayaya.aya') as websocket:
         await websocket.send('ayaya')
     ```
     
-    ```
+    ```py
     websocket = await http_client.connect_ws('http://ayaya.aya')
     await websocket.send('ayaya')
     ```

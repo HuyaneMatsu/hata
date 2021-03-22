@@ -585,7 +585,7 @@ class Role(DiscordEntity, immortal=True):
         
         Examples
         --------
-        ```
+        ```py
         >>>> from hata import Role, now_as_id
         >>>> role = Role.precreate(now_as_id(), name='admiral-general')
         >>>> role

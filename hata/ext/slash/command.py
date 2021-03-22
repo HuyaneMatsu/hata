@@ -3198,9 +3198,9 @@ def match_application_commands_to_commands(application_commands, commands, match
                     matched = []
                 
                 matched.append((application_command, command))
-            
-            if not commands:
-                commands = None
+        
+        if not commands:
+            commands = None
     
     return commands, matched
 
@@ -4443,7 +4443,9 @@ class Slasher(EventHandlerBase):
                 if not non_global_keep_commands:
                     non_global_keep_commands = None
             
-            tasks = []
+            command_create_coroutines = None
+            command_edit_coroutines = None
+            command_delete_coroutines = None
             
             guild_added_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_added_commands, True)
@@ -4461,24 +4463,28 @@ class Slasher(EventHandlerBase):
                 guild_added_commands, False)
             if (matched is not None):
                 for application_command, command in matched:
-                    task = Task(self._edit_command(client, command, guild_command_state, guild_id,
-                        application_command,), KOKORO)
-                    tasks.append(task)
+                    coroutine = self._edit_command(client, command, guild_command_state, guild_id,
+                        application_command,)
+                    if command_edit_coroutines is None:
+                        command_edit_coroutines = []
+                    command_edit_coroutines.append(coroutine)
             
             non_global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 non_global_added_commands, False)
             if (matched is not None):
                 for application_command, command in matched:
-                    task = Task(self._edit_guild_command_to_non_global(client, command, non_global_command_state,
-                        guild_id, application_command), KOKORO)
-                    tasks.append(task)
+                    coroutine = self._edit_guild_command_to_non_global(client, command, non_global_command_state,
+                        guild_id, application_command)
+                    if command_edit_coroutines is None:
+                        command_edit_coroutines = []
+                    command_edit_coroutines.append(coroutine)
             
             guild_keep_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_keep_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
                     self._keep_helper(command, guild_command_state, guild_id)
-                
+            
             non_global_keep_commands, matched = match_application_commands_to_commands(application_commands,
                 non_global_keep_commands, True)
             if (matched is not None):
@@ -4489,33 +4495,38 @@ class Slasher(EventHandlerBase):
                 guild_removed_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    task = Task(self._delete_command(client, command, guild_command_state, guild_id,
-                        application_command), KOKORO)
-                    tasks.append(task)
+                    coroutine = self._delete_command(client, command, guild_command_state, guild_id,
+                        application_command)
+                    if command_delete_coroutines is None:
+                        command_delete_coroutines = []
+                    command_delete_coroutines.append(coroutine)
             
             if (guild_added_commands is not None):
                 while guild_added_commands:
                     command = guild_added_commands.pop()
                     
-                    task = Task(self._create_command(client, command, guild_command_state, guild_id),
-                        KOKORO)
-                    tasks.append(task)
+                    coroutine = self._create_command(client, command, guild_command_state, guild_id)
+                    if command_create_coroutines is None:
+                        command_create_coroutines = []
+                    command_create_coroutines.append(coroutine)
                     continue
             
             while application_commands:
                 application_command = application_commands.pop()
                 
-                task = Task(self._delete_command(client, None, None, guild_id, application_command), KOKORO)
-                tasks.append(task)
+                coroutine = self._delete_command(client, None, None, guild_id, application_command)
+                if command_delete_coroutines is None:
+                    command_delete_coroutines = []
+                command_delete_coroutines.append(coroutine)
             
-            if tasks:
-                done, pending = await WaitTillAll(tasks, KOKORO)
-                success = True
-                for future in done:
-                    if not future.result():
-                        success = False
-            else:
-                success = True
+            success = True
+            for coroutines in (command_delete_coroutines, command_edit_coroutines, command_create_coroutines):
+                if (coroutines is not None):
+                    done, pending = await WaitTillAll([Task(coroutine, KOKORO) for coroutine in coroutines], KOKORO)
+                    
+                    for future in done:
+                        if not future.result():
+                            success = False
         
         finally:
             try:
@@ -4572,7 +4583,9 @@ class Slasher(EventHandlerBase):
                 if not global_removed_commands:
                     global_removed_commands = None
             
-            tasks = []
+            command_create_coroutines = None
+            command_edit_coroutines = None
+            command_delete_coroutines = None
             
             global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 global_added_commands, True)
@@ -4590,31 +4603,37 @@ class Slasher(EventHandlerBase):
                 global_removed_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    task = Task(self._delete_command(client, command, global_command_state, SYNC_ID_GLOBAL,
-                        application_command), KOKORO)
-                    tasks.append(task)
+                    coroutine = self._delete_command(client, command, global_command_state, SYNC_ID_GLOBAL,
+                        application_command)
+                    if command_delete_coroutines is None:
+                        command_delete_coroutines = []
+                    command_delete_coroutines.append(coroutine)
             
             if (global_added_commands is not None):
                 while global_added_commands:
                     command = global_added_commands.pop()
                     
-                    task = Task(self._create_command(client, command, global_command_state, SYNC_ID_GLOBAL), KOKORO)
-                    tasks.append(task)
+                    coroutine = self._create_command(client, command, global_command_state, SYNC_ID_GLOBAL)
+                    if command_create_coroutines is None:
+                        command_create_coroutines = []
+                    command_create_coroutines.append(coroutine)
             
             while application_commands:
                 application_command = application_commands.pop()
                 
-                task = Task(self._delete_command(client, None, None, SYNC_ID_GLOBAL, application_command), KOKORO)
-                tasks.append(task)
+                coroutine = self._delete_command(client, None, None, SYNC_ID_GLOBAL, application_command)
+                if command_delete_coroutines is None:
+                    command_delete_coroutines = []
+                command_delete_coroutines.append(coroutine)
             
-            if tasks:
-                done, pending = await WaitTillAll(tasks, KOKORO)
-                success = True
-                for future in done:
-                    if not future.result():
-                        success = False
-            else:
-                success = True
+            success = True
+            for coroutines in (command_delete_coroutines, command_edit_coroutines, command_create_coroutines):
+                if (coroutines is not None):
+                    done, pending = await WaitTillAll([Task(coroutine, KOKORO) for coroutine in coroutines], KOKORO)
+                    
+                    for future in done:
+                        if not future.result():
+                            success = False
         
         finally:
             try:

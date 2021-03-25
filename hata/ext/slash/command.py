@@ -90,7 +90,7 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
     response : `Any`
         Any object yielded or returned by the command coroutine.
     
-    Returns
+    Yields
     -------
     request_coro : `None` or `coroutine`
     """
@@ -147,7 +147,7 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
     """
     Processes a slash command coroutine generator.
     
-    This method os a coroutine.
+    This function os a coroutine.
     
     Parameters
     ----------
@@ -240,7 +240,7 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
     
     If the coroutine returns or yields a string or an embed like then sends it to the respective channel.
     
-    This method is a coroutine.
+    This function is a coroutine.
     
     Parameters
     ----------
@@ -412,7 +412,11 @@ class SlashResponse(object):
                 
                 yield client.interaction_response_message_create(interaction_event,
                     show_for_invoking_user_only=show_for_invoking_user_only)
-            
+                
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                    'tts'))
+                
+                yield client.interaction_response_message_edit(interaction_event, **response_parameters)
             else:
                 response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'tts'))
                 response_parameters['show_for_invoking_user_only'] = \
@@ -986,7 +990,7 @@ class ArgumentConverter(object):
             - If `annotation` is not `tuple`.
             - If `annotation` 1st element is not `str` instance.
         ValueError
-            - If `annotation` is a `tuple`, but it's length is not 2.
+            - If `annotation` is a `tuple`, but it's length is not range [2:3].
             - If `annotation_value` is `str` instance, but not any of the expected ones.
             - If `annotation_value` is `type` instance, but not any of the expected ones.
             - If `choice` amount is out of the expected range [1:25].
@@ -994,31 +998,31 @@ class ArgumentConverter(object):
             - If a `choice` values are mixed types.
             - If `annotation` 1st element's range is out of the expected range [2:100].
         """
-        name = argument.name
+        argument_name = argument.name
         if not argument.has_annotation:
-            raise TypeError(f'Argument `{name}` has no annotation.')
+            raise TypeError(f'Argument `{argument_name}` has no annotation.')
         
         annotation = argument.annotation
         if not isinstance(annotation, tuple):
-            raise TypeError(f'Argument `{name}` is not `tuple` instances, got {annotation.__class__.__name__}.')
+            raise TypeError(f'Argument `{argument_name}` is not `tuple` instances, got {annotation.__class__.__name__}.')
             
         annotation_tuple_length = len(annotation)
-        if annotation_tuple_length != 2:
-            raise ValueError(f'Argument `{name}` has annotation as `tuple`, but it\'s length is not 2, got '
-                f'{annotation_tuple_length!r}, {annotation_tuple_length!r}.')
+        if annotation_tuple_length not in (2, 3):
+            raise ValueError(f'Argument `{argument_name}` has annotation as `tuple`, but it\'s length is not in range [2:3], '
+                f'got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
         
-        annotation_value, description = annotation
-        annotation_type, choices = parse_annotation_type_and_choice(annotation_value, name)
+        annotation_value, description = annotation[:2]
+        annotation_type, choices = parse_annotation_type_and_choice(annotation_value, argument_name)
         
         if (description is not None) and (not isinstance(description, str)):
-            raise TypeError(f'Argument `{name}` has annotation description is not `str` instance, got '
+            raise TypeError(f'Argument `{argument_name}` has annotation description is not `str` instance, got '
                 f'{description.__class__.__name__}.')
         
         description_length = len(description)
         if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
                 description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
-            raise ValueError(f'Argument `{name}` has annotation description\'s length is out of the expected range '
-                f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:'
+            raise ValueError(f'Argument `{argument_name}` has annotation description\'s length is out of the expected '
+                f'range [{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:'
                 f'{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got {description_length}; {description!r}.')
         
         if argument.has_default:
@@ -1027,6 +1031,19 @@ class ArgumentConverter(object):
         else:
             default = None
             required = True
+        
+        if len(annotation) == 3:
+            name = annotation[2]
+            
+            if type(name) is str:
+                pass
+            elif isinstance(name, str):
+                name = str(name)
+            else:
+                raise TypeError(f'`Argument `{argument_name}` has name given as non `str` instance, got '
+                    f'{name.__class__.__name__}.')
+        else:
+            name = argument_name
         
         name = raw_name_to_display(name)
         self = object.__new__(cls)

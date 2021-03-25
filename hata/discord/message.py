@@ -286,6 +286,7 @@ class Sticker(DiscordEntity):
         """Returns the sticker's representation."""
         return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'
 
+
 class MessageInteraction(DiscordEntity):
     """
     Sent with a ``Message``, when the it is a response to an ``InteractionEvent``.
@@ -302,7 +303,7 @@ class MessageInteraction(DiscordEntity):
         Who invoked the interaction.
     """
     __slots__ = ('name', 'type', 'user')
-    def __new_(cls, data):
+    def __new__(cls, data):
         """
         Creates a new ``MessageInteraction`` instance from the received data.
         

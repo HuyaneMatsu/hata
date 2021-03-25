@@ -73,7 +73,7 @@ from hata.ext.slash import setup_ext_slash
 GUILD = Guild.precreate(guild_id)
 
 Seija = Client('TOKEN')
-setup_ext_commands(Seija)
+setup_ext_slash(Seija)
 
 @Seija.events
 async def ready(client):
@@ -93,7 +93,7 @@ Hata leaves the main thread free, `client.start()` blocks it only till the clien
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.1.51'
+__version__ = '1.1.52'
 
 from .env import BACKEND_ONLY
 

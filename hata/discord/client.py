@@ -13495,10 +13495,10 @@ class Client(UserBase):
         # Mark the interaction as responded.
         
         response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
-        # if deferring:
-        #    response_state = INTERACTION_EVENT_RESPONSE_STATE_DEFERRED
-        # else:
-        #    response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+        if deferring:
+            response_state = INTERACTION_EVENT_RESPONSE_STATE_DEFERRED
+        else:
+            response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
         interaction._response_state = response_state
         
         # No message data is returned by Discord, return `None`.
@@ -13712,8 +13712,8 @@ class Client(UserBase):
         
         # Mark the interaction as responded if deferred.
         
-        #if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-        #    interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+        if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
     
     async def interaction_response_message_delete(self, interaction):
         """

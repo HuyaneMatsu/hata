@@ -153,7 +153,7 @@ class ActivityTimestamps(object):
     
     def to_data(self):
         """
-        Serialises the activity timestamp.
+        Serializes the activity timestamp.
         
         Returns
         -------
@@ -267,7 +267,7 @@ class ActivityAssets(object):
     
     def to_data(self):
         """
-        Serialises the activity asset.
+        Serializes the activity asset.
         
         Returns
         -------
@@ -375,7 +375,7 @@ class ActivityParty(object):
     
     def to_data(self):
         """
-        Serialises the activity party.
+        Serializes the activity party.
         
         Returns
         -------
@@ -475,7 +475,7 @@ class ActivitySecrets(object):
     
     def to_data(self):
         """
-        Serialises the activity secret.
+        Serializes the activity secret.
         
         Returns
         -------

@@ -553,7 +553,7 @@ def set_highlight_html_class(token_type_identifier, html_class):
     try:
         node = TOKEN_TYPE_NODES[token_type_identifier]
     except KeyError:
-        raise ValueError(f'`token_type_identifier` was not given as any of the predefined values, got:'
+        raise ValueError(f'`token_type_identifier` was not given as any of the predefined values, got: '
             f'{token_type_identifier!r}.') from None
     
     node.set_html_class(html_class)

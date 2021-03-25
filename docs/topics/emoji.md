@@ -23,11 +23,12 @@ unicode emojis on the same way as static, just by storing their identifier.
 Unicode emojis can be accessed from the global `EMOJIS` cache by their `.id` as they key, by using the
 `UNICODE_EMOJIS` with their name or alternative name or from the `UNICODE_TO_EMOJI` by their unicode value.
 
-Between each unicode emoji release some old emoji's name or unicode value might change. This not affects Discord
-nor Hata, since old emojis are still usable, so the newer releases will get their new object keeping old data
+Between each unicode emoji release some emoji's name or unicode value might change. This not affects Discord
+nor Hata, since older emojis are still usable, so the newer releases will get their new object keeping old data
 unaffected.
 
-You can access old emojis from `UNICODE_EMOJIS` as well, by using an `old_` prefix before their name.
+You can access older Variant selector-16 emojis from `UNICODE_EMOJIS` as well, by using an `_vs16` postfix after their
+name.
 
 ## Custom emojis
 

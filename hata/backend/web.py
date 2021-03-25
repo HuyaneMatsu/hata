@@ -490,6 +490,54 @@ class Route(object):
         result.append('>')
         
         return ''.join(result)
+    
+    def __call__(self):
+        """
+        Calls the route.
+        
+        Returns
+        -------
+        coroutine : `CoroutineType` or `GeneratorType`
+            The ``.rule``'s `view_func`.
+        """
+        rule = self.rule
+        parameters = self.parameters.copy()
+        
+        positional_parameter_names = rule.positional_parameter_names
+        if positional_parameter_names is None:
+            positional_parameters = None
+        else:
+            positional_parameters = []
+            for parameter_name in positional_parameter_names:
+                positional_parameters.append(parameters.pop(parameter_name))
+        
+        if rule.kwargs_parameter_supported:
+            keyword_parameters = parameters
+        else:
+            keyword_parameter_names = rule.keyword_parameter_names
+            if keyword_parameter_names is None:
+                keyword_parameters = None
+            else:
+                keyword_parameters = {}
+                for parameter_name in keyword_parameter_names:
+                    keyword_parameters[parameter_name] = parameters[parameter_name]
+        
+        view_func = rule.view_func
+        if positional_parameters is None:
+            if keyword_parameters is None:
+                coroutine = view_func()
+            else:
+                coroutine = view_func(**keyword_parameters)
+        else:
+            if keyword_parameters is None:
+                coroutine = view_func(*positional_parameters)
+            else:
+                coroutine = view_func(*positional_parameters, **keyword_parameters)
+        
+        return coroutine
+
+
+
 
 MAYBE_REGEX_PATH_PART_RP = re.compile('<(?:(string|int|float|uuid)\:)?([a-zA-Z_][a-zA-Z_0-9]*)>')
 
@@ -650,7 +698,7 @@ class ParameterValidatorPathStep(object):
     
     Attributes
     ----------
-    path_routers : `list` of `tuple` (`str`, ``PathRouter``)
+    path_routers : `list` of `tuple` (``PathRouter``, `str`)
         A list of `parameter-name`, `path-router` combination to route to.
     parameter_type : `int`
         Identifier value representing the validator.
@@ -706,7 +754,7 @@ class ParameterValidatorPathStep(object):
         self.parameter_type = parameter_type
         self.validator = PARAMETER_TYPE_TO_VALIDATOR[parameter_type]
         path_router = PathRouter()
-        self.path_routers = [(parameter_name, path_router)]
+        self.path_routers = [(path_router, parameter_name)]
         return self, path_router
     
     def get_path_router(self, parameter_name):
@@ -724,12 +772,12 @@ class ParameterValidatorPathStep(object):
             The matched or created router.
         """
         path_routers = self.path_routers
-        for maybe_parameter_name, path_router in path_routers:
+        for path_router, maybe_parameter_name in path_routers:
             if maybe_parameter_name == parameter_name:
                 break
         else:
             path_router = PathRouter()
-            path_routers.append((parameter_name, path_router))
+            path_routers.append((path_router, parameter_name))
         
         return path_router
     
@@ -745,12 +793,24 @@ class ParameterValidatorPathStep(object):
             Rendered path parts.
         """
         parameter_type = self.parameter_type
-        for parameter_name, path_router in self.path_routers:
+        for path_router, parameter_name in self.path_routers:
             path_part = _rebuild_path_parameter(parameter_type, parameter_name)
             route_prefix_parts.append(path_part)
             path_router.render_structure(route_prefix_parts, parts)
             del route_prefix_parts[-1]
+    
+    def validate_parameters(self):
+        """
+        Validates the parameters of the rules registered into the parameter validator path step.
         
+        Raises
+        ------
+        RuntimeError
+            If a `view_func` might not receive a parameter in runtime.
+        """
+        for router, parameter_name in self.path_routers:
+            router.validate_parameters()
+    
     def __ge__(self, other):
         """Returns whether self should be tested later or at the same time as the other."""
         if type(self) is not type(other):
@@ -1135,8 +1195,45 @@ class PathRouter(object):
             _render_route_prefix_into(route_prefix_parts, parts)
             del route_prefix_parts[-1]
             parts.append(' *\n')
+    
+    def validate_parameters(self):
+        """
+        Validates the parameters of the rules registered into the router.
+        
+        Raises
+        ------
+        RuntimeError
+            If a `view_func` might not receive a parameter in runtime.
+        """
+        route_step_paths = self.route_step_paths
+        if (route_step_paths is not None):
+            for path_router in route_step_paths.values():
+                path_router.validate_parameters()
+        
+        route_step_validated = self.route_step_validated
+        if (route_step_validated is not None):
+            for parameter_validator_path_step in route_step_validated:
+                parameter_validator_path_step.validate_parameters()
+        
+        route_end = self.route_end
+        if (route_end is not None):
+            for rule in route_end.values():
+                rule.validate_parameters()
+        
+        route_end_all = self.route_end_all
+        if (route_end_all is not None):
+            route_end_all.validate_parameters()
+        
+        route_end_path = self.route_end_path
+        if (route_end_path is not None):
+            for rule, parameter_name in route_end_path.values():
+                rule.validate_parameters()
+        
+        route_end_path_all = self.route_end_path_all
+        if (route_end_path_all is not None):
+            rule, parameter_name = route_end_path_all
+            rule.validate_parameters()
 
-            
 class AbortRequest(BaseException):
     """
     Exception raised when ``abort`` is called.
@@ -1837,41 +1934,41 @@ def _merge_url_rule(rule_before, rule_after):
     
     return (*rule_before, *rule_after)
 
-def _merge_parameters(priority_parameters, secondary_parameters):
+def _merge_parameters(primary_parameters, secondary_parameters):
     """
     Merges two default parameters list,
     
     Parameters
     ----------
-    priority_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
+    primary_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
         Priority parameters, which element's wont be removed.
     secondary_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
-        Secondary parameters, which will be merged to `priority_parameters`.
+        Secondary parameters, which will be merged to `primary_parameters`.
     
     Returns
     -------
     merged_parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
         The merged parameters.
     """
-    if priority_parameters is None:
+    if primary_parameters is None:
         return secondary_parameters
     
     if secondary_parameters is None:
-        return priority_parameters
+        return primary_parameters
     
     extend_parameters = []
     for secondary_item in secondary_parameters:
         parameter_name = secondary_item[0]
-        for priority_item in priority_parameters:
+        for priority_item in primary_parameters:
             if priority_item[0] == parameter_name:
                 break
         else:
             extend_parameters.append(secondary_item)
     
     if not extend_parameters:
-        return priority_parameters
+        return primary_parameters
     
-    return (*priority_parameters, *extend_parameters)
+    return (*primary_parameters, *extend_parameters)
 
 class RuleFolder(object):
     """
@@ -1879,15 +1976,23 @@ class RuleFolder(object):
     
     Attributes
     ----------
+    endpoint : `str`
+        The endpoint's internal name.
+    keyword_parameter_names : `None` or `tuple` of `str`
+        Keyword only parameter names accepted by `view_func`.
+    kwargs_parameter_supported : `bool`
+        Whether `view_func` accepts `**kwargs` parameter.
+    positional_parameter_names : `None` or `tuple` of `str`
+        Positional only parameter names accepted by `view_func`.
     rules : `list` of ``Rule``
         Rules added.
     view_func : `async-callable`
         The function to call when serving a request to the provided endpoint.
-    endpoint : `str`
-        The endpoint's internal name.
     """
-    __slots__ = ('endpoint', 'rules', 'view_func',)
-    def __init__(self, view_func, endpoint):
+    __slots__ = ('endpoint', 'keyword_parameter_names', 'kwargs_parameter_supported', 'positional_parameter_names',
+        'rules', 'view_func')
+    def __init__(self, view_func, positional_parameter_names, keyword_parameter_names, kwargs_parameter_supported,
+            endpoint):
         """
         Creates a new ``RuleFolder`` instance.
         
@@ -1895,12 +2000,21 @@ class RuleFolder(object):
         ----------
         view_func : `async-callable`
             The function to call when serving a request to the provided endpoint.
+        positional_parameter_names : `None` or `tuple` of `str`
+            Positional only parameter names accepted by `view_func`.
+        keyword_parameter_names : `None` or `tuple` of `str`
+            Keyword only parameter names accepted by `view_func`.
+        kwargs_parameter_supported : `bool`
+            Whether `view_func` accepts `**kwargs` parameter.
         endpoint : `str`
             The endpoint's internal name.
         """
         self.view_func = view_func
         self.endpoint = endpoint
         self.rules = []
+        self.positional_parameter_names = positional_parameter_names
+        self.keyword_parameter_names = keyword_parameter_names
+        self.kwargs_parameter_supported = kwargs_parameter_supported
     
     @classmethod
     def from_rule(cls, rule):
@@ -1921,6 +2035,9 @@ class RuleFolder(object):
         self.view_func = rule.view_func
         self.endpoint = rule.endpoint
         self.rules = [rule]
+        self.positional_parameter_names = rule.positional_parameter_names
+        self.keyword_parameter_names = rule.keyword_parameter_names
+        self.kwargs_parameter_supported = rule.kwargs_parameter_supported
         
         return self
     
@@ -1939,7 +2056,8 @@ class RuleFolder(object):
         subdomain : `None` or `str`
             Whether the route should match the specified subdomain.
         """
-        self.rules.append(Rule(rule, self.view_func, self.endpoint, request_methods, parameters, subdomain))
+        self.rules.append(Rule(rule, self.view_func, self.positional_parameter_names, self.keyword_parameter_names,
+            self.kwargs_parameter_supported, self.endpoint, request_methods, parameters, subdomain))
     
     def copy(self):
         """
@@ -1952,6 +2070,11 @@ class RuleFolder(object):
         new = object.__new__(type(self))
         
         new.rules = [rule.copy() for rule in self.rules]
+        new.view_func = self.view_func
+        new.endpoint = self.endpoint
+        new.positional_parameter_names = self.positional_parameter_names
+        new.keyword_parameter_names = self.keyword_parameter_names
+        new.kwargs_parameter_supported = self.kwargs_parameter_supported
         
         return new
     
@@ -2036,10 +2159,24 @@ class Rule(object):
     
     Attributes
     ----------
+    application : `None` or ``WebApp``
+        The parent application.
+        
+        Only added when the rule is registered.
+    blueprint_state_stack : `None` or `tuple` of ``Blueprint``
+        Blueprint stack for the rule.
+        
+        Only added when the rule is registered.
     endpoint : `str`
         The endpoint's internal name.
+    keyword_parameter_names : `None` or `tuple` of `str`
+        Keyword only parameter names accepted by `view_func`.
+    kwargs_parameter_supported : `bool`
+        Whether `view_func` accepts `**kwargs` parameter.
     parameters : `None` or `tuple` of `tuple` (`str`, `Any`)
         Default parameters to pass to the `view_func`.
+    positional_parameter_names : `None` or `tuple` of `str`
+        Positional only parameter names accepted by `view_func`.
     request_methods : `None` or `set` of `str`
         Request methods to call `view_func` when received.
     rule : `tuple` or `tuple` of (`int`, `str`)
@@ -2048,19 +2185,13 @@ class Rule(object):
         Whether the route should match the specified subdomain.
     view_func : `async-callable`
         The function to call when serving a request to the provided endpoint.
-    blueprint_state_stack : `None` or `tuple` of ``Blueprint``
-        Blueprint stack for the rule.
-        
-        Only added when the rule is registered.
-    application : `None` or ``WebApp``
-        The parent application.
-        
-        Only added when the rule is registered.
     """
-    __slots__ = ('application', 'blueprint_state_stack', 'endpoint', 'parameters', 'request_methods', 'rule',
+    __slots__ = ('application', 'blueprint_state_stack', 'endpoint', 'keyword_parameter_names',
+        'kwargs_parameter_supported', 'parameters', 'positional_parameter_names', 'request_methods', 'rule',
         'subdomain', 'view_func')
     
-    def __init__(self, rule, view_func, endpoint, request_methods, parameters, subdomain):
+    def __init__(self, rule, view_func, positional_parameter_names, keyword_parameter_names,
+            kwargs_parameter_supported, endpoint, request_methods, parameters, subdomain):
         """
         Creates a new ``Rule`` instance.
         
@@ -2070,6 +2201,12 @@ class Rule(object):
             The url rule to register.
         view_func : `async-callable`
             The function to call when serving a request to the provided endpoint.
+        positional_parameter_names : `None` or `tuple` of `str`
+            Positional only parameter names accepted by `view_func`.
+        keyword_parameter_names : `None` or `tuple` of `str`
+            Keyword only parameter names accepted by `view_func`.
+        kwargs_parameter_supported : `bool`
+            Whether `view_func` accepts `**kwargs` parameter.
         endpoint : `str`
             The endpoint's internal name.
         request_methods : `None` or `set` of `str`
@@ -2087,6 +2224,9 @@ class Rule(object):
         self.subdomain = subdomain
         self.application = None
         self.blueprint_state_stack = None
+        self.positional_parameter_names = positional_parameter_names
+        self.keyword_parameter_names = keyword_parameter_names
+        self.kwargs_parameter_supported = kwargs_parameter_supported
     
     def copy(self):
         """
@@ -2104,8 +2244,44 @@ class Rule(object):
         new.rule = self.rule
         new.subdomain = self.subdomain
         new.view_func = self.view_func
+        new.positional_parameter_names = self.positional_parameter_names
+        new.keyword_parameter_names = self.keyword_parameter_names
+        new.kwargs_parameter_supported = self.kwargs_parameter_supported
         
         return new
+    
+    def validate_parameters(self):
+        """
+        Validates the parameters of the ``Rule``. Raises `RuntimeError` if the rule's ``.view_func`` might not receive
+        a parameter in runtime.
+        
+        Raises
+        ------
+        RuntimeError
+            If ``.view_func`` might not receive a parameter in runtime.
+        """
+        excepted_parameter_names = set()
+        
+        positional_parameter_names = self.positional_parameter_names
+        if (positional_parameter_names is not None):
+            excepted_parameter_names.update(positional_parameter_names)
+        
+        keyword_parameter_names = self.keyword_parameter_names
+        if (keyword_parameter_names is not None):
+            excepted_parameter_names.update(keyword_parameter_names)
+        
+        parameters = self.parameters
+        if (parameters is not None):
+            for parameter_name, parameter_value in parameters:
+                excepted_parameter_names.discard(parameter_name)
+        
+        for rule_part_type, rule_part_name in self.rule:
+            if rule_part_type != PARAMETER_TYPE_STATIC:
+                excepted_parameter_names.discard(rule_part_name)
+        
+        if excepted_parameter_names:
+            raise RuntimeError(f'{self.__class__.__name__}: {self!r} might be called without all of it\'s expected '
+                f'parameters. The following might be missing: {", ".join(excepted_parameter_names)}')
     
     def set_subdomain(self, subdomain):
         """
@@ -2309,8 +2485,9 @@ class Rule(object):
         return teardown_request_functions
 
 
-ROUTE_METHOD_NOT_ALLOWED = Rule((), _handler_method_not_allowed, 'method_not_allowed', None, None, None)
-ROUTE_NOT_FOUND_NOT_ALLOWED = Rule((), _handler_not_found, 'not found', None, None, None)
+ROUTE_METHOD_NOT_ALLOWED = Rule((), _handler_method_not_allowed, None, None, False, 'method_not_allowed', None, None,
+    None)
+ROUTE_NOT_FOUND_NOT_ALLOWED = Rule((), _handler_not_found, None, None, False, 'not found', None, None, None)
 
 
 def _analyze_handler(handler, handler_name, expected_parameter_count):
@@ -2622,11 +2799,59 @@ class AppBase(object):
             raise TypeError(f'`view_func` can be `async-callable`, `{Rule.__name__}` or `{RuleFolder.__name__}` '
                 f'instance, got `None`.')
         
-        if not isinstance(view_func, (Rule, RuleFolder)):
+        if isinstance(view_func, (Rule, RuleFolder)):
+            real_func = view_func.view_func
+            analyzed = CallableAnalyzer(real_func)
+            
+            view_func_positional_parameter_names = view_func.positional_parameter_names
+            view_func_keyword_parameter_names = view_func.keyword_parameter_names
+            view_func_kwargs_parameter_supported = view_func.kwargs_parameter_supported
+        else:
+            real_func = view_func
             analyzed = CallableAnalyzer(view_func)
             if not analyzed.is_async():
                 raise TypeError(f'`view_func` can be given as `async-callable`, got {view_func.__class__.__name__}; '
                     f'{view_func!r}.')
+            
+            if analyzed.accepts_args():
+                raise TypeError(f'`view_func` should not accept `*args` meanwhile it does, got {view_func!r}.')
+            
+            view_func_positional_parameter_names = None
+            view_func_keyword_parameter_names = None
+            view_func_kwargs_parameter_supported = analyzed.accepts_kwargs()
+            
+            for argument in analyzed.arguments:
+                if argument.reserved:
+                    continue
+                
+                if argument.is_kwargs():
+                    continue
+                
+                if argument.is_positional():
+                    if view_func_positional_parameter_names is None:
+                        view_func_positional_parameter_names = []
+                    view_func_positional_parameter_names.append(argument.name)
+                else:
+                    if view_func_keyword_parameter_names is None:
+                        view_func_keyword_parameter_names = []
+                    view_func_keyword_parameter_names.append(argument.name)
+            
+            if (view_func_positional_parameter_names is not None):
+                view_func_positional_parameter_names = tuple(view_func_positional_parameter_names)
+            
+            if (view_func_keyword_parameter_names is not None):
+                view_func_keyword_parameter_names = tuple(view_func_keyword_parameter_names)
+        
+        view_func_parameters = None
+        for argument in analyzed.arguments:
+            if argument.has_default:
+                if view_func_parameters is None:
+                    view_func_parameters = []
+                
+                view_func_parameters.append((argument.name, argument.default))
+        
+        if (view_func_parameters is not None):
+            view_func_parameters = tuple(view_func_parameters)
         
         for parameter_name in ('method', 'methods', 'defaults'):
             if options.get(parameter_name) is None:
@@ -2686,13 +2911,14 @@ class AppBase(object):
             parameters = None
             subdomain = None
         
-        if isinstance(view_func, (Rule, RuleFolder)):
-            view_func = view_func.view_func
+        parameters = _merge_parameters(parameters, view_func_parameters)
         
         actual_rule = self.rules.get(endpoint)
         
         if actual_rule is None:
-            rule = Rule(rule_processed, view_func, endpoint, request_methods, parameters, subdomain)
+            rule = Rule(rule_processed, real_func, view_func_positional_parameter_names,
+                view_func_keyword_parameter_names, view_func_kwargs_parameter_supported, endpoint, request_methods,
+                parameters, subdomain)
             self.rules[endpoint] = rule
             return rule
         
@@ -3534,6 +3760,7 @@ class RequestHandler(object):
             blueprint_state_stack.append(blueprint_state)
             continue
         
+        router.validate_parameters()
         
         self = object.__new__(cls)
         self._router = router
@@ -3573,7 +3800,34 @@ class RequestHandler(object):
         """
         url = URL(raw_request_message.path)
         route = self._dispatch_route(url, raw_request_message.method)
-    
+        rule = route.rule
+        
+        before_request_functions = rule.before_request_functions
+        if (before_request_functions is None):
+            answered = False
+        else:
+            for before_request_function in before_request_functions:
+                try:
+                    response_result = await before_request_function()
+                except BaseException as err:
+                    response_exception = err
+                    # TODO
+                    # Answer
+                    answered = True
+                    break
+                else:
+                    if (response_result is not None):
+                        # TODO
+                        # Answer
+                        answered = True
+                        break
+            else:
+                answered = False
+        
+        if not answered:
+            # TODO
+            pass
+        
     def _dispatch_route(self, url, request_method):
         """
         Gets handler for the given `url` and `request_method` combination.
@@ -3584,6 +3838,11 @@ class RequestHandler(object):
             The received request url.
         request_method : `str`
             The method to request.
+        
+        Returns
+        -------
+        route : ``Route``
+            The found route if any.
         """
         subdomain = url.subdomain
         if subdomain is None:

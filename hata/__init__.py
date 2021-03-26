@@ -87,13 +87,15 @@ async def ping(client, event):
 Seija.start()
 ```
 
+> Note: You need to restart your client, or the slash command wont show up.
+
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.1.52'
+__version__ = '1.1.53'
 
 from .env import BACKEND_ONLY
 

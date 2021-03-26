@@ -149,7 +149,7 @@ class Client(UserBase):
     secret : `str`
         The client's secret used when interacting with oauth2 endpoints.
     shard_count : `int`
-        The client's shard count. Set as `0` if the is not using sharding.
+        The client's shard count. Set as `0` if the bot is not using sharding.
     token : `str`
         The client's token.
     voice_clients : `dict` of (`int`, ``VoiceClient``) items
@@ -13755,9 +13755,7 @@ class Client(UserBase):
         Sends a followup message with the given interaction.
         
         When calling ``.interaction_followup_message_create`` before calling ``.interaction_response_message_create``
-        on an interaction, will redirect to ``.interaction_followup_message_create` `and drop a warning. If
-        ``.interaction_followup_message_create`` was called, but only to defer the interaction event, will redirect to
-        ``.interaction_followup_message_edit`` instead.
+        on an interaction, will redirect to ``.interaction_followup_message_create` `and drop a warning.
         
         This method is a coroutine.
         
@@ -13836,18 +13834,17 @@ class Client(UserBase):
             return await self.interaction_response_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions, tts=tts)
         
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-            warnings.warn(
-                f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
-                f'`{self.__class__.__name__}.interaction_response_message_edit` (deferred response was sent) with '
-                f'{interaction!r}. Tho it is possible to call `.interaction_followup_message_create`` before, the '
-                f'request is still redirected to `.interaction_response_message_edit`.',
-                ResourceWarning)
-            
-            return await self.interaction_response_message_edit(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions)
-        
-
+        # Ignore this case to allow more functionality at retrieving message object.
+        # elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+        #     warnings.warn(
+        #         f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
+        #         f'`{self.__class__.__name__}.interaction_response_message_edit` (deferred response was sent) with '
+        #         f'{interaction!r}. Tho it is possible to call `.interaction_followup_message_create`` before, the '
+        #         f'request is still redirected to `.interaction_response_message_edit`.',
+        #         ResourceWarning)
+        #
+        #     return await self.interaction_response_message_edit(interaction, content, embed=embed,
+        #         allowed_mentions=allowed_mentions)
         
         application_id = self.application.id
         if __debug__:
@@ -13975,6 +13972,9 @@ class Client(UserBase):
         
         data = await self.http.interaction_followup_message_create(application_id, interaction.id, interaction.token,
             to_send)
+        
+        # Set the message to responded to avoid editing the before message.
+        interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
         
         return interaction.channel._create_new_message(data)
     

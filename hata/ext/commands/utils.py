@@ -1,12 +1,13 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('ChooseMenu', 'Closer', 'Cooldown', 'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY',
     'GUI_STATE_SWITCHING_CTX', 'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'Pagination', 'WaitAndContinue',
-    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction', 'MessageCreateWaitfor',)
+    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'multievent', 'wait_for_message', 'wait_for_reaction',
+    'MessageCreateWaitfor',)
 
 from ...backend.futures import Task, Future
 from ...backend.event_loop import LOOP_TIME
 
-from ...discord.parsers import EventWaitforBase
+from ...discord.parsers import EventWaitforBase, InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_NONE
 from ...discord.emoji import BUILTIN_EMOJIS
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client_core import KOKORO
@@ -338,8 +339,12 @@ class Pagination(object):
         ----------
         client : ``Client``
             The client who will execute the ``Pagination``.
-        channel : ``ChannelTextBase`` instance or ``Message``
+        channel : ``ChannelTextBase`` instance, ``Message``, ``InteractionEvent``
             The channel where the ``Pagination`` will be executed. Pass it as a ``Message`` instance to send a reply.
+            
+            If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
+            Although will not acknowledge it if `message` is given.
+        
         pages : `indexable-container`
             An indexable container, what stores the displayable pages.
         timeout : `float`, Optional
@@ -382,10 +387,16 @@ class Pagination(object):
         
         if isinstance(channel, ChannelTextBase):
             target_channel = channel
+            received_interaction = False
         elif isinstance(channel, Message):
             target_channel = channel.channel
+            received_interaction = False
+        elif isinstance(channel, InteractionEvent):
+            target_channel = channel.channel
+            received_interaction = True
         else:
-            raise TypeError('`channel` can be given only as `ChannelTextBase` or as `Message` instance.')
+            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
+                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
         
         self = object.__new__(cls)
         self.check = check
@@ -401,7 +412,13 @@ class Pagination(object):
         
         try:
             if message is None:
-                message = await client.message_create(channel, pages[0])
+                if received_interaction:
+                    if channel._response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                        await client.interaction_response_message_create(channel)
+                    
+                    message = await client.interaction_followup_message_create(channel, pages[0])
+                else:
+                    message = await client.message_create(channel, pages[0])
                 self.message = message
             else:
                 await client.message_edit(message, pages[0])
@@ -770,8 +787,12 @@ class Closer(object):
         ----------
         client : ``Client``
             The client who will execute the ``Closer``.
-        channel : ``ChannelTextBase`` instance or ``Message``
+        channel : ``ChannelTextBase`` instance, ``Message``, ``InteractionEvent``
             The channel where the ``Closer`` will be executed.  Pass it as a ``Message`` instance to send a reply.
+        
+            If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
+            Although will not acknowledge it if `message` is given.
+        
         content : ``Any`
             The displayed content.
         timeout : `float`, Optional
@@ -810,10 +831,16 @@ class Closer(object):
         """
         if isinstance(channel, ChannelTextBase):
             target_channel = channel
+            received_interaction = False
         elif isinstance(channel, Message):
             target_channel = channel.channel
+            received_interaction = False
+        elif isinstance(channel, InteractionEvent):
+            target_channel = channel.channel
+            received_interaction = True
         else:
-            raise TypeError('`channel` can be given only as `ChannelTextBase` or as `Message` instance.')
+            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
+                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
         
         self = object.__new__(cls)
         self.check = check
@@ -826,7 +853,13 @@ class Closer(object):
         
         try:
             if message is None:
-                message = await client.message_create(channel, content)
+                if received_interaction:
+                    if channel._response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                        await client.interaction_response_message_create(channel)
+                    
+                    message = await client.interaction_followup_message_create(channel, content)
+                else:
+                    message = await client.message_create(channel, content)
                 self.message = message
             else:
                 await client.message_edit(message, content)
@@ -1059,9 +1092,9 @@ class ChooseMenu(object):
     
     client : ``Client``
         The client who executes the ``ChooseMenu``.
-    embed : ``Embed`` (or any compatible)
-            An embed base, what's description and footer will be rendered with the given choices and with information
-            about the respective page.
+    embed : ``EmbedBase`` instance
+        An embed base, what's description and footer will be rendered with the given choices and with information
+        about the respective page.
     message : `None` or ``Message``
         The message on what the ``ChooseMenu`` is executed.
     selected : `int`
@@ -1173,6 +1206,10 @@ class ChooseMenu(object):
             The client who executes the ``ChooseMenu``.
         channel : ``ChannelTextBase`` instance or ``Message``
             The channel where the ``ChooseMenu`` is executed. Pass it as a ``Message`` instance to send a reply.
+            
+            If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
+            Although will not acknowledge it if `message` is given.
+        
         choices : `indexable` of `Any`
             An indexable container, what stores the displayable choices.
             
@@ -1196,15 +1233,15 @@ class ChooseMenu(object):
             `message` passed to the `selector` will be `None` as well.
             
             At least 3 parameters are passed to the `selector`:
-            +-------------------+-------------------------------+
-            | Respective name   | Type                          |
-            +===================+===============================+
-            | client            | ``Client``                    |
-            +-------------------+-------------------------------+
-            | channel           | ``ChannelTextBase`` instance  |
-            +-------------------+-------------------------------+
-            | message           | ``Message`` or `None`         |
-            +-------------------+-------------------------------+
+            +-------------------+-----------------------------------------------------------+
+            | Respective name   | Type                                                      |
+            +===================+===========================================================+
+            | client            | ``Client``                                                |
+            +-------------------+-----------------------------------------------------------+
+            | channel           | ``ChannelTextBase``, ``Message`` or ``InteractionEvent``  |
+            +-------------------+-----------------------------------------------------------+
+            | message           | ``Message`` or `None`                                     |
+            +-------------------+-----------------------------------------------------------+
             
             The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
             `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
@@ -1256,19 +1293,25 @@ class ChooseMenu(object):
         
         if isinstance(channel, ChannelTextBase):
             target_channel = channel
+            received_interaction = False
         elif isinstance(channel, Message):
             target_channel = channel.channel
+            received_interaction = False
+        elif isinstance(channel, InteractionEvent):
+            target_channel = channel.channel
+            received_interaction = True
         else:
-            raise TypeError('`channel` can be given only as `ChannelTextBase` or as `Message` instance.')
+            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
+                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
         
         result_ln = len(choices)
         if result_ln < 2:
             if result_ln == 1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
-                    coro = selector(client, target_channel, message, *choice)
+                    coro = selector(client, channel, message, *choice)
                 else:
-                    coro = selector(client, target_channel, message, choice)
+                    coro = selector(client, channel, message, choice)
                 await coro
             return None
         
@@ -1289,7 +1332,13 @@ class ChooseMenu(object):
         
         try:
             if message is None:
-                message = await client.message_create(channel, embed=self._render_embed())
+                if received_interaction:
+                    if channel._response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                        await client.interaction_response_message_create(channel)
+                    
+                    message = await client.interaction_followup_message_create(channel, embed=self._render_embed())
+                else:
+                    message = await client.message_create(channel, embed=self._render_embed())
                 self.message = message
             else:
                 await client.message_edit(message, embed=self._render_embed())

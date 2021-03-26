@@ -1085,7 +1085,7 @@ def sanitize_mentions(content, guild=None):
         id_ = int(id_)
         user = USERS.get(id_)
         if (user is None) or user.partial:
-            sanitized_mention = '@deleted user'
+            sanitized_mention = '@invalid-user'
         else:
             sanitized_mention = '@'+user.name_at(guild)
         

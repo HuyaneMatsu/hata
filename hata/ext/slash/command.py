@@ -298,6 +298,8 @@ class SlashResponse(object):
     
     Attributes
     ----------
+    -force_new_message : `bool`
+        Whether a new message should be forced out from Discord and being retrieved.
     _parameters : `dict` of (`str`, `Any`) items
         Parameters to pass to the respective ``Client`` functions.
         
@@ -310,10 +312,10 @@ class SlashResponse(object):
         - `'show_for_invoking_user_only'`
         - `'tts'`
     """
-    __slots__ = ('_parameters',)
+    __slots__ = ('_force_new_message', '_parameters',)
     
     def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., tts=...,
-            show_for_invoking_user_only=...,):
+            show_for_invoking_user_only=..., force_new_message=False):
         """
         Creates a new ``SlashResponse`` instance with the given parameters.
         
@@ -340,7 +342,11 @@ class SlashResponse(object):
             the command.
             
             If given as `True` only the message's content will be processed by Discord.
+        force_new_message : `bool`, Optional
+            Whether a new message should be forced out from Discord allowing the client to retrieve a new ``Message``
+            object as well. Defaults to `False`.
         """
+        self._force_new_message = force_new_message
         self._parameters = parameters = {}
         
         if (content is not ...):
@@ -405,45 +411,59 @@ class SlashResponse(object):
         request_coro : `None` or `coroutine`
         """
         response_state = interaction_event._response_state
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-            if 'file' in self._parameters:
-                show_for_invoking_user_only = \
-                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                
-                yield client.interaction_response_message_create(interaction_event,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
-                
-                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
-                    'tts'))
-                
-                yield client.interaction_response_message_edit(interaction_event, **response_parameters)
-            else:
-                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'tts'))
-                response_parameters['show_for_invoking_user_only'] = \
-                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                
-                yield client.interaction_response_message_create(interaction_event, **response_parameters)
-            return
-        
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed' 'file',))
+        if self._force_new_message:
+            if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                yield client.interaction_response_message_create(interaction_event)
             
-            yield client.interaction_response_message_edit(interaction_event, **response_parameters)
-            return
-        
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
-            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file', 'tts'))
+            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                'tts'))
             response_parameters['show_for_invoking_user_only'] = \
                 self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
             
             yield client.interaction_followup_message_create(interaction_event, **response_parameters)
             return
-        
-        return
+        else:
+            if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                if 'file' in self._parameters:
+                    show_for_invoking_user_only = \
+                        self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                    
+                    yield client.interaction_response_message_create(interaction_event,
+                        show_for_invoking_user_only=show_for_invoking_user_only)
+                    
+                    response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                        'tts'))
+                    
+                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+                else:
+                    response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'tts'))
+                    response_parameters['show_for_invoking_user_only'] = \
+                        self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                    
+                    yield client.interaction_response_message_create(interaction_event, **response_parameters)
+                return
+            
+            if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed' 'file',))
+                
+                yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+                return
+            
+            if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                    'tts'))
+                response_parameters['show_for_invoking_user_only'] = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                return
     
     def __repr__(self):
         """Returns the slash response's representation."""
-        result = ['<', self.__class__.__name__]
+        result = ['<', self.__class__.__name__, ' ']
+        if self._force_new_message:
+            result.append('(force new message) ')
+        
         parameters = self._parameters
         if parameters:
             for key, value in parameters.items():
@@ -2763,7 +2783,7 @@ class SlashCommandFunction(object):
     
     def __repr__(self):
         """Returns the application command option's representation."""
-        result = ['<', self.__class__.__name__, 'name=', repr(self.name), ', description=', repr(self.description)]
+        result = ['<', self.__class__.__name__, ' name=', repr(self.name), ', description=', repr(self.description)]
         if self.is_default:
             result.append(', is_default=True')
         

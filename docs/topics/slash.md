@@ -125,10 +125,13 @@ propagated to be sent as a response to the user, but you can also send responses
 `Client.interaction_response_message_create` or with the `Client.interaction_followup_message_create` methods. There
 are also other interaction related client methods, which are mentioned [later](#manual-responding).
 
+> New commands might not show up till you restart your client (not the bot). This is **always** the case for the first
+> command.
+
 ## Command Parameters
 
-By default 2 parameter is passed to every slash command, the respective client, and the received interaction event, what
-can be used to access every related information about the received event's context.
+By default 2 parameter is passed to every slash command, the respective client, and the received interaction event,
+which can be used to access every related information about the received event's context.
 
 An interaction event has the following top level attributes, which you may use up to produce a proper response:
 
@@ -426,8 +429,6 @@ async def repeat(client, event,
     return SlashResponse(text, allowed_mentions=None)
 ```
 
-Note, that `SlashResponse` accepts every fields, but only those will be delivered, what the actual endpoints supports.
-
 ##### Responding multiple times
 
 Sometimes you might wanna respond multiple times on an event. At this case use `yield` instead of `return`.
@@ -480,7 +481,7 @@ additional 15 minutes!
 ##### Capturing messages & exceptions
 
 Acknowledging will never return a message object (Discord side), so it cannot be captured either, but followup messages
-will do. You can do the following them:
+will do. So can do the following with them:
 
 ```py
 message = yield content
@@ -489,11 +490,35 @@ message = yield content
 Exceptions can be captured on the same way as well.
 
 ```py
-
 try:
     yield content
 except BaseException as err:
     # Do things.
+```
+
+After an interaction event is acknowledged with empty content, the second `yield` will edit the source message,
+causing no `Message` object to be retrieved. This is why `SlashResponse` supports a `force_new_message` parameter,
+which will force a new message causing a `Message` object to be retrieved.
+
+```py
+from hata import sleep
+from hata.ext.slash import SlashResponse
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def collect_reactions(client, event):
+    """Collects reactions"""
+    message = yield SlashResponse('Collecting reactions for 1 minute!', force_new_message=True)
+    await sleep(60.0)
+    
+    reactions = message.reactions
+    if reactions:
+        emojis = list(reactions)
+        # Limit reactions to 16 to avoid error from Discord
+        del emojis[16:]
+        
+        yield ' '.join(emoji.as_emoji for emoji in emojis)
+    else:
+        yield 'No reactions were collected.'
 ```
 
 ##### Giving away control flow
@@ -599,6 +624,24 @@ async def is_banned(client, event,
 ```
 
 > We need some iteration from Discord, till this feature will work at every case as expected.
+
+##### Changing parameter name
+
+Familiarly to the `name` interaction parameter mentioned [above](#name), the tailing `_` characters are removed from
+parameter names as well, but at some cases it is not enough. For this cases, you can add an extra third element to your
+annotation tuple.
+
+```py
+@Nitori.interactions(guild=TEST_GUILD)
+async def user_id(client, event,
+        user_id: ('user_id', 'Get the id of an other user?', 'user') = None,
+            ):
+    """Shows your or the selected user's id."""
+    if user_id is None:
+        user_id = event.user.id
+    
+    return str(user_id)
+```
 
 ## Non-global commands
 

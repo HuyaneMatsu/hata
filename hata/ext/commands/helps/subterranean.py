@@ -70,16 +70,16 @@ ARGUMENT_SEPARATOR_SPACE_AFTER_ONLY = {
 COLOR_GETTER_TYPE_STATIC = 0
 COLOR_GETTER_TYPE_CALLABLE = 1
 
-def check_user(event, user):
+def check_user(user, event):
     """
     Checks whether the ``ReactionAddEvent`` or ``ReactionDeleteEvent`` instance's user is same as the given one.
     
     Parameters
     ----------
-    event : ``ReactionAddEvent`` or ``ReactionDeleteEvent``
-        The reaction addition or deletion event.
     user : ``User`` or ``Client``
         The user who should be matched.
+    event : ``ReactionAddEvent`` or ``ReactionDeleteEvent``
+        The reaction addition or deletion event.
     """
     return (event.user is user)
 

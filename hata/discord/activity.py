@@ -569,6 +569,11 @@ class ActivityBase(object):
         return Color()
     
     @property
+    def colour(self):
+        """Alias of ``.color``."""
+        return self.color
+    
+    @property
     def discord_side_id(self):
         """
         Returns the activity's Discord side id. If the activity implements id returns that, else returns it's

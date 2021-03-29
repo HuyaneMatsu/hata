@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ApplicationCommandOptionType', 'AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag',
-    'GuildFeature', 'HypesquadHouse', 'InteractionType', 'InviteTargetType', 'MFA', 'VerificationScreenStepType',
-    'MessageActivityType', 'MessageNotificationLevel', 'MessageType', 'PremiumType', 'RelationshipType',
-    'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme', 'VerificationLevel', 'VoiceRegion',
-    'WebhookType', )
+__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'AuditLogEvent', 'ContentFilterLevel',
+    'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature', 'HypesquadHouse', 'InteractionType', 'InviteTargetType',
+    'MFA', 'VerificationScreenStepType', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
+    'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme',
+    'VerificationLevel', 'VoiceRegion', 'WebhookType', )
 
 from ..backend.utils import DOCS_ENABLED, any_to_any
 
@@ -1923,6 +1923,11 @@ class DefaultAvatar(PreinstancedBase):
     
     url = property(URLS.default_avatar_url)
     
+    @property
+    def colour(self):
+        """Alias of ``.color_at``."""
+        return self.color
+    
     # predefined
     blue   = NotImplemented
     gray   = NotImplemented
@@ -2353,6 +2358,52 @@ class VerificationScreenStepType(PreinstancedBase):
     rules = NotImplemented
 
 VerificationScreenStepType.rules = VerificationScreenStepType('TERMS')
+
+
+class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
+    """
+    Represents an application command's permission's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application command permission overwrite type.
+    value : `int`
+        The identifier value the application command permission overwrite type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ApplicationCommandPermissionOverwriteType``) items
+        Stores the predefined ``ApplicationCommandPermissionOverwriteType`` instances. These can be accessed with their
+        `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The application command permission overwrite types' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the application command permission overwrite types.
+    
+    Every predefined application command permission overwrite type. can be accessed as class attribute as well:
+    
+    +-----------------------+-------+-------+
+    | Class attribute name  | Name  | Value |
+    +=======================+=======+=======+
+    | ROLE                  | ROLE  | 1     |
+    +-----------------------+-------+-------+
+    | USER                  | USER  | 2     |
+    +-----------------------+-------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    NONE    = NotImplemented
+    ROLE    = NotImplemented
+    USER    = NotImplemented
+
+ApplicationCommandPermissionOverwriteType.NONE = ApplicationCommandPermissionOverwriteType(0 , 'NONE' ,)
+ApplicationCommandPermissionOverwriteType.ROLE = ApplicationCommandPermissionOverwriteType(1 , 'ROLE' ,)
+ApplicationCommandPermissionOverwriteType.USER = ApplicationCommandPermissionOverwriteType(2 , 'USER' ,)
 
 
 module_utils.RelationshipType = RelationshipType

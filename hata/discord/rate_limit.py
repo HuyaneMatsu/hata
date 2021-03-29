@@ -1856,6 +1856,14 @@ class RATE_LIMIT_GROUPS:
         - Limit : `2`
         - Resets after : `60.0`
     
+    - application_command_permission_get_all_guild
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/permissions'`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
     - application_command_guild_get
         - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}`
         - Method : `GET`
@@ -1878,6 +1886,22 @@ class RATE_LIMIT_GROUPS:
         - Required auth : `bot`
         - Limiter : `guild_id`
         - Limit : `5`
+        - Resets after : `20.0`
+    
+    - application_command_permission_get
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}/permissions`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - application_command_permission_edit
+        - Endpoint : `/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}/permissions`
+        - Method : `PUT`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5.0`
         - Resets after : `20.0`
     
     - application_get_all_detectable
@@ -3108,10 +3132,13 @@ class RATE_LIMIT_GROUPS:
     application_command_global_edit = RateLimitGroup()
     application_command_guild_get_all = RateLimitGroup.unlimited()
     application_command_guild_update_multiple = RateLimitGroup(LIMITER_GUILD)
+    application_command_permission_get_all_guild = RateLimitGroup.unlimited()
     application_command_guild_delete = RateLimitGroup(LIMITER_GUILD)
     application_command_guild_create = RateLimitGroup(LIMITER_GUILD)
     application_command_guild_get = RateLimitGroup.unlimited()
     application_command_guild_edit = RateLimitGroup(LIMITER_GUILD)
+    application_command_permission_get = RateLimitGroup.unlimited()
+    application_command_permission_edit = RateLimitGroup()
     application_get_all_detectable = RateLimitGroup(optimistic=True)
     client_logout               = RateLimitGroup() # untested
     channel_delete              = RateLimitGroup.unlimited()

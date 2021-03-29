@@ -623,8 +623,6 @@ async def is_banned(client, event,
     yield embed
 ```
 
-> We need some iteration from Discord, till this feature will work at every case as expected.
-
 ##### Changing parameter name
 
 Familiarly to the `name` interaction parameter mentioned [above](#name), the tailing `_` characters are removed from

@@ -2018,6 +2018,18 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_guild_update_multiple, guild_id),
             METHOD_PUT, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands', data)
     
+    async def application_command_permission_get(self, application_id, guild_id, application_command_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_permission_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}/permissions')
+    
+    async def application_command_permission_edit(self, application_id, guild_id, application_command_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_permission_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PUT, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}/permissions', data)
+    
+    async def application_command_permission_get_all_guild(self, application_id, guild_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.application_command_permission_get_all_guild, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/permissions')
+    
     async def interaction_response_message_create(self, interaction_id, interaction_token, data):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.interaction_response_message_create, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST, f'{API_ENDPOINT}/interactions/{interaction_id}/{interaction_token}/callback', data)

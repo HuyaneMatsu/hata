@@ -30,7 +30,7 @@ from .role import Role
 from .exceptions import DiscordException, ERROR_CODES
 from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
-from .interaction import ApplicationCommand, INTERACTION_TYPE_TABLE
+from .interaction import ApplicationCommand, INTERACTION_TYPE_TABLE, ApplicationCommandPermission
 from .integration import Integration
 from .permission import Permission
 from .preinstanced import InteractionType
@@ -218,6 +218,7 @@ GLOBAL_INTENT_EVENTS = (
     'APPLICATION_COMMAND_CREATE',
     'APPLICATION_COMMAND_UPDATE',
     'APPLICATION_COMMAND_DELETE',
+    'APPLICATION_COMMAND_PERMISSIONS_UPDATE',
     'USER_GUILD_SETTINGS_UPDATE', # User account only
     'CHANNEL_UNREAD_UPDATE', # User account only
         )
@@ -4792,65 +4793,90 @@ del APPLICATION_COMMAND_DELETE_CAL, \
     APPLICATION_COMMAND_DELETE_OPT
 
 
+def APPLICATION_COMMAND_PERMISSIONS_UPDATE_CAL(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
+    
+    application_command_permission = ApplicationCommandPermission.from_data(data)
+    
+    Task(client.events.application_command_permission_update(client, guild, application_command_permission), KOKORO)
+
+def APPLICATION_COMMAND_PERMISSIONS_UPDATE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'APPLICATION_COMMAND_PERMISSIONS_UPDATE',
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE_CAL,
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE_CAL,
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE_OPT,
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE_OPT)
+del APPLICATION_COMMAND_PERMISSIONS_UPDATE_CAL, \
+    APPLICATION_COMMAND_PERMISSIONS_UPDATE_OPT
+
 
 EVENTS = EVENT_SYSTEM_CORE()
 
-EVENTS.add_default('error'                      , 3 , ()                                        , )
-EVENTS.add_default('launch'                     , 1 , ()                                        , )
+EVENTS.add_default('error'                                  , 3 , ()                                        , )
+EVENTS.add_default('launch'                                 , 1 , ()                                        , )
 
-EVENTS.add_default('ready'                      , 1 , 'READY'                                   , )
-EVENTS.add_default('client_edit'                , 2 , 'USER_UPDATE'                             , )
-EVENTS.add_default('message_create'             , 2 , 'MESSAGE_CREATE'                          , )
-EVENTS.add_default('message_delete'             , 2 , ('MESSAGE_DELETE', 'MESSAGE_DELETE_BULK') , )
-EVENTS.add_default('message_edit'               , 3 , 'MESSAGE_UPDATE'                          , )
-EVENTS.add_default('embed_update'               , 3 , 'MESSAGE_UPDATE'                          , )
-EVENTS.add_default('reaction_add'               , 2 , 'MESSAGE_REACTION_ADD'                    , )
-EVENTS.add_default('reaction_clear'             , 3 , 'MESSAGE_REACTION_REMOVE_ALL'             , )
-EVENTS.add_default('reaction_delete'            , 2 , 'MESSAGE_REACTION_REMOVE'                 , )
-EVENTS.add_default('reaction_delete_emoji'      , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'           , )
-EVENTS.add_default('user_edit'                  , 3 , 'PRESENCE_UPDATE'                         , )
-EVENTS.add_default('user_presence_update'       , 3 , 'PRESENCE_UPDATE'                         , )
-EVENTS.add_default('user_profile_edit'          , 4 , 'GUILD_MEMBER_UPDATE'                     , )
-EVENTS.add_default('channel_delete'             , 3 , 'CHANNEL_DELETE'                          , )
-EVENTS.add_default('channel_edit'               , 3 , 'CHANNEL_UPDATE'                          , )
-EVENTS.add_default('channel_create'             , 2 , 'CHANNEL_CREATE'                          , )
-EVENTS.add_default('channel_pin_update'         , 2 , 'CHANNEL_PINS_UPDATE'                     , )
-EVENTS.add_default('channel_group_user_add'     , 3 , 'CHANNEL_RECIPIENT_ADD'                   , )
-EVENTS.add_default('channel_group_user_delete'  , 3 , 'CHANNEL_RECIPIENT_REMOVE'                , )
-EVENTS.add_default('emoji_create'               , 2 , 'GUILD_EMOJIS_UPDATE'                     , )
-EVENTS.add_default('emoji_delete'               , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
-EVENTS.add_default('emoji_edit'                 , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
-EVENTS.add_default('guild_user_add'             , 3 , 'GUILD_MEMBER_ADD'                        , )
-EVENTS.add_default('guild_user_delete'          , 4 , 'GUILD_MEMBER_REMOVE'                     , )
-EVENTS.add_default('guild_join_reject'          , 3 , 'GUILD_JOIN_REQUEST_DELETE'               , )
-EVENTS.add_default('guild_create'               , 2 , 'GUILD_CREATE'                            , )
-EVENTS.add_default('guild_edit'                 , 2 , 'GUILD_UPDATE'                            , )
-EVENTS.add_default('guild_delete'               , 3 , 'GUILD_DELETE'                            , )
-EVENTS.add_default('guild_ban_add'              , 3 , 'GUILD_BAN_ADD'                           , )
-EVENTS.add_default('guild_ban_delete'           , 3 , 'GUILD_BAN_REMOVE'                        , )
-EVENTS.add_default('guild_user_chunk'           , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
-EVENTS.add_default('integration_create'         , 3 , 'INTEGRATION_CREATE'                      , )
-EVENTS.add_default('integration_delete'         , 4 , 'INTEGRATION_DELETE'                      , )
-EVENTS.add_default('integration_edit'           , 3 , 'INTEGRATION_UPDATE'                      , )
-EVENTS.add_default('integration_update'         , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
-EVENTS.add_default('role_create'                , 2 , 'GUILD_ROLE_CREATE'                       , )
-EVENTS.add_default('role_delete'                , 3 , 'GUILD_ROLE_DELETE'                       , )
-EVENTS.add_default('role_edit'                  , 3 , 'GUILD_ROLE_UPDATE'                       , )
-EVENTS.add_default('webhook_update'             , 2 , 'WEBHOOKS_UPDATE'                         , )
-EVENTS.add_default('user_voice_join'            , 2 , 'VOICE_STATE_UPDATE'                      , )
-EVENTS.add_default('user_voice_leave'           , 2 , 'VOICE_STATE_UPDATE'                      , )
-EVENTS.add_default('user_voice_update'          , 3 , 'VOICE_STATE_UPDATE'                      , )
-EVENTS.add_default('typing'                     , 4 , 'TYPING_START'                            , )
-EVENTS.add_default('invite_create'              , 2 , 'INVITE_CREATE'                           , )
-EVENTS.add_default('invite_delete'              , 2 , 'INVITE_DELETE'                           , )
-EVENTS.add_default('relationship_add'           , 2 , 'RELATIONSHIP_ADD'                        , )
-EVENTS.add_default('relationship_change'        , 3 , 'RELATIONSHIP_ADD'                        , )
-EVENTS.add_default('relationship_delete'        , 2 , 'RELATIONSHIP_REMOVE'                     , )
-EVENTS.add_default('gift_update'                , 3 , 'GIFT_CODE_UPDATE'                        , )
-EVENTS.add_default('interaction_create'         , 2 , 'INTERACTION_CREATE'                      , )
-EVENTS.add_default('application_command_create' , 3 , 'APPLICATION_COMMAND_CREATE'              , )
-EVENTS.add_default('application_command_update' , 4 , 'APPLICATION_COMMAND_UPDATE'              , )
-EVENTS.add_default('application_command_delete' , 3 , 'APPLICATION_COMMAND_DELETE'              , )
+EVENTS.add_default('ready'                                  , 1 , 'READY'                                   , )
+EVENTS.add_default('client_edit'                            , 2 , 'USER_UPDATE'                             , )
+EVENTS.add_default('message_create'                         , 2 , 'MESSAGE_CREATE'                          , )
+EVENTS.add_default('message_delete'                         , 2 , ('MESSAGE_DELETE', 'MESSAGE_DELETE_BULK') , )
+EVENTS.add_default('message_edit'                           , 3 , 'MESSAGE_UPDATE'                          , )
+EVENTS.add_default('embed_update'                           , 3 , 'MESSAGE_UPDATE'                          , )
+EVENTS.add_default('reaction_add'                           , 2 , 'MESSAGE_REACTION_ADD'                    , )
+EVENTS.add_default('reaction_clear'                         , 3 , 'MESSAGE_REACTION_REMOVE_ALL'             , )
+EVENTS.add_default('reaction_delete'                        , 2 , 'MESSAGE_REACTION_REMOVE'                 , )
+EVENTS.add_default('reaction_delete_emoji'                  , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'           , )
+EVENTS.add_default('user_edit'                              , 3 , 'PRESENCE_UPDATE'                         , )
+EVENTS.add_default('user_presence_update'                   , 3 , 'PRESENCE_UPDATE'                         , )
+EVENTS.add_default('user_profile_edit'                      , 4 , 'GUILD_MEMBER_UPDATE'                     , )
+EVENTS.add_default('channel_delete'                         , 3 , 'CHANNEL_DELETE'                          , )
+EVENTS.add_default('channel_edit'                           , 3 , 'CHANNEL_UPDATE'                          , )
+EVENTS.add_default('channel_create'                         , 2 , 'CHANNEL_CREATE'                          , )
+EVENTS.add_default('channel_pin_update'                     , 2 , 'CHANNEL_PINS_UPDATE'                     , )
+EVENTS.add_default('channel_group_user_add'                 , 3 , 'CHANNEL_RECIPIENT_ADD'                   , )
+EVENTS.add_default('channel_group_user_delete'              , 3 , 'CHANNEL_RECIPIENT_REMOVE'                , )
+EVENTS.add_default('emoji_create'                           , 2 , 'GUILD_EMOJIS_UPDATE'                     , )
+EVENTS.add_default('emoji_delete'                           , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
+EVENTS.add_default('emoji_edit'                             , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
+EVENTS.add_default('guild_user_add'                         , 3 , 'GUILD_MEMBER_ADD'                        , )
+EVENTS.add_default('guild_user_delete'                      , 4 , 'GUILD_MEMBER_REMOVE'                     , )
+EVENTS.add_default('guild_join_reject'                      , 3 , 'GUILD_JOIN_REQUEST_DELETE'               , )
+EVENTS.add_default('guild_create'                           , 2 , 'GUILD_CREATE'                            , )
+EVENTS.add_default('guild_edit'                             , 2 , 'GUILD_UPDATE'                            , )
+EVENTS.add_default('guild_delete'                           , 3 , 'GUILD_DELETE'                            , )
+EVENTS.add_default('guild_ban_add'                          , 3 , 'GUILD_BAN_ADD'                           , )
+EVENTS.add_default('guild_ban_delete'                       , 3 , 'GUILD_BAN_REMOVE'                        , )
+EVENTS.add_default('guild_user_chunk'                       , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
+EVENTS.add_default('integration_create'                     , 3 , 'INTEGRATION_CREATE'                      , )
+EVENTS.add_default('integration_delete'                     , 4 , 'INTEGRATION_DELETE'                      , )
+EVENTS.add_default('integration_edit'                       , 3 , 'INTEGRATION_UPDATE'                      , )
+EVENTS.add_default('integration_update'                     , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
+EVENTS.add_default('role_create'                            , 2 , 'GUILD_ROLE_CREATE'                       , )
+EVENTS.add_default('role_delete'                            , 3 , 'GUILD_ROLE_DELETE'                       , )
+EVENTS.add_default('role_edit'                              , 3 , 'GUILD_ROLE_UPDATE'                       , )
+EVENTS.add_default('webhook_update'                         , 2 , 'WEBHOOKS_UPDATE'                         , )
+EVENTS.add_default('user_voice_join'                        , 2 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('user_voice_leave'                       , 2 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('user_voice_update'                      , 3 , 'VOICE_STATE_UPDATE'                      , )
+EVENTS.add_default('typing'                                 , 4 , 'TYPING_START'                            , )
+EVENTS.add_default('invite_create'                          , 2 , 'INVITE_CREATE'                           , )
+EVENTS.add_default('invite_delete'                          , 2 , 'INVITE_DELETE'                           , )
+EVENTS.add_default('relationship_add'                       , 2 , 'RELATIONSHIP_ADD'                        , )
+EVENTS.add_default('relationship_change'                    , 3 , 'RELATIONSHIP_ADD'                        , )
+EVENTS.add_default('relationship_delete'                    , 2 , 'RELATIONSHIP_REMOVE'                     , )
+EVENTS.add_default('gift_update'                            , 3 , 'GIFT_CODE_UPDATE'                        , )
+EVENTS.add_default('interaction_create'                     , 2 , 'INTERACTION_CREATE'                      , )
+EVENTS.add_default('application_command_create'             , 3 , 'APPLICATION_COMMAND_CREATE'              , )
+EVENTS.add_default('application_command_update'             , 4 , 'APPLICATION_COMMAND_UPDATE'              , )
+EVENTS.add_default('application_command_delete'             , 3 , 'APPLICATION_COMMAND_DELETE'              , )
+EVENTS.add_default('application_command_permission_update'  , 3 , 'APPLICATION_COMMAND_PERMISSIONS_UPDATE'  , )
+
 
 def _check_name_should_break(name):
     """
@@ -7448,15 +7474,19 @@ class EventDescriptor(object):
     
     Additional Event Attributes
     --------------------------
-    application_command_create(client : ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
+    application_command_create(client: ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
         Called when you create an application guild bound to a guild.
         
         The respective guild must be cached.
     
-    application_command_delete(client: ``Client``, guild : ``Guild``, application_command: ``ApplicationCommand``)
+    application_command_delete(client: ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
         Called when you delete one of your guild bound application commands.
         
         The respective guild must be cached.
+    
+    application_command_permission_update(client: ``Client``, guild: ``Guild``, \
+            application_command_permission: ``ApplicationCommandPermission``)
+        Called when an application command's permissions are updated inside of a guild.
     
     application_command_update(client : ``Client``, guild: ``guild``, application:command: ``ApplicationCommand``, \
             old_attributes : Union[`dict`, `None`])
@@ -7470,16 +7500,18 @@ class EventDescriptor(object):
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
         
-        +---------------+---------------------------------------------------+
-        | Keys          | Values                                            |
-        +===============+===================================================+
-        | description   | str                                               |
-        +---------------+---------------------------------------------------+
-        | name          | str                                               |
-        +---------------+---------------------------------------------------+
-        | options       | `None` or `list` of ``ApplicationCommandOption``  |
-        +---------------+---------------------------------------------------+
-        
+        +-----------------------+---------------------------------------------------+
+        | Keys                  | Values                                            |
+        +=======================+===================================================+
+        | default_permission    | bool                                              |
+        +-----------------------+---------------------------------------------------+
+        | description           | str                                               |
+        +-----------------------+---------------------------------------------------+
+        | name                  | str                                               |
+        +-----------------------+---------------------------------------------------+
+        | options               | `None` or `list` of ``ApplicationCommandOption``  |
+        +-----------------------+---------------------------------------------------+
+    
     channel_create(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is created.
         

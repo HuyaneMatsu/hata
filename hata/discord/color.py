@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
-__all__ = ('Color', 'parse_color', )
+__all__ = ('COLORS', 'COLOURS', 'Color', 'Colour', 'parse_color', 'parse_colour')
 
 import re
 from math import floor
+from random import Random
+
+from ..backend.utils import modulize
 
 class Color(int):
     """
     A Color object represents a RGB color. Using int instead of Color is completely fine.
+    
+    Class Attributes
+    ----------------
+    _random : `random.Random`
+        ``Color`` class uses it's own random seeding, so it has it's own `random.Random` instance to do it.
+        
+        To get a random color, use ``.random` and to set seed use ``.set_seed``
     
     Examples
     --------
@@ -42,10 +52,15 @@ class Color(int):
     >>> # Creating color from html color code
     >>> color = Color.from_html('#ff0000')
     >>> color
+    <Color #FF0000>
     
     >>> # Converting color back to html color code
     <Color #FF0000>
     >>> color.as_html
+    '#FF0000'
+    
+    >>> # str(color) is same as color.as_html
+    >>> str(color)
     '#FF0000'
     
     >>> # html color codes with length of 3 are working as well
@@ -59,6 +74,10 @@ class Color(int):
     def __repr__(self):
         """Returns the color's representation."""
         return f'<{self.__class__.__name__} #{self:06X}>'
+    
+    def __str__(self):
+        """Returns the color as a string. Same as ``.as_html``."""
+        return f'#{self:06X}'
     
     @classmethod
     def from_html(cls, value):
@@ -104,7 +123,7 @@ class Color(int):
                     blue = (color_value&0xf)*17
                     return Color((red<<16)|(green<<8)|blue)
         
-        raise ValueError('The given value has invalid length or is not hexadecimal.')
+        raise ValueError('The given value has invalid length or is not hexadecimal')
     
     @property
     def as_html(self):
@@ -309,7 +328,46 @@ class Color(int):
         return self&0x0000ff
     
     b = blue
-
+    
+    _random = Random()
+    
+    @classmethod
+    def random(cls):
+        """
+        Returns a random color.
+        
+        Returns
+        -------
+        color : ``Color``
+        """
+        return cls(cls._random.random()*0xffffff)
+    
+    @classmethod
+    def set_seed(cls, seed=None, version=2):
+        """
+        Initialize the random number generator for the ``Color`` class.
+        
+        Parameters
+        ----------
+        seed : `Any`, Optional
+            If `seed` is given as `None`, the current system time is used. If randomness sources are provided by the
+            operating system, they are used instead of the system time.
+            
+            If `seed` is an `int`, it is used directly.
+            
+            > Since Python 3.9 the seed must be one of the following types: `NoneType`, `int`, `float`, `str`, `bytes`,
+            > or `bytearray`.
+            
+        version : `int`, Optional
+            Can be given either as `1` or `2`.
+            
+            If given as `2` (so by default), a `str`, `bytes`, or `bytearray` object gets converted to an `int` and all
+            of its bits are used.
+            
+            If given as `1` (provided for reproducing random sequences from older versions of Python), the algorithm
+            for `str` and `bytes` generates a narrower range of seeds.
+        """
+        cls._random.seed(seed, version)
 
 COLOR_RGB_INT_RP = re.compile(
     '(25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{0,2})[ \t\n]+'
@@ -340,149 +398,157 @@ COLOR_DEC_RP = re.compile(
 
 COLOR_BY_NAME = {}
 
+@modulize
+class COLORS:
+    """
+    Contains the web colors as attributes.
+    """
+
 for color, *color_names in (
-        (Color(0x000000), 'black'                  ,                            ),
-        (Color(0x000080), 'navy'                   ,                            ),
-        (Color(0x00008B), 'darkblue'               , 'dark blue'              , ),
-        (Color(0x0000CD), 'mediumblue'             , 'medium blue'            , ),
-        (Color(0x0000FF), 'blue'                   ,                            ),
-        (Color(0x006400), 'darkgreen'              , 'dark green'             , ),
-        (Color(0x008000), 'green'                  ,                            ),
-        (Color(0x008080), 'teal'                   ,                            ),
-        (Color(0x008B8B), 'darkcyan'               , 'dark cyan'              , ),
-        (Color(0x00BFFF), 'deepskyblue'            , 'deep sky blue'          , ),
-        (Color(0x00CED1), 'darkturquoise'          , 'dark turquoise'         , ),
-        (Color(0x00FA9A), 'mediumspringgreen'      , 'medium spring green'    , ),
-        (Color(0x00FF00), 'lime'                   ,                            ),
-        (Color(0x00FF7F), 'springgreen'            , 'spring green'           , ),
-        (Color(0x00FFFF), 'aqua'                   , 'cyan'                   , ),
-        (Color(0x191970), 'midnightblue'           , 'midnight blue'          , ),
-        (Color(0x1E90FF), 'dodgerblue'             , 'dodger blue'            , ),
-        (Color(0x20B2AA), 'lightseagreen'          , 'light sea green'        , ),
-        (Color(0x228B22), 'forestgreen'            , 'forest green'           , ),
-        (Color(0x2E8B57), 'seagreen'               , 'sea green'              , ),
-        (Color(0x2F4F4F), 'darkslategray'          , 'dark slate gray'        , ),
-        (Color(0x32CD32), 'limegreen'              , 'lime green'             , ),
-        (Color(0x3CB371), 'mediumseagreen'         , 'medium sea green'       , ),
-        (Color(0x40E0D0), 'turquoise'              ,                            ),
-        (Color(0x4169E1), 'royalblue'              , 'royal blue'             , ),
-        (Color(0x4682B4), 'steelblue'              , 'steel blue'             , ),
-        (Color(0x483D8B), 'darkslateblue'          , 'dark slate blue'        , ),
-        (Color(0x48D1CC), 'mediumturquoise'        , 'medium turquoise'       , ),
-        (Color(0x4B0082), 'indigo'                 ,                            ),
-        (Color(0x556B2F), 'darkolivegreen'         , 'dark olive green'       , ),
-        (Color(0x5F9EA0), 'cadetblue'              , 'cadet blue'             , ),
-        (Color(0x6495ED), 'cornflowerblue'         , 'cornflower blue'        , ),
-        (Color(0x66CDAA), 'mediumaquamarine'       , 'medium aquamarine'      , ),
-        (Color(0x696969), 'dimgray'                , 'dim gray'               , ),
-        (Color(0x6A5ACD), 'slateblue'              , 'slate blue'             , ),
-        (Color(0x6B8E23), 'olivedrab'              , 'olive drab'             , ),
-        (Color(0x708090), 'slategray'              , 'slate gray'             , ),
-        (Color(0x778899), 'lightslategray'         , 'light slate gray'       , ),
-        (Color(0x7B68EE), 'mediumslateblue'        , 'medium slate blue'      , ),
-        (Color(0x7CFC00), 'lawngreen'              , 'lawn green'             , ),
-        (Color(0x7FFF00), 'chartreuse'             ,                            ),
-        (Color(0x7FFFD4), 'aquamarine'             ,                            ),
-        (Color(0x800000), 'maroon'                 ,                            ),
-        (Color(0x800080), 'purple'                 ,                            ),
-        (Color(0x808000), 'olive'                  ,                            ),
-        (Color(0x808080), 'gray'                   ,                            ),
-        (Color(0x87CEEB), 'skyblue'                , 'sky blue'               , ),
-        (Color(0x87CEFA), 'lightskyblue'           , 'light sky blue'         , ),
-        (Color(0x8A2BE2), 'blueviolet'             , 'blue violet'            , ),
-        (Color(0x8B0000), 'darkred'                , 'dark red'               , ),
-        (Color(0x8B008B), 'darkmagenta'            , 'dark magenta'           , ),
-        (Color(0x8B4513), 'saddlebrown'            , 'saddle brown'           , ),
-        (Color(0x8FBC8F), 'darkseagreen'           , 'dark sea green'         , ),
-        (Color(0x90EE90), 'lightgreen'             , 'light green'            , ),
-        (Color(0x9370DB), 'mediumpurple'           , 'medium purple'          , ),
-        (Color(0x9400D3), 'darkviolet'             , 'dark violet'            , ),
-        (Color(0x98FB98), 'palegreen'              , 'pale green'             , ),
-        (Color(0x9932CC), 'darkorchid'             , 'dark orchid'            , ),
-        (Color(0x9ACD32), 'yellowgreen'            , 'yellow green'           , ),
-        (Color(0xA0522D), 'sienna'                 ,                            ),
-        (Color(0xA52A2A), 'brown'                  ,                            ),
-        (Color(0xA9A9A9), 'darkgray'               , 'dark gray'              , ),
-        (Color(0xADD8E6), 'lightblue'              , 'light blue'             , ),
-        (Color(0xADFF2F), 'greenyellow'            , 'green yellow'           , ),
-        (Color(0xAFEEEE), 'paleturquoise'          , 'pale turquoise'         , ),
-        (Color(0xB0C4DE), 'lightsteelblue'         , 'light steel blue'       , ),
-        (Color(0xB0E0E6), 'powderblue'             , 'powder blue'            , ),
-        (Color(0xB22222), 'firebrick'              ,                            ),
-        (Color(0xB8860B), 'darkgoldenrod'          , 'dark goldenrod'         , ),
-        (Color(0xBA55D3), 'mediumorchid'           , 'medium orchid'          , ),
-        (Color(0xBC8F8F), 'rosybrown'              , 'rosy brown'             , ),
-        (Color(0xBDB76B), 'darkkhaki'              , 'dark khaki'             , ),
-        (Color(0xC0C0C0), 'silver'                 ,                            ),
-        (Color(0xC71585), 'mediumvioletred'        , 'medium violet red'      , ),
-        (Color(0xCD5C5C), 'indianred'              , 'indian red'             , ),
-        (Color(0xCD853F), 'peru'                   ,                            ),
-        (Color(0xD2691E), 'chocolate'              ,                            ),
-        (Color(0xD2B48C), 'tan'                    ,                            ),
-        (Color(0xD3D3D3), 'lightgray'              , 'light gray'             , ),
-        (Color(0xD8BFD8), 'thistle'                ,                            ),
-        (Color(0xDA70D6), 'orchid'                 ,                            ),
-        (Color(0xDAA520), 'goldenrod'              ,                            ),
-        (Color(0xDB7093), 'palevioletred'          , 'pale violet red'        , ),
-        (Color(0xDC143C), 'crimson'                ,                            ),
-        (Color(0xDCDCDC), 'gainsboro'              ,                            ),
-        (Color(0xDDA0DD), 'plum'                   ,                            ),
-        (Color(0xDEB887), 'burlywood'              ,                            ),
-        (Color(0xE0FFFF), 'lightcyan'              , 'light cyan'             , ),
-        (Color(0xE6E6FA), 'lavender'               ,                            ),
-        (Color(0xE9967A), 'darksalmon'             , 'dark salmon'            , ),
-        (Color(0xEE82EE), 'violet'                 ,                            ),
-        (Color(0xEEE8AA), 'palegoldenrod'          , 'pale goldenrod'         , ),
-        (Color(0xF08080), 'lightcoral'             , 'light coral'            , ),
-        (Color(0xF0E68C), 'khaki'                  ,                            ),
-        (Color(0xF0F8FF), 'aliceblue'              , 'alice blue'             , ),
-        (Color(0xF0FFF0), 'honeydew'               ,                            ),
-        (Color(0xF0FFFF), 'azure'                  ,                            ),
-        (Color(0xF4A460), 'sandybrown'             , 'sandy brown'            , ),
-        (Color(0xF5DEB3), 'wheat'                  ,                            ),
-        (Color(0xF5F5DC), 'beige'                  ,                            ),
-        (Color(0xF5F5F5), 'whitesmoke'             , 'white smoke'            , ),
-        (Color(0xF5FFFA), 'mintcream'              , 'mint cream'             , ),
-        (Color(0xF8F8FF), 'ghostwhite'             , 'ghost white'            , ),
-        (Color(0xFA8072), 'salmon'                 ,                            ),
-        (Color(0xFAEBD7), 'antiquewhite'           , 'antique white'          , ),
-        (Color(0xFAF0E6), 'linen'                  ,                            ),
-        (Color(0xFAFAD2), 'lightgoldenrodyellow'   , 'light goldenrod yellow' , ),
-        (Color(0xFDF5E6), 'oldlace'                , 'old lace'               , ),
-        (Color(0xFF0000), 'red'                    ,                            ),
-        (Color(0xFF00FF), 'fuchsia'                , 'magenta'                , ),
-        (Color(0xFF1493), 'deeppink'               , 'deep pink'              , ),
-        (Color(0xFF4500), 'orangered'              , 'orange red'             , ),
-        (Color(0xFF6347), 'tomato'                 ,                            ),
-        (Color(0xFF69B4), 'hotpink'                , 'hot pink'               , ),
-        (Color(0xFF7F50), 'coral'                  ,                            ),
-        (Color(0xFF8C00), 'darkorange'             , 'dark orange'            , ),
-        (Color(0xFFA07A), 'lightsalmon'            , 'light salmon'           , ),
-        (Color(0xFFA500), 'orange'                 ,                            ),
-        (Color(0xFFB6C1), 'lightpink'              , 'light pink'             , ),
-        (Color(0xFFC0CB), 'pink'                   ,                            ),
-        (Color(0xFFD700), 'gold'                   ,                            ),
-        (Color(0xFFDAB9), 'peachpuff'              , 'peach puff'             , ),
-        (Color(0xFFDEAD), 'navajowhite'            , 'navajo white'           , ),
-        (Color(0xFFE4B5), 'moccasin'               ,                            ),
-        (Color(0xFFE4C4), 'bisque'                 ,                            ),
-        (Color(0xFFE4E1), 'mistyrose'              , 'misty rose'             , ),
-        (Color(0xFFEBCD), 'blanchedalmond'         , 'blanched almond'        , ),
-        (Color(0xFFEFD5), 'papayawhip'             , 'papaya whip'            , ),
-        (Color(0xFFF0F5), 'lavenderblush'          , 'lavender blush'         , ),
-        (Color(0xFFF5EE), 'seashell'               ,                            ),
-        (Color(0xFFF8DC), 'cornsilk'               ,                            ),
-        (Color(0xFFFACD), 'lemonchiffon'           , 'lemon chiffon'          , ),
-        (Color(0xFFFAF0), 'floralwhite'            , 'floral white'           , ),
-        (Color(0xFFFAFA), 'snow'                   ,                            ),
-        (Color(0xFFFF00), 'yellow'                 ,                            ),
-        (Color(0xFFFFE0), 'lightyellow'            , 'light yellow'           , ),
-        (Color(0xFFFFF0), 'ivory'                  ,                            ),
-        (Color(0xFFFFFF), 'white'                  ,                            ),
+        (Color(0x000000), 'black'                  , ),
+        (Color(0x000080), 'navy'                   , ),
+        (Color(0x00008B), 'dark blue'              , ),
+        (Color(0x0000CD), 'medium blue'            , ),
+        (Color(0x0000FF), 'blue'                   , ),
+        (Color(0x006400), 'dark green'             , ),
+        (Color(0x008000), 'green'                  , ),
+        (Color(0x008080), 'teal'                   , ),
+        (Color(0x008B8B), 'dark cyan'              , ),
+        (Color(0x00BFFF), 'deep sky blue'          , ),
+        (Color(0x00CED1), 'dark turquoise'         , ),
+        (Color(0x00FA9A), 'medium spring green'    , ),
+        (Color(0x00FF00), 'lime'                   , ),
+        (Color(0x00FF7F), 'spring green'           , ),
+        (Color(0x00FFFF), 'cyan'                   , ),
+        (Color(0x191970), 'midnight blue'          , ),
+        (Color(0x1E90FF), 'dodger blue'            , ),
+        (Color(0x20B2AA), 'light sea green'        , ),
+        (Color(0x228B22), 'forest green'           , ),
+        (Color(0x2E8B57), 'sea green'              , ),
+        (Color(0x2F4F4F), 'dark slate gray'        , ),
+        (Color(0x32CD32), 'lime green'             , ),
+        (Color(0x3CB371), 'medium sea green'       , ),
+        (Color(0x40E0D0), 'turquoise'              , ),
+        (Color(0x4169E1), 'royal blue'             , ),
+        (Color(0x4682B4), 'steel blue'             , ),
+        (Color(0x483D8B), 'dark slate blue'        , ),
+        (Color(0x48D1CC), 'medium turquoise'       , ),
+        (Color(0x4B0082), 'indigo'                 , ),
+        (Color(0x556B2F), 'dark olive green'       , ),
+        (Color(0x5F9EA0), 'cadet blue'             , ),
+        (Color(0x6495ED), 'cornflower blue'        , ),
+        (Color(0x66CDAA), 'medium aquamarine'      , ),
+        (Color(0x696969), 'dim gray'               , ),
+        (Color(0x6A5ACD), 'slate blue'             , ),
+        (Color(0x6B8E23), 'olive drab'             , ),
+        (Color(0x708090), 'slate gray'             , ),
+        (Color(0x778899), 'light slate gray'       , ),
+        (Color(0x7B68EE), 'medium slate blue'      , ),
+        (Color(0x7CFC00), 'lawn green'             , ),
+        (Color(0x7FFF00), 'chartreuse'             , ),
+        (Color(0x7FFFD4), 'aquamarine'             , ),
+        (Color(0x800000), 'maroon'                 , ),
+        (Color(0x800080), 'purple'                 , ),
+        (Color(0x808000), 'olive'                  , ),
+        (Color(0x808080), 'gray'                   , ),
+        (Color(0x87CEEB), 'sky blue'               , ),
+        (Color(0x87CEFA), 'light sky blue'         , ),
+        (Color(0x8A2BE2), 'blue violet'            , ),
+        (Color(0x8B0000), 'dark red'               , ),
+        (Color(0x8B008B), 'dark magenta'           , ),
+        (Color(0x8B4513), 'saddle brown'           , ),
+        (Color(0x8FBC8F), 'dark sea green'         , ),
+        (Color(0x90EE90), 'light green'            , ),
+        (Color(0x9370DB), 'medium purple'          , ),
+        (Color(0x9400D3), 'dark violet'            , ),
+        (Color(0x98FB98), 'pale green'             , ),
+        (Color(0x9932CC), 'dark orchid'            , ),
+        (Color(0x9ACD32), 'yellow green'           , ),
+        (Color(0xA0522D), 'sienna'                 , ),
+        (Color(0xA52A2A), 'brown'                  , ),
+        (Color(0xA9A9A9), 'dark gray'              , ),
+        (Color(0xADD8E6), 'light blue'             , ),
+        (Color(0xADFF2F), 'green yellow'           , ),
+        (Color(0xAFEEEE), 'pale turquoise'         , ),
+        (Color(0xB0C4DE), 'light steel blue'       , ),
+        (Color(0xB0E0E6), 'powder blue'            , ),
+        (Color(0xB22222), 'firebrick'              , ),
+        (Color(0xB8860B), 'dark goldenrod'         , ),
+        (Color(0xBA55D3), 'medium orchid'          , ),
+        (Color(0xBC8F8F), 'rosy brown'             , ),
+        (Color(0xBDB76B), 'dark khaki'             , ),
+        (Color(0xC0C0C0), 'silver'                 , ),
+        (Color(0xC71585), 'medium violet red'      , ),
+        (Color(0xCD5C5C), 'indian red'             , ),
+        (Color(0xCD853F), 'peru'                   , ),
+        (Color(0xD2691E), 'chocolate'              , ),
+        (Color(0xD2B48C), 'tan'                    , ),
+        (Color(0xD3D3D3), 'light gray'             , ),
+        (Color(0xD8BFD8), 'thistle'                , ),
+        (Color(0xDA70D6), 'orchid'                 , ),
+        (Color(0xDAA520), 'goldenrod'              , ),
+        (Color(0xDB7093), 'pale violet red'        , ),
+        (Color(0xDC143C), 'crimson'                , ),
+        (Color(0xDCDCDC), 'gainsboro'              , ),
+        (Color(0xDDA0DD), 'plum'                   , ),
+        (Color(0xDEB887), 'burlywood'              , ),
+        (Color(0xE0FFFF), 'light cyan'             , ),
+        (Color(0xE6E6FA), 'lavender'               , ),
+        (Color(0xE9967A), 'dark salmon'            , ),
+        (Color(0xEE82EE), 'violet'                 , ),
+        (Color(0xEEE8AA), 'pale goldenrod'         , ),
+        (Color(0xF08080), 'light coral'            , ),
+        (Color(0xF0E68C), 'khaki'                  , ),
+        (Color(0xF0F8FF), 'alice blue'             , ),
+        (Color(0xF0FFF0), 'honeydew'               , ),
+        (Color(0xF0FFFF), 'azure'                  , ),
+        (Color(0xF4A460), 'sandy brown'            , ),
+        (Color(0xF5DEB3), 'wheat'                  , ),
+        (Color(0xF5F5DC), 'beige'                  , ),
+        (Color(0xF5F5F5), 'white smoke'            , ),
+        (Color(0xF5FFFA), 'mint cream'             , ),
+        (Color(0xF8F8FF), 'ghost white'            , ),
+        (Color(0xFA8072), 'salmon'                 , ),
+        (Color(0xFAEBD7), 'antique white'          , ),
+        (Color(0xFAF0E6), 'linen'                  , ),
+        (Color(0xFAFAD2), 'light goldenrod yellow' , ),
+        (Color(0xFDF5E6), 'old lace'               , ),
+        (Color(0xFF0000), 'red'                    , ),
+        (Color(0xFF00FF), 'magenta'                , ),
+        (Color(0xFF1493), 'deep pink'              , ),
+        (Color(0xFF4500), 'orange red'             , ),
+        (Color(0xFF6347), 'tomato'                 , ),
+        (Color(0xFF69B4), 'hot pink'               , ),
+        (Color(0xFF7F50), 'coral'                  , ),
+        (Color(0xFF8C00), 'dark orange'            , ),
+        (Color(0xFFA07A), 'light salmon'           , ),
+        (Color(0xFFA500), 'orange'                 , ),
+        (Color(0xFFB6C1), 'light pink'             , ),
+        (Color(0xFFC0CB), 'pink'                   , ),
+        (Color(0xFFD700), 'gold'                   , ),
+        (Color(0xFFDAB9), 'peach puff'             , ),
+        (Color(0xFFDEAD), 'navajo white'           , ),
+        (Color(0xFFE4B5), 'moccasin'               , ),
+        (Color(0xFFE4C4), 'bisque'                 , ),
+        (Color(0xFFE4E1), 'misty rose'             , ),
+        (Color(0xFFEBCD), 'blanched almond'        , ),
+        (Color(0xFFEFD5), 'papaya whip'            , ),
+        (Color(0xFFF0F5), 'lavender blush'         , ),
+        (Color(0xFFF5EE), 'seashell'               , ),
+        (Color(0xFFF8DC), 'cornsilk'               , ),
+        (Color(0xFFFACD), 'lemon chiffon'          , ),
+        (Color(0xFFFAF0), 'floral white'           , ),
+        (Color(0xFFFAFA), 'snow'                   , ),
+        (Color(0xFFFF00), 'yellow'                 , ),
+        (Color(0xFFFFE0), 'light yellow'           , ),
+        (Color(0xFFFFF0), 'ivory'                  , ),
+        (Color(0xFFFFFF), 'white'                  , ),
             ):
     
     for color_name in color_names:
         COLOR_BY_NAME[color_name] = color
+        COLOR_BY_NAME[color_name.replace(' ', '')] = color
+        COLORS.__dict__[color_name.replace(' ', '_')] = color
 
 del color, color_names, color_name
 
@@ -548,3 +614,8 @@ def parse_color(text):
     return None
 
 del re
+del modulize
+
+Colour = Color
+parse_colour = parse_color
+COLOURS = COLORS

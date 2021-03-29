@@ -698,6 +698,16 @@ class Role(DiscordEntity, immortal=True):
         """
         return (self.guild is None)
     
+    def _get_colour(self):
+        return self.color
+    
+    def _set_colour(self, color):
+        self.color = color
+    
+    colour = property(_get_colour, _set_colour)
+    if DOCS_ENABLED:
+        colour.__doc__ = """Alias of ``.color``."""
+    
     def __gt__(self, other):
         """Returns whether this role's position is higher than the other's."""
         if type(self) is type(other):

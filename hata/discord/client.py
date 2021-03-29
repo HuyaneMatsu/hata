@@ -59,13 +59,16 @@ from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryR
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
     BanEntry, maybe_snowflake_pair
 from .embed import EmbedBase, EmbedImage
-from .interaction import ApplicationCommand, InteractionResponseTypes
+from .interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
+    ApplicationCommandPermissionOverwrite
 from .color import Color
-from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD
+from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 
 from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
     channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
-    guild as module_guild, audit_logs as module_audit_logs, application as module_application
+    guild as module_guild, audit_logs as module_audit_logs, application as module_application, \
+    interaction as module_interaction
 
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
@@ -13261,6 +13264,207 @@ class Client(UserBase):
         return application_command_datas
     
     
+    async def application_command_permission_get(self, guild, application_command):
+        """
+        Returns the permissions set for the given `application_command` in the given `guild`.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The respective guild.
+        application_command : ``ApplicationCommand`` or `int`
+            The respective application command.
+        
+        Returns
+        -------
+        permission : ``ApplicationCommandPermission``
+            The requested permissions.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If an application command was not given neither as ``ApplicationCommand`` or `int` instance.
+        
+        Notes
+        -----
+        Íf the application command has no permission overwrites in the guild, Discord will drop the following error:
+        
+        ```py
+        DiscordException Not Found (404), code=10066: Unknown application command permissions
+        ```
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if isinstance(application_command, ApplicationCommand):
+            application_command_id = application_command.id
+        else:
+            application_command_id = maybe_snowflake(application_command)
+            if application_command_id is None:
+                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
+                    f'instance, got {application_command.__class__.__name__}.')
+        
+        permission_data = await self.http.application_command_permission_get(application_id, guild_id,
+            application_command_id)
+        
+        return ApplicationCommandPermission.from_data(permission_data)
+    
+    
+    async def application_command_permission_edit(self, guild, application_command,
+            overwrites):
+        """
+        Edits the permissions of the given `application_command` in the given `guild`.
+        
+        > The new permissions will overwrite the existing permission of an application command.
+        >
+        > A command will lose it's permissions on rename.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The respective guild.
+        application_command : ``ApplicationCommand`` or `int`
+            The respective application command.
+        overwrites : `None` or (`tuple`, `list` of `set`) of ``ApplicationCommandPermissionOverwrite``
+            The new permission overwrites of the given application command inside of the guild.
+            
+            Give it as `None` to remove all existing one.
+        
+        Returns
+        -------
+        permissions : ``ApplicationCommandPermission``
+            The application command's new permissions.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the client's application is not yet synced.
+            - If an application command was not given neither as ``ApplicationCommand`` or `int` instance.
+            - If `overwrites` was not given as `None`, `tuple`, `list` or `set`.
+            - If `overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
+            - If `overwrites` contains more than 10 elements.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        if isinstance(application_command, ApplicationCommand):
+            application_command_id = application_command.id
+        else:
+            application_command_id = maybe_snowflake(application_command)
+            if application_command_id is None:
+                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
+                    f'instance, got {application_command.__class__.__name__}.')
+        
+        overwrite_datas = []
+        if (overwrites is not None):
+            if __debug__:
+                if not isinstance(overwrites, (list, set, tuple)):
+                    raise AssertionError(f'`overwrites` can be given as `None`, `list`, `tuple` or `set`, got '
+                        f'{overwrites.__class__.__name__}.')
+            
+            for overwrite in overwrites:
+                if __debug__:
+                    if not isinstance(overwrite, ApplicationCommandPermissionOverwrite):
+                        raise AssertionError(f'`overwrites` contains a non '
+                            f'{ApplicationCommandPermissionOverwrite.__name__} instance, got '
+                            f'{overwrite.__class__.__name__}.')
+                
+                overwrite_datas.append(overwrite.to_data())
+            
+            if __debug__:
+                if len(overwrite_datas) > APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
+                    raise AssertionError(f'`overwrites` can contain up to '
+                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` overwrites, which is passed, got '
+                        f'{len(overwrites)!r}.')
+        
+        data = {'permissions': overwrite_datas}
+        permission_data = await self.http.application_command_permission_edit(application_id, guild_id, application_command_id,
+            data)
+        
+        return ApplicationCommandPermission(permission_data)
+    
+    async def application_command_permission_get_all_guild(self, guild):
+        """
+        Returns the permissions set for application commands in the given `guild`.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild to request application command permissions from.
+        
+        Returns
+        -------
+        permission : `list` of ``ApplicationCommandPermission``
+            The requested permissions for all the application commands in the guild.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if isinstance(guild, Guild):
+            guild_id = guild.id
+        else:
+            guild_id = maybe_snowflake(guild)
+            if guild_id is None:
+                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
+                    f'{guild.__class__.__name__}.')
+        
+        permission_datas = await self.http.application_command_permission_get_all_guild(application_id, guild_id)
+        
+        return [ApplicationCommandPermission.from_data(permission_data) for permission_data in permission_datas]
+    
+    
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
             tts=False, show_source=None, show_for_invoking_user_only=False):
         """
@@ -13503,6 +13707,7 @@ class Client(UserBase):
         
         # No message data is returned by Discord, return `None`.
         return None
+    
     
     async def interaction_response_message_edit(self, interaction, content=..., embed=..., file=None,
             allowed_mentions=...):
@@ -15707,6 +15912,7 @@ module_client_utils.Client = Client
 module_guild.Client = Client
 module_audit_logs.Client = Client
 module_application.Client = Client
+module_interaction.Client = Client
 
 del module_client_core
 del re
@@ -15723,3 +15929,4 @@ del module_channel
 del module_guild
 del module_audit_logs
 del module_application
+del module_interaction

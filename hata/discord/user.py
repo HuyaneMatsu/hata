@@ -359,6 +359,11 @@ class GuildProfile(object):
                     return color
         
         return Color()
+    
+    @property
+    def colour(self):
+        """Alias of ``.color``."""
+        return self.color
 
 class UserBase(DiscordEntity, immortal=True):
     """
@@ -694,7 +699,11 @@ class UserBase(DiscordEntity, immortal=True):
         color : ``Color``
         """
         return Color()
-
+    
+    def colour_at(self, guild):
+        """Alias of ``.color_at``."""
+        return self.color_at
+    
     def name_at(self, guild):
         """
         Returns the user's name at the given guild.

@@ -358,6 +358,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | unknown_application_command                       | 10063     | -     |
     +---------------------------------------------------+-----------+-------+
+    | unknown_application_command_permissions           | 10066     | -     |
+    +---------------------------------------------------+-----------+-------+
     | bots_not_allowed                                  | 20001     | -     |
     +---------------------------------------------------+-----------+-------+
     | only_bots_allowed                                 | 20002     | -     |
@@ -584,6 +586,7 @@ class ERROR_CODES:
     unknown_discovery_category = 10059
     unknown_interaction     = 10062
     unknown_application_command = 10063
+    unknown_application_command_permissions = 10066
     
     bots_not_allowed        = 20001
     only_bots_allowed       = 20002

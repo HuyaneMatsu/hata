@@ -137,6 +137,7 @@ def parse_time(timestamp):
     Parameters
     ----------
     timestamp : `str`
+        The timestamp to parse.
     
     Returns
     -------

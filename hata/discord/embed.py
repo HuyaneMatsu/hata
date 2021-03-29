@@ -889,6 +889,16 @@ class EmbedBase(object):
         Subclasses should overwrite it.
         """
         return []
+    
+    def _get_colour(self):
+        return self.color
+    
+    def _set_colour(self, color):
+        self.color = color
+    
+    colour = property(_get_colour, _set_colour)
+    if DOCS_ENABLED:
+        colour.__doc__ = """Alias of ``.color``."""
 
 
 class EmbedCore(EmbedBase):

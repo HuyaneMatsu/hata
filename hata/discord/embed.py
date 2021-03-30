@@ -1747,7 +1747,8 @@ class Embed(EmbedBase):
         except IndexError as err:
             err.args = ('Index out of the fields\' range.', )
             raise
-    
+    remove_field = del_field
+
     # footer
     def _get_footer(self):
         try:
@@ -1800,6 +1801,7 @@ class Embed(EmbedBase):
         
         self.data['footer'] = footer_data
         return self
+    set_footer = add_footer
     
     # image
     def _get_image(self):
@@ -1848,7 +1850,7 @@ class Embed(EmbedBase):
         
         self.data['image'] = image_data
         return self
-    
+    set_image = add_image
     # provider
     def _get_provider(self):
         try:
@@ -1923,7 +1925,8 @@ class Embed(EmbedBase):
 
         self.data['thumbnail'] = thumbnail_data
         return self
-
+    set_thumnail = add_thumbnail
+    
     #timestamp
     def _get_timestamp(self):
         try:

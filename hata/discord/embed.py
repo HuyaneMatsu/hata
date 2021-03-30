@@ -1433,6 +1433,7 @@ class Embed(EmbedBase):
         """
         return self.data
     
+    
     # author
     def _get_author(self):
         try:
@@ -1492,6 +1493,8 @@ class Embed(EmbedBase):
         self.data['author'] = author_data
         return self
     
+    set_author = add_author
+    
     # color
     def _get_color(self):
         return self.data.get('color', None)
@@ -1515,6 +1518,7 @@ class Embed(EmbedBase):
         Accepts and returns `None` or a ``Color`` (/ `int`) object.
         """)
     
+    
     # description
     def _get_description(self):
         return self.data.get('description', None)
@@ -1537,6 +1541,7 @@ class Embed(EmbedBase):
         
         Accepts and returns `None` or a `str` instance.
         """)
+    
     
     # fields
     def _get_fields(self):
@@ -1747,8 +1752,10 @@ class Embed(EmbedBase):
         except IndexError as err:
             err.args = ('Index out of the fields\' range.', )
             raise
+    
     remove_field = del_field
-
+    
+    
     # footer
     def _get_footer(self):
         try:
@@ -1850,7 +1857,10 @@ class Embed(EmbedBase):
         
         self.data['image'] = image_data
         return self
+    
     set_image = add_image
+    
+    
     # provider
     def _get_provider(self):
         try:
@@ -1878,7 +1888,8 @@ class Embed(EmbedBase):
         Embed providers cannot be set, they are receive only.
         """)
     
-    #thumbnail
+    
+    # thumbnail
     def _get_thumbnail(self):
         try:
             thumbnail_data = self.data['thumbnail']
@@ -1906,6 +1917,7 @@ class Embed(EmbedBase):
         Accepts and returns `None` or an ``EmbedThumbnail`` object.
         """)
     
+    
     def add_thumbnail(self, url):
         """
         Adds an ``EmbedThumbnail`` to the embed with the given `url`.
@@ -1925,9 +1937,11 @@ class Embed(EmbedBase):
 
         self.data['thumbnail'] = thumbnail_data
         return self
-    set_thumnail = add_thumbnail
     
-    #timestamp
+    set_thumbnail = add_thumbnail
+    
+    
+    # timestamp
     def _get_timestamp(self):
         try:
             timestamp_value = self.data['timestamp']
@@ -1979,6 +1993,7 @@ class Embed(EmbedBase):
         Accepts and returns `None` or a `str` instance.
         """)
     
+    
     # type
     def _get_type(self):
         return self.data.get('type', None)
@@ -2002,6 +2017,7 @@ class Embed(EmbedBase):
         Accepts and returns `None` or a `str` instance.
         """)
     
+    
     # url
     def _get_url(self):
         return self.data.get('url', None)
@@ -2024,6 +2040,7 @@ class Embed(EmbedBase):
         
         Accepts and returns `None` or a `str` instance.
         """)
+    
     
     # video
     def _get_video(self):
@@ -2051,6 +2068,7 @@ class Embed(EmbedBase):
         
         Embed videos cannot be set, they are receive only.
         """)
+    
     
     # rest
     def _get_source(self):
@@ -2080,6 +2098,7 @@ class Embed(EmbedBase):
         
         Returns an `EmbedCore` object and accepts any embed compatible objects.
         """)
+    
     
     def __len__(self):
         """Returns the embed's contents' length."""

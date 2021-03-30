@@ -17,7 +17,7 @@ real stuff:
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
 - Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.
-- Can interacting with the Discord API without gateway connection.
+- Can interact with the Discord API without gateway connection.
 - Switching between api version with environmental variable.
 
 ## Usage
@@ -88,6 +88,7 @@ Seija.start()
 ```
 
 > Note: You need to restart your client, or the slash command wont show up.
+> If there are more than 50 integrations (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord limitation.
 
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 

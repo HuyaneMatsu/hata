@@ -665,7 +665,7 @@ class Team(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) objects
         """
-        target_state = TeamMembershipState.INVITED
+        target_state = TeamMembershipState.invited
         return [team_member.user for team_member in self.members if team_member.state is target_state]
     
     @property
@@ -677,7 +677,7 @@ class Team(DiscordEntity, immortal=True):
         -------
         users : `list` of (``User`` or ``Client``) objects
         """
-        target_state = TeamMembershipState.ACCEPTED
+        target_state = TeamMembershipState.accepted
         return [team_member.user for team_member in self.members if team_member.state is target_state]
     
     def __str__(self):

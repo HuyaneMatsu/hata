@@ -24,7 +24,7 @@ async def _do_initial_sync(client):
     client.events.remove(_do_initial_sync, 'launch', count=1)
 
 
-async def _application_command_create_watcher(client, guild, application_command):
+async def _application_command_create_watcher(client, guild_id, application_command):
     """
     `application_command_create` event handler.
     
@@ -36,17 +36,17 @@ async def _application_command_create_watcher(client, guild, application_command
     ----------
     client : ``Client``
         The respective client instance.
-    guild : `Guild``
-        The guild to where the command was added.
+    guild_id : `int`
+        The guild's identifier to where the command was added.
     application_command : ``ApplicationCommand``
         The added application command.
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is not None) and isinstance(slasher, Slasher):
-        slasher._maybe_register_guild_command(application_command, guild.id)
+        slasher._maybe_register_guild_command(application_command, guild_id)
 
 
-async def _application_command_delete_watcher(client, guild, application_command):
+async def _application_command_delete_watcher(client, guild_id, application_command):
     """
     `application_command_delete` event handler added to the respective client by the ``setup_ext_slash`` function.
     
@@ -58,12 +58,31 @@ async def _application_command_delete_watcher(client, guild, application_command
     ----------
     client : ``Client``
         The respective client instance.
-    guild : `Guild``
-        The guild to where the command was deleted from.
+    guild_id : `int`
+        The guild's identifier to where the command was deleted from.
     application_command : ``ApplicationCommand``
         The deleted application command.
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is not None) and isinstance(slasher, Slasher):
-        slasher._maybe_unregister_guild_command(application_command, guild.id)
+        slasher._maybe_unregister_guild_command(application_command, guild_id)
 
+
+async def _application_command_permission_update_watcher(client, permission):
+    """
+    `application_command_permission_update` event handler.
+    
+    Whenever an application command's permissions is updated, will notify teh client's ``Slasher`` about it.
+    
+    This method is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client instance.
+    permission : ``ApplicationCommandPermission``
+        The updated application command's permissions.
+    """
+    slasher = getattr(client, 'slasher', None)
+    if (slasher is not None) and isinstance(slasher, Slasher):
+        slasher._maybe_store_application_command_permission(permission)

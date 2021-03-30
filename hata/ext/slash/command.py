@@ -27,7 +27,8 @@ from ...discord.interaction import ApplicationCommandOption, ApplicationCommandO
     ApplicationCommandPermissionOverwrite
 from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICES_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
-    APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
+    APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX, \
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
@@ -345,9 +346,11 @@ class SlashResponse(object):
             the command.
             
             If given as `True` only the message's content will be processed by Discord.
-        force_new_message : `bool`, Optional
+        force_new_message : `int` or `bool`, Optional
             Whether a new message should be forced out from Discord allowing the client to retrieve a new ``Message``
             object as well. Defaults to `False`.
+            
+            If given as `-1` will only force new message if the event already deferred.
         """
         self._force_new_message = force_new_message
         self._parameters = parameters = {}
@@ -414,17 +417,48 @@ class SlashResponse(object):
         request_coro : `None` or `coroutine`
         """
         response_state = interaction_event._response_state
-        if self._force_new_message:
-            if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-                yield client.interaction_response_message_create(interaction_event)
-            
-            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
-                'tts'))
-            response_parameters['show_for_invoking_user_only'] = \
-                self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-            
-            yield client.interaction_followup_message_create(interaction_event, **response_parameters)
-            return
+        force_new_message = self._force_new_message
+        if force_new_message:
+            if force_new_message > 0:
+                if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                    yield client.interaction_response_message_create(interaction_event)
+                
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                    'tts'))
+                response_parameters['show_for_invoking_user_only'] = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                return
+            else:
+                if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                    if 'file' in self._parameters:
+                        show_for_invoking_user_only = \
+                            self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                        
+                        yield client.interaction_response_message_create(interaction_event,
+                            show_for_invoking_user_only=show_for_invoking_user_only)
+                        
+                        response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                            'tts'))
+                        
+                        yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+                    else:
+                        response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'tts'))
+                        response_parameters['show_for_invoking_user_only'] = \
+                            self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                        
+                        yield client.interaction_response_message_create(interaction_event, **response_parameters)
+                    return
+                
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
+                    'tts'))
+                response_parameters['show_for_invoking_user_only'] = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                return
+        
         else:
             if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
                 if 'file' in self._parameters:
@@ -533,8 +567,9 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., sh
         else:
             show_for_invoking_user_only = True
     
+    
     response = SlashResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, tts=tts,
-        show_for_invoking_user_only=show_for_invoking_user_only, force_new_message=show_for_invoking_user_only)
+        show_for_invoking_user_only=show_for_invoking_user_only, force_new_message=-1)
     
     raise InteractionAbortedError(response)
 
@@ -625,7 +660,7 @@ class SlashCommandWrapper(object):
         """Returns the slash command wrapper's representation."""
         return f'<{self.__class__.__name__} wrapped={self._wrapped!r}>'
     
-    def fetch_wrappers_and_function_back(self):
+    def fetch_function_and_wrappers_back(self):
         """
         Fetches back the source function and all the wrappers, the returns them.
         
@@ -646,6 +681,7 @@ class SlashCommandWrapper(object):
                 function = maybe_wrapper
                 break
         
+        wrappers.reverse()
         return function, wrappers
 
 
@@ -663,16 +699,40 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         The permission overwrite to apply.
     """
     __slots__ = ('_guild_id', '_overwrite')
-    def __new__(cls, guild, entity, allow):
+    def __new__(cls, guild, target, allow):
         """
         Creates a partial function to wrap a slash command.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild's identifier where the overwrite is applied.
+        target : ``User``, ``Client`` or ``Role``, `tuple` ((``User``, ``UserBase``, ``Role`` type) or \
+                `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
+            The target entity of the overwrite
+            
+            The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
+            To avoid confusing, here is a list of the expected structures:
+            
+            - ``Role`` instance
+            - ``User`` instance
+            - ``Client`` instance
+            - `tuple` (``Role`` type, `int`)
+            - `tuple` (``User`` type, `int`)
+            - `tuple` (``UserBase`` type, `int`)
+            - `tuple` (`'Role'`, `int`)
+            - `tuple` (`'role'`, `int`)
+            - `tuple` (`'User'`, `int`)
+            - `tuple` (`'user'`, `int`)
+        
+        allow : `bool`
+            Whether the respective application command should be enabled for the respective entity.
         
         Returns
         -------
         wrapper : `functools.partial` of ``SlashCommandWrapper._decorate``
             Partial function to wrap a slash command.
         """
-        return partial_func(cls._decorate, cls)
         if isinstance(guild, Guild):
             guild_id = guild.id
         elif isinstance(guild, (int, str)):
@@ -681,7 +741,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
             raise TypeError(f'`guild` can be given neither as `{Guild.__class__.__name__}`, and as `int` instance, '
                 f'got {guild.__class__.__name__}.')
         
-        overwrite = ApplicationCommandPermissionOverwrite(entity, allow)
+        overwrite = ApplicationCommandPermissionOverwrite(target, allow)
         
         return partial_func(cls._decorate, cls, guild_id, overwrite)
     
@@ -717,7 +777,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         ----------
         slash_command : ``SlashCommand``
         """
-        pass
+        slash_command.add_overwrite(self._guild_id, self._overwrite)
     
     def __repr__(self):
         """Returns the slash command wrapper's representation."""
@@ -1002,16 +1062,16 @@ ANNOTATION_TYPE_TO_CONVERTER = {
 # `int` Discord fields are broken and they are refusing to fix it, use string instead.
 # Reference: https://github.com/discord/discord-api-docs/issues/2448
 ANNOTATION_TYPE_TO_OPTION_TYPE = {
-    ANNOTATION_TYPE_STR        : ApplicationCommandOptionType.STRING  ,
-    ANNOTATION_TYPE_INT        : ApplicationCommandOptionType.STRING  ,
-    ANNOTATION_TYPE_BOOL       : ApplicationCommandOptionType.BOOLEAN ,
-    ANNOTATION_TYPE_USER       : ApplicationCommandOptionType.USER    ,
-    ANNOTATION_TYPE_USER_ID    : ApplicationCommandOptionType.USER    ,
-    ANNOTATION_TYPE_ROLE       : ApplicationCommandOptionType.ROLE    ,
-    ANNOTATION_TYPE_ROLE_ID    : ApplicationCommandOptionType.ROLE    ,
-    ANNOTATION_TYPE_CHANNEL    : ApplicationCommandOptionType.CHANNEL ,
-    ANNOTATION_TYPE_CHANNEL_ID : ApplicationCommandOptionType.CHANNEL ,
-    ANNOTATION_TYPE_NUMBER     : ApplicationCommandOptionType.INTEGER ,
+    ANNOTATION_TYPE_STR        : ApplicationCommandOptionType.string  ,
+    ANNOTATION_TYPE_INT        : ApplicationCommandOptionType.string  ,
+    ANNOTATION_TYPE_BOOL       : ApplicationCommandOptionType.boolean ,
+    ANNOTATION_TYPE_USER       : ApplicationCommandOptionType.user    ,
+    ANNOTATION_TYPE_USER_ID    : ApplicationCommandOptionType.user    ,
+    ANNOTATION_TYPE_ROLE       : ApplicationCommandOptionType.role    ,
+    ANNOTATION_TYPE_ROLE_ID    : ApplicationCommandOptionType.role    ,
+    ANNOTATION_TYPE_CHANNEL    : ApplicationCommandOptionType.channel ,
+    ANNOTATION_TYPE_CHANNEL_ID : ApplicationCommandOptionType.channel ,
+    ANNOTATION_TYPE_NUMBER     : ApplicationCommandOptionType.integer ,
         }
 
 
@@ -1152,7 +1212,7 @@ class ArgumentConverter(object):
         Internal identifier of the converter.
     """
     __slots__ = ('choices', 'converter', 'default', 'description', 'name', 'required', 'type')
-
+    
     def __new__(cls, argument):
         """
         Creates a new argument converter from the given argument.
@@ -1461,6 +1521,8 @@ class SlashCommand(object):
     ----------
     _command : `None` or ``SlashCommandFunction``
         The command of the slash command.
+    _overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
+        Permission overwrites applied to the slash command.
     _registered_application_command_ids : `None` or `dict` of (`int`, `int`) items
         The registered application command ids, which are matched by the command's schema.
         
@@ -1487,7 +1549,7 @@ class SlashCommand(object):
         Sub-commands of the slash command.
         
         Mutually exclusive with the ``._command`` parameter.
-    allowed_by_default : `bool`
+    allow_by_default : `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     description : `str`
         Application command description. It's length can be in range [2:100].
@@ -1506,8 +1568,9 @@ class SlashCommand(object):
     -----
     ``SlashCommand`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_command', '_registered_application_command_ids', '_schema', '_sub_commands',
-        '_unloading_behaviour', 'allowed_by_default', 'description', 'guild_ids', 'is_default', 'is_global', 'name', )
+    __slots__ = ('__weakref__', '_command', '_overwrites', '_registered_application_command_ids', '_schema',
+        '_sub_commands', '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default',
+        'is_global', 'name')
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -1671,7 +1734,7 @@ class SlashCommand(object):
                 Whether the slash command is the default command in it's category.
             - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command should be deleted from Discord when removed.
-            - `allowed_by_default` : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - `allow_by_default` : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
@@ -1683,7 +1746,7 @@ class SlashCommand(object):
             - is_global
             - show_for_invoking_user_only
             - is_default
-            - allowed_by_default
+            - allow_by_default
         
         Returns
         -------
@@ -1718,7 +1781,7 @@ class SlashCommand(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -1754,7 +1817,7 @@ class SlashCommand(object):
         show_for_invoking_user_only = getattr(klass, 'show_for_invoking_user_only', None)
         is_default = getattr(klass, 'is_default', None)
         delete_on_unload = getattr(klass, 'delete_on_unload', None)
-        allowed_by_default = getattr(klass, 'allowed_by_default', None)
+        allow_by_default = getattr(klass, 'allow_by_default', None)
         
         if (kwargs is not None) and kwargs:
             if (description is None):
@@ -1813,11 +1876,11 @@ class SlashCommand(object):
                 except KeyError:
                     pass
             
-            if (allowed_by_default is None):
-                allowed_by_default = kwargs.pop('allowed_by_default', None)
+            if (allow_by_default is None):
+                allow_by_default = kwargs.pop('allow_by_default', None)
             else:
                 try:
-                    del kwargs['allowed_by_default']
+                    del kwargs['allow_by_default']
                 except KeyError:
                     pass
             
@@ -1832,7 +1895,7 @@ class SlashCommand(object):
                 FutureWarning)
         
         return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allowed_by_default)
+            delete_on_unload, allow_by_default)
     
     @classmethod
     def from_kwargs(cls, command, name, kwargs):
@@ -1858,7 +1921,7 @@ class SlashCommand(object):
             - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
             - is_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-            - allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
         
         Returns
         -------
@@ -1892,7 +1955,7 @@ class SlashCommand(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -1914,7 +1977,7 @@ class SlashCommand(object):
             guild = None
             is_default = None
             delete_on_unload = None
-            allowed_by_default = None
+            allow_by_default = None
         else:
             description = kwargs.pop('description', None)
             show_source = kwargs.pop('show_source', None)
@@ -1923,7 +1986,7 @@ class SlashCommand(object):
             guild = kwargs.pop('checks', None)
             is_default = kwargs.pop('is_default', None)
             delete_on_unload = kwargs.pop('delete_on_unload', None)
-            allowed_by_default = kwargs.pop('allowed_by_default', None)
+            allow_by_default = kwargs.pop('allow_by_default', None)
             
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
@@ -1936,7 +1999,7 @@ class SlashCommand(object):
                 FutureWarning)
         
         return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allowed_by_default)
+            delete_on_unload, allow_by_default)
     
     @classmethod
     def _check_maybe_route(cls, variable_name, variable_value, route_to, validator):
@@ -2238,31 +2301,31 @@ class SlashCommand(object):
         return unloading_behaviour
     
     @staticmethod
-    def _validate_allowed_by_default(allowed_by_default):
+    def _validate_allow_by_default(allow_by_default):
         """
-        Validates the given `allowed_by_default` value.
+        Validates the given `allow_by_default` value.
         
         Parameters
         ----------
-        allowed_by_default : `None` or `bool`
-            The `allowed_by_default` value to validate.
+        allow_by_default : `None` or `bool`
+            The `allow_by_default` value to validate.
         
         Returns
         -------
-        allowed_by_default : `bool`
-            The validated `allowed_by_default` value.
+        allow_by_default : `bool`
+            The validated `allow_by_default` value.
         
         Raises
         ------
         TypeError
-            If `allowed_by_default` was not given as `None` nor as `bool` instance.
+            If `allow_by_default` was not given as `None` nor as `bool` instance.
         """
-        if allowed_by_default is None:
-            allowed_by_default = True
+        if allow_by_default is None:
+            allow_by_default = True
         else:
-            allowed_by_default = preconvert_bool(allowed_by_default, 'allowed_by_default')
+            allow_by_default = preconvert_bool(allow_by_default, 'allow_by_default')
         
-        return allowed_by_default
+        return allow_by_default
     
     @staticmethod
     def _generate_description_from(command, description):
@@ -2314,7 +2377,7 @@ class SlashCommand(object):
         return description
     
     def __new__(cls, command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allowed_by_default):
+            delete_on_unload, allow_by_default):
         """
         Creates a new ``SlashCommand`` instance with the given parameters.
         
@@ -2338,7 +2401,7 @@ class SlashCommand(object):
             Whether the slash command is the default command in it's category.
         delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             Whether the command should be deleted from Discord when removed.
-        allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -2371,7 +2434,7 @@ class SlashCommand(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -2386,6 +2449,11 @@ class SlashCommand(object):
             - If `name` length is out of the expected range [1:32].
         """
         # Check for routing
+        if (command is not None) and isinstance(command, SlashCommandWrapper):
+            command, wrappers = command.fetch_function_and_wrappers_back()
+        else:
+            wrappers = None
+        
         route_to = 0
         name, route_to = cls._check_maybe_route('name', name, route_to, cls._validate_name)
         description, route_to = cls._check_maybe_route('description', description, route_to, None)
@@ -2396,8 +2464,8 @@ class SlashCommand(object):
         is_default, route_to = cls._check_maybe_route('is_default', is_default, route_to, cls._validate_is_default)
         unloading_behaviour, route_to = cls._check_maybe_route('delete_on_unload', delete_on_unload, route_to,
             cls._validate_delete_on_unload)
-        allowed_by_default, route_to = cls._check_maybe_route('allowed_by_default', allowed_by_default, route_to,
-            cls._validate_allowed_by_default)
+        allow_by_default, route_to = cls._check_maybe_route('allow_by_default', allow_by_default, route_to,
+            cls._validate_allow_by_default)
         
         if route_to:
             name = route_name(command, name, route_to)
@@ -2408,7 +2476,7 @@ class SlashCommand(object):
             guild_ids = route_value(guild_ids, route_to)
             is_default = route_value(is_default, route_to)
             unloading_behaviour = route_value(unloading_behaviour, route_to)
-            allowed_by_default = route_value(allowed_by_default, route_to)
+            allow_by_default = route_value(allow_by_default, route_to)
             
             description = [
                 cls._generate_description_from(command, description)
@@ -2436,8 +2504,8 @@ class SlashCommand(object):
             router = []
             
             for name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,\
-                    allowed_by_default in zip(name, description, show_for_invoking_user_only, is_global, guild_ids,
-                        is_default, unloading_behaviour, allowed_by_default):
+                    allow_by_default in zip(name, description, show_for_invoking_user_only, is_global, guild_ids,
+                        is_default, unloading_behaviour, allow_by_default):
                 
                 if is_global and (guild_ids is not None):
                     raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
@@ -2464,7 +2532,13 @@ class SlashCommand(object):
                 self._registered_application_command_ids = None
                 self.is_default = is_default
                 self._unloading_behaviour = unloading_behaviour
-                self.allowed_by_default = allowed_by_default
+                self.allow_by_default = allow_by_default
+                self._overwrites = None
+                
+                if (wrappers is not None):
+                    for wrapper in wrappers:
+                        wrapper.apply(self)
+                
                 router.append(self)
             
             return Router(router)
@@ -2494,7 +2568,13 @@ class SlashCommand(object):
             self._registered_application_command_ids = None
             self.is_default = is_default
             self._unloading_behaviour = unloading_behaviour
-            self.allowed_by_default = allowed_by_default
+            self.allow_by_default = allow_by_default
+            self._overwrites = None
+            
+            if (wrappers is not None):
+                for wrapper in wrappers:
+                    wrapper.apply(self)
+            
             return self
     
     def __repr__(self):
@@ -2512,8 +2592,8 @@ class SlashCommand(object):
         
         result.append(type_name)
         
-        if not self.allowed_by_default:
-            result.append(', allowed_by_default=False')
+        if not self.allow_by_default:
+            result.append(', allow_by_default=False')
         
         if (guild_ids is not None):
             result.append(', guild_ids=')
@@ -2602,7 +2682,7 @@ class SlashCommand(object):
             else:
                 options = None
         
-        return ApplicationCommand(self.name, self.description, allowed_by_default=self.allowed_by_default,
+        return ApplicationCommand(self.name, self.description, allow_by_default=self.allow_by_default,
             options=options, )
     
     def as_sub(self):
@@ -2649,7 +2729,7 @@ class SlashCommand(object):
         new.is_global = self.is_global
         new.name = self.name
         new._unloading_behaviour = self._unloading_behaviour
-        new.allowed_by_default = self.allowed_by_default
+        new.allow_by_default = self.allow_by_default
         
         if (sub_commands is not None):
             parent_reference = None
@@ -2659,6 +2739,11 @@ class SlashCommand(object):
                         parent_reference = WeakReferer(new)
                     sub_command._parent_reference = parent_reference
         
+        overwrites = self._overwrites
+        if (overwrites is not None):
+            overwrites = {guild_id: overwrite.copy() for guild_id, overwrite in overwrites.items()}
+        
+        new._overwrites = overwrites
         return new
     
     @property
@@ -2681,7 +2766,7 @@ class SlashCommand(object):
         return _EventHandlerManager(self)
     
     def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None, delete_on_unload=None, allowed_by_default=None):
+            is_global=None, guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Adds a sub-command under the slash command.
         
@@ -2705,7 +2790,7 @@ class SlashCommand(object):
             Whether the command is the default command in it's category.
         delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -2737,7 +2822,7 @@ class SlashCommand(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -2773,7 +2858,7 @@ class SlashCommand(object):
             return self
         
         command = type(self)(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allowed_by_default)
+            delete_on_unload, allow_by_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -2808,7 +2893,7 @@ class SlashCommand(object):
                 Whether the command is the default command in it's category.
             - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command should be deleted from Discord when removed.
-            - allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -2843,7 +2928,7 @@ class SlashCommand(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -2925,10 +3010,102 @@ class SlashCommand(object):
         if self.name != other.name:
             return False
         
-        if self.allowed_by_default != other.allowed_by_default:
+        if self.allow_by_default != other.allow_by_default:
+            return False
+        
+        if self._overwrites != other._overwrites:
             return False
         
         return True
+    
+    def add_overwrite(self, guild_id, overwrite):
+        """
+        Adds an overwrite to the slash command.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The guild's id where the overwrite will be applied.
+        overwrite : ``ApplicationCommandPermissionOverwrite`` or `None`
+            The permission overwrite to add
+        
+        Raises
+        ------
+        AssertionError
+            - Each command in each guild can have up to `10` overwrite, which is already reached.
+        """
+        overwrites = self._overwrites
+        if overwrites is None:
+            self._overwrites = overwrites = {}
+        
+        overwrites_for_guild = overwrites.get(guild_id)
+        
+        if __debug__:
+            if (overwrites_for_guild is not None) and \
+                    (len(overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX):
+                raise AssertionError(f'`Each command in each guild can have up to '
+                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX} overwrite,s which is already reached.')
+        
+        if (overwrites_for_guild is not None) and (overwrite is not None):
+            target_id = overwrite.target_id
+            for index in range(len(overwrites_for_guild)):
+                overwrite_ = overwrites_for_guild[index]
+                
+                if overwrite_.target_id != target_id:
+                    continue
+                
+                if overwrite.allow == overwrite_.allow:
+                    return
+                
+                del overwrites_for_guild[index]
+                
+                if overwrites_for_guild:
+                    return
+                
+                overwrites[guild_id] = None
+                return
+        
+        if overwrite is None:
+            if overwrites_for_guild is None:
+                overwrites[guild_id] = None
+        else:
+            if overwrites_for_guild is None:
+                overwrites[guild_id] = overwrites_for_guild = []
+            
+            overwrites_for_guild.append(overwrite)
+    
+    def get_overwrites_for(self, guild_id):
+        """
+        Returns the slash command's overwrites for the given guild.
+        
+        Returns
+        -------
+        overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
+            Returns `None` instead of an empty list.
+        """
+        overwrites = self._overwrites
+        if overwrites is None:
+            return
+        
+        return overwrites.get(guild_id)
+
+    def _get_sync_permission_ids(self):
+        """
+        Gets the permission overwrite guild id-s which should be synced.
+        """
+        permission_sync_ids = set()
+        guild_ids = self.guild_ids
+        # If the command is guild bound, sync it in every guild, if not, then sync it in every guild where it has an
+        # an overwrite.
+        if (guild_ids is None):
+            overwrites = self._overwrites
+            if (overwrites is not None):
+                permission_sync_ids.update(guild_ids)
+        else:
+            permission_sync_ids.update(guild_ids)
+        
+        return permission_sync_ids
+
 
 class SlashCommandFunction(object):
     """
@@ -3044,7 +3221,7 @@ class SlashCommandFunction(object):
         else:
             options = None
         
-        return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.SUB_COMMAND,
+        return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.sub_command,
             options=options, default=self.is_default)
     
     def copy(self):
@@ -3162,7 +3339,7 @@ class SlashCommandCategory(object):
         else:
             options = None
         
-        return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.SUB_COMMAND_GROUP,
+        return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.sub_command_group,
             options=options, default=self.is_default)
     
     def copy(self):
@@ -3194,7 +3371,7 @@ class SlashCommandCategory(object):
         return _EventHandlerManager(self)
     
     def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None, delete_on_unload=None, allowed_by_default=None):
+            is_global=None, guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Adds a sub-command under the slash category.
         
@@ -3218,7 +3395,7 @@ class SlashCommandCategory(object):
             Whether the command is the default command in it's category.
         delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -3250,7 +3427,7 @@ class SlashCommandCategory(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -3283,7 +3460,7 @@ class SlashCommandCategory(object):
             return self
         
         command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allowed_by_default)
+            delete_on_unload, allow_by_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -3318,7 +3495,7 @@ class SlashCommandCategory(object):
                 Whether the command is the default command in it's category.
             - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command should be deleted from Discord when removed.
-            - allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -3353,7 +3530,7 @@ class SlashCommandCategory(object):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -3869,6 +4046,9 @@ class CommandState(object):
         
         Returns
         -------
+        command : ``SlashCommand``
+            The existing command or the given one.
+        
         action_identifier : `int`
             The action what took place.
             
@@ -3885,9 +4065,6 @@ class CommandState(object):
             +---------------------------------------+-------+
             | COMMAND_STATE_IDENTIFIER_NON_GLOBAL   | 5     |
             +---------------------------------------+-------+
-        
-        command : ``SlashCommand``
-            The existing command or the given one.
         """
         if self._is_non_global:
             existing_command, purge_identifier = self._try_purge(command.name)
@@ -3967,6 +4144,8 @@ class CommandState(object):
         
         Returns
         -------
+        command : ``SlashCommand``
+            The existing command or the given one.
         action_identifier : `int`
             The action what took place.
             
@@ -3983,9 +4162,6 @@ class CommandState(object):
             +---------------------------------------+-------+
             | COMMAND_STATE_IDENTIFIER_NON_GLOBAL   | 5     |
             +---------------------------------------+-------+
-        
-        command : ``SlashCommand``
-            The existing command or the given one.
         """
         unloading_behaviour = command._unloading_behaviour
         if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
@@ -4110,10 +4286,14 @@ class Slasher(EventHandlerBase):
     
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
+    _sync_permission_tasks : `dict` of (`int`, ``Task``) items
+        A dictionary of `guild-id` - `permission getter` tasks.
     _sync_should : `set` of `int`
         A set of guild id-s which should be synced.
     _sync_tasks : `dict` of (`int, ``Task``) items
         A dictionary of guilds, which are in sync at the moment.
+    _synced_permissions : `dict` of (`int`, `dict` of (`int`, ``ApplicationCommandPermission``) items) items
+        A nested dictionary, which contains application command permission overwrites per guild_id and per command_id.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
     
@@ -4128,8 +4308,8 @@ class Slasher(EventHandlerBase):
     -----
     ``Slasher`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_command_states', '_command_unloading_behaviour', '_sync_done', '_sync_should',
-        '_sync_tasks', 'command_id_to_command')
+    __slots__ = ('__weakref__', '_command_states', '_command_unloading_behaviour', '_sync_done',
+        '_sync_permission_tasks', '_sync_should', '_sync_tasks', '_synced_permissions', 'command_id_to_command')
     
     __event_name__ = 'interaction_create'
     
@@ -4168,6 +4348,8 @@ class Slasher(EventHandlerBase):
         self._sync_tasks = {}
         self._sync_should = set()
         self._sync_done = set()
+        self._sync_permission_tasks = {}
+        self._synced_permissions = {}
         
         self.command_id_to_command = {}
         
@@ -4202,7 +4384,7 @@ class Slasher(EventHandlerBase):
     
     
     def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None, delete_on_unload=None, allowed_by_default=None):
+            is_global=None, guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Adds a slash command.
         
@@ -4226,7 +4408,7 @@ class Slasher(EventHandlerBase):
             Whether the command is the default command in it's category.
         delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -4259,7 +4441,7 @@ class Slasher(EventHandlerBase):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -4288,7 +4470,7 @@ class Slasher(EventHandlerBase):
             return func
         
         command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allowed_by_default)
+            delete_on_unload, allow_by_default)
         if isinstance(command, Router):
             command = command[0]
         
@@ -4323,7 +4505,7 @@ class Slasher(EventHandlerBase):
                 Whether the command is the default command in it's category.
             - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command should be deleted from Discord when removed.
-            - allowed_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
                 Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
@@ -4359,7 +4541,7 @@ class Slasher(EventHandlerBase):
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allowed_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
@@ -4735,18 +4917,29 @@ class Slasher(EventHandlerBase):
             command_create_coroutines = None
             command_edit_coroutines = None
             command_delete_coroutines = None
+            command_register_coroutines = None
             
             guild_added_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    self._register_helper(command, guild_command_state, guild_id, application_command.id)
+                    coroutine = self._register_command(client, command, guild_command_state, guild_id,
+                        application_command)
+                    
+                    if command_register_coroutines is None:
+                        command_register_coroutines = []
+                    command_register_coroutines.append(coroutine)
             
             non_global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 non_global_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    self._register_helper(command, non_global_command_state, guild_id, application_command.id)
+                    coroutine = self._register_command(client, command, non_global_command_state, guild_id,
+                        application_command)
+                    
+                    if command_register_coroutines is None:
+                        command_register_coroutines = []
+                    command_register_coroutines.append(coroutine)
             
             guild_added_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_added_commands, False)
@@ -4809,7 +5002,8 @@ class Slasher(EventHandlerBase):
                 command_delete_coroutines.append(coroutine)
             
             success = True
-            for coroutines in (command_delete_coroutines, command_edit_coroutines, command_create_coroutines):
+            for coroutines in (command_register_coroutines, command_delete_coroutines, command_edit_coroutines, \
+                    command_create_coroutines):
                 if (coroutines is not None):
                     done, pending = await WaitTillAll([Task(coroutine, KOKORO) for coroutine in coroutines], KOKORO)
                     
@@ -4875,12 +5069,18 @@ class Slasher(EventHandlerBase):
             command_create_coroutines = None
             command_edit_coroutines = None
             command_delete_coroutines = None
+            command_register_coroutines = None
             
             global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 global_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    self._register_helper(command, global_command_state, SYNC_ID_GLOBAL, application_command.id)
+                    coroutine = self._register_command(client, command, global_command_state, SYNC_ID_GLOBAL,
+                        application_command)
+                    
+                    if command_register_coroutines is None:
+                        command_register_coroutines = []
+                    command_register_coroutines.append(coroutine)
             
             global_keep_commands, matched = match_application_commands_to_commands(application_commands,
                 global_keep_commands, True)
@@ -4916,7 +5116,8 @@ class Slasher(EventHandlerBase):
                 command_delete_coroutines.append(coroutine)
             
             success = True
-            for coroutines in (command_delete_coroutines, command_edit_coroutines, command_create_coroutines):
+            for coroutines in (command_register_coroutines, command_delete_coroutines, command_edit_coroutines,
+                    command_create_coroutines):
                 if (coroutines is not None):
                     done, pending = await WaitTillAll([Task(coroutine, KOKORO) for coroutine in coroutines], KOKORO)
                     
@@ -4935,6 +5136,103 @@ class Slasher(EventHandlerBase):
             self._sync_done.add(SYNC_ID_GLOBAL)
         
         return success
+    
+    async def _register_command(self, client, command, command_state, guild_id, application_command):
+        """
+        Finishes registering the command.
+        
+        This method is a coroutine.
+        
+        Attributes
+        ----------
+        client : ``Client``
+            The respective client.
+        command : ``SlashCommand``
+            The non_global command what replaced the slash command.
+        command_state : ``CommandState``
+            The command's command state.
+        guild_id : `int`
+            The respective guild's identifier where the command is.
+        application_command : ``ApplicationCommand``
+            The respective application command.
+        
+        Returns
+        -------
+        success : `bool`
+            Whether the command was registered successfully.
+        """
+        if guild_id == SYNC_ID_GLOBAL:
+            tasks = []
+            for permission_guild_id in command._get_sync_permission_ids():
+                task = Task(self._register_command_task(client, command, permission_guild_id, application_command),
+                    KOKORO)
+                task.append(task)
+            
+            if tasks:
+                await WaitTillAll(tasks, KOKORO)
+                
+                success = True
+                for future in tasks:
+                    if not future.result():
+                        success = False
+                
+                if not success:
+                    return False
+        else:
+            await self._register_command_task(client, command, guild_id, application_command)
+        
+        self._register_helper(command, command_state, guild_id, application_command.id)
+        return True
+    
+    async def _register_command_task(self, client, command, guild_id, application_command):
+        """
+        Syncs a command's permissions inside of a guild.
+        
+        This method is a coroutine.
+        
+        Attributes
+        ----------
+        client : ``Client``
+            The respective client.
+        command : ``SlashCommand``
+            The non_global command what replaced the slash command.
+        guild_id : `int`
+            The respective guild's identifier where the command is.
+        application_command : ``ApplicationCommand``
+            The respective application command.
+        
+        Returns
+        -------
+        success : `bool`
+            Whether the command was registered successfully.
+        """
+        success, permission = await self._get_permission_for(client, guild_id, application_command.id)
+        if not success:
+            return False
+        
+        overwrites = command.get_overwrites_for(guild_id)
+        
+        if permission is None:
+            current_overwrites = None
+        else:
+            current_overwrites = permission.overwrites
+        
+        if overwrites != current_overwrites:
+            try:
+                permission = await client.application_command_permission_edit(guild_id, application_command, overwrites)
+            except BaseException as err:
+                if not isinstance(err, ConnectionError):
+                    await client.events.error(client, f'{self!r}._register_command', err)
+                return False
+            
+            try:
+                per_guild = self._synced_permissions[guild_id]
+            except KeyError:
+                per_guild = self._synced_permissions[guild_id] = {}
+            
+            per_guild[permission.application_command_id] = permission
+        
+        return True
     
     async def _edit_guild_command_to_non_global(self, client, command, command_state, guild_id, application_command):
         """
@@ -4974,8 +5272,7 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._edit_guild_command_to_non_global', err)
             return False
         
-        self._register_helper(command, command_state, guild_id, application_command.id)
-        return True
+        return await self._register_command(client, command, command_state, guild_id, application_command)
     
     async def _edit_command(self, client, command, command_state, guild_id, application_command):
         """
@@ -5021,8 +5318,7 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._edit_command', err)
             return False
         
-        self._register_helper(command, guild_id, application_command.id, command_state)
-        return True
+        return await self._register_command(client, command, command_state, guild_id, application_command)
     
     async def _delete_command(self, client, command, command_state, guild_id, application_command):
         """
@@ -5106,8 +5402,7 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._create_command', err)
             return False
         
-        self._register_helper(command, command_state, guild_id, application_command.id)
-        return True
+        return await self._register_command(client, command, command_state, guild_id, application_command)
     
     def do_main_sync(self, client):
         """
@@ -5294,6 +5589,102 @@ class Slasher(EventHandlerBase):
         
         Accepts and returns any `bool` instance.
         """)
-
+    
+    def _maybe_store_application_command_permission(self, permission):
+        """
+        Stores an application command's new permissions if needed.
+        
+        Parameters
+        ----------
+        permission : ``ApplicationCommandPermission``
+            The updated application command's permissions.
+        """
+        try:
+            tracked_guild = self._synced_permissions[permission.guild_id]
+        except KeyError:
+            return
+        
+        tracked_guild[permission.application_command_id] = permission
+    
+    async def _get_permission_for(self, client, guild_id, application_command_id):
+        """
+        Gets the permissions for the given application command in the the respective guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client.
+        guild_id : `int`
+            The respective guild's identifier where the command is.
+        application_command_id : `int`
+            The respective application command's identifier.
+        """
+        try:
+            per_guild = self._synced_permissions[guild_id]
+        except KeyError:
+            pass
+        else:
+            return True, per_guild.get(application_command_id)
+        
+        try:
+            sync_permission_task = self._sync_permission_tasks[guild_id]
+        except KeyError:
+            sync_permission_task = Task(self._sync_permission_task(client, guild_id), KOKORO)
+            self._sync_permission_tasks[guild_id] = sync_permission_task
+        
+        success, per_guild = await sync_permission_task
+        if success:
+            permission = per_guild.get(application_command_id)
+        else:
+            permission = None
+        
+        return success, permission
+    
+    async def _sync_permission_task(self, client, guild_id):
+        """
+        Syncs the respective guild's permissions.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client.
+        guild_id : `int`
+            The guild's id to sync.
+        
+        Returns
+        -------
+        success : `bool`
+            Whether syncing was successful.
+        per_guild : `None` or `dict` of (`int`, ``ApplicationCommandPermission``) items
+            The application command permission for the respective guild. If `success` is `False, this value is
+            returned as `None`.
+        """
+        try:
+            try:
+                permissions = await client.application_command_permission_get_all_guild(guild_id)
+            except BaseException as err:
+                if not isinstance(err, ConnectionError):
+                    await client.events.error(client, f'{self!r}._sync_permission_task', err)
+                
+                return False, None
+            else:
+                try:
+                    per_guild = self._synced_permissions[guild_id]
+                except KeyError:
+                    per_guild = self._synced_permissions[guild_id] = {}
+                
+                for permission in permissions:
+                    per_guild[permission.application_command_id] = permission
+                
+                return True, per_guild
+        finally:
+            try:
+                del self._sync_permission_tasks[guild_id]
+            except KeyError:
+                pass
 
 del EventHandlerBase

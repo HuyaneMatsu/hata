@@ -1444,11 +1444,11 @@ class TeamMembershipState(PreinstancedBase):
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
     +=======================+===========+=======+
-    | NONE                  | NONE      | 0     |
+    | none                  | none      | 0     |
     +-----------------------+-----------+-------+
-    | INVITED               | INVITED   | 1     |
+    | invited               | invited   | 1     |
     +-----------------------+-----------+-------+
-    | ACCEPTED              | ACCEPTED  | 2     |
+    | accepted              | accepted  | 2     |
     +-----------------------+-----------+-------+
     """
     INSTANCES = {}
@@ -1457,13 +1457,13 @@ class TeamMembershipState(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    NONE     = None
-    INVITED  = None
-    ACCEPTED = None
+    none     = None
+    invited  = None
+    accepted = None
 
-TeamMembershipState.NONE     = TeamMembershipState(0, 'NONE')
-TeamMembershipState.INVITED  = TeamMembershipState(1, 'INVITED')
-TeamMembershipState.ACCEPTED = TeamMembershipState(2, 'ACCEPTED')
+TeamMembershipState.none     = TeamMembershipState(0, 'none')
+TeamMembershipState.invited  = TeamMembershipState(1, 'invited')
+TeamMembershipState.accepted = TeamMembershipState(2, 'accepted')
 
 
 
@@ -1621,7 +1621,7 @@ GuildFeature.verified                   = GuildFeature('VERIFIED')
 GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
 GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
 GuildFeature.verification_screen        = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
-GuildFeature.preview_enabled             = GuildFeature('PREVIEW_ENABLED')
+GuildFeature.preview_enabled            = GuildFeature('PREVIEW_ENABLED')
 
 class AuditLogEvent(PreinstancedBase):
     """
@@ -1648,75 +1648,75 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------+---------------------------+-------+
     | Class attribute name      | name                      | value |
     +===========================+===========================+=======+
-    | GUILD_UPDATE              | GUILD_UPDATE              |  1    |
+    | guild_update              | guild_update              |  1    |
     +---------------------------+---------------------------+-------+
-    | CHANNEL_CREATE            | CHANNEL_CREATE            | 10    |
+    | channel_create            | channel_create            | 10    |
     +---------------------------+---------------------------+-------+
-    | CHANNEL_UPDATE            | CHANNEL_UPDATE            | 11    |
+    | channel_update            | channel_update            | 11    |
     +---------------------------+---------------------------+-------+
-    | CHANNEL_DELETE            | CHANNEL_DELETE            | 12    |
+    | channel_delete            | channel_delete            | 12    |
     +---------------------------+---------------------------+-------+
-    | CHANNEL_OVERWRITE_CREATE  | CHANNEL_OVERWRITE_CREATE  | 13    |
+    | channel_overwrite_create  | channel_overwrite_create  | 13    |
     +---------------------------+---------------------------+-------+
-    | CHANNEL_OVERWRITE_UPDATE  | CHANNEL_OVERWRITE_UPDATE  | 14    |
+    | channel_overwrite_update  | channel_overwrite_update  | 14    |
     +---------------------------+---------------------------+-------+
-    | CHANNEL_OVERWRITE_DELETE  | CHANNEL_OVERWRITE_DELETE  | 15    |
+    | channel_overwrite_delete  | channel_overwrite_delete  | 15    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_KICK               | MEMBER_KICK               | 20    |
+    | member_kick               | member_kick               | 20    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_PRUNE              | MEMBER_PRUNE              | 21    |
+    | member_prune              | member_prune              | 21    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_BAN_ADD            | MEMBER_BAN_ADD            | 22    |
+    | member_ban_add            | member_ban_add            | 22    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_BAN_REMOVE         | MEMBER_BAN_REMOVE         | 23    |
+    | member_ban_remove         | member_ban_remove         | 23    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_UPDATE             | MEMBER_UPDATE             | 24    |
+    | member_update             | member_update             | 24    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_ROLE_UPDATE        | MEMBER_ROLE_UPDATE        | 25    |
+    | member_role_update        | member_role_update        | 25    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_MOVE               | MEMBER_MOVE               | 26    |
+    | member_move               | member_move               | 26    |
     +---------------------------+---------------------------+-------+
-    | MEMBER_DISCONNECT         | MEMBER_DISCONNECT         | 27    |
+    | member_disconnect         | member_disconnect         | 27    |
     +---------------------------+---------------------------+-------+
-    | BOT_ADD                   | BOT_ADD                   | 28    |
+    | bot_add                   | bot_add                   | 28    |
     +---------------------------+---------------------------+-------+
-    | ROLE_CREATE               | ROLE_CREATE               | 30    |
+    | role_create               | role_create               | 30    |
     +---------------------------+---------------------------+-------+
-    | ROLE_UPDATE               | ROLE_UPDATE               | 31    |
+    | role_update               | role_update               | 31    |
     +---------------------------+---------------------------+-------+
-    | ROLE_DELETE               | ROLE_DELETE               | 32    |
+    | role_delete               | role_delete               | 32    |
     +---------------------------+---------------------------+-------+
-    | INVITE_CREATE             | INVITE_CREATE             | 40    |
+    | invite_create             | invite_create             | 40    |
     +---------------------------+---------------------------+-------+
-    | INVITE_UPDATE             | INVITE_UPDATE             | 41    |
+    | invite_update             | invite_update             | 41    |
     +---------------------------+---------------------------+-------+
-    | INVITE_DELETE             | INVITE_DELETE             | 42    |
+    | INVITE_delete             | INVITE_delete             | 42    |
     +---------------------------+---------------------------+-------+
-    | WEBHOOK_CREATE            | WEBHOOK_CREATE            | 50    |
+    | webhook_create            | webhook_create            | 50    |
     +---------------------------+---------------------------+-------+
-    | WEBHOOK_UPDATE            | WEBHOOK_UPDATE            | 51    |
+    | webhook_update            | webhook_update            | 51    |
     +---------------------------+---------------------------+-------+
-    | WEBHOOK_DELETE            | WEBHOOK_DELETE            | 52    |
+    | webhook_delete            | webhook_delete            | 52    |
     +---------------------------+---------------------------+-------+
-    | EMOJI_CREATE              | EMOJI_CREATE              | 60    |
+    | emoji_create              | emoji_create              | 60    |
     +---------------------------+---------------------------+-------+
-    | EMOJI_UPDATE              | EMOJI_UPDATE              | 61    |
+    | emoji_update              | emoji_update              | 61    |
     +---------------------------+---------------------------+-------+
-    | EMOJI_DELETE              | EMOJI_DELETE              | 62    |
+    | emoji_delete              | emoji_delete              | 62    |
     +---------------------------+---------------------------+-------+
-    | MESSAGE_DELETE            | MESSAGE_DELETE            | 72    |
+    | message_delete            | message_delete            | 72    |
     +---------------------------+---------------------------+-------+
-    | MESSAGE_BULK_DELETE       | MESSAGE_BULK_DELETE       | 73    |
+    | message_bulk_delete       | message_bulk_delete       | 73    |
     +---------------------------+---------------------------+-------+
-    | MESSAGE_PIN               | MESSAGE_PIN               | 74    |
+    | message_pin               | message_pin               | 74    |
     +---------------------------+---------------------------+-------+
-    | MESSAGE_UNPIN             | MESSAGE_UNPIN             | 75    |
+    | message_unpin             | message_unpin             | 75    |
     +---------------------------+---------------------------+-------+
-    | INTEGRATION_CREATE        | INTEGRATION_CREATE        | 80    |
+    | integration_create        | integration_create        | 80    |
     +---------------------------+---------------------------+-------+
-    | INTEGRATION_UPDATE        | INTEGRATION_UPDATE        | 81    |
+    | integration_update        | integration_update        | 81    |
     +---------------------------+---------------------------+-------+
-    | INTEGRATION_DELETE        | INTEGRATION_DELETE        | 82    |
+    | integration_delete        | integration_delete        | 82    |
     +---------------------------+---------------------------+-------+
     """
     INSTANCES = {}
@@ -1726,93 +1726,93 @@ class AuditLogEvent(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    GUILD_UPDATE             = NotImplemented
+    guild_update             = NotImplemented
     
-    CHANNEL_CREATE           = NotImplemented
-    CHANNEL_UPDATE           = NotImplemented
-    CHANNEL_DELETE           = NotImplemented
-    CHANNEL_OVERWRITE_CREATE = NotImplemented
-    CHANNEL_OVERWRITE_UPDATE = NotImplemented
-    CHANNEL_OVERWRITE_DELETE = NotImplemented
+    channel_create           = NotImplemented
+    channel_update           = NotImplemented
+    channel_delete           = NotImplemented
+    channel_overwrite_create = NotImplemented
+    channel_overwrite_update = NotImplemented
+    channel_overwrite_delete = NotImplemented
     
-    MEMBER_KICK              = NotImplemented
-    MEMBER_PRUNE             = NotImplemented
-    MEMBER_BAN_ADD           = NotImplemented
-    MEMBER_BAN_REMOVE        = NotImplemented
-    MEMBER_UPDATE            = NotImplemented
-    MEMBER_ROLE_UPDATE       = NotImplemented
-    MEMBER_MOVE              = NotImplemented
-    MEMBER_DISCONNECT        = NotImplemented
-    BOT_ADD                  = NotImplemented
+    member_kick              = NotImplemented
+    member_prune             = NotImplemented
+    member_ban_add           = NotImplemented
+    member_ban_remove        = NotImplemented
+    member_update            = NotImplemented
+    member_role_update       = NotImplemented
+    member_move              = NotImplemented
+    member_disconnect        = NotImplemented
+    bot_add                  = NotImplemented
     
-    ROLE_CREATE              = NotImplemented
-    ROLE_UPDATE              = NotImplemented
-    ROLE_DELETE              = NotImplemented
+    role_create              = NotImplemented
+    role_update              = NotImplemented
+    role_delete              = NotImplemented
     
-    INVITE_CREATE            = NotImplemented
-    INVITE_UPDATE            = NotImplemented
-    INVITE_DELETE            = NotImplemented
+    invite_create            = NotImplemented
+    invite_update            = NotImplemented
+    INVITE_delete            = NotImplemented
     
-    WEBHOOK_CREATE           = NotImplemented
-    WEBHOOK_UPDATE           = NotImplemented
-    WEBHOOK_DELETE           = NotImplemented
+    webhook_create           = NotImplemented
+    webhook_update           = NotImplemented
+    webhook_delete           = NotImplemented
     
-    EMOJI_CREATE             = NotImplemented
-    EMOJI_UPDATE             = NotImplemented
-    EMOJI_DELETE             = NotImplemented
+    emoji_create             = NotImplemented
+    emoji_update             = NotImplemented
+    emoji_delete             = NotImplemented
     
-    MESSAGE_DELETE           = NotImplemented
-    MESSAGE_BULK_DELETE      = NotImplemented
-    MESSAGE_PIN              = NotImplemented
-    MESSAGE_UNPIN            = NotImplemented
+    message_delete           = NotImplemented
+    message_bulk_delete      = NotImplemented
+    message_pin              = NotImplemented
+    message_unpin            = NotImplemented
     
-    INTEGRATION_CREATE       = NotImplemented
-    INTEGRATION_UPDATE       = NotImplemented
-    INTEGRATION_DELETE       = NotImplemented
+    integration_create       = NotImplemented
+    integration_update       = NotImplemented
+    integration_delete       = NotImplemented
 
-AuditLogEvent.GUILD_UPDATE             = AuditLogEvent( 1, 'GUILD_UPDATE')
+AuditLogEvent.guild_update             = AuditLogEvent( 1, 'guild_update')
 
-AuditLogEvent.CHANNEL_CREATE           = AuditLogEvent(10, 'CHANNEL_CREATE')
-AuditLogEvent.CHANNEL_UPDATE           = AuditLogEvent(11, 'CHANNEL_UPDATE')
-AuditLogEvent.CHANNEL_DELETE           = AuditLogEvent(12, 'CHANNEL_DELETE')
-AuditLogEvent.CHANNEL_OVERWRITE_CREATE = AuditLogEvent(13, 'CHANNEL_OVERWRITE_CREATE')
-AuditLogEvent.CHANNEL_OVERWRITE_UPDATE = AuditLogEvent(14, 'CHANNEL_OVERWRITE_UPDATE')
-AuditLogEvent.CHANNEL_OVERWRITE_DELETE = AuditLogEvent(15, 'CHANNEL_OVERWRITE_DELETE')
+AuditLogEvent.channel_create           = AuditLogEvent(10, 'channel_create')
+AuditLogEvent.channel_update           = AuditLogEvent(11, 'channel_update')
+AuditLogEvent.channel_delete           = AuditLogEvent(12, 'channel_delete')
+AuditLogEvent.channel_overwrite_create = AuditLogEvent(13, 'channel_overwrite_create')
+AuditLogEvent.channel_overwrite_update = AuditLogEvent(14, 'channel_overwrite_update')
+AuditLogEvent.channel_overwrite_delete = AuditLogEvent(15, 'channel_overwrite_delete')
 
-AuditLogEvent.MEMBER_KICK              = AuditLogEvent(20, 'MEMBER_KICK')
-AuditLogEvent.MEMBER_PRUNE             = AuditLogEvent(21, 'MEMBER_PRUNE')
-AuditLogEvent.MEMBER_BAN_ADD           = AuditLogEvent(22, 'MEMBER_BAN_ADD')
-AuditLogEvent.MEMBER_BAN_REMOVE        = AuditLogEvent(23, 'MEMBER_BAN_REMOVE')
-AuditLogEvent.MEMBER_UPDATE            = AuditLogEvent(24, 'MEMBER_UPDATE')
-AuditLogEvent.MEMBER_ROLE_UPDATE       = AuditLogEvent(25, 'MEMBER_ROLE_UPDATE')
-AuditLogEvent.MEMBER_MOVE              = AuditLogEvent(26, 'MEMBER_MOVE')
-AuditLogEvent.MEMBER_DISCONNECT        = AuditLogEvent(27, 'MEMBER_DISCONNECT')
-AuditLogEvent.BOT_ADD                  = AuditLogEvent(28, 'MEMBER_ROLE_UPDATE')
+AuditLogEvent.member_kick              = AuditLogEvent(20, 'member_kick')
+AuditLogEvent.member_prune             = AuditLogEvent(21, 'member_prune')
+AuditLogEvent.member_ban_add           = AuditLogEvent(22, 'member_ban_add')
+AuditLogEvent.member_ban_remove        = AuditLogEvent(23, 'member_ban_remove')
+AuditLogEvent.member_update            = AuditLogEvent(24, 'member_update')
+AuditLogEvent.member_role_update       = AuditLogEvent(25, 'member_role_update')
+AuditLogEvent.member_move              = AuditLogEvent(26, 'member_move')
+AuditLogEvent.member_disconnect        = AuditLogEvent(27, 'member_disconnect')
+AuditLogEvent.bot_add                  = AuditLogEvent(28, 'member_role_update')
 
-AuditLogEvent.ROLE_CREATE              = AuditLogEvent(30, 'ROLE_CREATE')
-AuditLogEvent.ROLE_UPDATE              = AuditLogEvent(31, 'ROLE_UPDATE')
-AuditLogEvent.ROLE_DELETE              = AuditLogEvent(32, 'ROLE_DELETE')
+AuditLogEvent.role_create              = AuditLogEvent(30, 'role_create')
+AuditLogEvent.role_update              = AuditLogEvent(31, 'role_update')
+AuditLogEvent.role_delete              = AuditLogEvent(32, 'role_delete')
 
-AuditLogEvent.INVITE_CREATE            = AuditLogEvent(40, 'INVITE_CREATE')
-AuditLogEvent.INVITE_UPDATE            = AuditLogEvent(41, 'INVITE_UPDATE')
-AuditLogEvent.INVITE_DELETE            = AuditLogEvent(42, 'INVITE_DELETE')
+AuditLogEvent.invite_create            = AuditLogEvent(40, 'invite_create')
+AuditLogEvent.invite_update            = AuditLogEvent(41, 'invite_update')
+AuditLogEvent.INVITE_delete            = AuditLogEvent(42, 'INVITE_delete')
 
-AuditLogEvent.WEBHOOK_CREATE           = AuditLogEvent(50, 'WEBHOOK_CREATE')
-AuditLogEvent.WEBHOOK_UPDATE           = AuditLogEvent(51, 'WEBHOOK_UPDATE')
-AuditLogEvent.WEBHOOK_DELETE           = AuditLogEvent(52, 'WEBHOOK_DELETE')
+AuditLogEvent.webhook_create           = AuditLogEvent(50, 'webhook_create')
+AuditLogEvent.webhook_update           = AuditLogEvent(51, 'webhook_update')
+AuditLogEvent.webhook_delete           = AuditLogEvent(52, 'webhook_delete')
 
-AuditLogEvent.EMOJI_CREATE             = AuditLogEvent(60, 'EMOJI_CREATE')
-AuditLogEvent.EMOJI_UPDATE             = AuditLogEvent(61, 'EMOJI_UPDATE')
-AuditLogEvent.EMOJI_DELETE             = AuditLogEvent(62, 'EMOJI_DELETE')
+AuditLogEvent.emoji_create             = AuditLogEvent(60, 'emoji_create')
+AuditLogEvent.emoji_update             = AuditLogEvent(61, 'emoji_update')
+AuditLogEvent.emoji_delete             = AuditLogEvent(62, 'emoji_delete')
 
-AuditLogEvent.MESSAGE_DELETE           = AuditLogEvent(72, 'MESSAGE_DELETE')
-AuditLogEvent.MESSAGE_BULK_DELETE      = AuditLogEvent(73, 'MESSAGE_BULK_DELETE')
-AuditLogEvent.MESSAGE_PIN              = AuditLogEvent(74, 'MESSAGE_PIN')
-AuditLogEvent.MESSAGE_UNPIN            = AuditLogEvent(75, 'MESSAGE_UNPIN')
+AuditLogEvent.message_delete           = AuditLogEvent(72, 'message_delete')
+AuditLogEvent.message_bulk_delete      = AuditLogEvent(73, 'message_bulk_delete')
+AuditLogEvent.message_pin              = AuditLogEvent(74, 'message_pin')
+AuditLogEvent.message_unpin            = AuditLogEvent(75, 'message_unpin')
 
-AuditLogEvent.INTEGRATION_CREATE       = AuditLogEvent(80, 'INTEGRATION_CREATE')
-AuditLogEvent.INTEGRATION_UPDATE       = AuditLogEvent(81, 'INTEGRATION_UPDATE')
-AuditLogEvent.INTEGRATION_DELETE       = AuditLogEvent(82, 'INTEGRATION_DELETE')
+AuditLogEvent.integration_create       = AuditLogEvent(80, 'integration_create')
+AuditLogEvent.integration_update       = AuditLogEvent(81, 'integration_update')
+AuditLogEvent.integration_delete       = AuditLogEvent(82, 'integration_delete')
 
 
 class DefaultAvatar(PreinstancedBase):
@@ -2022,11 +2022,11 @@ class InviteTargetType(PreinstancedBase):
     +-----------------------+-----------------------+-------+
     | Class attribute name  | name                  | value |
     +=======================+=======================+=======+
-    | NONE                  | NONE                  | 0     |
+    | none                  | none                  | 0     |
     +-----------------------+-----------------------+-------+
-    | STREAM                | STREAM                | 1     |
+    | stream                | stream                | 1     |
     +-----------------------+-----------------------+-------+
-    | EMBEDDED_APPLICATION  | EMBEDDED_APPLICATION  | 2     |
+    | embedded_application  | embedded_application  | 2     |
     +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
@@ -2035,13 +2035,13 @@ class InviteTargetType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    NONE                 = NotImplemented
-    STREAM               = NotImplemented
-    EMBEDDED_APPLICATION = NotImplemented
+    none                 = NotImplemented
+    stream               = NotImplemented
+    embedded_application = NotImplemented
 
-InviteTargetType.NONE                 = InviteTargetType(0, 'NONE'                , )
-InviteTargetType.STREAM               = InviteTargetType(1, 'STREAM'              , )
-InviteTargetType.EMBEDDED_APPLICATION = InviteTargetType(2, 'EMBEDDED_APPLICATION', )
+InviteTargetType.none                 = InviteTargetType(0, 'none'                , )
+InviteTargetType.stream               = InviteTargetType(1, 'stream'              , )
+InviteTargetType.embedded_application = InviteTargetType(2, 'embedded_application', )
 
 
 class StickerType(PreinstancedBase):
@@ -2069,13 +2069,13 @@ class StickerType(PreinstancedBase):
     +-----------------------+-----------+-------+
     | Class attribute name  | name      | value |
     +=======================+===========+=======+
-    | NONE                  | NONE      | 0     |
+    | none                  | none      | 0     |
     +-----------------------+-----------+-------+
-    | PNG                   | PNG       | 1     |
+    | png                   | png       | 1     |
     +-----------------------+-----------+-------+
-    | APNG                  | APNG      | 2     |
+    | apng                  | apng      | 2     |
     +-----------------------+-----------+-------+
-    | LOTTIE                | LOTTIE    | 3     |
+    | lottie                | lottie    | 3     |
     +-----------------------+-----------+-------+
     """
     INSTANCES = {}
@@ -2085,15 +2085,15 @@ class StickerType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    NONE   = NotImplemented
-    PNG    = NotImplemented
-    APNG   = NotImplemented
-    LOTTIE = NotImplemented
+    none   = NotImplemented
+    png    = NotImplemented
+    apng   = NotImplemented
+    lottie = NotImplemented
 
-StickerType.NONE   = StickerType(0, 'NONE')
-StickerType.PNG    = StickerType(1, 'PNG')
-StickerType.APNG   = StickerType(2, 'APNG')
-StickerType.LOTTIE = StickerType(3, 'LOTTIE')
+StickerType.none   = StickerType(0, 'none')
+StickerType.png    = StickerType(1, 'png')
+StickerType.apng   = StickerType(2, 'apng')
+StickerType.lottie = StickerType(3, 'lottie')
 
 
 class RoleManagerType(PreinstancedBase):
@@ -2121,17 +2121,17 @@ class RoleManagerType(PreinstancedBase):
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |
     +=======================+===============+=======+
-    | NONE                  | NONE          | 0     |
+    | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | UNSET                 | UNSET         | 1     |
+    | unset                 | unset         | 1     |
     +-----------------------+---------------+-------+
-    | UNKNOWN               | UNKNOWN       | 2     |
+    | unknown               | unknown       | 2     |
     +-----------------------+---------------+-------+
-    | BOT                   | BOT           | 3     |
+    | bot                   | bot           | 3     |
     +-----------------------+---------------+-------+
-    | BOOSTER               | BOOSTER       | 4     |
+    | booster               | booster       | 4     |
     +-----------------------+---------------+-------+
-    | INTEGRATION           | INTEGRATION   | 5     |
+    | integration           | integration   | 5     |
     +-----------------------+---------------+-------+
     """
     INSTANCES = {}
@@ -2149,19 +2149,19 @@ class RoleManagerType(PreinstancedBase):
         
         return boolean
     
-    NONE        = NotImplemented
-    UNSET       = NotImplemented
-    UNKNOWN     = NotImplemented
-    BOT         = NotImplemented
-    BOOSTER     = NotImplemented
-    INTEGRATION = NotImplemented
+    none        = NotImplemented
+    unset       = NotImplemented
+    unknown     = NotImplemented
+    bot         = NotImplemented
+    booster     = NotImplemented
+    integration = NotImplemented
 
-RoleManagerType.NONE        = RoleManagerType(0 , 'NONE'        ,)
-RoleManagerType.UNSET       = RoleManagerType(1 , 'UNSET'       ,)
-RoleManagerType.UNKNOWN     = RoleManagerType(2 , 'UNKNOWN'     ,)
-RoleManagerType.BOT         = RoleManagerType(3 , 'BOT'         ,)
-RoleManagerType.BOOSTER     = RoleManagerType(4 , 'BOOSTER'     ,)
-RoleManagerType.INTEGRATION = RoleManagerType(5 , 'INTEGRATION' ,)
+RoleManagerType.none        = RoleManagerType(0 , 'none'        ,)
+RoleManagerType.unset       = RoleManagerType(1 , 'unset'       ,)
+RoleManagerType.unknown     = RoleManagerType(2 , 'unknown'     ,)
+RoleManagerType.bot         = RoleManagerType(3 , 'bot'         ,)
+RoleManagerType.booster     = RoleManagerType(4 , 'booster'     ,)
+RoleManagerType.integration = RoleManagerType(5 , 'integration' ,)
 
 
 class ApplicationCommandOptionType(PreinstancedBase):
@@ -2190,23 +2190,23 @@ class ApplicationCommandOptionType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | Class attribute name  | Name              | Value |
     +=======================+===================+=======+
-    | NONE                  | NONE              | 0     |
+    | none                  | none              | 0     |
     +-----------------------+-------------------+-------+
-    | SUB_COMMAND           | SUB_COMMAND       | 1     |
+    | sub_command           | sub_command       | 1     |
     +-----------------------+-------------------+-------+
-    | SUB_COMMAND_GROUP     | SUB_COMMAND_GROUP | 2     |
+    | sub_command_group     | sub_command_group | 2     |
     +-----------------------+-------------------+-------+
-    | STRING                | STRING            | 3     |
+    | string                | string            | 3     |
     +-----------------------+-------------------+-------+
-    | INTEGER               | INTEGER           | 4     |
+    | integer               | integer           | 4     |
     +-----------------------+-------------------+-------+
-    | BOOLEAN               | BOOLEAN           | 5     |
+    | boolean               | boolean           | 5     |
     +-----------------------+-------------------+-------+
-    | USER                  | USER              | 6     |
+    | user                  | user              | 6     |
     +-----------------------+-------------------+-------+
-    | CHANNEL               | CHANNEL           | 7     |
+    | channel               | channel           | 7     |
     +-----------------------+-------------------+-------+
-    | ROLE                  | ROLE              | 8     |
+    | role                  | role              | 8     |
     +-----------------------+-------------------+-------+
     """
     INSTANCES = {}
@@ -2215,25 +2215,25 @@ class ApplicationCommandOptionType(PreinstancedBase):
     
     __slots__ = ()
     
-    NONE              = NotImplemented
-    SUB_COMMAND       = NotImplemented
-    SUB_COMMAND_GROUP = NotImplemented
-    STRING            = NotImplemented
-    INTEGER           = NotImplemented
-    BOOLEAN           = NotImplemented
-    USER              = NotImplemented
-    CHANNEL           = NotImplemented
-    ROLE              = NotImplemented
+    none              = NotImplemented
+    sub_command       = NotImplemented
+    sub_command_group = NotImplemented
+    string            = NotImplemented
+    integer           = NotImplemented
+    boolean           = NotImplemented
+    user              = NotImplemented
+    channel           = NotImplemented
+    role              = NotImplemented
 
-ApplicationCommandOptionType.NONE              = ApplicationCommandOptionType(0 , 'NONE'              ,)
-ApplicationCommandOptionType.SUB_COMMAND       = ApplicationCommandOptionType(1 , 'SUB_COMMAND'       ,)
-ApplicationCommandOptionType.SUB_COMMAND_GROUP = ApplicationCommandOptionType(2 , 'SUB_COMMAND_GROUP' ,)
-ApplicationCommandOptionType.STRING            = ApplicationCommandOptionType(3 , 'STRING'            ,)
-ApplicationCommandOptionType.INTEGER           = ApplicationCommandOptionType(4 , 'INTEGER'           ,)
-ApplicationCommandOptionType.BOOLEAN           = ApplicationCommandOptionType(5 , 'BOOLEAN'           ,)
-ApplicationCommandOptionType.USER              = ApplicationCommandOptionType(6 , 'USER'              ,)
-ApplicationCommandOptionType.CHANNEL           = ApplicationCommandOptionType(7 , 'CHANNEL'           ,)
-ApplicationCommandOptionType.ROLE              = ApplicationCommandOptionType(8 , 'ROLE'              ,)
+ApplicationCommandOptionType.none              = ApplicationCommandOptionType(0 , 'none'              ,)
+ApplicationCommandOptionType.sub_command       = ApplicationCommandOptionType(1 , 'sub_command'       ,)
+ApplicationCommandOptionType.sub_command_group = ApplicationCommandOptionType(2 , 'sub_command_group' ,)
+ApplicationCommandOptionType.string            = ApplicationCommandOptionType(3 , 'string'            ,)
+ApplicationCommandOptionType.integer           = ApplicationCommandOptionType(4 , 'integer'           ,)
+ApplicationCommandOptionType.boolean           = ApplicationCommandOptionType(5 , 'boolean'           ,)
+ApplicationCommandOptionType.user              = ApplicationCommandOptionType(6 , 'user'              ,)
+ApplicationCommandOptionType.channel           = ApplicationCommandOptionType(7 , 'channel'           ,)
+ApplicationCommandOptionType.role              = ApplicationCommandOptionType(8 , 'role'              ,)
 
 
 class InteractionType(PreinstancedBase):
@@ -2386,9 +2386,11 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     +-----------------------+-------+-------+
     | Class attribute name  | Name  | Value |
     +=======================+=======+=======+
-    | ROLE                  | ROLE  | 1     |
+    | none                  | none  | 0     |
     +-----------------------+-------+-------+
-    | USER                  | USER  | 2     |
+    | role                  | role  | 1     |
+    +-----------------------+-------+-------+
+    | user                  | user  | 2     |
     +-----------------------+-------+-------+
     """
     INSTANCES = {}
@@ -2397,13 +2399,13 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     
     __slots__ = ()
     
-    NONE    = NotImplemented
-    ROLE    = NotImplemented
-    USER    = NotImplemented
+    none    = NotImplemented
+    role    = NotImplemented
+    user    = NotImplemented
 
-ApplicationCommandPermissionOverwriteType.NONE = ApplicationCommandPermissionOverwriteType(0 , 'NONE' ,)
-ApplicationCommandPermissionOverwriteType.ROLE = ApplicationCommandPermissionOverwriteType(1 , 'ROLE' ,)
-ApplicationCommandPermissionOverwriteType.USER = ApplicationCommandPermissionOverwriteType(2 , 'USER' ,)
+ApplicationCommandPermissionOverwriteType.none = ApplicationCommandPermissionOverwriteType(0 , 'none' ,)
+ApplicationCommandPermissionOverwriteType.role = ApplicationCommandPermissionOverwriteType(1 , 'role' ,)
+ApplicationCommandPermissionOverwriteType.user = ApplicationCommandPermissionOverwriteType(2 , 'user' ,)
 
 
 module_utils.RelationshipType = RelationshipType

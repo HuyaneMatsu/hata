@@ -942,6 +942,7 @@ class PreinstancedBase(object):
         """Returns the representation of the preinstanced object."""
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
 
+
 class IconType(PreinstancedBase):
     """
     Represents a Discord icon's type.
@@ -967,11 +968,11 @@ class IconType(PreinstancedBase):
     +-----------------------+---------------+-------+
     | Class attribute name  | name          | value |
     +=======================+===============+=======+
-    | NONE                  | NONE          | 0     |
+    | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | STATIC                | STATIC        | 1     |
+    | static                | static        | 1     |
     +-----------------------+---------------+-------+
-    | ANIMATED              | ANIMATED      | 2     |
+    | animated              | animated      | 2     |
     +-----------------------+---------------+-------+
     """
     INSTANCES = {}
@@ -988,13 +989,13 @@ class IconType(PreinstancedBase):
         
         return boolean
     
-    NONE = NotImplemented
-    STATIC = NotImplemented
-    ANIMATED = NotImplemented
+    none = NotImplemented
+    static = NotImplemented
+    animated = NotImplemented
 
-IconType.NONE     = ICON_TYPE_NONE     = IconType(0, 'NONE'    )
-IconType.STATIC   = ICON_TYPE_STATIC   = IconType(1, 'STATIC'  )
-IconType.ANIMATED = ICON_TYPE_ANIMATED = IconType(2, 'ANIMATED')
+IconType.none     = ICON_TYPE_NONE     = IconType(0, 'none'    )
+IconType.static   = ICON_TYPE_STATIC   = IconType(1, 'static'  )
+IconType.animated = ICON_TYPE_ANIMATED = IconType(2, 'animated')
 
 
 class Icon(object):

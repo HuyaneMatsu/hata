@@ -2,13 +2,12 @@
 __all__ = ('EXTRA_EMBED_TYPES', 'Embed', 'EmbedAuthor', 'EmbedBase', 'EmbedCore', 'EmbedField', 'EmbedFooter',
     'EmbedImage', 'EmbedProvider', 'EmbedThumbnail', 'EmbedVideo', )
 
-from re import escape as re_escape, compile as re_compile
 from typing import Union, List
 from datetime import datetime
 
 from ..backend.utils import DOCS_ENABLED
 
-from .utils import ROLE_MENTION_RP, USER_MENTION_RP, CHANNEL_MENTION_RP, parse_time, url_cutter, sanitize_mentions
+from .utils import parse_time, url_cutter, sanitize_mentions
 from .color import Color
 
 from . import preinstanced as module_preinstanced

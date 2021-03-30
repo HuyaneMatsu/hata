@@ -11585,7 +11585,7 @@ class Client(UserBase):
             'temporary'      : temporary,
             'unique'         : unique,
             'target_user_id' : user_id,
-            'target_type'    : InviteTargetType.STREAM.value,
+            'target_type'    : InviteTargetType.stream.value,
                 }
         
         data = await self.http.invite_create(voice_state.channel.id, data)
@@ -11678,7 +11678,7 @@ class Client(UserBase):
             'temporary'             : temporary,
             'unique'                : unique,
             'target_application_id' : application_id,
-            'target_type'           : InviteTargetType.EMBEDDED_APPLICATION.value,
+            'target_type'           : InviteTargetType.embedded_application.value,
                 }
         
         data = await self.http.invite_create(channel_id, data)
@@ -13418,7 +13418,7 @@ class Client(UserBase):
         permission_data = await self.http.application_command_permission_edit(application_id, guild_id, application_command_id,
             data)
         
-        return ApplicationCommandPermission(permission_data)
+        return ApplicationCommandPermission.from_data(permission_data)
     
     async def application_command_permission_get_all_guild(self, guild):
         """

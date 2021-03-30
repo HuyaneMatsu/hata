@@ -19,12 +19,12 @@ from . import rate_limit as module_rate_limit, user as module_user
 
 create_partial_integration = NotImplemented
 
-ROLE_MANAGER_TYPE_NONE        = RoleManagerType.NONE
-ROLE_MANAGER_TYPE_UNSET       = RoleManagerType.UNSET
-ROLE_MANAGER_TYPE_UNKNOWN     = RoleManagerType.UNKNOWN
-ROLE_MANAGER_TYPE_BOT         = RoleManagerType.BOT
-ROLE_MANAGER_TYPE_BOOSTER     = RoleManagerType.BOOSTER
-ROLE_MANAGER_TYPE_INTEGRATION = RoleManagerType.INTEGRATION
+ROLE_MANAGER_TYPE_NONE        = RoleManagerType.none
+ROLE_MANAGER_TYPE_UNSET       = RoleManagerType.unset
+ROLE_MANAGER_TYPE_UNKNOWN     = RoleManagerType.unknown
+ROLE_MANAGER_TYPE_BOT         = RoleManagerType.bot
+ROLE_MANAGER_TYPE_BOOSTER     = RoleManagerType.booster
+ROLE_MANAGER_TYPE_INTEGRATION = RoleManagerType.integration
 
 if API_VERSION in (6, 7):
     PERMISSION_KEY = 'permissions_new'

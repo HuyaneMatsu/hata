@@ -9,13 +9,17 @@ from .command import *
 
 import warnings
 
-from .utils import _do_initial_sync, _application_command_create_watcher, _application_command_delete_watcher
+from .utils import _do_initial_sync, _application_command_create_watcher, _application_command_delete_watcher, \
+    _application_command_permission_update_watcher
 from .client_wrapper_extension import *
 
 __all__ = (
+    'set_permission',
     'setup_ext_slash',
     *command.__all__,
         )
+
+set_permission = SlashCommandPermissionOverwriteWrapper
 
 def setup_ext_slash(client, *, immediate_sync=None, **kwargs):
     """
@@ -68,6 +72,7 @@ def setup_ext_slash(client, *, immediate_sync=None, **kwargs):
     client.events(_do_initial_sync, name='launch')
     client.events(_application_command_create_watcher, name='application_command_create')
     client.events(_application_command_delete_watcher, name='application_command_delete')
+    client.events(_application_command_permission_update_watcher, name='application_command_permission_update')
     
     return slasher
 

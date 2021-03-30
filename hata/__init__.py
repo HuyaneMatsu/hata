@@ -17,7 +17,7 @@ stuff:
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
 - Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.
-- Can interacting with the Discord API without gateway connection.
+- Can interact with the Discord API without gateway connection.
 
 Usage
 -----
@@ -87,7 +87,9 @@ async def ping(client, event):
 Seija.start()
 ```
 
-> Note: You need to restart your client, or the slash command wont show up.
+> Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
+> (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
+> limitation.
 
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 
@@ -95,7 +97,7 @@ Hata leaves the main thread free, `client.start()` blocks it only till the clien
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 """
-__version__ = '1.1.55'
+__version__ = '1.1.56'
 
 from .env import BACKEND_ONLY
 

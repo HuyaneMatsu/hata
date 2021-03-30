@@ -4666,6 +4666,26 @@ class InteractionEvent(DiscordEntity, EventBase):
         
         return ''.join(result)
     
+    def is_acknowledged(self):
+        """
+        Returns whether the event is acknowledged.
+        
+        Returns
+        -------
+        is_acknowledged : `bool`
+        """
+        return (self._response_state != INTERACTION_EVENT_RESPONSE_STATE_NONE)
+    
+    def is_responded(self):
+        """
+        Returns whether was responded.
+        
+        Returns
+        -------
+        is_responded : `bool`
+        """
+        return (self._response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED)
+    
     def __len__(self):
         """Helper for unpacking if needed."""
         return 3
@@ -4685,6 +4705,7 @@ def INTERACTION_CREATE_CAL(client, data):
     # Since interaction can be called from guilds, where the bot is not in, we will call it even if the respective
     # channel & guild are not cached.
     event = InteractionEvent(data)
+    
     Task(client.events.interaction_create(client, event), KOKORO)
 
 def INTERACTION_CREATE_OPT(client, data):
@@ -4702,14 +4723,10 @@ del INTERACTION_CREATE_CAL, \
 
 def APPLICATION_COMMAND_CREATE_CAL(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        return
     
     application_command = ApplicationCommand.from_data(data)
     
-    Task(client.events.application_command_create(client, guild, application_command), KOKORO)
+    Task(client.events.application_command_create(client, guild_id, application_command), KOKORO)
 
 def APPLICATION_COMMAND_CREATE_OPT(client, data):
     pass
@@ -4727,16 +4744,6 @@ del APPLICATION_COMMAND_CREATE_CAL, \
 def APPLICATION_COMMAND_UPDATE_CAL(client, data):
     guild_id = int(data['guild_id'])
     application_command_id = data['id']
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        try:
-            application_command = APPLICATION_COMMANDS[application_command_id]
-        except KeyError:
-            pass
-        else:
-            application_command._update_no_return(data)
-        return
     
     try:
         application_command = APPLICATION_COMMANDS[application_command_id]
@@ -4748,7 +4755,7 @@ def APPLICATION_COMMAND_UPDATE_CAL(client, data):
         if not old_attributes:
             return
     
-    Task(client.events.application_command_update(client, guild, application_command, old_attributes), KOKORO)
+    Task(client.events.application_command_update(client, guild_id, application_command, old_attributes), KOKORO)
 
 def APPLICATION_COMMAND_UPDATE_OPT(client, data):
     application_command_id = data['id']
@@ -4771,14 +4778,9 @@ del APPLICATION_COMMAND_UPDATE_CAL, \
 
 def APPLICATION_COMMAND_DELETE_CAL(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        return
-    
     application_command = ApplicationCommand.from_data(data)
     
-    Task(client.events.application_command_delete(client, guild, application_command), KOKORO)
+    Task(client.events.application_command_delete(client, guild_id, application_command), KOKORO)
 
 def APPLICATION_COMMAND_DELETE_OPT(client, data):
     pass
@@ -4794,15 +4796,9 @@ del APPLICATION_COMMAND_DELETE_CAL, \
 
 
 def APPLICATION_COMMAND_PERMISSIONS_UPDATE_CAL(client, data):
-    guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        return
-    
     application_command_permission = ApplicationCommandPermission.from_data(data)
     
-    Task(client.events.application_command_permission_update(client, guild, application_command_permission), KOKORO)
+    Task(client.events.application_command_permission_update(client, application_command_permission), KOKORO)
 
 def APPLICATION_COMMAND_PERMISSIONS_UPDATE_OPT(client, data):
     pass
@@ -4875,7 +4871,7 @@ EVENTS.add_default('interaction_create'                     , 2 , 'INTERACTION_C
 EVENTS.add_default('application_command_create'             , 3 , 'APPLICATION_COMMAND_CREATE'              , )
 EVENTS.add_default('application_command_update'             , 4 , 'APPLICATION_COMMAND_UPDATE'              , )
 EVENTS.add_default('application_command_delete'             , 3 , 'APPLICATION_COMMAND_DELETE'              , )
-EVENTS.add_default('application_command_permission_update'  , 3 , 'APPLICATION_COMMAND_PERMISSIONS_UPDATE'  , )
+EVENTS.add_default('application_command_permission_update'  , 2 , 'APPLICATION_COMMAND_PERMISSIONS_UPDATE'  , )
 
 
 def _check_name_should_break(name):
@@ -5398,7 +5394,7 @@ class _EventHandlerManager(object):
         if func is ...:
             return self._wrapper(self, name, kwargs)
         
-        name = check_name(func, name)
+        # name = check_name(func, name)
         
         func = self.parent.__setevent__(func, name, **kwargs)
         return func
@@ -6969,15 +6965,23 @@ class EventWaitforMeta(type):
     del _call_emoji_delete
     
     async def _call_reaction_add(self, client, event):
+        message = event.message
+        if not isinstance(message, Message):
+            return
+        
         args = (client, event)
-        self._run_waitfors_for(event.message, args)
+        self._run_waitfors_for(message, args)
     
     _call_waitfors['reaction_add'] = _call_reaction_add
     del _call_reaction_add
     
     async def _call_reaction_delete(self, client, event):
+        message = event.message
+        if not isinstance(message, Message):
+            return
+        
         args = (client, event)
-        self._run_waitfors_for(event.message, args)
+        self._run_waitfors_for(message, args)
     
     _call_waitfors['reaction_delete'] = _call_reaction_delete
     del _call_reaction_delete
@@ -7458,6 +7462,7 @@ async def DEFAULT_EVENT(*args):
     """
     pass
 
+
 class EventDescriptor(object):
     """
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
@@ -7474,25 +7479,19 @@ class EventDescriptor(object):
     
     Additional Event Attributes
     --------------------------
-    application_command_create(client: ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
+    application_command_create(client: ``Client``, guild_id: `int`, application_command: ``ApplicationCommand``)
         Called when you create an application guild bound to a guild.
-        
-        The respective guild must be cached.
     
-    application_command_delete(client: ``Client``, guild: ``Guild``, application_command: ``ApplicationCommand``)
+    application_command_delete(client: ``Client``, guild_id: `int`, application_command: ``ApplicationCommand``)
         Called when you delete one of your guild bound application commands.
-        
-        The respective guild must be cached.
     
-    application_command_permission_update(client: ``Client``, guild: ``Guild``, \
+    application_command_permission_update(client: ``Client``, \
             application_command_permission: ``ApplicationCommandPermission``)
         Called when an application command's permissions are updated inside of a guild.
     
-    application_command_update(client : ``Client``, guild: ``guild``, application:command: ``ApplicationCommand``, \
+    application_command_update(client : ``Client``, guild_id: ``int`, application:command: ``ApplicationCommand``, \
             old_attributes : Union[`dict`, `None`])
         Called when you update one of your guild bound application command.
-        
-        The respective guild must be cached.
         
         `old_attributes` might be given as `None` if the `application_command` is not cached. If it is cached, is given
         as a `dict` which contains the updated attributes of the application command as keys and their old values as

@@ -87,8 +87,9 @@ async def ping(client, event):
 Seija.start()
 ```
 
-> Note: You need to restart your client, or the slash command wont show up.
-> If there are more than 50 integrations (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord limitation.
+> Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
+> (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
+> limitation.
 
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 

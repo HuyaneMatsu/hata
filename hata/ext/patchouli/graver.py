@@ -11,7 +11,7 @@ GRAVE_TYPE_QUOTE = 4
 
 WARNINGS = []
 
-class DocWarning(object):
+class DocWarning:
     """
     Represents a documentation warning.
     
@@ -121,7 +121,7 @@ DO_NOT_ADD_SPACE_AFTER = {
     '[',
         }
 
-class Grave(object):
+class Grave:
     """
     Represents a string inside of '`' characters.
     
@@ -421,7 +421,7 @@ def graved_to_source_text(graved):
     return ''.join(result)
 
 
-class GravedDescription(object):
+class GravedDescription:
     """
     Represents a graved description part of a docstring.
     
@@ -461,7 +461,7 @@ class GravedDescription(object):
         """Returns the graved description's representation."""
         return f'<{self.__class__.__name__} content={graved_to_source_text(self.content)!r}>'
 
-class GravedAttributeDescription(object):
+class GravedAttributeDescription:
     """
     Represents an attribute's graved header part.
     
@@ -503,7 +503,7 @@ class GravedAttributeDescription(object):
         return (f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
             f'{graved_to_source_text(self.content)!r}>')
 
-class GravedCodeBlock(object):
+class GravedCodeBlock:
     """
     Represents a graved code block part of a docstring.
     
@@ -566,7 +566,7 @@ class GravedCodeBlock(object):
         return ''.join(result)
 
 
-class GravedTable(object):
+class GravedTable:
     """
     Represents a graved table.
     
@@ -692,7 +692,7 @@ def apply_warnings_to_path(warnings, path):
         DocWarning(path, warning)
 
 
-class GravedListingElement(object):
+class GravedListingElement:
     """
     Represents a graved listing element.
     
@@ -764,7 +764,7 @@ class GravedListingElement(object):
         
         return ''.join(result)
 
-class GravedListing(object):
+class GravedListing:
     """
     Represents a graved listing.
     
@@ -811,7 +811,7 @@ class GravedListing(object):
         return f'<{self.__class__.__name__} elements={self.elements!r}>'
 
 
-class GravedBlockQuote(object):
+class GravedBlockQuote:
     """
     Represents a graved block quote part of a docstring.
     

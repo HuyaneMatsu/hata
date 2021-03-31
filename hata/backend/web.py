@@ -25,7 +25,7 @@ NOT_FOUND                  = http.HTTPStatus.METHOD_NOT_ALLOWED
 
 TASK_LOCALS = {}
 
-class TaskLocal(object):
+class TaskLocal:
     """
     Allows instances's attributes to be accessed from the task where the ``TaskLocal`` is entered from.
     
@@ -257,7 +257,7 @@ class HTTPRequestHandler(ProtocolBase):
         return None
 
 
-class HTTPServer(object):
+class HTTPServer:
     """
     Http web-server implementation.
     
@@ -430,7 +430,7 @@ class HTTPServer(object):
                 await future
 
 
-class Route(object):
+class Route:
     """
     Represents a route found by ``PathRouter``.
     
@@ -692,7 +692,7 @@ PARAMETER_TYPE_TO_NAME = {
     PARAMETER_TYPE_STRING : 'string' ,
         }
 
-class ParameterValidatorPathStep(object):
+class ParameterValidatorPathStep:
     """
     Represents a path dispatching step, here validation is used.
     
@@ -916,7 +916,7 @@ def _rebuild_path_parameter(parameter_type, parameter_name):
     return f'<{parameter_type_name}:{parameter_name}>'
 
 
-class PathRouter(object):
+class PathRouter:
     """
     Path router for getting which handler function should run for a pre-defined route.
     
@@ -1292,7 +1292,7 @@ async def _handler_not_found():
     raise AbortRequest(NOT_FOUND)
 
 
-class _RouteAdder(object):
+class _RouteAdder:
     """
     Route adder returned by ``WebBase.route`` to add a route to it as a decorator.
     
@@ -1349,7 +1349,7 @@ class _RouteAdder(object):
             provide_automatic_options=None, **self.options)
 
 
-class _ErrorHandlerAdder(object):
+class _ErrorHandlerAdder:
     """
     Error handler adder returned by ``WebBase.error_handler`` to add an error handler to it as a decorator.
     
@@ -1970,7 +1970,7 @@ def _merge_parameters(primary_parameters, secondary_parameters):
     
     return (*primary_parameters, *extend_parameters)
 
-class RuleFolder(object):
+class RuleFolder:
     """
     Rule folder, which contains more rules enabling adding them at once.
     
@@ -2153,7 +2153,7 @@ class RuleFolder(object):
             yield from rule.iter_rules()
 
 
-class Rule(object):
+class Rule:
     """
     A registered rule.
     
@@ -2532,7 +2532,7 @@ def _analyze_handler(handler, handler_name, expected_parameter_count):
             f'{non_default_keyword_only_argument_count}.')
 
 
-class AppBase(object):
+class AppBase:
     """
     Base class for ``Blueprint``-s and for ``WebApp``-s.
     
@@ -3180,7 +3180,7 @@ class AppBase(object):
         blueprints.append(blueprint_state)
 
 
-class BlueprintState(object):
+class BlueprintState:
     """
     Represents options with what an a blueprint is added, since a blueprint's options can be overwritten.
     
@@ -3677,7 +3677,7 @@ def _register_rules_from_state_stack(application, blueprint_state_stack, router,
         url_prefix_final, subdomain_final)
 
 
-class RequestHandler(object):
+class RequestHandler:
     """
     Dispatches a request.
     

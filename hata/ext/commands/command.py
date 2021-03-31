@@ -27,7 +27,7 @@ assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_AP
 
 DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME = 'general'
 
-class CommandWrapper(object):
+class CommandWrapper:
     """
     Command wrapper what can be used for rich checks, which might return values to call their handler with.
     
@@ -240,7 +240,7 @@ COMMAND_CHECKS_HANDLED = 2
 COMMAND_PARSER_FAILED = 3
 COMMAND_SUCCEEDED = 4
 
-class Command(object):
+class Command:
     """
     Represents a command object stored by a ``CommandProcesser`` in it's `.commands` and by a ``Category`` in it's
     ``.commands`` instance attribute.
@@ -1713,7 +1713,7 @@ def normalize_description(text):
     return '\n'.join(lines)
 
 
-class Category(object):
+class Category:
     """
     Represents a category of a ``CommandProcesser.md``.
     
@@ -3733,7 +3733,3 @@ class CommandProcesser(EventWaitforBase):
         | should_process    | `bool`    |
         +-------------------+-----------+
         """)
-
-
-del DOCS_ENABLED
-del name_property

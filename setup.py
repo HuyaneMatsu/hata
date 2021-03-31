@@ -25,6 +25,7 @@ setup(
         'hata.discord.bin',
         'hata.ext',
         'hata.ext.asyncio',
+        'hata.ext.command_utils',
         'hata.ext.commands',
         'hata.ext.commands.helps',
         'hata.ext.extension_loader',

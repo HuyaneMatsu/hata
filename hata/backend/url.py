@@ -16,7 +16,7 @@ DEFAULT_PORTS = {
     'wss'   : 443,
         }
 
-class URL(object):
+class URL:
     """
     Represents an URL (Uniform Resource Locator)
     

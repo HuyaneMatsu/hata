@@ -36,7 +36,7 @@ from . import executor as module_executor, futures as module_futures
 LOOP_TIME = module_time.monotonic
 LOOP_TIME_RESOLUTION = module_time.get_clock_info('monotonic').resolution
 
-class Handle(object):
+class Handle:
     """
     Object returned by a callback registration method:
     - ``EventThread.call_soon``
@@ -312,7 +312,7 @@ class TimerWeakHandle(TimerHandle):
             self.args = args
             self.cancelled = False
         
-    class _callback(object):
+    class _callback:
         """
         Weakreference callback used by ``TimerWeakHandle`` to cancel the respective handle, when it's `func` gets
         garbage collected.
@@ -348,7 +348,7 @@ class TimerWeakHandle(TimerHandle):
             if (handle is not None):
                 handle.cancel()
 
-class CyclerCallable(object):
+class CyclerCallable:
     """
     An element of a ``Cycler``, which describes whether the stored callable is sync or async and what is it's ordering
     priority.
@@ -477,7 +477,7 @@ class CyclerCallable(object):
         return self.priority < other.priority
 
 
-class Cycler(object):
+class Cycler:
     """
     Cycles the given functions on an event loop, by calling them after every `n` amount of seconds.
     
@@ -878,7 +878,7 @@ class Cycler(object):
         return handle.when
 
 
-class ThreadSyncerCTX(object):
+class ThreadSyncerCTX:
     """
     Thread syncer for ``EventThread``-s, to stop their execution, meanwhile they are used inside of a a `with` block.
     The local thread's exception is stopped, meanwhile it waits for the ``EventThread`` top pause.
@@ -1317,7 +1317,7 @@ if sys.platform == 'win32':
                 result_w.extend(result_x)
                 return result_r, result_w, EMPTY
 
-class Server(object):
+class Server:
     """
     Server returned by ``EventThread.create_server``.
     
@@ -1464,7 +1464,7 @@ class Server(object):
         close_waiters.append(close_waiter)
         await close_waiter
 
-class EventThreadCTXManager(object):
+class EventThreadCTXManager:
     """
     Context manager of an ``EventThread``, which wraps it's runner. when the runner is started up, set it's ``waiter.``
     allowing the starter thread to continue.
@@ -1565,7 +1565,7 @@ class EventThreadCTXManager(object):
         return False
 
 
-class EventThreadRunDescriptor(object):
+class EventThreadRunDescriptor:
     if DOCS_ENABLED:
         __class_doc__ = ("""
         Descriptor which decides, exactly which function of the ``EventThread`` is called, when using it's `.run`
@@ -3290,7 +3290,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         await future
     
-    class _socket_connect_done(object):
+    class _socket_connect_done:
         """
         Callback added to the waited future by ``EventThread.socket_connect`` to remove the respective socket from the
         writers by it's file descriptor.
@@ -4176,9 +4176,5 @@ module_executor.EventThread = EventThread
 module_futures.EventThread = EventThread
 
 del module_time
-del subprocess
-del IS_UNIX
 del module_futures
 del module_executor
-del doc_property
-del DOCS_ENABLED

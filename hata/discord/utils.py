@@ -650,7 +650,7 @@ else:
         return result
 
 
-class Relationship(object):
+class Relationship:
     """
     Represents a Discord relationship.
     
@@ -814,7 +814,7 @@ class Unknown(DiscordEntity):
         
         return (self.id < other.id)
 
-class Gift(object):
+class Gift:
     """
     Represents a Discord gift.
     
@@ -1118,6 +1118,4 @@ def sanitize_mentions(content, guild=None):
 
 module_bases.id_to_time = id_to_time
 
-del istr
-del modulize
 del module_bases

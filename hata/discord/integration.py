@@ -178,7 +178,7 @@ class Integration(DiscordEntity, immortal=True):
         
         return ''.join(result)
 
-class IntegrationDetail(object):
+class IntegrationDetail:
     """
     Details about a non discord integration.
     
@@ -260,7 +260,7 @@ class IntegrationDetail(object):
         return f'<{self.__class__.__name__} role={self.role!r}>'
 
 
-class IntegrationAccount(object):
+class IntegrationAccount:
     """
     Account for who an ``Integration`` is for.
     
@@ -366,7 +366,4 @@ class IntegrationApplication(DiscordEntity):
 # Scopes
 module_role.create_partial_integration = create_partial_integration
 
-del DiscordEntity
 del module_role
-del URLS
-del IconSlot

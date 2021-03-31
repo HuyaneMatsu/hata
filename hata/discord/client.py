@@ -15915,15 +15915,10 @@ module_application.Client = Client
 module_interaction.Client = Client
 
 del module_client_core
-del re
-del URLS
 del module_message
 del module_webhook
-del RATE_LIMIT_GROUPS
-del DISCOVERY_CATEGORIES
 del module_invite
 del module_parsers
-del methodize
 del module_client_utils
 del module_channel
 del module_guild

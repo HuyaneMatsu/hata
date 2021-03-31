@@ -28,7 +28,7 @@ else:
         BROTLI_COMPRESSOR = brotli.Compressor
     else:
         # brotli case
-        class BROTLI_DECOMPRESSOR(object):
+        class BROTLI_DECOMPRESSOR:
             __slots__ = ('_decompressor', )
             def __init__(self):
                 self._decompressor = brotli.Decompressor()
@@ -36,7 +36,7 @@ else:
             def decompress(self, value):
                 return self._decompressor.process(value)
         
-        class BROTLI_COMPRESSOR(object):
+        class BROTLI_COMPRESSOR:
             __slots__ = ('_compressor', )
             def __init__(self):
                 self._compressor = brotli.Compressor()
@@ -87,7 +87,7 @@ PAYLOAD_ERROR_EOF_AT_HTTP_HEADER = (
     'EOF received meanwhile reading http headers.'
         )
 
-class RawMessage(object):
+class RawMessage:
     """
     Base class of ``RawResponseMessage`` and ``RawRequestMessage``.
     
@@ -265,7 +265,7 @@ def apply_mask(mask, data):
         data_bytes[index::4] = data_bytes[index::4].translate(_XOR_TABLE[mask[index]])
     return data_bytes
 
-class Frame(object):
+class Frame:
     """
     Represents a websocket frame.
     
@@ -419,7 +419,7 @@ class Frame(object):
         
         raise WebSocketProtocolError(f'Invalid op_code: {op_code}.')
 
-class HTTPStreamWriter(object):
+class HTTPStreamWriter:
     """
     Http writer used by ``ClientRequest``.
     
@@ -583,7 +583,7 @@ class HTTPStreamWriter(object):
             await protocol._drain_helper()
 
 
-class ReadProtocolBase(object):
+class ReadProtocolBase:
     """
     Asynchronous protocol, what implements common reading operations.
     
@@ -2419,7 +2419,7 @@ class ReadProtocolBase(object):
         return self
 
 
-class DatagramAddressedReadProtocol(object):
+class DatagramAddressedReadProtocol:
     """
     Datagram reader protocol for reading from payloads form multiple addresses.
     
@@ -3015,5 +3015,3 @@ class ProtocolBase(ReadProtocolBase):
                 await future
         
         await self._drain_helper()
-
-del re, Struct

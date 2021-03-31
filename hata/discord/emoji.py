@@ -4563,7 +4563,4 @@ generate_builtin_emojis()
 
 module_activity.create_partial_emoji = create_partial_emoji
 
-del generate_builtin_emojis
 del module_activity
-del URLS
-del DOCS_ENABLED

@@ -181,7 +181,7 @@ SCOPES = {v: v for v in ('activities.read', 'activities.write', 'applications.bu
 
 # rest of scopes are ignorable
 
-class OA2Access(object):
+class OA2Access:
     """
     Represents a Discord oauth2 access object, what is returned by ``Client.activate_authorization_code`` if
     activating the authorization code went successfully.
@@ -535,9 +535,3 @@ class Achievement(DiscordEntity):
         self.secure = data['secure']
         
         self._set_icon(data)
-
-del UserBase
-del re
-del URLS
-del DiscordEntity
-del IconSlot

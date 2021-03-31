@@ -56,7 +56,7 @@ else:
             break
         return bot
 
-class ClientDictionary(object):
+class ClientDictionary:
     """
     A dictionary like data object for storing directly ``Client`` objects.
     
@@ -414,7 +414,7 @@ if sys.implementation.name == 'pypy':
 
 HEARTBEAT_TIMEOUT = 20.0
 
-class Kokoro(object):
+class Kokoro:
     """
     A beater for Discord gateways.
     
@@ -803,8 +803,3 @@ class Kokoro(object):
         result.append('>')
         
         return ''.join(result)
-
-
-del WeakValueDictionary
-del ClientDictionary
-del sys

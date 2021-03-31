@@ -20,7 +20,7 @@ try:
 except ImportError:
     from weakref import ref as WeakrefType
 
-class RemovedDescriptor(object):
+class RemovedDescriptor:
     """
     A descriptor, what can be used to overwrite a class's attribute, what should be inherited anyways.
     
@@ -65,7 +65,7 @@ class RemovedDescriptor(object):
 DOCS_ENABLED = (RemovedDescriptor.__doc__ is not None)
 
 
-class doc_property(object):
+class doc_property:
     """
     Property to return the class's docs if called from class, else the given object.
     """
@@ -88,7 +88,7 @@ class doc_property(object):
         raise AttributeError('can\'t delete attribute')
 
 
-class name_property(object):
+class name_property:
     """
     Property to return the class's name if called from the respective class.
     
@@ -278,7 +278,7 @@ def change_on_switch(list_, value, new_position, key=None):
     return result
 
 
-class KeepType(object):
+class KeepType:
     """
     A decorator, what can be used to add features to an already existing class, by defining a new one, what will extend
     the old one's functionality.
@@ -361,7 +361,7 @@ class KeepType(object):
 _spaceholder = object()
 
 
-class _multidict_items(object):
+class _multidict_items:
     """
     ``multidict`` item iterator.
     
@@ -412,7 +412,7 @@ class _multidict_items(object):
         return value in values
 
 
-class _multidict_values(object):
+class _multidict_values:
     """
     ``multidict`` value iterator.
     
@@ -1127,7 +1127,7 @@ def list_difference(list1, list2):
     
     return difference
 
-class cached_property(object):
+class cached_property:
     """
     Cached property, what can be used as a method decorator. It operates almost like python's `@property`, but it puts
     the result of the method to the respective instance's `_cache`, preferably type `dict` attribute.
@@ -1194,7 +1194,7 @@ class cached_property(object):
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
-class alchemy_incendiary(object):
+class alchemy_incendiary:
     """
     Function wrapper familiar to `functools.partial`.
     
@@ -1388,7 +1388,7 @@ class basemethod(MethodLike):
     
     __doc__ = doc_property()
 
-class BaseMethodDescriptor(object):
+class BaseMethodDescriptor:
     """
     Descriptor, which can be used as a decorator to wrap a function to a basemethod.
     
@@ -1578,7 +1578,7 @@ def modulize(klass):
     
     return result_module
 
-class methodize(object):
+class methodize:
     """
     Wraps a type to as a method, allowing instancing it with it's parent instance object passed by default.
     
@@ -2022,7 +2022,7 @@ except TypeError:
 else:
     NEEDS_DUMMY_INIT = False
 
-class WeakHasher(object):
+class WeakHasher:
     """
     Object to store unhashable weakreferences.
     
@@ -2281,7 +2281,7 @@ class weakmethod(WeakReferer, MethodLike):
         return self
 
 
-class _WeakValueDictionaryCallback(object):
+class _WeakValueDictionaryCallback:
     """
     Callback used by ``WeakValueDictionary``-s and by ``HybridValueDictionary``-s.
     
@@ -2328,7 +2328,7 @@ class _WeakValueDictionaryCallback(object):
                 pass
 
 
-class _HybridValueDictionaryKeyIterator(object):
+class _HybridValueDictionaryKeyIterator:
     """
     Key iterator for ``HybridValueDictionary``-s.
     
@@ -2384,7 +2384,7 @@ class _HybridValueDictionaryKeyIterator(object):
         return len(self._parent)
 
 
-class _HybridValueDictionaryValueIterator(object):
+class _HybridValueDictionaryValueIterator:
     """
     Value iterator for ``HybridValueDictionary``-s.
     
@@ -2462,7 +2462,7 @@ class _HybridValueDictionaryValueIterator(object):
         return len(self._parent)
 
 
-class _HybridValueDictionaryItemIterator(object):
+class _HybridValueDictionaryItemIterator:
     """
     Item iterator for ``HybridValueDictionary``-s.
     
@@ -3033,7 +3033,7 @@ class HybridValueDictionary(dict):
         return _HybridValueDictionaryValueIterator(self)
 
 
-class _WeakValueDictionaryKeyIterator(object):
+class _WeakValueDictionaryKeyIterator:
     """
     Key iterator for ``WeakValueDictionary``-s.
     
@@ -3089,7 +3089,7 @@ class _WeakValueDictionaryKeyIterator(object):
         return len(self._parent)
 
 
-class _WeakValueDictionaryValueIterator(object):
+class _WeakValueDictionaryValueIterator:
     """
     Value iterator for ``WeakValueDictionary``-s.
     
@@ -3162,7 +3162,7 @@ class _WeakValueDictionaryValueIterator(object):
         return len(self._parent)
 
 
-class _WeakValueDictionaryItemIterator(object):
+class _WeakValueDictionaryItemIterator:
     """
     Item iterator for ``WeakValueDictionary``-s.
     
@@ -3686,7 +3686,7 @@ class WeakValueDictionary(dict):
         return _WeakValueDictionaryValueIterator(self)
 
 
-class _WeakKeyDictionaryCallback(object):
+class _WeakKeyDictionaryCallback:
     """
     Callback used by ``WeakKeyDictionary``-s.
     
@@ -3733,7 +3733,7 @@ class _WeakKeyDictionaryCallback(object):
 
 
 
-class _WeakKeyDictionaryKeyIterator(object):
+class _WeakKeyDictionaryKeyIterator:
     """
     Key iterator for ``WeakKeyDictionary``-s.
     
@@ -3790,7 +3790,7 @@ class _WeakKeyDictionaryKeyIterator(object):
         return len(self._parent)
 
 
-class _WeakKeyDictionaryValueIterator(object):
+class _WeakKeyDictionaryValueIterator:
     """
     Value iterator for ``WeakKeyDictionary``-s.
     
@@ -3862,7 +3862,7 @@ class _WeakKeyDictionaryValueIterator(object):
         return len(self._parent)
 
 
-class _WeakKeyDictionaryItemIterator(object):
+class _WeakKeyDictionaryItemIterator:
     """
     Item iterator for ``WeakKeyDictionary``-s.
     
@@ -4351,7 +4351,7 @@ class WeakKeyDictionary(dict):
         return _WeakKeyDictionaryValueIterator(self)
 
 
-class _WeakMapCallback(object):
+class _WeakMapCallback:
     """
     Callback used by ``WeakMap``-s.
     
@@ -4397,7 +4397,7 @@ class _WeakMapCallback(object):
                 pass
 
 
-class _WeakMapIterator(object):
+class _WeakMapIterator:
     """
     Iterator for ``WeakKeyDictionary``-s.
     
@@ -4773,7 +4773,7 @@ class WeakMap(dict):
         dict.__setitem__(self, reference, reference)
         return key
 
-class module_property(object):
+class module_property:
     """
     Instead of defining a  `.__module__` attribute as `property`, define it as `module_property` to avoid getter issues,
     when calling from class.

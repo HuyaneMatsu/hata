@@ -32,7 +32,7 @@ ARGUMENT_KEYWORD_ONLY           = 2
 ARGUMENT_ARGS                   = 3
 ARGUMENT_KWARGS                 = 4
 
-class Argument(object):
+class Argument:
     """
     Represents a callable's argument.
     
@@ -187,7 +187,7 @@ class Argument(object):
         
         return False
 
-class CallableAnalyzer(object):
+class CallableAnalyzer:
     """
     Analyzer for callable-s.
     

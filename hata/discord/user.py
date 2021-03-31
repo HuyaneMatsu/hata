@@ -116,7 +116,7 @@ if DOCS_ENABLED:
     user : ``Client`` or ``User``
     """)
 
-class GuildProfile(object):
+class GuildProfile:
     """
     Represents a user's profile at a guild.
     
@@ -1957,7 +1957,7 @@ class User(UserBase):
             The user's id.
         """)
 
-class ActivityChange(object):
+class ActivityChange:
     """
     Represents a user's changed activities.
     
@@ -2037,7 +2037,7 @@ class ActivityChange(object):
         yield self.updated
         yield self.removed
 
-class ActivityUpdate(object):
+class ActivityUpdate:
     """
     Represents an updated activity with storing the activity and it's old updated attributes in a `dict`.
     
@@ -2113,7 +2113,7 @@ class ActivityUpdate(object):
         yield self.old_attributes
 
 
-class VoiceState(object):
+class VoiceState:
     """
     Represents a user at a ``ChannelVoice``.
     
@@ -2273,11 +2273,4 @@ ZEROUSER = User._create_empty(0)
 
 module_utils.create_partial_user = create_partial_user
 
-del URLS
-del CACHE_USER
-del CACHE_PRESENCE
-del DiscordEntity
-del FlagBase
-del IconSlot
 del module_utils
-del DOCS_ENABLED

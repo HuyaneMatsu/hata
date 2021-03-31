@@ -180,5 +180,3 @@ Permission.permission_deny_text      = Permission(0b1111111111111101100001111111
 Permission.permission_deny_voice     = Permission(0b11111100000011111111110011111111) #~voice
 Permission.permission_deny_voice_con = Permission(0b11101100000011111111111011101111) #~voice - manage_roles - manage_channel
 Permission.permission_deny_both      = Permission(Permission.permission_deny_text|Permission.permission_deny_voice)
-
-del FlagBase

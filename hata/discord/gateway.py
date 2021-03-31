@@ -26,7 +26,7 @@ from .exceptions import DiscordGatewayException, VOICE_CLIENT_DISCONNECT_CLOSE_C
 GATEWAY_RATE_LIMIT_LIMIT = 120
 GATEWAY_RATE_LIMIT_RESET = 60.0
 
-class GatewayRateLimiter(object):
+class GatewayRateLimiter:
     """
     Burst rate limit handler for gateways, what operates on the clients' loop only.
     
@@ -146,7 +146,7 @@ class GatewayRateLimiter(object):
         
         return ''.join(result)
 
-class DiscordGateway(object):
+class DiscordGateway:
     """
     The gateway used by ``Client``-s to communicate with Discord with secure websocket.
     
@@ -734,7 +734,7 @@ class DiscordGateway(object):
         await self.send_as_json(data)
 
 
-class DiscordGatewayVoice(object):
+class DiscordGatewayVoice:
     """
     The gateway used by ``VoiceClient``-s to communicate with Discord with secure websocket.
     
@@ -1214,7 +1214,7 @@ class DiscordGatewayVoice(object):
         await self.send_as_json(data)
 
 
-class DiscordGatewaySharder(object):
+class DiscordGatewaySharder:
     """
     Sharder gateway used to control more ``DiscordGateway``-s at the same time.
     

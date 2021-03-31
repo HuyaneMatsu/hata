@@ -39,7 +39,7 @@ from . import rate_limit as module_rate_limit
 
 Client = NotImplemented
 
-class EVENT_SYSTEM_CORE(object):
+class EVENT_SYSTEM_CORE:
     """
     Stores expected argcount amount and event-parser name relations.
     
@@ -597,7 +597,7 @@ def first_client_or_me(clients, flag_shift, me):
 
 PARSERS = {}
 
-class PARSER_DEFAULTS(object):
+class PARSER_DEFAULTS:
     """
     Stores the parsers for each dispatch events.
     
@@ -931,7 +931,7 @@ def guild_sync(client, data, parser_and_checker):
         return
     queue.append((client, data, parser_and_checker),)
 
-class EventBase(object):
+class EventBase:
     """
     Base class for events.
     """
@@ -5093,7 +5093,7 @@ def compare_converted(converted, non_converted):
 
 READY_STATE_TIMEOUT = 2.0
 
-class ReadyState(object):
+class ReadyState:
     """
     Client on login fills up their `.ready_state` with ``Guild`` objects, which will have their members requested.
     
@@ -5323,7 +5323,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
     
     return result
 
-class _EventHandlerManager(object):
+class _EventHandlerManager:
     """
     Gives a decorator functionality to an event handler, because 'rich' event handlers still can not be used a
     decorator, their `__call__` is already allocated for handling their respective event.
@@ -5441,7 +5441,7 @@ class _EventHandlerManager(object):
         
         self.parent.__delevent__(func, name, **kwargs)
     
-    class _wrapper(object):
+    class _wrapper:
         """
         When the parent ``_EventHandlerManager`` is called and `func` was not passed (so only keyword arguments were
         if any), then an instance of this class is returned to allow using ``_EventHandlerManager`` as a decorator with
@@ -5990,7 +5990,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         return f'<{self.__class__.__name__} parent={self.parent!r}, getter={self._getter!r}, from_class_constructor=' \
                f'{self._from_class_constructor!r}>'
 
-class EventListElement(object):
+class EventListElement:
     """
     Represents an element of an ``eventlist``.
     
@@ -6353,7 +6353,7 @@ class eventlist(list):
         def __init__(self, *args, **kwargs):
             pass
     
-    class _wrapper(object):
+    class _wrapper:
         """
         When a parent ``eventlist`` is called and `func` was not passed (so only keyword arguments were if any), then
         an instance of this class is returned. It's main purpose is to enable using ``eventlist`` as a decorator with
@@ -6701,7 +6701,7 @@ class eventlist(list):
         self.kwargs = None
 
 # This class is a placeholder for the `with` statement support also for the `shortcut` property as well.
-class EventHandlerBase(object):
+class EventHandlerBase:
     """
     Base class for event handlers.
     """
@@ -7463,7 +7463,7 @@ async def DEFAULT_EVENT(*args):
     pass
 
 
-class EventDescriptor(object):
+class EventDescriptor:
     """
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
     inside of a ``EventDescriptor`` and can be accessed through ``Client.events``.
@@ -8080,7 +8080,7 @@ class EventDescriptor(object):
         object.__setattr__(self, name, new)
         return func
     
-    class _wrapper(object):
+    class _wrapper:
         """
         When the parent ``EventDescriptor`` is called without passing `func`, then an instance of this class is
         returned to enable using ``EventDescriptor`` as a decorator with passing additional keyword arguments at the
@@ -8344,9 +8344,4 @@ async def _with_error(client, task):
 
 module_rate_limit.InteractionEvent = InteractionEvent
 
-del RemovedDescriptor
-del FlagBase
-del NEEDS_DUMMY_INIT
-del DOCS_ENABLED
-del DiscordEntity
 del module_rate_limit

@@ -688,7 +688,7 @@ class Team(DiscordEntity, immortal=True):
         """Returns the team's representation."""
         return f'<{self.__class__.__name__} owner={self.owner.full_name}, total members={len(self.members)}>'
 
-class TeamMember(object):
+class TeamMember:
     """
     Represents a team member of a ``Team``.
     
@@ -786,7 +786,7 @@ class ApplicationSubEntity(DiscordEntity):
         
         return True
 
-class ApplicationExecutable(object):
+class ApplicationExecutable:
     """
     Represents a game's executable.
     
@@ -873,7 +873,7 @@ class ApplicationExecutable(object):
         
         return result
 
-class ThirdPartySKU(object):
+class ThirdPartySKU:
     """
     Represents a third party Stock Keeping Unit.
     
@@ -989,9 +989,3 @@ class EULA(DiscordEntity, immortal=True):
     def __repr__(self):
         """Returns the eula's representation"""
         return f'<{self.__class__.__name__} {self.name!r}, id={self.id}>'
-
-
-del URLS
-del DiscordEntity
-del IconSlot
-del FlagBase

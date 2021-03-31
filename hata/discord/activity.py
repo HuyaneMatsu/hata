@@ -86,7 +86,7 @@ class ActivityTypes:
     competing = 5
 
 
-class ActivityTimestamps(object):
+class ActivityTimestamps:
     """
     Represents an activity's timestamp field.
     
@@ -172,7 +172,7 @@ class ActivityTimestamps(object):
         return timestamps_data
 
 
-class ActivityAssets(object):
+class ActivityAssets:
     """
     Represents a discord activity asset.
     
@@ -294,7 +294,7 @@ class ActivityAssets(object):
         return assets_data
 
 
-class ActivityParty(object):
+class ActivityParty:
     """
     Represents a discord activity party.
     
@@ -395,7 +395,7 @@ class ActivityParty(object):
         return party_data
 
 
-class ActivitySecrets(object):
+class ActivitySecrets:
     """
     Represents and activity secret.
     
@@ -498,7 +498,7 @@ class ActivitySecrets(object):
         return secrets_data
 
 
-class ActivityBase(object):
+class ActivityBase:
     """
     Base class for activities.
     
@@ -1520,7 +1520,4 @@ def create_activity(activity_data):
 
 module_preinstanced.ActivityTypes = ActivityTypes
 
-del URLS
-del FlagBase
-del modulize
 del module_preinstanced

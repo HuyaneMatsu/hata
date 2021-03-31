@@ -99,7 +99,7 @@ To check highlights set some colors down and enjoy.
 ```py
 TUMMY_REPR_ACCURACY = 2
 
-class CakeEater(object):
+class CakeEater:
     __slots__ = ('tummy_size', 'type')
     
     def __init__(self, type_, tummy_size):
@@ -200,7 +200,7 @@ CONSOLE_PREFIX_RP = re.compile('(>>>>?)( [ \t]*)')
 
 FORMAT_STRING_POSTFIX_RP = re.compile('(![sraSRA])\}')
 
-class WordNode(object):
+class WordNode:
     """
     A words's character node when building regex.
     
@@ -383,7 +383,7 @@ PUNCTUATION_WP = create_word_pattern(PUNCTUATIONS)
 OPERATOR_WP = create_word_pattern(OPERATORS)
 
 
-class TokenTypeNode(object):
+class TokenTypeNode:
     """
     Represents a token class node for specified token types.
     
@@ -682,7 +682,7 @@ MERGE_TOKEN_TYPES = {
         }
 
 
-class Token(object):
+class Token:
     """
     Represents a token parsed by ``HighlightContextBase``.
     
@@ -742,7 +742,7 @@ def _merge_tokens(tokens, start_index, end_index):
     tokens[start_index].value = value
 
 
-class HighlightContextBase(object):
+class HighlightContextBase:
     """
     Base class for highlighting.
     

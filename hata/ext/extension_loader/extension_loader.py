@@ -133,7 +133,7 @@ def _validate_entry_or_exit(point):
     return False
 
 
-class Extension(object):
+class Extension:
     """
     Represents an extension.
     
@@ -636,7 +636,7 @@ PROTECTED_NAMES = {
     'submodule_search_locations',
         }
 
-class ExtensionLoader(object):
+class ExtensionLoader:
     """
     There are some cases when you probably want to change some functional part of your client in runtime. Load,
     unload or reload code. Hata provides an easy to use (that's what she said) solution to solve this issue.
@@ -1814,6 +1814,3 @@ class ExtensionLoader(object):
         return ''.join(result)
 
 EXTENSION_LOADER = ExtensionLoader()
-
-del WeakValueDictionary
-del DOCS_ENABLED

@@ -1741,7 +1741,7 @@ def ensure_future(coro_or_future, *, loop=None):
     
     return loop.ensure_future(coro_or_future)
 
-class _gatherer_done_cb_return_exceptions(object):
+class _gatherer_done_cb_return_exceptions:
     __slots__ = ('future', )
     def __init__(self, future):
         self.future = future
@@ -1773,7 +1773,7 @@ class _gatherer_done_cb_return_exceptions(object):
         
         future.set_result(results)
 
-class _gatherer_done_cb_raise(object):
+class _gatherer_done_cb_raise:
     __slots__ = ('future', )
     def __init__(self, future):
         self.future = future
@@ -1808,7 +1808,7 @@ class _gatherer_done_cb_raise(object):
         else:
             future.set_exception(exception)
 
-class _getherer_cancel_cb(object):
+class _getherer_cancel_cb:
     __slots__ = ('gatherer',)
     def __init__(self, gatherer):
         self.gatherer = gatherer
@@ -2292,7 +2292,3 @@ class Popen:
     """
     def __new__(cls, args, stdin=None, stdout=None, stderr=None, **kwds):
         raise NotImplementedError
-
-
-del BACKEND_ONLY
-del main_thread

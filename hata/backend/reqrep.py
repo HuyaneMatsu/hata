@@ -32,7 +32,7 @@ from .protocol import HTTPStreamWriter
 
 json_re = re.compile(r'^application/(?:[\w.+-]+?\+)?json')
 
-class Fingerprint(object):
+class Fingerprint:
     """
     HTTP fingerprinting can be used to automate information systems and security audits. Automated security testing
     tools can use HTTP fingerprinting to narrow down the set of tests required, based on the specific platform or the
@@ -122,7 +122,7 @@ else:
     SSL_ALLOWED_TYPES = (module_ssl.SSLContext, bool, Fingerprint, type(None))
 
 
-class ConnectionKey(object):
+class ConnectionKey:
     """
     Contains information about a host, like proxy, TLS to prevent reusing wrong connections from the pool.
     
@@ -213,7 +213,7 @@ class ConnectionKey(object):
         return hash(self.host) ^ (self.port << 17) ^ hash(self.is_ssl) ^ hash(self.ssl) ^ hash(self.proxy_auth) ^ \
                hash(self.proxy_url)
 
-class RequestInfo(object):
+class RequestInfo:
     """
     Base information representing a request.
     
@@ -253,7 +253,7 @@ DEFAULT_HEADERS = (
     (ACCEPT_ENCODING, 'gzip, deflate'),
         )
 
-class ClientRequest(object):
+class ClientRequest:
     """
     Http request class used by ``HTTPClient``.
     
@@ -622,7 +622,7 @@ class ClientRequest(object):
             writer.cancel()
 
 
-class ClientResponse(object):
+class ClientResponse:
     """
     Http response class used by ``HTTPClient``.
     

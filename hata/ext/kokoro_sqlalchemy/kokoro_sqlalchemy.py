@@ -11,7 +11,7 @@ from ...backend.utils import alchemy_incendiary
 from ...backend.executor import ExecutorThread
 
 
-class KOKOROEngine(object):
+class KOKOROEngine:
     __slots__=('_engine', '_worker',)
     def __init__(self, pool, dialect, u, single_worker=True, **kwargs):
         if single_worker:
@@ -100,7 +100,7 @@ class KOKOROEngine(object):
             worker.cancel()
 
 
-class AsyncConnection(object):
+class AsyncConnection:
     __slots__=('_connection', 'executor',)
     def __init__(self, connection, executor):
         self._connection = connection
@@ -140,7 +140,7 @@ class AsyncConnection(object):
         return self._connection.in_transaction()
 
 
-class AsyncTransaction(object):
+class AsyncTransaction:
     __slots__ = ('_transaction', 'executor',)
     def __init__(self, transaction, executor):
         self._transaction = transaction
@@ -156,7 +156,7 @@ class AsyncTransaction(object):
         await self.executor.execute(self._transaction.close)
 
 
-class AsyncResultProxyIterator(object):
+class AsyncResultProxyIterator:
     __slots__ = ('_result_proxy', 'executor',)
     def __init__(self, result_proxy, executor):
         self._result_proxy = result_proxy
@@ -172,7 +172,7 @@ class AsyncResultProxyIterator(object):
         return row
 
 
-class AsyncResultProxy(object):
+class AsyncResultProxy:
     __slots__ = ('_result_proxy', 'executor',)
     def __init__(self, result_proxy, executor):
         self._result_proxy = result_proxy
@@ -215,7 +215,7 @@ class AsyncResultProxy(object):
         return self._result_proxy.inserted_primary_key
 
 
-class EngineTransactionCM(object):
+class EngineTransactionCM:
     __slots__ = ('_close_with_result', '_context', '_engine', 'executor',)
 
     def __init__(self, engine, close_with_result, executor):
@@ -232,7 +232,7 @@ class EngineTransactionCM(object):
         return await self.executor.execute(alchemy_incendiary(self._context.__exit__, (exc_type, exc_val, exc_tb),))
 
 
-class ConnectionCM(object):
+class ConnectionCM:
     __slots__ = ('result', 'task',)
     def __init__(self, task):
         self.task = task
@@ -269,4 +269,3 @@ class KOKOROEngineStrategy(DefaultEngineStrategy):
 
 KOKOROEngineStrategy()
 
-del DefaultEngineStrategy

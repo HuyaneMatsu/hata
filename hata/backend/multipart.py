@@ -69,7 +69,7 @@ def create_payload(data, kwargs):
     return type_(data, kwargs)
 
 
-class PayloadBase(object):
+class PayloadBase:
     """
     Base class for payloads.
     
@@ -737,7 +737,7 @@ class BodyPartReaderPayload(PayloadBase):
             else:
                 break
 
-class MimeType(object):
+class MimeType:
     # Parses a MIME type into its components
     
     __slots__ = ('parameters', 'sub_type', 'suffix', 'type', )
@@ -1362,7 +1362,7 @@ TRANSFER_ENCODING_NONE = 0
 TRANSFER_ENCODING_BASE64 = 1
 TRANSFER_ENCODING_QUOTED_PRINTABLE = 2
 
-class MultipartPayloadWriter(object):
+class MultipartPayloadWriter:
     """
     Multipart payload writer of ``MultipartWriter``.
     

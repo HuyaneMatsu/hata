@@ -19,7 +19,7 @@ from .user import User
 
 from . import guild as module_guild
 
-class VoiceClient(object):
+class VoiceClient:
     """
     Represents a client what is joined to a voice channel.
     
@@ -1232,4 +1232,3 @@ class VoiceClient(object):
 module_guild.VoiceClient = VoiceClient
 
 del module_guild
-del DOCS_ENABLED

@@ -57,7 +57,7 @@ LIMITER_INTERACTION = 'interaction_id'
 LIMITER_GLOBAL      = 'global'
 LIMITER_UNLIMITED   = 'unlimited'
 
-class RateLimitGroup(object):
+class RateLimitGroup:
     """
     Represents a rate limit group of one endpoint or of more endpoints sharing the same one.
     
@@ -202,7 +202,7 @@ class RateLimitGroup(object):
         
         return ''.join(result)
 
-class RateLimitUnit(object):
+class RateLimitUnit:
     """
     Represents a chained rate limit unit storing how much request is already done till the next reset, what is
     also stored by it.
@@ -333,7 +333,7 @@ class RateLimitUnit(object):
         
         return ''.join(result)
 
-class RateLimitHandler(object):
+class RateLimitHandler:
     """
     Handles a request's rate limit.
     
@@ -724,7 +724,7 @@ class RateLimitHandler(object):
         
         return result
 
-class RateLimitHandlerCTX(object):
+class RateLimitHandlerCTX:
     """
     Context manager of a ``RateLimitHandler``.
     
@@ -777,7 +777,7 @@ class RateLimitHandlerCTX(object):
         self.exited = True
         self.parent.exit(None)
 
-class RateLimitProxy(object):
+class RateLimitProxy:
     """
     A proxy towards a rate limit.
     
@@ -1163,7 +1163,7 @@ class RateLimitProxy(object):
         """Hashes the rate limit proxy."""
         return self.group.group_id^self._key.limiter_id
     
-    class _wait_till_limits_expire_callback(object):
+    class _wait_till_limits_expire_callback:
         """
         `WeakReferer` callback used at ``.wait_till_limits_expire`` for waking it up.
         """
@@ -1256,7 +1256,7 @@ class RateLimitProxy(object):
         
         return drops[0].drop-LOOP_TIME()
 
-class StaticRateLimitGroup(object):
+class StaticRateLimitGroup:
     """
     Represents a static rate limit group of one endpoint or of more endpoints sharing the same one.
     
@@ -1354,7 +1354,7 @@ class StaticRateLimitGroup(object):
         return ''.join(result)
 
 
-class StaticRateLimitHandler(object):
+class StaticRateLimitHandler:
     """
     Static rate limit handler to defend the wrapper from stupidity.
     
@@ -1519,7 +1519,7 @@ class StaticRateLimitHandler(object):
         """
         return RateLimitHandlerCTX(self)
 
-class StackedStaticRateLimitHandler(object):
+class StackedStaticRateLimitHandler:
     """
     Stacked static rate limit handler to defend the wrapper from stacked stupidity.
     
@@ -3289,6 +3289,3 @@ class RATE_LIMIT_GROUPS:
     STATIC_MESSAGE_DELETE_SUB   = StaticRateLimitGroup(5, 5.0, LIMITER_CHANNEL)
     static_message_delete       = (STATIC_MESSAGE_DELETE_SUB, StaticRateLimitGroup(3, 1.0, LIMITER_CHANNEL))
     static_message_delete_b2wo  = (STATIC_MESSAGE_DELETE_SUB, StaticRateLimitGroup(30, 120.0, LIMITER_CHANNEL))
-
-del modulize
-del DOCS_ENABLED

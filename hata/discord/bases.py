@@ -188,7 +188,7 @@ class DiscordEntity(object, metaclass=DiscordEntityMeta):
         
         return NotImplemented
 
-class FlagGetDescriptor(object):
+class FlagGetDescriptor:
     """
     Returns the flag descriptor's owner's value at a specific bitwise position.
     
@@ -237,7 +237,7 @@ class ReverseFlagGetDescriptor(FlagGetDescriptor):
     def __call__(self, value):
         return ((value>>self.shift)&1)^1
 
-class FlagEnabler(object):
+class FlagEnabler:
     """
     Enables a specific bitwise flag of a given value by returning a new one with the given bitwise flag enabled.
     
@@ -285,7 +285,7 @@ class FlagEnableDescriptor(FlagGetDescriptor):
             result.shift = self.shift
             return result
 
-class FlagDisabler(object):
+class FlagDisabler:
     """
     Disables a specific bitwise flag of a given value by returning a new one with the given bitwise flag disabled.
     
@@ -745,7 +745,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
 
 
 
-class PreinstancedBase(object):
+class PreinstancedBase:
     """
     Base class for preinstanced types.
     
@@ -998,7 +998,7 @@ IconType.static   = ICON_TYPE_STATIC   = IconType(1, 'static'  )
 IconType.animated = ICON_TYPE_ANIMATED = IconType(2, 'animated')
 
 
-class Icon(object):
+class Icon:
     """
     Represents a Discord Icon.
     
@@ -1154,7 +1154,7 @@ class Icon(object):
         return self
 
 
-class IconSlot(object):
+class IconSlot:
     if DOCS_ENABLED:
         __class_doc__ = (
     """
@@ -1508,7 +1508,3 @@ def instance_or_id_to_snowflake(obj, type_, name):
                 f'`uint64`, got {obj!r}.')
     
     return snowflake
-
-del sys
-del DOCS_ENABLED
-del doc_property

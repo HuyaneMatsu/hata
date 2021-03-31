@@ -9,9 +9,9 @@ from .parser import ATTRIBUTE_SECTION_NAME_RP, ATTRIBUTE_NAME_RP
 from .builder_html import sub_section_serializer, create_relative_link, graved_to_escaped
 from .module_mapper import TypeUnit, ModuleUnit, PropertyUnit, InstanceAttributeUnit, FunctionUnit, MAPPED_OBJECTS
 
-from . import module_mapper
+from . import module_mapper as module_module_mapper
 
-class Structure(object):
+class Structure:
     """
     Represents an extended docstring's html structure.
     
@@ -368,7 +368,7 @@ def item_sort_key(item):
     return name_sort_key(item[0])
 
 
-class SimpleSection(object):
+class SimpleSection:
     """
     Represents a simple section.
     
@@ -464,7 +464,7 @@ class SimpleSection(object):
         
         return Structure(title, prefixed_title, None)
 
-class FunctionOrPropertySerializer(object):
+class FunctionOrPropertySerializer:
     """
     Serializer for a method or for a property.
     
@@ -600,7 +600,7 @@ class FunctionOrPropertySerializer(object):
         prefixed_title = get_anchor_prefix_for(path)
         return Structure(title, prefixed_title, children)
 
-class UnitSection(object):
+class UnitSection:
     """
     Represents a section, which is filled with units.
     
@@ -707,7 +707,7 @@ class UnitSection(object):
         
         return Structure(title, prefixed_title, children)
     
-class AttributeSection(object):
+class AttributeSection:
     """
     Represents an attribute section.
     
@@ -910,7 +910,7 @@ SECTION_NAME_TYPE_DEFAULT_RELATIONS = {
         }
 
 
-class TypeSerializer(object):
+class TypeSerializer:
     """
     Converts the given type docs to topically broken down parts.
     
@@ -1135,7 +1135,7 @@ class TypeSerializer(object):
         
         return Structure(title, prefixed_title, children)
 
-class UnitListerSection(object):
+class UnitListerSection:
     """
     Serializer to list units inside of a module section.
     
@@ -1228,7 +1228,7 @@ class UnitListerSection(object):
         child_prefixed_title = anchor_escape(title)
         return Structure(title, child_prefixed_title, None)
 
-class ModuleSerializer(object):
+class ModuleSerializer:
     """
     Collects the given module to topically broken down parts.
     
@@ -1439,7 +1439,6 @@ def html_serialize_docs_extended(object_, get_html, get_structure):
     
     return html, structure
 
-module_mapper.html_serialize_docs_extended = html_serialize_docs_extended
+module_module_mapper.html_serialize_docs_extended = html_serialize_docs_extended
 
-del module_mapper
-del re
+del module_module_mapper

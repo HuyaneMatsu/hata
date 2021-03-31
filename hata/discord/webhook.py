@@ -534,6 +534,4 @@ class WebhookRepr(UserBase):
 module_webhook.Webhook = Webhook
 module_webhook.WebhookRepr = WebhookRepr
 
-del URLS
-del UserBase
 del module_webhook

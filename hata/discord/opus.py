@@ -183,7 +183,7 @@ FRAME_SIZE = SAMPLES_PER_FRAME*SAMPLE_SIZE
 BUFFER_SIZE = 3840
 BUFFER_TYPE = ctypes.c_char*BUFFER_SIZE
 
-class OpusEncoder(object):
+class OpusEncoder:
     """
     Opus encoder of a ``VoiceClient``.
     
@@ -342,7 +342,7 @@ class OpusEncoder(object):
         end = opus.opus_encode(self._encoder, data, SAMPLES_PER_FRAME, buffer, max_data_bytes)
         return buffer[:end]
 
-class OpusDecoder(object):
+class OpusDecoder:
     """
     Opus decoder of a ``VoiceClient``.
     
@@ -486,6 +486,3 @@ class OpusDecoder(object):
         
         end = opus.opus_decode(self._decoder, data, len(data), buffer_ptr, frame_size, True)
         return bytes(buffer[:((end<<1)*CHANNELS)])
-
-del ModuleType
-

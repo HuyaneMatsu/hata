@@ -377,7 +377,7 @@ Description can be passed instead of defining as docstring. As an example this f
 commands, like:
 
 ```py
-class Action(object):
+class Action:
     __slots__ = ('action_name', 'embed_color', )
     def __init__(self, action_name, embed_color):
         self.action_name = action_name

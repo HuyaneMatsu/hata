@@ -9,7 +9,7 @@ from .url import URL
 from .helpers import is_ip_address
 from .event_loop import LOOP_TIME
 
-class CookieJar(object):
+class CookieJar:
     """
     Implements cookie storage adhering to RFC 6265.
     
@@ -408,5 +408,3 @@ class CookieJar(object):
             return None
         
         return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)
-
-del re

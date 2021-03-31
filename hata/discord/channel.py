@@ -528,7 +528,7 @@ class ChannelBase(DiscordEntity, immortal=True):
 
 # sounds funny, but this is a class
 # the chunk_size is 97, because it means 1 request for _load_messages_till
-class MessageIterator(object):
+class MessageIterator:
     """
     An asynchronous message iterator over the given text channel.
     
@@ -5098,8 +5098,4 @@ URLS.ChannelGuildBase = ChannelGuildBase
 
 del module_message
 del module_webhook
-del URLS
 del module_rate_limit
-del DiscordEntity
-del WeakSet
-del DOCS_ENABLED

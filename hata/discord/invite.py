@@ -558,6 +558,3 @@ class Invite(DiscordEntity, immortal=True):
                 setattr(invite, *item)
         
         return invite
-
-del URLS
-del DOCS_ENABLED

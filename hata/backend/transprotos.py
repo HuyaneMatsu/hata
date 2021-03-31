@@ -21,7 +21,7 @@ DO_HANDSHAKE = 'DO_HANDSHAKE'
 WRAPPED = 'WRAPPED'
 SHUTDOWN = 'SHUTDOWN'
 
-class _SSLPipe(object):
+class _SSLPipe:
     """
     An SSL pipe.
     
@@ -365,7 +365,7 @@ class _SSLPipe(object):
         
         return ssl_data, offset
 
-class _SSLProtocolTransport(object):
+class _SSLProtocolTransport:
     """
     Asynchronous ssl protocol's read-write  transport implementation.
     
@@ -661,7 +661,7 @@ class _SSLProtocolTransport(object):
             transport.set_write_buffer_limits(high, low)
 
 
-class SSLProtocol(object):
+class SSLProtocol:
     """
     Asynchronous SSL protocol implementation on top of a `socket`. Uses `ssl.MemoryBIO` instances for incoming and
     outgoing data.
@@ -1091,7 +1091,7 @@ class SSLProtocol(object):
                 self._finalize()
 
 
-class _SelectorSocketTransport(object):
+class _SelectorSocketTransport:
     """
     Socket transport for selector based event loops.
     
@@ -1721,7 +1721,7 @@ class _SelectorSocketTransport(object):
                     self.socket.shutdown(module_socket.SHUT_WR)
 
 
-class _SelectorDatagramTransport(object):
+class _SelectorDatagramTransport:
     """
     Asynchronous transport implementation for datagram sockets.
     

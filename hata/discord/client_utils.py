@@ -19,7 +19,7 @@ USER_CHUNK_TIMEOUT = 2.5
 
 
 
-class SingleUserChunker(object):
+class SingleUserChunker:
     """
     A user chunk waiter, which yields after the first received chunk. Used at ``Client.request_members``.
     
@@ -102,7 +102,7 @@ class SingleUserChunker(object):
         """
         return self.waiter.__await__()
 
-class MassUserChunker(object):
+class MassUserChunker:
     """
     A user chunk waiter, which yields after the chunks of certain amount of guilds are received. Used at
     ``Client._request_members`` and at ``Client._request_members``.
@@ -206,7 +206,7 @@ class MassUserChunker(object):
         """
         return self.waiter.__await__()
 
-class DiscoveryCategoryRequestCacher(object):
+class DiscoveryCategoryRequestCacher:
     """
     Cacher for storing ``Client``'s requests.
     
@@ -342,7 +342,7 @@ class DiscoveryCategoryRequestCacher(object):
     
     __call__ = execute
 
-class TimedCacheUnit(object):
+class TimedCacheUnit:
     """
     Timed cache unit used at keyed request cachers.
     
@@ -361,7 +361,7 @@ class TimedCacheUnit(object):
         return (f'<{self.__class__.__name__} creation_time={self.creation_time!r}, last_usage_time='
                 f'{self.last_usage_time!r}, result={self.result!r}>')
 
-class DiscoveryTermRequestCacher(object):
+class DiscoveryTermRequestCacher:
     """
     Cacher for storing ``Client'' requests. Also uses other clients, if the source client's rate limits are already
     exhausted.
@@ -575,7 +575,7 @@ class DiscoveryTermRequestCacher(object):
     __call__ = execute
 
 
-class UserGuildPermission(object):
+class UserGuildPermission:
     """
     Represents a user's permissions inside of a guild. Returned by ``Client.user_guild_get_all``.
     
@@ -608,7 +608,7 @@ class UserGuildPermission(object):
         yield self.permission
 
 
-class MultiClientMessageDeleteSequenceSharder(object):
+class MultiClientMessageDeleteSequenceSharder:
     """
     Helper class of multi client message sequence deleter.
     
@@ -661,7 +661,7 @@ class MultiClientMessageDeleteSequenceSharder(object):
         return self
     
 
-class WaitForHandler(object):
+class WaitForHandler:
     """
     O(n) event waiter. Added as an event handler by ``Client.wait_for``.
     
@@ -707,7 +707,7 @@ class WaitForHandler(object):
                 
                 future.set_result_if_pending(args)
 
-class Typer(object):
+class Typer:
     """
     A typer what will keep sending typing events to the given channel with the client. Can be used as a context
     manager.
@@ -778,7 +778,7 @@ class Typer(object):
         self.cancel()
 
 
-class ClientWrapper(object):
+class ClientWrapper:
     """
     Wraps together more clients enabling to add the same event handlers or commands to them. Tho for that feature, you
     need first import it's respective extension.
@@ -877,7 +877,7 @@ class ClientWrapper(object):
         
         return func
     
-    class _events_wrapper(object):
+    class _events_wrapper:
         """
         When the parent ``ClientWrapper``'s `.events` is called without giving the `func` parameter to it an instance
         of this class is created for allowing using it as a decorator with passing additional keyword arguments at the

@@ -765,7 +765,7 @@ class Role(DiscordEntity, immortal=True):
         return NotImplemented
 
 
-class PermissionOverwrite(object):
+class PermissionOverwrite:
     """
     Represents a permission overwrite of a guild channel.
     
@@ -1168,7 +1168,4 @@ module_rate_limit.Role = Role
 module_user.create_partial_role = create_partial_role
 
 del module_rate_limit
-del DiscordEntity
-del API_VERSION
-del DOCS_ENABLED
 del module_user

@@ -2807,7 +2807,7 @@ class GuildPreview(DiscordEntity):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
 
-class GuildDiscovery(object):
+class GuildDiscovery:
     """
     Represent a guild's Discovery settings.
     
@@ -3248,7 +3248,7 @@ DiscoveryCategory.console = DiscoveryCategory(46, 'Console', False)
 DiscoveryCategory.charity_and_nonprofit = DiscoveryCategory(47, 'Charity & Nonprofit', False)
 
 
-class WelcomeScreen(object):
+class WelcomeScreen:
     """
     Represents a guild's welcome screen.
     
@@ -3324,7 +3324,7 @@ class WelcomeScreen(object):
         return True
 
 
-class WelcomeChannel(object):
+class WelcomeChannel:
     """
     Represents a featured channel by a welcome screen.
     
@@ -3536,7 +3536,7 @@ class WelcomeChannel(object):
         return True
 
 
-class VerificationScreen(object):
+class VerificationScreen:
     """
     Represents a guild's verification screen.
     
@@ -3604,7 +3604,7 @@ class VerificationScreen(object):
         return True
 
 
-class VerificationScreenStep(object):
+class VerificationScreenStep:
     """
     Represents a step of a ``VerificationScreen``.
     
@@ -3810,14 +3810,5 @@ class VerificationScreenStep(object):
 module_rate_limit.Guild = Guild
 module_channel.Guild = Guild
 
-del URLS
-del cached_property
-del ActivityUnknown
-del UserBase
 del module_rate_limit
-del DiscordEntity
-del ReverseFlagBase
-del IconSlot
-del DOCS_ENABLED
 del module_channel
-del BaseMethodDescriptor

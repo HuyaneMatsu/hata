@@ -330,7 +330,7 @@ def render_frames_to_list(frames, extend=None):
     
     return extend
 
-class _EXCFrameType(object):
+class _EXCFrameType:
     """
     Wraps a `traceback` object to be `frame` compatible.
     
@@ -638,7 +638,7 @@ def format_coroutine(coro):
     
     return f'{name} {state} defined at {file_name}:{line_number}'
 
-class Future(object):
+class Future:
     """
     A Future represents an eventual result of an asynchronous operation.
     
@@ -1213,7 +1213,7 @@ class Future(object):
         """
         return FutureAsyncWrapper(self, loop)
 
-class FutureSyncWrapper(object):
+class FutureSyncWrapper:
     """
     Sync wrapper for ``Future`` instances enabling them to be waited from a sync threads.
     
@@ -3137,7 +3137,7 @@ class Task(Future):
         self._must_cancel = False
         return exception
 
-class AsyncQue(object):
+class AsyncQue:
     """
     An asynchronous FIFO queue.
     
@@ -3454,7 +3454,7 @@ class AsyncQue(object):
             if waiter is not None:
                 waiter.__silence__()
 
-class FGElement(object):
+class FGElement:
     """
     An element of a ``FutureG`` results.
     
@@ -3499,7 +3499,7 @@ class FGElement(object):
             return self.result
         raise exception
 
-class FGCallback(object):
+class FGCallback:
     """
     Callback of ``FutureG`` to set a waited future's result or exception to itself.
     
@@ -3751,7 +3751,7 @@ class Gatherer(FutureWM):
         self._loop._schedule_callbacks(self)
         return 2
 
-class _HandleCancellerBase(object):
+class _HandleCancellerBase:
     """
     ``Future`` callback-base to cancel a respective ``Handle`` instance when the future is marked as done before the
     handle, or if the handler runs first, then sets the future result or exception.
@@ -3941,7 +3941,7 @@ def future_or_timeout(future, timeout):
     callback.handler = handler
     future.add_done_callback(callback)
 
-class _FutureChainer(object):
+class _FutureChainer:
     """
     Chains a future's result into an other one used as a callback of the source future.
     
@@ -4027,7 +4027,7 @@ class _FutureChainer(object):
             The source future to chain it's result from.
         """)
 
-class _ChainRemover(object):
+class _ChainRemover:
     """
     Removes the ``_FutureChainer`` callback of the source future if the chained target future is marked as done before.
     
@@ -4169,7 +4169,7 @@ class WaitTillFirst(Future):
     
     # `__repr__` is same as ``Future.__repr__``
     
-    class _wait_callback(object):
+    class _wait_callback:
         """
         ``WaitTillFirst``'s callback put on the future's waited by it.
         
@@ -4484,7 +4484,7 @@ class WaitTillExc(WaitTillFirst):
     # `__new__` is same as ``WaitTillFirst.__new__``
     # `__repr__` is same as ``Future.__repr__``
     
-    class _wait_callback(object):
+    class _wait_callback:
         """
         ``WaitTillExc``'s callback put on the future's waited by it.
         
@@ -4608,7 +4608,7 @@ class WaitTillAll(WaitTillFirst):
     # `__new__` is same as ``WaitTillFirst.__new__``
     # `__repr__` is same as ``Future.__repr__``
 
-    class _wait_callback(object):
+    class _wait_callback:
         """
         ``WaitTillAll``'s callback put on the future's waited by it.
         
@@ -4682,7 +4682,7 @@ class WaitTillAll(WaitTillFirst):
     # `sync_wrap` is same as ``Future.cancel_handles``
     # `async_wrap` is same as ``Future.cancel_handles``
 
-class Lock(object):
+class Lock:
     """
     Implements a mutex lock for hata tasks.
 
@@ -4970,7 +4970,7 @@ class ScarletLock(Lock):
         return ''.join(result)
 
 
-class Event(object):
+class Event:
     """
     Asynchronous equivalent to `threading.Event`.
     
@@ -5065,7 +5065,7 @@ class Event(object):
         return ''.join(result)
 
 
-class enter_executor(object):
+class enter_executor:
     """
     Async context manager for moving a ``Task``'s section's execution to an executor thread.
     
@@ -5287,7 +5287,7 @@ class enter_executor(object):
             self = None
             task = None
 
-class ScarletExecutorCB(object):
+class ScarletExecutorCB:
     """
     ``ScarletExecutor`` callback's added to futures or tasks waited by it.
     
@@ -5342,7 +5342,7 @@ class ScarletExecutorCB(object):
         
         parent._waiter.set_result_if_pending(None)
     
-class ScarletExecutor(object):
+class ScarletExecutor:
     """
     Scarlet executor allows the user to limit parallelly running task amount to a set one. Not that, only those tasks
     count, which are added to the executor with it's ``.add`` method.
@@ -5779,7 +5779,7 @@ class WaitContinuously(WaitTillFirst):
     
     # `__repr__` is same as ``Future.__repr__``
     
-    class _wait_callback(object):
+    class _wait_callback:
         """
         ``WaitContinuously``'s callback put on the future's waited by it.
         
@@ -6207,6 +6207,4 @@ class WaitContinuously(WaitTillFirst):
 module_analyzer.is_coroutine_function = is_coroutine_function
 module_analyzer.is_coroutine_generator_function = is_coroutine_generator_function
 
-del DOCS_ENABLED
-del copy_func
 del module_analyzer

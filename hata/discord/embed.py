@@ -10,11 +10,9 @@ from ..backend.utils import DOCS_ENABLED
 from .utils import parse_time, url_cutter, sanitize_mentions
 from .color import Color
 
-from . import preinstanced as module_preinstanced
-
 EXTRA_EMBED_TYPES = ('application_news', 'article', 'gifv', 'image', 'link', 'video')
 
-class EmbedThumbnail(object):
+class EmbedThumbnail:
     """
     Represents an embed's thumbnail.
     
@@ -115,7 +113,7 @@ class EmbedThumbnail(object):
         
         return (self.url == other.url)
     
-class EmbedVideo(object):
+class EmbedVideo:
     """
     Represents an embed's video.
     
@@ -215,7 +213,7 @@ class EmbedVideo(object):
         
         return (self.url == other.url)
 
-class EmbedImage(object):
+class EmbedImage:
     """
     Represents an embed's image.
     
@@ -317,7 +315,7 @@ class EmbedImage(object):
         
         return (self.url == other.url)
     
-class EmbedProvider(object):
+class EmbedProvider:
     """
     Represents an embed's provider.
     
@@ -403,7 +401,7 @@ class EmbedProvider(object):
         
         return True
     
-class EmbedAuthor(object):
+class EmbedAuthor:
     """
     Represents an embed's author.
     
@@ -539,7 +537,7 @@ class EmbedAuthor(object):
         
         return True
     
-class EmbedFooter(object):
+class EmbedFooter:
     """
     Represents an embed's footer.
     
@@ -648,7 +646,7 @@ class EmbedFooter(object):
         
         return True
 
-class EmbedField(object):
+class EmbedField:
     """
     Represents an embed's field.
     
@@ -745,7 +743,7 @@ class EmbedField(object):
         return True
 
 
-class EmbedBase(object):
+class EmbedBase:
     """
     Base class for Discord embedded contents. Should be taken as a guide for implementing custom embed classes.
     
@@ -2213,7 +2211,7 @@ class Embed(EmbedBase):
         return result
 
 
-class _EmbedFieldsReflection(object):
+class _EmbedFieldsReflection:
     """
     A reflection of an `Embed` object's fields. The instances of this type allow direct modifications of their
     respective embed's fields.
@@ -2350,10 +2348,3 @@ class _EmbedFieldsReflection(object):
         """
         for field_data in reversed(self.data):
             yield EmbedField.from_data(field_data)
-
-
-del DOCS_ENABLED
-del module_preinstanced
-del Union
-del List
-del datetime

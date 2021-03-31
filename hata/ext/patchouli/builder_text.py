@@ -253,7 +253,7 @@ def graved_to_escaped_words(graved):
     
     return words
 
-class BuilderContext(object):
+class BuilderContext:
     """
     Builder context for converters.
     
@@ -287,7 +287,7 @@ EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNI
 TEXT_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_single_graved_words)
 TEXT_SOURCE_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_source_words)
 
-class TableLine(object):
+class TableLine:
     """
     Represents a line inside of a table.
     
@@ -387,7 +387,7 @@ class TableLine(object):
         
         return length
 
-class TableConverter(object):
+class TableConverter:
     """
     Converter class for tables, when building text.
     
@@ -699,7 +699,7 @@ class TableConverter(object):
         to_extend.append('<<END>>')
         return ''.join(to_extend)
 
-class CodeBlockConverter(object):
+class CodeBlockConverter:
     """
     Converter class for code blocks, when building text.
     
@@ -1082,7 +1082,7 @@ class CodeBlockConverter(object):
         return ''.join(to_extend)
 
 
-class DescriptionConverter(object):
+class DescriptionConverter:
     """
     Converter class for descriptions when building text.
     
@@ -1240,7 +1240,7 @@ class DescriptionConverter(object):
         return ''.join(to_extend)
 
 
-class BlockQuoteConverter(object):
+class BlockQuoteConverter:
     """
     Converter class for descriptions when building text.
     
@@ -1751,7 +1751,7 @@ def should_accept_section_break(section_1, section_2):
     
     return True
 
-class SectionConverter(object):
+class SectionConverter:
     """
     Converter class for converting a section.
     
@@ -2153,5 +2153,3 @@ def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
         preview = None
     
     return preview
-
-del re

@@ -19,7 +19,7 @@ from.client_utils import maybe_snowflake
 
 Client = NotImplemented
 
-class AuditLog(object):
+class AuditLog:
     """
     Whenever an admin action is performed on the API, an audit log entry is added to the respective guild's audit
     logs. This class represents a requested  collections of these entries.
@@ -113,7 +113,7 @@ class AuditLog(object):
         """Returns the representation of the Audit log."""
         return f'<{self.__class__.__name__} of {self.guild.name}, length={len(self.entries)}>'
 
-class AuditLogIterator(object):
+class AuditLogIterator:
     """
     An async iterator over a guild's audit logs.
     
@@ -561,7 +561,7 @@ del convert_message
 del convert_integration
 
 
-class AuditLogEntry(object):
+class AuditLogEntry:
     """
     Represents an entry of an ``AuditLog``.
     
@@ -1025,7 +1025,7 @@ del transform_user
 del transform_verification_level
 
 
-class AuditLogChange(object):
+class AuditLogChange:
     """
     A change of an ``AuditLogEntry``.
     
@@ -1155,5 +1155,3 @@ class AuditLogChange(object):
     def __repr__(self):
         """Returns the representation of the audit log change."""
         return f'{self.__class__.__name__}(attr={self.attr!r}, before={self.before!r}, after={self.after!r})'
-
-del API_VERSION

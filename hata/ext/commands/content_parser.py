@@ -37,7 +37,7 @@ NUMERIC_CONVERSION_LIMIT = 100
 
 CONTENT_ARGUMENT_SEPARATORS = {}
 
-class ContentArgumentSeparator(object):
+class ContentArgumentSeparator:
     """
     Content argument separator used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
     instances.
@@ -459,7 +459,7 @@ CONVERTER_FLAG_ID = 1 << ConverterFlag.__keys__['id']
 CONVERTER_FLAG_EVERYWHERE = 1 << ConverterFlag.__keys__['everywhere']
 CONVERTER_FLAG_PROFILE = 1 << ConverterFlag.__keys__['profile']
 
-class ContentParserContext(object):
+class ContentParserContext:
     """
     Content parser instance context used when parsing a message's content.
     
@@ -562,7 +562,7 @@ DEFAULT_TYPE_OBJ = 1
 DEFAULT_TYPE_CALL = 2
 DEFAULT_TYPE_NAMES = ('DEFAULT_TYPE_NONE', 'DEFAULT_TYPE_OBJ', 'DEFAULT_TYPE_CALL', )
 
-class ParserContextBase(object):
+class ParserContextBase:
     """
     Base class for parser contexts.
     """
@@ -1204,7 +1204,7 @@ class ChainedParserContext(ChainedArgsParserContext):
 CONVERTER_SETTING_TYPE_RELATION_MAP = {}
 CONVERTER_SETTING_NAME_TO_TYPE = {}
 
-class ConverterSetting(object):
+class ConverterSetting:
     """
     Store settings about a converter.
     
@@ -2408,7 +2408,7 @@ def validate_annotation_type_flags(annotation, flags):
     
     return new_flags
 
-class FlaggedAnnotation(object):
+class FlaggedAnnotation:
     """
     Flagged annotation to store an annotation type with it's flags.
     
@@ -2551,7 +2551,7 @@ def validate_annotation(annotation, flags=None):
     return result
 
 
-class Converter(object):
+class Converter:
     """
     Represents a converter type-hint for setting additional information for the parser.
     
@@ -2740,7 +2740,7 @@ class Converter(object):
         
         return ''.join(result)
 
-class ContentParserArgumentHinter(object):
+class ContentParserArgumentHinter:
     """
     Hinter for content parser about it's arguments.
     
@@ -2773,7 +2773,7 @@ class ContentParserArgumentHinter(object):
         return f'{self.__class__.__name__}(default={self.default!r}, default_type={self.default_type!r}, annotation=' \
             f'{self.annotation!r}, is_args={self.is_args!r})'
 
-class CommandContentParser(object):
+class CommandContentParser:
     """
     Content parser for commands.
     
@@ -3158,7 +3158,7 @@ class ContentParser(CommandContentParser):
         self._is_method = is_method
         return self
     
-    class _wrapper(object):
+    class _wrapper:
         """
         A wrapper of ``ContentParser`` to allow using it as a decorator.
         
@@ -3455,7 +3455,3 @@ class ContentParserMethod(MethodLike):
     def __repr__(self):
         """Returns the method's representation."""
         return f'{self.__class__.__name__}(content_parser={self._content_parser!r}, obj={self.__self__!r})'
-
-del module_property
-del FlagBase
-del DOCS_ENABLED

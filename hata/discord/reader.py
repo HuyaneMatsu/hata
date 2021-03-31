@@ -16,7 +16,7 @@ else:
 EMPTY_VOICE_FRAME_ENCODED = b'\xf8\xff\xfe'
 EMPTY_VOICE_FRAME_DECODED = b'\x00'*3840
 
-class Array_uint_32b(object): #TODO : ask python to implement arrays already
+class Array_uint_32b: #TODO : ask python to implement arrays already
     """
     Implements an uint32 array casted on bytes.
     
@@ -77,7 +77,7 @@ class Array_uint_32b(object): #TODO : ask python to implement arrays already
             
             offset = offset+4
 
-class PacketBase(object):
+class PacketBase:
     """
     Base class for packet subclasses.
     """
@@ -567,7 +567,7 @@ class AudioStream(AudioSource):
         """
         return f'{self.__class__.__name__} from {self.user.full_name!r}'
 
-class AudioReader(object):
+class AudioReader:
     """
     Audio reader of a ``VoiceClient``.
     
@@ -716,6 +716,3 @@ class AudioReader(object):
                 audio_stream.stop()
     
     __del__ = stop
-
-del opus
-del OpusDecoder

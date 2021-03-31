@@ -290,7 +290,7 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
             raise
 
 
-class SlashResponse(object):
+class SlashResponse:
     """
     Rich interaction response message usable with `return` or with `yield` statements.
     
@@ -601,7 +601,7 @@ class InteractionAbortedError(BaseException):
         return f'{self.__class__.__name__}({self.response!r})'
 
 
-class SlashCommandWrapper(object):
+class SlashCommandWrapper:
     """
     Wraps a slash command enabling the wrapper to postprocess the created slash command.
     
@@ -615,7 +615,7 @@ class SlashCommandWrapper(object):
         """
         Creates a partial function to wrap a slash command.
         
-        Sub-classes should overwrite this method.
+        Subclasses should overwrite this method.
         
         Returns
         -------
@@ -626,9 +626,9 @@ class SlashCommandWrapper(object):
     
     def _decorate(cls, wrapped):
         """
-        Wraps given command.
+        Wraps the given command.
         
-        Sub-classes should overwrite this method.
+        Subclasses should overwrite this method.
         
         Parameters
         ----------
@@ -1190,7 +1190,7 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
     return annotation_type, choices
 
 
-class ArgumentConverter(object):
+class ArgumentConverter:
     """
     Converter class for choice based converters.
     
@@ -1513,7 +1513,7 @@ def normalize_description(description):
     return ' '.join(lines)
 
 
-class SlashCommand(object):
+class SlashCommand:
     """
     Class to wrap an application command providing interface for ``Slasher``.
     
@@ -3107,7 +3107,7 @@ class SlashCommand(object):
         return permission_sync_ids
 
 
-class SlashCommandFunction(object):
+class SlashCommandFunction:
     """
     Represents an application command's backend implementation.
     
@@ -3262,7 +3262,7 @@ class SlashCommandFunction(object):
         return True
 
 
-class SlashCommandCategory(object):
+class SlashCommandCategory:
     """
     Represents an application command's backend implementation.
     
@@ -3670,7 +3670,7 @@ COMMAND_STATE_IDENTIFIER_ACTIVE = 3
 COMMAND_STATE_IDENTIFIER_KEPT = 4
 COMMAND_STATE_IDENTIFIER_NON_GLOBAL = 5
 
-class CommandChange(object):
+class CommandChange:
     """
     Represents an added or removed command inside of ``CommandState._changes``
     
@@ -3709,7 +3709,7 @@ class CommandChange(object):
         """Helper for unpacking."""
         return 2
 
-class CommandState(object):
+class CommandState:
     """
     Represents command's state inside of a guild.
     
@@ -5686,5 +5686,3 @@ class Slasher(EventHandlerBase):
                 del self._sync_permission_tasks[guild_id]
             except KeyError:
                 pass
-
-del EventHandlerBase

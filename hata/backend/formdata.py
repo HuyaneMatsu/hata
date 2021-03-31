@@ -11,7 +11,7 @@ from .headers import CONTENT_TYPE, CONTENT_TRANSFER_ENCODING, CONTENT_LENGTH
 from .multipart import MultipartWriter, create_payload, BytesPayload
 
 
-class Formdata(object):
+class Formdata:
     """
     Helper class for `multipart/form-data` and `application/x-www-form-urlencoded` body generation.
     

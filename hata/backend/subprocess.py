@@ -13,7 +13,7 @@ MAX_READ_SIZE = 262144
 
 PROCESS_EXIT_DELAY_LIMIT = 10
 
-class UnixReadPipeTransport(object):
+class UnixReadPipeTransport:
     """
     Asynchronous read only transport implementation for pipes.
     
@@ -285,7 +285,7 @@ class UnixReadPipeTransport(object):
             
             self.protocol = None
 
-class UnixWritePipeTransport(object):
+class UnixWritePipeTransport:
     """
     Asynchronous write only transport implementation for pipes.
     
@@ -765,7 +765,7 @@ class UnixWritePipeTransport(object):
         self._set_write_buffer_limits(low=low, high=high)
         self._maybe_pause_protocol()
 
-class SubprocessStreamWriter(object):
+class SubprocessStreamWriter:
     """
     Writer interface for subprocess calls.
     
@@ -906,7 +906,7 @@ class SubprocessStreamWriter(object):
         
         await self.protocol._drain_helper()
 
-class SubprocessWritePipeProtocol(object):
+class SubprocessWritePipeProtocol:
     """
     Asynchronous subprocess write pipe protocol.
     
@@ -1045,7 +1045,7 @@ class SubprocessReadPipeProtocol(SubprocessWritePipeProtocol):
         return False
 
 
-class AsyncProcess(object):
+class AsyncProcess:
     """
     Asynchronous process implementation.
     

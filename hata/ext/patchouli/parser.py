@@ -206,7 +206,7 @@ def detect_table(lines, index, limit):
     
     return index
 
-class TextTable(object):
+class TextTable:
     """
     Represents a table inside of a docstring.
     
@@ -537,7 +537,7 @@ def detect_description(lines, index, limit):
         continue
 
 
-class TextDescription(object):
+class TextDescription:
     """
     Represents a text part of a docstring.
     
@@ -700,7 +700,7 @@ def detect_code_block(lines, index, limit):
         
         return source_index
 
-class TextCodeBlock(object):
+class TextCodeBlock:
     """
     Represents a code-block part in a docstring.
     
@@ -1032,7 +1032,7 @@ def detect_listing(lines, index, limit):
     return index
 
 
-class TextListingElement(object):
+class TextListingElement:
     """
     Represents an element of a listing.
     
@@ -1159,7 +1159,7 @@ class TextListingElement(object):
         return GravedListingElement(self, path)
 
 
-class TextListing(object):
+class TextListing:
     """
     Represents a listing inside of a docstring.
     
@@ -1336,7 +1336,7 @@ def remove_block_quote_indents(lines):
     return lines
 
 
-class TextBlockQuote(object):
+class TextBlockQuote:
     """
     Represents a block quote of a docstring.
     
@@ -1568,7 +1568,7 @@ def get_attribute_docs_from(sections):
     
     return result
 
-class DocString(object):
+class DocString:
     """
     Represents a docstring.
     
@@ -1691,5 +1691,3 @@ class DocString(object):
         
         name = convert_extra_attribute_section_name(name)
         return attribute_sections.get(name)
-
-del re

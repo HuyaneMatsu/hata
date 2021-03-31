@@ -263,8 +263,3 @@ def revert_snapshot(snapshot_difference):
         for snapshot_type_name, snapshot_type_specific_difference in client_snapshot_difference:
             snapshot_taker, difference_calculator, reverter = SNAPSHOT_TAKERS[snapshot_type_name]
             reverter(client, snapshot_type_specific_difference)
-
-
-del ChunkWaiter
-del WaitForHandler
-del EVENTS

@@ -2738,5 +2738,3 @@ CHECK_AND_TABLE = {
     frozenset((owner_or_has_role      , owner_or_has_any_role           )): owner_or_has_any_role           ,
     frozenset((owner_or_has_any_role  , owner_or_has_any_role           )): owner_or_has_any_role           ,
         }
-
-del NEEDS_DUMMY_INIT

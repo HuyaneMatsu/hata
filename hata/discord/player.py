@@ -32,7 +32,7 @@ STREAM_OPTIONS = (
         )
 
 
-class AudioSource(object):
+class AudioSource:
     """
     Base class for audio sources.
     
@@ -494,7 +494,7 @@ else:
             return self
 
 
-class AudioPlayer(object):
+class AudioPlayer:
     """
     Sends voice data through the voice client's socket.
     

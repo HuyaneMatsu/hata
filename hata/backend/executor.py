@@ -13,7 +13,7 @@ _ignore_frame(__spec__.origin,  'run'           , 'result=func()'       ,)
 
 EventThread = NotImplemented
 
-class SyncWait(object):
+class SyncWait:
     """
     Blocking waiter, what's result or exception can be set.
     
@@ -109,7 +109,7 @@ class SyncWait(object):
         self._exception = CancelledError()
         
 
-class SyncQueue(object):
+class SyncQueue:
     """
     Synchronous queue for retrieving set elements outside of an event loop.
     
@@ -485,7 +485,7 @@ class ExecutorThread(Thread):
             else:
                 index += 1
 
-class ExecutionPair(object):
+class ExecutionPair:
     """
     Stores a function to execute and it's future, to what the function's result or exception is set when done.
     
@@ -516,7 +516,7 @@ class ExecutionPair(object):
         """Returns the execution pair's representation."""
         return f'{self.__class__.__name__}(func={self.func!r}, future={self.future!r})'
 
-class _claim_ended_cb(object):
+class _claim_ended_cb:
     """
     Future callback set to result waiter futures when calling ``ClaimedExecutor.release``.
     
@@ -560,7 +560,7 @@ class _claim_ended_cb(object):
         
         return self.executor is other.executor
     
-class ClaimedExecutor(object):
+class ClaimedExecutor:
     """
     Wrapper for claimed executor threads.
     
@@ -651,7 +651,7 @@ class ClaimedExecutor(object):
         """Releases the claimed executor."""
         self.release()
     
-class _execution_ended_cb(object):
+class _execution_ended_cb:
     """
     Future callback set to result waiter futures when calling ``Executor.run_in_executor``.
     
@@ -690,7 +690,7 @@ class _execution_ended_cb(object):
         
         return self.executor is other.executor
 
-class Executor(object):
+class Executor:
     """
     Executor enabling running blocking sync code from async.
     
@@ -915,5 +915,3 @@ class Executor(object):
             return
         
         executor.release()
-
-del _ignore_frame

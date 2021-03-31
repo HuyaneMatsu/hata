@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('QualPath',)
 
-class QualPath(object):
+class QualPath:
     """
     Represents a class's module path.
     

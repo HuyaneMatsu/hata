@@ -14,7 +14,7 @@ from . import websocket as module_websocket
 
 DEFAULT_TIMEOUT = 60.0
 
-class HTTPClient(object):
+class HTTPClient:
     """
     HTTP client implementation.
     
@@ -820,7 +820,7 @@ class HTTPClient(object):
         """
         return WebsocketCM(WSClient(self.loop, url, **kwargs, http_client=self))
 
-class RequestCM(object):
+class RequestCM:
     """
     Asynchronous context manager wrapping a request coroutine.
     
@@ -917,7 +917,7 @@ class RequestCM(object):
             response.release()
 
 
-class WebsocketCM(object):
+class WebsocketCM:
     """
     Asynchronous context manager wrapping a websocket connecting coroutine.
     

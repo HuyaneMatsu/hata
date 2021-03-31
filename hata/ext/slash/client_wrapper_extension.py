@@ -62,5 +62,3 @@ class ClientWrapper:
         """
         return _EventHandlerManagerRouter(self, interactions_getter, from_class_constructor)
 
-
-del KeepType

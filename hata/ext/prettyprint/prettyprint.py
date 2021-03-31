@@ -23,7 +23,7 @@ from ...discord.integration import IntegrationAccount
 
 PRETTY_PRINTERS = {}
 
-class PrettyEmpty(object):
+class PrettyEmpty:
     __slots__ = ()
     def __init__(self, text=None, back=None):
         pass
@@ -52,9 +52,9 @@ class PrettyEmpty(object):
     def __call__(self, amount):
         return self
     
-PrettyEmpty=PrettyEmpty()
+PrettyEmpty = PrettyEmpty()
 
-class Pretty_line(object):
+class Pretty_line:
     __slots__ = ('back', 'text')
     def __init__(self,text, back=0):
         self.text = text
@@ -73,7 +73,7 @@ class Pretty_line(object):
         return self
 
 
-class PrettyIgnorePush(object):
+class PrettyIgnorePush:
     __slots__ = ('text',)
     def __init__(self, text, back=None):
         self.text = text
@@ -92,7 +92,7 @@ class PrettyIgnorePush(object):
     back = type(PrettyEmpty).back
 
 
-class PrettyBlock(object):
+class PrettyBlock:
     __slots__ = ('container', 'back',)
     def __init__(self, back=0):
         self.container = []

@@ -18,7 +18,7 @@ from ....discord.guild import Guild
 from ....discord.message import Message
 from ....discord.invite import Invite
 
-from ..utils import Pagination, Closer
+from ...command_utils import Pagination, Closer
 from ..content_parser import DEFAULT_TYPE_NONE, RestParserContext, SingleArgsParserContext, ChainedArgsParserContext, \
     SingleParserContext, ChainedParserContext, timedelta, relativedelta
 
@@ -52,6 +52,7 @@ ARGUMENT_TYPE_TO_NAME = {
     str : 'string',
     int : 'integer',
     timedelta : 'time-delta',
+    Emoji : 'emoji',
         }
 
 if (relativedelta is not None):
@@ -83,7 +84,7 @@ def check_user(user, event):
     """
     return (event.user is user)
 
-class ColorGetter(object):
+class ColorGetter:
     """
     Color getter of the ``SubterraneanHelpCommand``
     
@@ -184,7 +185,7 @@ class ColorGetter(object):
         return f'{self.__class__.__name__}({self.getter!r})'
 
 
-class SubterraneanHelpHelp(object):
+class SubterraneanHelpHelp:
     """
     Shows the usage of help of a respective help command.
     
@@ -234,7 +235,7 @@ class SubterraneanHelpHelp(object):
         
         return embed
 
-class SubterraneanHelpCommand(object):
+class SubterraneanHelpCommand:
     __class_doc__ = (
     """
     A default help command shipped with hata's commands extension.
@@ -1035,25 +1036,3 @@ class SubterraneanHelpCommand(object):
             embed_postprocessor(client, message, embed)
         
         await Closer(client, message.channel, embed, check=partial_func(check_user, message.author))
-
-
-del timedelta
-del relativedelta
-del UserBase
-del User
-del ChannelBase
-del ChannelTextBase
-del ChannelText
-del ChannelPrivate
-del ChannelVoice
-del ChannelGroup
-del ChannelCategory
-del ChannelStore
-del ChannelThread
-del Role
-del Emoji
-del Guild
-del Message
-del Invite
-del DOCS_ENABLED
-del doc_property

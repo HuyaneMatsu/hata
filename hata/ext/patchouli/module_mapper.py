@@ -324,7 +324,7 @@ def map_types_and_functions(obj, references, path, from_type):
 
 MAPPED_OBJECTS = {}
 
-class UnitBase(object):
+class UnitBase:
     """
     Base class for representative units.
     
@@ -1072,7 +1072,7 @@ def map_module(module_name):
     return root
 
 
-class CachedSearcher(object):
+class CachedSearcher:
     """
     Cached unit path searcher.
     
@@ -1172,16 +1172,3 @@ class CachedSearcher(object):
 
 
 search_paths = CachedSearcher()
-
-
-del IconSlot
-del cached_property
-del module_property
-del basemethod
-del weakmethod
-del FunctionType
-del BuiltinFunctionType
-del BuiltinMethodType
-del MethodType
-del GetSetDescriptorType
-del MemberDescriptorType

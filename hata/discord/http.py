@@ -1089,7 +1089,7 @@ del version_l
 
 del sys
 
-class _ConnectorRefCounter(object):
+class _ConnectorRefCounter:
     """
     Connector reference counter used by ``DiscordHTTPClient`` to limit the connector amount per loop to one.
     
@@ -2053,6 +2053,3 @@ class DiscordHTTPClient(HTTPClient):
     async def interaction_followup_message_delete(self, application_id, interaction_id, interaction_token, message_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.interaction_followup_message_delete, interaction_id),
             METHOD_DELETE, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/{message_id}')
-
-del re
-del modulize

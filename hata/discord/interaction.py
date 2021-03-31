@@ -623,7 +623,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         return length
 
 
-class ApplicationCommandOption(object):
+class ApplicationCommandOption:
     """
     An option of an ``ApplicationCommand``.
     
@@ -1119,7 +1119,7 @@ class ApplicationCommandOption(object):
         return length
 
 
-class ApplicationCommandOptionChoice(object):
+class ApplicationCommandOptionChoice:
     """
     A choice of a ``ApplicationCommandOption``.
     
@@ -1239,7 +1239,7 @@ class ApplicationCommandOptionChoice(object):
         return length
 
 
-class ApplicationCommandPermission(object):
+class ApplicationCommandPermission:
     """
     Stores am ``ApplicationCommand``'s overwrites.
     
@@ -1470,7 +1470,7 @@ class ApplicationCommandPermission(object):
         overwrites.append(overwrite)
 
 
-class ApplicationCommandPermissionOverwrite(object):
+class ApplicationCommandPermissionOverwrite:
     """
     Represents an application command's allow/disallow overwrite for the given entity.
     
@@ -1950,7 +1950,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         
         return ''.join(result)
 
-class ApplicationCommandInteractionOption(object):
+class ApplicationCommandInteractionOption:
     """
     Represents an option of a ``ApplicationCommandInteraction``.
     
@@ -2048,6 +2048,3 @@ INTERACTION_TYPE_TABLE = {
     InteractionType.ping.value: None,
     InteractionType.application_command.value: ApplicationCommandInteraction,
         }
-
-del DiscordEntity
-del modulize

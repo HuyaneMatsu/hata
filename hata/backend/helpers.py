@@ -19,7 +19,7 @@ HttpVersion11 = HttpVersion(1,1)
 
 del namedtuple
 
-class BasicAuth(object):
+class BasicAuth:
     """
     Http basic authorization implementation.
     
@@ -219,7 +219,7 @@ TIMEOUT_STATE_TIMEOUTED = 1
 TIMEOUT_STATE_CANCELLED = 2
 TIMEOUT_STATE_EXITED = 3
 
-class Timeout(object):
+class Timeout:
     """
     Implements async timeout feature as a context manager.
     

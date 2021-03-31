@@ -174,7 +174,7 @@ def get_executor():
     return executor
 
 
-class _AsyncIOIterator(object):
+class _AsyncIOIterator:
     """
     Asynchronous iterator for ``AsyncIO`` objects.
     
@@ -213,7 +213,7 @@ class _AsyncIOIterator(object):
         raise StopAsyncIteration
 
 
-class AsyncIO(object):
+class AsyncIO:
     """
     Asynchronous file-io, what uses an executor for it.
     
@@ -861,7 +861,7 @@ class AsyncIO(object):
         return _AsyncIOIterator(self)
 
 
-class _ReuAsyncIOIterator(object):
+class _ReuAsyncIOIterator:
     """
     Asynchronous iterator for ``ReuAsyncIO`` objects.
     

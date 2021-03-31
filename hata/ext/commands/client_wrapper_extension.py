@@ -61,6 +61,3 @@ class ClientWrapper:
         event_handler_manager_router : ``_EventHandlerManagerRouter``
         """
         return _EventHandlerManagerRouter(self, commands_getter, from_class_constructor)
-
-
-del KeepType

@@ -28,7 +28,7 @@ from .websocket import ProtocolBase
 
 KEEP_ALIVE_TIMEOUT = 15.0
 
-class Connection(object):
+class Connection:
     """
     Reusable connection used by connectors to remember their details.
     
@@ -220,7 +220,7 @@ class Connection(object):
         return False
 
 
-class ConnectorBase(object):
+class ConnectorBase:
     """
     Base connector class.
     
@@ -513,7 +513,7 @@ class ConnectorBase(object):
 
 DNS_CACHE_TIMEOUT = 10.0
 
-class HostInfo(object):
+class HostInfo:
     """
     Resolved information about a host.
     
@@ -617,7 +617,7 @@ class HostInfo(object):
                hash(self.flags)
 
 
-class HostInfoCont(object):
+class HostInfoCont:
     """
     ``HostInfo`` container, which rotates it's hosts.
     

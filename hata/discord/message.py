@@ -65,7 +65,7 @@ class MessageFlag(FlagBase):
         'invoking_user_only'     : 6,
             }
 
-class MessageActivity(object):
+class MessageActivity:
     """
     Might be sent with a ``Message``, if it has rich presence-related chat embeds.
     
@@ -341,7 +341,7 @@ class MessageInteraction(DiscordEntity):
         return ''.join(result)
 
 
-class MessageReference(object):
+class MessageReference:
     """
     A cross guild reference used as a ``Message``'s `.cross_reference` at crosspost messages.
     
@@ -2411,8 +2411,4 @@ class Message(DiscordEntity, immortal=True):
 
 module_rate_limit.Message = Message
 
-del URLS
 del module_rate_limit
-del DiscordEntity
-del FlagBase
-del IconSlot

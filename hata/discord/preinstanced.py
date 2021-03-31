@@ -2410,7 +2410,4 @@ ApplicationCommandPermissionOverwriteType.user = ApplicationCommandPermissionOve
 
 module_utils.RelationshipType = RelationshipType
 
-del DOCS_ENABLED
-del PreinstancedBase
-del URLS
 del module_utils

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('WSClient', 'WSServer', )
 
-import hashlib, codecs, functools, http
+import hashlib, codecs, functools
+import http as module_http
 from base64 import b64encode, b64decode
 from collections import OrderedDict
 from binascii import Error as BinasciiError
@@ -22,12 +23,12 @@ from .helpers import HttpVersion11, BasicAuth
 from .protocol import ProtocolBase, WS_OP_CONT, WS_OP_TEXT, WS_OP_BINARY , WS_OP_CLOSE, WS_OP_PING, WS_OP_PONG, \
     WS_DATA_OPCODES, WS_CTRL_OPCODES, Frame
 
-FORBIDDEN             = http.HTTPStatus.FORBIDDEN
-UPGRADE_REQUIRED      = http.HTTPStatus.UPGRADE_REQUIRED
-BAD_REQUEST           = http.HTTPStatus.BAD_REQUEST
-INTERNAL_SERVER_ERROR = http.HTTPStatus.INTERNAL_SERVER_ERROR
-SERVICE_UNAVAILABLE   = http.HTTPStatus.SERVICE_UNAVAILABLE
-SWITCHING_PROTOCOLS   = http.HTTPStatus.SWITCHING_PROTOCOLS
+FORBIDDEN             = module_http.HTTPStatus.FORBIDDEN
+UPGRADE_REQUIRED      = module_http.HTTPStatus.UPGRADE_REQUIRED
+BAD_REQUEST           = module_http.HTTPStatus.BAD_REQUEST
+INTERNAL_SERVER_ERROR = module_http.HTTPStatus.INTERNAL_SERVER_ERROR
+SERVICE_UNAVAILABLE   = module_http.HTTPStatus.SERVICE_UNAVAILABLE
+SWITCHING_PROTOCOLS   = module_http.HTTPStatus.SWITCHING_PROTOCOLS
 
 CONNECTING = 'CONNECTING'
 OPEN       = 'OPEN'
@@ -1814,7 +1815,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
         return True
 
 
-class WSServer(object):
+class WSServer:
     """
     Asynchronous websocket server implementation.
     
@@ -2134,4 +2135,4 @@ class WSServer(object):
                 tasks = None
                 await future
 
-del http
+del module_http

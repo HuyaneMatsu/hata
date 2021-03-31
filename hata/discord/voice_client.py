@@ -156,14 +156,13 @@ class VoiceClient:
         if OpusEncoder is None:
             raise RuntimeError('Opus is not loaded.')
         
-        channel_type = channel.__class__
-        if channel_type is ChannelVoice:
+        if isinstance(channel, ChannelVoice):
             guild = channel.guild
             if guild is None:
                 raise RuntimeError('Cannot connect to partial channel.')
             
         else:
-            raise TypeError(f'Can join only to {ChannelVoice.__name__}, got {channel_type.__name__}.')
+            raise TypeError(f'Can join only to {ChannelVoice.__name__}, got {channel.__class__.__name__}.')
         
         region = channel.region
         if region is None:

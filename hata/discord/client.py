@@ -15094,6 +15094,25 @@ class Client(UserBase):
         
         return voice_client
     
+    async def join_podium(self, channel):
+        """
+        Joins the client to the given voice stage channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelStage``
+            The stage channel to join.
+        """
+        data = {
+            'suppress': False,
+            'request_to_speak_timestamp': None,
+            'channel_id': channel.id
+                }
+        
+        await self.http.voice_stage_state_edit(channel.guild.id, data)
+    
     async def wait_for(self, event_name, check, timeout=None):
         """
         O(n) event waiter with massive overhead compared to other optimized event waiters.

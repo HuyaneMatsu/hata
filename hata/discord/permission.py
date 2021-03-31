@@ -137,6 +137,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_webhooks'           : 29,
         'manage_emojis'             : 30,
         'use_application_commands'  : 31,
+        'request_to_speak'          : 32,
             }
     
     def handle_overwrite(self, allow, deny):

@@ -2712,6 +2712,15 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
+    - voice_stage_state_edit
+        - Endpoint : `/guilds/{guild_id}/voice-states/@me`
+        - Method : `PATCH`
+        - Required auth : Untested
+        - Limiter : Untested
+        - Limit : Untested
+        - Resets after : Untested
+        - Notes : Untested
+    
     - welcome_screen_get
         - Endpoint : `/guilds/{guild_id}/welcome-screen`
         - Method : `GET`
@@ -3237,6 +3246,7 @@ class RATE_LIMIT_GROUPS:
     role_edit                   = RateLimitGroup(LIMITER_GUILD)
     vanity_invite_get           = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     vanity_invite_edit          = RateLimitGroup(LIMITER_GUILD, optimistic=True) # untested
+    voice_stage_state_edit      = RateLimitGroup.unlimited() # untested
     welcome_screen_get          = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     welcome_screen_edit         = RateLimitGroup(LIMITER_GUILD)
     webhook_get_all_guild       = RateLimitGroup(LIMITER_GUILD, optimistic=True)

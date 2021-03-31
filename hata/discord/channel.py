@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelPrivate', 'ChannelStore',
-    'ChannelText', 'ChannelTextBase', 'ChannelThread', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object',
-    'ChannelGuildUndefined',)
+__all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelPrivate', 'ChannelStage',
+    'ChannelStore', 'ChannelText', 'ChannelTextBase', 'ChannelThread', 'ChannelVoice', 'MessageIterator',
+    'cr_pg_channel_object', 'ChannelGuildUndefined',)
 
 import re
 from collections import deque
@@ -4829,15 +4829,61 @@ class ChannelGuildUndefined(ChannelGuildBase):
         
         return channel
 
+class ChannelStage(ChannelVoice):
+    """
+    Represents a Discord stage channel. The class is derived from ``ChannelVoice``.
+    
+    Attributes
+    ----------
+    id : `int`
+        Unique identifier of the channel.
+    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    category : `None`, ``ChannelCategory`` or ``Guild``
+        The channel's category. If the channel is deleted, set to `None`.
+    guild : `None` or ``Guild``
+        The channel's guild. If the channel is deleted, set to `None`.
+    name : `str`
+        The channel's name.
+    overwrites : `list` of ``PermissionOverwrite`` objects
+        The channel's permission overwrites.
+    position : `int`
+        The channel's position.
+    bitrate : `int`
+        The bitrate (in bits) of the voice channel.
+    region : `None` or ``VoiceRegion``
+        The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
+    user_limit : `int`
+        The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    
+    Class Attributes
+    ----------------
+    INTERCHANGE : `tuple` of `int` = `(13,)`
+        Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
+        them.
+    ORDER_GROUP : `int` = `2`
+        An order group what defined which guild channel type comes after the other one.
+    type : `int` = `13`
+        The channel's Discord side type.
+    """
+    __slots__ = () # Stage channel related
+    
+    ORDER_GROUP = 2
+    INTERCHANGE = (13,)
+    type = 13
+
+
+
 CHANNEL_TYPES = {
-    0: ChannelText,
-    1: ChannelPrivate,
-    2: ChannelVoice,
-    3: ChannelGroup,
-    4: ChannelCategory,
-    5: ChannelText,
-    6: ChannelStore,
-    9: ChannelThread,
+     0: ChannelText,
+     1: ChannelPrivate,
+     2: ChannelVoice,
+     3: ChannelGroup,
+     4: ChannelCategory,
+     5: ChannelText,
+     6: ChannelStore,
+     9: ChannelThread,
+    13: ChannelStage,
         }
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,

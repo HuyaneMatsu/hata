@@ -25,11 +25,11 @@ from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
-    ChannelGuildUndefined
+    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
-from .http import DiscordHTTPClient, URLS
+from .http import DiscordHTTPClient
 from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
@@ -54,7 +54,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
 from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
-    MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType
+    MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
     BanEntry, maybe_snowflake_pair
@@ -925,19 +925,6 @@ class Client(UserBase):
         if should_edit_nick:
             await self.http.client_edit_nick(guild_id, {'nick': nick}, reason)
     
-    async def client_connections(self):
-        """
-        Deprecated, please use ``.client_connection_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.client_connections` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.client_connection_get_all` instead.',
-            FutureWarning)
-        
-        return await self.client_connection_get_all()
-    
     async def client_connection_get_all(self):
         """
         Requests the client's connections.
@@ -1202,18 +1189,6 @@ class Client(UserBase):
         
         return await self.user_info_get(*args, **kwargs)
     
-    async def get_user_info(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.user_info_get`` instead. Will be removed in 2021 february.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.get_user_info` is deprecated, and will be removed in 2021 february. '
-            f'Please use `{self.__class__.__name__}.user_info_get` instead.',
-            FutureWarning)
-        
-        return await self.user_info_get(*args, **kwargs)
     
     async def user_info_get(self, access):
         """
@@ -1528,18 +1503,6 @@ class Client(UserBase):
         
         await self.http.guild_user_add(guild_id, user_id, data)
     
-    async def user_guilds(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.user_guild_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.user_guilds` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.user_guild_get_all` instead.',
-            FutureWarning)
-        
-        return await self.user_guild_get_all(*args, **kwargs)
     
     async def user_guild_get_all(self, access):
         """
@@ -2068,18 +2031,6 @@ class Client(UserBase):
         
         return eula
     
-    async def applications_detectable(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.application_get_all_detectable`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.applications_detectable` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.application_get_all_detectable` instead.',
-            FutureWarning)
-        
-        return await self.application_get_all_detectable(*args, **kwargs)
     
     async def application_get_all_detectable(self):
         """
@@ -2690,7 +2641,7 @@ class Client(UserBase):
         await self.http.channel_move(guild.id, data, reason)
     
     async def channel_edit(self, channel, *, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
-            bitrate=None, region=..., type_=None, reason=None):
+            bitrate=None, region=..., video_quality_mode=None, type_=None, reason=None):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
         out of place parameters. Only the passed parameters will be edited of the channel.
@@ -2715,10 +2666,12 @@ class Client(UserBase):
             The new bitrate of the `channel`.
         type_ : `int`, Optional
             The `channel`'s new type value.
-        region: `None`, ``VoiceRegion``, `str`, Optional
+        region : `None`, ``VoiceRegion``, `str`, Optional
             The channel's new voice region.
             
             > By giving as `None`, you can remove the old value.
+        video_quality_mode : ``VideoQualityMode`` or `int`, Optional
+            The channel's new video quality mode.
         reason : `None` or `str`, Optional
             Shows up at the respective guild's audit logs.
         
@@ -2726,13 +2679,14 @@ class Client(UserBase):
         ------
         TypeError
             - If the given `channel` is not ``ChannelGuildBase`` or `int` instance.
-            - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
+            - If `region` was not given neither as `None`, `str` nor ``VoiceRegion`` instance.
+            - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int` instance.
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name`'s length is under `2` or over `100`.
             - If `topic` was not given as `str` instance.
-            - If `topic`'s length is over `1024`.
-            - If `topic` was given, but the given channel is not ``ChannelText`` instance.
+            - If `topic`'s length is over `1024` or `120` depending on channel type.
+            - If `topic` was given, but the given channel is not ``ChannelText`` nor ``ChannelStage`` instance.
             - If `type_` was given, but the given channel is not ``ChannelText`` instance.
             - If `type_` was not given as `int` instance.
             - If `type_` cannot be interchanged to the given value.
@@ -2741,13 +2695,14 @@ class Client(UserBase):
             - If `slowmode` was given, but the channel is not ``ChannelText`` instance.
             - If `slowmode` was not given as `int` instance.
             - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-            - If `bitrate` was given, but the channel is not ``ChannelVoice`` instance.
+            - If `bitrate` was given, but the channel is not ``ChannelVoiceBase`` instance.
             - If `bitrate` was not given as `int` instance.
             - If `bitrate`'s value is out of the expected range.
-            - If `user_limit` was given, but the channel is not ``ChannelVoice`` instance.
+            - If `user_limit` was given, but the channel is not ``ChannelVoiceBase`` instance.
             - If `user_limit` was not given as `int` instance.
             - If `user_limit` was given, but is out of the expected [0:99] range.
-            - If `region` was given, but the respective channel type is not ``ChannelVoice``.
+            - If `region` was given, but the respective channel type is not ``ChannelVoiceBase``.
+            - if `video_quality_mode` was given,but the respective channel type is not ``ChannelVoice``
         ConnectionError
             No internet connection.
         DiscordException
@@ -2781,18 +2736,24 @@ class Client(UserBase):
         if (topic is not None):
             if __debug__:
                 if (channel is not None):
-                    if not isinstance(channel, ChannelText):
-                        raise AssertionError(f'`topic` is a valid parameter only for {ChannelText.__name__} '
-                            f'instances, got {channel.__class__.__name__}.')
+                    if not isinstance(channel, (ChannelText, ChannelStage)):
+                        raise AssertionError(f'`topic` is a valid parameter only for {ChannelText.__name__} and for '
+                            f'{ChannelStage.__name__} instances, got {channel.__class__.__name__}.')
                 
                 if not isinstance(topic, str):
                     raise AssertionError(f'`topic` can be given as `str` instance, got {topic.__class__.__name__}.')
                 
-                topic_ln = len(topic)
+                if issubclass(channel_type, ChannelText):
+                    topic_length_limit = 1024
+                else:
+                    topic_length_limit = 120
                 
-                if topic_ln > 1024:
-                    raise AssertionError(f'`topic` length can be in range [0:1024], got {topic_ln}; {topic!r}.')
+                topic_length = len(topic)
                 
+                if topic_length > topic_length_limit:
+                    raise AssertionError(f'`topic` length can be in range [0:{topic_length_limit}], got {topic_length}; '
+                        f'{topic!r}.')
+            
             data['topic'] = topic
         
         
@@ -2845,8 +2806,8 @@ class Client(UserBase):
         if (bitrate is not None):
             if __debug__:
                 if (channel is not None):
-                    if not isinstance(channel, ChannelVoice):
-                        raise AssertionError(f'`bitrate` is a valid parameter only for `{ChannelVoice.__name__}` '
+                    if not isinstance(channel, ChannelVoiceBase):
+                        raise AssertionError(f'`bitrate` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
                             f'instances, but got {channel.__class__.__name__}.')
                     
                 if not isinstance(bitrate, int):
@@ -2873,8 +2834,8 @@ class Client(UserBase):
         if (user_limit is not None):
             if __debug__:
                 if (channel is not None):
-                    if not isinstance(channel, ChannelVoice):
-                        raise AssertionError(f'`user_limit` is a valid parameter only for `{ChannelVoice.__name__}` '
+                    if not isinstance(channel, ChannelVoiceBase):
+                        raise AssertionError(f'`user_limit` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
                             f'instances, but got {channel.__class__.__name__}.')
                 
                 if user_limit < 0 or user_limit > 99:
@@ -2887,8 +2848,8 @@ class Client(UserBase):
         if (region is not ...):
             if __debug__:
                 if (channel is not None):
-                    if not isinstance(channel, ChannelVoice):
-                        raise AssertionError(f'`region` is a valid parameter only for `{ChannelVoice.__name__}` '
+                    if not isinstance(channel, ChannelVoiceBase):
+                        raise AssertionError(f'`region` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
                             f'instances, but got {channel.__class__.__name__}.')
             
             if region is None:
@@ -2902,6 +2863,24 @@ class Client(UserBase):
                     f'instance, {region.__class__.__name__}.')
             
             data['rtc_region'] = region_value
+        
+        
+        if (video_quality_mode is not None):
+            if __debug__:
+                if not issubclass(channel_type, ChannelVoice):
+                    raise AssertionError(f'`video_quality_mode` is a valid parameter only for `{ChannelVoice.__name__}` '
+                        f'instances, but got {channel_type.__name__}.')
+            
+            if isinstance(video_quality_mode, VideoQualityMode):
+                video_quality_mode_value = video_quality_mode.value
+            elif isinstance(video_quality_mode, int):
+                video_quality_mode_value = video_quality_mode
+            else:
+                raise TypeError(f'`video_quality_mode` can be given either as `None`, `str` or as '
+                    f'`{VideoQualityMode.__name__}` instance, {video_quality_mode.__class__.__name__}.')
+            
+            data['video_quality_mode'] = video_quality_mode_value
+        
         
         await self.http.channel_edit(channel_id, data, reason)
     
@@ -2942,8 +2921,10 @@ class Client(UserBase):
             The channel's user limit.
         category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
             The channel's category. If the category is under a guild, leave it empty.
-        category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
-            The channel's category. If the category is under a guild, leave it empty.
+        region : `None`, ``VoiceRegion`` or `str`, Optional
+            The channel's voice region.
+        video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional
+            The channel's video quality mode.
         
         Returns
         -------
@@ -3242,18 +3223,6 @@ class Client(UserBase):
         
         return channel._process_message_chunk(data)
     
-    async def message_logs_fromzero(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.message_get_chunk_from_zero`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.message_logs_fromzero` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.message_get_chunk_from_zero` instead.',
-            FutureWarning)
-        
-        return await self.message_get_chunk_from_zero(*args, **kwargs)
     
     # If you have 0-1 messages at a channel, and you wanna store the messages. The other wont store it, because it
     # wont see anything what allows channeling.
@@ -5423,19 +5392,6 @@ class Client(UserBase):
         await self.http.message_unpin(channel_id, message_id)
     
     
-    async def channel_pins(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.channel_pin_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.channel_pins` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.channel_pin_get_all` instead.',
-            FutureWarning)
-        
-        return await self.channel_pin_get_all(*args, **kwargs)
-    
     async def channel_pin_get_all(self, channel):
         """
         Returns the pinned messages at the given channel.
@@ -5632,19 +5588,6 @@ class Client(UserBase):
         
         return messages[index]
     
-    
-    async def messages_in_range(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.message_get_all_in_range`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.messages_in_range` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.message_get_all_in_range` instead.',
-            FutureWarning)
-        
-        return await self.message_get_all_in_range(*args, **kwargs)
     
     async def message_get_all_in_range(self, channel, start=0, end=100):
         """
@@ -6358,18 +6301,6 @@ class Client(UserBase):
         
         return users
     
-    async def reaction_load_all(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.reaction_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.reaction_load_all` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.reaction_get_all` instead.',
-            FutureWarning)
-        
-        return await self.reaction_get_all(*args, **kwargs)
     
     async def reaction_get_all(self, message):
         """
@@ -6457,20 +6388,8 @@ class Client(UserBase):
         
         return message
     
-    # Guild
     
-    async def guild_preview(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.guild_preview_get`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.guild_preview` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.guild_preview_get` instead.',
-            FutureWarning)
-        
-        return await self.guild_preview_get(*args, **kwargs)
+    # Guild
     
     async def guild_preview_get(self, guild):
         """
@@ -8439,21 +8358,6 @@ class Client(UserBase):
     discovery_category_get_all = DiscoveryCategoryRequestCacher(_discovery_category_get_all, 3600.0,
         cached=list(DISCOVERY_CATEGORIES.values()))
     
-    async def _discovery_categories(self):
-        """
-        Deprecated, please use ``.discovery_category_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.discovery_categories` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.discovery_category_get_all` instead.',
-            FutureWarning)
-        
-        return await self._discovery_category_get_all()
-    
-    discovery_categories = DiscoveryCategoryRequestCacher(_discovery_categories, 3600.0,
-        cached=list(DISCOVERY_CATEGORIES.values()))
     
     async def discovery_validate_term(self, term):
         """
@@ -8482,18 +8386,6 @@ class Client(UserBase):
     discovery_validate_term = DiscoveryTermRequestCacher(discovery_validate_term, 86400.0,
         RATE_LIMIT_GROUPS.discovery_validate_term)
     
-    async def guild_users(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.guild_user_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.guild_users` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.guild_user_get_all` instead.',
-            FutureWarning)
-        
-        return await self.guild_user_get_all(*args, **kwargs)
     
     async def guild_user_get_all(self, guild):
         """
@@ -8645,18 +8537,6 @@ class Client(UserBase):
         
         return voice_regions, optimals
     
-    async def voice_regions(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.voice_region_get_all`` instead. Will be removed in 2021 february.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.voice_regions` is deprecated, and will be removed in 2021 february. '
-            f'Please use `{self.__class__.__name__}.voice_region_get_all` instead.',
-            FutureWarning)
-        
-        return await self.guild_voice_region_get_all(*args, **kwargs)
     
     async def voice_region_get_all(self):
         """
@@ -8910,7 +8790,7 @@ class Client(UserBase):
             Whether the user should be deafen at the voice channels.
         mute : `bool`, Optional
             Whether the user should be muted at the voice channels.
-        voice_channel : `None`, ``ChannelVoice``, `int` instance , Optional
+        voice_channel : `None`, ``ChannelVoiceBase``, `int` instance , Optional
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
             Pass it as `None` to kick the user from it's voice channel.
@@ -8924,7 +8804,7 @@ class Client(UserBase):
         TypeError
             - If `guild` was not given neither as ``Guild`` neither as `int` instance.
             - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
-            - If `voice_channel` was not given neither as `None`, ``ChannelVoice``, neither as `int` instance.
+            - If `voice_channel` was not given neither as `None`, ``ChannelVoiceBase``, neither as `int` instance.
             - If `roles` contains neither ``Role`` or `int` element.
         ConnectionError
             No internet connection.
@@ -9008,13 +8888,13 @@ class Client(UserBase):
         if (voice_channel is not ...):
             if voice_channel is None:
                 voice_channel_id = None
-            elif isinstance(voice_channel, ChannelVoice):
+            elif isinstance(voice_channel, ChannelVoiceBase):
                 voice_channel_id = voice_channel.id
             else:
                 voice_channel_id = maybe_snowflake(voice_channel)
                 if voice_channel_id is None:
-                    raise TypeError(f'`voice_channel` can be given either as `None`, `{ChannelVoice.__name__}` or as '
-                        f'`int` instance, got {voice_channel.__class__.__name__}.')
+                    raise TypeError(f'`voice_channel` can be given either as `None`, `{ChannelVoiceBase.__name__}` '
+                        f'or as `int` instance, got {voice_channel.__class__.__name__}.')
             
             data['channel_id'] = voice_channel_id
         
@@ -9040,6 +8920,7 @@ class Client(UserBase):
             data['roles'] = role_ids
         
         await self.http.user_edit(guild_id, user_id, data, reason)
+    
     
     async def user_role_add(self, user, role, *, reason=None):
         """
@@ -9091,6 +8972,7 @@ class Client(UserBase):
         
         await self.http.user_role_add(guild_id, user_id, role_id, reason)
     
+    
     async def user_role_delete(self, user, role, *, reason=None):
         """
         Deletes the role from the user.
@@ -9141,7 +9023,8 @@ class Client(UserBase):
         
         await self.http.user_role_delete(guild_id, user_id, role_id, reason)
     
-    async def user_voice_move(self, user, voice_channel):
+    
+    async def user_voice_move(self, user, channel):
         """
         Moves the user to the given voice channel. The user must be in a voice channel at the respective guild already.
         
@@ -9151,24 +9034,33 @@ class Client(UserBase):
         ----------
         user : ``Client``, ``User`` or `int`
             The user to move.
-        voice_channel : ``ChannelVoice``
+        channel : ``ChannelVoiceBase`` or `tuple` (`int`, `int`)
             The channel where the user will be moved.
         
         Raises
         ------
         TypeError
-            If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `channel` was not given neither as ``ChannelVoiceBase`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `channel` was not given as ``ChannelVoice`` instance.
         """
-        if __debug__:
-            if not isinstance(voice_channel, ChannelVoice):
-                raise AssertionError(f'`channel` can be given as `{ChannelVoice.__name__}` instance, got '
-                    f'{voice_channel.__class__.__name__}.')
+        if isinstance(channel, ChannelVoiceBase):
+            guild = channel.guild
+            if guild is None:
+                return
+            
+            channel_id = channel.id
+            guild_id = guild.id
+        else:
+            snowflake_pair = maybe_snowflake_pair(channel)
+            if snowflake_pair is None:
+                raise TypeError(f'`channel` can be given as `{ChannelVoiceBase.__name__}`, or as '
+                    f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
+            
+            guild_id, channel_id = snowflake_pair
         
         if isinstance(user, (User, Client)):
             user_id = user.id
@@ -9177,13 +9069,117 @@ class Client(UserBase):
             if user_id is None:
                 raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
-        
-        # If the channel is partial, it's guild is None.
-        guild = voice_channel.guild
-        if guild is None:
-            return
        
-        await self.http.user_move(guild.id, user_id, {'channel_id': voice_channel.id})
+        await self.http.user_move(guild_id, user_id, {'channel_id': channel_id})
+    
+    
+    async def user_voice_move_to_speakers(self, user, channel):
+        """
+        Moves the user to the speakers inside of a stage channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        user : ``Client``, ``User`` or `int`
+            The user to move.
+        channel : ``ChannelStage`` or `tuple` (`int`, `int`)
+            The channel where the user will be moved.
+        
+        Raises
+        ------
+        TypeError
+            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `channel` was not given neither as ``ChannelStage`` nor as `tuple` of (`int`, `int`).
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if isinstance(channel, ChannelStage):
+            guild = channel.guild
+            if guild is None:
+                return
+            
+            channel_id = channel.id
+            guild_id = guild.id
+        else:
+            snowflake_pair = maybe_snowflake_pair(channel)
+            if snowflake_pair is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
+                    f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
+            
+            guild_id, channel_id = snowflake_pair
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+       
+        data = {
+            'suppress' : False,
+            'channel_id': channel_id,
+                }
+        
+        await self.http.voice_state_user_edit(guild_id, user_id, data)
+    
+    
+    async def user_voice_move_to_audience(self, user, channel):
+        """
+        Moves the user to the audience inside of a stage channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        user : ``Client``, ``User`` or `int`
+            The user to move.
+        channel : ``ChannelStage`` or `tuple` (`int`, `int`)
+            The channel where the user will be moved.
+        
+        Raises
+        ------
+        TypeError
+            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `channel` was not given neither as ``ChannelStage`` nor as `tuple` of (`int`, `int`).
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if isinstance(channel, ChannelStage):
+            guild = channel.guild
+            if guild is None:
+                return
+            
+            channel_id = channel.id
+            guild_id = guild.id
+        else:
+            snowflake_pair = maybe_snowflake_pair(channel)
+            if snowflake_pair is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
+                    f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
+            
+            guild_id, channel_id = snowflake_pair
+        
+        if isinstance(user, (User, Client)):
+            user_id = user.id
+        else:
+            user_id = maybe_snowflake(user)
+            if user_id is None:
+                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    f'got {user.__class__.__name__}.')
+       
+        data = {
+            'suppress' : True,
+            'channel_id': channel_id,
+                }
+        
+        await self.http.voice_state_user_edit(guild_id, user_id, data)
+    
     
     async def user_voice_kick(self, user, guild):
         """
@@ -9225,6 +9221,7 @@ class Client(UserBase):
                     f'{guild.__class__.__name__}.')
         
         await self.http.user_move(guild_id, user_id, {'channel_id': None})
+    
     
     async def user_get(self, user, *, force_update=False):
         """
@@ -9710,18 +9707,6 @@ class Client(UserBase):
         
         await self.http.integration_sync(guild.id, integration.id)
     
-    async def permission_ow_edit(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.permission_overwrite_edit`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.permission_ow_edit` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.permission_overwrite_edit` instead.',
-            FutureWarning)
-        
-        return await self.permission_overwrite_edit(*args, **kwargs)
     
     async def permission_overwrite_edit(self, channel, overwrite, *, allow=None, deny=None, reason=None):
         """
@@ -9846,18 +9831,6 @@ class Client(UserBase):
         
         await self.http.permission_overwrite_delete(channel_id, overwrite.target.id, reason)
     
-    async def permission_ow_create(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.permission_overwrite_create`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.permission_ow_create` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.permission_overwrite_create` instead.',
-            FutureWarning)
-        
-        return await self.permission_overwrite_create(*args, **kwargs)
     
     async def permission_overwrite_create(self, channel, target, allow, deny, *, reason=None):
         """
@@ -10205,18 +10178,6 @@ class Client(UserBase):
         data = await self.http.webhook_get_all_channel(channel_id)
         return [Webhook(data) for data in data]
     
-    async def webhook_get_guild(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.webhook_get_all_guild`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.webhook_get_guild` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.webhook_get_all_guild` instead.',
-            FutureWarning)
-        
-        return await self.webhook_get_all_guild(*args, **kwargs)
     
     async def webhook_get_all_guild(self, guild):
         """
@@ -11359,18 +11320,6 @@ class Client(UserBase):
         invite_data = await self.http.invite_get(vanity_code, {})
         return Invite._create_vanity(guild, invite_data)
     
-    async def vanity_edit(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.vanity_invite_edit`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.vanity_edit` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.vanity_invite_edit` instead.',
-            FutureWarning)
-        
-        return await self.vanity_invite_edit(*args, **kwargs)
     
     async def vanity_invite_edit(self, guild, vanity_code, *, reason=None):
         """
@@ -11844,18 +11793,6 @@ class Client(UserBase):
         
         return invite
     
-    async def invite_get_guild(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.invite_get_all_guild`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.invite_get_guild` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.invite_get_all_guild` instead.',
-            FutureWarning)
-        
-        return await self.invite_get_all_guild(*args, **kwargs)
     
     async def invite_get_all_guild(self, guild):
         """
@@ -13466,7 +13403,7 @@ class Client(UserBase):
     
     
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
-            tts=False, show_source=None, show_for_invoking_user_only=False):
+            tts=False, show_for_invoking_user_only=False):
         """
         Sends an interaction response. After receiving an ``InteractionEvent``, you should acknowledge it within
         `3` seconds to perform followup actions.
@@ -13500,11 +13437,6 @@ class Client(UserBase):
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         tts : `bool`, Optional
             Whether the message is text-to-speech.
-        show_source : `bool`, Optional Deprecated
-            Whether the source message should be shown as well. Defaults to `True`.
-            
-            Deprecates, the source message is always shown, will be merged to the response message in a future discord
-            update. Will be removed in 2021 April.
         show_for_invoking_user_only : `bool`, Optional
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
@@ -13640,13 +13572,6 @@ class Client(UserBase):
                 content = str(content)
                 if not content:
                     content = None
-        
-        if (show_source is not None):
-            warnings.warn(
-                f'`{self.__class__.__name__}.interaction_response_message_create`\'s `show_source` parameter is '
-                f'deprecated, and will be removed in 2021 April. Reference: '
-                f'https://github.com/discord/discord-api-docs/pull/2615',
-                FutureWarning)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -14013,10 +13938,6 @@ class Client(UserBase):
             - If the client's application is not yet synced.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
-        Notes
-        -----
-        Can be used before calling ``.interaction_response_message_create``, tho it will be redirected manually with
-        the `show_source` parameter passed as `False`.
         """
         if __debug__:
             if not isinstance(interaction, InteractionEvent):
@@ -15052,7 +14973,22 @@ class Client(UserBase):
                 guild = None
                 to_remove = None
     
-    async def join_voice_channel(self, channel):
+    
+    async def join_voice_channel(self, *args, **kwargs):
+        """
+        Deprecated, please use ``.join_voice`` instead. Will be removed in 2021 June.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.join_voice_channel` is deprecated, and will be removed in 2021 June. '
+            f'Please use `{self.__class__.__name__}.join_voice` instead.',
+            FutureWarning)
+        
+        return await self.join_voice(*args, **kwargs)
+    
+    
+    async def join_voice(self, channel):
         """
         Joins a voice client to the channel. If there is an already existing voice client at the respective guild,
         moves it.
@@ -15064,7 +15000,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        channel : ``ChannelVoice``
+        channel : ``ChannelVoiceBase`` or `int`
             The channel to join to.
         
         Returns
@@ -15074,13 +15010,32 @@ class Client(UserBase):
         Raises
         ------
         RuntimeError
-            If not every library is installed to join voice.
+            - If not every library is installed to join voice.
+            - If `channel` is partial.
         TimeoutError
             If voice client fails to connect the given channel.
+        TypeError
+            If `channel` was not given neither as ``ChannelVoiceBase`` nor as `int` referring to a voice channel.
         """
+        if isinstance(channel, ChannelVoiceBase):
+            pass
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelVoiceBase.__name__}` or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                raise RuntimeError(f'Cannot join partial channel: {channel!r}') from None
+            
+            if not isinstance(channel, ChannelVoiceBase):
+                raise TypeError(f'Can join only to `{ChannelVoiceBase.__name__}`, got {channel.__class__.__name__}.')
+        
         guild = channel.guild
         if guild is None:
-            raise TimeoutError(f'Cannot join channel without guild: {channel!r}.')
+            raise RuntimeError(f'Cannot join partial channel: {channel!r}')
         
         guild_id = guild.id
         try:
@@ -15094,9 +15049,11 @@ class Client(UserBase):
         
         return voice_client
     
-    async def join_podium(self, channel):
+    
+    async def join_speakers(self, channel, *, request=False):
         """
-        Joins the client to the given voice stage channel.
+        Request to speak or joins the client as a speaker inside of a stage channel. The client must be in the stage
+        channel.
         
         This method is a coroutine.
         
@@ -15104,14 +15061,103 @@ class Client(UserBase):
         ----------
         channel : ``ChannelStage``
             The stage channel to join.
+        request : `bool`, Optional
+            Whether the client should only request to speak.
+        
+        Raises
+        ------
+        RuntimeError
+            If `channel` is partial.
+        TypeError
+            If `channel` was not given neither as ``ChannelStage`` nor as `int` referring to a stage channel.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
         """
+        if isinstance(channel, ChannelStage):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}` or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                raise RuntimeError(f'Cannot join partial channel: {channel!r}') from None
+            
+            if not isinstance(channel, ChannelStage):
+                raise TypeError(f'Can join only to `{ChannelStage.__name__}`, got {channel.__class__.__name__}.')
+        
+        guild = channel.guild
+        if guild is None:
+            raise RuntimeError(f'Cannot join partial channel: {channel!r}')
+        
+        if request:
+            timestamp = datetime.now().isoformat()
+        else:
+            timestamp = None
+        
         data = {
             'suppress': False,
-            'request_to_speak_timestamp': None,
-            'channel_id': channel.id
+            'request_to_speak_timestamp': timestamp,
+            'channel_id': channel_id
                 }
         
-        await self.http.voice_stage_state_edit(channel.guild.id, data)
+        await self.http.voice_state_client_edit(guild.id, data)
+    
+    
+    async def join_audience(self, channel):
+        """
+        Moves the client to the audience inside of the stage channel. The client must be in the stage channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelStage``
+            The stage channel to join.
+        
+        Raises
+        ------
+        RuntimeError
+            If `channel` is partial.
+        TypeError
+            If `channel` was not given neither as ``ChannelStage`` nor as `int` referring to a stage channel.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if isinstance(channel, ChannelStage):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}` or `int` instance, got '
+                    f'{channel.__class__.__name__}.')
+            
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                raise RuntimeError(f'Cannot join partial channel: {channel!r}') from None
+            
+            if not isinstance(channel, ChannelStage):
+                raise TypeError(f'Can join only to `{ChannelStage.__name__}`, got {channel.__class__.__name__}.')
+        
+        guild = channel.guild
+        if guild is None:
+            raise RuntimeError(f'Cannot join partial channel: {channel!r}')
+        
+        data = {
+            'suppress': True,
+            'channel_id': channel_id
+                }
+        
+        await self.http.voice_state_client_edit(guild.id, data)
+    
     
     async def wait_for(self, event_name, check, timeout=None):
         """

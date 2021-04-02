@@ -1728,9 +1728,13 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.verification_screen_edit, guild_id),
             METHOD_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/member-verification', data)
     
-    async def voice_stage_state_edit(self, guild_id, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.voice_stage_state_edit, guild_id),
+    async def voice_state_client_edit(self, guild_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_client_edit, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/voice-states/@me', data)
+    
+    async def voice_state_user_edit(self, guild_id, user_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.voice_state_user_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PATCH, f'{API_ENDPOINT}/guilds/{guild_id}/voice-states/{user_id}', data)
     
     # Invite
     

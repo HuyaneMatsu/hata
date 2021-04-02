@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwrit
     'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature', 'HypesquadHouse', 'InteractionType', 'InviteTargetType',
     'MFA', 'VerificationScreenStepType', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
     'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme',
-    'VerificationLevel', 'VoiceRegion', 'WebhookType', )
+    'VerificationLevel', 'VideoQualityMode', 'VoiceRegion', 'WebhookType', )
 
 from ..backend.utils import DOCS_ENABLED, any_to_any
 
@@ -2381,7 +2381,7 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the application command permission overwrite types.
     
-    Every predefined application command permission overwrite type. can be accessed as class attribute as well:
+    Every predefined application command permission overwrite type can be accessed as class attribute as well:
     
     +-----------------------+-------+-------+
     | Class attribute name  | Name  | Value |
@@ -2406,6 +2406,53 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
 ApplicationCommandPermissionOverwriteType.none = ApplicationCommandPermissionOverwriteType(0 , 'none' ,)
 ApplicationCommandPermissionOverwriteType.role = ApplicationCommandPermissionOverwriteType(1 , 'role' ,)
 ApplicationCommandPermissionOverwriteType.user = ApplicationCommandPermissionOverwriteType(2 , 'user' ,)
+
+
+class VideoQualityMode(PreinstancedBase):
+    """
+    Represents a voice channel's video quality mode.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the video quality mode.
+    value : `int`
+        The identifier value the video quality mode.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``VideoQualityMode``) items
+        Stores the predefined ``VideoQualityMode`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The video quality modes' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the video quality modes.
+    
+    Every predefined video quality mode can be accessed as class attribute as well:
+    
+    +-----------------------+-------+-------+-------------------------------------------------------+
+    | Class attribute name  | Name  | Value | Description                                           |
+    +=======================+=======+=======+=======================================================+
+    | none                  | none  | 0     | N/A                                                   |
+    +-----------------------+-------+-------+-------------------------------------------------------+
+    | auto                  | auto  | 1     | Discord chooses the quality for optimal performance.  |
+    +-----------------------+-------+-------+-------------------------------------------------------+
+    | full                  | full  | 2     | 720p                                                  |
+    +-----------------------+-------+-------+-------------------------------------------------------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none    = NotImplemented
+    auto    = NotImplemented
+    full    = NotImplemented
+    
+VideoQualityMode.none = VideoQualityMode(0, 'none')
+VideoQualityMode.auto = VideoQualityMode(1, 'auto')
+VideoQualityMode.full = VideoQualityMode(2, 'full')
 
 
 module_utils.RelationshipType = RelationshipType

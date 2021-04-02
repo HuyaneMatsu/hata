@@ -9,7 +9,7 @@ from .bases import DiscordEntity
 from .client_core import ROLES
 from .utils import random_id, DATETIME_FORMAT_CODE
 from .color import Color
-from .permission import Permission
+from .permission import Permission, PERMISSION_NONE
 from .user import create_partial_user
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
     preconvert_flag
@@ -101,7 +101,7 @@ def create_partial_role(role_id):
     role.manager_id = 0
     role.mentionable = False
     role.name = ''
-    role.permissions = Permission.permission_none
+    role.permissions = PERMISSION_NONE
     role.position = 1 # 0 is default role, so we go for 1
     
     ROLES[role_id] = role
@@ -316,7 +316,7 @@ class Role(DiscordEntity, immortal=True):
             role.manager_type = ROLE_MANAGER_TYPE_NONE
             role.mentionable = False
             role.name = ''
-            role.permissions = Permission.permission_none
+            role.permissions = PERMISSION_NONE
             role.position = 1
             ROLES[role_id] = role
         else:

@@ -12,7 +12,9 @@ from ..backend.event_loop import LOOP_TIME
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .client_core import CHANNELS, USERS
-from .permission import Permission
+from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
+    PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
+    PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_TEXT_AND_STAGE_DENY
 from .http import URLS
 from .message import Message, MESSAGES
 from .user import User, ZEROUSER
@@ -24,7 +26,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int,
 from .utils import DATETIME_FORMAT_CODE
 from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
-from .preinstanced import VoiceRegion
+from .preinstanced import VoiceRegion, VideoQualityMode
 
 from . import webhook as module_webhook, message as module_message, rate_limit as module_rate_limit
 
@@ -481,7 +483,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         -----
         Always return empty permissions. Subclasses should implement this method.
         """
-        return Permission.permission_none
+        return PERMISSION_NONE
     
     def cached_permissions_for(self, user):
         """
@@ -503,7 +505,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Always return empty permissions. Subclasses should implement this method.
         """
-        return Permission.permission_none
+        return PERMISSION_NONE
     
     def permissions_for_roles(self, *roles):
         """
@@ -524,7 +526,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Always return empty permissions. Subclasses should implement this method.
         """
-        return Permission.permission_none
+        return PERMISSION_NONE
 
 # sounds funny, but this is a class
 # the chunk_size is 97, because it means 1 request for _load_messages_till
@@ -1244,7 +1246,7 @@ class ChannelGuildBase(ChannelBase):
     
     Class Attributes
     ----------------
-    INTERCHANGE : `tuple` of `int` = `(0,)`
+    INTERCHANGE : `tuple` of `int` = `()`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
     ORDER_GROUP : `int` = `0`
@@ -1462,7 +1464,7 @@ class ChannelGuildBase(ChannelBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         default_role =  guild.roles.get(guild.id)
         if default_role is None:
@@ -1484,7 +1486,7 @@ class ChannelGuildBase(ChannelBase):
                 
                 return Permission(base)
             
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         roles = guild_profile.roles
         if (roles is not None):
@@ -1493,7 +1495,7 @@ class ChannelGuildBase(ChannelBase):
                 base |= role.permissions
         
         if Permission.can_administrator(base):
-            return Permission.permission_all
+            return PERMISSION_ALL
         
         overwrites = self.overwrites
         if overwrites:
@@ -1537,14 +1539,14 @@ class ChannelGuildBase(ChannelBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return Permission.permission_all
+            return PERMISSION_ALL
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            result = Permission.permission_none
+            result = PERMISSION_NONE
         
         return result
     
@@ -1602,7 +1604,7 @@ class ChannelGuildBase(ChannelBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         default_role =  guild.roles.get(guild.id)
         if default_role is None:
@@ -1615,7 +1617,7 @@ class ChannelGuildBase(ChannelBase):
                 base |= role.permissions
         
         if Permission.can_administrator(base):
-            return Permission.permission_all
+            return PERMISSION_ALL
         
         roles = set(roles)
         
@@ -1657,7 +1659,7 @@ class ChannelGuildBase(ChannelBase):
         """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
-            result = Permission.permission_none
+            result = PERMISSION_NONE
         
         return result
     
@@ -1977,10 +1979,6 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        self : ``ChannelText``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -2203,24 +2201,24 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return Permission.permission_deny_voice
+            return PERMISSION_VOICE_DENY
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         # text channels don't have voice permissions
-        result &= Permission.permission_deny_voice
+        result &= PERMISSION_VOICE_DENY
         
         if self.type and (not Permission.can_manage_messages(result)):
-            result = result&Permission.permission_deny_text
+            result = result&PERMISSION_TEXT_DENY
             return Permission(result)
         
         if not Permission.can_send_messages(result):
-            result = result&Permission.permission_deny_text
+            result = result&PERMISSION_TEXT_DENY
         
         return Permission(result)
     
@@ -2243,17 +2241,17 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         # text channels don't have voice permissions
-        result &= Permission.permission_deny_voice
+        result &= PERMISSION_VOICE_DENY
         
         if self.type and (not Permission.can_manage_messages(result)):
-            result = result&Permission.permission_deny_text
+            result = result&PERMISSION_TEXT_DENY
             return Permission(result)
         
         if not Permission.can_send_messages(result):
-            result = result&Permission.permission_deny_text
+            result = result&PERMISSION_TEXT_DENY
         
         return Permission(result)
     
@@ -2432,10 +2430,6 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        self : ``ChannelPrivate``
         """
         assert (client is not None), f'`client` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -2638,18 +2632,18 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         """
         if user in self.users:
             if user.is_bot:
-                return Permission.permission_private_bot
+                return PERMISSION_PRIVATE_BOT
             else:
-                return Permission.permission_private
+                return PERMISSION_PRIVATE
             
-        return Permission.permission_none
+        return PERMISSION_NONE
     
     cached_permissions_for = permissions_for
     
     @property
     def guild(self):
         """
-        Returns the private channel's guild what is `None` every time.
+        Returns the private channel's guild, which is `None` every time.
         
         This property is just for compatibility with the other channel types.
         
@@ -2705,9 +2699,9 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         return channel
 
 
-class ChannelVoice(ChannelGuildBase):
+class ChannelVoiceBase(ChannelGuildBase):
     """
-    Represents a ``Guild`` voice channel.
+    Base class for guild voice channels.
     
     Attributes
     ----------
@@ -2734,6 +2728,78 @@ class ChannelVoice(ChannelGuildBase):
     
     Class Attributes
     ----------------
+    INTERCHANGE : `tuple` of `int` = `()`
+        Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
+        them.
+    ORDER_GROUP : `int` = `2`
+        An order group what defined which guild channel type comes after the other one.
+    """
+    __slots__ = ('bitrate', 'region', 'user_limit') # Voice related.
+    
+    ORDER_GROUP = 2
+    
+    @property
+    def voice_users(self):
+        """
+        Returns a list of the users, who are in the voice channel.
+        
+        Returns
+        -------
+        users : `list` of (``User`` or ``Client``) objects
+        """
+        users = []
+        guild = self.guild
+        if guild is None:
+            return users
+        
+        for state in guild.voice_states.values():
+            if state.channel is self:
+                users.append(state.user)
+        
+        return users
+
+    @property
+    def display_name(self):
+        """
+        A voice channel's display name is same as it's `.name`.
+        
+        Returns
+        -------
+        display_name : `str`
+        """
+        return self.name
+
+class ChannelVoice(ChannelVoiceBase):
+    """
+    Represents a ``Guild`` voice channel.
+    
+    Attributes
+    ----------
+    id : `int`
+        Unique identifier of the channel.
+    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
+    category : `None`, ``ChannelCategory`` or ``Guild``
+        The channel's category. If the channel is deleted, set to `None`.
+    guild : `None` or ``Guild``
+        The channel's guild. If the channel is deleted, set to `None`.
+    name : `str`
+        The channel's name.
+    overwrites : `list` of ``PermissionOverwrite`` objects
+        The channel's permission overwrites.
+    position : `int`
+        The channel's position.
+    bitrate : `int`
+        The bitrate (in bits) of the voice channel.
+    region : `None` or ``VoiceRegion``
+        The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
+    user_limit : `int`
+        The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    video_quality_mode : ``VideoQualityMode``
+        The video quality of the voice channel.
+    
+    Class Attributes
+    ----------------
     INTERCHANGE : `tuple` of `int` = `(2,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -2742,9 +2808,8 @@ class ChannelVoice(ChannelGuildBase):
     type : `int` = `2`
         The channel's Discord side type.
     """
-    __slots__ = ('bitrate',  'region', 'user_limit') # Voice channel related
+    __slots__ = ('video_quality_mode',) # Voice channel related
     
-    ORDER_GROUP = 2
     INTERCHANGE = (2,)
     type = 2
     
@@ -2761,10 +2826,6 @@ class ChannelVoice(ChannelGuildBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        channel : ``ChannelVoice``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -2779,19 +2840,24 @@ class ChannelVoice(ChannelGuildBase):
             if self.clients:
                 return self
         
+        # Guild base
         self._cache_perm = None
         self.name = data['name']
         
         self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
-        self.bitrate = data['bitrate']
-        self.user_limit = data['user_limit']
-        
+        # Voice base
         region = data.get('rtc_region')
         if (region is not None):
             region = VoiceRegion.get(region)
         self.region = region
+        
+        self.bitrate = data['bitrate']
+        self.user_limit = data['user_limit']
+        
+        # Voice
+        self.video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
         
         return self
     
@@ -2817,28 +2883,21 @@ class ChannelVoice(ChannelGuildBase):
         self = object.__new__(cls)
         
         self._cache_perm = None
-        self.bitrate = 0
+        
         self.category = None
         self.guild = partial_guild
         self.id = channel_id
         self.name = data.get('name', '')
         self.overwrites = []
         self.position = 0
-        self.user_limit = 0
+        
+        self.bitrate = 0
         self.region = None
+        self.user_limit = 0
+        
+        self.video_quality_mode = VideoQualityMode.auto
         
         return self
-    
-    @property
-    def display_name(self):
-        """
-        A voice channel's display name is it's capitalized name.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
-        return self.name.capitalize()
     
     def _delete(self):
         """
@@ -2854,8 +2913,8 @@ class ChannelVoice(ChannelGuildBase):
         del guild.channels[self.id]
         
         self.category = None
-        #safe delete
         
+        # safe delete
         if self is guild.afk_channel:
             guild.afk_channel = None
         
@@ -2884,6 +2943,7 @@ class ChannelVoice(ChannelGuildBase):
             region = VoiceRegion.get(region)
         self.region = region
         
+        self.video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
     
     def _update(self, data):
         """
@@ -2902,23 +2962,26 @@ class ChannelVoice(ChannelGuildBase):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | bitrate       | `int`                             |
-        +---------------+-----------------------------------+
-        | category      | ``ChannelCategory`` or ``Guild``  |
-        +---------------+-----------------------------------+
-        | name          | `str`                             |
-        +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite`` |
-        +---------------+-----------------------------------+
-        | position      | `int`                             |
-        +---------------+-----------------------------------+
-        | region        | `None` or ``VoiceRegion``         |
-        +---------------+-----------------------------------+
-        | user_limit    | `int`                             |
-        +---------------+-----------------------------------+
+        
+        +-----------------------+-----------------------------------+
+        | Keys                  | Values                            |
+        +=======================+===================================+
+        | bitrate               | `int`                             |
+        +-----------------------+-----------------------------------+
+        | category              | ``ChannelCategory`` or ``Guild``  |
+        +-----------------------+-----------------------------------+
+        | name                  | `str`                             |
+        +-----------------------+-----------------------------------+
+        | overwrites            | `list` of ``PermissionOverwrite`` |
+        +-----------------------+-----------------------------------+
+        | position              | `int`                             |
+        +-----------------------+-----------------------------------+
+        | region                | `None` or ``VoiceRegion``         |
+        +-----------------------+-----------------------------------+
+        | user_limit            | `int`                             |
+        +-----------------------+-----------------------------------+
+        | video_quality_mode    | ``VideoQualityMode``              |
+        +-----------------------+-----------------------------------+
         """
         self._cache_perm = None
         old_attributes = {}
@@ -2948,10 +3011,15 @@ class ChannelVoice(ChannelGuildBase):
             region = VoiceRegion.get(region)
         
         if self.region is not region:
-            old_attributes['region'] = region
+            old_attributes['region'] = self.region
             self.region = region
         
         self._update_category_and_position(data, old_attributes)
+        
+        video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
+        if self.video_quality_mode is not video_quality_mode:
+            old_attributes['video_quality_mode'] = self.video_quality_mode
+            self.video_quality_mode = video_quality_mode
         
         return old_attributes
     
@@ -2973,20 +3041,20 @@ class ChannelVoice(ChannelGuildBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return Permission.permission_deny_text
+            return PERMISSION_TEXT_DENY
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         #voice channels don't have text permissions
-        result &= Permission.permission_deny_text
+        result &= PERMISSION_TEXT_AND_STAGE_DENY
         
         if not Permission.can_connect(result):
-            result &= Permission.permission_deny_voice_con
+            result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
     
@@ -3009,34 +3077,15 @@ class ChannelVoice(ChannelGuildBase):
         """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         # voice channels don't have text permissions
-        result &= Permission.permission_deny_text
+        result &= PERMISSION_TEXT_AND_STAGE_DENY
         
         if not Permission.can_connect(result):
-            result &= Permission.permission_deny_voice_con
+            result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
-    
-    @property
-    def voice_users(self):
-        """
-        Returns a list of the users, who are in the voice channel.
-        
-        Returns
-        -------
-        users : `list` of (``User`` or ``Client``) objects
-        """
-        result = []
-        guild = self.guild
-        if guild is None:
-            return result
-        
-        for state in guild.voice_states.values():
-            if state.channel is self:
-                result.append(state.user)
-        return result
 
     @classmethod
     def precreate(cls, channel_id, **kwargs):
@@ -3062,6 +3111,8 @@ class ChannelVoice(ChannelGuildBase):
             The channel's ``.user_limit``.
         region : `None`, ``VoiceRegion`` or `str`, Optional
             The channel's voice region.
+        video_quality_mode : ``VideoQualityMode``
+            The video quality of the voice channel.
         
         Returns
         -------
@@ -3099,14 +3150,20 @@ class ChannelVoice(ChannelGuildBase):
                     value = preconvert_int(value, key, *details)
                     processable.append((key,value))
             
-            try:
-                region = kwargs.pop('region')
-            except KeyError:
-                pass
-            else:
-                if (region is not None):
-                    region = preconvert_preinstanced_type(region, 'type_', VoiceRegion)
-                    processable.append(('region', region))
+            for key, type_, nullable in (
+                    ('region', VoiceRegion, True),
+                    ('video_quality_mode', VideoQualityMode, False)
+                        ):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    if nullable and (value is None):
+                        continue
+                    
+                    value = preconvert_preinstanced_type(value, key, type_)
+                    processable.append((key, value))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -3131,6 +3188,8 @@ class ChannelVoice(ChannelGuildBase):
             channel.bitrate = 64000
             channel.user_limit = 0
             channel.region = None
+            
+            channel.video_quality_mode = VideoQualityMode.auto
             
             CHANNELS[channel_id] = channel
         
@@ -3204,10 +3263,6 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        self : ``ChannelGroup``
         """
         assert (client is not None), f'`client` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -3415,11 +3470,11 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         permission : ``Permission``
         """
         if self.owner_id == user.id:
-            return Permission.permission_group_owner
+            return PERMISSION_GROUP_OWNER
         elif user in self.users:
-            return Permission.permission_group
+            return PERMISSION_GROUP
         else:
-            return Permission.permission_none
+            return PERMISSION_NONE
     
     cached_permissions_for = permissions_for
     
@@ -3578,10 +3633,6 @@ class ChannelCategory(ChannelGuildBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        channel : ``ChannelCategory``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -3866,10 +3917,6 @@ class ChannelStore(ChannelGuildBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        self : ``ChannelStore``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -4041,17 +4088,17 @@ class ChannelStore(ChannelGuildBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return Permission.permission_deny_both
+            return PERMISSION_TEXT_AND_VOICE_DENY
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         # store channels do not have text and voice related permissions
-        result &= Permission.permission_deny_both
+        result &= PERMISSION_TEXT_AND_VOICE_DENY
         
         return Permission(result)
     
@@ -4074,10 +4121,10 @@ class ChannelStore(ChannelGuildBase):
         """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         # store channels do not have text and voice related permissions
-        result &= Permission.permission_deny_both
+        result &= PERMISSION_TEXT_AND_VOICE_DENY
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):
@@ -4217,10 +4264,6 @@ class ChannelThread(ChannelGuildBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        channel : ``ChannelThread``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -4381,17 +4424,17 @@ class ChannelThread(ChannelGuildBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return Permission.permission_deny_both
+            return PERMISSION_TEXT_AND_VOICE_DENY
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         # thread channels do not have text and voice related permissions?
-        # result&=Permission.permission_deny_both
+        # result&=PERMISSION_TEXT_AND_VOICE_DENY
         
         return Permission(result)
     
@@ -4533,10 +4576,6 @@ class ChannelGuildUndefined(ChannelGuildBase):
             The client, who received the channel's data, if any.
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
-        
-        Returns
-        -------
-        channel : ``ChannelGuildUndefined``
         """
         assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
         
@@ -4732,14 +4771,14 @@ class ChannelGuildUndefined(ChannelGuildBase):
         """
         guild = self.guild
         if guild is None:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return Permission.permission_deny_both
+            return PERMISSION_TEXT_AND_VOICE_DENY
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         return Permission(result)
     
@@ -4829,9 +4868,10 @@ class ChannelGuildUndefined(ChannelGuildBase):
         
         return channel
 
-class ChannelStage(ChannelVoice):
+
+class ChannelStage(ChannelVoiceBase):
     """
-    Represents a Discord stage channel. The class is derived from ``ChannelVoice``.
+    Represents a Discord stage channel.
     
     Attributes
     ----------
@@ -4855,6 +4895,8 @@ class ChannelStage(ChannelVoice):
         The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    topic : `None` or `str`
+        The channel's topic.
     
     Class Attributes
     ----------------
@@ -4866,11 +4908,459 @@ class ChannelStage(ChannelVoice):
     type : `int` = `13`
         The channel's Discord side type.
     """
-    __slots__ = () # Stage channel related
+    __slots__ = ('topic',) # Stage channel related
     
-    ORDER_GROUP = 2
     INTERCHANGE = (13,)
     type = 13
+    
+    def __new__(cls, data, client=None, guild=None):
+        """
+        Creates a stage channel from the channel data received from Discord. If the channel already exists and if it is
+        partial, then updates it.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data receive from Discord.
+        client : `None` or ``Client``, Optional
+            The client, who received the channel's data, if any.
+        guild : `None` or ``Guild``, Optional
+            The guild of the channel.
+        """
+        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        
+        channel_id = int(data['id'])
+        try:
+            self = CHANNELS[channel_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = channel_id
+            CHANNELS[channel_id] = self
+        else:
+            if self.clients:
+                return self
+        
+        # Guild base
+        self._cache_perm = None
+        self.name = data['name']
+        
+        self._init_category_and_position(data, guild)
+        self.overwrites = self._parse_overwrites(data)
+        
+        # Voice base
+        region = data.get('rtc_region')
+        if (region is not None):
+            region = VoiceRegion.get(region)
+        self.region = region
+        
+        self.bitrate = data['bitrate']
+        self.user_limit = data['user_limit']
+        
+        self.topic = data.get('topic')
+        
+        return self
+    
+    @classmethod
+    def _from_partial_data(cls, data, channel_id, partial_guild):
+        """
+        Creates a ``ChannelVoice`` from partial data. Called by ``create_partial_channel`` when a new partial channel
+        is needed to be created.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Partial channel data.
+        channel_id : `int`
+            The channel's id.
+        partial_guild : ``Guild`` or `None`
+            The channel's guild if applicable.
+        
+        Returns
+        -------
+        channel : ``ChannelVoice``
+        """
+        self = object.__new__(cls)
+        
+        self._cache_perm = None
+        
+        self.category = None
+        self.guild = partial_guild
+        self.id = channel_id
+        self.name = data.get('name', '')
+        self.overwrites = []
+        self.position = 0
+        
+        self.bitrate = 0
+        self.region = None
+        self.user_limit = 0
+        
+        self.topic = None
+        
+        return self
+    
+    def _delete(self):
+        """
+        Removes the channel's references.
+        
+        Used when the channel is deleted.
+        """
+        guild = self.guild
+        if guild is None:
+            return
+        
+        self.guild = None
+        del guild.channels[self.id]
+        
+        self.category = None
+        
+        self.overwrites.clear()
+        self._cache_perm = None
+    
+    def _update_no_return(self, data):
+        """
+        Updates the channel with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord.
+        """
+        self._cache_perm = None
+        self._set_category_and_position(data)
+        self.overwrites = self._parse_overwrites(data)
+        
+        self.name = data['name']
+        self.bitrate = data['bitrate']
+        self.user_limit = data['user_limit']
+        
+        region = data.get('rtc_region')
+        if (region is not None):
+            region = VoiceRegion.get(region)
+        self.region = region
+        
+        self.topic = None
+    
+    def _update(self, data):
+        """
+        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
+        `old-value` relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord.
+            
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        
+        +-----------------------+-----------------------------------+
+        | Keys                  | Values                            |
+        +=======================+===================================+
+        | bitrate               | `int`                             |
+        +-----------------------+-----------------------------------+
+        | category              | ``ChannelCategory`` or ``Guild``  |
+        +-----------------------+-----------------------------------+
+        | name                  | `str`                             |
+        +-----------------------+-----------------------------------+
+        | overwrites            | `list` of ``PermissionOverwrite`` |
+        +-----------------------+-----------------------------------+
+        | position              | `int`                             |
+        +-----------------------+-----------------------------------+
+        | region                | `None` or ``VoiceRegion``         |
+        +-----------------------+-----------------------------------+
+        | user_limit            | `int`                             |
+        +-----------------------+-----------------------------------+
+        | topic                 | `None` or `int`                   |
+        +-----------------------+-----------------------------------+
+        """
+        self._cache_perm = None
+        old_attributes = {}
+        
+        name = data['name']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
+        
+        bitrate = data['bitrate']
+        if self.bitrate != bitrate:
+            old_attributes['bitrate'] = self.bitrate
+            self.bitrate = bitrate
+        
+        user_limit = data['user_limit']
+        if self.user_limit != user_limit:
+            old_attributes['user_limit'] = self.user_limit
+            self.user_limit = user_limit
+        
+        overwrites = self._parse_overwrites(data)
+        if self.overwrites != overwrites:
+            old_attributes['overwrites'] = self.overwrites
+            self.overwrites = overwrites
+        
+        region = data.get('rtc_region')
+        if (region is not None):
+            region = VoiceRegion.get(region)
+        
+        if self.region is not region:
+            old_attributes['region'] = self.region
+            self.region = region
+        
+        self._update_category_and_position(data, old_attributes)
+        
+        topic = data.get('topic')
+        if self.topic != topic:
+            old_attributes['topic'] = self.topic
+            self.topic = topic
+        
+        return old_attributes
+
+    def permissions_for(self, user):
+        """
+        Returns the permissions for the given user at the channel.
+        
+        Parameters
+        ----------
+        user : ``UserBase`` instance
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        See Also
+        --------
+        ``.cached_permissions_for`` : Cached permission calculator.
+        """
+        guild = self.guild
+        if guild is None:
+            return PERMISSION_NONE
+        
+        if user.id == guild.owner_id:
+            return PERMISSION_TEXT_DENY
+        
+        result = self._permissions_for(user)
+        if not result.can_view_channel:
+            return PERMISSION_NONE
+        
+        # voice channels don't have text permissions
+        result &= PERMISSION_TEXT_DENY
+        
+        if not Permission.can_connect(result):
+            result &= PERMISSION_VOICE_DENY_CONNECTION
+        
+        return Permission(result)
+    
+    def permissions_for_roles(self, *roles):
+        """
+        Returns the channel permissions of an imaginary user who would have the listed roles.
+        
+        Parameters
+        ----------
+        *roles : ``Role``
+            The roles to calculate final permissions from.
+        
+        Returns
+        -------
+        permission : ``Permission``
+        
+        Notes
+        -----
+        Partial roles and roles from other guilds as well are ignored.
+        """
+        result = self._permissions_for_roles(roles)
+        if not result.can_view_channel:
+            return PERMISSION_NONE
+        
+        # voice channels don't have text permissions
+        result &= PERMISSION_TEXT_DENY
+        
+        if not Permission.can_connect(result):
+            result &= PERMISSION_VOICE_DENY_CONNECTION
+        
+        return Permission(result)
+
+    @classmethod
+    def precreate(cls, channel_id, **kwargs):
+        """
+        Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
+        the precrated channel will be picked up. If an already existing channel would be precreated, returns that
+        instead and updates that only, if that is a partial channel.
+        
+        Parameters
+        ----------
+        channel_id : `int` or `str`
+            The channel's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the channel.
+        
+        Other Parameters
+        ----------------
+        name : `str`, Optional
+            The channel's ``.name``.
+        bitrate : `int`, Optional
+            The channel's ``.bitrate``.
+        user_limit : `int`, Optional
+            The channel's ``.user_limit``.
+        region : `None`, ``VoiceRegion`` or `str`, Optional
+            The channel's voice region.
+        topic : `None` or `str`, Optional
+            The channel's topic.
+        
+        Returns
+        -------
+        channel : ``ChannelStage``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
+        """
+        channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        
+        if kwargs:
+            processable = []
+            
+            try:
+                name = kwargs.pop('name')
+            except KeyError:
+                pass
+            else:
+                name = preconvert_str(name, 'name', 2, 100)
+                processable.append(('name', name))
+            
+            for key, details in (
+                    ('bitrate'   , (8000, 384000)),
+                    ('user_limit', (    0,    99)),
+                        ):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_int(value, key, *details)
+                    processable.append((key,value))
+            
+            try:
+                region = kwargs.pop('region')
+            except KeyError:
+                pass
+            else:
+                if (region is not None):
+                    region = preconvert_preinstanced_type(region, 'type_', VoiceRegion)
+                    processable.append(('region', region))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            
+            try:
+                topic = kwargs.pop('topic')
+            except KeyError:
+                pass
+            else:
+                if (topic is not None):
+                    topic = preconvert_str(topic, 'topic', 0, 120)
+                    if topic:
+                        processable.append((topic, topic))
+        
+        else:
+            processable = None
+        
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            channel = object.__new__(cls)
+            
+            channel.id = channel_id
+            
+            channel._cache_perm = None
+            channel.category = None
+            channel.guild = None
+            channel.overwrites = []
+            channel.position = 0
+            channel.name = ''
+            
+            channel.bitrate = 64000
+            channel.user_limit = 0
+            channel.region = None
+            
+            CHANNELS[channel_id] = channel
+        
+        else:
+            if not channel.partial:
+                return channel
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(channel, *item)
+        
+        return channel
+    
+    @property
+    def audience(self):
+        """
+        Returns the audience in the stage channel.
+        
+        Returns
+        -------
+        users : `list` of (``User``, ``Client``)
+        """
+        users = []
+        guild = self.guild
+        if guild is None:
+            return users
+        
+        for state in guild.voice_states.values():
+            if (state.channel is self) and state.is_speaker:
+                users.append(state.user)
+        
+        return users
+
+    @property
+    def speakers(self):
+        """
+        Returns the speakers in the stage channel.
+        
+        Returns
+        -------
+        users : `list` of (``User``, ``Client``)
+        """
+        users = []
+        guild = self.guild
+        if guild is None:
+            return users
+        
+        for state in guild.voice_states.values():
+            if (state.channel is self) and (not state.is_speaker):
+                users.append(state.user)
+        
+        return users
+    
+    @property
+    def moderators(self):
+        """
+        Returns the moderators in the stage channel.
+        
+        Returns
+        -------
+        users : `list` of (``User``, ``Client``)
+        """
+        users = []
+        guild = self.guild
+        if guild is None:
+            return users
+        
+        for state in guild.voice_states.values():
+            if (state.channel is self):
+                user = state.user
+                if self.permissions_for(user) >= PERMISSION_STAGE_MODERATOR:
+                    users.append(user)
+        
+        return users
 
 
 
@@ -4887,7 +5377,7 @@ CHANNEL_TYPES = {
         }
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
-        user_limit=None, region=None, category=None, guild=None):
+        user_limit=None, region=None, video_quality_mode=None, category=None, guild=None):
     """
     Creates a json serializable object representing a ``GuildChannelBase`` instance.
     
@@ -4912,6 +5402,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         The channel's user limit.
     region : `None`, ``VoiceRegion`` or `str`, Optional
         The channel's voice region.
+    video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional
+        The channel's video quality mode.
     category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
         The channel's category. If the category is under a guild, leave it empty.
     guild : `None` or ``Guild``, Optional
@@ -4927,6 +5419,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
         - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
         - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
+        - If `video_quality_mode` was not given neither as `None`, `VideoQualityMode`` nor as `int` instance.
     AssertionError
         - if `guild` is given, but not as `None` nor ``Guild`` instance.
         - If `type_` was given as `int`, and is less than `0`.
@@ -4935,21 +5428,22 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `name`'s length is under `2` or over `100`.
         - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
         - If `topic` was not given as `str` instance.
-        - If `topic`'s length is over `1024`.
-        - If `topic` was given, but the respective channel type is not ``ChannelText``.
+        - If `topic`'s length is over `1024` or `120` depending on channel type.
+        - If `topic` was given, but the respective channel type is not ``ChannelText`` nor ``ChannelStage``.
         - If `nsfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
         - If `nsfw` was not given as `bool`.
         - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
         - If `slowmode` was not given as `int` instance.
         - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-        - If `bitrate` was given, but the respective channel type is not ``ChannelVoice``.
+        - If `bitrate` was given, but the respective channel type is not ``ChannelVoiceBase``.
         - If `bitrate` was not given as `int` instance.
         - If `bitrate`'s value is out of the expected range.
-        - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
+        - If `user_limit` was given, but the respective channel type is not ``ChannelVoiceBase``.
         - If `user_limit` was not given as `int` instance.
         - If `user_limit`' was given, but is out of the expected [0:99] range.
         - If `category` was given, but the respective channel type cannot be put under other categories.
-        - If `region` was given, but the respective channel type is not ``ChannelVoice``.
+        - If `region` was given, but the respective channel type is not ``ChannelVoiceBase``.
+        - If `video_quality_mode` was given, but the respective channel is not ``ChannelVoice`` instance.
     """
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
@@ -4995,7 +5489,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
             if not isinstance(overwrites, list):
                 raise AssertionError(f'`overwrites` can be given as `None` or `list` of `cr_p_overwrite_object` '
                      f'returns, got {overwrites.__class__.__name__}')
-        
+            
             for index, element in enumerate(overwrites):
                 if not isinstance(element, dict):
                     raise AssertionError(f'`overwrites`\'s element {index} should be `dict` instance, but got '
@@ -5011,18 +5505,22 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     
     if (topic is not None):
         if __debug__:
-            if not issubclass(channel_type, ChannelText):
-                raise AssertionError(f'`topic` is a valid parameter only for {ChannelText.__name__} '
-                    f'instances, got {channel_type.__name__}.')
+            if not issubclass(channel_type, (ChannelText, ChannelStage)):
+                raise AssertionError(f'`topic` is a valid parameter only for `{ChannelText.__name__}` and for '
+                    f'{ChannelStage.__name__} instances, got {channel_type.__name__}.')
             
             if not isinstance(topic, str):
                 raise AssertionError(f'`topic` can be given as `str` instance, got {topic.__class__.__name__}.')
             
-            topic_ln = len(topic)
+            if issubclass(channel_type, ChannelText):
+                topic_length_limit = 1024
+            else:
+                topic_length_limit = 120
             
-            if topic_ln > 1024:
-                raise AssertionError(f'`topic` length can be in range [0:1024], got {topic_ln}; {topic!r}.')
-            
+            if topic_length > topic_length_limit:
+                raise AssertionError(f'`topic` length can be in range [0:{topic_length_limit}], got {topic_length}; '
+                    f'{topic!r}.')
+        
         channel_data['topic'] = topic
     
     
@@ -5057,8 +5555,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
 
     if (bitrate is not None):
         if __debug__:
-            if not issubclass(channel_type, ChannelVoice):
-                raise AssertionError(f'`bitrate` is a valid parameter only for `{ChannelVoice.__name__}` instances, '
+            if not issubclass(channel_type, ChannelVoiceBase):
+                raise AssertionError(f'`bitrate` is a valid parameter only for `{ChannelVoiceBase.__name__}` instances, '
                     f'but got {channel_type.__name__}.')
                 
             if not isinstance(bitrate, int):
@@ -5079,8 +5577,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     
     if (user_limit is not None):
         if __debug__:
-            if not issubclass(channel_type, ChannelVoice):
-                raise AssertionError(f'`user_limit` is a valid parameter only for `{ChannelVoice.__name__}` '
+            if not issubclass(channel_type, ChannelVoiceBase):
+                raise AssertionError(f'`user_limit` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
                     f'instances, but got {channel_type.__name__}.')
             
             if user_limit < 0 or user_limit > 99:
@@ -5092,8 +5590,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     
     if (region is not None):
         if __debug__:
-            if not issubclass(channel_type, ChannelVoice):
-                raise AssertionError(f'`region` is a valid parameter only for `{ChannelVoice.__name__}` '
+            if not issubclass(channel_type, ChannelVoiceBase):
+                raise AssertionError(f'`region` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
                     f'instances, but got {channel_type.__name__}.')
         
         if isinstance(region, VoiceRegion):
@@ -5105,6 +5603,24 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
                 f'{region.__class__.__name__}.')
         
         data['rtc_region'] = region_value
+    
+    
+    if (video_quality_mode is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelVoice):
+                raise AssertionError(f'`video_quality_mode` is a valid parameter only for `{ChannelVoice.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+        
+        if isinstance(video_quality_mode, VideoQualityMode):
+            video_quality_mode_value = video_quality_mode.value
+        elif isinstance(video_quality_mode, int):
+            video_quality_mode_value = video_quality_mode
+        else:
+            raise TypeError(f'`video_quality_mode` can be given either as `None`, `str` or as '
+                f'`{VideoQualityMode.__name__}` instance, {video_quality_mode.__class__.__name__}.')
+        
+        data['video_quality_mode'] = video_quality_mode_value
+    
     
     if category is None:
         category_id = 0

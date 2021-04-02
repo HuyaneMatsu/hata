@@ -1440,7 +1440,7 @@ class ApplicationCommandPermission:
     
     def add_overwrite(self, overwrite):
         """
-        Adds an application command permission overwrite to teh overwrites of the application command permission.
+        Adds an application command permission overwrite to the overwrites of the application command permission.
         
         Parameters
         ----------

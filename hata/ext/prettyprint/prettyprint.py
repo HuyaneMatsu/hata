@@ -1375,7 +1375,11 @@ def str_voice_state(state, index=None, **kwargs):
     result.append(f'- self_mute : {state.self_mute}', 1)
     result.append(f'- self_deaf : {state.self_deaf}', 1)
     result.append(f'- self_video : {state.self_video}', 1)
-
+    result.append(f'- is_speaker : {state.is_speaker!r}', 1)
+    requested_to_speak_at = state.requested_to_speak_at
+    if (requested_to_speak_at is not None):
+        result.append(f'- requested to speak at: {requested_to_speak_at:{DATETIME_FORMAT_CODE}}', 1)
+    
     return result
 
 def str_user_oa2(user, index=None, **kwargs):

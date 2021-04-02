@@ -74,35 +74,11 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +---------------------------+-------------------+
     | use_application_commands  | 31                |
     +---------------------------+-------------------+
+    | request_to_speak          | 32                |
+    +---------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
-    
-    There are some predefined permissions as well set as class attributes, mainly for internal usage:
-    
-    +---------------------------+-----------------------------------------------+
-    | Name                      | Value                                         |
-    +===========================+===============================================+
-    | permission_all            | 0b01111111111111111111111111111111            |
-    +---------------------------+-----------------------------------------------+
-    | permission_none           | 0b00000000000000000000000000000000            |
-    +---------------------------+-----------------------------------------------+
-    | permission_private        | 0b00000000000001111100110001000000            |
-    +---------------------------+-----------------------------------------------+
-    | permission_private_bot    | 0b00000000000001101100110001000000            |
-    +---------------------------+-----------------------------------------------+
-    | permission_group          | 0b00000000000001111100010001000000            |
-    +---------------------------+-----------------------------------------------+
-    | permission_group_owner    | 0b00000000000001111100110001000010            |
-    +---------------------------+-----------------------------------------------+
-    | permission_deny_text      | 0b11111111111111011000011111111111            |
-    +---------------------------+-----------------------------------------------+
-    | permission_deny_voice     | 0b11111100000011111111110011111111            |
-    +---------------------------+-----------------------------------------------+
-    | permission_deny_voice_con | 0b11101100000011111111111011101111            |
-    +---------------------------+-----------------------------------------------+
-    | permission_deny_both      | permission_deny_text|permission_deny_voice    |
-    +---------------------------+-----------------------------------------------+
     """
     __keys__ = {
         'create_instant_invite'     :  0,
@@ -157,27 +133,213 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         """
         # 1st denies permissions, then allows
         return type(self)((self&~deny)|allow)
-    
-    # guild specific permissions: manage_guild, kick_users, ban_users, administrator, change_nicknames, manage_nicknames
-    
-    permission_all            = NotImplemented
-    permission_none           = NotImplemented
-    permission_private        = NotImplemented
-    permission_private_bot    = NotImplemented
-    permission_group          = NotImplemented
-    permission_group_owner    = NotImplemented
-    permission_deny_text      = NotImplemented
-    permission_deny_voice     = NotImplemented
-    permission_deny_voice_con = NotImplemented
-    permission_deny_both      = NotImplemented
 
-Permission.permission_all            = Permission(0b01111111111111111111111111111111)
-Permission.permission_none           = Permission(0b00000000000000000000000000000000)
-Permission.permission_private        = Permission(0b00000000000001111100110001000000)
-Permission.permission_private_bot    = Permission(0b00000000000001101100110001000000)
-Permission.permission_group          = Permission(0b00000000000001111100010001000000)
-Permission.permission_group_owner    = Permission(0b00000000000001111100110001000010)
-Permission.permission_deny_text      = Permission(0b11111111111111011000011111111111)
-Permission.permission_deny_voice     = Permission(0b11111100000011111111110011111111) #~voice
-Permission.permission_deny_voice_con = Permission(0b11101100000011111111111011101111) #~voice - manage_roles - manage_channel
-Permission.permission_deny_both      = Permission(Permission.permission_deny_text|Permission.permission_deny_voice)
+
+PERMISSION_ALL = Permission().update_by_keys(
+    create_instant_invite    = True,
+    kick_users               = True,
+    ban_users                = True,
+    administrator            = True,
+    manage_channel           = True,
+    manage_guild             = True,
+    add_reactions            = True,
+    view_audit_logs          = True,
+    priority_speaker         = True,
+    stream                   = True,
+    view_channel             = True,
+    send_messages            = True,
+    send_tts_messages        = True,
+    manage_messages          = True,
+    embed_links              = True,
+    attach_files             = True,
+    read_message_history     = True,
+    mention_everyone         = True,
+    use_external_emojis      = True,
+    view_guild_insights      = True,
+    connect                  = True,
+    speak                    = True,
+    mute_users               = True,
+    deafen_users             = True,
+    move_users               = True,
+    use_voice_activation     = True,
+    change_nickname          = True,
+    manage_nicknames         = True,
+    manage_roles             = True,
+    manage_webhooks          = True,
+    manage_emojis            = True,
+    use_application_commands = True,
+    request_to_speak         = True,
+        )
+
+PERMISSION_NONE = Permission()
+
+PERMISSION_PRIVATE = Permission().update_by_keys(
+    create_instant_invite    = False,
+    kick_users               = False,
+    ban_users                = False,
+    administrator            = False,
+    manage_channel           = False,
+    manage_guild             = False,
+    add_reactions            = True,
+    view_audit_logs          = False,
+    priority_speaker         = False,
+    stream                   = False,
+    view_channel             = True,
+    send_messages            = True,
+    send_tts_messages        = False,
+    manage_messages          = False,
+    embed_links              = True,
+    attach_files             = True,
+    read_message_history     = True,
+    mention_everyone         = True,
+    use_external_emojis      = True,
+    view_guild_insights      = False,
+    connect                  = False,
+    speak                    = False,
+    mute_users               = False,
+    deafen_users             = False,
+    move_users               = False,
+    use_voice_activation     = True,
+    change_nickname          = False,
+    manage_nicknames         = False,
+    manage_roles             = False,
+    manage_webhooks          = False,
+    manage_emojis            = False,
+    use_application_commands = True,
+    request_to_speak         = False,
+        )
+
+PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
+    read_message_history     = False,
+        )
+
+PERMISSION_GROUP = PERMISSION_PRIVATE.update_by_keys(
+    create_instant_invite    = True,
+        )
+
+PERMISSION_GROUP_OWNER = PERMISSION_GROUP.update_by_keys(
+    kick_users               = True,
+        )
+
+PERMISSION_TEXT_ALL = Permission().update_by_keys(
+    create_instant_invite    = False,
+    kick_users               = False,
+    ban_users                = False,
+    administrator            = False,
+    manage_channel           = False,
+    manage_guild             = False,
+    add_reactions            = True,
+    view_audit_logs          = False,
+    priority_speaker         = False,
+    stream                   = False,
+    view_channel             = False,
+    send_messages            = True,
+    send_tts_messages        = True,
+    manage_messages          = False,
+    embed_links              = True,
+    attach_files             = True,
+    read_message_history     = False,
+    mention_everyone         = True,
+    use_external_emojis      = True,
+    view_guild_insights      = False,
+    connect                  = False,
+    speak                    = False,
+    mute_users               = False,
+    deafen_users             = False,
+    move_users               = False,
+    use_voice_activation     = False,
+    change_nickname          = False,
+    manage_nicknames         = False,
+    manage_roles             = False,
+    manage_webhooks          = False,
+    manage_emojis            = False,
+    use_application_commands = True,
+    request_to_speak         = False,
+        )
+
+PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
+
+PERMISSION_TEXT_AND_STAGE_DENY = PERMISSION_TEXT_DENY.update_by_keys(
+    request_to_speak         = False,
+        )
+
+PERMISSION_VOICE_ALL = Permission().update_by_keys(
+    create_instant_invite    = False,
+    kick_users               = False,
+    ban_users                = False,
+    administrator            = False,
+    manage_channel           = False,
+    manage_guild             = False,
+    add_reactions            = False,
+    view_audit_logs          = False,
+    priority_speaker         = True,
+    stream                   = True,
+    view_channel             = False,
+    send_messages            = False,
+    send_tts_messages        = False,
+    manage_messages          = False,
+    embed_links              = False,
+    attach_files             = False,
+    read_message_history     = False,
+    mention_everyone         = False,
+    use_external_emojis      = False,
+    view_guild_insights      = False,
+    connect                  = True,
+    speak                    = True,
+    mute_users               = True,
+    deafen_users             = True,
+    move_users               = True,
+    use_voice_activation     = True,
+    change_nickname          = False,
+    manage_nicknames         = False,
+    manage_roles             = False,
+    manage_webhooks          = False,
+    manage_emojis            = False,
+    use_application_commands = False,
+    request_to_speak         = True,
+        )
+
+PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)
+
+PERMISSION_VOICE_DENY_CONNECTION = PERMISSION_VOICE_DENY.update_by_keys(
+    manage_roles             = False,
+    manage_channel           = False,
+        )
+
+PERMISSION_TEXT_AND_VOICE_DENY = Permission(PERMISSION_TEXT_DENY|PERMISSION_VOICE_DENY)
+
+PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
+    create_instant_invite    = False,
+    kick_users               = False,
+    ban_users                = False,
+    administrator            = False,
+    manage_channel           = False,
+    manage_guild             = False,
+    add_reactions            = False,
+    view_audit_logs          = False,
+    priority_speaker         = False,
+    stream                   = False,
+    view_channel             = False,
+    send_messages            = False,
+    send_tts_messages        = False,
+    manage_messages          = False,
+    embed_links              = False,
+    attach_files             = False,
+    read_message_history     = False,
+    mention_everyone         = False,
+    use_external_emojis      = False,
+    view_guild_insights      = False,
+    connect                  = False,
+    speak                    = False,
+    mute_users               = True,
+    deafen_users             = False,
+    move_users               = True,
+    use_voice_activation     = False,
+    change_nickname          = False,
+    manage_nicknames         = False,
+    manage_roles             = False,
+    manage_webhooks          = False,
+    manage_emojis            = False,
+    use_application_commands = False,
+    request_to_speak         = True,
+        )

@@ -2328,18 +2328,6 @@ class Message(DiscordEntity, immortal=True):
         
         return mentions
     
-    @property
-    def cross_reference(self):
-        """
-        Deprecated, please use ``.referenced_message`` instead. Will be removed in 2021 february.
-        """
-        warnings.warn(
-            '`Client.cross_reference` is deprecated, and will be removed in 2021 february. '
-            'Please use `Message.referenced_message` instead.',
-            FutureWarning)
-        
-        if self.flags.is_crosspost:
-            return self.referenced_message
     
     def __len__(self):
         """

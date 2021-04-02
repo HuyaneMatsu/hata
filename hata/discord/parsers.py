@@ -32,7 +32,7 @@ from .invite import Invite
 from .message import EMBED_UPDATE_NONE, Message, MessageRepr
 from .interaction import ApplicationCommand, INTERACTION_TYPE_TABLE, ApplicationCommandPermission
 from .integration import Integration
-from .permission import Permission
+from .permission import Permission, PERMISSION_PRIVATE
 from .preinstanced import InteractionType
 
 from . import rate_limit as module_rate_limit
@@ -1184,6 +1184,7 @@ else:
         message_id = int(data['id'])
         message = channel._pop_message(message_id)
         if message is None:
+            clients.close()
             return
         
         for client_ in clients:
@@ -1441,6 +1442,7 @@ if ALLOW_DEAD_EVENTS:
         
         if message is None:
             if 'edited_timestamp' not in data:
+                clients.close()
                 return
             
             if message is None:
@@ -1449,6 +1451,7 @@ if ALLOW_DEAD_EVENTS:
             else:
                 old_attributes = message._update(data)
                 if not old_attributes:
+                    clients.close()
                     return
             
             for client_ in clients:
@@ -1459,6 +1462,7 @@ if ALLOW_DEAD_EVENTS:
         if 'edited_timestamp' in data:
             old_attributes = message._update(data)
             if not old_attributes:
+                clients.close()
                 return
             
             for client_ in clients:
@@ -1466,6 +1470,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             result = message._update_embed(data)
             if not result:
+                clients.close()
                 return
                 
             for client_ in clients:
@@ -1508,6 +1513,7 @@ else:
         if 'edited_timestamp' in data:
             old_attributes = message._update(data)
             if not old_attributes:
+                clients.close()
                 return
             
             for client_ in clients:
@@ -1515,6 +1521,7 @@ else:
         else:
             result = message._update_embed(data)
             if not result:
+                clients.close()
                 return
                 
             for client_ in clients:
@@ -1892,6 +1899,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             old_reactions = message.reactions
             if not old_reactions:
+                clients.close()
                 return
             
             message.reactions = type(old_reactions)(None)
@@ -1929,6 +1937,7 @@ else:
         
         old_reactions = message.reactions
         if not old_reactions:
+            clients.close()
             return
         
         message.reactions = type(old_reactions)(None)
@@ -2241,6 +2250,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             users = message.reactions.remove_emoji(emoji)
             if users is None:
+                clients.close()
                 return
         
         for client_ in clients:
@@ -2275,6 +2285,7 @@ else:
         emoji = create_partial_emoji(data['emoji'])
         users = message.reactions.remove_emoji(emoji)
         if users is None:
+            clients.close()
             return
         
         for client_ in clients:
@@ -2449,6 +2460,7 @@ if CACHE_USER:
         user, old_attributes = User._update_profile(data, guild)
         
         if not old_attributes:
+            clients.close()
             return
         
         if isinstance(user, Client):
@@ -2634,6 +2646,7 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
     
     old_attributes = channel._update(data)
     if not old_attributes:
+        clients.close()
         return
     
     for client_ in clients:
@@ -2889,6 +2902,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
     changes = guild._update_emojis(data['emojis'])
     
     if not changes:
+        clients.close()
         return
     
     for client_ in clients:
@@ -3369,6 +3383,7 @@ def GUILD_UPDATE__CAL_MC(client, data):
     
     old_attributes = guild._update(data)
     if not old_attributes:
+        clients.close()
         return
     
     for client_ in clients:
@@ -3793,6 +3808,7 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     try:
         role = guild.roles[role_id]
     except KeyError:
+        clients.close()
         guild_sync(client, data, None)
         return
     
@@ -3889,11 +3905,13 @@ def GUILD_ROLE_UPDATE__CAL_MC(client, data):
     try:
         role = guild.roles[role_id]
     except KeyError:
+        clients.close()
         guild_sync(client, data, None)
         return
     
     old_attributes = role._update(data['role'])
     if not old_attributes:
+        clients.close()
         return
     
     for client_ in clients:
@@ -4552,7 +4570,7 @@ class InteractionEvent(DiscordEntity, EventBase):
         try:
             user_permissions = user_data['permissions']
         except KeyError:
-            user_permissions = Permission.permission_private
+            user_permissions = PERMISSION_PRIVATE
         else:
             user_permissions = Permission(user_permissions)
         
@@ -7525,37 +7543,39 @@ class EventDescriptor:
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
         
-        +---------------+---------------------------------------+
-        | Keys          | Values                                |
-        +===============+=======================================+
-        | bitrate       | `int`                                 |
-        +---------------+---------------------------------------+
-        | category      | ``ChannelCategory`` or ``Guild``      |
-        +---------------+---------------------------------------+
-        | icon          | ``Icon``                              |
-        +---------------+---------------------------------------+
-        | name          | `str`                                 |
-        +---------------+---------------------------------------+
-        | nsfw          | `bool`                                |
-        +---------------+---------------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``     |
-        +---------------+---------------------------------------+
-        | owner_id      | `int`                                 |
-        +---------------+---------------------------------------+
-        | position      | `int`                                 |
-        +---------------+---------------------------------------+
-        | region        | `None` or ``VoiceRegion``             |
-        +---------------+---------------------------------------+
-        | slowmode      | `int`                                 |
-        +---------------+---------------------------------------+
-        | topic         | `None` or `str`                       |
-        +---------------+---------------------------------------+
-        | type          | `int`                                 |
-        +---------------+---------------------------------------+
-        | user_limit    | `int`                                 |
-        +---------------+---------------------------------------+
-        | users         | `list` of (``User`` or ``Client``)    |
-        +---------------+---------------------------------------+
+        +-----------------------+---------------------------------------+
+        | Keys                  | Values                                |
+        +=======================+=======================================+
+        | bitrate               | `int`                                 |
+        +-----------------------+---------------------------------------+
+        | category              | ``ChannelCategory`` or ``Guild``      |
+        +-----------------------+---------------------------------------+
+        | icon                  | ``Icon``                              |
+        +-----------------------+---------------------------------------+
+        | name                  | `str`                                 |
+        +-----------------------+---------------------------------------+
+        | nsfw                  | `bool`                                |
+        +-----------------------+---------------------------------------+
+        | overwrites            | `list` of ``PermissionOverwrite``     |
+        +-----------------------+---------------------------------------+
+        | owner_id              | `int`                                 |
+        +-----------------------+---------------------------------------+
+        | position              | `int`                                 |
+        +-----------------------+---------------------------------------+
+        | region                | `None` or ``VoiceRegion``             |
+        +-----------------------+---------------------------------------+
+        | slowmode              | `int`                                 |
+        +-----------------------+---------------------------------------+
+        | topic                 | `None` or `str`                       |
+        +-----------------------+---------------------------------------+
+        | type                  | `int`                                 |
+        +-----------------------+---------------------------------------+
+        | user_limit            | `int`                                 |
+        +-----------------------+---------------------------------------+
+        | users                 | `list` of (``User`` or ``Client``)    |
+        +-----------------------+---------------------------------------+
+        | video_quality_mode    | ``VideoQualityMode``                  |
+        +-----------------------+---------------------------------------+
     
     channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: Union[``Client``, ``User``]):
         Called when a user is added to a group channel.
@@ -7976,23 +7996,27 @@ class EventDescriptor:
         
         Every item in `old_attributes` is optional and they can be the following:
         
-        +---------------+-------------------+
-        | Keys          | Values            |
-        +===============+===================+
-        | channel       | ``ChannelVoice``  |
-        +---------------+-------------------+
-        | deaf          | `str`             |
-        +---------------+-------------------+
-        | mute          | `bool`            |
-        +---------------+-------------------+
-        | self_deaf     | `bool`            |
-        +---------------+-------------------+
-        | self_mute     | `bool`            |
-        +---------------+-------------------+
-        | self_stream   | `bool`            |
-        +---------------+-------------------+
-        | self_video    | `bool`            |
-        +---------------+-------------------+
+        +-----------------------+-----------------------+
+        | Keys                  | Values                |
+        +=======================+=======================+
+        | channel               | ``ChannelVoice``      |
+        +-----------------------+-----------------------+
+        | deaf                  | `str`                 |
+        +-----------------------+-----------------------+
+        | is_speaker            | `bool`                |
+        +-----------------------+-----------------------+
+        | mute                  | `bool`                |
+        +-----------------------+-----------------------+
+        | requested_to_speak_at | `None` or `datetime`  |
+        +-----------------------+-----------------------+
+        | self_deaf             | `bool`                |
+        +-----------------------+-----------------------+
+        | self_mute             | `bool`                |
+        +-----------------------+-----------------------+
+        | self_stream           | `bool`                |
+        +-----------------------+-----------------------+
+        | self_video            | `bool`                |
+        +-----------------------+-----------------------+
     
     webhook_update(client: ``Client``, channel: ``ChannelGuildBase``):
         Called when a webhook of a channel is updated. Discord not provides further details tho.

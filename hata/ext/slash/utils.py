@@ -72,7 +72,7 @@ async def _application_command_permission_update_watcher(client, permission):
     """
     `application_command_permission_update` event handler.
     
-    Whenever an application command's permissions is updated, will notify teh client's ``Slasher`` about it.
+    Whenever an application command's permissions is updated, will notify the client's ``Slasher`` about it.
     
     This method is a coroutine.
     

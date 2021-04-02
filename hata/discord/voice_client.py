@@ -2,6 +2,7 @@
 __all__ = ('VoiceClient', )
 
 import socket as module_socket
+from datetime import datetime
 
 from ..backend.utils import DOCS_ENABLED
 from ..backend.futures import Future, Task, sleep, future_or_timeout, Lock, Event
@@ -13,7 +14,7 @@ from .opus import OpusEncoder
 from .player import AudioPlayer, AudioSource
 from .reader import AudioReader, AudioStream
 from .gateway import DiscordGatewayVoice, SecretBox
-from .channel import ChannelVoice
+from .channel import ChannelVoiceBase, ChannelStage
 from .exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from .user import User
 
@@ -156,13 +157,13 @@ class VoiceClient:
         if OpusEncoder is None:
             raise RuntimeError('Opus is not loaded.')
         
-        if isinstance(channel, ChannelVoice):
+        if isinstance(channel, ChannelVoiceBase):
             guild = channel.guild
             if guild is None:
                 raise RuntimeError('Cannot connect to partial channel.')
             
         else:
-            raise TypeError(f'Can join only to {ChannelVoice.__name__}, got {channel.__class__.__name__}.')
+            raise TypeError(f'Can join only to {ChannelVoiceBase.__name__}, got {channel.__class__.__name__}.')
         
         region = channel.region
         if region is None:
@@ -547,6 +548,20 @@ class VoiceClient:
         
         return streams
     
+    @property
+    def voice_state(self):
+        """
+        Returns the voice state of the client.
+        
+        Returns
+        -------
+        voice_state : `None` or ``VoiceState``
+        """
+        guild = self.guild
+        if (guild is not None):
+            return guild.voice_states.get(self.client.id)
+    
+    
     async def move_to(self, channel):
         """
         Move the voice client to an another ``ChannelVoice``.
@@ -555,7 +570,7 @@ class VoiceClient:
         
         Arguments
         ---------
-        channel : ``ChannelVoice``
+        channel : ``ChannelVoiceBase``
             The channel where the voice client will move to.
         
         Raises
@@ -563,21 +578,111 @@ class VoiceClient:
         TypeError
             If  `channel` was not given as ``ChannelVoice`` instance.
         RuntimeError
-            If the ``VoiceClient`` would be moved between guilds.
+            - If `channel` is partial.
+            - If the ``VoiceClient`` would be moved between guilds.
         """
-        channel_type = channel.__class__
-        if (channel_type is not ChannelVoice):
-            raise TypeError(f'Can join only to {ChannelVoice.__name__}, got {channel_type.__name__}.')
+        if not isinstance(channel, ChannelVoiceBase):
+            raise TypeError(f'Can join only to {ChannelVoiceBase.__name__}, got {channel.__class__.__name__}.')
         
         if self.channel is channel:
             return
         
+        guild = channel.guild
+        if guild is None:
+            raise RuntimeError('Cannot connect to partial channel.')
+        
         own_guild = self.guild
-        if (own_guild is not channel.guild):
+        if (own_guild is not guild):
             raise RuntimeError('Cannot move to an another guild.')
         
         gateway = self.client._gateway_for(own_guild.id)
         await gateway._change_voice_state(own_guild.id, channel.id)
+    
+    
+    async def join_speakers(self, *, request=False):
+        """
+        Requests to speak at the voice client's voice channel. Only applicable for stage channels.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        request : `bool`, Optional
+            Whether the client should only request to speak.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild = self.guild
+        if guild is None:
+            return
+        
+        channel = self.channel
+        if not isinstance(channel, ChannelStage):
+            return
+        
+        try:
+            voice_state = guild.voice_states[self.client.id]
+        except KeyError:
+            return
+        
+        if voice_state.is_speaker:
+            return
+        
+        if request:
+            timestamp = datetime.now().isoformat()
+        else:
+            timestamp = None
+        
+        data = {
+            'suppress': False,
+            'request_to_speak_timestamp': timestamp,
+            'channel_id': channel.id
+                }
+        
+        await self.client.http.voice_state_client_edit(guild.id, data)
+    
+    
+    async def join_audience(self):
+        """
+        Joins the audience in the voice client's voice chanel. Only applicable for stage channels.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild = self.guild
+        if guild is None:
+            return
+        
+        channel = self.channel
+        if not isinstance(channel, ChannelStage):
+            return
+        
+        try:
+            voice_state = guild.voice_states[self.client.id]
+        except KeyError:
+            return
+        
+        if not voice_state.is_speaker:
+            return
+        
+        data = {
+            'suppress': True,
+            'channel_id': channel.id
+                }
+        
+        await self.client.http.voice_state_client_edit(guild.id, data)
+        return
     
     def append(self, source):
         """
@@ -611,6 +716,7 @@ class VoiceClient:
         player.set_source(source)
         Task(self.set_speaking(1), KOKORO)
         return True
+    
     
     def skip(self, index=0):
         """
@@ -778,7 +884,6 @@ class VoiceClient:
                 
                 except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
                         InvalidHandshake, ValueError) as err:
-                    print(str(err), repr(err))
                     self._maybe_close_socket()
                     
                     if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE):
@@ -813,7 +918,6 @@ class VoiceClient:
                         future_or_timeout(task, 60.)
                         await task
                     except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
-                        print(str(err), repr(err))
                         self._maybe_close_socket()
                         
                         if isinstance(err, ConnectionClosed):

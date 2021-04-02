@@ -4,6 +4,7 @@ __all__ = ('SlashCommand', 'SlashCommandPermissionOverwriteWrapper', 'SlashComma
 import warnings
 from threading import current_thread
 from functools import partial as partial_func
+import reprlib
 
 from ...backend.futures import Task, is_coroutine_generator, WaitTillAll
 from ...backend.analyzer import CallableAnalyzer
@@ -1036,6 +1037,20 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'number'     : ANNOTATION_TYPE_NUMBER     ,
         }
 
+# Used at repr
+ANNOTATION_TYPE_TO_STR_ANNOTATION = {
+    ANNOTATION_TYPE_STR        : 'str'        ,
+    ANNOTATION_TYPE_INT        : 'int'        ,
+    ANNOTATION_TYPE_BOOL       : 'bool'       ,
+    ANNOTATION_TYPE_USER       : 'user'       ,
+    ANNOTATION_TYPE_USER_ID    : 'user_id'    ,
+    ANNOTATION_TYPE_ROLE       : 'role'       ,
+    ANNOTATION_TYPE_ROLE_ID    : 'role_id'    ,
+    ANNOTATION_TYPE_CHANNEL    : 'channel'    ,
+    ANNOTATION_TYPE_CHANNEL_ID : 'channel_id' ,
+    ANNOTATION_TYPE_NUMBER     : 'number'     ,
+        }
+
 TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
     str          : ANNOTATION_TYPE_STR     ,
     int          : ANNOTATION_TYPE_INT     ,
@@ -1073,7 +1088,6 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_CHANNEL_ID : ApplicationCommandOptionType.channel ,
     ANNOTATION_TYPE_NUMBER     : ApplicationCommandOptionType.integer ,
         }
-
 
 def parse_annotation_type_and_choice(annotation_value, annotation_name):
     """
@@ -1347,6 +1361,33 @@ class ArgumentConverter:
                         value = None
         
         return passed, value
+    
+    def __repr__(self):
+        """Returns the argument converter's representation."""
+        result = [
+            '<',
+            self.__class__.__name__,
+            ' name=',
+            repr(self.name),
+            ', type=',
+            ANNOTATION_TYPE_TO_STR_ANNOTATION[self.type],
+            ', description=',
+            reprlib.repr(self.description)
+                ]
+        
+        if not self.required:
+            result.append(', default=')
+            result.append(repr(self.default))
+        
+        choices = self.choices
+        if (choices is not None):
+            result.append(', choices=')
+            result.append(repr(choices))
+        
+        result.append('>')
+        
+        return ''.join(result)
+    
     
     def as_option(self):
         """
@@ -1813,7 +1854,6 @@ class SlashCommand:
         
         is_global = getattr(klass, 'is_global', None)
         guild = getattr(klass, 'guild', None)
-        show_source = getattr(klass, 'show_source', None)
         show_for_invoking_user_only = getattr(klass, 'show_for_invoking_user_only', None)
         is_default = getattr(klass, 'is_default', None)
         delete_on_unload = getattr(klass, 'delete_on_unload', None)
@@ -1833,14 +1873,6 @@ class SlashCommand:
             else:
                 try:
                     del kwargs['is_global']
-                except KeyError:
-                    pass
-            
-            if (show_source is None):
-                show_source = kwargs.pop('show_source', None)
-            else:
-                try:
-                    del kwargs['show_source']
                 except KeyError:
                     pass
             
@@ -1886,13 +1918,6 @@ class SlashCommand:
             
             if kwargs:
                 raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
-        
-        if (show_source is not None):
-            warnings.warn(
-                f'`{cls.__name__}.from_class`\'s `show_source` parameter is '
-                f'deprecated, and will be removed in 2021 April. Reference: '
-                f'https://github.com/discord/discord-api-docs/pull/2615',
-                FutureWarning)
         
         return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
             delete_on_unload, allow_by_default)
@@ -1971,7 +1996,6 @@ class SlashCommand:
         """
         if (kwargs is None) or (not kwargs):
             description = None
-            show_source = None
             show_for_invoking_user_only = None
             is_global = None
             guild = None
@@ -1980,7 +2004,6 @@ class SlashCommand:
             allow_by_default = None
         else:
             description = kwargs.pop('description', None)
-            show_source = kwargs.pop('show_source', None)
             show_for_invoking_user_only = kwargs.pop('show_for_invoking_user_only', None)
             is_global = kwargs.pop('is_global', None)
             guild = kwargs.pop('checks', None)
@@ -1990,13 +2013,6 @@ class SlashCommand:
             
             if kwargs:
                 raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
-        
-        if (show_source is not None):
-            warnings.warn(
-                f'`{cls.__name__}.from_kwargs`\'s `show_source` parameter is '
-                f'deprecated, and will be removed in 2021 April. Reference: '
-                f'https://github.com/discord/discord-api-docs/pull/2615',
-                FutureWarning)
         
         return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
             delete_on_unload, allow_by_default)
@@ -2765,8 +2781,8 @@ class SlashCommand:
         
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
+    def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
+            is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Adds a sub-command under the slash command.
         
@@ -2842,13 +2858,6 @@ class SlashCommand:
         """
         if self._command is not None:
             raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
-        
-        if (show_source is not None):
-            warnings.warn(
-                f'`{self.__class__.__name__}.__setevent__`\'s `show_source` parameter is '
-                f'deprecated, and will be removed in 2021 April. Reference: '
-                f'https://github.com/discord/discord-api-docs/pull/2615',
-                FutureWarning)
         
         if isinstance(func, Router):
             func = func[0]
@@ -3370,8 +3379,8 @@ class SlashCommandCategory:
         """
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
+    def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
+            is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Adds a sub-command under the slash category.
         
@@ -3445,13 +3454,6 @@ class SlashCommandCategory:
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
-        if (show_source is not None):
-            warnings.warn(
-                f'`{self.__class__.__name__}.__setevent__`\'s `show_source` parameter is '
-                f'deprecated, and will be removed in 2021 April. Reference: '
-                f'https://github.com/discord/discord-api-docs/pull/2615',
-                FutureWarning)
-        
         if isinstance(func, Router):
             func = func[0]
         
@@ -4383,8 +4385,8 @@ class Slasher(EventHandlerBase):
             await command(client, interaction_event)
     
     
-    def __setevent__(self, func, name, description=None, show_source=None, show_for_invoking_user_only=None,
-            is_global=None, guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
+    def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
+            is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Adds a slash command.
         
@@ -4455,13 +4457,6 @@ class Slasher(EventHandlerBase):
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
         """
-        if (show_source is not None):
-            warnings.warn(
-                f'`{self.__class__.__name__}.__setevent__`\'s `show_source` parameter is '
-                f'deprecated, and will be removed in 2021 April. Reference: '
-                f'https://github.com/discord/discord-api-docs/pull/2615',
-                FutureWarning)
-        
         if isinstance(func, Router):
             func = func[0]
         

@@ -2123,8 +2123,16 @@ class VoiceState:
         The channel to where the user is connected to.
     deaf : `bool`
         Whether the user is deafen.
+    is_speaker : `bool`
+        Whether the user is suppressed inside of the voice channel.
+        
+        If the channel is a ``ChannelVoice``, it is always `False`, meanwhile it ``ChannelStage`` it can vary.
     mute : `bool`
         Whether the user is muted.
+    requested_to_speak_at : `None` or `datetime`
+        When the user requested to speak.
+        
+        Only applicable for ``ChannelStage``-s.
     self_deaf : `bool`
         Whether the user muted everyone else.
     self_mute : `bool`
@@ -2138,7 +2146,8 @@ class VoiceState:
     user : ``User`` or ``Client``
         The voice state's respective user. If user caching is disabled it will be set as a partial user.
     """
-    __slots__ = ('channel', 'deaf', 'mute', 'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user')
+    __slots__ = ('channel', 'deaf', 'is_speaker', 'mute', 'requested_to_speak_at', 'self_deaf', 'self_mute', 'self_stream',
+        'self_video', 'session_id', 'user', )
     def __init__(self, data, channel):
         """
         Creates a ``VoiceState`` object from the given data.
@@ -2147,7 +2156,7 @@ class VoiceState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Voice state data received from Discord.
-        channel : ``ChannelVoice``
+        channel : ``ChannelVoiceBase``
             The channel of the voice state.
         """
         self.channel = channel
@@ -2159,11 +2168,19 @@ class VoiceState:
         self.self_mute = data['self_mute']
         self.self_stream = data.get('self_stream', False)
         self.self_video = data['self_video']
+        
+        requested_to_speak_at = data.get('request_to_speak_timestamp')
+        if (requested_to_speak_at is not None):
+            requested_to_speak_at = parse_time(requested_to_speak_at)
+        
+        self.is_speaker = not data.get('suppress', False)
+        
+        self.requested_to_speak_at = requested_to_speak_at
     
     @property
     def guild(self):
         """
-        Returns the voice state's respective guild
+        Returns the voice state's respective guild.
         
         Returns
         -------
@@ -2190,23 +2207,27 @@ class VoiceState:
         
         Returned Data Structure
         -----------------------
-        +---------------+-------------------+
-        | Keys          | Values            |
-        +===============+===================+
-        | channel       | ``ChannelVoice``  |
-        +---------------+-------------------+
-        | deaf          | `str`             |
-        +---------------+-------------------+
-        | mute          | `bool`            |
-        +---------------+-------------------+
-        | self_deaf     | `bool`            |
-        +---------------+-------------------+
-        | self_mute     | `bool`            |
-        +---------------+-------------------+
-        | self_stream   | `bool`            |
-        +---------------+-------------------+
-        | self_video    | `bool`            |
-        +---------------+-------------------+
+        +-----------------------+-----------------------+
+        | Keys                  | Values                |
+        +=======================+=======================+
+        | channel               | ``ChannelVoice``      |
+        +-----------------------+-----------------------+
+        | deaf                  | `str`                 |
+        +-----------------------+-----------------------+
+        | is_speaker            | `bool`                |
+        +-----------------------+-----------------------+
+        | mute                  | `bool`                |
+        +-----------------------+-----------------------+
+        | requested_to_speak_at | `None` or `datetime`  |
+        +-----------------------+-----------------------+
+        | self_deaf             | `bool`                |
+        +-----------------------+-----------------------+
+        | self_mute             | `bool`                |
+        +-----------------------+-----------------------+
+        | self_stream           | `bool`                |
+        +-----------------------+-----------------------+
+        | self_video            | `bool`                |
+        +-----------------------+-----------------------+
         """
         old_attributes = {}
         
@@ -2244,6 +2265,19 @@ class VoiceState:
             old_attributes['self_mute'] = self.self_mute
             self.self_mute = self_mute
         
+        requested_to_speak_at = data.get('request_to_speak_timestamp')
+        if (requested_to_speak_at is not None):
+            requested_to_speak_at = parse_time(requested_to_speak_at)
+        
+        if self.requested_to_speak_at != requested_to_speak_at:
+            old_attributes['requested_to_speak_at'] = self.requested_to_speak_at
+            self.requested_to_speak_at = requested_to_speak_at
+        
+        is_speaker = not data.get('suppress', False)
+        if self.is_speaker != is_speaker:
+            old_attributes['is_speaker'] = self.is_speaker
+            self.is_speaker = is_speaker
+        
         return old_attributes
     
     def _update_no_return(self, data, channel):
@@ -2264,6 +2298,14 @@ class VoiceState:
         self.self_mute = data['self_mute']
         self.self_stream = data.get('self_stream', False)
         self.self_video = data['self_video']
+        
+        requested_to_speak_at = data.get('request_to_speak_timestamp')
+        if (requested_to_speak_at is not None):
+            requested_to_speak_at = parse_time(requested_to_speak_at)
+        
+        self.requested_to_speak_at = requested_to_speak_at
+        
+        self.is_speaker = not data.get('suppress', False)
     
     def __repr__(self):
         """Returns the voice state's representation."""

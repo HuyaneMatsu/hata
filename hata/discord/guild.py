@@ -6,18 +6,17 @@ __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'Guil
 import re, reprlib
 
 from ..env import CACHE_PRESENCE
-from ..backend.utils import cached_property, DOCS_ENABLED, BaseMethodDescriptor
+from ..backend.utils import cached_property, BaseMethodDescriptor
 from ..backend.futures import Task
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
 from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, parse_time
-from .user import User, create_partial_user, VoiceState, UserBase, ZEROUSER
+from .user import User, create_partial_user, VoiceState, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase, ChannelGuildUndefined
 from .http import URLS
-from .permission import Permission
-from .activity import ActivityUnknown
+from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL
 from .emoji import Emoji, create_partial_emoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
@@ -1300,15 +1299,37 @@ class Guild(DiscordEntity, immortal=True):
         return [channel for channel in self.channels.values() if channel.type==9]
     
     @property
+    def stage_channels(self):
+        """
+        Returns the stage channels of the guild.
+        
+        Returns
+        -------
+        channels . `list` of ``ChannelVoiceBase``
+        """
+        return [channel for channel in self.channels.values() if channel.type==13]
+    
+    @property
     def messageable_channels(self):
         """
-        Returns the message able channels of the guild.
+        Returns the messageable channels of the guild.
         
         Returns
         -------
         channels : `list` of ``ChannelText``
         """
         return [channel for channel in self.channels.values() if channel.type in (0, 5)]
+    
+    @property
+    def connectable_channels(self):
+        """
+        Returns the connectable channels of the guild.
+        
+        Returns
+        -------
+        channels . `list` of ``ChannelVoiceBase``
+        """
+        return [channel for channel in self.channels.values() if channel.type in (2, 13)]
     
     @property
     def default_role(self):
@@ -1904,7 +1925,7 @@ class Guild(DiscordEntity, immortal=True):
         ``.cached_permissions_for`` : Cached permission calculator.
         """
         if user.id == self.owner_id:
-            return Permission.permission_all
+            return PERMISSION_ALL
         
         default_role = self.roles.get(self.id)
         if default_role is None:
@@ -1917,7 +1938,7 @@ class Guild(DiscordEntity, immortal=True):
         except KeyError:
             if isinstance(user, (Webhook, WebhookRepr)) and user.guild is self:
                 return base
-            return Permission.permission_none
+            return PERMISSION_NONE
         
         roles = guild_profile.roles
         if (roles is not None):
@@ -1926,7 +1947,7 @@ class Guild(DiscordEntity, immortal=True):
                 base |= role.permissions
         
         if Permission.can_administrator(base):
-            return Permission.permission_all
+            return PERMISSION_ALL
         
         return Permission(base)
     
@@ -1992,7 +2013,7 @@ class Guild(DiscordEntity, immortal=True):
                 base |= role.permissions
         
         if Permission.can_administrator(base):
-            return Permission.permission_all
+            return PERMISSION_ALL
         
         return Permission(base)
     

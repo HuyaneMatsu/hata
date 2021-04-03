@@ -106,6 +106,7 @@ class MessageActivity:
         """Returns the message activity's representation."""
         return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
 
+
 class Attachment(DiscordEntity):
     """
     Represents an attachment of a ``Message``.
@@ -114,6 +115,8 @@ class Attachment(DiscordEntity):
     ----------
     id : `int`
         The unique identifier number of the attachment.
+    content_type : `None` or `str`
+        The attachment's media type.
     height : `int`
         The height of the attachment if applicable. Defaults to `0`.
     name : `str`
@@ -127,7 +130,7 @@ class Attachment(DiscordEntity):
     width : `int`
         The attachment's width if applicable. Defaults to `0`.
     """
-    __slots__ = ('height', 'name', 'proxy_url', 'size', 'url', 'width',)
+    __slots__ = ('content_type', 'height', 'name', 'proxy_url', 'size', 'url', 'width',)
     def __init__(self, data):
         """
         Creates an attachment object from the attachment data included inside of a ``Message`'s.
@@ -138,6 +141,7 @@ class Attachment(DiscordEntity):
             Received attachment data.
         """
         self.name = data['filename']
+        self.content_type = data.get('content_type')
         self.id = int(data['id'])
         self.proxy_url = data['proxy_url']
         self.size = data['size']
@@ -148,9 +152,9 @@ class Attachment(DiscordEntity):
     def __repr__(self):
         """Returns the representation of the attachment."""
         result = [
-            '<',self.__class__.__name__,
-            ' id=',repr(self.id),
-            ', name=',repr(self.name),
+            '<', self.__class__.__name__,
+            ' id=', repr(self.id),
+            ', name=', repr(self.name),
                 ]
         
         x = self.width
@@ -164,7 +168,7 @@ class Attachment(DiscordEntity):
         result.append('>')
         
         return ''.join(result)
-        
+
 
 class MessageApplication(DiscordEntity):
     """

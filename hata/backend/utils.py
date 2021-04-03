@@ -4,6 +4,8 @@ __all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescripto
     'imultidict', 'istr', 'is_weakreferable', 'list_difference', 'methodize', 'module_property', 'modulize', 'multidict',
     'name_property', 'weakmethod', )
 
+from functools import partial as partial_func
+
 from types import \
     MethodType              as method, \
     FunctionType            as function, \
@@ -4822,6 +4824,56 @@ class module_property:
     
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
+
+
+def _do_copy_docs(source, target):
+    """
+    Does the actual doc-string copy described by ``copy_docs``.
+    
+    Parameters
+    ----------
+    source : `Any`
+        The source object to copy it's doc-string from.
+    target : `Any`
+        The target object to copy it's doc-string to.
+    
+    Returns
+    -------
+    target : `Any`
+        The target object.
+    """
+    target.__doc__ = source.__doc__
+    return target
+
+def copy_docs(source):
+    """
+    Copies a function's doc-string to an other one.
+    
+    Parameters
+    ----------
+    source : `Any`
+        The source object to copy it's docs from.
+    
+    Returns
+    -------
+    wrapper : ``functools.partial``
+        Wrapper which will change the target object's docstring.
+    
+    Examples
+    --------
+    
+    ```py
+    def eat():
+        \"\"\"Cakes are great\"\"\"
+        pass
+    
+    @copy_docs(eat)
+    def taste():
+        pass
+    ```
+    """
+    return partial_func(_do_copy_docs, source)
+
 
 del WeakrefType
 del dummy_init_tester

@@ -361,13 +361,18 @@ def str_attachment(attachment, index=None, **kwargs):
     result.append(f'{start}Attachment:')
     result.append(f'- id : {attachment.id}', 1)
     result.append(f'- name : {attachment.name}', 1)
+    content_type = attachment.content_type
+    if (content_type is not None):
+        result.append(f'- content_type : {content_type}', )
     result.append(f'- url : {attachment.url}', 1)
     result.append(f'- proxy_url : {attachment.proxy_url}', 1)
     result.append(f'- size : {attachment.size}', 1)
-    if attachment.height:
-        result.append(f'- height : {attachment.height}', 1)
-    if attachment.width:
-        result.append(f'- width : {attachment.width}', 1)
+    height = attachment.height
+    width = attachment.width
+    if (height and width):
+        result.append(f'- height : {height}', 1)
+        result.append(f'- width : {width}', 1)
+    
     return result
 
 def str_sticker(sticker, index=None, **kwargs):

@@ -1073,6 +1073,8 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+---------------------------------------------------+-------+
     | application_command                       | DEFAULT_CONVERT                                   | 20    |
     +-------------------------------------------+---------------------------------------------------+-------+
+    | invite_reminder                           | convert_invite_reminder                           | 22    |
+    +-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -1165,6 +1167,7 @@ class MessageType(PreinstancedBase):
     discovery_grace_period_final_warning = NotImplemented
     inline_reply = NotImplemented
     application_command = NotImplemented
+    invite_reminder = NotImplemented
 
 def convert_add_user(self):
     return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
@@ -1315,6 +1318,9 @@ def convert_thread_created(self):
     user_name = self.author.name_at(self.guild)
     return f'{user_name} started a thread'
 
+def convert_invite_reminder(self):
+    return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
+
 MessageType.default = MessageType(0, 'default', MessageType.DEFAULT_CONVERT)
 MessageType.add_user = MessageType(1, 'add_user', convert_add_user)
 MessageType.remove_user = MessageType(2, 'remove_user', convert_remove_user)
@@ -1338,6 +1344,7 @@ MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_gr
 MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
 MessageType.inline_reply = MessageType(19, 'inline_reply', MessageType.DEFAULT_CONVERT)
 MessageType.application_command = MessageType(20, 'application_command', MessageType.DEFAULT_CONVERT)
+MessageType.application_command = MessageType(22, 'invite_reminder', convert_invite_reminder)
 
 
 del convert_add_user
@@ -1358,6 +1365,7 @@ del convert_discovery_requalified
 del convert_discovery_grace_period_initial_warning
 del convert_discovery_grace_period_final_warning
 del convert_thread_created
+del convert_invite_reminder
 
 
 class MessageActivityType(PreinstancedBase):

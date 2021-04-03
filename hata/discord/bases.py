@@ -577,6 +577,11 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         -------
         flag : ``FlagBase`` instance
         
+        Raises
+        ------
+        LookupError
+            If a keyword is invalid.
+        
         Examples
         -------
         ```py
@@ -593,9 +598,8 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         for key, value in kwargs.items():
             try:
                 shift = self.__keys__[key]
-            except KeyError as err:
-                err.args = (f'Invalid key: {key!r}.',)
-                raise
+            except KeyError:
+                raise LookupError(f'Invalid key: {key!r}.') from None
             
             if value:
                 new |= (1<<shift)

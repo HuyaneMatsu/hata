@@ -1300,7 +1300,7 @@ class has_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `in` instance
+        permissions : ``Permission`` or `int` instance
             The permission, what the message's author should have at the message's channel.
         handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
@@ -1804,7 +1804,7 @@ class is_any_guild(_check_base):
             If an element of `guilds` was given as `str` or as `int` instance, but not as a valid snowflake.
         """
         guild_type = guilds.__class__
-        if not hasattr(guild_type,'__iter__'):
+        if not hasattr(guild_type, '__iter__'):
             raise TypeError(f'`guilds` can be given as `iterable` of (`str`, `int` or `{Guild.__name__}`), got '
                 f'{guild_type.__name__}.')
         
@@ -2226,7 +2226,7 @@ class is_in_voice(_check_base):
         """
         guild = message.channel.guild
         if guild is None:
-            return
+            return False
         
         if message.author.id in guild.voice_states:
             return True

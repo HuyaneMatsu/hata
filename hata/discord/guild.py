@@ -49,19 +49,32 @@ class SystemChannelFlag(ReverseFlagBase):
     For Discord these flags tell, what ``MessageType`-s are not sent to the guild's system channel, but the wrapper
     reverses this behaviour.
     
+    The implemented system channel flags are the following:
+    
+    +---------------------------+-------------------+
+    | Respective name           | Bitwise position  |
+    +===========================+===================+
+    | welcome                   | 0                 |
+    +---------------------------+-------------------+
+    | boost                     | 1                 |
+    +---------------------------+-------------------+
+    | setup_tips                | 2                 |
+    +---------------------------+-------------------+
+    
     There are also predefined ``SystemChannelFlag``-s:
     
     +-----------------------+-----------------------+
     | Class attribute name  | value                 |
     +=======================+=======================+
-    | NONE                  | ActivityFlag(0b11)    |
+    | NONE                  | ActivityFlag(0b111)   |
     +-----------------------+-----------------------+
-    | ALL                   | ActivityFlag(0b00)    |
+    | ALL                   | ActivityFlag(0b000)   |
     +-----------------------+-----------------------+
     """
     __keys__ = {
-        'welcome': 0,
-        'boost'  : 1,
+        'welcome'       : 0,
+        'boost'         : 1,
+        'setup_tips'    : 2,
             }
     
     @property
@@ -89,8 +102,8 @@ class SystemChannelFlag(ReverseFlagBase):
     NONE = NotImplemented
     ALL  = NotImplemented
 
-SystemChannelFlag.NONE = SystemChannelFlag(0b11)
-SystemChannelFlag.ALL  = SystemChannelFlag(0b00)
+SystemChannelFlag.NONE = SystemChannelFlag(0b111)
+SystemChannelFlag.ALL  = SystemChannelFlag(0b000)
 
 class GuildWidgetUser(DiscordEntity):
     """

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ()
+__all__ = ('CheckBase', )
 
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
@@ -912,7 +912,7 @@ class CheckIsBooster(CheckBase):
         return True
 
 
-class CheckClient(CheckBase):
+class CheckIsClient(CheckBase):
     """
     Check whether the message was sent by a client.
     """

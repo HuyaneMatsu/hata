@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+__all__ = ('CommandWrapper', 'CommandCheckWrapper', )
+
 from functools import partial as partial_func
 
 class CommandWrapper:

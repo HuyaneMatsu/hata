@@ -71,7 +71,7 @@ class ContentArgumentSeparator:
         ------
         TypeError
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.

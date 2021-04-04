@@ -5756,8 +5756,8 @@ class Client(UserBase):
     
     def keep_typing(self, channel, timeout=300.):
         """
-        Returns a ``Typer`` object, what will keep sending typing events at the given channel. It can be used as a
-        context manager.
+        Returns a context manager which will keep sending typing events at the channel. Can be used to indicate that
+        the bot is working.
         
         Parameters
         ----------
@@ -5774,6 +5774,14 @@ class Client(UserBase):
         ------
         TypeError
             If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
+        
+        Examples
+        --------
+        ```py
+        with client.keep_typing(channel):
+            # Do some things
+            await client.message_create(channel, 'Ayaya')
+        ```
         """
         if isinstance(channel, ChannelTextBase):
             channel_id = channel.id

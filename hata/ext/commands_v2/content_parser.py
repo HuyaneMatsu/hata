@@ -103,6 +103,18 @@ class ContentArgumentParserContextBase:
         return ''
 
 class ContentArgumentParserContextSeparator(ContentArgumentParserContextBase):
+    """
+    Separator pattern based parsing context returned by ``ContentArgumentParser``.
+    
+    Attributes
+    ----------
+    _cache : `dict` of (`str`, `Any`)
+        Cache used by cached properties.
+    _parsed : re.Match
+        The parsed regex.
+    """
+    __slots__ = ()
+    
     @cached_property
     @copy_docs(ContentArgumentParserContextBase.whole)
     def whole(self):
@@ -119,6 +131,18 @@ class ContentArgumentParserContextSeparator(ContentArgumentParserContextBase):
         return self._parsed.group(3)
 
 class ContentArgumentParserContextEncapsulator(ContentArgumentParserContextBase):
+    """
+    Encapsulator pattern based parsing context returned by ``ContentArgumentParser``.
+    
+    Attributes
+    ----------
+    _cache : `dict` of (`str`, `Any`)
+        Cache used by cached properties.
+    _parsed : re.Match
+        The parsed regex.
+    """
+    __slots__ = ()
+    
     @cached_property
     @copy_docs(ContentArgumentParserContextBase.whole)
     def whole(self):

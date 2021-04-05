@@ -11,7 +11,7 @@ from ..backend.utils import _spaceholder, BaseMethodDescriptor
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .http import URLS
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
-from .client_core import MESSAGES, CHANNELS, GUILDS
+from .client_core import MESSAGES, CHANNELS, GUILDS, ROLES
 from .user import ZEROUSER, User
 from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
@@ -1057,29 +1057,34 @@ class Message(DiscordEntity, immortal=True):
         self.user_mentions = user_mentions
         
         if guild is None:
-            self._channel_mentions = None
-            self.role_mentions = None
+            channel_mentions = None
         else:
-            self._channel_mentions = _spaceholder
-    
-            try:
-                role_mention_ids = data['mention_roles']
-            except KeyError:
-                role_mentions = None
-            else:
-                if role_mention_ids:
-                    roles = guild.roles
+            channel_mentions = _spaceholder
+        
+        self._channel_mentions = channel_mentions
+        
+        role_mentions = None
+        try:
+            role_mention_ids = data['mention_roles']
+        except KeyError:
+            pass
+        else:
+            for role_id in role_mention_ids:
+                role_id = int(role_id)
+                try:
+                    role = ROLES[role_id]
+                except KeyError:
+                    continue
+                
+                if role_mentions is None:
                     role_mentions = []
-                    for role_id in role_mention_ids:
-                        try:
-                            role_mentions.append(roles[int(role_id)])
-                        except KeyError:
-                            continue
-                    role_mentions.sort()
-                else:
-                    role_mentions = None
+                
+                role_mentions.append(role)
             
-            self.role_mentions = role_mentions
+            if (role_mentions is not None):
+                role_mentions.sort()
+        
+        self.role_mentions = role_mentions
         
         MESSAGES[self.id] = self
     
@@ -2269,7 +2274,7 @@ class Message(DiscordEntity, immortal=True):
     @property
     def clean_content(self):
         """
-        Returns them message's clean content, what actually depends on the message's type. By default it is the
+        Returns the message's clean content, what actually depends on the message's type. By default it is the
         message's content with transformed mentions, but for different message types it means different things.
         
         Returns

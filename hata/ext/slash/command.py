@@ -63,7 +63,7 @@ def is_only_embed(maybe_embeds):
 
 def raw_name_to_display(raw_name):
     """
-    Converts the given raw application command name and converts it to it's display name.
+    Converts the given raw application command name to it's display name.
     
     Parameters
     ----------

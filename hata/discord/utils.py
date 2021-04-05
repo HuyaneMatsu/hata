@@ -1114,7 +1114,7 @@ def sanitize_mentions(content, guild=None):
         transformations[f'<@&{id_}>'] = sanitized_mention
     
     return re_compile('|'.join(transformations)).sub(
-        lambda mention: transformations[re_escape(mention.group(0))], content)
+        lambda mention: transformations[mention.group(0)], content)
 
 module_bases.id_to_time = id_to_time
 

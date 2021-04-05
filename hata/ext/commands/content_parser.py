@@ -344,6 +344,7 @@ def parse_channel_mention(part, message):
         if channel.id == channel_id:
             return channel
 
+
 class ConverterFlag(FlagBase):
     """
     Flags for a converter to describe by which rules it should convert.
@@ -2772,6 +2773,7 @@ class ContentParserArgumentHinter:
         """Returns the inter's representation."""
         return f'{self.__class__.__name__}(default={self.default!r}, default_type={self.default_type!r}, annotation=' \
             f'{self.annotation!r}, is_args={self.is_args!r})'
+
 
 class CommandContentParser:
     """

@@ -48,7 +48,28 @@ class CommandContext(object):
         return self
     
     def __repr__(self):
-        """Returns teh context's representation."""
+        """Returns the context's representation."""
+        return f'<{self.__class__.__name__} client={self.client!r}, message={self.message!r}, command={self.command!r}>'
+    
+    def __eq__(self, other):
+        """Returns whether the two contexts are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.command != other.command:
+            return False
+        
+        if self.message is not other.message:
+            return False
+        
+        if self.client is not other.client:
+            return False
+        
+        return True
+    
+    def __hash__(self):
+        """Returns the hash value of the context."""
+        return hash(self.client) ^ hash(self.message) ^ hash(self.command)
     
     # Properties
     
@@ -107,7 +128,7 @@ class CommandContext(object):
     
     async def reply(self, *args, **kwargs):
         """
-        Replies to teh command's caller.
+        Replies to the command's caller.
         
         This method is a coroutine.
         
@@ -274,3 +295,4 @@ class CommandContext(object):
         ```
         """
         return self.client.keep_typing(self.channel, *args, **kwargs)
+

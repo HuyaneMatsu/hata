@@ -7507,7 +7507,7 @@ class EventDescriptor:
             application_command_permission: ``ApplicationCommandPermission``)
         Called when an application command's permissions are updated inside of a guild.
     
-    application_command_update(client : ``Client``, guild_id: ``int`, application:command: ``ApplicationCommand``, \
+    application_command_update(client : ``Client``, guild_id: `int`, application:command: ``ApplicationCommand``, \
             old_attributes : Union[`dict`, `None`])
         Called when you update one of your guild bound application command.
         

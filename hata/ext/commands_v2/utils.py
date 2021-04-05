@@ -160,3 +160,20 @@ class CommandCheckWrapper(CommandWrapper):
     def __repr__(self):
         """Returns the command wrapper's representation."""
         return f'<{self.__class__.__name__} wrapped={self._wrapped!r} check={self._check!r}>'
+
+
+def raw_name_to_display(raw_name):
+    """
+    Converts the given raw command or it's parameter's name to it's display name
+    
+    Parameters
+    ----------
+    raw_name : `str`
+        The name to convert.
+    
+    Returns
+    -------
+    display_name : `str`
+        The converted name.
+    """
+    return '-'.join([w for w in raw_name.strip('_ ').lower().replace(' ', '-').replace('_', '-').split('-') if w])

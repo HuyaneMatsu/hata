@@ -381,8 +381,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         ------
         user : ``Client`` or ``User``
         """
-        return
-        yield
+        yield from self.users
     
     @property
     def clients(self):

@@ -7,7 +7,7 @@ import re
 from collections import deque
 from weakref import WeakSet
 
-from ..backend.utils import _spaceholder, DOCS_ENABLED
+from ..backend.utils import _spaceholder, DOCS_ENABLED, copy_docs
 from ..backend.event_loop import LOOP_TIME
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
@@ -363,13 +363,26 @@ class ChannelBase(DiscordEntity, immortal=True):
     @property
     def users(self):
         """
-        The users who are can see this channel.
+        The users who can see this channel.
         
         Returns
         -------
-        users : `list` of (``Client`` or ``User``) objects
+        users : `list` of (``Client`` or ``User``)
         """
         return []
+    
+    def iter_users(self):
+        """
+        Iterates over the users who can see the channel.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        user : ``Client`` or ``User``
+        """
+        return
+        yield
     
     @property
     def clients(self):
@@ -384,46 +397,59 @@ class ChannelBase(DiscordEntity, immortal=True):
         for user in self.users:
             if type(user) is User:
                 continue
+            
             result.append(user)
         
         return result
     
-    #for sorting channels
+    # for sorting channels
     def __gt__(self, other):
         """Returns whether this channel's id is greater than the other's."""
-        if isinstance(other, ChannelBase):
-            return self.id > other.id
-        return NotImplemented
+        if not isinstance(other, ChannelBase):
+            return NotImplemented
+        
+        return self.id > other.id
+        
     
     def __ge__(self, other):
         """Returns whether this channel's id is greater or equal than the other's."""
-        if isinstance(other, ChannelBase):
-            return self.id >= other.id
-        return NotImplemented
+        if not isinstance(other, ChannelBase):
+            return NotImplemented
+        
+        return self.id >= other.id
+        
     
     def __eq__(self, other):
         """Returns whether this channel's id is equal to the other's."""
-        if isinstance(other, ChannelBase):
-            return self.id == other.id
-        return NotImplemented
+        if not isinstance(other, ChannelBase):
+            return NotImplemented
+        
+        return self.id == other.id
+        
     
     def __ne__(self,other):
         """Returns whether this channel's id is not equal to the other's."""
-        if isinstance(other, ChannelBase):
-            return self.id != other.id
-        return NotImplemented
+        if not isinstance(other, ChannelBase):
+            return NotImplemented
+        
+        return self.id != other.id
+        
     
     def __le__(self, other):
         """Returns whether this channel's id is less or equal than the other's."""
-        if isinstance(other, ChannelBase):
-            return self.id <= other.id
-        return NotImplemented
+        if not isinstance(other, ChannelBase):
+            return NotImplemented
+        
+        return self.id <= other.id
+        
     
     def __lt__(self, other):
         """Returns whether this channel's id is less than the other's."""
-        if isinstance(other, ChannelBase):
-            return self.id < other.id
-        return NotImplemented
+        if not isinstance(other, ChannelBase):
+            return NotImplemented
+        
+        return self.id < other.id
+        
     
     @property
     def name(self):
@@ -527,6 +553,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         Always return empty permissions. Subclasses should implement this method.
         """
         return PERMISSION_NONE
+
 
 # sounds funny, but this is a class
 # the chunk_size is 97, because it means 1 request for _load_messages_till
@@ -1223,6 +1250,7 @@ class ChannelTextBase:
         
         return received
 
+
 class ChannelGuildBase(ChannelBase):
     """
     Base class for guild channels.
@@ -1449,6 +1477,7 @@ class ChannelGuildBase(ChannelBase):
             self.position = position
             self.category = category
     
+    
     def _permissions_for(self, user):
         """
         Base permission calculator method. Subclasses call this first, then apply their channel type related changes.
@@ -1520,6 +1549,7 @@ class ChannelGuildBase(ChannelBase):
                 base = (base&~overwrite.deny)|overwrite.allow
         
         return Permission(base)
+    
     
     def permissions_for(self, user):
         """
@@ -1696,37 +1726,36 @@ class ChannelGuildBase(ChannelBase):
         
         return overwrites
     
+    
     def __str__(self):
         """Returns the channel's name."""
         return self.name
     
-    @property
-    def users(self):
-        """
-        Returns the users, who can see this channel.
-        
-        Returns
-        -------
-        users : `list` of (``User`` or ``Client``) objects
-        """
-        guild = self.guild
-        if guild is None:
-            return []
-        return [user for user in guild.users.values() if self.permissions_for(user).can_view_channel]
     
     @property
+    @copy_docs(ChannelBase.users)
+    def users(self):
+        return list(self.iter_users())
+    
+    
+    @copy_docs(ChannelBase.iter_users)
+    def iter_users(self):
+        guild = self.guild
+        if (guild is not None):
+            for user in guild.users.values():
+                if self.permissions_for(user).can_view_channel:
+                    yield user
+    
+    
+    @property
+    @copy_docs(ChannelBase.clients)
     def clients(self):
-        """
-        The clients, who can access this channel.
-        
-        Returns
-        -------
-        clients : `list` of ``Client`` objects
-        """
         guild = self.guild
         if guild is None:
             return []
+        
         return guild.clients
+    
     
     def get_user(self, name, default=None):
         """

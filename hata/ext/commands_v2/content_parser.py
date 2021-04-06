@@ -1912,7 +1912,7 @@ class CommandContentParser:
         
         if should_instance:
             func = analyzer.insatnce()
-    
+        
         self = object.__new__(cls)
         self._parameters = parameters
         self._content_parameter_parser = content_parameter_parser

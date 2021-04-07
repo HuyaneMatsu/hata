@@ -7534,7 +7534,7 @@ class EventDescriptor:
         
         > This event is not called when a private channel is created.
     
-    channel_delete(client: ``Client``, channel: ``ChannelBase``)
+    channel_delete(client: ``Client``, channel: ``ChannelBase``, guild: Union[`None`, ``Guild``])
         Called when a channel is deleted.
     
     channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: `dict`)

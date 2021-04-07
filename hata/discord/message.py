@@ -1,10 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_NONE',
-    'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageApplication', 'MessageFlag', 'MessageReference',
-    'MessageRepr', 'Sticker', 'UnknownCrossMention', )
+    'EMBED_UPDATE_SIZE_UPDATE', 'Message', 'MessageActivity', 'MessageApplication', 'MessageFlag',
+    'MessageInteraction', 'MessageReference', 'MessageRepr', 'Sticker', 'UnknownCrossMention')
 
 from datetime import datetime
-import warnings
 
 from ..backend.utils import _spaceholder, BaseMethodDescriptor
 

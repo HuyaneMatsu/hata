@@ -62,47 +62,53 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     -------
     snapshot_difference : `None` or `tuple` (`set` of ``SlashCommand``, `set` of ``SlashCommand``)
     """
-    if (snapshot_old is None) or (snapshot_new is None):
+    if (snapshot_old is None) and (snapshot_new is None):
         return None
     
     # Keep the order!
     added_commands = []
     removed_commands = []
     
-    guild_ids = set(snapshot_old.keys())
-    guild_ids.update(snapshot_new.keys())
+    guild_ids = set()
+    if (snapshot_old is not None):
+        guild_ids.update(snapshot_old.keys())
+    
+    if (snapshot_new is not None):
+        guild_ids.update(snapshot_new.keys())
     
     for guild_id in guild_ids:
         local_added_commands = []
         local_removed_commands = []
         
-        try:
-            new_changes = snapshot_new[guild_id]
-        except KeyError:
-            pass
-        else:
-            for added, command in new_changes:
-                if added:
-                    local_added_commands.append(command)
-                else:
-                    local_removed_commands.remove(command)
-        
-        try:
-            old_changes = snapshot_old[guild_id]
-        except KeyError:
-            pass
-        else:
-            for added, command in old_changes:
-                if added:
-                    try:
-                        local_added_commands.remove(command)
-                    except ValueError:
-                        local_removed_commands.append(command)
-                else:
-                    try:
-                        local_removed_commands.remove(command)
-                    except ValueError:
+        if (snapshot_new is not None):
+            try:
+                new_changes = snapshot_new[guild_id]
+            except KeyError:
+                pass
+            else:
+                for added, command in new_changes:
+                    if added:
                         local_added_commands.append(command)
+                    else:
+                        local_removed_commands.remove(command)
+        
+        if (snapshot_old is not None):
+            try:
+                old_changes = snapshot_old[guild_id]
+            except KeyError:
+                pass
+            else:
+                for added, command in old_changes:
+                    if added:
+                        try:
+                            local_added_commands.remove(command)
+                        except ValueError:
+                            local_removed_commands.append(command)
+                    else:
+                        try:
+                            local_removed_commands.remove(command)
+                        except ValueError:
+                            local_added_commands.append(command)
         
         added_commands.extend(local_added_commands)
         removed_commands.extend(local_removed_commands)

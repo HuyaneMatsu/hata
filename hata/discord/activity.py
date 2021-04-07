@@ -86,6 +86,18 @@ class ActivityTypes:
     competing = 5
 
 
+ACTIVITY_TYPE_NAMES = {
+    0: 'game',
+    1: 'stream',
+    2: 'spotify',
+    3: 'watching',
+    4: 'custom',
+    5: 'competing',
+        }
+
+ACTIVITY_TYPE_NAME_UNKNOWN = 'unknown'
+
+
 class ActivityTimestamps:
     """
     Represents an activity's timestamp field.
@@ -789,7 +801,18 @@ class ActivityRich(ActivityBase):
     
     def __repr__(self):
         """Returns the rich activity's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, type={self.type}>'
+        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name), ' type=']
+        
+        type_value = self.type
+        type_name = ACTIVITY_TYPE_NAMES.get(type_value, ACTIVITY_TYPE_NAME_UNKNOWN)
+        repr_parts.append(type_name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(type_value))
+        repr_parts.append(')')
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
     
     @property
     def color(self):

@@ -2963,7 +2963,7 @@ class CommandContentParser:
             hinter.annotation = hinter_annotation
             hinter.is_args = True
             hinters.append(hinter)
-    
+        
         parsers = []
         for hinter in hinters:
             annotation = hinter.annotation

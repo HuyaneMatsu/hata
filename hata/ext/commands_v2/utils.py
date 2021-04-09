@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ('CommandWrapper', 'CommandCheckWrapper', )
 
-from functools import partial as partial_func
-
 class CommandWrapper:
     """
     Command wrapper to add additional functionality to a command after it is created.
@@ -18,19 +16,14 @@ class CommandWrapper:
         Creates a partial function to wrap a command.
         
         Subclasses should overwrite this method.
-        
-        Returns
-        -------
-        wrapper : `functools.partial` of ``CommandWrapper._decorate``
-            Partial function to wrap a command.
         """
-        return partial_func(cls._decorate, cls)
+        self = object.__new__(cls)
+        self._wrapped = None
+        return self
     
-    def _decorate(cls, wrapped):
+    def __call__(self, wrapped):
         """
         Wraps the given command.
-        
-        Subclasses should overwrite this method.
         
         Parameters
         ----------
@@ -40,9 +33,15 @@ class CommandWrapper:
         Returns
         -------
         self : ``CommandWrapper``
-            The created instance.
+        
+        Raises
+        ------
+        RuntimeError
+            The wrapper already wrapped something.
         """
-        self = object.__new__(cls)
+        if (self._wrapped is not None):
+            raise RuntimeError('The wrapper already wrapped something.')
+        
         self._wrapped = wrapped
         return self
     
@@ -113,36 +112,12 @@ class CommandCheckWrapper(CommandWrapper):
             Additional parameters to pass to the `check_type`'s constructor.
         **kwargs : Keyword arguments, Optional
             Additional parameters to pass to the `check_type`'s constructor.
-        
-        Returns
-        -------
-        wrapper : `functools.partial` of ``CommandWrapper._decorate``
-            Partial function to wrap a command.
         """
         check = check_type(*args, **kwargs)
-        return partial_func(cls._decorate, cls, check)
-
-    def _decorate(cls, check, wrapped):
-        """
-        Wraps the given command.
         
-        Sub-classes should overwrite this method.
-        
-        Parameters
-        ----------
-        check : ``CheckBase`` instance
-            The check's type.
-        wrapped : `Any`
-            The slash command or other wrapper to wrap.
-        
-        Returns
-        -------
-        self : ``CommandWrapper``
-            The created instance.
-        """
         self = object.__new__(cls)
         self._check = check
-        self._wrapped = wrapped
+        self._wrapped = None
         return self
     
     def apply(self, command):

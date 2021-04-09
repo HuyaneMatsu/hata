@@ -933,7 +933,7 @@ class ClientWrapper:
             if func is None:
                 raise TypeError('`func` is given as `None`.')
             
-            return self.parent(func, *self.args)
+            return self.parent.events(func, *self.args)
     
     def __setattr__(self, attribute_name, attribute_value):
         """

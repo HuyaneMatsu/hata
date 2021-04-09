@@ -2,6 +2,7 @@
 import re
 from datetime import timedelta
 
+from ...env import CACHE_USER
 from ...backend.utils import cached_property, copy_docs, function
 from ...backend.analyzer import CallableAnalyzer
 from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, parse_tdelta, parse_rdelta, \
@@ -21,7 +22,8 @@ from ...discord.color import Color, parse_color
 from ...discord.http.URLS import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
 from ...discord.message import Message
 
-from ...env import CACHE_USER
+from .context import CommandContext
+from .exceptions import CommandParameterParsingError
 
 try:
     from dateutil.relativedelta import relativedelta
@@ -341,13 +343,16 @@ class ContentParameterParser:
         
         Returns
         -------
-        part : `str`
-            The parsed out part.
-        index : `int`
+        keyword : `None` or `str`
+            The parsed out part's keyword if any.
+        value : `str`
+            The parsed out value.
+        end : `int`
             The index where the next parsing should start from.
         """
-        return self._context_class(self._rp.match(content, index))
-    
+        context = self._context_class(self._rp.match(content, index))
+        return context.keyword, context.value, context.end
+        
     def __repr__(self):
         """Returns the content argument separator's representation."""
         return f'{self.__class__.__name__}({self.separator!r}, {self.assigner!r})'
@@ -401,6 +406,7 @@ def parse_user_mention(part, message):
         if user.id == user_id:
             return user
 
+
 def parse_role_mention(part, message):
     """
     If the message's given part is a role mention, returns the respective role.
@@ -429,6 +435,7 @@ def parse_role_mention(part, message):
         if role.id == role_id:
             return role
 
+
 def parse_channel_mention(part, message):
     """
     If the message's given part is a channel mention, returns the respective channel.
@@ -456,6 +463,24 @@ def parse_channel_mention(part, message):
     for channel in channel_mentions:
         if channel.id == channel_id:
             return channel
+
+
+def parse_rest_content(content, index):
+    """
+    Parses everything till the content's end.
+    
+    Parameters
+    ----------
+    content : `str`
+        A message's content after a respective prefix.
+    index : `int`
+        The start till we should cut down the content.
+    
+    Returns
+    -------
+    rest : `str`
+        The content's end.
+    """
 
 
 class ConverterFlag(FlagBase):
@@ -598,14 +623,16 @@ class ConverterSetting:
         The default flags with what the converter will be used if not defining any specific.
     default_type : `None` or `type`
         The default annotation type of the converter.
+    requires_part : `bool`
+        Whether teh converter requires data to parse or it just produces it's result on teh fly.
     uses_flags : `bool`
         Whether the converter processes any flags.
     """
     __slots__ = ('all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags',
-        'default_type', 'uses_flags')
+        'default_type', 'requires_part', 'uses_flags')
     
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
-            alternative_types):
+            alternative_types, requires_part):
         """
         Creates a new ``ConverterSetting`` instance to store settings related to a converter function.
         
@@ -625,6 +652,8 @@ class ConverterSetting:
             The default annotation type of the converter.
         alternative_types : `None` `iterable` of `type`
             A list of the alternatively accepted types.
+        requires_part : `bool`
+            Whether teh converter requires data to parse or it just produces it's result on the fly.
         
         Raises
         -------
@@ -637,14 +666,17 @@ class ConverterSetting:
             - If `alternative_type_name` was not given as `None`, neither as `str` instance.
             - If `default_type` was not given as `None`, neither as `type` instance.
             - If `alternative_types` was not given as `None`, neither as `iterable` of `type`.
+            - If `requires_part` was not ot given as `bool` instance.
         ValueError
             If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
             `ConverterFlag(0)`
         """
-        converter_type = converter.__class__
-        if (converter_type is not function):
+        if not isinstance(converter, function):
             raise TypeError(f'`converter` should have been given as `{function.__name__}` instance, got '
-                f'{converter_type.__name__}.')
+                f'{converter.__class__.__name__}.')
+        
+        if type(requires_part) is not bool:
+            raise TypeError(f'`requires_part` can be given as `bool`, got {requires_part.__class__.__name__}.')
         
         analyzed = CallableAnalyzer(converter)
         if (not analyzed.is_async()):
@@ -652,9 +684,9 @@ class ConverterSetting:
                 f'{converter!r}.')
         
         non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count != 3:
-            raise TypeError(f'`converter` should accept `3` non reserved positional arguments, meanwhile it expects '
-                f'{non_reserved_positional_argument_count}.')
+        if non_reserved_positional_argument_count != 3-requires_part:
+            raise TypeError(f'`converter` should accept `3` (or 2 if `requires_part` is `False`) non reserved '
+                f'positional arguments , meanwhile it expects {non_reserved_positional_argument_count}.')
         
         if analyzed.accepts_args():
             raise TypeError(f'`converter` should accept not expect args, meanwhile it does.')
@@ -667,37 +699,20 @@ class ConverterSetting:
             raise TypeError(f'`converter` should accept `0` keyword only arguments, meanwhile it expects '
                 f'{non_default_keyword_only_argument_count}.')
         
-        uses_flags_type = uses_flags.__class__
-        if uses_flags_type is bool:
-            pass
-        elif issubclass(uses_flags_type, int):
-            if uses_flags in (0, 1):
-                uses_flags = bool(uses_flags)
-            else:
-                raise TypeError(f'`uses_flags` was given as `int` instance, but not as `0`, or `1`, got '
-                    f'{uses_flags_type.__name__}. Next time please pass a `bool` instance.')
-        else:
-            raise TypeError(f'`uses_flags` should have been given as `bool` instance, got {uses_flags_type.__name__}.')
+        if type(uses_flags) is not bool:
+            raise TypeError(f'`uses_flags` can be given as `bool`, got {uses_flags.__class__.__name__}.')
         
-        default_flags_type = default_flags.__class__
-        if default_flags_type is not ConverterFlag:
-            raise TypeError(f'`default_flags` should have be given as `{ConverterFlag.__name__}` instance, got '
-                f'{default_flags_type.__name__}.')
+        if type(default_flags) is not ConverterFlag:
+            raise TypeError(f'`default_flags` should have be given as `{ConverterFlag.__name__}`, got '
+                f'{default_flags.__class__.__name__}.')
         
-        all_flags_type = all_flags.__class__
-        if all_flags_type is not ConverterFlag:
-            raise TypeError(f'`all_flags` should have be given as `{ConverterFlag.__name__}` instance, got '
-                f'{all_flags_type.__name__}.')
+        if type(all_flags) is not ConverterFlag:
+            raise TypeError(f'`all_flags` should have be given as `{ConverterFlag.__name__}`, got '
+                f'{all_flags.__class__.__name__}.')
         
-        if (alternative_type_name is not None):
-            alternative_type_name_type = alternative_type_name.__class__
-            if alternative_type_name_type is str:
-                pass
-            elif issubclass(alternative_type_name_type, str):
-                alternative_type_name = str(alternative_type_name)
-            else:
-                raise TypeError(f'`alternative_type_name` should have be given as `None` or as `str` instance, got '
-                    f'{alternative_type_name_type.__class__}.')
+        if (alternative_type_name is not None) and (type(alternative_type_name) is not str):
+            raise TypeError(f'`alternative_type_name` should have be given as `None` or as `str`, got '
+                f'{alternative_type_name.__class__.__name__}.')
         
         if (default_type is not None) and (not isinstance(default_type, type)):
             raise TypeError(f'`default_type` was not given as `None`, neither as `type` instance, got '
@@ -738,6 +753,7 @@ class ConverterSetting:
         self.alternative_type_name = alternative_type_name
         self.default_type = default_type
         self.alternative_types = alternative_types_processed
+        self.requires_part = requires_part
         
         if (default_type is not None):
             CONVERTER_SETTING_TYPE_TO_SETTING[default_type] = self
@@ -813,7 +829,7 @@ class ConverterSetting:
         return ''.join(result)
 
 
-async def none_converter(command_context, content_parsing_parameter, content_parser_context):
+async def none_converter(command_context, content_parser_parameter):
     return None
 
 
@@ -822,19 +838,62 @@ CONVERTER_NONE = ConverterSetting(
     uses_flags = False,
     default_flags = ConverterFlag(),
     all_flags = ConverterFlag(),
-    alternative_type_name = 'none',
+    alternative_type_name = None,
     default_type = None,
     alternative_types = None,
+    requires_part = False
         )
 
 
+async def command_context_converter(command_context, content_parser_parameter):
+    return command_context
+
+CONVERTER_SELF_CONTEXT = ConverterSetting(
+    converter = command_context_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = None,
+    default_type = CommandContext,
+    alternative_types = None,
+    requires_part = False
+        )
+
+
+async def self_client_converter(command_context, content_parser_parameter):
+    return command_context.client
+
+CONVERTER_SELF_CLIENT = ConverterSetting(
+    converter = self_client_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = None,
+    default_type = None,
+    alternative_types = None,
+    requires_part = False
+        )
+
+
+async def self_message_converter(command_context, content_parser_parameter):
+    return command_context.client
+
+CONVERTER_SELF_MESSAGE = ConverterSetting(
+    converter = self_message_converter,
+    uses_flags = False,
+    default_flags = ConverterFlag(),
+    all_flags = ConverterFlag(),
+    alternative_type_name = None,
+    default_type = None,
+    alternative_types = None,
+    requires_part = False
+        )
+
+
+
 if CACHE_USER:
-    async def user_converter(command_context, content_parser_context, content_parsing_parameter):
-        part = content_parser_context.get_next()
-        if (part is None):
-            return None
-        
-        flags = content_parsing_parameter.flags
+    async def user_converter(command_context, content_parser_parameter, part):
+        flags = content_parser_parameter.flags
         message = command_context.message
         
         if flags&CONVERTER_FLAG_ID:
@@ -898,12 +957,8 @@ if CACHE_USER:
         
         return None
 else:
-    async def user_converter(command_context, content_parser_context, content_parsing_parameter):
-        part = content_parser_context.get_next()
-        if (part is None):
-            return None
-        
-        flags = content_parsing_parameter.flags
+    async def user_converter(command_context, content_parser_parameter, part):
+        flags = content_parser_parameter.flags
         message = command_context.message
         
         if flags&CONVERTER_FLAG_ID:
@@ -990,7 +1045,7 @@ else:
         
         return None
 
-ConverterSetting(
+CONVERTER_USER = ConverterSetting(
     converter = user_converter,
     uses_flags = True,
     default_flags = ConverterFlag.user_default,
@@ -1000,14 +1055,11 @@ ConverterSetting(
     alternative_types = [
         UserBase,
             ],
+    requires_part = True,
         )
 
-async def client_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
-    flags = content_parsing_parameter.flags
+async def client_converter(command_context, content_parser_parameter, part):
+    flags = content_parser_parameter.flags
     message = command_context.message
     
     if flags&CONVERTER_FLAG_ID:
@@ -1076,7 +1128,7 @@ async def client_converter(command_context, content_parser_context, content_pars
     
     return None
     
-ConverterSetting(
+CONVERTER_CLIENT = ConverterSetting(
     converter = client_converter,
     uses_flags = True,
     default_flags = ConverterFlag.client_default,
@@ -1084,15 +1136,12 @@ ConverterSetting(
     alternative_type_name = 'client',
     default_type = Client,
     alternative_types = None,
+    requires_part = True,
         )
 
-async def channel_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
-    flags = content_parsing_parameter.flags
-    channel_type = content_parsing_parameter.type
+async def channel_converter(command_context, content_parser_parameter, part):
+    flags = content_parser_parameter.flags
+    channel_type = content_parser_parameter.type
     message = command_context.message
     
     if flags&CONVERTER_FLAG_ID:
@@ -1144,7 +1193,7 @@ async def channel_converter(command_context, content_parser_context, content_par
     
     return None
 
-ConverterSetting(
+CONVERTER_CHANNEL = ConverterSetting(
     converter = channel_converter,
     uses_flags = True,
     default_flags = ConverterFlag.channel_default,
@@ -1164,14 +1213,11 @@ ConverterSetting(
         ChannelThread,
         ChannelStage,
             ],
+    requires_part = True,
         )
 
-async def role_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
-    flags = content_parsing_parameter.flags
+async def role_converter(command_context, content_parser_parameter, part):
+    flags = content_parser_parameter.flags
     message = command_context.message
     
     if flags&CONVERTER_FLAG_ID:
@@ -1211,7 +1257,7 @@ async def role_converter(command_context, content_parser_context, content_parsin
     
     return None
 
-ConverterSetting(
+CONVERTER_ROLE = ConverterSetting(
     converter = role_converter,
     uses_flags = True,
     default_flags = ConverterFlag.role_default,
@@ -1219,14 +1265,11 @@ ConverterSetting(
     alternative_type_name = 'role',
     default_type = Role,
     alternative_types = None,
+    requires_part = True,
         )
 
-async def emoji_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
-    flags = content_parsing_parameter.flags
+async def emoji_converter(command_context, content_parser_parameter, part):
+    flags = content_parser_parameter.flags
     if flags&CONVERTER_FLAG_MENTION:
         emoji = parse_emoji(part)
         if (emoji is not None):
@@ -1265,7 +1308,7 @@ async def emoji_converter(command_context, content_parser_context, content_parsi
     
     return None
 
-ConverterSetting(
+CONVERTER_EMOJI = ConverterSetting(
     converter = emoji_converter,
     uses_flags = True,
     default_flags = ConverterFlag.emoji_default,
@@ -1273,13 +1316,10 @@ ConverterSetting(
     alternative_type_name = 'emoji',
     default_type = Emoji,
     alternative_types = None,
+    requires_part = True,
         )
 
-async def guild_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
+async def guild_converter(command_context, part, content_parser_parameter):
     parsed = ID_RP.fullmatch(part)
     if (parsed is None):
         return None
@@ -1291,7 +1331,7 @@ async def guild_converter(command_context, content_parser_context, content_parsi
     except KeyError:
         return None
     
-    if content_parsing_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+    if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
         return guild
     
     if guild in command_context.client.guild_profiles:
@@ -1299,7 +1339,7 @@ async def guild_converter(command_context, content_parser_context, content_parsi
     
     return None
 
-ConverterSetting(
+CONVERTER_GUILD = ConverterSetting(
     converter = guild_converter,
     uses_flags = True,
     default_flags = ConverterFlag.guild_default,
@@ -1307,15 +1347,16 @@ ConverterSetting(
     alternative_type_name = 'guild',
     default_type = Guild,
     alternative_types = None,
+    requires_part = True
         )
 
 # Gets a message by it's id
-async def _message_converter_m_id(command_context, content_parsing_parameter, message_id):
+async def _message_converter_m_id(command_context, content_parser_parameter, message_id):
     message = MESSAGES.get(message_id)
     channel = command_context.message.channel
     if (message is not None):
         # Message found
-        if content_parsing_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+        if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -1357,12 +1398,12 @@ async def _message_converter_m_id(command_context, content_parsing_parameter, me
         return None
 
 # Gets a message by it's and it's channel's id
-async def _message_converter_cm_id(command_context, content_parsing_parameter, channel_id, message_id):
+async def _message_converter_cm_id(command_context, content_parser_parameter, channel_id, message_id):
     channel = command_context.message.channel
     message = MESSAGES.get(message_id)
     if (message is not None):
         # Message found
-        if content_parsing_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+        if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -1377,7 +1418,7 @@ async def _message_converter_cm_id(command_context, content_parsing_parameter, c
     if (message_channel is None):
         return None
 
-    if content_parsing_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+    if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
         # Lets use that multi client core
         for client in message_channel.clients:
             if message_channel.cached_permissions_for(client).can_read_message_history:
@@ -1430,35 +1471,31 @@ async def _message_converter_cm_id(command_context, content_parsing_parameter, c
         
         return None
 
-async def message_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
-    if content_parsing_parameter.flags&CONVERTER_FLAG_ID:
+async def message_converter(command_context, content_parser_parameter, part):
+    if content_parser_parameter.flags&CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             message_id = int(parsed.group(1))
-            return await _message_converter_m_id(command_context, content_parsing_parameter, message_id)
+            return await _message_converter_m_id(command_context, content_parser_parameter, message_id)
         
         parsed = CHANNEL_MESSAGE_RP.fullmatch(part)
         if (parsed is not None):
             channel_id, message_id = parsed.groups()
             channel_id = int(channel_id)
             message_id = int(message_id)
-            return await _message_converter_cm_id(command_context, content_parsing_parameter, channel_id, message_id)
+            return await _message_converter_cm_id(command_context, content_parser_parameter, channel_id, message_id)
     
-    if content_parsing_parameter.flags&CONVERTER_FLAG_URL:
+    if content_parser_parameter.flags&CONVERTER_FLAG_URL:
         parsed = MESSAGE_JUMP_URL_RP.fullmatch(part)
         if (parsed is not None):
             _, channel_id, message_id = parsed.groups()
             channel_id = int(channel_id)
             message_id = int(message_id)
-            return await _message_converter_cm_id(command_context, content_parsing_parameter, channel_id, message_id)
+            return await _message_converter_cm_id(command_context, content_parser_parameter, channel_id, message_id)
     
     return None
 
-ConverterSetting(
+CONVERTER_MESSAGE = ConverterSetting(
     converter = message_converter,
     uses_flags = True,
     default_flags = ConverterFlag.message_default,
@@ -1466,14 +1503,11 @@ ConverterSetting(
     alternative_type_name = 'message',
     default_type = Message,
     alternative_types = None,
+    requires_part = True,
         )
 
-async def invite_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
-    flags = content_parsing_parameter.flags
+async def invite_converter(command_context, part, content_parser_parameter):
+    flags = content_parser_parameter.flags
     
     # It would not be a Huyane code without some GOTO
     while True:
@@ -1503,7 +1537,7 @@ async def invite_converter(command_context, content_parser_context, content_pars
     
     return invite
 
-ConverterSetting(
+CONVERTER_INVITE = ConverterSetting(
     converter = invite_converter,
     uses_flags = True,
     default_flags = ConverterFlag.invite_default,
@@ -1511,17 +1545,14 @@ ConverterSetting(
     alternative_type_name = 'invite',
     default_type = Invite,
     alternative_types = None,
+    requires_part = True,
         )
 
 
-async def color_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if (part is None):
-        return None
-    
+async def color_converter(command_context, content_parser_parameter, part):
     return parse_color(part)
 
-ConverterSetting(
+CONVERTER_COLOR = ConverterSetting(
     converter = color_converter,
     uses_flags = False,
     default_flags = ConverterFlag(),
@@ -1529,13 +1560,14 @@ ConverterSetting(
     alternative_type_name = 'color',
     default_type = Color,
     alternative_types = None,
+    requires_part = True,
         )
 
 
-async def str_converter(command_context, content_parser_context, content_parsing_parameter):
-    return content_parser_context.get_next()
+async def str_converter(command_context, content_parser_parameter, part):
+    return part
 
-ConverterSetting(
+CONVERTER_STR = ConverterSetting(
     converter = str_converter,
     uses_flags = False,
     default_flags = ConverterFlag(),
@@ -1543,15 +1575,12 @@ ConverterSetting(
     alternative_type_name = None,
     default_type = str,
     alternative_types = None,
+    requires_part = True,
         )
 
 
-async def int_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if part is None:
-        return None
-    
-    if len(part)>NUMERIC_CONVERSION_LIMIT:
+async def int_converter(command_context, content_parser_parameter, part):
+    if len(part) > NUMERIC_CONVERSION_LIMIT:
         return None
     
     try:
@@ -1561,7 +1590,7 @@ async def int_converter(command_context, content_parser_context, content_parsing
     
     return int_
 
-ConverterSetting(
+CONVERTER_INT = ConverterSetting(
     converter = int_converter,
     uses_flags = False,
     default_flags = ConverterFlag(),
@@ -1569,16 +1598,13 @@ ConverterSetting(
     alternative_type_name = None,
     default_type = int,
     alternative_types = None,
+    requires_part = True,
         )
 
-async def tdelta_converter(command_context, content_parser_context, content_parsing_parameter):
-    part = content_parser_context.get_next()
-    if part is None:
-        return None
-    
+async def tdelta_converter(command_context, content_parser_parameter, part):
     return parse_tdelta(part)
 
-ConverterSetting(
+CONVERTER_TDELTA = ConverterSetting(
     converter = tdelta_converter,
     uses_flags = False,
     default_flags = ConverterFlag(),
@@ -1586,17 +1612,14 @@ ConverterSetting(
     alternative_type_name = 'tdelta',
     default_type = timedelta,
     alternative_types = None,
+    requires_part = True,
         )
 
 if (relativedelta is not None):
-    async def rdelta_converter(command_context, content_parser_context, content_parsing_parameter):
-        part = content_parser_context.get_next()
-        if part is None:
-            return None
-        
+    async def rdelta_converter(command_context, content_parser_parameter, part):
         return parse_rdelta(part)
 
-    ConverterSetting(
+    CONVERTER_RDELTA = ConverterSetting(
         converter = rdelta_converter,
         uses_flags = False,
         default_flags = ConverterFlag(),
@@ -1604,26 +1627,57 @@ if (relativedelta is not None):
         alternative_type_name = 'rdelta',
         default_type = relativedelta,
         alternative_types = None,
+        requires_part = True,
             )
 
 else:
     rdelta_converter = None
+    CONVERTER_RDELTA = None
 
+
+class ContentParserParameterDetail:
+    """
+    Stores details about a converter.
+    
+    Attributes
+    ----------
+    annotation_type : `None` or `type` instance
+        The type or subtype of the annotation to parse.
+    converter_setting : ``ConverterSetting``
+        The converter setting used by the parameter.
+    flags : ``ConverterFlag``
+        Converter flags to customize the parsers
+    """
+    def __new__(cls, annotation_type, converter_setting):
+        """
+        Creates a new ``ContentParserParameterDetail`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        annotation_type : `None` or `type` instance
+            The type or subtype of the annotation to parse.
+        converter_setting : ``ConverterSetting``
+            The converter setting used by the parameter.
+        """
+        self = object.__new__(cls)
+        self.annotation_type = annotation_type
+        self.converter_setting = converter_setting
+        self.flags = converter_setting.default_flags
+        return self
+    
+    def __repr__(self):
+        """Returns the ``ContentParserParameterDetail``'s representation."""
+        result = ['<', self.__class__.__name__]
+        return f'<{self.__class__.__name__} >'
+        
 
 class ContentParserParameter:
     """
     Represents a parameter to parse.
     
     Parameters
-    ---------
-    annotation_name : `None` or `str`
-        Identifier of the respective parser if any.
-    annotation_type : `None` or `type` instance
-        The type or subtype of the annotation to parse.
-    converter : `async-function`
-        The function used to parse the parameter.
-    converter_setting : ``ConverterSetting``
-        The converter setting used by the parameter.
+    ----------
+    detail : `None` or
     default : `None` or `Any`
         Default value to the parser
     has_default : `bool`
@@ -1634,8 +1688,6 @@ class ContentParserParameter:
         The description of the parameter if any.
     display_name : `str`
         The parameter's display name.
-    flags : ``ConverterFlag``
-        Converter flags to customize the parsers
     has_default : `bool`
         Whether the parameter has default value set.
     index : `int`
@@ -1648,11 +1700,13 @@ class ContentParserParameter:
         Whether the parameter is `**kwargs` parameter.
     is_positional : `bool`
         Whether the parameter is positional.
+    is_rest : `bool`
+        Whether the parameter is rest parser.
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('annotation_name', 'annotation_type', 'converter', 'converter_setting', 'default', 'description',
-        'display_name', 'flags', 'has_default', 'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'name')
+    __slots__ = ('annotation_type', 'converter', 'converter_setting', 'default', 'description', 'display_name', 'flags',
+        'has_default', 'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name')
     
     def __new__(cls, parameter, index):
         """
@@ -1682,7 +1736,6 @@ class ContentParserParameter:
             if annotation is None:
                 description = None
                 converter_setting = CONVERTER_NONE
-                annotation_name = converter_setting.alternative_type_name
                 annotation_type = converter_setting.default_type
             
             elif isinstance(annotation, type):
@@ -1692,7 +1745,6 @@ class ContentParserParameter:
                     raise ValueError(f'There is no converter registered for {annotation!r}.') from None
                 
                 description = None
-                annotation_name = converter_setting.alternative_type_name
                 annotation_type = annotation
             
             elif isinstance(annotation, str):
@@ -1706,7 +1758,6 @@ class ContentParserParameter:
                     raise ValueError(f'There is no converter registered for {annotation!r}.') from None
                 
                 description = None
-                annotation_name = converter_setting.alternative_type_name
                 annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation)
             
             elif isinstance(annotation, tuple):
@@ -1721,7 +1772,6 @@ class ContentParserParameter:
                 annotation_tuple_type = annotation[0]
                 if annotation_tuple_type is None:
                     converter_setting = CONVERTER_NONE
-                    annotation_name = converter_setting.alternative_type_name
                     annotation_type = converter_setting.default_type
                 
                 elif isinstance(annotation_tuple_type, type):
@@ -1730,7 +1780,6 @@ class ContentParserParameter:
                     except KeyError:
                         raise ValueError(f'There is no converter registered for {annotation_tuple_type!r}.') from None
                     
-                    annotation_name = converter_setting.alternative_type_name
                     annotation_type = annotation_tuple_type
                 
                 elif isinstance(annotation_tuple_type, str):
@@ -1743,7 +1792,6 @@ class ContentParserParameter:
                     except KeyError:
                         raise ValueError(f'There is no converter registered for {annotation_tuple_type!r}.') from None
                     
-                    annotation_name = converter_setting.alternative_type_name
                     annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation_tuple_type)
                 
                 else:
@@ -1779,7 +1827,6 @@ class ContentParserParameter:
         else:
             description = None
             converter_setting = CONVERTER_NONE
-            annotation_name = converter_setting.alternative_type_name
             annotation_type = converter_setting.default_type
         
         display_name = raw_name_to_display(display_name)
@@ -1790,25 +1837,23 @@ class ContentParserParameter:
         else:
             default = None
         
-        converter = converter_setting.converter
-        
         is_positional = parameter.is_positional()
         is_keyword = parameter.is_keyword_only()
         is_args = parameter.is_args()
         is_kwargs = parameter.is_kwargs()
         
+        name = parameter.name
+        
         self = object.__new__(cls)
-        self.annotation_name = annotation_name
         self.annotation_type = annotation_type
-        self.converter = converter
         self.converter_setting = converter_setting
         self.default = default
         self.description = description
         self.display_name = display_name
-        self.flags = flags
         self.has_default = has_default
         self.index = index
         self.is_args = is_args
+        self.is_rest = False
         self.is_keyword = is_keyword
         self.is_kwargs = is_kwargs
         self.is_positional = is_positional
@@ -1819,7 +1864,6 @@ class ContentParserParameter:
         """Returns the inter's representation."""
         result = ['<', self.__class__.__name__,
             ' name=', repr(self.name),
-            ', annotation=', repr(self.annotation),
                  ]
         
         if self.has_default:
@@ -1828,6 +1872,17 @@ class ContentParserParameter:
         
         result.append('>')
         return ''.join(result)
+    
+    def set_converter_setting(self, converter_setting):
+        """
+        Sets a new converter setting to the ``ContentParserParameter``.
+        
+        Parameters
+        ----------
+        converter_setting : ``ConverterSetting``
+        """
+        self.flags = converter_setting.default_flags
+        self.annotation_type = converter_setting.default_type
 
 
 COMMAND_CONTENT_PARSER_POST_PROCESSORS = []
@@ -1916,7 +1971,587 @@ class CommandContentParser:
         self = object.__new__(cls)
         self._parameters = parameters
         self._content_parameter_parser = content_parameter_parser
+        
+        for postprocessor in CONTENT_PARSER_PARAMETER_POSTPROCESSORS:
+            postprocessor(self)
+        
         return self, func
+    
+    
+    async def parse_content(self, command_context, content):
+        """
+        Parses the message's content to fulfill a command's parameters.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        command_context : ``CommandContext``
+            A command context of the command.
+        content : `str`
+            The respective message's content without it's prefix.
+        
+        Returns
+        -------
+        parameter_parsing_states : `list` of ``ParameterParsingStateBase`` instances
+        """
+        content_parameter_parser = self._content_parameter_parser
+        parameter_parsing_states = create_parameter_parsing_states(self)
+        
+        for parameter_parsing_state in iter_no_part_parameter_states(parameter_parsing_states):
+            
+            content_parser_parameter = parameter_parsing_state.content_parser_parameter
+            converter = content_parser_parameter.converter_setting.converter
+            parsed_value = await converter(command_context, content_parser_parameter)
+            parameter_parsing_state.add_parsed_value(parsed_value, None)
+        
+        index = 0
+        length = len(content)
+        while True:
+            if index >= length:
+                break
+            
+            if get_is_all_parameter_parser_state_satisfied(parameter_parsing_states):
+                parameter_parsing_state = get_rest_parameter_state(parameter_parsing_states)
+                if (parameter_parsing_state is not None):
+                    rest = parse_rest_content(content, index)
+                    parameter_parsing_state.add_parsed_value(rest, None)
+                
+                break
+            
+            keyword, part, index = content_parameter_parser.parse(index)
+            if keyword is None:
+                parameter_parsing_state = get_next_non_filled_parameter_state(parameter_parsing_states)
+                if parameter_parsing_state is None:
+                    continue
+                
+                content_parser_parameter = parameter_parsing_state.content_parser_parameter
+                converter = content_parser_parameter.converter_setting.converter
+                parsed_value = await converter(command_context, content_parser_parameter, part)
+                parameter_parsing_state.add_parsed_value(parsed_value, None)
+            else:
+                keyword = raw_name_to_display(keyword)
+                parameter_parsing_state = get_keyword_parameter_state(parameter_parsing_states, keyword)
+                if parameter_parsing_state is None:
+                    continue
+                
+                content_parser_parameter = parameter_parsing_state.content_parser_parameter
+                converter = content_parser_parameter.converter_setting.converter
+                parsed_value = await converter(command_context, content_parser_parameter)
+                parameter_parsing_state.add_parsed_value(parsed_value, keyword)
+        
+        return parameter_parsing_states
+
+
+def get_next_non_filled_parameter_state(parameter_parsing_states):
+    """
+    Gets the next non-filled parameter parsing state.
+    
+    Parameters
+    ----------
+    parameter_parsing_states : `list` of ``ParameterParsingState``
+        Parameters parsing states to choose from.
+    
+    Returns
+    -------
+    parameter_parsing_state : ``ParameterParsingState`` or `None`
+    """
+    for parameter_parsing_state in parameter_parsing_states:
+        content_parser_parameter = parameter_parsing_state.content_parser_parameter
+        if content_parser_parameter.is_keyword or content_parser_parameter.is_kwargs:
+            return None
+        
+        if content_parser_parameter.is_args:
+            return content_parser_parameter
+        
+        if not parameter_parsing_state.parsed_values:
+            return content_parser_parameter
+        
+        continue
+    
+    return None
+
+
+def iter_no_part_parameter_states(parameter_parsing_states):
+    """
+    Iterates over the parameter parsing states, and yields which do not require
+    
+    Parameters
+    ----------
+    parameter_parsing_states : `list` of ``ParameterParsingState``
+        Parameters parsing states to choose from.
+
+    Yields
+    ------
+    parameter_parsing_state : ``ParameterParsingState``
+    """
+    for parameter_parsing_state in parameter_parsing_states:
+        if not parameter_parsing_state.content_parser_parameter.converter_setting.requires_part:
+            yield parameter_parsing_state
+
+
+def get_keyword_parameter_state(parameter_parsing_states, keyword):
+    """
+    Tries to get the parameter state for the given name.
+    
+    Parameters
+    ----------
+    parameter_parsing_states : `list` of ``ParameterParsingState``
+        Parameters parsing states to choose from.
+    keyword : `str`
+        The keyword to get the parameter for.
+    
+    Returns
+    -------
+    parameter_parsing_state : ``ParameterParsingState`` or `None`
+    """
+    for parameter_parsing_state in parameter_parsing_states:
+        content_parser_parameter = parameter_parsing_state.content_parser_parameter
+        if content_parser_parameter.is_kwargs:
+            return content_parser_parameter
+        
+        if content_parser_parameter.display_name == keyword:
+            return content_parser_parameter
+    
+    return None
+
+
+def get_rest_parameter_state(parameter_parsing_states):
+    """
+    Gets the rest parameter from the given content if there is any.
+    
+    Parameters
+    ----------
+    parameter_parsing_states `list` of ``ParameterParsingStateBase`` instances
+        The created parameter parser state instances.
+
+    Returns
+    -------
+    parameter_parsing_state : ``ParameterParsingState`` or `None`
+    """
+    for parameter_parsing_state in parameter_parsing_states:
+        if parameter_parsing_state.content_parser_parameter.is_rest:
+            return parameter_parsing_state
+
+
+def create_parameter_parsing_states(command_content_parser):
+    """
+    Creates parser states for the given content parser parameters.
+    
+    Parameters
+    ----------
+    command_content_parser : ``CommandContentParser``
+        The parameters of a ``CommandContentParser``.
+    
+    Returns
+    -------
+    parameter_parsing_states : `list` of ``ParameterParsingStateBase`` instances
+        The created parameter parser state instances.
+    """
+    parameter_parsing_states = []
+    for content_parser_parameters in command_content_parser._parameters:
+        if content_parser_parameters.is_kwargs:
+            parameter_parser_state_type = KwargsParameterParsingState
+        elif content_parser_parameters.is_rest:
+            parameter_parser_state_type = RestParameterParsingState
+        else:
+            parameter_parser_state_type = GenericParameterParsingState
+        
+        parameter_parser_state = parameter_parser_state_type(content_parser_parameters)
+        parameter_parsing_states.append(parameter_parser_state)
+    
+    return parameter_parsing_states
+
+
+def get_is_all_parameter_parser_state_satisfied(parameter_parsing_states):
+    """
+    Returns whether all the parser states are satisfied.
+    
+    Parameters
+    ----------
+    parameter_parsing_states : `list` of ``ParameterParsingStateBase`` instances
+        The used parameter parsing states.
+    
+    Returns
+    -------
+    is_all_parameter_parser_state_satisfied : `bool`
+    """
+    for parameter_parser_state in parameter_parsing_states:
+        if not parameter_parser_state.is_satisfied():
+            return False
+    
+    return True
+
+
+class ParameterParsingStateBase:
+    """
+    Base class for parsing states used meanwhile parsing parameters of a command.
+    
+    Attributes
+    ----------
+    content_parser_parameter : ``ContentParserParameter``
+        The respective parameter.
+    """
+    __slots__ = ('content_parser_parameter', )
+    def __new__(cls, content_parser_parameter):
+        """
+        Creates a new ``ParameterParsingState`` from the given ``content_parser_parameter`` instance.
+        
+        Parameters
+        ----------
+        content_parser_parameter : ``ContentParserParameter``
+            The respective parameter.
+        """
+        self = object.__new__(cls)
+        self.content_parser_parameter = content_parser_parameter
+        return self
+    
+    
+    def add_parsed_value(self, parsed_value, keyword):
+        """
+        Adds a value to the ``ParameterParsingState``.
+        
+        Parameters
+        ----------
+        parsed_value : `Any`
+            The parsed value.
+        keyword : `None` or `str`
+            The keyword used ot reference the value.
+        """
+        pass
+    
+    
+    def get_parser_value(self, args, kwargs):
+        """
+        Gets the parser's value.
+        
+        Parameters
+        ----------
+        args : `list`
+            Arguments to pass to a command's function.
+        kwargs : `dict`
+            Keyword argument to pass to a command's function.
+
+        Raises
+        ------
+        CommandParameterParsingError
+            Parsing was unsuccessful.
+        """
+        pass
+
+    
+    def is_satisfied(self):
+        """
+        Returns whether the respective parameter is satisfied.
+        
+        Returns
+        -------
+        is_satisfied : `bool`
+        """
+        return True
+
+
+class GenericParameterParsingState(ParameterParsingStateBase):
+    """
+    Generic parsing state used meanwhile parsing parameters of a command.
+    
+    Attributes
+    ----------
+    content_parser_parameter : ``ContentParserParameter``
+        The respective parameter.
+    satisfied : `bool`
+        Whether the parser is satisfied.
+    parsed_values : `None` or `list` of `Any`
+        The parsed values for the respective ``ContentParserParameter``.
+    """
+    __slots__ = ('satisfied', 'parsed_values', )
+    
+    @copy_docs(ParameterParsingStateBase.__new__)
+    def __new__(cls, content_parser_parameter):
+        self = object.__new__(cls)
+        self.content_parser_parameter = content_parser_parameter
+        self.parsed_values = None
+        self.satisfied = False
+        return self
+    
+    
+    @copy_docs(ParameterParsingStateBase.add_parsed_value)
+    def add_parsed_value(self, parsed_value, keyword):
+        parsed_values = self.parsed_values
+        if parsed_values is None:
+            parsed_values = []
+        
+        parsed_values.append(parsed_value)
+        
+        if (parsed_value is not None):
+            content_parser_parameter = self.content_parser_parameter
+            if content_parser_parameter.is_positional or content_parser_parameter.is_keyword:
+                self.satisfied = True
+    
+    @copy_docs(ParameterParsingStateBase.get_parser_value)
+    def get_parser_value(self, args, kwargs):
+        content_parser_parameter = self.content_parser_parameter
+        if content_parser_parameter.is_positional:
+            parsed_value = get_first_non_none_parsed_value(self.parsed_values)
+            if parsed_value is None:
+                if (not content_parser_parameter.has_default):
+                    raise CommandParameterParsingError(content_parser_parameter)
+                
+                parsed_value = content_parser_parameter.default
+                
+            args.append(parsed_value)
+            return
+        
+        if content_parser_parameter.is_keyword:
+            parsed_value = get_first_non_none_parsed_value(self.parsed_values)
+            if parsed_value is None:
+                if (not content_parser_parameter.has_default):
+                    raise CommandParameterParsingError(content_parser_parameter)
+                
+                parsed_value = content_parser_parameter.default
+            
+            kwargs[content_parser_parameter.name] = parsed_value
+            return
+        
+        if content_parser_parameter.is_args:
+            parsed_values = get_all_non_none_parsed_value(self.parsed_values)
+            args.extend(parsed_values)
+    
+    
+    @copy_docs(ParameterParsingStateBase.is_satisfied)
+    def is_satisfied(self):
+        return self.satisfied
+
+
+class KwargsParameterParsingState(ParameterParsingStateBase):
+    """
+    `**kwargs`` specific parsing state used meanwhile parsing parameters of a command.
+    
+    Attributes
+    ----------
+    content_parser_parameter : ``ContentParserParameter``
+        The respective parameter.
+    parsed_items : `None` or `list` of `tuple` (`str`, `Any`)
+        The parsed values for the respective ``ContentParserParameter``.
+    """
+    __slots__ = ('parsed_items', )
+    
+    @copy_docs(ParameterParsingStateBase.__new__)
+    def __new__(cls, content_parser_parameter):
+        self = object.__new__(cls)
+        self.content_parser_parameter = content_parser_parameter
+        self.parsed_items = None
+        return self
+    
+    
+    @copy_docs(ParameterParsingStateBase.add_parsed_value)
+    def add_parsed_value(self, parsed_value, keyword):
+        parsed_items = self.parsed_items
+        if parsed_items is None:
+            parsed_items = []
+        
+        parsed_items.append((keyword, parsed_value))
+    
+    
+    @copy_docs(ParameterParsingStateBase.get_parser_value)
+    def get_parser_value(self, args, kwargs):
+        parsed_items = self.parsed_items
+        if (parsed_items is not None):
+            for key, value in parsed_items:
+                if (value is not None):
+                    kwargs.setdefault(key, value)
+    
+    
+    @copy_docs(ParameterParsingStateBase.is_satisfied)
+    def is_satisfied(self):
+        return False
+
+
+class RestParameterParsingState(ParameterParsingStateBase):
+    """
+    Parameter parsing state which consumes all the unused content. Used parsing state used meanwhile parsing
+    parameters of a command.
+    
+    Attributes
+    ----------
+    content_parser_parameter : ``ContentParserParameter``
+        The respective parameter.
+    value : `None` or `str`
+        The set rest value.
+    """
+    __slots__ = ('value', )
+    
+    @copy_docs(ParameterParsingStateBase.__new__)
+    def __new__(cls, content_parser_parameter):
+        self = object.__new__(cls)
+        self.content_parser_parameter = content_parser_parameter
+        self.value = None
+        return self
+
+    @copy_docs(ParameterParsingStateBase.add_parsed_value)
+    def add_parsed_value(self, parsed_value, keyword):
+        if parsed_value:
+            self.value = parsed_value
+    
+    @copy_docs(ParameterParsingStateBase.get_parser_value)
+    def get_parser_value(self, args, kwargs):
+        parsed_value = self.value
+        if parsed_value is None:
+            content_parser_parameter = self.content_parser_parameter
+            if content_parser_parameter.has_default:
+                parsed_value = content_parser_parameter.default
+            else:
+                parsed_value = ''
+        
+        args.append(parsed_value)
+
+
+def get_first_non_none_parsed_value(parsed_values):
+    """
+    Gets the first non-`None` parsed value.
+    
+    Parameters
+    ----------
+    parsed_values : `None` or `list` of `Any`
+        The parsed value.
+
+    Returns
+    -------
+    value : `None` or `Any`
+        The parsed value if any.
+    """
+    if (parsed_values is not None):
+        for parsed_value in parsed_values:
+            if (parsed_value is not None):
+                return parsed_value
+    
+    return None
+
+
+def get_all_non_none_parsed_value(parsed_values):
+    """
+    Gets all the non-`None` parsed values.
+    
+    Parameters
+    ----------
+    parsed_values : `None` or `list` of `Any`
+        The parsed value.
+
+    Returns
+    -------
+    values : `None` or `Any`
+        The parsed value if any.
+    """
+    values = []
+    if (parsed_values is not None):
+        for parsed_value in parsed_values:
+            if (parsed_value is not None):
+                values.append(parsed_value)
+    
+    return values
+
+
+def content_parser_parameter_postprocessor_try_find_context(command_context_parser):
+    """
+    Tries to find context variable inside of a command context parser's parameters.
+    
+    Parameters
+    ----------
+    command_context_parser : ``CommandContentParser``
+        The respective command content parser.
+    """
+    parameters = command_context_parser._parameters
+    for parameter in parameters:
+        if parameter.converter_setting is CONVERTER_SELF_CONTEXT:
+            return
+    
+    for parameter in parameters:
+        if parameter.converter_setting is CONVERTER_NONE and parameter.name in ('ctx', 'context', 'command_context'):
+            parameter.set_converter_setting(CONVERTER_SELF_CONTEXT)
+            return
+
+
+def content_parser_parameter_postprocessor_try_find_message_and_client(command_context_parser):
+    """
+    Tries to find client and the message variables inside of a command context parser's parameters.
+    
+    Parameters
+    ----------
+    command_context_parser : ``CommandContentParser``
+        The respective command content parser.
+    """
+    parameters = command_context_parser._parameters
+    if len(parameters) < 2:
+        return
+    
+    parameter_1, parameter_2 = parameters[:2]
+    if parameter_1.name not in ('client', 'c'):
+        return
+    
+    if parameter_2.name not in ('message', 'm'):
+        return
+    
+    converter_setting = parameter_1.converter_setting
+    if (converter_setting is not CONVERTER_NONE) and (converter_setting is not CONVERTER_CLIENT):
+        return
+    
+    converter_setting = parameter_2.converter_setting
+    if (converter_setting is not CONVERTER_NONE) and (converter_setting is not CONVERTER_MESSAGE):
+        return
+    
+    parameter_1.set_converter_setting(CONVERTER_SELF_CLIENT)
+    parameter_2.set_converter_setting(CONVERTER_SELF_MESSAGE)
+
+
+def content_parser_parameter_postprocessor_try_find_rest_parser(command_context_parser):
+    """
+    Tries to find rest parser
+    
+    Parameters
+    ----------
+    command_context_parser : ``CommandContentParser``
+        The respective command content parser.
+    """
+    parameters = command_context_parser._parameters
+    if not parameters:
+        return
+    
+    for parameter in parameters:
+        if parameter.is_args or parameter.is_kwargs or parameter.is_keyword:
+            return
+    
+    parameter = parameters[-1]
+    if (parameter.converter_setting is not CONVERTER_NONE):
+        return
+    
+    parameter.is_rest = True
+
+
+def convert_parser_parameter_postprocessor_try_find_string(command_context_parser):
+    """
+    Sets the unset parameters to use string converters.
+    
+    Parameters
+    ----------
+    command_context_parser : ``CommandContentParser``
+        The respective command content parser.
+    """
+    parameters = command_context_parser._parameters
+    for parameter in parameters:
+        if (parameter.converter_setting is CONVERTER_NONE) and (not parameter.is_rest):
+            parameter.set_converter_setting(CONVERTER_STR)
+
+
+CONTENT_PARSER_PARAMETER_POSTPROCESSORS = [
+    content_parser_parameter_postprocessor_try_find_context,
+    content_parser_parameter_postprocessor_try_find_message_and_client,
+    content_parser_parameter_postprocessor_try_find_rest_parser,
+    convert_parser_parameter_postprocessor_try_find_string,
+        ]
+
+
+
+
 
 
 

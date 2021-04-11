@@ -929,7 +929,7 @@ class ApplicationCommandOption:
             The created application command option.
         """
         self = object.__new__(cls)
-        choice_datas = data.get('choices')
+        choice_datas = data.get('choices', None)
         if (choice_datas is None) or (not choice_datas):
             choices = None
         else:
@@ -940,7 +940,7 @@ class ApplicationCommandOption:
         self.description = data['description']
         self.name = data['name']
         
-        option_datas = data.get('options')
+        option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
             options = None
         else:
@@ -1703,8 +1703,8 @@ class ApplicationCommandPermissionOverwrite:
             self_target_id = self.target_id
             other_target_id = other.target_id
             
-            self_role = ROLES.get(self_target_id)
-            other_role = ROLES.get(other_target_id)
+            self_role = ROLES.get(self_target_id, None)
+            other_role = ROLES.get(other_target_id, None)
             if self_role is None:
                 if other_role is None:
                     return (self_target_id > other_target_id)
@@ -1740,8 +1740,8 @@ class ApplicationCommandPermissionOverwrite:
             self_target_id = self.target_id
             other_target_id = other.target_id
             
-            self_role = ROLES.get(self_target_id)
-            other_role = ROLES.get(other_target_id)
+            self_role = ROLES.get(self_target_id, None)
+            other_role = ROLES.get(other_target_id, None)
             if self_role is None:
                 if other_role is None:
                     return (self_target_id < other_target_id)
@@ -1853,7 +1853,7 @@ class ApplicationCommandInteraction(DiscordEntity):
                         if resolved_guild_profile_datas is None:
                             guild_profile_data = None
                         else:
-                            guild_profile_data = resolved_guild_profile_datas.get(user_id)
+                            guild_profile_data = resolved_guild_profile_datas.get(user_id, None)
                         
                         if (guild_profile_data is not None):
                             user_data['member'] = guild_profile_data
@@ -1902,7 +1902,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         id_ = int(data['id'])
         name = data['name']
         
-        option_datas = data.get('options')
+        option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
             options = None
         else:
@@ -1980,7 +1980,7 @@ class ApplicationCommandInteractionOption:
         """
         name = data['name']
         
-        option_datas = data.get('options')
+        option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
             options = None
         else:
@@ -1991,7 +1991,7 @@ class ApplicationCommandInteractionOption:
         self.options = options
         self.type = ApplicationCommandOptionType.get(data.get('type', 0))
         
-        value = data.get('value')
+        value = data.get('value', None)
         if value is not None:
             value = str(value)
         

@@ -148,7 +148,7 @@ class Webhook(UserBase):
         webhook._update_no_return(data)
         webhook.type = WebhookType.get(data['type'])
         
-        application_id = data.get('application_id')
+        application_id = data.get('application_id', None)
         if application_id is None:
             application_id = 0
         else:
@@ -194,7 +194,7 @@ class Webhook(UserBase):
         if channel.clients:
             channel.guild.webhooks[self.id] = self
         
-        token = data.get('token')
+        token = data.get('token', None)
         if (token is not None):
             self.token = token
         
@@ -411,7 +411,7 @@ class Webhook(UserBase):
                 if name is None:
                     name = ''
                 
-                avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar'))
+                avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar', None))
         else:
             # TODO: can it be animated if the guild's icon is animated?
             avatar_hash = guild.icon_hash

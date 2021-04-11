@@ -1490,7 +1490,7 @@ class ReadProtocolBase:
         chunk, offset = yield from self._read_http_helper()
         headers = yield from self._read_http_headers(chunk, offset)
         
-        length = headers.get(CONTENT_LENGTH)
+        length = headers.get(CONTENT_LENGTH, None)
         if length is None:
             part = yield from self._read_until(b'\r\n--'+boundary)
         else:
@@ -2117,7 +2117,7 @@ class ReadProtocolBase:
         payload_reader_task : `None` or `generator`
             Payload reader task if applicable.
         """
-        length = message.headers.get(CONTENT_LENGTH)
+        length = message.headers.get(CONTENT_LENGTH, None)
         if (length is not None):
             if length.isdigit():
                 length = int(length)

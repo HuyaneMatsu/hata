@@ -264,7 +264,7 @@ class _check_meta(type):
         else:
             inherited_slots = None
         
-        new_slots = class_attributes.get('__slots__')
+        new_slots = class_attributes.get('__slots__', None)
         
         final_slots = []
         if (inherited_slots is not None):
@@ -450,7 +450,7 @@ class _invert_op_check(_check_base):
         if isinstance(check, cls):
             self = check.check
         else:
-            target_type = CHECK_INVERT_TABLE.get(check.__class__)
+            target_type = CHECK_INVERT_TABLE.get(check.__class__, None)
             if target_type is None:
                 self = object.__new__(cls)
                 self.check = check

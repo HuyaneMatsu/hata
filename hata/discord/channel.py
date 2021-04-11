@@ -621,7 +621,7 @@ class MessageIterator:
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
             
             if channel is None:
                 try:
@@ -1397,7 +1397,7 @@ class ChannelGuildBase(ChannelBase):
         
         self.position = data.get('position', 0)
         
-        category_id = data.get('parent_id')
+        category_id = data.get('parent_id', None)
         if category_id is None:
             category = guild
         else:
@@ -1421,13 +1421,13 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return
         
-        new_category_id = data.get('parent_id')
+        new_category_id = data.get('parent_id', None)
         if new_category_id is None:
             new_category = guild
         else:
             new_category = guild.channels[int(new_category_id)]
         
-        position=data.get('position',0)
+        position = data.get('position',0)
         
         category = self.category
         if category is new_category:
@@ -1456,7 +1456,7 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return
         
-        new_category_id = data.get('parent_id')
+        new_category_id = data.get('parent_id', None)
         if new_category_id is None:
             new_category = guild
         else:
@@ -1494,7 +1494,7 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return PERMISSION_NONE
         
-        default_role =  guild.roles.get(guild.id)
+        default_role =  guild.roles.get(guild.id, None)
         if default_role is None:
             base = 0
         else:
@@ -1635,7 +1635,7 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return PERMISSION_NONE
         
-        default_role =  guild.roles.get(guild.id)
+        default_role =  guild.roles.get(guild.id, None)
         if default_role is None:
             base = 0
         else:
@@ -2029,7 +2029,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self._init_category_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
-        self.topic = data.get('topic')
+        self.topic = data.get('topic', None)
         self.nsfw = data.get('nsfw', False)
         self.slowmode = int(data.get('rate_limit_per_user', 0))
         
@@ -2106,7 +2106,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         self.name = data['name']
         self.type = data['type']
-        self.topic = data.get('topic')
+        self.topic = data.get('topic', None)
         self.nsfw = data.get('nsfw', False)
         self.slowmode = int(data.get('rate_limit_per_user', 0))
     
@@ -2160,7 +2160,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             old_attributes['name'] = self.name
             self.name = name
         
-        topic = data.get('topic')
+        topic = data.get('topic', None)
         if self.topic != topic:
             old_attributes['topic'] = self.topic
             self.topic = topic
@@ -2876,7 +2876,7 @@ class ChannelVoice(ChannelVoiceBase):
         self.overwrites = self._parse_overwrites(data)
         
         # Voice base
-        region = data.get('rtc_region')
+        region = data.get('rtc_region', None)
         if (region is not None):
             region = VoiceRegion.get(region)
         self.region = region
@@ -2966,7 +2966,7 @@ class ChannelVoice(ChannelVoiceBase):
         self.bitrate = data['bitrate']
         self.user_limit = data['user_limit']
         
-        region = data.get('rtc_region')
+        region = data.get('rtc_region', None)
         if (region is not None):
             region = VoiceRegion.get(region)
         self.region = region
@@ -3034,7 +3034,7 @@ class ChannelVoice(ChannelVoiceBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        region = data.get('rtc_region')
+        region = data.get('rtc_region', None)
         if (region is not None):
             region = VoiceRegion.get(region)
         
@@ -3310,7 +3310,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             
             users.clear()
         
-        name = data.get('name')
+        name = data.get('name', None)
         self.name = '' if name is None else name
         self._set_icon(data)
         self.owner_id = int(data['owner_id'])
@@ -3397,7 +3397,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
         """
-        name = data.get('name')
+        name = data.get('name', None)
         self.name = '' if name is None else name
         
         self._set_icon(data)
@@ -3439,7 +3439,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         """
         old_attributes = {}
         
-        name = data.get('name')
+        name = data.get('name', None)
         if name is None:
             name=''
         if self.name != name:
@@ -4976,7 +4976,7 @@ class ChannelStage(ChannelVoiceBase):
         self.overwrites = self._parse_overwrites(data)
         
         # Voice base
-        region = data.get('rtc_region')
+        region = data.get('rtc_region', None)
         if (region is not None):
             region = VoiceRegion.get(region)
         self.region = region
@@ -4984,7 +4984,7 @@ class ChannelStage(ChannelVoiceBase):
         self.bitrate = data['bitrate']
         self.user_limit = data['user_limit']
         
-        self.topic = data.get('topic')
+        self.topic = data.get('topic', None)
         
         return self
     
@@ -5061,7 +5061,7 @@ class ChannelStage(ChannelVoiceBase):
         self.bitrate = data['bitrate']
         self.user_limit = data['user_limit']
         
-        region = data.get('rtc_region')
+        region = data.get('rtc_region', None)
         if (region is not None):
             region = VoiceRegion.get(region)
         self.region = region
@@ -5129,7 +5129,7 @@ class ChannelStage(ChannelVoiceBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        region = data.get('rtc_region')
+        region = data.get('rtc_region', None)
         if (region is not None):
             region = VoiceRegion.get(region)
         
@@ -5139,7 +5139,7 @@ class ChannelStage(ChannelVoiceBase):
         
         self._update_category_and_position(data, old_attributes)
         
-        topic = data.get('topic')
+        topic = data.get('topic', None)
         if self.topic != topic:
             old_attributes['topic'] = self.topic
             self.topic = topic

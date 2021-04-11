@@ -528,7 +528,7 @@ class Client(UserBase):
         self.mfa = data.get('mfa_enabled', False)
         self.system = data.get('system', False)
         self.verified = data.get('verified', False)
-        self.email = data.get('email')
+        self.email = data.get('email', None)
         self.flags = UserFlag(data.get('flags', 0))
         self.premium_type = PremiumType.get(data.get('premium_type', 0))
         self.locale = parse_locale(data)
@@ -887,7 +887,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         # Security debug checks.
         if __debug__:
@@ -1979,7 +1979,7 @@ class Client(UserBase):
                 raise TypeError(f'`application_id` can be given as `{Application.__name__}` or as `int` instance, got '
                     f'{application_id.__class__.__name__}.')
             
-            application = APPLICATIONS.get(application_id)
+            application = APPLICATIONS.get(application_id, None)
             
         application_data = await self.http.application_get(application_id)
         if application is None:
@@ -2021,7 +2021,7 @@ class Client(UserBase):
                 raise TypeError(f'`eula` can be given as `{EULA.__name__}` or as `int` instance, got '
                     f'{eula.__class__.__name__}.')
             
-            eula = EULAS.get(eula_id)
+            eula = EULAS.get(eula_id, None)
         
         eula_data = await self.http.eula_get(eula_id)
         if eula is None:
@@ -2973,7 +2973,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         
         data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
@@ -3193,7 +3193,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3266,7 +3266,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3330,7 +3330,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
@@ -3353,7 +3353,7 @@ class Client(UserBase):
         Parameters
         ----------
         channel : ``ChannelTextBase`` instance, `int` instance, ``Message``, ``MessageRepr``, ``MessageReference``,
-                `tuple` (`int, `int`)
+                `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
@@ -3432,7 +3432,7 @@ class Client(UserBase):
             channel_id = maybe_snowflake(channel)
             if (channel_id is not None):
                 message_id = None
-                channel = CHANNELS.get(channel_id)
+                channel = CHANNELS.get(channel_id, None)
             elif isinstance(channel, MessageRepr):
                 message_id = channel.id
                 channel = channel.channel
@@ -3440,7 +3440,7 @@ class Client(UserBase):
             elif isinstance(channel, MessageReference):
                 channel_id = channel.channel_id
                 message_id = channel.message_id
-                channel = CHANNELS.get(channel_id)
+                channel = CHANNELS.get(channel_id, None)
             else:
                 snowflake_pair = maybe_snowflake_pair(channel)
                 if snowflake_pair is None:
@@ -3449,7 +3449,7 @@ class Client(UserBase):
                         f'{channel.__class__.__name__}.')
                 
                 channel_id, message_id = snowflake_pair
-                channel = CHANNELS.get(channel_id)
+                channel = CHANNELS.get(channel_id, None)
         
         # Embed check order:
         # 1.: None
@@ -3914,7 +3914,7 @@ class Client(UserBase):
                 
                 channel_id, message_id = snowflake_pair
             
-            message = MESSAGES.get(message)
+            message = MESSAGES.get(message, None)
         
         return channel_id, message_id, message
     
@@ -5426,7 +5426,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
         
         data = await self.http.channel_pin_get_all(channel_id)
         
@@ -5561,7 +5561,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
             
             if channel is None:
                 messages = await self.message_get_chunk_from_zero(channel_id, min(index+1, 100))
@@ -5644,7 +5644,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
             
             if channel is None:
                 messages = await self.message_get_chunk_from_zero(channel_id, min(end+1, 100))
@@ -6365,7 +6365,7 @@ class Client(UserBase):
                         f'`{message.__class__.__name__}`.')
                 
                 channel_id, message_id = snowflake_pair
-                message = MESSAGES.get(message_id)
+                message = MESSAGES.get(message_id, None)
             
             if (message is None):
                 message = await self.message_get(channel_id, message_id)
@@ -6959,7 +6959,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if guild is None:
             data = await self.http.guild_get(guild_id)
@@ -7326,7 +7326,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if __debug__:
             if not isinstance(count, bool):
@@ -7369,7 +7369,7 @@ class Client(UserBase):
                 data['include_roles'] = role_ids
         
         data = await self.http.guild_prune(guild_id, data, reason)
-        return data.get('pruned')
+        return data.get('pruned', None)
     
     
     async def guild_prune_estimate(self, guild, days, *, roles=None):
@@ -7449,7 +7449,7 @@ class Client(UserBase):
                 data['include_roles'] = role_ids
         
         data = await self.http.guild_prune_estimate(guild_id, data)
-        return data.get('pruned')
+        return data.get('pruned', None)
     
     async def guild_edit(self, guild, *, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
             afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
@@ -8027,7 +8027,7 @@ class Client(UserBase):
                     f'got {user.__class__.__name__}.')
         
         data = await self.http.guild_ban_get(guild_id, user_id)
-        return BanEntry(User(data['user']), data.get('reason'))
+        return BanEntry(User(data['user']), data.get('reason', None))
     
     async def guild_widget_get(self, guild):
         """
@@ -8833,7 +8833,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if isinstance(user, (User, Client)):
             user_id = user.id
@@ -8843,7 +8843,7 @@ class Client(UserBase):
                 raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
             
-            user = USERS.get(user_id)
+            user = USERS.get(user_id, None)
         
         data = {}
         if (nick is not ...):
@@ -10022,7 +10022,7 @@ class Client(UserBase):
                 raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
                     f'{webhook.__class__.__name__}.')
             
-            webhook = USERS.get(webhook_id)
+            webhook = USERS.get(webhook_id, None)
         
         if (webhook is not None):
             channel = webhook.channel
@@ -10079,7 +10079,7 @@ class Client(UserBase):
                 raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
                     f'{webhook.__class__.__name__}.')
             
-            webhook = USERS.get(webhook_id)
+            webhook = USERS.get(webhook_id, None)
         
         if __debug__:
             if not isinstance(webhook_token, str):
@@ -10170,7 +10170,7 @@ class Client(UserBase):
                 raise TypeError(f'`channel` cna be given either as `{ChannelText.__name__}` or as `int` instance, got '
                     f'{channel.__class__.__name__}.')
             
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
             
             if __debug__:
                 if (channel is not None) and (not isinstance(channel, ChannelText)):
@@ -10223,7 +10223,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if guild is None:
             webhook_datas = await self.http.webhook_get_all_guild(guild_id)
@@ -10990,7 +10990,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if isinstance(emoji, Emoji):
             emoji_id = emoji.id
@@ -11000,7 +11000,7 @@ class Client(UserBase):
                 raise TypeError(f'`emoji` can be given either as `{Emoji.__name__}` or as `int` instance, got '
                     f'{emoji.__class__.__name__}.')
             
-            emoji = EMOJIS.get(emoji)
+            emoji = EMOJIS.get(emoji, None)
         
         emoji_data = await self.http.emoji_get(guild_id, emoji_id)
         
@@ -11098,7 +11098,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if __debug__:
             if not isinstance(name, str):
@@ -11311,7 +11311,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         if guild is None or guild.partial:
             invite_data = await self.http.vanity_invite_get(guild_id)
@@ -12128,7 +12128,7 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
                     f'{guild.__class__.__name__}.')
             
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
         
         data = {}
         
@@ -12224,7 +12224,7 @@ class Client(UserBase):
                     f'{role.__class__.__name__}.')
             
             guild_id, role_id = snowflake_pair
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
             if (guild is None) or guild.partial:
                 guild = await self.guild_sync(guild_id)
             
@@ -12298,11 +12298,11 @@ class Client(UserBase):
                     f'{role.__class__.__name__}.')
             
             guild_id, role_id = snowflake_pair
-            guild = GUILDS.get(guild_id)
+            guild = GUILDS.get(guild_id, None)
             if (guild is None) or guild.partial:
                 guild = await self.guild_sync(guild_id)
             
-            role = ROLES.get(role_id)
+            role = ROLES.get(role_id, None)
         
         if not isinstance(position, int):
             raise TypeError(f'`roles` item[1] should be `int` instance, but got {position.__class__.__name__}.')
@@ -12588,7 +12588,7 @@ class Client(UserBase):
                 raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, or as `int` '
                     f'instance, got {application_command.__class__.__name__}.')
             
-            application_command = APPLICATION_COMMANDS.get(application_command_id)
+            application_command = APPLICATION_COMMANDS.get(application_command_id, None)
         
         application_command_data = await self.http.application_command_global_get(application_id,
             application_command_id)
@@ -12902,7 +12902,7 @@ class Client(UserBase):
                 raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, or as `int` '
                     f'instance, got {application_command.__class__.__name__}.')
             
-            application_command = APPLICATION_COMMANDS.get(application_command_id)
+            application_command = APPLICATION_COMMANDS.get(application_command_id, None)
         
         application_command_data = await self.http.application_command_guild_get(application_id, guild_id,
             application_command_id)
@@ -15530,7 +15530,7 @@ class Client(UserBase):
         if guild is None:
             voice_client = None
         else:
-            voice_client = self.voice_clients.get(guild.id)
+            voice_client = self.voice_clients.get(guild.id, None)
         return voice_client
     
     def get_guild(self, name, default=None):
@@ -15782,7 +15782,7 @@ class Client(UserBase):
 
         self._update_avatar(data, old_attributes)
         
-        email = data.get('email')
+        email = data.get('email', None)
         if self.email != email:
             old_attributes['email'] = self.email
             self.email = email
@@ -15838,7 +15838,7 @@ class Client(UserBase):
         
         self.verified = data.get('verified', False)
         
-        self.email = data.get('email')
+        self.email = data.get('email', None)
         
         self.premium_type = PremiumType.get(data.get('premium_type', 0))
         

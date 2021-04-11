@@ -1236,7 +1236,7 @@ class IconSlot:
         func_name = f'_set_{internal_name}'
         exec(compile((
             f'def {func_name}(self, data):\n'
-            f'    icon = data.get({discord_side_name!r})\n'
+            f'    icon = data.get({discord_side_name!r}, None)\n'
             f''
             f'    if icon is None:\n'
             f'        icon_type = ICON_TYPE_NONE\n'
@@ -1260,7 +1260,7 @@ class IconSlot:
             func_name = f'_update_{internal_name}'
             exec(compile((
                 f'def {func_name}(self, data, old_attributes):\n'
-                f'    icon = data.get({discord_side_name!r})\n'
+                f'    icon = data.get({discord_side_name!r}, None)\n'
                 f''
                 f'    if icon is None:\n'
                 f'        icon_type = ICON_TYPE_NONE\n'

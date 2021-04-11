@@ -105,13 +105,13 @@ class PayloadBase:
             Additional keyword arguments.
         """
         self.data = data
-        self.encoding = kwargs.get('encoding')
-        self.filename = filename = kwargs.get('filename')
+        self.encoding = kwargs.get('encoding', None)
+        self.filename = filename = kwargs.get('filename', None)
         self.size = None
         
         headers = imultidict()
         
-        content_type = kwargs.get('content_type')
+        content_type = kwargs.get('content_type', None)
         if content_type is None:
             if filename is None:
                 content_type = DEFAULT_CONTENT_TYPE
@@ -124,7 +124,7 @@ class PayloadBase:
         
         headers[CONTENT_TYPE] = content_type
         
-        headers_parameter = kwargs.get('headers')
+        headers_parameter = kwargs.get('headers', None)
         if (headers_parameter is not None) or  headers_parameter:
             headers.extend(headers_parameter)
         
@@ -244,8 +244,8 @@ class StringPayload(BytesPayload):
         kwargs : `dict` of (`str`, `Any`) items
             Additional keyword arguments.
         """
-        encoding = kwargs.get('encoding')
-        content_type = kwargs.get('content_type')
+        encoding = kwargs.get('encoding', None)
+        content_type = kwargs.get('content_type', None)
         if encoding is None:
             if content_type is None:
                 encoding = 'utf-8'
@@ -404,8 +404,8 @@ class TextIOPayload(IOBasePayload):
         kwargs : `dict` of (`str`, `Any`) items
             Additional keyword arguments.
         """
-        encoding = kwargs.get('encoding')
-        content_type = kwargs.get('content_type')
+        encoding = kwargs.get('encoding', None)
+        content_type = kwargs.get('content_type', None)
         if encoding is None:
             if content_type is None:
                 encoding = 'utf-8'
@@ -565,7 +565,7 @@ class JsonPayload(BytesPayload):
         kwargs : `dict` of (`str`, `Any`) items
             Additional keyword arguments.
         """
-        encoding = kwargs.get('encoding')
+        encoding = kwargs.get('encoding', None)
         if (encoding is None):
             kwargs['encoding'] = encoding = 'utf-8'
         

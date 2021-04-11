@@ -209,10 +209,10 @@ class ActivityAssets:
         assets_data : `dict` of (`str`, `Any`) items
             Activity asset data.
         """
-        self.image_large = assets_data.get('large_image')
-        self.image_small = assets_data.get('small_image')
-        self.text_large = assets_data.get('large_text')
-        self.text_small = assets_data.get('small_text')
+        self.image_large = assets_data.get('large_image', None)
+        self.image_small = assets_data.get('small_image', None)
+        self.text_large = assets_data.get('large_text', None)
+        self.text_small = assets_data.get('small_text', None)
     
     def __repr__(self):
         """Returns the activity asset's representation."""
@@ -329,7 +329,7 @@ class ActivityParty:
         party_data : `dict` of (`str`, `Any`) items
             Activity party data.
         """
-        self.id = party_data.get('id')
+        self.id = party_data.get('id', None)
         
         try:
             size, max_ = party_data['size']
@@ -430,9 +430,9 @@ class ActivitySecrets:
         secrets_data : `dict` of (`str`, `Any`) items
             Activity secret data.
         """
-        self.join = secrets_data.get('join')
-        self.spectate = secrets_data.get('spectate')
-        self.match = secrets_data.get('match')
+        self.join = secrets_data.get('join', None)
+        self.spectate = secrets_data.get('spectate', None)
+        self.match = secrets_data.get('match', None)
     
     def __repr__(self):
         """Returns the activity secret's representation."""
@@ -938,7 +938,7 @@ class ActivityRich(ActivityBase):
         
         self.created = activity_data.get('created_at', 0)
         
-        self.details = activity_data.get('details')
+        self.details = activity_data.get('details', None)
         
         self.flags = ActivityFlag(activity_data.get('flags', 0))
         
@@ -960,11 +960,11 @@ class ActivityRich(ActivityBase):
             secrets = ActivitySecrets(secrets_data)
         self.secrets = secrets
         
-        self.session_id = activity_data.get('session_id')
+        self.session_id = activity_data.get('session_id', None)
         
-        self.state = activity_data.get('state')
+        self.state = activity_data.get('state', None)
         
-        self.sync_id = activity_data.get('sync_id')
+        self.sync_id = activity_data.get('sync_id', None)
         
         try:
             timestamps_data = activity_data['timestamps']
@@ -974,7 +974,7 @@ class ActivityRich(ActivityBase):
             timestamps = ActivityTimestamps(timestamps_data)
         self.timestamps = timestamps
         
-        self.url = activity_data.get('url')
+        self.url = activity_data.get('url', None)
     
     def _update(self, activity_data):
         """
@@ -1051,7 +1051,7 @@ class ActivityRich(ActivityBase):
             old_attributes['created'] = self.created
             self.created = created
         
-        details = activity_data.get('details')
+        details = activity_data.get('details', None)
         if self.details != details:
             old_attributes['details'] = self.details
             self.details = details
@@ -1088,17 +1088,17 @@ class ActivityRich(ActivityBase):
             old_attributes['secrets'] = self.secrets
             self.secrets = secrets
         
-        session_id = activity_data.get('session_id')
+        session_id = activity_data.get('session_id', None)
         if self.session_id != session_id:
             old_attributes['session_id'] = self.session_id
             self.session_id = session_id
         
-        state = activity_data.get('state')
+        state = activity_data.get('state', None)
         if self.state != state:
             old_attributes['state'] = self.state
             self.state = state
         
-        sync_id = activity_data.get('sync_id')
+        sync_id = activity_data.get('sync_id', None)
         if self.sync_id != sync_id:
             old_attributes['sync_id'] = self.sync_id
             self.sync_id = sync_id
@@ -1114,7 +1114,7 @@ class ActivityRich(ActivityBase):
             old_attributes['timestamps'] = self.timestamps
             self.timestamps = timestamps
         
-        url = activity_data.get('url')
+        url = activity_data.get('url', None)
         if self.url != url:
             old_attributes['url'] = self.url
             self.url = url
@@ -1418,9 +1418,9 @@ class ActivityCustom(ActivityBase):
         activity_data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         """
-        self.state = activity_data.get('state')
+        self.state = activity_data.get('state', None)
         
-        emoji_data = activity_data.get('emoji')
+        emoji_data = activity_data.get('emoji', None)
         if emoji_data is None:
             emoji = None
         else:
@@ -1457,12 +1457,12 @@ class ActivityCustom(ActivityBase):
         """
         old_attributes = {}
         
-        state = activity_data.get('state')
+        state = activity_data.get('state', None)
         if self.state != state:
             old_attributes['state'] = self.state
             self.state = state
         
-        emoji_data = activity_data.get('emoji')
+        emoji_data = activity_data.get('emoji', None)
         if emoji_data is None:
             emoji = None
         else:

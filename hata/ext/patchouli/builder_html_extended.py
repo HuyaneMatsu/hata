@@ -62,7 +62,7 @@ def create_relative_sectioned_link(source, target):
     """
     while True:
         parent_maybe = source.parent
-        unit = MAPPED_OBJECTS.get(parent_maybe)
+        unit = MAPPED_OBJECTS.get(parent_maybe, None)
         if unit is None:
             break
         
@@ -76,7 +76,7 @@ def create_relative_sectioned_link(source, target):
     
     while True:
         target_maybe = target.parent
-        unit = MAPPED_OBJECTS.get(target_maybe)
+        unit = MAPPED_OBJECTS.get(target_maybe, None)
         if unit is None:
             break
         
@@ -252,7 +252,7 @@ def get_anchor_prefix_for(path):
     prefix_parts = []
     while True:
         parent = path.parent
-        unit = MAPPED_OBJECTS.get(parent)
+        unit = MAPPED_OBJECTS.get(parent, None)
         if unit is None:
             break
         
@@ -281,7 +281,7 @@ def get_tier_for(path):
     tier = 1
     while True:
         parent = path.parent
-        unit = MAPPED_OBJECTS.get(parent)
+        unit = MAPPED_OBJECTS.get(parent, None)
         if unit is None:
             break
         
@@ -309,7 +309,7 @@ def get_parent_path_of(path):
     """
     while True:
         parent = path.parent
-        unit = MAPPED_OBJECTS.get(parent)
+        unit = MAPPED_OBJECTS.get(parent, None)
         if unit is None:
             break
         

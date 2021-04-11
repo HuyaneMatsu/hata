@@ -2530,7 +2530,7 @@ class CommandProcesser(EventWaitforBase):
         for command in category.commands:
             alters = command._alters
             for name in alters:
-                other_command = commands.get(name)
+                other_command = commands.get(name, None)
                 if other_command is command:
                     del commands[name]
     
@@ -2961,7 +2961,7 @@ class CommandProcesser(EventWaitforBase):
         commands = self.commands
         name = command.name
         
-        would_overwrite = commands.get(name)
+        would_overwrite = commands.get(name, None)
         if (would_overwrite is not None) and (would_overwrite.name!=name):
             raise ValueError(f'The command would overwrite an alias of an another one: `{would_overwrite}`.'
                 'If you intend to overwrite an another command please overwrite it with it\'s default name.')

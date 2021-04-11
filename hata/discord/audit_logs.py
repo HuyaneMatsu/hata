@@ -600,7 +600,7 @@ class AuditLogEntry:
         self.id = int(data['id'])
         self.type = AuditLogEvent.get(int(data['action_type']))
         
-        options = data.get('options')
+        options = data.get('options', None)
         if (options is None):
             details = None
         else:
@@ -618,16 +618,16 @@ class AuditLogEntry:
         
         self.details = details
         
-        user_id = data.get('user_id')
+        user_id = data.get('user_id', None)
         if user_id is None:
             user = None
         else:
-            user = parent.users.get(int(user_id))
+            user = parent.users.get(int(user_id), None)
         self.user = user
         
-        self.reason = data.get('reason')
+        self.reason = data.get('reason', None)
         
-        change_datas = data.get('changes')
+        change_datas = data.get('changes', None)
         if (change_datas is None):
             changes = None
         else:
@@ -706,8 +706,8 @@ class AuditLogEntry:
 def transform_nothing(name, data):
     change = AuditLogChange()
     change.attr = name
-    change.before = data.get('old_value')
-    change.after = data.get('new_value')
+    change.before = data.get('old_value', None)
+    change.after = data.get('new_value', None)
     return change
 
 def transform_deprecated(name, data):
@@ -721,24 +721,24 @@ def transform_icon(name, data):
         name = name[:-5]
     change.attr = name
     
-    change.before = Icon.from_base16_hash(data.get('old_value'))
+    change.before = Icon.from_base16_hash(data.get('old_value', None))
     
-    change.after = Icon.from_base16_hash(data.get('new_value'))
+    change.after = Icon.from_base16_hash(data.get('new_value', None))
     
     return change
 
 def transform_bool__separated(name, data):
     change = AuditLogChange()
     change.attr = 'separated'
-    change.before = data.get('old_value')
-    change.after = data.get('new_value')
+    change.before = data.get('old_value', None)
+    change.after = data.get('new_value', None)
     return change
 
 def transform_channel(name, data):
     change = AuditLogChange()
     change.attr = name[:-3]
     
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     if value is None:
         change.before=None
     else:
@@ -749,7 +749,7 @@ def transform_channel(name, data):
             before = Unknown('Channel', value)
         change.before = before
     
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     if value is None:
         change.after = None
     else:
@@ -765,59 +765,59 @@ def transform_channel(name, data):
 def transform_color(name, data):
     change = AuditLogChange()
     change.attr = 'color'
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     change.before = None if value is None else Color(value)
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     change.after = None if value is None else Color(value)
     return change
 
 def transform_content_filter(name, data):
     change = AuditLogChange()
     change.attr = 'content_filter'
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     change.before = None if value is None else ContentFilterLevel.get(value)
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     change.after = None if value is None else ContentFilterLevel.get(value)
     return change
 
 def transform_int__days(name, data):
     change = AuditLogChange()
     change.attr = 'days'
-    change.before = data.get('old_value')
-    change.after = data.get('new_value')
+    change.before = data.get('old_value', None)
+    change.after = data.get('new_value', None)
     return change
 
 def transform_int__slowmode(name, data):
     change = AuditLogChange()
     change.attr = 'slowmode'
-    change.before = data.get('old_value')
-    change.after = data.get('new_value')
+    change.before = data.get('old_value', None)
+    change.after = data.get('new_value', None)
     return change
 
 def transform_message_notification(name, data):
     change  =AuditLogChange()
     change.attr = 'message_notification'
-    before = data.get('old_value')
+    before = data.get('old_value', None)
     change.before = None if before is None else MessageNotificationLevel.get(before)
-    after = data.get('new_value')
+    after = data.get('new_value', None)
     change.after = None if before is None else MessageNotificationLevel.get(after)
     return change
 
 def transform_mfa(name, data):
     change = AuditLogChange()
     change.attr = 'mfa'
-    before = data.get('old_value')
+    before = data.get('old_value', None)
     change.before = None if before is None else MFA.get(before)
-    after = data.get('new_value')
+    after = data.get('new_value', None)
     change.after = None if before is None else MFA.get(after)
     return change
 
 def transform_overwrites(name, data):
     change = AuditLogChange()
     change.attr = 'overwrites'
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     change.before = None if value is None else [PermissionOverwrite(ow_data) for ow_data in value]
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     change.after = None if value is None else [PermissionOverwrite(ow_data) for ow_data in value]
     return change
 
@@ -828,18 +828,18 @@ def transform_permission(name, data):
         name = name[:-4]
     
     change.attr = name
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     change.before = None if value is None else Permission(value)
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     change.after = None if value is None else Permission(value)
     return change
 
 def transform_region(name, data):
     change = AuditLogChange()
     change.attr = 'region'
-    before = data.get('old_value')
+    before = data.get('old_value', None)
     change.before = None if before is None else VoiceRegion.get(before)
-    after = data.get('new_value')
+    after = data.get('new_value', None)
     change.after = None if before is None else VoiceRegion.get(after)
     return change
 
@@ -870,35 +870,35 @@ def transform_role(name, data):
 def transform_snowflake(name, data):
     change = AuditLogChange()
     change.attr = name
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     change.before = None if value is None else int(value)
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     change.after = None if value is None else int(value)
     return change
 
 def transform_str__vanity_code(name, data):
     change = AuditLogChange()
     change.attr = 'vanity_code'
-    change.before = data.get('old_value')
-    change.after = data.get('new_value')
+    change.before = data.get('old_value', None)
+    change.after = data.get('new_value', None)
     return change
 
 def transform_system_channel_flags(name, data):
     change = AuditLogChange()
     change.attr = 'system_channel_flags'
-    before = data.get('old_value')
+    before = data.get('old_value', None)
     change.before = None if before is None else SystemChannelFlag(before)
-    after = data.get('new_value')
+    after = data.get('new_value', None)
     change.after = None if before is None else SystemChannelFlag(after)
     return change
 
 def transform_type(name, data):
     # If we talk about permission overwrite, type can be `str` too, what we ignore
-    before = data.get('old_value')
+    before = data.get('old_value', None)
     if type(before) is str:
         return
     
-    after = data.get('new_value')
+    after = data.get('new_value', None)
     if type(after) is str:
         return
     
@@ -911,7 +911,7 @@ def transform_type(name, data):
 def transform_user(name, data):
     change = AuditLogChange()
     change.attr = name[:-3]
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     if value is None:
         before = None
     else:
@@ -922,7 +922,7 @@ def transform_user(name, data):
             before = Unknown('User', value)
     change.before = before
     
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     if value is None:
         after = None
     else:
@@ -938,9 +938,9 @@ def transform_user(name, data):
 def transform_verification_level(name, data):
     change = AuditLogChange()
     change.attr = 'verification_level'
-    value = data.get('old_value')
+    value = data.get('old_value', None)
     change.before = None if value is None else VerificationLevel.value[value]
-    value = data.get('new_value')
+    value = data.get('new_value', None)
     change.after = None if value is None else VerificationLevel.value[value]
     return change
 

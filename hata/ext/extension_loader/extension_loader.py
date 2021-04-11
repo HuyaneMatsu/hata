@@ -433,7 +433,7 @@ class Extension:
         if state == EXTENSION_STATE_UNDEFINED:
             
             spec = self._spec
-            lib = sys.modules.get(spec.name)
+            lib = sys.modules.get(spec.name, None)
             if lib is None:
                 # lib is not imported yet, nice
                 lib = module_from_spec(spec)

@@ -383,7 +383,7 @@ class ClientRequest:
                 if isinstance(key, Morsel):
                     # Preserve coded_value
                     try:
-                        morsel_value = value.get(value.key)
+                        morsel_value = value.get(value.key, None)
                     except KeyError:
                         morsel_value = Morsel()
                     
@@ -407,7 +407,7 @@ class ClientRequest:
         
         # Needed for transfer data checks
         chunked = True
-        compression = headers.get(CONTENT_ENCODING)
+        compression = headers.get(CONTENT_ENCODING, None)
         
         # Get request content encoding.
         if (data is not None):
@@ -869,7 +869,7 @@ class ClientResponse:
         content_type = self.headers.get(CONTENT_TYPE, '').lower()
         mime_type = MimeType(content_type)
         
-        encoding = mime_type.parameters.get('charset')
+        encoding = mime_type.parameters.get('charset', None)
         if encoding is not None:
             try:
                 codecs.lookup(encoding)

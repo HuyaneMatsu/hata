@@ -110,8 +110,8 @@ class DiscordException(Exception):
         data = self.data
         if type(data) is dict:
             message_base = data.get('message', '')
-            error_datas = data.get('errors')
-            if error_datas:
+            error_datas = data.get('errors', None)
+            if (error_datas is not None) and error_datas:
                 stack = [[(None, error_datas,)]]
                 while True:
                     line = stack[-1]

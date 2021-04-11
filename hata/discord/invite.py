@@ -215,7 +215,7 @@ class Invite(DiscordEntity, immortal=True):
                 channel = None
             else:
                 channel_id = int(channel_id)
-                channel = CHANNELS.get(channel_id)
+                channel = CHANNELS.get(channel_id, None)
         else:
             channel = create_partial_channel(channel_data, guild)
         self.channel = channel
@@ -300,7 +300,7 @@ class Invite(DiscordEntity, immortal=True):
                     channel = None
                 else:
                     channel_id = int(channel_id)
-                    channel = CHANNELS.get(channel_id)
+                    channel = CHANNELS.get(channel_id, None)
             else:
                 channel = create_partial_channel(channel_data, guild)
             

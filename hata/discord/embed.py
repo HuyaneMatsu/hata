@@ -1720,7 +1720,7 @@ class Embed(EmbedBase):
     @copy_docs(EmbedBase.clear)
     def clear(self):
         data = self._data
-        fields = data.get('fields')
+        fields = data.get('fields', None)
         data.clear()
         if (fields is not None):
             fields.clear()

@@ -210,7 +210,7 @@ class GuildProfile:
         guild : ``Guild``
             The guild profile's respective guild.
         """
-        self.nick = data.get('nick')
+        self.nick = data.get('nick', None)
         
         role_ids = data['roles']
         if role_ids:
@@ -232,12 +232,12 @@ class GuildProfile:
         
         self.roles = roles
         
-        boosts_since = data.get('premium_since')
+        boosts_since = data.get('premium_since', None)
         if (boosts_since is not None):
             boosts_since = parse_time(boosts_since)
         self.boosts_since = boosts_since
         
-        self.pending = data.get('pending')
+        self.pending = data.get('pending', None)
     
     def _update(self, data, guild):
         """
@@ -271,14 +271,13 @@ class GuildProfile:
         +-------------------+-------------------------------+
         """
         old_attributes = {}
-        nick = data.get('nick')
+        nick = data.get('nick', None)
         if self.nick != nick:
             old_attributes['nick'] = self.nick
             self.nick = nick
         
         role_ids = data['roles']
         if role_ids:
-            guild_roles = guild.roles
             roles = []
             for role_id in role_ids:
                 role_id = int(role_id)
@@ -307,7 +306,7 @@ class GuildProfile:
                     old_attributes['roles'] = self.roles
                     self.roles = roles
         
-        boosts_since = data.get('premium_since')
+        boosts_since = data.get('premium_since', None)
         if (boosts_since is not None):
             boosts_since = parse_time(boosts_since)
         if self.boosts_since != boosts_since:
@@ -1205,7 +1204,7 @@ class User(UserBase):
                 user_data = data['user']
             except KeyError:
                 user_data = data
-                guild_profile_data = data.get('member')
+                guild_profile_data = data.get('member', None)
             else:
                 guild_profile_data = data
             
@@ -1248,7 +1247,7 @@ class User(UserBase):
                 guild_profile_data = data
             except KeyError:
                 user_data = data
-                guild_profile_data = data.get('member')
+                guild_profile_data = data.get('member', None)
                 
             user_id = int(user_data['id'])
 
@@ -1286,7 +1285,7 @@ class User(UserBase):
                 guild_profile_data = data
             except KeyError:
                 user_data = data
-                guild_profile_data = data.get('member')
+                guild_profile_data = data.get('member', None)
             
             user_id = int(user_data['id'])
             
@@ -1658,7 +1657,7 @@ class User(UserBase):
             status = data['status']
             if self.status.value != status:
                 old_attributes['status'] = self.status
-                self.status = Status.get(status)
+                self.status = Status.get(status, None)
         
         activity_datas = data['activities']
         
@@ -2169,7 +2168,7 @@ class VoiceState:
         self.self_stream = data.get('self_stream', False)
         self.self_video = data['self_video']
         
-        requested_to_speak_at = data.get('request_to_speak_timestamp')
+        requested_to_speak_at = data.get('request_to_speak_timestamp', None)
         if (requested_to_speak_at is not None):
             requested_to_speak_at = parse_time(requested_to_speak_at)
         
@@ -2265,7 +2264,7 @@ class VoiceState:
             old_attributes['self_mute'] = self.self_mute
             self.self_mute = self_mute
         
-        requested_to_speak_at = data.get('request_to_speak_timestamp')
+        requested_to_speak_at = data.get('request_to_speak_timestamp', None)
         if (requested_to_speak_at is not None):
             requested_to_speak_at = parse_time(requested_to_speak_at)
         
@@ -2299,7 +2298,7 @@ class VoiceState:
         self.self_stream = data.get('self_stream', False)
         self.self_video = data['self_video']
         
-        requested_to_speak_at = data.get('request_to_speak_timestamp')
+        requested_to_speak_at = data.get('request_to_speak_timestamp', None)
         if (requested_to_speak_at is not None):
             requested_to_speak_at = parse_time(requested_to_speak_at)
         

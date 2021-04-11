@@ -110,14 +110,14 @@ class Integration(DiscordEntity, immortal=True):
         
         self.enabled = data['enabled']
         
-        user_data = data.get('user')
+        user_data = data.get('user', None)
         if user_data is None:
             user = ZEROUSER
         else:
             user = User(user_data)
         self.user = user
         
-        application_data = data.get('application')
+        application_data = data.get('application', None)
         if application_data is None:
             application = None
         else:
@@ -353,7 +353,7 @@ class IntegrationApplication(DiscordEntity):
         self.summary = data['summary']
         self._set_icon(data)
         
-        bot_data = data.get('bot')
+        bot_data = data.get('bot', None)
         if bot_data is None:
             bot = ZEROUSER
         else:

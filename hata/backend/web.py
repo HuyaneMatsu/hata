@@ -2854,7 +2854,7 @@ class AppBase:
             view_func_parameters = tuple(view_func_parameters)
         
         for parameter_name in ('method', 'methods', 'defaults'):
-            if options.get(parameter_name) is None:
+            if options.get(parameter_name, None) is None:
                 parameter_value = getattr(endpoint, parameter_name, None)
                 if (parameter_value is not None):
                     options[parameter_name] = parameter_value
@@ -2913,7 +2913,7 @@ class AppBase:
         
         parameters = _merge_parameters(parameters, view_func_parameters)
         
-        actual_rule = self.rules.get(endpoint)
+        actual_rule = self.rules.get(endpoint, None)
         
         if actual_rule is None:
             rule = Rule(rule_processed, real_func, view_func_positional_parameter_names,

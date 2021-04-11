@@ -488,8 +488,8 @@ else:
             self.process = None
             self._stdout = None
             self.path = path
-            self.title = data.get('title')
-            self.url = data.get('url')
+            self.title = data.get('title', None)
+            self.url = data.get('url', None)
             
             return self
 

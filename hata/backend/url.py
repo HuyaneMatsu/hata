@@ -186,11 +186,12 @@ class URL:
 
     def __hash__(self):
         """Returns hash(self)."""
-        ret = self._cache.get('hash')
-        if ret is None:
-            ret = self._cache['hash'] = hash(self._value)
-        return ret
-
+        try:
+            hash_value = self._cache['hash']
+        except KeyError:
+            hash_value = self._cache['hash'] = hash(self._value)
+        return hash_value
+    
     def __gt__(self, other):
         """Returns (self > other)."""
         if type(self) is type(other):
@@ -294,7 +295,7 @@ class URL:
         if self.port is None:
             return False
         
-        default = DEFAULT_PORTS.get(self.scheme)
+        default = DEFAULT_PORTS.get(self.scheme, None)
         if default is None:
             return False
         
@@ -487,7 +488,7 @@ class URL:
         value = self._value
         port = value.port
         if port is None:
-            port = DEFAULT_PORTS.get(value.scheme)
+            port = DEFAULT_PORTS.get(value.scheme, None)
         
         return port
     

@@ -36,9 +36,9 @@ def create_partial_emoji(data):
         name = data['name']
     except KeyError:
         name = data['emoji_name']
-        emoji_id = data.get('emoji_id')
+        emoji_id = data.get('emoji_id', None)
     else:
-        emoji_id = data.get('id')
+        emoji_id = data.get('id', None)
     
     if emoji_id is None:
         try:
@@ -164,7 +164,7 @@ class Emoji(DiscordEntity, immortal=True):
         emoji.user = ZEROUSER
         emoji.unicode = None
         
-        role_ids = data.get('roles')
+        role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
@@ -459,7 +459,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         self.name = name
         
-        role_ids = data.get('roles')
+        role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
@@ -533,7 +533,7 @@ class Emoji(DiscordEntity, immortal=True):
             old_attributes['name'] = self.name
             self.name = name
         
-        role_ids = data.get('roles')
+        role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
@@ -954,7 +954,7 @@ def parse_emoji(text):
     """
     parsed = EMOJI_RP.fullmatch(text)
     if parsed is None:
-        emoji = UNICODE_TO_EMOJI.get(text)
+        emoji = UNICODE_TO_EMOJI.get(text, None)
     else:
         emoji = Emoji._from_parsed_group(parsed.groups())
     

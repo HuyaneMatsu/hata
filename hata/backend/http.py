@@ -152,11 +152,13 @@ class HTTPClient:
                         except KeyError:
                             pass
                     
-                    redirect_url = (response.headers.get(LOCATION) or response.headers.get(URI))
+                    redirect_url = response.headers.get(LOCATION, None)
                     if redirect_url is None:
-                        break
-                    else:
-                        response.release()
+                        redirect_url = response.headers.get(URI, None)
+                        if redirect_url is None:
+                            break
+                    
+                    response.release()
                     
                     redirect_url = URL(redirect_url)
                     
@@ -303,13 +305,13 @@ class HTTPClient:
                         
                         method = METHOD_GET
                         data = None
-                        content_ln = headers.get(CONTENT_LENGTH)
+                        content_ln = headers.get(CONTENT_LENGTH, None)
                         if (content_ln is not None) and content_ln:
                             del headers[CONTENT_LENGTH]
                     
-                    redirect_url = response.headers.get(LOCATION)
+                    redirect_url = response.headers.get(LOCATION, None)
                     if redirect_url is None:
-                        redirect_url = response.headers.get(URI)
+                        redirect_url = response.headers.get(URI, None)
                         if redirect_url is None:
                             break
                     

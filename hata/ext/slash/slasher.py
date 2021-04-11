@@ -1376,7 +1376,7 @@ class Slasher(EventHandlerBase):
             if not isinstance(err, ConnectionError):
                 await client.events.error(client, f'{self!r}._sync_guild_task', err)
         else:
-            guild_command_state = self._command_states.get(guild_id)
+            guild_command_state = self._command_states.get(guild_id, None)
             if guild_command_state is None:
                 guild_added_commands = None
                 guild_keep_commands = None
@@ -1394,7 +1394,7 @@ class Slasher(EventHandlerBase):
                 if not guild_removed_commands:
                     guild_removed_commands = None
             
-            non_global_command_state = self._command_states.get(SYNC_ID_NON_GLOBAL)
+            non_global_command_state = self._command_states.get(SYNC_ID_NON_GLOBAL, None)
             if non_global_command_state is None:
                 non_global_added_commands = None
                 non_global_keep_commands = None
@@ -1541,7 +1541,7 @@ class Slasher(EventHandlerBase):
                 await client.events.error(client, f'{self!r}._sync_global_commands', err)
             
         else:
-            global_command_state = self._command_states.get(SYNC_ID_GLOBAL)
+            global_command_state = self._command_states.get(SYNC_ID_GLOBAL, None)
             if global_command_state is None:
                 global_added_commands = None
                 global_keep_commands = None
@@ -2132,7 +2132,7 @@ class Slasher(EventHandlerBase):
         except KeyError:
             pass
         else:
-            return True, per_guild.get(application_command_id)
+            return True, per_guild.get(application_command_id, None)
         
         try:
             sync_permission_task = self._sync_permission_tasks[guild_id]
@@ -2142,7 +2142,7 @@ class Slasher(EventHandlerBase):
         
         success, per_guild = await sync_permission_task
         if success:
-            permission = per_guild.get(application_command_id)
+            permission = per_guild.get(application_command_id, None)
         else:
             permission = None
         

@@ -1064,7 +1064,7 @@ def MESSAGE_CREATE__CAL(client, data):
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        if data.get('guild_id') is not None:
+        if data.get('guild_id', None) is not None:
             return
         
         channel = ChannelPrivate._create_dataless(channel_id)
@@ -1080,7 +1080,7 @@ def MESSAGE_CREATE__OPT(client, data):
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        if data.get('guild_id') is not None:
+        if data.get('guild_id', None) is not None:
             return
         
         channel = ChannelPrivate._create_dataless(channel_id)
@@ -1104,7 +1104,7 @@ if ALLOW_DEAD_EVENTS:
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            if data.get('guild_id') is not None:
+            if data.get('guild_id', None) is not None:
                 return
                 
             channel = ChannelPrivate._create_dataless(channel_id)
@@ -1123,7 +1123,7 @@ if ALLOW_DEAD_EVENTS:
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            if data.get('guild_id') is not None:
+            if data.get('guild_id', None) is not None:
                 return
                 
             channel = ChannelPrivate._create_dataless(channel_id)
@@ -1359,13 +1359,13 @@ del MESSAGE_DELETE_BULK__CAL_SC, \
 if ALLOW_DEAD_EVENTS:
     def MESSAGE_UPDATE__CAL_SC(client, data):
         message_id = int(data['id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                if data.get('guild_id') is not None:
+                if data.get('guild_id', None) is not None:
                     return
                 
                 if 'edited_timestamp' not in data:
@@ -1411,13 +1411,13 @@ if ALLOW_DEAD_EVENTS:
     
     def MESSAGE_UPDATE__CAL_MC(client, data):
         message_id = int(data['id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                if data.get('guild_id') is not None:
+                if data.get('guild_id', None) is not None:
                     return
                 
                 if 'edited_timestamp' not in data:
@@ -1485,7 +1485,7 @@ if ALLOW_DEAD_EVENTS:
 else:
     def MESSAGE_UPDATE__CAL_SC(client, data):
         message_id = int(data['id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -1504,7 +1504,7 @@ else:
     
     def MESSAGE_UPDATE__CAL_MC(client, data):
         message_id = int(data['id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -1539,7 +1539,7 @@ else:
 
 def MESSAGE_UPDATE__OPT_SC(client, data):
     message_id = int(data['id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -1550,7 +1550,7 @@ def MESSAGE_UPDATE__OPT_SC(client, data):
 
 def MESSAGE_UPDATE__OPT_MC(client, data):
     message_id = int(data['id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -1704,13 +1704,13 @@ async def _delete_reaction_with_task(reaction_add_event, client):
 if ALLOW_DEAD_EVENTS:
     def MESSAGE_REACTION_ADD__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                if data.get('guild_id') is not None:
+                if data.get('guild_id', None) is not None:
                     return
                 
                 user_id = int(data['user_id'])
@@ -1741,13 +1741,13 @@ if ALLOW_DEAD_EVENTS:
     
     def MESSAGE_REACTION_ADD__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                if data.get('guild_id') is not None:
+                if data.get('guild_id', None) is not None:
                     return
                 
                 user_id = int(data['user_id'])
@@ -1787,7 +1787,7 @@ if ALLOW_DEAD_EVENTS:
 else:
     def MESSAGE_REACTION_ADD__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -1801,7 +1801,7 @@ else:
     
     def MESSAGE_REACTION_ADD__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -1825,7 +1825,7 @@ else:
 
 def MESSAGE_REACTION_ADD__OPT_SC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -1836,7 +1836,7 @@ def MESSAGE_REACTION_ADD__OPT_SC(client, data):
 
 def MESSAGE_REACTION_ADD__OPT_MC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -1866,7 +1866,7 @@ del MESSAGE_REACTION_ADD__CAL_SC, \
 if ALLOW_DEAD_EVENTS:
     def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
@@ -1889,7 +1889,7 @@ if ALLOW_DEAD_EVENTS:
     
     def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
@@ -1926,7 +1926,7 @@ if ALLOW_DEAD_EVENTS:
 else:
     def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -1940,7 +1940,7 @@ else:
     
     def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -1964,7 +1964,7 @@ else:
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
 
@@ -1972,7 +1972,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -2060,13 +2060,13 @@ class ReactionDeleteEvent(ReactionAddEvent):
 if ALLOW_DEAD_EVENTS:
     def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                if data.get('guild_id') is not None:
+                if data.get('guild_id', None) is not None:
                     return
                 
                 user_id = int(data['user_id'])
@@ -2097,13 +2097,13 @@ if ALLOW_DEAD_EVENTS:
     
     def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
                 channel = CHANNELS[channel_id]
             except KeyError:
-                if data.get('guild_id') is not None:
+                if data.get('guild_id', None) is not None:
                     return
                 
                 user_id = int(data['user_id'])
@@ -2143,7 +2143,7 @@ if ALLOW_DEAD_EVENTS:
 else:
     def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -2157,7 +2157,7 @@ else:
     
     def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -2181,7 +2181,7 @@ else:
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -2192,7 +2192,7 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
 
 def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -2222,7 +2222,7 @@ del MESSAGE_REACTION_REMOVE__CAL_SC, \
 if ALLOW_DEAD_EVENTS:
     def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
@@ -2247,7 +2247,7 @@ if ALLOW_DEAD_EVENTS:
     
     def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             channel_id = int(data['channel_id'])
             try:
@@ -2282,7 +2282,7 @@ if ALLOW_DEAD_EVENTS:
 else:
     def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -2295,7 +2295,7 @@ else:
     
     def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
         message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id)
+        message = MESSAGES.get(message_id, None)
         if message is None:
             return
         
@@ -2319,7 +2319,7 @@ else:
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -2328,7 +2328,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
     message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if message is None:
         return
     
@@ -2717,7 +2717,7 @@ del CHANNEL_UPDATE__CAL_SC, \
 def CHANNEL_CREATE__CAL(client, data):
     channel_type = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
     
-    guild_id = data.get('guild_id')
+    guild_id = data.get('guild_id', None)
     if guild_id is None:
         channel_type(data, client, None)
         return
@@ -2736,7 +2736,7 @@ def CHANNEL_CREATE__CAL(client, data):
 def CHANNEL_CREATE__OPT(client, data):
     channel_type = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
     
-    guild_id = data.get('guild_id')
+    guild_id = data.get('guild_id', None)
     if guild_id is None:
         channel_type(data, client, None)
         return
@@ -3603,7 +3603,7 @@ if CACHE_PRESENCE:
         event = object.__new__(GuildUserChunkEvent)
         event.guild = guild
         event.users = users
-        event.nonce = data.get('nonce')
+        event.nonce = data.get('nonce', None)
         event.index = data['chunk_index']
         event.count = data['chunk_count']
         
@@ -3624,7 +3624,7 @@ else:
         event = object.__new__(GuildUserChunkEvent)
         event.guild = guild
         event.users = users
-        event.nonce = data.get('nonce')
+        event.nonce = data.get('nonce', None)
         event.index = data['chunk_index']
         event.count = data['chunk_count']
         
@@ -4016,7 +4016,7 @@ def WEBHOOKS_UPDATE__CAL(client, data):
     guild.webhooks_up_to_date = False
     
     channel_id = int(data['channel_id'])
-    channel = guild.channels.get(channel_id)
+    channel = CHANNELS.get(channel_id, None)
     
     #if this happens the client might ask for update.
     Task(client.events.webhook_update(client, channel,), KOKORO)
@@ -4286,7 +4286,7 @@ if CACHE_PRESENCE:
         user_id = int(data['user_id'])
         user = create_partial_user(user_id)
         
-        timestamp = datetime.utcfromtimestamp(data.get('timestamp'))
+        timestamp = datetime.utcfromtimestamp(data.get('timestamp', None))
         
         Task(client.events.typing(client, channel, user, timestamp), KOKORO)
     
@@ -4577,7 +4577,7 @@ class InteractionEvent(DiscordEntity, EventBase):
         data : `dict` of (`str`, `Any`) items
             `INTERACTION_CREATE` dispatch event data.
         """
-        guild_id = data.get('guild_id')
+        guild_id = data.get('guild_id', None)
         if guild_id is None:
             guild_id = 0
         else:
@@ -4616,7 +4616,7 @@ class InteractionEvent(DiscordEntity, EventBase):
             user_permissions = Permission(user_permissions)
         
         type_value = data['type']
-        interaction_type = INTERACTION_TYPE_TABLE.get(type_value)
+        interaction_type = INTERACTION_TYPE_TABLE.get(type_value, None)
         if interaction_type is None:
             interaction = None
         else:
@@ -7302,14 +7302,14 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
     else:
         raise TypeError(f'`{cls.__name__} should be only the metaclass of `{EventWaitforBase.__name__}`.')
     
-    event_name = class_attributes.get('__event_name__')
+    event_name = class_attributes.get('__event_name__', None)
     if event_name is None:
         event_name = class_name
     
     if event_name not in EVENTS.parsers:
         raise TypeError(f'`{class_name}.__event_name__` is not set, or not set correctly.')
     
-    if (class_attributes.get('call_waitfors') is None):
+    if (class_attributes.get('call_waitfors', None) is None):
         try:
             call_waitfors = cls._call_waitfors[event_name]
         except KeyError:
@@ -7319,7 +7319,7 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
         class_attributes['call_waitfors'] = call_waitfors
         
         try:
-            call = class_attributes.get('__call__')
+            call = class_attributes.get('__call__', None)
         except KeyError:
             call = None
         

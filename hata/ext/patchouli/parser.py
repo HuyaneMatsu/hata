@@ -1670,7 +1670,7 @@ class DocString:
         if attribute_sections is None:
             self._attribute_sections = attribute_sections = get_attribute_docs_from(self.sections)
         
-        return attribute_sections.get(name)
+        return attribute_sections.get(name, None)
     
     def extra_attribute_docstring_for(self, name):
         """
@@ -1690,4 +1690,4 @@ class DocString:
             self._attribute_sections = attribute_sections = get_attribute_docs_from(self.sections)
         
         name = convert_extra_attribute_section_name(name)
-        return attribute_sections.get(name)
+        return attribute_sections.get(name, None)

@@ -358,7 +358,7 @@ class UnitBase:
         """
         parent_path = self.path.parent
         if parent_path:
-            parent = MAPPED_OBJECTS.get(parent_path)
+            parent = MAPPED_OBJECTS.get(parent_path, None)
         else:
             parent = None
         
@@ -536,7 +536,7 @@ class UnitBase:
                 if (object_ is not None):
                     return object_
             
-            parent = MAPPED_OBJECTS.get(self.path.parent)
+            parent = MAPPED_OBJECTS.get(self.path.parent, None)
             if parent is None:
                 return self
             else:
@@ -549,7 +549,7 @@ class UnitBase:
         
         path = self.path.parent
         while path:
-            parent = MAPPED_OBJECTS.get(path)
+            parent = MAPPED_OBJECTS.get(path, None)
             if parent is None:
                 break
             
@@ -587,7 +587,7 @@ def direct_lookup_in(object_, reference_parts):
         
         reference_part = reference_parts.pop()
         try:
-            object_ = object_.references.get(reference_part)
+            object_ = object_.references.get(reference_part, None)
         except KeyError:
             # Reference not be found, leave.
             object_ = None
@@ -660,7 +660,7 @@ class AttributeUnitBase(UnitBase):
         -------
         docstring : `None` or ``DocString``
         """
-        parent = MAPPED_OBJECTS.get(self.path.parent)
+        parent = MAPPED_OBJECTS.get(self.path.parent, None)
         if parent is None:
             return None
         

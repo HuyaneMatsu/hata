@@ -313,7 +313,7 @@ class UserOA2(UserBase):
         
         self.mfa = data.get('mfa_enabled', False)
         self.verified = data.get('verified', False)
-        self.email = data.get('email')
+        self.email = data.get('email', None)
         
         try:
             flags = data['flags']

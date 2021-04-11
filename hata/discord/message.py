@@ -140,7 +140,7 @@ class Attachment(DiscordEntity):
             Received attachment data.
         """
         self.name = data['filename']
-        self.content_type = data.get('content_type')
+        self.content_type = data.get('content_type', None)
         self.id = int(data['id'])
         self.proxy_url = data['proxy_url']
         self.size = data['size']
@@ -270,7 +270,7 @@ class Sticker(DiscordEntity):
         self.name = data['name']
         self.pack_id = int(data['pack_id'])
         
-        tags = data.get('tags')
+        tags = data.get('tags', None)
         if tags is not None:
             tags = tags.split(',')
         self.tags = tags
@@ -379,7 +379,7 @@ class MessageReference:
         -------
         self / message : ``MessageReference`` or ``Message``
         """
-        message_id = data.get('message_id')
+        message_id = data.get('message_id', None)
         if message_id is None:
             message_id = 0
         else:
@@ -391,13 +391,13 @@ class MessageReference:
             else:
                 return message
         
-        channel_id = data.get('channel_id')
+        channel_id = data.get('channel_id', None)
         if channel_id is None:
             channel_id = None
         else:
             channel_id = int(channel_id)
         
-        guild_id = data.get('guild_id')
+        guild_id = data.get('guild_id', None)
         if guild_id is None:
             guild_id = 0
         else:
@@ -427,7 +427,7 @@ class MessageReference:
         if channel is _spaceholder:
             channel_id = self.channel_id
             if channel_id:
-                channel = CHANNELS.get(channel_id)
+                channel = CHANNELS.get(channel_id, None)
             else:
                 channel = None
             
@@ -448,7 +448,7 @@ class MessageReference:
         if guild is _spaceholder:
             guild_id = self.guild_id
             if guild_id:
-                guild = GUILDS.get(guild_id)
+                guild = GUILDS.get(guild_id, None)
             else:
                 guild = None
             
@@ -469,7 +469,7 @@ class MessageReference:
         if message is _spaceholder:
             message_id = self.message_id
             if message_id:
-                message = GUILDS.get(message_id)
+                message = GUILDS.get(message_id, None)
             else:
                 message = None
             
@@ -929,8 +929,8 @@ class Message(DiscordEntity, immortal=True):
         self.deleted = False
         self.channel = channel
         guild = channel.guild
-        webhook_id = data.get('webhook_id')
-        author_data = data.get('author')
+        webhook_id = data.get('webhook_id', None)
+        author_data = data.get('author', None)
         
         if webhook_id is None:
             cross_mentions = None
@@ -944,8 +944,8 @@ class Message(DiscordEntity, immortal=True):
                 author = User(author_data, guild)
         else:
             webhook_id = int(webhook_id)
-            if (data.get('message_reference') is not None):
-                cross_mention_datas = data.get('mention_channels')
+            if (data.get('message_reference', None) is not None):
+                cross_mention_datas = data.get('mention_channels', None)
                 if (cross_mention_datas is None) or (not cross_mention_datas):
                     cross_mentions = None
                 else:
@@ -968,7 +968,7 @@ class Message(DiscordEntity, immortal=True):
         self.author = author
         self.cross_mentions = cross_mentions
         
-        self.reactions = reaction_mapping(data.get('reactions'))
+        self.reactions = reaction_mapping(data.get('reactions', None))
         
         # Most common case is reply
         # First always check the `referenced_message` payload, and then second the `message_reference` one.
@@ -976,9 +976,9 @@ class Message(DiscordEntity, immortal=True):
         # Note, that `referenced_message` wont contain an another `referenced_message`, but only `message_reference`
         # one.
         
-        referenced_message_data = data.get('referenced_message')
+        referenced_message_data = data.get('referenced_message', None)
         if referenced_message_data is None:
-            referenced_message_data = data.get('message_reference')
+            referenced_message_data = data.get('message_reference', None)
             if referenced_message_data is None:
                 referenced_message = None
             else:
@@ -1029,18 +1029,18 @@ class Message(DiscordEntity, immortal=True):
             embeds = None
         self.embeds = embeds
         
-        self.nonce = data.get('nonce')
+        self.nonce = data.get('nonce', None)
         self.content = data['content']
         self.flags = MessageFlag(data.get('flags', 0))
         
-        interaction_data = data.get('interaction')
+        interaction_data = data.get('interaction', None)
         if interaction_data is None:
             interaction = None
         else:
             interaction = MessageInteraction(interaction_data)
         self.interaction = interaction
         
-        sticker_datas = data.get('stickers')
+        sticker_datas = data.get('stickers', None)
         if sticker_datas is  None:
             stickers = None
         else:
@@ -1964,7 +1964,7 @@ class Message(DiscordEntity, immortal=True):
         
         self._channel_mentions = _spaceholder
         
-        cross_mention_datas = data.get('mention_channels')
+        cross_mention_datas = data.get('mention_channels', None)
         if cross_mention_datas is None:
             cross_mentions = None
         else:
@@ -2086,7 +2086,7 @@ class Message(DiscordEntity, immortal=True):
         
         self._channel_mentions = _spaceholder
         
-        cross_mention_datas = data.get('mention_channels')
+        cross_mention_datas = data.get('mention_channels', None)
         if cross_mention_datas is None:
             cross_mentions = None
         else:
@@ -2152,7 +2152,7 @@ class Message(DiscordEntity, immortal=True):
         else:
             ln1 = len(embeds)
         
-        embed_datas = data.get('embeds')
+        embed_datas = data.get('embeds', None)
         if embed_datas is None:
             ln2 = 0
         else:
@@ -2215,7 +2215,7 @@ class Message(DiscordEntity, immortal=True):
         else:
             ln1 = len(embeds)
         
-        embed_datas=data.get('embeds')
+        embed_datas = data.get('embeds', None)
         if embed_datas is None:
             ln2 = 0
         else:

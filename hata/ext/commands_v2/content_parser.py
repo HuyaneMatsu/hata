@@ -1352,7 +1352,7 @@ CONVERTER_GUILD = ConverterSetting(
 
 # Gets a message by it's id
 async def _message_converter_m_id(command_context, content_parser_parameter_detail, message_id):
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     channel = command_context.message.channel
     if (message is not None):
         # Message found
@@ -1400,7 +1400,7 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
 # Gets a message by it's and it's channel's id
 async def _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id, message_id):
     channel = command_context.message.channel
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if (message is not None):
         # Message found
         if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
@@ -1414,7 +1414,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
         # Message found, but other guild or channel yield None
         return None
     
-    message_channel = CHANNELS.get(channel_id)
+    message_channel = CHANNELS.get(channel_id, None)
     if (message_channel is None):
         return None
 
@@ -1965,7 +1965,7 @@ def get_detail_for_str(annotation):
     except KeyError:
         raise ValueError(f'There is no converter registered for {annotation!r}.') from None
     
-    annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation)
+    annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation, None)
     
     return ContentParserParameterDetail(converter_setting, annotation_type)
 

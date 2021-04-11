@@ -1084,7 +1084,7 @@ def sanitize_mentions(content, guild=None):
     
     for id_ in USER_MENTION_RP.findall(content):
         id_ = int(id_)
-        user = USERS.get(id_)
+        user = USERS.get(id_, None)
         if (user is None) or user.partial:
             sanitized_mention = '@invalid-user'
         else:
@@ -1095,7 +1095,7 @@ def sanitize_mentions(content, guild=None):
         
     for id_ in CHANNEL_MENTION_RP.findall(content):
         id_ = int(id_)
-        channel = CHANNELS.get(id_)
+        channel = CHANNELS.get(id_, None)
         if (channel is None) or channel.partial:
             sanitized_mention = '@deleted channel'
         else:
@@ -1105,7 +1105,7 @@ def sanitize_mentions(content, guild=None):
     
     for id_ in ROLE_MENTION_RP.findall(content):
         id_ = int(id_)
-        role = ROLES.get(id_)
+        role = ROLES.get(id_, None)
         if (role is None) or role.partial:
             sanitized_mention = '@deleted role'
         else:

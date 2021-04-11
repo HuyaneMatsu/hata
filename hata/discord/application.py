@@ -311,7 +311,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.description = data['description']
         
-        rpc_origins = data.get('rpc_origins')
+        rpc_origins = data.get('rpc_origins', None)
         if (rpc_origins is not None) and (not rpc_origins):
             rpc_origins = None
         
@@ -323,9 +323,9 @@ class Application(DiscordEntity, immortal=True):
         self.verify_key = data['verify_key']
         
         if set_owner:
-            team_data = data.get('team')
+            team_data = data.get('team', None)
             if team_data is None:
-                owner_data = data.get('owner')
+                owner_data = data.get('owner', None)
                 if owner_data is None:
                     owner = ZEROUSER
                 else:
@@ -335,7 +335,7 @@ class Application(DiscordEntity, immortal=True):
             
             self.owner = owner
         
-        guild_id = data.get('guild_id')
+        guild_id = data.get('guild_id', None)
         if guild_id is None:
             guild_id = 0
         else:
@@ -343,7 +343,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.guild_id = guild_id
         
-        primary_sku_id = data.get('primary_sku_id')
+        primary_sku_id = data.get('primary_sku_id', None)
         if primary_sku_id is None:
             primary_sku_id = None
         else:
@@ -355,7 +355,7 @@ class Application(DiscordEntity, immortal=True):
         self._set_cover(data)
         self._set_icon(data)
         
-        developers_data = data.get('developers')
+        developers_data = data.get('developers', None)
         if (developers_data is None) or (not developers_data):
             developers = None
         else:
@@ -365,7 +365,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.hook = data.get('hook', False)
         
-        publishers_data = data.get('publishers')
+        publishers_data = data.get('publishers', None)
         if (publishers_data is None) or (not publishers_data):
             publishers = None
         else:
@@ -373,7 +373,7 @@ class Application(DiscordEntity, immortal=True):
         
         self.publishers = publishers
         
-        executables_data = data.get('executables')
+        executables_data = data.get('executables', None)
         if (executables_data is None) or (not executables_data):
             executables = None
         else:
@@ -383,7 +383,7 @@ class Application(DiscordEntity, immortal=True):
         
         self._set_splash(data)
         
-        third_party_skus_data = data.get('third_party_skus')
+        third_party_skus_data = data.get('third_party_skus', None)
         if (third_party_skus_data is None) or (not third_party_skus_data):
             third_party_skus = None
         else:
@@ -394,13 +394,13 @@ class Application(DiscordEntity, immortal=True):
         self.overlay = data.get('overlay', False)
         self.overlay_compatibility_hook = data.get('overlay_compatibility_hook', False)
         
-        aliases = data.get('aliases')
+        aliases = data.get('aliases', None)
         if (aliases is not None) and (not aliases):
             aliases = None
         
         self.aliases = aliases
         
-        eula_id = data.get('eula_id')
+        eula_id = data.get('eula_id', None)
         if eula_id is None:
             eula_id = 0
         else:
@@ -416,12 +416,12 @@ class Application(DiscordEntity, immortal=True):
         else:
             self.flags = ApplicationFlag(flags)
         
-        privacy_policy_url = data.get('privacy_policy_url')
+        privacy_policy_url = data.get('privacy_policy_url', None)
         if (privacy_policy_url is not None) and (not privacy_policy_url):
             privacy_policy_url = None
         self.privacy_policy_url = privacy_policy_url
         
-        terms_of_service_url = data.get('terms_of_service_url')
+        terms_of_service_url = data.get('terms_of_service_url', None)
         if (terms_of_service_url is not None) and (not terms_of_service_url):
             terms_of_service_url = None
         self.terms_of_service_url = terms_of_service_url
@@ -814,7 +814,7 @@ class ApplicationExecutable:
         """
         self.name = data['name']
         self.os = data['os']
-        self.arguments = data.get('arguments')
+        self.arguments = data.get('arguments', None)
         self.is_launcher = data.get('is_launcher', False)
     
     def __repr__(self):

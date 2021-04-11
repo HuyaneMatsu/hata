@@ -102,7 +102,7 @@ async def converter_bool(client, interaction, value):
     value : `None` or `bool`
         If conversion fails, then returns `None`.
     """
-    return BOOL_TABLE.get(value)
+    return BOOL_TABLE.get(value, None)
 
 
 async def converter_snowflake(client, interaction, value):
@@ -165,7 +165,7 @@ async def converter_user(client, interaction, value):
         if resolved_users is None:
             user = None
         else:
-            user = resolved_users.get(user_id)
+            user = resolved_users.get(user_id, None)
         
         if user is None:
             try:
@@ -209,10 +209,10 @@ async def converter_role(client, interaction, value):
         if resolved_roles is None:
             role = None
         else:
-            role = resolved_roles.get(role_id)
+            role = resolved_roles.get(role_id, None)
         
         if role is None:
-            role = ROLES.get(role_id)
+            role = ROLES.get(role_id, None)
     
     return role
 
@@ -246,10 +246,10 @@ async def converter_channel(client, interaction, value):
         if resolved_channels is None:
             channel = None
         else:
-            channel = resolved_channels.get(channel_id)
+            channel = resolved_channels.get(channel_id, None)
         
         if channel is None:
-            channel = CHANNELS.get(channel_id)
+            channel = CHANNELS.get(channel_id, None)
     
     return channel
 
@@ -2288,7 +2288,7 @@ class SlashCommand:
         if overwrites is None:
             self._overwrites = overwrites = {}
         
-        overwrites_for_guild = overwrites.get(guild_id)
+        overwrites_for_guild = overwrites.get(guild_id, None)
         
         if __debug__:
             if (overwrites_for_guild is not None) and \
@@ -2337,7 +2337,7 @@ class SlashCommand:
         if overwrites is None:
             return
         
-        return overwrites.get(guild_id)
+        return overwrites.get(guild_id, None)
 
     def _get_sync_permission_ids(self):
         """
@@ -2430,7 +2430,7 @@ class SlashCommandFunction:
                 parameter_relation[option.name] = option.value
         
         for argument_parser in self._argument_parsers:
-            value = parameter_relation.get(argument_parser.name)
+            value = parameter_relation.get(argument_parser.name, None)
             
             passed, parameter = await argument_parser(client, interaction_event.interaction, value)
             if not passed:

@@ -368,7 +368,7 @@ class GuildWidget(DiscordEntity):
         -------
         invite_url : `str` or `None`
         """
-        return self._data.get('instant_invite')
+        return self._data.get('instant_invite', None)
     
     @property
     def online_count(self):
@@ -1122,7 +1122,7 @@ class Guild(DiscordEntity, immortal=True):
             | self_video    | `bool`            |
             +---------------+-------------------+
         """
-        channel_id = data.get('channel_id')
+        channel_id = data.get('channel_id', None)
         if channel_id is None:
             try:
                 voice_state = self.voice_states.pop(user.id)
@@ -1206,7 +1206,7 @@ class Guild(DiscordEntity, immortal=True):
             
             Will be returned as `None` if action is `VOICE_STATE_NONE`.
         """
-        channel_id = data.get('channel_id')
+        channel_id = data.get('channel_id', None)
         if channel_id is None:
             try:
                 voice_state = self.voice_states.pop(user.id)
@@ -1355,7 +1355,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         default_role : `None` or `Role``
         """
-        return self.roles.get(self.id)
+        return self.roles.get(self.id, None)
     
     @property
     def partial(self):
@@ -1940,7 +1940,7 @@ class Guild(DiscordEntity, immortal=True):
         if user.id == self.owner_id:
             return PERMISSION_ALL
         
-        default_role = self.roles.get(self.id)
+        default_role = self.roles.get(self.id, None)
         if default_role is None:
             base = 0
         else:
@@ -2015,7 +2015,7 @@ class Guild(DiscordEntity, immortal=True):
         -----
         Partial roles and roles from other guilds as well are ignored.
         """
-        default_role = self.roles.get(self.id)
+        default_role = self.roles.get(self.id, None)
         if default_role is None:
             base = 0
         else:
@@ -2177,7 +2177,7 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['features'] = self.features
             self.features = features
         
-        system_channel_id = data.get('system_channel_id')
+        system_channel_id = data.get('system_channel_id', None)
         if system_channel_id is None:
             system_channel = None
         else:
@@ -2196,7 +2196,7 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['system_channel_flags'] = self.system_channel_flags
             self.system_channel_flags = system_channel_flags
         
-        public_updates_channel_id = data.get('public_updates_channel_id')
+        public_updates_channel_id = data.get('public_updates_channel_id', None)
         if public_updates_channel_id is None:
             public_updates_channel = None
         else:
@@ -2206,7 +2206,7 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['public_updates_channel'] = self.public_updates_channel
             self.public_updates_channel = public_updates_channel
         
-        owner_id = data.get('owner_id')
+        owner_id = data.get('owner_id', None)
         if owner_id is None:
             owner_id = 0
         else:
@@ -2230,7 +2230,7 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['widget_enabled'] = self.widget_enabled
             self.widget_enabled = widget_enabled
         
-        widget_channel_id = data.get('widget_channel_id')
+        widget_channel_id = data.get('widget_channel_id', None)
         if widget_channel_id is None:
             widget_channel = None
         else:
@@ -2240,7 +2240,7 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['widget_channel'] = self.widget_channel
             self.widget_channel = widget_channel
         
-        rules_channel_id = data.get('rules_channel_id')
+        rules_channel_id = data.get('rules_channel_id', None)
         if rules_channel_id is None:
             rules_channel = None
         else:
@@ -2250,24 +2250,24 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['rules_channel'] = self.rules_channel
             self.rules_channel = rules_channel
         
-        description = data.get('description')
+        description = data.get('description', None)
         if self.description != description:
             old_attributes['description'] = self.description
             self.description = description
         
-        vanity_code = data.get('vanity_url_code')
+        vanity_code = data.get('vanity_url_code', None)
         if self.vanity_code != vanity_code:
             old_attributes['vanity_code'] = self.vanity_code
             self.vanity_code = vanity_code
         
-        max_users = data.get('max_members')
+        max_users = data.get('max_members', None)
         if max_users is None:
             max_users = 250000
         if self.max_users != max_users:
             old_attributes['max_users'] = self.max_users
             self.max_users = max_users
         
-        max_presences = data.get('max_presences')
+        max_presences = data.get('max_presences', None)
         if max_presences is None:
             max_presences = 25000
         if self.max_presences != max_presences:
@@ -2275,16 +2275,16 @@ class Guild(DiscordEntity, immortal=True):
             self.max_presences = max_presences
         
         max_video_channel_users = data.get('max_video_channel_users', 25)
-        if self.max_video_channel_users!=max_video_channel_users:
+        if self.max_video_channel_users != max_video_channel_users:
             old_attributes['max_video_channel_users'] = self.max_video_channel_users
             self.max_video_channel_users = max_video_channel_users
         
-        premium_tier=data['premium_tier']
-        if self.premium_tier!=premium_tier:
-            old_attributes['premium_tier']=self.premium_tier
-            self.premium_tier=premium_tier
+        premium_tier = data['premium_tier']
+        if self.premium_tier != premium_tier:
+            old_attributes['premium_tier'] = self.premium_tier
+            self.premium_tier = premium_tier
 
-        booster_count = data.get('premium_subscription_count')
+        booster_count = data.get('premium_subscription_count', None)
         if booster_count is None:
             booster_count = 0
         
@@ -2347,7 +2347,7 @@ class Guild(DiscordEntity, immortal=True):
             features.sort()
             self.features = features
         
-        system_channel_id = data.get('system_channel_id')
+        system_channel_id = data.get('system_channel_id', None)
         if system_channel_id is None:
             system_channel = None
         else:
@@ -2360,21 +2360,21 @@ class Guild(DiscordEntity, immortal=True):
             system_channel_flags = SystemChannelFlag.ALL
         self.system_channel_flags = system_channel_flags
         
-        public_updates_channel_id = data.get('public_updates_channel_id')
+        public_updates_channel_id = data.get('public_updates_channel_id', None)
         if public_updates_channel_id is None:
             public_updates_channel = None
         else:
             public_updates_channel = self.channels[int(public_updates_channel_id)]
         self.public_updates_channel = public_updates_channel
         
-        owner_id = data.get('owner_id')
+        owner_id = data.get('owner_id', None)
         if owner_id is None:
             owner_id = 0
         else:
             owner_id = int(owner_id)
         self.owner_id= owner_id
         
-        afk_channel_id = data.get('afk_channel_id')
+        afk_channel_id = data.get('afk_channel_id', None)
         if afk_channel_id is None:
             afk_channel = None
         else:
@@ -2383,30 +2383,30 @@ class Guild(DiscordEntity, immortal=True):
         
         self.widget_enabled = data.get('widget_enabled', False)
 
-        widget_channel_id = data.get('widget_channel_id')
+        widget_channel_id = data.get('widget_channel_id', None)
         if widget_channel_id is None:
             widget_channel = None
         else:
             widget_channel = self.channels[int(widget_channel_id)]
         self.widget_channel = widget_channel
         
-        rules_channel_id = data.get('rules_channel_id')
+        rules_channel_id = data.get('rules_channel_id', None)
         if rules_channel_id is None:
             rules_channel = None
         else:
             rules_channel = self.channels[int(rules_channel_id)]
         self.rules_channel = rules_channel
         
-        self.description = data.get('description')
+        self.description = data.get('description', None)
         
-        self.vanity_code = data.get('vanity_url_code')
+        self.vanity_code = data.get('vanity_url_code', None)
         
-        max_users = data.get('max_members')
+        max_users = data.get('max_members', None)
         if max_users is None:
             max_users = 250000
         self.max_users = max_users
         
-        max_presences = data.get('max_presences')
+        max_presences = data.get('max_presences', None)
         if max_presences is None:
             max_presences = 25000
         self.max_presences = max_presences
@@ -2415,7 +2415,7 @@ class Guild(DiscordEntity, immortal=True):
         
         self.premium_tier = data['premium_tier']
         
-        booster_count = data.get('premium_subscription_count')
+        booster_count = data.get('premium_subscription_count', None)
         if booster_count is None:
             booster_count = 0
         
@@ -3123,7 +3123,7 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
         name_data = data['name']
         category.name = name_data['default']
         
-        local_names = name_data.get('localizations')
+        local_names = name_data.get('localizations', None)
         if (local_names is not None) and (not local_names):
             local_names = None
         
@@ -3305,11 +3305,11 @@ class WelcomeScreen:
         data : `dict` of (`str`, `Any`) items
             Welcome screen data.
         """
-        description = data.get('description')
+        description = data.get('description', None)
         if (description is not None) and (not description):
             description = None
         
-        welcome_channel_datas = data.get('welcome_channels')
+        welcome_channel_datas = data.get('welcome_channels', None)
         if (welcome_channel_datas is None) or (not welcome_channel_datas):
             welcome_channels = None
         else:
@@ -3597,7 +3597,7 @@ class VerificationScreen:
         """
         self = object.__new__(cls)
         self.created_at = parse_time(data['version'])
-        self.description = data.get('description')
+        self.description = data.get('description', None)
         self.steps = tuple(VerificationScreenStep.from_data(field_data) for field_data in data['form_fields'])
         return self
     
@@ -3665,7 +3665,7 @@ class VerificationScreenStep:
         data : `dict` of (`str`, `Any`) items
             Verification screen step data.
         """
-        values = data.get('values')
+        values = data.get('values', None)
         if (values is not None) and (not values):
             values = None
         

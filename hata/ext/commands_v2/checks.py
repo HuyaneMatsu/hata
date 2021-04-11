@@ -72,7 +72,7 @@ class CheckMeta(type):
         else:
             inherited_slots = None
         
-        new_slots = class_attributes.get('__slots__')
+        new_slots = class_attributes.get('__slots__', None)
         
         final_slots = []
         if (inherited_slots is not None):

@@ -559,7 +559,7 @@ class VoiceClient:
         """
         guild = self.guild
         if (guild is not None):
-            return guild.voice_states.get(self.client.id)
+            return guild.voice_states.get(self.client.id, None)
     
     
     async def move_to(self, channel):
@@ -1211,9 +1211,9 @@ class VoiceClient:
         gateway = self.client._gateway_for(guild_id)
         
         self._session_id = gateway.session_id
-        token = data.get('token')
+        token = data.get('token', None)
         self._token = token
-        endpoint = data.get('endpoint')
+        endpoint = data.get('endpoint', None)
         
         if (endpoint is None) or (token is None):
             return

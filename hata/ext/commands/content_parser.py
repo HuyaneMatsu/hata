@@ -1913,7 +1913,7 @@ ConverterSetting(
 
 # Gets a message by it's id
 async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     channel = content_parser_ctx.message.channel
     if (message is not None):
         # Message found
@@ -1961,7 +1961,7 @@ async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
 # Gets a message by it's and it's channel's id
 async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, message_id):
     channel = content_parser_ctx.message.channel
-    message = MESSAGES.get(message_id)
+    message = MESSAGES.get(message_id, None)
     if (message is not None):
         # Message found
         if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
@@ -1975,7 +1975,7 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
         # Message found, but other guild or channel yield None
         return None
     
-    message_channel = CHANNELS.get(channel_id)
+    message_channel = CHANNELS.get(channel_id, None)
     if (message_channel is None):
         return None
 

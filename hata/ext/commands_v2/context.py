@@ -120,7 +120,7 @@ class CommandContext(object):
         if guild is None:
             voice_client = None
         else:
-            voice_client = self.client.voice_clients.get(guild.id)
+            voice_client = self.client.voice_clients.get(guild.id, None)
         
         return voice_client
     

@@ -8,7 +8,7 @@ from importlib import reload as reload_module
 from threading import current_thread
 
 from ...backend.event_loop import EventThread
-from ...backend.utils import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary, DOCS_ENABLED
+from ...backend.utils import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary
 from ...backend.futures import is_coroutine_function as is_coro, Task
 from ...backend.analyzer import CallableAnalyzer
 
@@ -324,64 +324,69 @@ class Extension:
         if default_variables:
             return
         
-        self._default_variables=None
+        self._default_variables = None
     
     def clear_default_variables(self):
         """
         Removes all the default variables of the extension.
         """
-        self._default_variables=None
+        self._default_variables = None
+    
+    @property
+    def entry_point(self):
+        """
+        Get-set-del descriptor for modifying the extension's entry point.
         
-    def _get_entry_point(self):
+        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
+        """
         return self._entry_point
     
-    def _set_entry_point(self, entry_point):
+    @entry_point.setter
+    def entry_point(self, entry_point):
         if not _validate_entry_or_exit(entry_point):
             raise TypeError(f'`{self.__class__.__name__}.entry_point` expected `None`, `str` or a `callable`, got '
                 f'{entry_point.__class__.__name__}.')
         
         self._entry_point = entry_point
     
-    def _del_entry_point(self):
+    @entry_point.deleter
+    def entry_point(self):
         self._entry_point = None
     
-    entry_point = property(_get_entry_point, _set_entry_point, _del_entry_point)
-    del _get_entry_point, _set_entry_point, _del_entry_point
     
-    if DOCS_ENABLED:
-        entry_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension's entry point.
+    @property
+    def exit_point(self):
+        """
+        Get-set-del descriptor for modifying the extension's exit point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
-    
-    def _get_exit_point(self):
+        """
         return self._exit_point
     
-    def _set_exit_point(self, exit_point):
+    @exit_point.setter
+    def exit_point(self, exit_point):
         if not _validate_entry_or_exit(exit_point):
             raise TypeError(f'`{self.__class__.__name__}.exit_point` expected `None`, `str` or a `callable`, got '
                 f'{exit_point.__class__.__name__}.')
         
         self._exit_point = exit_point
     
-    def _del_exit_point(self):
+    @exit_point.deleter
+    def exit_point(self):
         self._exit_point = None
     
-    exit_point = property(_get_exit_point, _set_exit_point, _del_exit_point)
-    del _get_exit_point, _set_exit_point, _del_exit_point
     
-    if DOCS_ENABLED:
-        exit_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension's exit point.
+    @property
+    def extend_default_variables(self):
+        """
+        Get-set descriptor to define whether the extension uses the loader's default variables or just it's own's.
         
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
-    
-    def _get_extend_default_variables(self):
+        Accepts and returns `bool`.
+        """
         return self._extend_default_variables
     
-    def _set_extend_default_variables(self, extend_default_variables):
+    @extend_default_variables.setter
+    def extend_default_variables(self, extend_default_variables):
         extend_default_variables_type = extend_default_variables.__class__
         if extend_default_variables_type is bool:
             pass
@@ -393,20 +398,18 @@ class Extension:
         
         self._extend_default_variables = extend_default_variables
     
-    extend_default_variables = property(_get_extend_default_variables,_set_extend_default_variables)
-    del _get_extend_default_variables, _set_extend_default_variables
-    
-    if DOCS_ENABLED:
-        extend_default_variables.__doc__ = ("""
-        Set-del descriptor to define whether the extension uses the loader's default variables or just it's own's.
+    @property
+    def locked(self):
+        """
+        Get-set property to define whether the extension should be picked up by the `{}_all` methods of the
+        extension loader.
         
         Accepts and returns `bool`.
-        """)
-    
-    def _get_locked(self):
+        """
         return self._locked
     
-    def _set_locked(self, locked):
+    @locked.setter
+    def locked(self, locked):
         locked_type = locked.__class__
         if locked_type is bool:
             pass
@@ -417,16 +420,6 @@ class Extension:
         
         self._locked = locked
     
-    locked = property(_get_locked, _set_locked)
-    del _get_locked, _set_locked
-    
-    if DOCS_ENABLED:
-        locked.__doc__ = ("""
-        Set-del descriptor to define whether the extension should be picked up by the `{}_all` methods of the
-        extension loader.
-        
-        Accepts and returns `bool`.
-        """)
     
     def _load(self):
         """
@@ -924,6 +917,8 @@ class ExtensionLoader:
     _default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
+    _execute_counter : `int`
+        Whether the extension loader is executing an extension.
     extensions : `dict` of (`str`, ``Extension``) items
         A dictionary of the added extensions to the extension loader in `extension-name` - ``Extension`` relation.
     
@@ -932,7 +927,8 @@ class ExtensionLoader:
     _instance : `None` or ``ExtensionLoader``
         The already created instance of the ``ExtensionLoader`` if there is any.
     """
-    __slots__ = ('_default_entry_point', '_default_exit_point', '_default_variables', 'extensions', )
+    __slots__ = ('_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter',
+        'extensions', )
     
     _instance = None
     def __new__(cls,):
@@ -951,54 +947,52 @@ class ExtensionLoader:
             self._default_exit_point = 'teardown'
             self.extensions = {}
             self._default_variables = HybridValueDictionary()
+            self._execute_counter = 0
         
         return self
     
-    def _get_default_entry_point(self):
+    @property
+    def default_entry_point(self):
+        """
+        Get-set-del descriptor for modifying the extension loader's default entry point.
+        
+        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
+        """
         return self._default_entry_point
     
-    def _set_default_entry_point(self, default_entry_point):
+    @default_entry_point.setter
+    def default_entry_point(self, default_entry_point):
         if not _validate_entry_or_exit(default_entry_point):
             raise TypeError(f'`{self.__class__.__name__}.default_entry_point` expected `None`, `str` or a `callable`, '
                 f'got {default_entry_point.__class__.__name__}.')
         
-        self._default_entry_point=default_entry_point
+        self._default_entry_point = default_entry_point
     
-    def _del_default_entry_point(self):
+    @default_entry_point.deleter
+    def default_entry_point(self):
         self._default_entry_point = None
     
-    default_entry_point = property(_get_default_entry_point, _set_default_entry_point, _del_default_entry_point)
-    del _get_default_entry_point, _set_default_entry_point, _del_default_entry_point
     
-    if DOCS_ENABLED:
-        default_entry_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension loader's default entry point.
+    @property
+    def default_exit_point(self):
+        """
+        Get-set-del descriptor for modifying the extension loader's default exit point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
-    
-    def _get_default_exit_point(self):
+        """
         return self._default_exit_point
     
-    def _set_default_exit_point(self, default_exit_point):
+    @default_exit_point.setter
+    def default_exit_point(self, default_exit_point):
         if not _validate_entry_or_exit(default_exit_point):
             raise TypeError(f'`{self.__class__.__name__}.default_exit_point` expected `None`, `str` or a `callable`, '
                 f'got {default_exit_point.__class__.__name__}.')
         
-        self._default_exit_point=default_exit_point
+        self._default_exit_point = default_exit_point
     
-    def _del_default_exit_point(self):
-        self._default_exit_point=None
-    
-    default_exit_point = property(_get_default_exit_point, _set_default_exit_point, _del_default_exit_point)
-    del _get_default_exit_point, _set_default_exit_point, _del_default_exit_point
-    
-    if DOCS_ENABLED:
-        default_exit_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension loader's default exit point.
-        
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
+    @default_exit_point.deleter
+    def default_exit_point(self):
+        self._default_exit_point = None
     
     def add_default_variables(self, **variables):
         """
@@ -1645,47 +1639,51 @@ class ExtensionLoader:
         ExtensionError
             Extension entry point raised.
         """
+        self._execute_counter += 1
         try:
-            # loading blocks, but unloading does not
-            lib = await KOKORO.run_in_executor(extension._load)
-        except BaseException as err:
-            message = await KOKORO.run_in_executor(alchemy_incendiary(
-                self._render_exc, (err, [
-                'Exception occurred meanwhile loading an extension: `', extension.name, '`.\n\n',],
-                    )))
+            try:
+                # loading blocks, but unloading does not
+                lib = await KOKORO.run_in_executor(extension._load)
+            except BaseException as err:
+                message = await KOKORO.run_in_executor(alchemy_incendiary(
+                    self._render_exc, (err, [
+                    'Exception occurred meanwhile loading an extension: `', extension.name, '`.\n\n',],
+                        )))
+                
+                raise ExtensionError(message) from None
             
-            raise ExtensionError(message) from None
-        
-        if lib is None:
-            return # already loaded
-        
-        entry_point = extension._entry_point
-        if entry_point is None:
-            entry_point = self._default_entry_point
+            if lib is None:
+                return # already loaded
+            
+            entry_point = extension._entry_point
             if entry_point is None:
-                return
-        
-        if isinstance(entry_point, str):
-            entry_point = getattr(lib, entry_point, None)
-            if entry_point is None:
-                return
-        
-        try:
+                entry_point = self._default_entry_point
+                if entry_point is None:
+                    return
             
-            if is_coro(entry_point):
-                await entry_point(lib)
-            else:
-                entry_point(lib)
-        
-        except BaseException as err:
-            message = await KOKORO.run_in_executor(alchemy_incendiary(
-                self._render_exc, (err, [
-                'Exception occurred meanwhile entering an extension: `', extension.name,
-                '`.\nAt entry_point:', repr(entry_point), '\n\n',],
-                    )))
+            if isinstance(entry_point, str):
+                entry_point = getattr(lib, entry_point, None)
+                if entry_point is None:
+                    return
             
-            raise ExtensionError(message) from None
-    
+            try:
+                
+                if is_coro(entry_point):
+                    await entry_point(lib)
+                else:
+                    entry_point(lib)
+            
+            except BaseException as err:
+                message = await KOKORO.run_in_executor(alchemy_incendiary(
+                    self._render_exc, (err, [
+                    'Exception occurred meanwhile entering an extension: `', extension.name,
+                    '`.\nAt entry_point:', repr(entry_point), '\n\n',],
+                        )))
+                
+                raise ExtensionError(message) from None
+        finally:
+            self._execute_counter -= 1
+        
     async def _unload_extension(self, extension):
         """
         Unloads the extension. If the extension is not loaded, will do nothing.
@@ -1711,51 +1709,55 @@ class ExtensionLoader:
         ExtensionError
             Extension exit point raised.
         """
-        # loading blocks, but unloading does not
-        lib = extension._unload()
-        
-        if lib is None:
-            return # not loaded
-        
+        self._execute_counter += 1
         try:
-            exit_point = extension._exit_point
-            if exit_point is None:
-                exit_point = self._default_exit_point
-                if exit_point is None:
-                    return
+            # loading blocks, but unloading does not
+            lib = extension._unload()
             
-            if isinstance(exit_point, str):
-                exit_point = getattr(lib, exit_point, None)
-                if exit_point is None:
-                    return
+            if lib is None:
+                return # not loaded
             
             try:
+                exit_point = extension._exit_point
+                if exit_point is None:
+                    exit_point = self._default_exit_point
+                    if exit_point is None:
+                        return
                 
-                if is_coro(exit_point):
-                    await exit_point(lib)
-                else:
-                    exit_point(lib)
+                if isinstance(exit_point, str):
+                    exit_point = getattr(lib, exit_point, None)
+                    if exit_point is None:
+                        return
+                
+                try:
+                    
+                    if is_coro(exit_point):
+                        await exit_point(lib)
+                    else:
+                        exit_point(lib)
+                
+                except BaseException as err:
+                    message = await KOKORO.run_in_executor(alchemy_incendiary(
+                        self._render_exc, (err, [
+                        'Exception occurred meanwhile unloading an extension: `', extension.name,
+                        '`.\nAt exit_point:', repr(exit_point), '\n\n',],
+                            )))
+                    
+                    raise ExtensionError(message) from None
             
-            except BaseException as err:
-                message = await KOKORO.run_in_executor(alchemy_incendiary(
-                    self._render_exc, (err, [
-                    'Exception occurred meanwhile unloading an extension: `', extension.name,
-                    '`.\nAt exit_point:', repr(exit_point), '\n\n',],
-                        )))
+            finally:
+                extension._unassign_variables()
                 
-                raise ExtensionError(message) from None
-        
+                keys = []
+                lib_globals = lib.__dict__
+                for key in lib_globals:
+                    if (not key.startswith('__')) and (not key.endswith('__')):
+                        keys.append(key)
+                
+                for key in keys:
+                    del lib_globals[key]
         finally:
-            extension._unassign_variables()
-            
-            keys = []
-            lib_globals = lib.__dict__
-            for key in lib_globals:
-                if (not key.startswith('__')) and (not key.endswith('__')):
-                    keys.append(key)
-            
-            for key in keys:
-                del lib_globals[key]
+            self._execute_counter -= 1
     
     @staticmethod
     def _render_exc(exception, header):
@@ -1812,5 +1814,21 @@ class ExtensionLoader:
         result.append('>')
         
         return ''.join(result)
+
+    def is_processing_extension(self):
+        """
+        Returns whether the extension loader is processing an extension.
+        
+        Returns
+        -------
+        is_processing_extension : `bool`
+        """
+        if self._execute_counter:
+            is_processing_extension = True
+        else:
+            is_processing_extension = False
+        
+        return is_processing_extension
+
 
 EXTENSION_LOADER = ExtensionLoader()

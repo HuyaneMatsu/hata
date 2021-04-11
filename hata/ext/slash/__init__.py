@@ -2,26 +2,27 @@
 """
 Hata extensions for supporting interactions.
 """
-from ...backend.futures import Task
-from ...discord.client_core import KOKORO
-
 from .command import *
+from .responding import *
+from .slasher import *
+from .utils import *
 
-import warnings
-
-from .utils import _do_initial_sync, _application_command_create_watcher, _application_command_delete_watcher, \
-    _application_command_permission_update_watcher
+from .event_handlers import _do_initial_sync, _application_command_create_watcher, \
+    _application_command_delete_watcher, _application_command_permission_update_watcher
 from .client_wrapper_extension import *
 
 __all__ = (
     'set_permission',
     'setup_ext_slash',
     *command.__all__,
+    *responding.__all__,
+    *slasher.__all__,
+    *utils.__all__,
         )
 
 set_permission = SlashCommandPermissionOverwriteWrapper
 
-def setup_ext_slash(client, *, immediate_sync=None, **kwargs):
+def setup_ext_slash(client, **kwargs):
     """
     Setups the slash extension on client.
     
@@ -51,20 +52,15 @@ def setup_ext_slash(client, *, immediate_sync=None, **kwargs):
     ------
     RuntimeError
         If the client has an attribute set what the slasher would use.
-    
     TypeError
-        If `delete_commands_on_unload` was not given as `bool` instance.
+        - If `client` was not given as ``Client`` instance.
+        - If `delete_commands_on_unload` was not given as `bool` instance.
     """
     for attr_name in ('slasher', 'interactions'):
         if hasattr(client, attr_name):
             raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
     
-    if (immediate_sync is not None):
-        warnings.warn(
-            f'`setup_ext_slash`\'s `immediate_sync` parameter is deprecated, and will be removed in 2021 April.',
-            FutureWarning)
-    
-    slasher = Slasher(**kwargs)
+    slasher = Slasher(client, **kwargs)
     
     client.events(slasher)
     client.slasher = slasher

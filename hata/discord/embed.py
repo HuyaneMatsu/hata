@@ -45,6 +45,10 @@ class EmbedThumbnail:
         """Returns the embed thumbnail's contents' length."""
         return 0
     
+    def __bool__(self):
+        """Returns whether the embed thumbnail is not empty."""
+        return (self.url is not None)
+    
     def __repr__(self):
         """Returns the representation of the embed thumbnail."""
         text = [
@@ -145,6 +149,10 @@ class EmbedVideo:
     def __len__(self):
         """Returns the embed video's contents' length."""
         return 0
+    
+    def __bool__(self):
+        """Returns whether the embed video is not empty."""
+        return (self.url is not None)
     
     def __repr__(self):
         """Returns the representation of the embed video."""
@@ -249,6 +257,10 @@ class EmbedImage:
         """Returns the embed image's contents' length."""
         return 0
     
+    def __bool__(self):
+        """Returns whether the embed image is not empty."""
+        return (self.url is not None)
+    
     def __repr__(self):
         """Returns the representation of the embed image."""
         text = [
@@ -341,7 +353,19 @@ class EmbedProvider:
         name = self.name
         if name is None:
             return 0
+        
         return len(name)
+    
+    def __bool__(self):
+        """Returns whether the embed provider is not empty."""
+        if (self.url is not None):
+            return True
+        
+        name = self.name
+        if (name is not None) and name:
+            return True
+        
+        return False
     
     def __repr__(self):
         """Returns the representation of the embed provider."""
@@ -443,7 +467,22 @@ class EmbedAuthor:
         name = self.name
         if name is None:
             return 0
+        
         return len(name)
+    
+    def __bool__(self):
+        """Returns whether the embed author is not empty."""
+        name = self.name
+        if (name is not None) and name:
+            return True
+        
+        if (self.url is not None):
+            return True
+        
+        if (self.icon_url is not None):
+            return True
+        
+        return False
     
     def __repr__(self):
         """Returns the representation of the embed author."""
@@ -575,6 +614,16 @@ class EmbedFooter:
         """Returns the embed footer's contents' length."""
         return len(self.text)
     
+    def __bool__(self):
+        """Returns whether the embed footer is not empty."""
+        if self.text:
+            return True
+        
+        if (self.icon_url is not None):
+            return True
+        
+        return False
+    
     def __repr__(self):
         """Returns the representation of the embed footer."""
         text = [
@@ -686,6 +735,16 @@ class EmbedField:
         """Returns the embed field's contents' length."""
         return len(self.name)+len(self.value)
     
+    def __bool__(self):
+        """Returns whether the embed field is not empty."""
+        if self.name:
+            return True
+        
+        if self.value:
+            return True
+        
+        return False
+    
     def __repr__(self):
         """Returns the representation of the embed field."""
         return f'<{self.__class__.__name__} length={len(self)}, inline={self.inline}>'
@@ -784,19 +843,20 @@ class EmbedBase:
     
     __slots__ = ()
     
-    author      : (None, EmbedAuthor)
-    color       : (None, Color, int)
-    description : (None, str)
+    author      : {None, EmbedAuthor}
+    color       : {None, Color, int}
+    description : {None, str}
     fields      : (list, EmbedField)
-    footer      : (None, EmbedFooter)
-    image       : (None, EmbedImage)
-    provider    : (None, EmbedProvider)
-    thumbnail   : (None, EmbedThumbnail)
-    timestamp   : (None, datetime)
-    title       : (None, str)
-    type        : (None, str)
-    url         : (None, str)
-    video       : (None, EmbedVideo)
+    footer      : {None, EmbedFooter}
+    image       : {None, EmbedImage}
+    provider    : {None, EmbedProvider}
+    thumbnail   : {None, EmbedThumbnail}
+    timestamp   : {None, datetime}
+    title       : {None, str}
+    type        : {None, str}
+    url         : {None, str}
+    video       : {None, EmbedVideo}
+    
     
     @property
     def colour(self):
@@ -809,18 +869,91 @@ class EmbedBase:
     
     
     def __len__(self):
-        """
-        Returns the embed's contents' length.
+        """Returns the embed's contents' length."""
+        result = 0
         
-        Notes
-        -----
-        Subclasses should overwrite it.
-        """
-        return 0
+        title = self.title
+        if (title is not None):
+            result += len(title)
+        
+        description = self.description
+        if (description is not None):
+            result += len(description)
+        
+        title = self.title
+        if (title is not None):
+            result += len(title)
+        
+        footer = self.footer
+        if (footer is not None):
+            result += len(footer.text)
+        
+        author = self.author
+        if (author is not None):
+            name = author.name
+            if (name is not None):
+                result += len(name)
+        
+        for field in self.fields:
+            result += len(field.name)
+            result += len(field.value)
+        
+        return result
+    
+    
+    def __bool__(self):
+        """Returns whether the embed is not empty."""
+        author = self.author
+        if (author is not None) and author:
+            return True
+        
+        if (self.color is not None):
+            return True
+        
+        description = self.description
+        if (description is not None) and description:
+            return True
+        
+        if self.fields:
+            return True
+        
+        footer = self.footer
+        if (footer is not None) and footer:
+            return True
+        
+        image = self.image
+        if (image is not None) and image:
+            return True
+        
+        provider = self.provider
+        if (provider is not None) and provider:
+            return True
+        
+        thumbnail = self.thumbnail
+        if (thumbnail is not None) and thumbnail:
+            return True
+        
+        if (self.timestamp is not None):
+            return True
+        
+        title = self.title
+        if (title is not None) and title:
+            return True
+        
+        if (self.url is not None):
+            return True
+        
+        video = self.video
+        if (video is not None) and video:
+            return True
+        
+        return False
+    
     
     def __repr__(self):
         """Returns the representation of the embed."""
         return f'<{self.__class__.__name__} length={len(self)}>'
+    
     
     def __eq__(self, other):
         """Returns whether the two embeds are equal."""
@@ -989,38 +1122,6 @@ class EmbedCore(EmbedBase):
         self.provider = None
         self.author = None
         self.fields = []
-    
-    def __len__(self):
-        """Returns the embed's contents' length."""
-        result = 0
-        
-        title = self.title
-        if (title is not None):
-            result += len(title)
-            
-        description = self.description
-        if (description is not None):
-            result += len(description)
-        
-        title = self.title
-        if (title is not None):
-            result += len(title)
-        
-        footer = self.footer
-        if (footer is not None):
-            result += len(footer.text)
-        
-        author = self.author
-        if (author is not None):
-            name = author.name
-            if (name is not None):
-                result += len(name)
-        
-        for field in self.fields:
-            result += len(field.name)
-            result += len(field.value)
-
-        return result
     
     @classmethod
     def from_data(cls, data):
@@ -1453,8 +1554,8 @@ class Embed(EmbedBase):
         if (type_ is not None):
             data['type'] = type_
     
+    @copy_docs(EmbedBase.__len__)
     def __len__(self):
-        """Returns the embed's contents' length."""
         data = self._data
         result = 0
         
@@ -1501,6 +1602,25 @@ class Embed(EmbedBase):
                 result += len(field_data['value'])
         
         return result
+    
+    @copy_docs(EmbedBase.__bool__)
+    def __bool__(self):
+        data = self._data
+        data_length = len(data)
+        if data_length == 0:
+            return False
+        
+        if data_length == 1:
+            try:
+                field_datas = data['fields']
+            except KeyError:
+                pass
+            else:
+                if not field_datas:
+                    return False
+        
+        return True
+    
     
     @property
     def contents(self):

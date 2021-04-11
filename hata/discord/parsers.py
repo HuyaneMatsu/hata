@@ -715,7 +715,7 @@ class PARSER_DEFAULTS:
         
         for event_name in EVENTS.parsers.keys():
             event = getattr(client.events, event_name)
-            if event is DEFAULT_EVENT:
+            if event is DEFAULT_EVENT_HANDLER:
                 continue
             
             parser_names = EVENTS.parsers[event_name]
@@ -760,7 +760,7 @@ class PARSER_DEFAULTS:
         
         for event_name in EVENTS.parsers.keys():
             event = getattr(client.events, event_name)
-            if event is DEFAULT_EVENT:
+            if event is DEFAULT_EVENT_HANDLER:
                 continue
             
             parser_names = EVENTS.parsers[event_name]
@@ -971,7 +971,7 @@ def maybe_ensure_launch(client):
         events._launch_called = True
         
         event_handler = client.events.launch
-        if (event_handler is not DEFAULT_EVENT):
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client), KOKORO)
 
 # we don't call ready from this function directly
@@ -1146,8 +1146,10 @@ if ALLOW_DEAD_EVENTS:
                 message = MessageRepr(message_id, channel)
             
             for client_ in clients:
-                Task(client_.events.message_delete(client_, message), KOKORO)
-        
+                event_handler = client_.events.message_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, message), KOKORO)
+
 else:
     def MESSAGE_DELETE__CAL_SC(client, data):
         channel_id = int(data['channel_id'])
@@ -1188,7 +1190,9 @@ else:
             return
         
         for client_ in clients:
-            Task(client_.events.message_delete(client_, message), KOKORO)
+            event_handler = client_.events.message_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, message), KOKORO)
 
 def MESSAGE_DELETE__OPT_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -1272,12 +1276,10 @@ if ALLOW_DEAD_EVENTS:
                 messages.append(message)
         
         for client_ in clients:
-            event = client_.events.message_delete
-            if event is DEFAULT_EVENT:
-                continue
-            
-            for message in messages:
-                Task(event(client_, message), KOKORO)
+            event_handler = client_.events.message_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                for message in messages:
+                    Task(event_handler(client_, message), KOKORO)
 else:
     def MESSAGE_DELETE_BULK__CAL_SC(client, data):
         channel_id = int(data['channel_id'])
@@ -1313,12 +1315,10 @@ else:
         messages, missed = channel._pop_multiple(message_ids)
         
         for client_ in clients:
-            event = client_.events.message_delete
-            if event is DEFAULT_EVENT:
-                continue
-            
-            for message in messages:
-                Task(event(client_, message), KOKORO)
+            event_handler = client_.events.message_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                for message in messages:
+                    Task(event_handler(client_, message), KOKORO)
 
 def MESSAGE_DELETE_BULK__OPT_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -1455,7 +1455,9 @@ if ALLOW_DEAD_EVENTS:
                     return
             
             for client_ in clients:
-                Task(client_.events.message_edit(client_, message, old_attributes), KOKORO)
+                event_handler = client_.events.message_edit
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, message, old_attributes), KOKORO)
             
             return
         
@@ -1466,15 +1468,19 @@ if ALLOW_DEAD_EVENTS:
                 return
             
             for client_ in clients:
-                Task(client_.events.message_edit(client_, message, old_attributes), KOKORO)
+                event_handler = client_.events.message_edit
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, message, old_attributes), KOKORO)
         else:
             result = message._update_embed(data)
             if not result:
                 clients.close()
                 return
-                
+            
             for client_ in clients:
-                Task(client_.events.embed_update(client_, message, result), KOKORO)
+                event_handler = client_.events.embed_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, message, result), KOKORO)
 
 else:
     def MESSAGE_UPDATE__CAL_SC(client, data):
@@ -1517,7 +1523,9 @@ else:
                 return
             
             for client_ in clients:
-                Task(client_.events.message_edit(client_, message, old_attributes), KOKORO)
+                event_handler = client_.events.message_edit
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, message, old_attributes), KOKORO)
         else:
             result = message._update_embed(data)
             if not result:
@@ -1525,7 +1533,9 @@ else:
                 return
                 
             for client_ in clients:
-                Task(client_.events.embed_update(client_, message, result), KOKORO)
+                event_handler = client_.events.embed_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, message, result), KOKORO)
 
 def MESSAGE_UPDATE__OPT_SC(client, data):
     message_id = int(data['id'])
@@ -1771,7 +1781,9 @@ if ALLOW_DEAD_EVENTS:
         
         event = ReactionAddEvent(message, emoji, user)
         for client_ in clients:
-            Task(client_.events.reaction_add(client_, event), KOKORO)
+            event_handler = client_.events.reaction_add
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, event), KOKORO)
 else:
     def MESSAGE_REACTION_ADD__CAL_SC(client, data):
         message_id = int(data['message_id'])
@@ -1807,7 +1819,9 @@ else:
         
         event = ReactionAddEvent(message, emoji, user)
         for client_ in clients:
-            Task(client_.events.reaction_add(client_, event), KOKORO)
+            event_handler = client_.events.reaction_add
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, event), KOKORO)
 
 def MESSAGE_REACTION_ADD__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -1905,7 +1919,9 @@ if ALLOW_DEAD_EVENTS:
             message.reactions = type(old_reactions)(None)
         
         for client_ in clients:
-            Task(client_.events.reaction_clear(client_, message, old_reactions), KOKORO)
+            event_handler = client_.events.reaction_clear
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, message, old_reactions), KOKORO)
 
 else:
     def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
@@ -1942,7 +1958,9 @@ else:
         
         message.reactions = type(old_reactions)(None)
         for client_ in clients:
-            Task(client_.events.reaction_clear(client_, message, old_reactions), KOKORO)
+            event_handler = client_.events.reaction_clear
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, message, old_reactions), KOKORO)
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -2119,7 +2137,9 @@ if ALLOW_DEAD_EVENTS:
         
         event = ReactionDeleteEvent(message, emoji, user)
         for client_ in clients:
-            Task(client_.events.reaction_delete(client_, event), KOKORO)
+            event_handler = client_.events.reaction_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, event), KOKORO)
 else:
     def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
         message_id = int(data['message_id'])
@@ -2155,7 +2175,9 @@ else:
         
         event = ReactionDeleteEvent(message, emoji, user)
         for client_ in clients:
-            Task(client_.events.reaction_delete(client_, event), KOKORO)
+            event_handler = client_.events.reaction_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, event), KOKORO)
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -2254,7 +2276,9 @@ if ALLOW_DEAD_EVENTS:
                 return
         
         for client_ in clients:
-            Task(client_.events.reaction_delete_emoji(client_, message, emoji, users), KOKORO)
+            event_handler = client_.events.reaction_delete_emoji
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, message, emoji, users), KOKORO)
 else:
     def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
         message_id = int(data['message_id'])
@@ -2289,7 +2313,9 @@ else:
             return
         
         for client_ in clients:
-            Task(client_.events.reaction_delete_emoji(client_, message, emoji, users), KOKORO)
+            event_handler = client_.events.reaction_delete_emoji
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, message, emoji, users), KOKORO)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -2381,19 +2407,15 @@ if CACHE_PRESENCE:
             return
         
         for client_ in CLIENTS:
-            if (client_.intents>>INTENT_GUILD_PRESENCES)&1 == 0:
-                continue
-            
-            if presence:
-                coro = client_.events.user_presence_update
-            else:
-                coro = client_.events.user_edit
-            
-            if coro is DEFAULT_EVENT:
-                continue
-            
-            Task(coro(client_, user, old_attributes), KOKORO)
-            continue
+            if (client_.intents>>INTENT_GUILD_PRESENCES)&1:
+                if presence:
+                    event_handler = client_.events.user_presence_update
+                else:
+                    event_handler = client_.events.user_edit
+                
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, user, old_attributes), KOKORO)
+    
     
     def PRESENCE_UPDATE__OPT(client, data):
         user_data = data['user']
@@ -2468,7 +2490,9 @@ if CACHE_USER:
         
         clients.send(user)
         for client_ in clients:
-            Task(client_.events.user_profile_edit(client_, user, guild, old_attributes), KOKORO)
+            event_handler = client_.events.user_profile_edit
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, user, guild, old_attributes), KOKORO)
     
     def GUILD_MEMBER_UPDATE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -2589,7 +2613,9 @@ def CHANNEL_DELETE__CAL_MC(client, data):
         
         for client in guild.clients:
             if (client.intents>>INTENT_GUILDS)&1:
-                Task(client.events.channel_delete(client, channel, guild), KOKORO)
+                event_handler = client.events.channel_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, channel, guild), KOKORO)
     else:
         channel._delete(client)
         Task(client.events.channel_delete(client, channel, None), KOKORO)
@@ -2650,7 +2676,9 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        Task(client_.events.channel_edit(client_, channel, old_attributes), KOKORO)
+        event_handler = client_.events.channel_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client_, channel, old_attributes), KOKORO)
 
 def CHANNEL_UPDATE__OPT_SC(client, data):
     channel_id = int(data['id'])
@@ -2821,7 +2849,9 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
     
     for client_ in channel.clients:
         if (client_ is client) or (client_ != user):
-            Task(client_.events.channel_group_user_delete(client_, channel, user), KOKORO)
+            event_handler = client_.events.channel_group_user_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, channel, user), KOKORO)
 
 def CHANNEL_RECIPIENT_REMOVE__OPT(client, data):
     channel_id = int(data['channel_id'])
@@ -2862,7 +2892,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
     for action, emoji, old_attributes in changes:
         if action == EMOJI_UPDATE_EDIT:
             coro = client.events.emoji_edit
-            if coro is DEFAULT_EVENT:
+            if coro is DEFAULT_EVENT_HANDLER:
                 continue
             
             Task(coro(client, emoji, old_attributes), KOKORO)
@@ -2870,7 +2900,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
             
         if action == EMOJI_UPDATE_NEW:
             coro = client.events.emoji_create
-            if coro is DEFAULT_EVENT:
+            if coro is DEFAULT_EVENT_HANDLER:
                 continue
             
             Task(coro(client, emoji), KOKORO)
@@ -2878,7 +2908,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
         
         if action == EMOJI_UPDATE_DELETE:
             coro = client.events.emoji_delete
-            if coro is DEFAULT_EVENT:
+            if coro is DEFAULT_EVENT_HANDLER:
                 continue
             
             Task(coro(client, emoji, guild), KOKORO)
@@ -2908,27 +2938,21 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         for action, emoji, old_attributes in changes:
             if action == EMOJI_UPDATE_EDIT:
-                coro = client_.events.emoji_edit
-                if coro is DEFAULT_EVENT:
-                    continue
-                
-                Task(coro(client, emoji, old_attributes), KOKORO)
+                event_handler = client_.events.emoji_edit
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, emoji, old_attributes), KOKORO)
                 continue
                 
             if action == EMOJI_UPDATE_NEW:
-                coro = client_.events.emoji_create
-                if coro is DEFAULT_EVENT:
-                    continue
-                
-                Task(coro(client, guild, emoji), KOKORO)
+                event_handler = client_.events.emoji_create
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, guild, emoji), KOKORO)
                 continue
             
             if action == EMOJI_UPDATE_DELETE:
-                coro = client_.events.emoji_delete
-                if coro is DEFAULT_EVENT:
-                    continue
-                
-                Task(coro(client, guild, emoji), KOKORO)
+                event_handler = client_.events.emoji_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, guild, emoji), KOKORO)
                 continue
             
             continue
@@ -2998,7 +3022,9 @@ def GUILD_MEMBER_ADD__CAL_MC(client, data):
     guild.user_count +=1
     
     for client_ in clients:
-        Task(client_.events.guild_user_add(client_, guild, user), KOKORO)
+        event_handler = client_.events.guild_user_add
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client_, guild, user), KOKORO)
 
 if CACHE_USER:
     def GUILD_MEMBER_ADD__OPT_SC(client, data):
@@ -3113,7 +3139,9 @@ if CACHE_USER:
         guild.user_count -= 1
         
         for client_ in clients:
-            Task(client_.events.guild_user_delete(client_, guild, user,profile), KOKORO)
+            event_handler = client_.events.guild_user_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, guild, user,profile), KOKORO)
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -3189,7 +3217,9 @@ else:
         guild.user_count -=1
         
         for client_ in clients:
-            Task(client_.events.guild_user_delete(client_, guild, user, None), KOKORO)
+            event_handler = client_.events.guild_user_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, guild, user, None), KOKORO)
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -3387,7 +3417,9 @@ def GUILD_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        Task(client_.events.guild_edit(client_, guild, old_attributes), KOKORO)
+        event_handler = client_.events.guild_edit
+        if (event_handler is DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client_, guild, old_attributes), KOKORO)
 
 def GUILD_UPDATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -3736,7 +3768,9 @@ def GUILD_ROLE_CREATE__CAL_MC(client, data):
     role = Role(data['role'], guild)
     
     for client_ in clients:
-        Task(client_.events.role_create(client_, role), KOKORO)
+        event_handler = client_.events.role_create
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client_, role), KOKORO)
 
 def GUILD_ROLE_CREATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -3815,7 +3849,9 @@ def GUILD_ROLE_DELETE__CAL_MC(client, data):
     role._delete()
     
     for client_ in clients:
-        Task(client_.events.role_delete(client_, role, guild), KOKORO)
+        event_handler = client_.events.role_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client_, role, guild), KOKORO)
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -3915,7 +3951,9 @@ def GUILD_ROLE_UPDATE__CAL_MC(client, data):
         return
     
     for client_ in clients:
-        Task(client_.events.role_edit(client_, role, old_attributes), KOKORO)
+        event_handler = client_.events.role_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client_, role, old_attributes), KOKORO)
 
 def GUILD_ROLE_UPDATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -4043,17 +4081,17 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     
     if action == VOICE_STATE_JOIN:
         event = client.events.user_voice_join
-        if (event is not DEFAULT_EVENT):
+        if (event is not DEFAULT_EVENT_HANDLER):
             Task(event(client, voice_state), KOKORO)
     
     elif action == VOICE_STATE_LEAVE:
         event = client.events.user_voice_leave
-        if (event is not DEFAULT_EVENT):
+        if (event is not DEFAULT_EVENT_HANDLER):
             Task(event(client, voice_state), KOKORO)
         
     elif action == VOICE_STATE_UPDATE:
         event = client.events.user_voice_update
-        if (event is not DEFAULT_EVENT):
+        if (event is not DEFAULT_EVENT_HANDLER):
             Task(event(client, voice_state, old_attributes), KOKORO)
 
 def VOICE_STATE_UPDATE__CAL_MC(client, data):
@@ -4102,19 +4140,22 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     
     for client_ in clients:
         if action == VOICE_STATE_JOIN:
-            event = client_.events.user_voice_join
-            if (event is not DEFAULT_EVENT):
-                Task(event(client, voice_state), KOKORO)
+            event_handler = client_.events.user_voice_join
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, voice_state), KOKORO)
+            continue
         
-        elif action == VOICE_STATE_LEAVE:
-            event = client_.events.user_voice_leave
-            if (event is not DEFAULT_EVENT):
-                Task(event(client, voice_state), KOKORO)
-            
-        elif action == VOICE_STATE_UPDATE:
-            event = client_.events.user_voice_update
-            if (event is not DEFAULT_EVENT):
-                Task(event(client, voice_state, old_attributes), KOKORO)
+        if action == VOICE_STATE_LEAVE:
+            event_handler = client_.events.user_voice_leave
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, voice_state), KOKORO)
+            continue
+        
+        if action == VOICE_STATE_UPDATE:
+            event_handler = client_.events.user_voice_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, voice_state, old_attributes), KOKORO)
+            continue
 
 def VOICE_STATE_UPDATE__OPT_SC(client, data):
     try:
@@ -7468,7 +7509,7 @@ class asynclist(list):
     sort = _spaceholder
 
 
-async def DEFAULT_EVENT(*args):
+async def DEFAULT_EVENT_HANDLER(*args):
     """
     Default event handler what is set under events if there is no specified event handler to use.
     
@@ -7508,7 +7549,7 @@ class EventDescriptor:
         Called when an application command's permissions are updated inside of a guild.
     
     application_command_update(client : ``Client``, guild_id: `int`, application:command: ``ApplicationCommand``, \
-            old_attributes : Union[`dict`, `None`])
+            old_attributes : {`dict`, `None`})
         Called when you update one of your guild bound application command.
         
         `old_attributes` might be given as `None` if the `application_command` is not cached. If it is cached, is given
@@ -7534,7 +7575,7 @@ class EventDescriptor:
         
         > This event is not called when a private channel is created.
     
-    channel_delete(client: ``Client``, channel: ``ChannelBase``, guild: Union[`None`, ``Guild``])
+    channel_delete(client: ``Client``, channel: ``ChannelBase``, guild: {`None`, ``Guild``})
         Called when a channel is deleted.
     
     channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: `dict`)
@@ -7577,10 +7618,10 @@ class EventDescriptor:
         | video_quality_mode    | ``VideoQualityMode``                  |
         +-----------------------+---------------------------------------+
     
-    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: Union[``Client``, ``User``]):
+    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: {``Client``, ``User``}):
         Called when a user is added to a group channel.
     
-    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: Union[``Client``, ``User``]):
+    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: {``Client``, ``User``}):
         Called when a user is removed from a group channel.
     
     channel_pin_update(client: ``Client``, channel: ``ChannelTextBase``):
@@ -7676,10 +7717,10 @@ class EventDescriptor:
     gift_update(client: ``Client``, gift: ``Gift``):
         Called when a gift code is sent to a channel.
     
-    guild_ban_add(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
+    guild_ban_add(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
         Called when a user is banned from a guild.
     
-    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
+    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
         Called when a user is unbanned at a guild.
     
     guild_create(client: ``Client``, guild: ``Guild``):
@@ -7757,12 +7798,12 @@ class EventDescriptor:
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
     
-    guild_join_reject(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
+    guild_join_reject(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
         Called when a user leaves from a guild before completing it's verification screen.
         
         > ``.guild_user_delete`` is called as well.
     
-    guild_user_add(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``]):
+    guild_user_add(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
         Called when a user joins a guild.
     
     guild_user_chunk(client: ``Client``, event: GuildUserChunkEvent):
@@ -7770,7 +7811,7 @@ class EventDescriptor:
         
         The event has a default handler called ``ChunkWaiter``.
     
-    guild_user_delete(client: ``Client``, guild: ``Guild``, user: Union[``Client``, ``User``], \
+    guild_user_delete(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}, \
             profile: ``GuildProfile``):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
         respective guild profile for the guild.
@@ -7780,7 +7821,7 @@ class EventDescriptor:
         well.
     
     integration_delete(client: ``Client``, guild: ``Guild``, integration_id: `int`, \
-            application_id: Union[`None`, `int`]):
+            application_id: {`None`, `int`}):
         Called when a guild has one of it's integrations deleted. If the integration is bound to an application, like
         a bot, then `application_id` is given as `int`.
     
@@ -7808,13 +7849,13 @@ class EventDescriptor:
     message_create(client: ``Client``, message: ``Message``):
         Called when a message is sent to any of the client's text channels.
     
-    message_delete(client: ``Client``, message: Union[``Message``, ``MessageRepr``]):
+    message_delete(client: ``Client``, message: {``Message``, ``MessageRepr``}):
         Called when a loaded message is deleted.
         
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is deleted,
         > then `message` is given as ``MessageRepr`` instance.
     
-    message_edit(client: ``Client``, message: ``Message``, old_attributes: Union[`None`, `dict`]):
+    message_edit(client: ``Client``, message: ``Message``, old_attributes: {`None`, `dict`}):
         Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -7861,8 +7902,8 @@ class EventDescriptor:
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reaction is added on an
         > uncached message, then `message` is given as ``MessageRepr``.
     
-    reaction_clear(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
-            old_reactions: Union[`None`, ``reaction_mapping``]):
+    reaction_clear(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
+            old_reactions: {`None`, ``reaction_mapping``}):
         Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
         of the message.
     
@@ -7875,8 +7916,8 @@ class EventDescriptor:
         Note, if `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reaction is removed from
         and uncached message, then `message` is given as ``MessageRepr``.
     
-    reaction_delete_emoji(client: ``Client``, message: Union[``Message``, ``MessageRepr``], \
-            users: Union[`None`, ``reaction_mapping_line``]):
+    reaction_delete_emoji(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
+            users: {`None`, ``reaction_mapping_line``}):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` argument
         are the old reactor users of the given emoji.
         
@@ -7927,12 +7968,12 @@ class EventDescriptor:
         | separated     | `bool`            |
         +---------------+-------------------+
     
-    typing(client: ``Client``, channel: ``ChannelTextBase``, user: Union[``Client``, ``User``], timestamp: `datetime`):
+    typing(client: ``Client``, channel: ``ChannelTextBase``, user: {``Client``, ``User``}, timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
-    user_edit(client: ``Client``, user: Union[``Client``, ``User``], old_attributes: `dict`):
+    user_edit(client: ``Client``, user: {``Client``, ``User``}, old_attributes: `dict`):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
         argument contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -7950,7 +7991,7 @@ class EventDescriptor:
         | name          | `str`         |
         +---------------+---------------+
     
-    user_presence_update(client: ``Client``, user: Union[``Client``, ``User``], old_attributes: `dict`):
+    user_presence_update(client: ``Client``, user: {``Client``, ``User``}, old_attributes: `dict`):
         Called when a user's presence is updated.
         
         The passed `old_attributes` argument contain the user's changed presence related attributes in
@@ -7967,7 +8008,7 @@ class EventDescriptor:
         | statuses      | `dict` of (`str`, `str`) items    |
         +---------------+-----------------------------------+
         
-    user_profile_edit(client : Client, user: Union[``Client``, ``User``], guild: ``Guild``, old_attributes: `dict`):
+    user_profile_edit(client : Client, user: {``Client``, ``User``}, guild: ``Guild``, old_attributes: `dict`):
         Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
         overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -8034,7 +8075,7 @@ class EventDescriptor:
         client_reference = WeakReferer(client)
         object.__setattr__(self, 'client_reference', client_reference)
         for name in EVENTS.defaults:
-            object.__setattr__(self, name, DEFAULT_EVENT)
+            object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
         object.__setattr__(self, 'error', default_error_event)
         object.__setattr__(self, '_launch_called', False)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
@@ -8082,11 +8123,11 @@ class EventDescriptor:
         if (parser_names is None):
             raise AttributeError(f'Event name: {name!r} is invalid.')
         
-        if func is DEFAULT_EVENT:
+        if func is DEFAULT_EVENT_HANDLER:
             return func
         
         actual = getattr(self, name)
-        if actual is DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT_HANDLER:
             object.__setattr__(self, name, func)
             
             for parser_name in parser_names:
@@ -8198,20 +8239,20 @@ class EventDescriptor:
             parser_default = PARSER_DEFAULTS.all[parser_name]
             actual = getattr(self, name)
             object.__setattr__(self, name, value)
-            if actual is DEFAULT_EVENT:
-                if value is DEFAULT_EVENT:
+            if actual is DEFAULT_EVENT_HANDLER:
+                if value is DEFAULT_EVENT_HANDLER:
                     continue
                 
                 parser_default.add_mention(self.client_reference())
                 continue
             
-            if value is DEFAULT_EVENT:
+            if value is DEFAULT_EVENT_HANDLER:
                 parser_default.remove_mention(self.client_reference())
             continue
     
     def __delattr__(self, name):
         """
-        Removes the event with switching it to `DEFAULT_EVENT`, and updates the event's parser if needed.
+        Removes the event with switching it to `DEFAULT_EVENT_HANDLER`, and updates the event's parser if needed.
         
         Parameters
         ----------
@@ -8224,10 +8265,10 @@ class EventDescriptor:
             The ``EventDescriptor`` has no attribute named as the given `name`.
         """
         actual = getattr(self, name)
-        if actual is DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT_HANDLER:
             return
         
-        object.__setattr__(self, name, DEFAULT_EVENT)
+        object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
         
         parser_names=EVENTS.parsers.get(name, None)
         if (parser_names is None) or (not parser_names):
@@ -8262,7 +8303,7 @@ class EventDescriptor:
         except AttributeError:
             return None
         
-        if actual is DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT_HANDLER:
             return None
         
         if type(actual) is asynclist:
@@ -8300,7 +8341,7 @@ class EventDescriptor:
         except AttributeError:
             return
         
-        if actual is DEFAULT_EVENT:
+        if actual is DEFAULT_EVENT_HANDLER:
             return
         
         if type(actual) is asynclist:
@@ -8335,7 +8376,7 @@ class EventDescriptor:
             if actual != func:
                 return
         
-        object.__setattr__(self, name, DEFAULT_EVENT)
+        object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
         
         parser_names = EVENTS.parsers.get(name, None)
         if (parser_names is None):

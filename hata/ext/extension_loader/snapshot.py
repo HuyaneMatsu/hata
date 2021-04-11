@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ...backend.utils import multidict
-from ...discord.parsers import asynclist, ChunkWaiter, EVENTS, DEFAULT_EVENT
+from ...discord.parsers import asynclist, ChunkWaiter, EVENTS, DEFAULT_EVENT_HANDLER
 from ...discord.client_core import CLIENTS
 from ...discord.client_utils import WaitForHandler
 
@@ -26,7 +26,7 @@ def should_ignore_event_handler(event_handler):
     -------
     should_ignore : `bool`
     """
-    if event_handler is DEFAULT_EVENT:
+    if event_handler is DEFAULT_EVENT_HANDLER:
         return True
     
     if type(event_handler) in IGNORED_EVENT_HANDLER_TYPES:

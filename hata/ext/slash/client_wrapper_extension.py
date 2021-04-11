@@ -6,8 +6,8 @@ from ...backend.utils import KeepType
 from ...discord.client_utils import ClientWrapper
 from ...discord.parsers import _EventHandlerManagerRouter
 
-from .command import Slasher, SlashCommand
-
+from .command import SlashCommand
+from .slasher import Slasher
 
 def interactions_getter(manager_router):
     """

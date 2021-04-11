@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ...discord.parsers import asynclist, DEFAULT_EVENT, EventWaitforBase
+from ...discord.parsers import asynclist, DEFAULT_EVENT_HANDLER, EventWaitforBase
 from ...discord.client import Client
 
 from .choose_menu import *
@@ -32,7 +32,7 @@ def setup_ext_command_utils(client):
     
     event_reaction_add = client.events.reaction_add
     while True:
-        if event_reaction_add is DEFAULT_EVENT:
+        if event_reaction_add is DEFAULT_EVENT_HANDLER:
             client.events(ReactionAddWaitfor)
             break
         
@@ -53,7 +53,7 @@ def setup_ext_command_utils(client):
     
     event_reaction_delete = client.events.reaction_delete
     while True:
-        if event_reaction_delete is DEFAULT_EVENT:
+        if event_reaction_delete is DEFAULT_EVENT_HANDLER:
             client.events(ReactionDeleteWaitfor)
             break
         
@@ -74,7 +74,7 @@ def setup_ext_command_utils(client):
     
     event_message_create = client.events.message_create
     while True:
-        if event_message_create is DEFAULT_EVENT:
+        if event_message_create is DEFAULT_EVENT_HANDLER:
             client.events(MessageCreateWaitfor)
             break
         

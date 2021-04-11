@@ -829,7 +829,7 @@ class ConverterSetting:
         return ''.join(result)
 
 
-async def none_converter(command_context, content_parser_parameter):
+async def none_converter(command_context, content_parser_parameter_detail):
     return None
 
 
@@ -845,7 +845,7 @@ CONVERTER_NONE = ConverterSetting(
         )
 
 
-async def command_context_converter(command_context, content_parser_parameter):
+async def command_context_converter(command_context, content_parser_parameter_detail):
     return command_context
 
 CONVERTER_SELF_CONTEXT = ConverterSetting(
@@ -860,7 +860,7 @@ CONVERTER_SELF_CONTEXT = ConverterSetting(
         )
 
 
-async def self_client_converter(command_context, content_parser_parameter):
+async def self_client_converter(command_context, content_parser_parameter_detail):
     return command_context.client
 
 CONVERTER_SELF_CLIENT = ConverterSetting(
@@ -875,7 +875,7 @@ CONVERTER_SELF_CLIENT = ConverterSetting(
         )
 
 
-async def self_message_converter(command_context, content_parser_parameter):
+async def self_message_converter(command_context, content_parser_parameter_detail):
     return command_context.client
 
 CONVERTER_SELF_MESSAGE = ConverterSetting(
@@ -892,8 +892,8 @@ CONVERTER_SELF_MESSAGE = ConverterSetting(
 
 
 if CACHE_USER:
-    async def user_converter(command_context, content_parser_parameter, part):
-        flags = content_parser_parameter.flags
+    async def user_converter(command_context, content_parser_parameter_detail, part):
+        flags = content_parser_parameter_detail.flags
         message = command_context.message
         
         if flags&CONVERTER_FLAG_ID:
@@ -957,8 +957,8 @@ if CACHE_USER:
         
         return None
 else:
-    async def user_converter(command_context, content_parser_parameter, part):
-        flags = content_parser_parameter.flags
+    async def user_converter(command_context, content_parser_parameter_detail, part):
+        flags = content_parser_parameter_detail.flags
         message = command_context.message
         
         if flags&CONVERTER_FLAG_ID:
@@ -1058,8 +1058,8 @@ CONVERTER_USER = ConverterSetting(
     requires_part = True,
         )
 
-async def client_converter(command_context, content_parser_parameter, part):
-    flags = content_parser_parameter.flags
+async def client_converter(command_context, content_parser_parameter_detail, part):
+    flags = content_parser_parameter_detail.flags
     message = command_context.message
     
     if flags&CONVERTER_FLAG_ID:
@@ -1139,9 +1139,9 @@ CONVERTER_CLIENT = ConverterSetting(
     requires_part = True,
         )
 
-async def channel_converter(command_context, content_parser_parameter, part):
-    flags = content_parser_parameter.flags
-    channel_type = content_parser_parameter.type
+async def channel_converter(command_context, content_parser_parameter_detail, part):
+    flags = content_parser_parameter_detail.flags
+    channel_type = content_parser_parameter_detail.type
     message = command_context.message
     
     if flags&CONVERTER_FLAG_ID:
@@ -1216,8 +1216,8 @@ CONVERTER_CHANNEL = ConverterSetting(
     requires_part = True,
         )
 
-async def role_converter(command_context, content_parser_parameter, part):
-    flags = content_parser_parameter.flags
+async def role_converter(command_context, content_parser_parameter_detail, part):
+    flags = content_parser_parameter_detail.flags
     message = command_context.message
     
     if flags&CONVERTER_FLAG_ID:
@@ -1268,8 +1268,8 @@ CONVERTER_ROLE = ConverterSetting(
     requires_part = True,
         )
 
-async def emoji_converter(command_context, content_parser_parameter, part):
-    flags = content_parser_parameter.flags
+async def emoji_converter(command_context, content_parser_parameter_detail, part):
+    flags = content_parser_parameter_detail.flags
     if flags&CONVERTER_FLAG_MENTION:
         emoji = parse_emoji(part)
         if (emoji is not None):
@@ -1319,7 +1319,7 @@ CONVERTER_EMOJI = ConverterSetting(
     requires_part = True,
         )
 
-async def guild_converter(command_context, part, content_parser_parameter):
+async def guild_converter(command_context, part, content_parser_parameter_detail):
     parsed = ID_RP.fullmatch(part)
     if (parsed is None):
         return None
@@ -1331,7 +1331,7 @@ async def guild_converter(command_context, part, content_parser_parameter):
     except KeyError:
         return None
     
-    if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+    if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
         return guild
     
     if guild in command_context.client.guild_profiles:
@@ -1351,12 +1351,12 @@ CONVERTER_GUILD = ConverterSetting(
         )
 
 # Gets a message by it's id
-async def _message_converter_m_id(command_context, content_parser_parameter, message_id):
+async def _message_converter_m_id(command_context, content_parser_parameter_detail, message_id):
     message = MESSAGES.get(message_id)
     channel = command_context.message.channel
     if (message is not None):
         # Message found
-        if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+        if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -1398,12 +1398,12 @@ async def _message_converter_m_id(command_context, content_parser_parameter, mes
         return None
 
 # Gets a message by it's and it's channel's id
-async def _message_converter_cm_id(command_context, content_parser_parameter, channel_id, message_id):
+async def _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id, message_id):
     channel = command_context.message.channel
     message = MESSAGES.get(message_id)
     if (message is not None):
         # Message found
-        if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+        if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -1418,7 +1418,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter, ch
     if (message_channel is None):
         return None
 
-    if content_parser_parameter.flags&CONVERTER_FLAG_EVERYWHERE:
+    if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
         # Lets use that multi client core
         for client in message_channel.clients:
             if message_channel.cached_permissions_for(client).can_read_message_history:
@@ -1471,27 +1471,29 @@ async def _message_converter_cm_id(command_context, content_parser_parameter, ch
         
         return None
 
-async def message_converter(command_context, content_parser_parameter, part):
-    if content_parser_parameter.flags&CONVERTER_FLAG_ID:
+async def message_converter(command_context, content_parser_parameter_detail, part):
+    if content_parser_parameter_detail.flags&CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             message_id = int(parsed.group(1))
-            return await _message_converter_m_id(command_context, content_parser_parameter, message_id)
+            return await _message_converter_m_id(command_context, content_parser_parameter_detail, message_id)
         
         parsed = CHANNEL_MESSAGE_RP.fullmatch(part)
         if (parsed is not None):
             channel_id, message_id = parsed.groups()
             channel_id = int(channel_id)
             message_id = int(message_id)
-            return await _message_converter_cm_id(command_context, content_parser_parameter, channel_id, message_id)
+            return await _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id,
+                message_id)
     
-    if content_parser_parameter.flags&CONVERTER_FLAG_URL:
+    if content_parser_parameter_detail.flags&CONVERTER_FLAG_URL:
         parsed = MESSAGE_JUMP_URL_RP.fullmatch(part)
         if (parsed is not None):
             _, channel_id, message_id = parsed.groups()
             channel_id = int(channel_id)
             message_id = int(message_id)
-            return await _message_converter_cm_id(command_context, content_parser_parameter, channel_id, message_id)
+            return await _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id,
+                message_id)
     
     return None
 
@@ -1506,8 +1508,8 @@ CONVERTER_MESSAGE = ConverterSetting(
     requires_part = True,
         )
 
-async def invite_converter(command_context, part, content_parser_parameter):
-    flags = content_parser_parameter.flags
+async def invite_converter(command_context, part, content_parser_parameter_detail):
+    flags = content_parser_parameter_detail.flags
     
     # It would not be a Huyane code without some GOTO
     while True:
@@ -1549,7 +1551,7 @@ CONVERTER_INVITE = ConverterSetting(
         )
 
 
-async def color_converter(command_context, content_parser_parameter, part):
+async def color_converter(command_context, content_parser_parameter_detail, part):
     return parse_color(part)
 
 CONVERTER_COLOR = ConverterSetting(
@@ -1564,7 +1566,7 @@ CONVERTER_COLOR = ConverterSetting(
         )
 
 
-async def str_converter(command_context, content_parser_parameter, part):
+async def str_converter(command_context, content_parser_parameter_detail, part):
     return part
 
 CONVERTER_STR = ConverterSetting(
@@ -1579,7 +1581,7 @@ CONVERTER_STR = ConverterSetting(
         )
 
 
-async def int_converter(command_context, content_parser_parameter, part):
+async def int_converter(command_context, content_parser_parameter_detail, part):
     if len(part) > NUMERIC_CONVERSION_LIMIT:
         return None
     
@@ -1601,7 +1603,7 @@ CONVERTER_INT = ConverterSetting(
     requires_part = True,
         )
 
-async def tdelta_converter(command_context, content_parser_parameter, part):
+async def tdelta_converter(command_context, content_parser_parameter_detail, part):
     return parse_tdelta(part)
 
 CONVERTER_TDELTA = ConverterSetting(
@@ -1616,7 +1618,7 @@ CONVERTER_TDELTA = ConverterSetting(
         )
 
 if (relativedelta is not None):
-    async def rdelta_converter(command_context, content_parser_parameter, part):
+    async def rdelta_converter(command_context, content_parser_parameter_detail, part):
         return parse_rdelta(part)
 
     CONVERTER_RDELTA = ConverterSetting(
@@ -1641,35 +1643,50 @@ class ContentParserParameterDetail:
     
     Attributes
     ----------
-    annotation_type : `None` or `type` instance
-        The type or subtype of the annotation to parse.
     converter_setting : ``ConverterSetting``
         The converter setting used by the parameter.
     flags : ``ConverterFlag``
-        Converter flags to customize the parsers
+        Converter flags to customize the parsers.
+    type : `None` or `type` instance
+        The type or subtype of the annotation to parse.
     """
-    def __new__(cls, annotation_type, converter_setting):
+    __slots__ = ('converter_setting', 'flags', 'type',)
+    def __new__(cls, converter_setting, type_):
         """
         Creates a new ``ContentParserParameterDetail`` instance with the given parameters.
         
         Parameters
         ----------
-        annotation_type : `None` or `type` instance
-            The type or subtype of the annotation to parse.
         converter_setting : ``ConverterSetting``
             The converter setting used by the parameter.
+        type_ : `None` or `type` instance
+            The type or subtype of the annotation to parse.
         """
         self = object.__new__(cls)
-        self.annotation_type = annotation_type
+        self.type = type_
         self.converter_setting = converter_setting
         self.flags = converter_setting.default_flags
         return self
     
     def __repr__(self):
         """Returns the ``ContentParserParameterDetail``'s representation."""
-        result = ['<', self.__class__.__name__]
-        return f'<{self.__class__.__name__} >'
+        result = ['<', self.__class__.__name__, ' converter_setting=']
+        converter_setting = self.converter_setting
+        result.append(repr(converter_setting))
         
+        type_ = self.type
+        if (type_ is not converter_setting.default_type):
+            result.append(', type=')
+            result.append(repr(type_))
+        
+        flags = self.flags
+        if (flags != converter_setting.default_flags):
+            result.append(', flags=')
+            result.append(repr(flags))
+        
+        result.append('>')
+        return ''.join(result)
+
 
 class ContentParserParameter:
     """
@@ -1677,7 +1694,6 @@ class ContentParserParameter:
     
     Parameters
     ----------
-    detail : `None` or
     default : `None` or `Any`
         Default value to the parser
     has_default : `bool`
@@ -1686,6 +1702,10 @@ class ContentParserParameter:
         The default object to return if the parser fails.
     description : `None` or `str`
         The description of the parameter if any.
+    detail : `None` or ``ContentParserParameterDetail``
+        Converting details for single-type annotation.
+    details : `None` or `list` of ``ContentParserParameterDetail``
+        Converting details for multi-type annotations.
     display_name : `str`
         The parameter's display name.
     has_default : `bool`
@@ -1705,8 +1725,8 @@ class ContentParserParameter:
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('annotation_type', 'converter', 'converter_setting', 'default', 'description', 'display_name', 'flags',
-        'has_default', 'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name')
+    __slots__ = ('converter', 'converter_setting', 'default', 'description', 'detail', 'details', 'display_name',
+        'flags', 'has_default', 'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name')
     
     def __new__(cls, parameter, index):
         """
@@ -1728,37 +1748,48 @@ class ContentParserParameter:
         ValueError
             - There is no converter for the given `annotation`.
             - The `annotation` is a `tuple`, but it's length is not 2 or 3.
+        RuntimeError
+            - Multi-type annotation without requiring parsing is forbidden.
         """
         display_name = parameter.name
+        
+        details = []
         
         if parameter.has_annotation:
             annotation = parameter.annotation
             if annotation is None:
-                description = None
-                converter_setting = CONVERTER_NONE
-                annotation_type = converter_setting.default_type
+                pass
             
             elif isinstance(annotation, type):
-                try:
-                    converter_setting = CONVERTER_SETTING_TYPE_TO_SETTING[annotation]
-                except KeyError:
-                    raise ValueError(f'There is no converter registered for {annotation!r}.') from None
-                
                 description = None
-                annotation_type = annotation
-            
+                detail = get_detail_for_type(annotation)
+                details.append(detail)
+            elif type(annotation) is str:
+                description = None
+                detail = get_detail_for_str(annotation)
+                details.append(detail)
             elif isinstance(annotation, str):
-                # Make sure
-                if type(annotation) is not str:
-                    annotation = str
-                
-                try:
-                    converter_setting = CONVERTER_SETTING_NAME_TO_SETTING[annotation]
-                except KeyError:
-                    raise ValueError(f'There is no converter registered for {annotation!r}.') from None
-                
+                annotation = str(annotation)
                 description = None
-                annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation)
+                detail = get_detail_for_str(annotation)
+                details.append(detail)
+            
+            elif isinstance(annotation, set):
+                # Ayaya
+                description = None
+                for sub_annotation in annotation:
+                    if sub_annotation is None:
+                        pass
+                    elif type(sub_annotation) is str:
+                        detail = get_detail_for_str(sub_annotation)
+                        details.append(detail)
+                    elif isinstance(sub_annotation, str):
+                        sub_annotation = str(sub_annotation)
+                        detail = get_detail_for_str(sub_annotation)
+                        details.append(detail)
+                    else:
+                        raise TypeError(f'`annotation` set can contain only `str` and `type` elements, got '
+                            f'{sub_annotation.__class__.__name__}.')
             
             elif isinstance(annotation, tuple):
                 if type(annotation) is not tuple:
@@ -1771,32 +1802,36 @@ class ContentParserParameter:
                 
                 annotation_tuple_type = annotation[0]
                 if annotation_tuple_type is None:
-                    converter_setting = CONVERTER_NONE
-                    annotation_type = converter_setting.default_type
+                    pass
                 
                 elif isinstance(annotation_tuple_type, type):
-                    try:
-                        converter_setting = CONVERTER_SETTING_TYPE_TO_SETTING[annotation_tuple_type]
-                    except KeyError:
-                        raise ValueError(f'There is no converter registered for {annotation_tuple_type!r}.') from None
-                    
-                    annotation_type = annotation_tuple_type
-                
+                    detail = get_detail_for_type(annotation_tuple_type)
+                    details.append(detail)
+                elif type(annotation_tuple_type) is str:
+                    detail = get_detail_for_str(annotation_tuple_type)
+                    details.append(detail)
                 elif isinstance(annotation_tuple_type, str):
-                    # Make sure
-                    if type(annotation_tuple_type) is not str:
-                        annotation_tuple_type = str
-                    
-                    try:
-                        converter_setting = CONVERTER_SETTING_NAME_TO_SETTING[annotation_tuple_type]
-                    except KeyError:
-                        raise ValueError(f'There is no converter registered for {annotation_tuple_type!r}.') from None
-                    
-                    annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation_tuple_type)
+                    annotation_tuple_type = str(annotation_tuple_type)
+                    detail = get_detail_for_str(annotation_tuple_type)
+                    details.append(detail)
+                
+                for sub_annotation in annotation_tuple_type:
+                    if sub_annotation is None:
+                        pass
+                    elif type(sub_annotation) is str:
+                        detail = get_detail_for_str(sub_annotation)
+                        details.append(detail)
+                    elif isinstance(sub_annotation, str):
+                        sub_annotation = str(sub_annotation)
+                        detail = get_detail_for_str(sub_annotation)
+                        details.append(detail)
+                    else:
+                        raise TypeError(f'`annotation` set can contain only `str` and `type` elements, got '
+                            f'{sub_annotation.__class__.__name__}.')
                 
                 else:
                     raise TypeError(f'`annotation` was given as `tuple`, but it\'s 0th element was not given as any '
-                        f'of the expected values: `None`, `type` or `str` instance, got '
+                        f'of the expected values: `None`, `type`, `str`, `set`, instance, got '
                         f'{annotation_tuple_type.__class__.__name__}; {annotation_tuple_type!r}.')
                 
                 
@@ -1821,13 +1856,24 @@ class ContentParserParameter:
                             f'{annotation_tuple_name.__class__.__name__}.')
                 
             else:
-                raise TypeError(f'`annotation` can be either given as `None`, `type`, `str` or `tuple`, got '
+                raise TypeError(f'`annotation` can be either given as `None`, `type`, `str`, `tuple, or `set`, got '
                     f'{annotation.__class__.__name__}; {annotation!r}.')
             
         else:
             description = None
-            converter_setting = CONVERTER_NONE
-            annotation_type = converter_setting.default_type
+        
+        
+        details_length = len(details)
+        if details_length == 0:
+            detail = ContentParserParameterDetail(CONVERTER_NONE, CONVERTER_NONE.default_type)
+            details = None
+        elif details_length == 1:
+            detail = details[0]
+            details = None
+        else:
+            for detail in details:
+                if not detail.converter_setting.requires_part:
+                    raise RuntimeError('Multi-type annotation without requiring parsing is forbidden.')
         
         display_name = raw_name_to_display(display_name)
         
@@ -1845,7 +1891,8 @@ class ContentParserParameter:
         name = parameter.name
         
         self = object.__new__(cls)
-        self.annotation_type = annotation_type
+        self.detail = detail
+        ael.details = details
         self.converter_setting = converter_setting
         self.default = default
         self.description = description
@@ -1880,12 +1927,74 @@ class ContentParserParameter:
         Parameters
         ----------
         converter_setting : ``ConverterSetting``
+        
+        Raises
+        ------
+        RuntimeError
+            Converter setting cannot be set if the parser is multi type parsers.
         """
-        self.flags = converter_setting.default_flags
-        self.annotation_type = converter_setting.default_type
+        if self.detail is None:
+            raise RuntimeError('Converter setting cannot be set if the parser is multi type parsers.')
+        
+        self.detail = ContentParserParameterDetail(converter_setting, converter_setting.default_type)
 
 
 COMMAND_CONTENT_PARSER_POST_PROCESSORS = []
+
+
+def get_detail_for_str(annotation):
+    """
+    Creates a ``ContentParserParameterDetail`` for the given string annotation value.
+    
+    Parameters
+    ----------
+    annotation : `str`
+        The respective annotation.
+
+    Returns
+    -------
+    detail : ``ContentParserParameterDetail``
+    
+    Raises
+    ------
+    ValueError
+        The is no converter setting for the annotation.
+    """
+    try:
+        converter_setting = CONVERTER_SETTING_NAME_TO_SETTING[annotation]
+    except KeyError:
+        raise ValueError(f'There is no converter registered for {annotation!r}.') from None
+    
+    annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation)
+    
+    return ContentParserParameterDetail(converter_setting, annotation_type)
+
+
+def get_detail_for_type(annotation):
+    """
+    Creates a ``ContentParserParameterDetail`` for the given type annotation value.
+    
+    Parameters
+    ----------
+    annotation : `str`
+        The respective annotation.
+    
+    Returns
+    -------
+    detail : ``ContentParserParameterDetail``
+    
+    Raises
+    ------
+    ValueError
+        The is no converter setting for the annotation.
+    """
+    try:
+        converter_setting = CONVERTER_SETTING_TYPE_TO_SETTING[annotation]
+    except KeyError:
+        raise ValueError(f'There is no converter registered for {annotation!r}.') from None
+    
+    return ContentParserParameterDetail(converter_setting, annotation)
+
 
 class CommandContentParser:
     """
@@ -2462,13 +2571,17 @@ def content_parser_parameter_postprocessor_try_find_context(command_context_pars
     """
     parameters = command_context_parser._parameters
     for parameter in parameters:
-        if parameter.converter_setting is CONVERTER_SELF_CONTEXT:
-            return
+        detail = parameter.detail
+        if (detail is not None):
+            if detail.converter_setting is CONVERTER_SELF_CONTEXT:
+                return
     
     for parameter in parameters:
-        if parameter.converter_setting is CONVERTER_NONE and parameter.name in ('ctx', 'context', 'command_context'):
-            parameter.set_converter_setting(CONVERTER_SELF_CONTEXT)
-            return
+        detail = parameter.detail
+        if (detail is not None):
+            if detail is CONVERTER_NONE and parameter.name in ('ctx', 'context', 'command_context'):
+                parameter.set_converter_setting(CONVERTER_SELF_CONTEXT)
+                return
 
 
 def content_parser_parameter_postprocessor_try_find_message_and_client(command_context_parser):
@@ -2485,17 +2598,25 @@ def content_parser_parameter_postprocessor_try_find_message_and_client(command_c
         return
     
     parameter_1, parameter_2 = parameters[:2]
-    if parameter_1.name not in ('client', 'c'):
+    if parameter_1.name not in ('client', 'clnt', 'c'):
         return
     
-    if parameter_2.name not in ('message', 'm'):
+    if parameter_2.name not in ('message', 'msg', 'm'):
         return
     
-    converter_setting = parameter_1.converter_setting
+    detail = parameter_1.annotation
+    if detail is None:
+        return
+    
+    converter_setting = detail.converter_setting
     if (converter_setting is not CONVERTER_NONE) and (converter_setting is not CONVERTER_CLIENT):
         return
     
-    converter_setting = parameter_2.converter_setting
+    detail = parameter_2.annotation
+    if detail is None:
+        return
+    
+    converter_setting = detail.converter_setting
     if (converter_setting is not CONVERTER_NONE) and (converter_setting is not CONVERTER_MESSAGE):
         return
     
@@ -2521,7 +2642,11 @@ def content_parser_parameter_postprocessor_try_find_rest_parser(command_context_
             return
     
     parameter = parameters[-1]
-    if (parameter.converter_setting is not CONVERTER_NONE):
+    detail = parameter.detail
+    if (detail is None):
+        return
+    
+    if (detail.converter_setting is not CONVERTER_NONE):
         return
     
     parameter.is_rest = True

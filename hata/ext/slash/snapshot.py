@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from ..extension_loader.snapshot import SNAPSHOT_TAKERS
-from .command import Slasher, SYNC_ID_NON_GLOBAL
+from ..extension_loader.extension_loader import EXTENSION_LOADER
+
+from .command import SYNC_ID_NON_GLOBAL
+from .slasher import Slasher
+from .utils import RUNTIME_SYNC_HOOKS
 
 def take_slasher_snapshot(client):
     """
@@ -119,7 +123,7 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     if client.running and client.application.id:
         slasher = getattr(client, 'slasher', None)
         if (slasher is not None):
-            slasher.do_main_sync(client)
+            slasher.sync()
     
     return added_commands, removed_commands
 
@@ -145,10 +149,25 @@ def revert_slasher_snapshot(client, snapshot_difference):
     for command in removed_commands:
         slasher._add_command(command)
     
-    slasher.do_main_sync(client)
+    if client.running and client.application.id:
+        slasher.sync()
 
 SNAPSHOT_TAKERS['client.slasher'] = (
     take_slasher_snapshot,
     calculate_slasher_snapshot_difference,
     revert_slasher_snapshot,
         )
+
+
+def runtime_sync_hook_is_executing_extension(client):
+    """
+    Runtime sync hook to check whether a slash command should be registered and synced instantly when added or removed.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client of the ``Slasher``.
+    """
+    return not EXTENSION_LOADER.is_processing_extension()
+
+RUNTIME_SYNC_HOOKS.append(runtime_sync_hook_is_executing_extension)

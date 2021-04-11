@@ -67,7 +67,7 @@ There are also choice parameters, but lets talk about those only later.
 When using slash commands, adding your bot to a guild with just the regular `bot` scope is not enough. Make sure you
 authorize it with `applications.commands` oauth2 scope as well. Just fill out your bot's application's id in the
 `<APPLICATION_ID>` part and add the bot to your guild;
-`https://discord.com/api/oauth2/authorize?client_id=<APPLICATION_ID>&scope=bot&applications.commands`.
+`https://discord.com/api/oauth2/authorize?client_id=<APPLICATION_ID>&scope=bot+applications.commands`.
 
 If this error pops ups as you launched your bot: `DiscordException Forbidden (403), code=50001: Missing access`
 Do not worry, you probably just need to authorize your bot with the `applications.commands` oauth2 scope.

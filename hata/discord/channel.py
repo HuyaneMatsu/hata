@@ -5545,6 +5545,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
             else:
                 topic_length_limit = 120
             
+            topic_length = len(topic)
             if topic_length > topic_length_limit:
                 raise AssertionError(f'`topic` length can be in range [0:{topic_length_limit}], got {topic_length}; '
                     f'{topic!r}.')
@@ -5630,7 +5631,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
             raise TypeError(f'`region` can be given either as `None`, `str` or as `{VoiceRegion.__name__}` instance, '
                 f'{region.__class__.__name__}.')
         
-        data['rtc_region'] = region_value
+        channel_data['rtc_region'] = region_value
     
     
     if (video_quality_mode is not None):
@@ -5647,7 +5648,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
             raise TypeError(f'`video_quality_mode` can be given either as `None`, `str` or as '
                 f'`{VideoQualityMode.__name__}` instance, {video_quality_mode.__class__.__name__}.')
         
-        data['video_quality_mode'] = video_quality_mode_value
+        channel_data['video_quality_mode'] = video_quality_mode_value
     
     
     if category is None:

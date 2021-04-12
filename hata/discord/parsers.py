@@ -6944,7 +6944,7 @@ class EventWaitforMeta(type):
         guild = channel.guild
         if guild is None:
             return
-        self._run_waitfors_for(guild, old_attributes)
+        self._run_waitfors_for(guild, args)
     
     _call_waitfors['channel_edit'] = _call_channel_edit
     del _call_channel_edit

@@ -3598,16 +3598,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             elif hasattr(module_socket, 'AF_UNIX') and family == module_socket.AF_UNIX:
                 if __debug__:
                     if (local_address is not None):
-                        local_address_type = address.__class__
-                        if not issubclass(local_address_type, (str, bytes)):
+                        if not isinstance(local_address, (str, bytes)):
                             raise TypeError('`local_address` should be given as `None` or as `str` or `bytes` '
-                                f'instance, if `family` is given as ``AF_UNIX`, got {local_address_type.__name__}')
+                                f'instance, if `family` is given as ``AF_UNIX`, got '
+                                f'{local_address.__class__.__name__}')
                     
                     if (remote_address is not None):
-                        remote_address_type = remote_address.__class__
-                        if not issucbalss(remote_address_type, (str, bytes)):
+                        if not isinstance(remote_address, (str, bytes)):
                             raise TypeError('`remote_address` should be given as `None` or as `str` or `bytes` '
-                                f'instance, if `family` is given as ``AF_UNIX`, got {remote_address_type.__name__}')
+                                f'instance, if `family` is given as ``AF_UNIX`, got '
+                                f'{remote_address.__class__.__name__}')
                 
                 if (local_address is not None) and local_address and \
                         (local_address[0] != (0 if isinstance(local_address, bytes) else '\x00')):

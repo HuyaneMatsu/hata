@@ -1439,7 +1439,7 @@ class Client(UserBase):
             if __debug__:
                 if 'guilds.join' not in access.scopes:
                     raise AssertionError(f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
-                        f'got {scope!r}.')
+                        f'got access={access!r}, scopes={access.scopes!r}.')
                 
                 if user_id and (user_id != access.id):
                     raise AssertionError(f'The given `user` and `access` refers to different users, got user={user!r}, '
@@ -2766,7 +2766,9 @@ class Client(UserBase):
                 if not isinstance(topic, str):
                     raise AssertionError(f'`topic` can be given as `str` instance, got {topic.__class__.__name__}.')
                 
-                if issubclass(channel_type, ChannelText):
+                if channel is None:
+                    topic_length_limit = 1024
+                elif isinstance(channel, ChannelText):
                     topic_length_limit = 1024
                 else:
                     topic_length_limit = 120
@@ -2890,9 +2892,10 @@ class Client(UserBase):
         
         if (video_quality_mode is not None):
             if __debug__:
-                if not issubclass(channel_type, ChannelVoice):
-                    raise AssertionError(f'`video_quality_mode` is a valid parameter only for `{ChannelVoice.__name__}` '
-                        f'instances, but got {channel_type.__name__}.')
+                if (channel is not None):
+                    if not isinstance(channel, ChannelVoice):
+                        raise AssertionError(f'`video_quality_mode` is a valid parameter only for '
+                            f'`{ChannelVoice.__name__}` instances, but got {channel_type.__name__}.')
             
             if isinstance(video_quality_mode, VideoQualityMode):
                 video_quality_mode_value = video_quality_mode.value
@@ -3487,13 +3490,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[0]
             else:
@@ -5128,13 +5130,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[0]
             else:
@@ -7680,7 +7681,7 @@ class Client(UserBase):
             if discovery_splash is None:
                 discovery_splash_data = None
             else:
-                if not isinstance(discovery_splash_type, (bytes, bytearray, memoryview)):
+                if not isinstance(discovery_splash, (bytes, bytearray, memoryview)):
                     raise TypeError(f'`discovery_splash` can be passed as `bytes-like`, got '
                         f'{discovery_splash.__class__.__name__}.')
                 
@@ -7768,7 +7769,7 @@ class Client(UserBase):
             else:
                 owner_id = maybe_snowflake(owner)
                 if owner_id is None:
-                    raise TypeError(f'`owner` can be given as `{UseBase.__name__}` instance or as `int`, got '
+                    raise TypeError(f'`owner` can be given as `{UserBase.__name__}` instance or as `int`, got '
                         f'{owner.__class__.__name__}.')
             
             
@@ -9789,7 +9790,7 @@ class Client(UserBase):
         else:
             if __debug__:
                 if not isinstance(allow, int):
-                    raise AssertionError(f'`allow` can be given either as `None`, `{Permmission.__name__}` or as other '
+                    raise AssertionError(f'`allow` can be given either as `None`, `{Permission.__name__}` or as other '
                         f'`int` instance, got {allow.__class__.__name__}.')
         
         if deny is None:
@@ -10591,13 +10592,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -10675,7 +10675,7 @@ class Client(UserBase):
         if (avatar_url is not None):
             if __debug__:
                 if not isinstance(avatar_url, str):
-                    raise AssetionError(f'`avatar_url` can be given as `None` or `str` instance, got '
+                    raise AssertionError(f'`avatar_url` can be given as `None` or `str` instance, got '
                         f'{avatar_url.__class__.__name__}.')
             
             message_data['avatar_url'] = avatar_url
@@ -10819,13 +10819,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -13540,13 +13539,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -13754,7 +13752,7 @@ class Client(UserBase):
                 ResourceWarning)
             
             return await self.interaction_followup_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions, tts=tts)
+                allowed_mentions=allowed_mentions, tts=False)
         
         # Embed check order:
         # 1.: Ellipsis
@@ -13772,13 +13770,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -14021,13 +14018,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -14238,13 +14234,12 @@ class Client(UserBase):
         elif isinstance(embed, (list, tuple)):
             if embed:
                 if __debug__:
-                    for index, element in enumerate(embed):
-                        if isinstance(element, EmbedBase):
+                    for index, embed_element in enumerate(embed):
+                        if isinstance(embed_element, EmbedBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -15440,7 +15435,7 @@ class Client(UserBase):
             if not isinstance(limit, int):
                 raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
             
-            if limir < 1 or limit > 100:
+            if limit < 1 or limit > 100:
                 raise AssertionError(f'`limit` is out of the expected range [1:100], got {limit!r}.')
             
             if not isinstance(name, str):

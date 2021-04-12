@@ -1688,7 +1688,7 @@ class User(UserBase):
             status = data['status']
             if self.status.value != status:
                 old_attributes['status'] = self.status
-                self.status = Status.get(status, None)
+                self.status = Status.get(status)
         
         activity_datas = data['activities']
         

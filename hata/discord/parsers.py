@@ -2406,7 +2406,7 @@ if CACHE_PRESENCE:
             
             return
         
-        for client_ in CLIENTS:
+        for client_ in CLIENTS.values():
             if (client_.intents>>INTENT_GUILD_PRESENCES)&1:
                 if presence:
                     event_handler = client_.events.user_presence_update

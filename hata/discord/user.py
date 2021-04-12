@@ -94,15 +94,6 @@ class UserFlag(FlagBase):
             }
 
 def create_partial_user(user_id):
-    try:
-        return USERS[user_id]
-    except KeyError:
-        pass
-    
-    return User._create_empty(user_id)
-
-if DOCS_ENABLED:
-    create_partial_user.__doc__ = (
     """
     Creates a partial user from the given `user_id`. If the user already exists returns that instead.
     
@@ -114,7 +105,14 @@ if DOCS_ENABLED:
     Returns
     -------
     user : ``Client`` or ``User``
-    """)
+    """
+    try:
+        return USERS[user_id]
+    except KeyError:
+        pass
+    
+    return User._create_empty(user_id)
+
 
 class GuildProfile:
     """
@@ -1361,6 +1359,39 @@ class User(UserBase):
             else:
                 profile._set_joined(guild_profile_data)
                 profile._update_no_return(guild_profile_data, guild)
+    
+    
+    @classmethod
+    def _from_client(cls, client):
+        """
+        Creates a client alter ego.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client to copy.
+        
+        Returns
+        -------
+        user : ``User``
+        """
+        self = object.__new__(cls)
+        self.id = client.name
+        self.discriminator = client.discriminator
+        self.name = client.name
+        
+        self.guild_profiles = client.guild_profiles.copy()
+        self.is_bot = client.is_bot
+        self.flags = client.flags
+        self.partial = client.partial
+        
+        if CACHE_PRESENCE:
+            self.activities = client.activities.copy()
+            self.status = client.status
+            self.statuses = client.statuses.copy()
+        
+        return self
+    
     
     @classmethod
     def precreate(cls, user_id, **kwargs):

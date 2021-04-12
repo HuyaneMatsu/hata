@@ -1086,7 +1086,7 @@ async def client_converter(command_context, content_parser_parameter_detail, par
     
     if flags&CONVERTER_FLAG_NAME:
         if flags&CONVERTER_FLAG_EVERYWHERE:
-            clients = list(CLIENTS)
+            clients = list(CLIENTS.values())
         else:
             clients = message.channel.clients
         

@@ -1110,7 +1110,7 @@ class Icon:
     
     def __repr__(self):
         """Returns the representation of the icon."""
-        return f'{self.__class__.__name__}(icon_type=ICON_TYPE_{self.type.name}, icon_hash={self.hash})'
+        return f'{self.__class__.__name__}(type=ICON_TYPE_{self.type.name.upper()}, hash={self.hash})'
     
     def __iter__(self):
         """

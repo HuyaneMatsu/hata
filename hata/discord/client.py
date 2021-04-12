@@ -57,7 +57,7 @@ from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, 
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
-    BanEntry, maybe_snowflake_pair
+    BanEntry, maybe_snowflake_pair, _check_is_client_duped
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite
@@ -74,6 +74,8 @@ from . import client_core as module_client_core, message as module_message, webh
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
+
+AUTO_CLIENT_ID_LIMIT = (1<<22)
 
 class Client(UserBase):
     """
@@ -187,6 +189,8 @@ class Client(UserBase):
     ----------------
     loop : ``EventThread``
         The event loop of the client. Every client uses the same one.
+    _next_auto_id : `int`
+        Auto id generator for clients without identifier.
     
     See Also
     --------
@@ -201,15 +205,16 @@ class Client(UserBase):
     Client supports weakreferencing and dynamic attribute names as well for extension support.
     """
     __slots__ = (
-        'guild_profiles', 'is_bot', 'partial', # default user
+        'guild_profiles', 'is_bot', 'flags', 'partial', # default user
         'activities', 'status', 'statuses', # presence
-        'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
+        'email', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
         '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
         '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
         'gateway', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships', 'running',
         'secret', 'shard_count', 'token', 'voice_clients', )
     
     loop = KOKORO
+    _next_auto_id = 1
     
     def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ActivityUnknown, status=None,
             is_bot=True, shard_count=0, intents=-1, additional_owners=None, **kwargs):
@@ -269,6 +274,8 @@ class Client(UserBase):
             If any argument's type is bad or if unexpected argument is passed.
         ValueError
             If an argument's type is good, but it's value is unacceptable.
+        RuntimeError
+            Creating the same client multiple times is not allowed.
         """
         # token
         if (type(token) is str):
@@ -404,6 +411,10 @@ class Client(UserBase):
         else:
             _status = status
         
+        if client_id < AUTO_CLIENT_ID_LIMIT:
+            client_id = cls._next_auto_id
+            cls._next_auto_id = client_id+1
+        
         self = object.__new__(cls)
         
         self.name = ''
@@ -452,10 +463,11 @@ class Client(UserBase):
             for item in processable:
                 setattr(self, *item)
         
-        CLIENTS.append(self)
-        
-        if client_id:
+        if client_id > AUTO_CLIENT_ID_LIMIT:
+            _check_is_client_duped(self, client_id)
             self._maybe_replace_alter_ego()
+        
+        CLIENTS[client_id] = self
         
         return self
     
@@ -482,7 +494,7 @@ class Client(UserBase):
                             guild.users[client_id] = self
             
             # This part should run at both case, except when there is no alter_ego detected when caching users.
-            for client in CLIENTS:
+            for client in CLIENTS.values():
                 if (client is self) or (not client.running):
                     continue
                 
@@ -515,10 +527,25 @@ class Client(UserBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Data requested from Discord by the ``.client_login_static`` method.
+        
+        Raises
+        ------
+        RuntimeError
+            Creating the same client multiple times is not allowed.
         """
         client_id = int(data['id'])
-        if self.id != client_id:
-            CLIENTS.update(self, client_id)
+        _check_is_client_duped(self, client_id)
+        
+        self_id = self.id
+        if self_id != client_id:
+            if CLIENTS.get(self_id, None) is self:
+                del CLIENTS[self_id]
+            
+            if USERS.get(self_id, None) is self:
+                del USERS[self_id]
+            
+            CLIENTS[client_id] = self
+            self.id = client_id
         
         self._maybe_replace_alter_ego()
         
@@ -588,26 +615,25 @@ class Client(UserBase):
         ```
         """
         if self.running:
-            raise RuntimeError(f'{self.__class__.__name__}._delete called from a running client.')
+            raise RuntimeError(f'`{self.__class__.__name__}._delete` called from a running client: {self!r}')
         
-        CLIENTS.remove(self)
         client_id = self.id
-        alter_ego = object.__new__(User)
-        for attribute_name in User.__slots__:
-            if attribute_name.startswith('__'):
-                continue
-            setattr(alter_ego, attribute_name, getattr(self, attribute_name))
+        if CLIENTS.get(client_id, None) is self:
+            del CLIENTS[client_id]
+        
+        
+        alter_ego = User._from_client(self)
         
         if CACHE_USER:
             USERS[client_id] = alter_ego
             guild_profiles = self.guild_profiles
             for guild in guild_profiles:
-                guild.users[client_id] = self
+                guild.users[client_id] = alter_ego
             
-            for client in CLIENTS:
+            for client in CLIENTS.values():
                 if (client is not self) and client.running:
                     for relationship in client.relationships:
-                        if relationship.user is self:
+                        if relationship.user is alter_ego:
                             relationship.user = alter_ego
         
         else:
@@ -634,9 +660,9 @@ class Client(UserBase):
         self.group_channels.clear()
         self.events.clear()
         
-        self.guild_profiles = GUILD_PROFILES_TYPE()
+        self.guild_profiles.clear()
         self.status = Status.offline
-        self.statuses = {}
+        self.statuses.clear()
         self._activity = ActivityUnknown
         self.activities = None
         self.ready_state = None
@@ -6988,7 +7014,7 @@ class Client(UserBase):
 
 ##    # Disable user syncing, takes too much time
 ##    async def _guild_sync_post_process(self, guild):
-##        for client in CLIENTS:
+##        for client in CLIENTS.values():
 ##            try:
 ##                user_data = await self.http.guild_user_get(guild.id, client.id)
 ##           except (DiscordException, ConnectionError):
@@ -14852,6 +14878,7 @@ class Client(UserBase):
             return False
         
         self._init_on_ready(data)
+        
         await self.client_gateway_reshard()
         await self.gateway.start()
         

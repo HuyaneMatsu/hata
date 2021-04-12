@@ -176,7 +176,7 @@ def take_snapshot():
         the `client-snapshot` is a list containing `snapshot-type-name`, `type-specific-snapshot` pairs.
     """
     snapshot = []
-    for client in CLIENTS:
+    for client in CLIENTS.values():
         client_snapshot = []
         snapshot.append((client, client_snapshot))
         

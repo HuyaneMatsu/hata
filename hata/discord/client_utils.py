@@ -481,7 +481,7 @@ class DiscoveryTermRequestCacher:
         free_count = RateLimitProxy(client, *self._rate_limit_proxy_args).free_count
         if not free_count:
             requester = client
-            for client_ in CLIENTS:
+            for client_ in CLIENTS.values():
                 if client_ is client:
                     continue
                 
@@ -811,7 +811,7 @@ class ClientWrapper:
                     raise TypeError(f'{cls.__name__} expects only `{Client.__name__}` instances to be given, got '
                         f'{client.__class__.__name__}: {client!r}.')
         else:
-            clients = tuple(CLIENTS)
+            clients = tuple(CLIENTS.values())
         
         self = object.__new__(cls)
         object.__setattr__(self, 'clients', clients)
@@ -1064,3 +1064,22 @@ def maybe_snowflake_pair(value):
         value = None
     
     return value
+
+
+def _check_is_client_duped(client, client_id):
+    """
+    Checks whether the client is duplicated.
+    
+    Raises
+    ------
+    RuntimeError
+        Creating the same client multiple times is not allowed.
+    """
+    try:
+        other_client = CLIENTS[client_id]
+    except KeyError:
+        return
+    
+    if other_client is not client:
+        raise RuntimeError(f'Creating the same client multiple times is not allowed; {client!r} already exists:, '
+            f'{other_client!r}.')

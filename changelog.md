@@ -1,4 +1,19 @@
 
+#### 1.1.64  *\[Soon TM\]*
+
+##### Public API:
+
+`CLIENTS` now uses `dict` type` instead of `ClientDictionary`.
+
+##### Internal:
+
+- `Client._delete` could construct not a fully built `User` object. Add `User._from_cleint` to fix this.
+- Remove `ClientDictionary`.
+- Speed up `dict.get` by passing default value.
+- Fix some bad assignments in `Client._delete`.
+- `Icon.__repr__` did not upper case `IconType.name`. (Pichu#0357)
+- `Icon.__repr__` displayed incorrect names. (Zeref Draganeel#3524)
+- Dupe client check was not working. (Zeref Draganeel#3524)
 
 #### 1.1.63  *\[2021-04-11\]*
 

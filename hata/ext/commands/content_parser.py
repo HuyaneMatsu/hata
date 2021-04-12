@@ -1638,7 +1638,7 @@ async def client_converter(parser_ctx, content_parser_ctx):
     
     if flags&CONVERTER_FLAG_NAME:
         if flags&CONVERTER_FLAG_EVERYWHERE:
-            clients = list(CLIENTS)
+            clients = list(CLIENTS.values())
         else:
             clients = message.channel.clients
         

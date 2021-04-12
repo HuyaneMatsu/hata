@@ -29,7 +29,7 @@ from ...discord.role import Role
 from ...discord.parsers import check_argcount_and_convert
 from ...discord.preconverters import preconvert_flag, preconvert_bool
 from ...discord.guild import Guild
-from ...discord.http.URLS import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
+from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
 from ...discord.invite import Invite
 from ...discord.color import Color, parse_color
 

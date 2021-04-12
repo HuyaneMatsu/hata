@@ -6,13 +6,15 @@ from datetime import datetime
 from .bases import DiscordEntity, instance_or_id_to_instance
 from .preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
 from .utils import parse_time, DISCORD_EPOCH_START
-from .http import URLS
 from .client_core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER
 from .guild import create_partial_guild, Guild
 from .channel import create_partial_channel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
 from .preinstanced import InviteTargetType
 from .application import Application
+
+
+from . import urls as module_urls
 
 Client = NotImplemented
 
@@ -157,7 +159,7 @@ class Invite(DiscordEntity, immortal=True):
         """Returns the invite's code's hash."""
         return hash(self.code)
     
-    url = property(URLS.invite_url)
+    url = property(module_urls.invite_url)
     
     @property
     def id(self):

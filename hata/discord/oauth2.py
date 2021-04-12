@@ -6,11 +6,12 @@ from datetime import datetime
 from time import time as time_now
 
 from .bases import DiscordEntity, IconSlot
-from .http import URLS
 from .integration import Integration
 from .utils import DATETIME_FORMAT_CODE
 from .user import UserBase, UserFlag
 from .preinstanced import PremiumType
+
+from . import urls as module_urls
 
 DEFAULT_LOCALE = 'en-US'
 LOCALES = {DEFAULT_LOCALE: DEFAULT_LOCALE}
@@ -429,7 +430,7 @@ class Achievement(DiscordEntity):
     """
     __slots__ = ('application_id', 'description', 'name', 'secret', 'secure',)
     
-    icon = IconSlot('icon', 'icon_hash', URLS.achievement_icon_url, URLS.achievement_icon_url_as)
+    icon = IconSlot('icon', 'icon_hash', module_urls.achievement_icon_url, module_urls.achievement_icon_url_as)
     
     def __init__(self, data):
         """

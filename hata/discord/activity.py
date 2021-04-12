@@ -10,10 +10,9 @@ from ..backend.utils import modulize
 from .utils import DISCORD_EPOCH_START
 from .bases import FlagBase
 from .color import Color
-from .http import URLS
 from .preconverters import preconvert_str, preconvert_int
 
-from . import preinstanced as module_preinstanced
+from . import preinstanced as module_preinstanced, urls as module_urls
 
 create_partial_emoji = NotImplemented
 
@@ -879,10 +878,10 @@ class ActivityRich(ActivityBase):
         
         return datetime.utcfromtimestamp(end/1000.)
     
-    image_large_url = property(URLS.activity_asset_image_large_url)
-    image_large_url_as = URLS.activity_asset_image_large_url_as
-    image_small_url = property(URLS.activity_asset_image_small_url)
-    image_small_url_as = URLS.activity_asset_image_small_url_as
+    image_large_url = property(module_urls.activity_asset_image_large_url)
+    image_large_url_as = module_urls.activity_asset_image_large_url_as
+    image_small_url = property(module_urls.activity_asset_image_small_url)
+    image_small_url_as = module_urls.activity_asset_image_small_url_as
     
     @classmethod
     def from_data(cls, activity_data):
@@ -1542,5 +1541,3 @@ def create_activity(activity_data):
 
 
 module_preinstanced.ActivityTypes = ActivityTypes
-
-del module_preinstanced

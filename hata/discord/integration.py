@@ -6,9 +6,8 @@ from .client_core import INTEGRATIONS
 from .user import User, ZEROUSER
 from .utils import parse_time, DISCORD_EPOCH_START
 from .role import create_partial_role
-from .http import URLS
 
-from . import role as module_role
+from . import role as module_role, urls as module_urls
 
 INTEGRATION_TYPE_DISCORD = 'discord'
 
@@ -336,7 +335,7 @@ class IntegrationApplication(DiscordEntity):
     """
     __slots__ = ('bot', 'description', 'name', 'summary', )
     
-    icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as,)
+    icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as,)
     
     def __init__(self, data):
         """

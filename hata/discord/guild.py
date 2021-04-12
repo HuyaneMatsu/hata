@@ -15,7 +15,6 @@ from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, par
 from .user import User, create_partial_user, VoiceState, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase, ChannelGuildUndefined
-from .http import URLS
 from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL
 from .emoji import Emoji, create_partial_emoji
 from .webhook import Webhook, WebhookRepr
@@ -24,7 +23,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_prei
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, VerificationScreenStepType
 
-from . import rate_limit as module_rate_limit, channel as module_channel
+from . import rate_limit as module_rate_limit, channel as module_channel, urls as module_urls
 
 VoiceClient = NotImplemented
 Client = NotImplemented
@@ -335,7 +334,7 @@ class GuildWidget(DiscordEntity):
         self._data = data
         self._cache = {}
     
-    json_url = property(URLS.guild_widget_json_url)
+    json_url = property(module_urls.guild_widget_json_url)
     
     @property
     def id(self):
@@ -645,10 +644,10 @@ class Guild(DiscordEntity, immortal=True):
         'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'webhooks',
         'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
     
-    banner = IconSlot('banner', 'banner', URLS.guild_banner_url, URLS.guild_banner_url_as)
-    icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
-    invite_splash = IconSlot('invite_splash', 'splash', URLS.guild_invite_splash_url, URLS.guild_invite_splash_url_as)
-    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', URLS.guild_discovery_splash_url, URLS.guild_discovery_splash_url_as)
+    banner = IconSlot('banner', 'banner', module_urls.guild_banner_url, module_urls.guild_banner_url_as)
+    icon = IconSlot('icon', 'icon', module_urls.guild_icon_url, module_urls.guild_icon_url_as)
+    invite_splash = IconSlot('invite_splash', 'splash', module_urls.guild_invite_splash_url, module_urls.guild_invite_splash_url_as)
+    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', module_urls.guild_discovery_splash_url, module_urls.guild_discovery_splash_url_as)
     
     def __new__(cls, data, client):
         """
@@ -1018,7 +1017,7 @@ class Guild(DiscordEntity, immortal=True):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    widget_url = URLS.guild_widget_url
+    widget_url = module_urls.guild_widget_url
 
     def _delete(self, client):
         """
@@ -2595,7 +2594,7 @@ class Guild(DiscordEntity, immortal=True):
         """
         return (8388608, 8388608, 52428800, 104857600)[self.premium_tier]
 
-    widget_json_url = property(URLS.guild_widget_json_url)
+    widget_json_url = property(module_urls.guild_widget_json_url)
     
     @property
     def boosters(self):
@@ -2736,9 +2735,9 @@ class GuildPreview(DiscordEntity):
     """
     __slots__ = ('description', 'emojis', 'features', 'name', 'online_count', 'user_count', )
     
-    icon = IconSlot('icon', 'icon', URLS.guild_icon_url, URLS.guild_icon_url_as)
-    invite_splash = IconSlot('invite_splash', 'splash', URLS.guild_invite_splash_url, URLS.guild_invite_splash_url_as)
-    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', URLS.guild_discovery_splash_url, URLS.guild_discovery_splash_url_as)
+    icon = IconSlot('icon', 'icon', module_urls.guild_icon_url, module_urls.guild_icon_url_as)
+    invite_splash = IconSlot('invite_splash', 'splash', module_urls.guild_invite_splash_url, module_urls.guild_invite_splash_url_as)
+    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', module_urls.guild_discovery_splash_url, module_urls.guild_discovery_splash_url_as)
     
     def __init__(self, data):
         """

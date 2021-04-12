@@ -19,7 +19,7 @@ from ...discord.emoji import Emoji, parse_emoji
 from ...discord.invite import Invite
 from ...discord.role import Role
 from ...discord.color import Color, parse_color
-from ...discord.http.URLS import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
+from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
 from ...discord.message import Message
 
 from .context import CommandContext

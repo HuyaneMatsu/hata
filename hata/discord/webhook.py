@@ -1,15 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Webhook', 'WebhookRepr', )
 
-from .http import URLS
 from .user import User, ZEROUSER, USERS, UserBase
 from .exceptions import DiscordException, ERROR_CODES
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .bases import ICON_TYPE_NONE, Icon
-from .http.URLS import WEBHOOK_URL_PATTERN
+from .urls import WEBHOOK_URL_PATTERN
 from .preinstanced import WebhookType
 
-from . import rate_limit as module_webhook
+from . import rate_limit as module_webhook, urls as module_urls
 
 ChannelText = NotImplemented
 Client = NotImplemented
@@ -365,7 +364,7 @@ class Webhook(UserBase):
         self.channel = None
         self.user = ZEROUSER
     
-    url = property(URLS.webhook_url)
+    url = property(module_urls.webhook_url)
     
     @classmethod
     async def _from_follow_data(cls, data, source_channel, target_channel, client):

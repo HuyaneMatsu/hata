@@ -5,14 +5,13 @@ __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwrit
     'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme',
     'VerificationLevel', 'VideoQualityMode', 'VoiceRegion', 'WebhookType', )
 
-from ..backend.utils import DOCS_ENABLED, any_to_any
+from ..backend.utils import any_to_any
 
 from .bases import PreinstancedBase
 from .color import Color
-from .http import URLS
 from .utils import sanitize_mentions
 
-from . import utils as module_utils
+from . import utils as module_utils, urls as module_urls
 
 ActivityTypes = NotImplemented
 
@@ -1929,7 +1928,7 @@ class DefaultAvatar(PreinstancedBase):
         """Returns the default's avatar's representation."""
         return f'<{self.__class__.__name__} name={self.name}, value={self.value}, color={self.color!r}>'
     
-    url = property(URLS.default_avatar_url)
+    url = property(module_urls.default_avatar_url)
     
     @property
     def colour(self):

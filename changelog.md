@@ -4,6 +4,7 @@
 
 - Fix some spacing. (sleep-cult#3040)
 - `ActivityFlag` now use lower case flag names.
+- Create `urls.py` from `http.URLS` module.
 
 #### 1.1.64  *\[2021-04-12\]*
 

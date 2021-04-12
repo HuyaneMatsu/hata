@@ -1005,7 +1005,7 @@ else:
             return relativedelta(**result)
 
 CHANNEL_MESSAGE_RP = re_compile('(\d{7,21})-(\d{7,21})')
-MESSAGE_JUMP_URL_RP = re_compile('(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
+MESSAGE_JUMP_URL_RP = NotImplemented
 
 def parse_message_reference(text):
     """

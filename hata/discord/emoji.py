@@ -7,12 +7,11 @@ from ..backend.utils import DOCS_ENABLED
 from .bases import DiscordEntity
 from .client_core import EMOJIS
 from .utils import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
-from .http import URLS
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 from .role import create_partial_role
 
-from . import activity as module_activity
+from . import activity as module_activity, urls as module_urls
 
 UNICODE_EMOJI_LIMIT = 1<<21
 
@@ -421,8 +420,8 @@ class Emoji(DiscordEntity, immortal=True):
         
         return created_at
 
-    url = property(URLS.emoji_url)
-    url_as = URLS.emoji_url_as
+    url = property(module_urls.emoji_url)
+    url_as = module_urls.emoji_url_as
     
     def _delete(self):
         """
@@ -4564,3 +4563,4 @@ generate_builtin_emojis()
 module_activity.create_partial_emoji = create_partial_emoji
 
 del module_activity
+del module_urls

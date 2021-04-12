@@ -3,11 +3,12 @@ __all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA
     'ThirdPartySKU', )
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, FlagBase
-from .http import URLS
 from .user import ZEROUSER, User
 from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
 from .preinstanced import TeamMembershipState
 from .preconverters import preconvert_snowflake, preconvert_bool, preconvert_str, preconvert_flag
+
+from . import urls as module_urls
 
 Client = NotImplemented
 
@@ -136,8 +137,8 @@ class Application(DiscordEntity, immortal=True):
         'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'summary', 'terms_of_service_url',
         'third_party_skus', 'verify_key')
     
-    cover = IconSlot('cover', 'cover_image', URLS.application_cover_url, URLS.application_cover_url_as, add_updater=False)
-    icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as, add_updater=False)
+    cover = IconSlot('cover', 'cover_image', module_urls.application_cover_url, module_urls.application_cover_url_as, add_updater=False)
+    icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as, add_updater=False)
     splash = IconSlot('splash', 'splash', None, None, add_updater=False)
     
     @classmethod
@@ -607,7 +608,7 @@ class Team(DiscordEntity, immortal=True):
     """
     __slots__ = ('members', 'name', 'owner_id',)
     
-    icon = IconSlot('icon', 'icon', URLS.team_icon_url, URLS.team_icon_url_as, add_updater = False)
+    icon = IconSlot('icon', 'icon', module_urls.team_icon_url, module_urls.team_icon_url_as, add_updater = False)
     
     def __new__(cls, data):
         """
@@ -989,3 +990,5 @@ class EULA(DiscordEntity, immortal=True):
     def __repr__(self):
         """Returns the eula's representation"""
         return f'<{self.__class__.__name__} {self.name!r}, id={self.id}>'
+
+del module_urls

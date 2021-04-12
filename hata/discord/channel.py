@@ -15,7 +15,6 @@ from .client_core import CHANNELS, USERS
 from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
     PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
     PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_TEXT_AND_STAGE_DENY
-from .http import URLS
 from .message import Message, MESSAGES
 from .user import User, ZEROUSER
 from .role import PermissionOverwrite
@@ -28,7 +27,7 @@ from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
 from .preinstanced import VoiceRegion, VideoQualityMode
 
-from . import webhook as module_webhook, message as module_message, rate_limit as module_rate_limit
+from . import webhook as module_webhook, message as module_message, rate_limit as module_rate_limit, urls as module_urls
 
 Client = NotImplemented
 Guild = NotImplemented
@@ -3273,7 +3272,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     __slots__ = ('users', # private channel related
         'name', 'owner_id',) # group channel related
     
-    icon = IconSlot('icon', 'icon', URLS.channel_group_icon_url, URLS.channel_group_icon_url_as)
+    icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
     
     INTERCHANGE = (3,)
     type = 3
@@ -5685,8 +5684,9 @@ module_message.ChannelPrivate = ChannelPrivate
 module_message.ChannelGroup = ChannelGroup
 module_rate_limit.ChannelBase = ChannelBase
 module_rate_limit.ChannelGuildBase = ChannelGuildBase
-URLS.ChannelGuildBase = ChannelGuildBase
+module_urls.ChannelGuildBase = ChannelGuildBase
 
 del module_message
 del module_webhook
 del module_rate_limit
+del module_urls

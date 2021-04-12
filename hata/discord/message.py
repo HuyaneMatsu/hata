@@ -8,7 +8,6 @@ from datetime import datetime
 from ..backend.utils import _spaceholder, BaseMethodDescriptor
 
 from .bases import DiscordEntity, FlagBase, IconSlot
-from .http import URLS
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from .client_core import MESSAGES, CHANNELS, GUILDS, ROLES
 from .user import ZEROUSER, User
@@ -20,7 +19,7 @@ from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflak
     preconvert_preinstanced_type
 from .preinstanced import MessageType, MessageActivityType, StickerType, InteractionType
 
-from . import rate_limit as module_rate_limit
+from . import rate_limit as module_rate_limit, urls as module_urls
 
 Client = NotImplemented
 ChannelBase = NotImplemented
@@ -193,8 +192,8 @@ class MessageApplication(DiscordEntity):
     """
     __slots__ = ('description', 'name',)
     
-    cover = IconSlot('cover', 'cover_image', URLS.application_cover_url, URLS.application_cover_url_as, add_updater=False)
-    icon = IconSlot('icon', 'icon', URLS.application_icon_url, URLS.application_icon_url_as, add_updater=False)
+    cover = IconSlot('cover', 'cover_image', module_urls.application_cover_url, module_urls.application_cover_url_as, add_updater=False)
+    icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as, add_updater=False)
     
     def __init__(self, data):
         """
@@ -211,10 +210,10 @@ class MessageApplication(DiscordEntity):
         self.id = int(data['id'])
         self.name = data['name']
     
-    icon_url = property(URLS.application_icon_url)
-    icon_url_as = URLS.application_icon_url_as
-    cover_url = property(URLS.application_cover_url)
-    cover_url_as = URLS.application_cover_url_as
+    icon_url = property(module_urls.application_icon_url)
+    icon_url_as = module_urls.application_icon_url_as
+    cover_url = property(module_urls.application_cover_url)
+    cover_url_as = module_urls.application_cover_url_as
     
     def __repr__(self):
         """Returns the representation of the message application."""
@@ -1708,7 +1707,7 @@ class Message(DiscordEntity, immortal=True):
             return channel_mentions
         self._channel_mentions = None
     
-    url = property(URLS.message_jump_url)
+    url = property(module_urls.message_jump_url)
     
     @property
     def channel_mentions(self):
@@ -2408,3 +2407,4 @@ class Message(DiscordEntity, immortal=True):
 module_rate_limit.Message = Message
 
 del module_rate_limit
+del module_urls

@@ -12,12 +12,11 @@ from .client_core import USERS
 from .utils import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
 from .activity import ActivityUnknown, create_activity
-from .http import URLS
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
 from .preinstanced import Status, DefaultAvatar
 
-from . import utils as module_utils
+from . import utils as module_utils, urls as module_urls
 
 create_partial_role = NotImplemented
 
@@ -383,7 +382,7 @@ class UserBase(DiscordEntity, immortal=True):
     """
     __slots__ = ('name', 'discriminator', )
     
-    avatar = IconSlot('avatar', 'avatar', URLS.user_avatar_url, URLS.user_avatar_url_as)
+    avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
     
     def __init_subclass__(cls):
         """Replaces some methods of the subclasses depending on their instance attributes."""
@@ -2346,3 +2345,4 @@ ZEROUSER = User._create_empty(0)
 module_utils.create_partial_user = create_partial_user
 
 del module_utils
+del module_urls

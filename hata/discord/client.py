@@ -30,7 +30,7 @@ from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, Guild
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
 from .http import DiscordHTTPClient
-from .http.URLS import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
+from .urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder

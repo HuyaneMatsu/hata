@@ -3495,8 +3495,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[0]
             else:
@@ -5136,8 +5135,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[0]
             else:
@@ -10599,8 +10597,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -10827,8 +10824,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -13548,8 +13544,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -13780,8 +13775,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -14029,8 +14023,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:
@@ -14246,8 +14239,7 @@ class Client(UserBase):
                             continue
                         
                         raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, but {embed_element.__class__.__name__}`, got: '
-                            f'{embed.__class__.__name__}.')
+                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
                 
                 embed = embed[:10]
             else:

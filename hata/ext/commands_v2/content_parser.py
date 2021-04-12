@@ -1892,8 +1892,7 @@ class ContentParserParameter:
         
         self = object.__new__(cls)
         self.detail = detail
-        ael.details = details
-        self.converter_setting = converter_setting
+        self.details = details
         self.default = default
         self.description = description
         self.display_name = display_name

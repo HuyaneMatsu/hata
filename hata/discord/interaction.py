@@ -838,7 +838,7 @@ class ApplicationCommandOption:
         
             if option.type is ApplicationCommandOptionType.sub_command_group:
                 raise AssertionError(f'`option`\'s type is sub-command group option, but sub-command groups cannot be '
-                    f'added under sub-command groups; got {options!r}.')
+                    f'added under sub-command groups; got {option!r}.')
         
         options = self.options
         if options is None:

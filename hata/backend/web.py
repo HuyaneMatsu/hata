@@ -252,7 +252,7 @@ class HTTPRequestHandler(ProtocolBase):
                 'Unhandled exception occurred at `',
                 self.__class__.__name__,
                 '._try_receive_request`, when handling an other exception;',
-                repr(err), ':'])
+                repr(err2), ':'])
         
         return None
 

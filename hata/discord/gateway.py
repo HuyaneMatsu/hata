@@ -205,19 +205,19 @@ class DiscordGateway:
     __slots__ = ('_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'sequence', 'session_id',
         'shard_id', 'websocket')
     
-    DISPATCH           = 0
-    HEARTBEAT          = 1
-    IDENTIFY           = 2
-    PRESENCE           = 3
-    VOICE_STATE        = 4
-    VOICE_PING         = 5
-    RESUME             = 6
-    RECONNECT          = 7
-    REQUEST_MEMBERS    = 8
+    DISPATCH = 0
+    HEARTBEAT = 1
+    IDENTIFY = 2
+    PRESENCE = 3
+    VOICE_STATE = 4
+    VOICE_PING = 5
+    RESUME = 6
+    RECONNECT = 7
+    REQUEST_MEMBERS = 8
     INVALIDATE_SESSION = 9
-    HELLO              = 10
-    HEARTBEAT_ACK      = 11
-    GUILD_SYNC         = 12
+    HELLO = 10
+    HEARTBEAT_ACK = 11
+    GUILD_SYNC = 12
     
     def __init__(self, client, shard_id=0):
         """
@@ -561,7 +561,7 @@ class DiscordGateway:
         """
         kokoro = self.kokoro
         if kokoro is None:
-            latency =  Kokoro.DEFAULT_LATENCY
+            latency = Kokoro.DEFAULT_LATENCY
         else:
             latency = kokoro.latency
         return latency
@@ -783,20 +783,20 @@ class DiscordGatewayVoice:
     """
     __slots__ = ('client', 'kokoro', 'rate_limit_handler', 'websocket')
         
-    IDENTIFY            = 0
-    SELECT_PROTOCOL     = 1
-    READY               = 2
-    HEARTBEAT           = 3
+    IDENTIFY = 0
+    SELECT_PROTOCOL = 1
+    READY = 2
+    HEARTBEAT = 3
     SESSION_DESCRIPTION = 4
-    SPEAKING            = 5
-    HEARTBEAT_ACK       = 6
-    RESUME              = 7
-    HELLO               = 8
-    INVALIDATE_SESSION  = 9
-    CLIENT_CONNECT      = 12
-    CLIENT_DISCONNECT   = 13
+    SPEAKING = 5
+    HEARTBEAT_ACK = 6
+    RESUME = 7
+    HELLO = 8
+    INVALIDATE_SESSION = 9
+    CLIENT_CONNECT = 12
+    CLIENT_DISCONNECT = 13
     VIDEO_SESSION_DESCRIPTION = 14
-    VIDEO_SINK          = 15
+    VIDEO_SINK = 15
     
     def __init__(self, voice_client):
         """

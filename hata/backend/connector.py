@@ -1018,7 +1018,7 @@ class TCPConnector(ConnectorBase):
         ssl.CertificateError
         OSError
         """
-        ssl_context  = self.get_ssl_context(request)
+        ssl_context = self.get_ssl_context(request)
         fingerprint = self.get_fingerprint(request)
         
         last_error = None

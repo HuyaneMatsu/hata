@@ -49,13 +49,13 @@ MimeType = NotImplemented
 ZLIB_DECOMPRESSOR = zlib.decompressobj
 ZLIB_COMPRESSOR = zlib.compressobj
 
-WS_OP_CONT   = 0
-WS_OP_TEXT   = 1
+WS_OP_CONT = 0
+WS_OP_TEXT = 1
 WS_OP_BINARY = 2
 
-WS_OP_CLOSE  = 8
-WS_OP_PING   = 9
-WS_OP_PONG   = 10
+WS_OP_CLOSE = 8
+WS_OP_PING = 9
+WS_OP_PONG = 10
 
 WS_DATA_OPCODES = (WS_OP_CONT,  WS_OP_TEXT, WS_OP_BINARY)
 WS_CTRL_OPCODES = (WS_OP_CLOSE, WS_OP_PING, WS_OP_PONG)
@@ -63,9 +63,9 @@ WS_CTRL_OPCODES = (WS_OP_CLOSE, WS_OP_PING, WS_OP_PONG)
 UNPACK_LEN2 = Struct('!H').unpack_from
 UNPACK_LEN3 = Struct('!Q').unpack_from
 
-PACK_LEN1   = Struct('!BB').pack
-PACK_LEN2   = Struct('!BBH').pack
-PACK_LEN3   = Struct('!BBQ').pack
+PACK_LEN1 = Struct('!BB').pack
+PACK_LEN2 = Struct('!BBH').pack
+PACK_LEN3 = Struct('!BBQ').pack
 
 HTTP_STATUS_RP = re.compile(b'HTTP/(\d)\.(\d) (\d\d\d)(?: (.*?))?\r\n')
 HTTP_REQUEST_RP = re.compile(b'([^ ]+) ([^ ]+) HTTP/(\d)\.(\d)\r\n')

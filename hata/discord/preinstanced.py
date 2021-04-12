@@ -58,17 +58,17 @@ class VerificationLevel(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none    = NotImplemented
-    low     = NotImplemented
-    medium  = NotImplemented
-    high    = NotImplemented
+    none = NotImplemented
+    low = NotImplemented
+    medium = NotImplemented
+    high = NotImplemented
     extreme = NotImplemented
 
-VerificationLevel.none     = VerificationLevel(0, 'none')
-VerificationLevel.low      = VerificationLevel(1, 'low')
-VerificationLevel.medium   = VerificationLevel(2, 'medium')
-VerificationLevel.high     = VerificationLevel(3, 'high')
-VerificationLevel.extreme  = VerificationLevel(4, 'extreme')
+VerificationLevel.none = VerificationLevel(0, 'none')
+VerificationLevel.low = VerificationLevel(1, 'low')
+VerificationLevel.medium = VerificationLevel(2, 'medium')
+VerificationLevel.high = VerificationLevel(3, 'high')
+VerificationLevel.extreme = VerificationLevel(4, 'extreme')
 
 
 class VoiceRegion(PreinstancedBase):
@@ -245,57 +245,57 @@ class VoiceRegion(PreinstancedBase):
     # predefined
     
     # normal
-    brazil          = NotImplemented
-    dubai           = NotImplemented
-    eu_central      = NotImplemented
-    eu_west         = NotImplemented
-    europe          = NotImplemented
-    hongkong        = NotImplemented
-    india           = NotImplemented
-    japan           = NotImplemented
-    russia          = NotImplemented
-    singapore       = NotImplemented
-    africa_south    = NotImplemented
-    sydney          = NotImplemented
-    us_central      = NotImplemented
-    us_east         = NotImplemented
-    us_south        = NotImplemented
-    us_west         = NotImplemented
+    brazil = NotImplemented
+    dubai = NotImplemented
+    eu_central = NotImplemented
+    eu_west = NotImplemented
+    europe = NotImplemented
+    hongkong = NotImplemented
+    india = NotImplemented
+    japan = NotImplemented
+    russia = NotImplemented
+    singapore = NotImplemented
+    africa_south = NotImplemented
+    sydney = NotImplemented
+    us_central = NotImplemented
+    us_east = NotImplemented
+    us_south = NotImplemented
+    us_west = NotImplemented
     # deprecated
-    amsterdam       = NotImplemented
-    frankfurt       = NotImplemented
-    london          = NotImplemented
+    amsterdam = NotImplemented
+    frankfurt = NotImplemented
+    london = NotImplemented
     # vip
-    vip_us_east     = NotImplemented
-    vip_us_west     = NotImplemented
+    vip_us_east = NotImplemented
+    vip_us_west = NotImplemented
     # vip + deprecated
-    vip_amsterdam   = NotImplemented
+    vip_amsterdam = NotImplemented
 
-VoiceRegion.brazil          = VoiceRegion('Brazil',         'brazil',       False,  False)
-VoiceRegion.dubai           = VoiceRegion('Dubai',          'dubai',        False,  False)
-VoiceRegion.eu_central      = VoiceRegion('Central Europe', 'eu-central',   False,  False)
-VoiceRegion.eu_west         = VoiceRegion('Western Europe', 'eu-west',      False,  False)
-VoiceRegion.europe          = VoiceRegion('Europe',         'europe',       False,  False)
-VoiceRegion.hongkong        = VoiceRegion('Hong Kong',      'hongkong',     False,  False)
-VoiceRegion.india           = VoiceRegion('India',          'india',        False,  False)
-VoiceRegion.japan           = VoiceRegion('Japan',          'japan',        False,  False)
-VoiceRegion.russia          = VoiceRegion('Russia',         'russia',       False,  False)
-VoiceRegion.singapore       = VoiceRegion('Singapore',      'singapore',    False,  False)
-VoiceRegion.africa_south    = VoiceRegion('South Africa',   'southafrica',  False,  False)
-VoiceRegion.sydney          = VoiceRegion('Sydney',         'sydney',       False,  False)
-VoiceRegion.us_central      = VoiceRegion('US Central',     'us-central',   False,  False)
-VoiceRegion.us_east         = VoiceRegion('US East',        'us-east',      False,  False)
-VoiceRegion.us_south        = VoiceRegion('US South',       'us-south',     False,  False)
-VoiceRegion.us_west         = VoiceRegion('US West',        'us-west',      False,  False)
+VoiceRegion.brazil = VoiceRegion('Brazil',         'brazil',       False,  False)
+VoiceRegion.dubai = VoiceRegion('Dubai',          'dubai',        False,  False)
+VoiceRegion.eu_central = VoiceRegion('Central Europe', 'eu-central',   False,  False)
+VoiceRegion.eu_west = VoiceRegion('Western Europe', 'eu-west',      False,  False)
+VoiceRegion.europe = VoiceRegion('Europe',         'europe',       False,  False)
+VoiceRegion.hongkong = VoiceRegion('Hong Kong',      'hongkong',     False,  False)
+VoiceRegion.india = VoiceRegion('India',          'india',        False,  False)
+VoiceRegion.japan = VoiceRegion('Japan',          'japan',        False,  False)
+VoiceRegion.russia = VoiceRegion('Russia',         'russia',       False,  False)
+VoiceRegion.singapore = VoiceRegion('Singapore',      'singapore',    False,  False)
+VoiceRegion.africa_south = VoiceRegion('South Africa',   'southafrica',  False,  False)
+VoiceRegion.sydney = VoiceRegion('Sydney',         'sydney',       False,  False)
+VoiceRegion.us_central = VoiceRegion('US Central',     'us-central',   False,  False)
+VoiceRegion.us_east = VoiceRegion('US East',        'us-east',      False,  False)
+VoiceRegion.us_south = VoiceRegion('US South',       'us-south',     False,  False)
+VoiceRegion.us_west = VoiceRegion('US West',        'us-west',      False,  False)
 # deprecated
-VoiceRegion.amsterdam       = VoiceRegion('Amsterdam',      'amsterdam',    True,   False)
-VoiceRegion.frankfurt       = VoiceRegion('Frankfurt',      'frankfurt',    True,   False)
-VoiceRegion.london          = VoiceRegion('London',         'london',       True,   False)
+VoiceRegion.amsterdam = VoiceRegion('Amsterdam',      'amsterdam',    True,   False)
+VoiceRegion.frankfurt = VoiceRegion('Frankfurt',      'frankfurt',    True,   False)
+VoiceRegion.london = VoiceRegion('London',         'london',       True,   False)
 # vip
-VoiceRegion.vip_us_east     = VoiceRegion('VIP US West',    'vip-us-west',  False,  True)
-VoiceRegion.vip_us_west     = VoiceRegion('VIP US East',    'vip-us-east',  False,  True)
+VoiceRegion.vip_us_east = VoiceRegion('VIP US West',    'vip-us-west',  False,  True)
+VoiceRegion.vip_us_west = VoiceRegion('VIP US East',    'vip-us-east',  False,  True)
 # vip + deprecated
-VoiceRegion.vip_amsterdam   = VoiceRegion('VIP Amsterdam',  'vip-amsterdam',True,   True)
+VoiceRegion.vip_amsterdam = VoiceRegion('VIP Amsterdam',  'vip-amsterdam',True,   True)
 
 
 class ContentFilterLevel(PreinstancedBase):
@@ -339,11 +339,11 @@ class ContentFilterLevel(PreinstancedBase):
     
     # predefined
     disabled = NotImplemented
-    no_role  = NotImplemented
+    no_role = NotImplemented
     everyone = NotImplemented
 
 ContentFilterLevel.disabled = ContentFilterLevel(0, 'disabled')
-ContentFilterLevel.no_role  = ContentFilterLevel(1, 'no_role')
+ContentFilterLevel.no_role = ContentFilterLevel(1, 'no_role')
 ContentFilterLevel.everyone = ContentFilterLevel(2, 'everyone')
 
 
@@ -388,15 +388,15 @@ class HypesquadHouse(PreinstancedBase):
     __slots__ = ()
 
     # predefined
-    none        = NotImplemented
-    bravery     = NotImplemented
-    brilliance  = NotImplemented
-    balance     = NotImplemented
+    none = NotImplemented
+    bravery = NotImplemented
+    brilliance = NotImplemented
+    balance = NotImplemented
 
-HypesquadHouse.none        = HypesquadHouse(0, 'none')
-HypesquadHouse.bravery     = HypesquadHouse(1, 'bravery')
-HypesquadHouse.brilliance  = HypesquadHouse(2, 'brilliance')
-HypesquadHouse.balance     = HypesquadHouse(3, 'balance')
+HypesquadHouse.none = HypesquadHouse(0, 'none')
+HypesquadHouse.bravery = HypesquadHouse(1, 'bravery')
+HypesquadHouse.brilliance = HypesquadHouse(2, 'brilliance')
+HypesquadHouse.balance = HypesquadHouse(3, 'balance')
 
 
 class Status(PreinstancedBase):
@@ -624,16 +624,16 @@ class Status(PreinstancedBase):
         return False
     
     # predefined
-    online     = NotImplemented
-    idle       = NotImplemented
-    dnd        = NotImplemented
-    offline    = NotImplemented
-    invisible  = NotImplemented
+    online = NotImplemented
+    idle = NotImplemented
+    dnd = NotImplemented
+    offline = NotImplemented
+    invisible = NotImplemented
 
-Status.online    = Status('online',    0)
-Status.idle      = Status('idle',      1)
-Status.dnd       = Status('dnd',       2)
-Status.offline   = Status('offline',   3)
+Status.online = Status('online',    0)
+Status.idle = Status('idle',      1)
+Status.dnd = Status('dnd',       2)
+Status.offline = Status('offline',   3)
 Status.invisible = Status('invisible', 3)
 
 class MessageNotificationLevel(PreinstancedBase):
@@ -677,15 +677,15 @@ class MessageNotificationLevel(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    all_messages  = NotImplemented
+    all_messages = NotImplemented
     only_mentions = NotImplemented
-    no_messages   = NotImplemented
-    null          = NotImplemented
+    no_messages = NotImplemented
+    null = NotImplemented
 
-MessageNotificationLevel.all_messages  = MessageNotificationLevel(0, 'all_messages')
+MessageNotificationLevel.all_messages = MessageNotificationLevel(0, 'all_messages')
 MessageNotificationLevel.only_mentions = MessageNotificationLevel(1, 'only_mentions')
-MessageNotificationLevel.no_messages   = MessageNotificationLevel(2, 'no_messages')
-MessageNotificationLevel.null          = MessageNotificationLevel(3, 'null')
+MessageNotificationLevel.no_messages = MessageNotificationLevel(2, 'no_messages')
+MessageNotificationLevel.null = MessageNotificationLevel(3, 'null')
 
 
 class MFA(PreinstancedBase):
@@ -725,10 +725,10 @@ class MFA(PreinstancedBase):
     __slots__ = ()
     
     # Predefined
-    none     = NotImplemented
+    none = NotImplemented
     elevated = NotImplemented
 
-MFA.none     = MFA(0, 'none')
+MFA.none = MFA(0, 'none')
 MFA.elevated = MFA(1, 'elevated')
 
 
@@ -771,13 +771,13 @@ class PremiumType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none          = NotImplemented
+    none = NotImplemented
     nitro_classic = NotImplemented
-    nitro         = NotImplemented
+    nitro = NotImplemented
 
-PremiumType.none          = PremiumType(0, 'none')
+PremiumType.none = PremiumType(0, 'none')
 PremiumType.nitro_classic = PremiumType(1, 'nitro_classic')
-PremiumType.nitro         = PremiumType(2, 'nitro')
+PremiumType.nitro = PremiumType(2, 'nitro')
 
 
 class RelationshipType(PreinstancedBase):
@@ -825,19 +825,19 @@ class RelationshipType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    stranger          = NotImplemented
-    friend            = NotImplemented
-    blocked           = NotImplemented
-    pending_incoming  = NotImplemented
-    pending_outgoing  = NotImplemented
-    implicit          = NotImplemented
+    stranger = NotImplemented
+    friend = NotImplemented
+    blocked = NotImplemented
+    pending_incoming = NotImplemented
+    pending_outgoing = NotImplemented
+    implicit = NotImplemented
 
-RelationshipType.stranger          = RelationshipType(0, 'stranger')
-RelationshipType.friend            = RelationshipType(1, 'friend')
-RelationshipType.blocked           = RelationshipType(2, 'blocked')
-RelationshipType.pending_incoming  = RelationshipType(3, 'pending_incoming')
-RelationshipType.pending_outgoing  = RelationshipType(4, 'pending_outgoing')
-RelationshipType.implicit          = RelationshipType(5, 'implicit')
+RelationshipType.stranger = RelationshipType(0, 'stranger')
+RelationshipType.friend = RelationshipType(1, 'friend')
+RelationshipType.blocked = RelationshipType(2, 'blocked')
+RelationshipType.pending_incoming = RelationshipType(3, 'pending_incoming')
+RelationshipType.pending_outgoing = RelationshipType(4, 'pending_outgoing')
+RelationshipType.implicit = RelationshipType(5, 'implicit')
 
 class FriendRequestFlag(PreinstancedBase):
     """
@@ -935,17 +935,17 @@ class FriendRequestFlag(PreinstancedBase):
         return result
     
     # predefined
-    none                      = NotImplemented
-    mutual_guilds             = NotImplemented
-    mutual_friends            = NotImplemented
+    none = NotImplemented
+    mutual_guilds = NotImplemented
+    mutual_friends = NotImplemented
     mutual_guilds_and_friends = NotImplemented
-    all                       = NotImplemented
+    all = NotImplemented
 
-FriendRequestFlag.none                      = FriendRequestFlag(0, 'none')
-FriendRequestFlag.mutual_guilds             = FriendRequestFlag(1, 'mutual_guilds')
-FriendRequestFlag.mutual_friends            = FriendRequestFlag(2, 'mutual_friends')
+FriendRequestFlag.none = FriendRequestFlag(0, 'none')
+FriendRequestFlag.mutual_guilds = FriendRequestFlag(1, 'mutual_guilds')
+FriendRequestFlag.mutual_friends = FriendRequestFlag(2, 'mutual_friends')
 FriendRequestFlag.mutual_guilds_and_friends = FriendRequestFlag(3, 'mutual_guilds_and_friends')
-FriendRequestFlag.all                       = FriendRequestFlag(4, 'all')
+FriendRequestFlag.all = FriendRequestFlag(4, 'all')
 
 class Theme(PreinstancedBase):
     """
@@ -994,10 +994,10 @@ class Theme(PreinstancedBase):
         self.name = value
     
     # predefined
-    dark  = NotImplemented
+    dark = NotImplemented
     light = NotImplemented
 
-Theme.dark  = Theme('dark')
+Theme.dark = Theme('dark')
 Theme.light = Theme('light')
 
 
@@ -1412,18 +1412,18 @@ class MessageActivityType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none         = NotImplemented
-    join         = NotImplemented
-    spectate     = NotImplemented
-    listen       = NotImplemented
-    watch        = NotImplemented
+    none = NotImplemented
+    join = NotImplemented
+    spectate = NotImplemented
+    listen = NotImplemented
+    watch = NotImplemented
     join_request = NotImplemented
 
-MessageActivityType.none         = MessageActivityType(0, 'none')
-MessageActivityType.join         = MessageActivityType(1, 'join')
-MessageActivityType.spectate     = MessageActivityType(2, 'spectate')
-MessageActivityType.listen       = MessageActivityType(3, 'listen')
-MessageActivityType.watch        = MessageActivityType(4, 'watch')
+MessageActivityType.none = MessageActivityType(0, 'none')
+MessageActivityType.join = MessageActivityType(1, 'join')
+MessageActivityType.spectate = MessageActivityType(2, 'spectate')
+MessageActivityType.listen = MessageActivityType(3, 'listen')
+MessageActivityType.watch = MessageActivityType(4, 'watch')
 MessageActivityType.join_request = MessageActivityType(5, 'join_request')
 
 
@@ -1465,12 +1465,12 @@ class TeamMembershipState(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none     = None
-    invited  = None
+    none = None
+    invited = None
     accepted = None
 
-TeamMembershipState.none     = TeamMembershipState(0, 'none')
-TeamMembershipState.invited  = TeamMembershipState(1, 'invited')
+TeamMembershipState.none = TeamMembershipState(0, 'none')
+TeamMembershipState.invited = TeamMembershipState(1, 'invited')
 TeamMembershipState.accepted = TeamMembershipState(2, 'accepted')
 
 
@@ -1587,49 +1587,49 @@ class GuildFeature(PreinstancedBase):
         return f'{self.__class__.__name__}(value={self.value!r})'
     
     # predefined
-    animated_icon               = NotImplemented
-    banner                      = NotImplemented
-    commerce                    = NotImplemented
-    community                   = NotImplemented
-    discoverable                = NotImplemented
+    animated_icon = NotImplemented
+    banner = NotImplemented
+    commerce = NotImplemented
+    community = NotImplemented
+    discoverable = NotImplemented
     enabled_discoverable_before = NotImplemented
-    featurable                  = NotImplemented
-    member_list_disabled        = NotImplemented
-    more_emoji                  = NotImplemented
-    news                        = NotImplemented
-    partnered                   = NotImplemented
-    public                      = NotImplemented
-    public_disabled             = NotImplemented
-    relay_enabled               = NotImplemented
-    invite_splash               = NotImplemented
-    vanity                      = NotImplemented
-    verified                    = NotImplemented
-    vip                         = NotImplemented
-    welcome_screen              = NotImplemented
-    verification_screen         = NotImplemented
-    preview_enabled              = NotImplemented
+    featurable = NotImplemented
+    member_list_disabled = NotImplemented
+    more_emoji = NotImplemented
+    news = NotImplemented
+    partnered = NotImplemented
+    public = NotImplemented
+    public_disabled = NotImplemented
+    relay_enabled = NotImplemented
+    invite_splash = NotImplemented
+    vanity = NotImplemented
+    verified = NotImplemented
+    vip = NotImplemented
+    welcome_screen = NotImplemented
+    verification_screen = NotImplemented
+    preview_enabled = NotImplemented
 
-GuildFeature.animated_icon              = GuildFeature('ANIMATED_ICON')
-GuildFeature.banner                     = GuildFeature('BANNER')
-GuildFeature.commerce                   = GuildFeature('COMMERCE')
-GuildFeature.community                  = GuildFeature('COMMUNITY')
-GuildFeature.discoverable               = GuildFeature('DISCOVERABLE')
+GuildFeature.animated_icon = GuildFeature('ANIMATED_ICON')
+GuildFeature.banner = GuildFeature('BANNER')
+GuildFeature.commerce = GuildFeature('COMMERCE')
+GuildFeature.community = GuildFeature('COMMUNITY')
+GuildFeature.discoverable = GuildFeature('DISCOVERABLE')
 GuildFeature.enabled_discoverable_before= GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
-GuildFeature.featurable                 = GuildFeature('FEATURABLE')
-GuildFeature.member_list_disabled       = GuildFeature('MEMBER_LIST_DISABLED')
-GuildFeature.more_emoji                 = GuildFeature('MORE_EMOJI')
-GuildFeature.news                       = GuildFeature('NEWS')
-GuildFeature.partnered                  = GuildFeature('PARTNERED')
-GuildFeature.public                     = GuildFeature('PUBLIC')
-GuildFeature.public_disabled            = GuildFeature('PUBLIC_DISABLED')
-GuildFeature.relay_enabled              = GuildFeature('RELAY_ENABLED')
-GuildFeature.invite_splash              = GuildFeature('INVITE_SPLASH')
-GuildFeature.vanity                     = GuildFeature('VANITY_URL')
-GuildFeature.verified                   = GuildFeature('VERIFIED')
-GuildFeature.vip                        = GuildFeature('VIP_REGIONS')
-GuildFeature.welcome_screen             = GuildFeature('WELCOME_SCREEN_ENABLED')
-GuildFeature.verification_screen        = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
-GuildFeature.preview_enabled            = GuildFeature('PREVIEW_ENABLED')
+GuildFeature.featurable = GuildFeature('FEATURABLE')
+GuildFeature.member_list_disabled = GuildFeature('MEMBER_LIST_DISABLED')
+GuildFeature.more_emoji = GuildFeature('MORE_EMOJI')
+GuildFeature.news = GuildFeature('NEWS')
+GuildFeature.partnered = GuildFeature('PARTNERED')
+GuildFeature.public = GuildFeature('PUBLIC')
+GuildFeature.public_disabled = GuildFeature('PUBLIC_DISABLED')
+GuildFeature.relay_enabled = GuildFeature('RELAY_ENABLED')
+GuildFeature.invite_splash = GuildFeature('INVITE_SPLASH')
+GuildFeature.vanity = GuildFeature('VANITY_URL')
+GuildFeature.verified = GuildFeature('VERIFIED')
+GuildFeature.vip = GuildFeature('VIP_REGIONS')
+GuildFeature.welcome_screen = GuildFeature('WELCOME_SCREEN_ENABLED')
+GuildFeature.verification_screen = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
+GuildFeature.preview_enabled = GuildFeature('PREVIEW_ENABLED')
 
 class AuditLogEvent(PreinstancedBase):
     """
@@ -1734,93 +1734,93 @@ class AuditLogEvent(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    guild_update             = NotImplemented
+    guild_update = NotImplemented
     
-    channel_create           = NotImplemented
-    channel_update           = NotImplemented
-    channel_delete           = NotImplemented
+    channel_create = NotImplemented
+    channel_update = NotImplemented
+    channel_delete = NotImplemented
     channel_overwrite_create = NotImplemented
     channel_overwrite_update = NotImplemented
     channel_overwrite_delete = NotImplemented
     
-    member_kick              = NotImplemented
-    member_prune             = NotImplemented
-    member_ban_add           = NotImplemented
-    member_ban_remove        = NotImplemented
-    member_update            = NotImplemented
-    member_role_update       = NotImplemented
-    member_move              = NotImplemented
-    member_disconnect        = NotImplemented
-    bot_add                  = NotImplemented
+    member_kick = NotImplemented
+    member_prune = NotImplemented
+    member_ban_add = NotImplemented
+    member_ban_remove = NotImplemented
+    member_update = NotImplemented
+    member_role_update = NotImplemented
+    member_move = NotImplemented
+    member_disconnect = NotImplemented
+    bot_add = NotImplemented
     
-    role_create              = NotImplemented
-    role_update              = NotImplemented
-    role_delete              = NotImplemented
+    role_create = NotImplemented
+    role_update = NotImplemented
+    role_delete = NotImplemented
     
-    invite_create            = NotImplemented
-    invite_update            = NotImplemented
-    INVITE_delete            = NotImplemented
+    invite_create = NotImplemented
+    invite_update = NotImplemented
+    INVITE_delete = NotImplemented
     
-    webhook_create           = NotImplemented
-    webhook_update           = NotImplemented
-    webhook_delete           = NotImplemented
+    webhook_create = NotImplemented
+    webhook_update = NotImplemented
+    webhook_delete = NotImplemented
     
-    emoji_create             = NotImplemented
-    emoji_update             = NotImplemented
-    emoji_delete             = NotImplemented
+    emoji_create = NotImplemented
+    emoji_update = NotImplemented
+    emoji_delete = NotImplemented
     
-    message_delete           = NotImplemented
-    message_bulk_delete      = NotImplemented
-    message_pin              = NotImplemented
-    message_unpin            = NotImplemented
+    message_delete = NotImplemented
+    message_bulk_delete = NotImplemented
+    message_pin = NotImplemented
+    message_unpin = NotImplemented
     
-    integration_create       = NotImplemented
-    integration_update       = NotImplemented
-    integration_delete       = NotImplemented
+    integration_create = NotImplemented
+    integration_update = NotImplemented
+    integration_delete = NotImplemented
 
-AuditLogEvent.guild_update             = AuditLogEvent( 1, 'guild_update')
+AuditLogEvent.guild_update = AuditLogEvent( 1, 'guild_update')
 
-AuditLogEvent.channel_create           = AuditLogEvent(10, 'channel_create')
-AuditLogEvent.channel_update           = AuditLogEvent(11, 'channel_update')
-AuditLogEvent.channel_delete           = AuditLogEvent(12, 'channel_delete')
+AuditLogEvent.channel_create = AuditLogEvent(10, 'channel_create')
+AuditLogEvent.channel_update = AuditLogEvent(11, 'channel_update')
+AuditLogEvent.channel_delete = AuditLogEvent(12, 'channel_delete')
 AuditLogEvent.channel_overwrite_create = AuditLogEvent(13, 'channel_overwrite_create')
 AuditLogEvent.channel_overwrite_update = AuditLogEvent(14, 'channel_overwrite_update')
 AuditLogEvent.channel_overwrite_delete = AuditLogEvent(15, 'channel_overwrite_delete')
 
-AuditLogEvent.member_kick              = AuditLogEvent(20, 'member_kick')
-AuditLogEvent.member_prune             = AuditLogEvent(21, 'member_prune')
-AuditLogEvent.member_ban_add           = AuditLogEvent(22, 'member_ban_add')
-AuditLogEvent.member_ban_remove        = AuditLogEvent(23, 'member_ban_remove')
-AuditLogEvent.member_update            = AuditLogEvent(24, 'member_update')
-AuditLogEvent.member_role_update       = AuditLogEvent(25, 'member_role_update')
-AuditLogEvent.member_move              = AuditLogEvent(26, 'member_move')
-AuditLogEvent.member_disconnect        = AuditLogEvent(27, 'member_disconnect')
-AuditLogEvent.bot_add                  = AuditLogEvent(28, 'member_role_update')
+AuditLogEvent.member_kick = AuditLogEvent(20, 'member_kick')
+AuditLogEvent.member_prune = AuditLogEvent(21, 'member_prune')
+AuditLogEvent.member_ban_add = AuditLogEvent(22, 'member_ban_add')
+AuditLogEvent.member_ban_remove = AuditLogEvent(23, 'member_ban_remove')
+AuditLogEvent.member_update = AuditLogEvent(24, 'member_update')
+AuditLogEvent.member_role_update = AuditLogEvent(25, 'member_role_update')
+AuditLogEvent.member_move = AuditLogEvent(26, 'member_move')
+AuditLogEvent.member_disconnect = AuditLogEvent(27, 'member_disconnect')
+AuditLogEvent.bot_add = AuditLogEvent(28, 'member_role_update')
 
-AuditLogEvent.role_create              = AuditLogEvent(30, 'role_create')
-AuditLogEvent.role_update              = AuditLogEvent(31, 'role_update')
-AuditLogEvent.role_delete              = AuditLogEvent(32, 'role_delete')
+AuditLogEvent.role_create = AuditLogEvent(30, 'role_create')
+AuditLogEvent.role_update = AuditLogEvent(31, 'role_update')
+AuditLogEvent.role_delete = AuditLogEvent(32, 'role_delete')
 
-AuditLogEvent.invite_create            = AuditLogEvent(40, 'invite_create')
-AuditLogEvent.invite_update            = AuditLogEvent(41, 'invite_update')
-AuditLogEvent.INVITE_delete            = AuditLogEvent(42, 'INVITE_delete')
+AuditLogEvent.invite_create = AuditLogEvent(40, 'invite_create')
+AuditLogEvent.invite_update = AuditLogEvent(41, 'invite_update')
+AuditLogEvent.INVITE_delete = AuditLogEvent(42, 'INVITE_delete')
 
-AuditLogEvent.webhook_create           = AuditLogEvent(50, 'webhook_create')
-AuditLogEvent.webhook_update           = AuditLogEvent(51, 'webhook_update')
-AuditLogEvent.webhook_delete           = AuditLogEvent(52, 'webhook_delete')
+AuditLogEvent.webhook_create = AuditLogEvent(50, 'webhook_create')
+AuditLogEvent.webhook_update = AuditLogEvent(51, 'webhook_update')
+AuditLogEvent.webhook_delete = AuditLogEvent(52, 'webhook_delete')
 
-AuditLogEvent.emoji_create             = AuditLogEvent(60, 'emoji_create')
-AuditLogEvent.emoji_update             = AuditLogEvent(61, 'emoji_update')
-AuditLogEvent.emoji_delete             = AuditLogEvent(62, 'emoji_delete')
+AuditLogEvent.emoji_create = AuditLogEvent(60, 'emoji_create')
+AuditLogEvent.emoji_update = AuditLogEvent(61, 'emoji_update')
+AuditLogEvent.emoji_delete = AuditLogEvent(62, 'emoji_delete')
 
-AuditLogEvent.message_delete           = AuditLogEvent(72, 'message_delete')
-AuditLogEvent.message_bulk_delete      = AuditLogEvent(73, 'message_bulk_delete')
-AuditLogEvent.message_pin              = AuditLogEvent(74, 'message_pin')
-AuditLogEvent.message_unpin            = AuditLogEvent(75, 'message_unpin')
+AuditLogEvent.message_delete = AuditLogEvent(72, 'message_delete')
+AuditLogEvent.message_bulk_delete = AuditLogEvent(73, 'message_bulk_delete')
+AuditLogEvent.message_pin = AuditLogEvent(74, 'message_pin')
+AuditLogEvent.message_unpin = AuditLogEvent(75, 'message_unpin')
 
-AuditLogEvent.integration_create       = AuditLogEvent(80, 'integration_create')
-AuditLogEvent.integration_update       = AuditLogEvent(81, 'integration_update')
-AuditLogEvent.integration_delete       = AuditLogEvent(82, 'integration_delete')
+AuditLogEvent.integration_create = AuditLogEvent(80, 'integration_create')
+AuditLogEvent.integration_update = AuditLogEvent(81, 'integration_update')
+AuditLogEvent.integration_delete = AuditLogEvent(82, 'integration_delete')
 
 
 class DefaultAvatar(PreinstancedBase):
@@ -1937,17 +1937,17 @@ class DefaultAvatar(PreinstancedBase):
         return self.color
     
     # predefined
-    blue   = NotImplemented
-    gray   = NotImplemented
-    green  = NotImplemented
+    blue = NotImplemented
+    gray = NotImplemented
+    green = NotImplemented
     orange = NotImplemented
-    red    = NotImplemented
+    red = NotImplemented
 
-DefaultAvatar.blue   = DefaultAvatar(0 ,   'blue' , Color(0x7289da))
-DefaultAvatar.gray   = DefaultAvatar(1 ,   'gray' , Color(0x747f8d))
-DefaultAvatar.green  = DefaultAvatar(2 ,  'green' , Color(0x43b581))
+DefaultAvatar.blue = DefaultAvatar(0 ,   'blue' , Color(0x7289da))
+DefaultAvatar.gray = DefaultAvatar(1 ,   'gray' , Color(0x747f8d))
+DefaultAvatar.green = DefaultAvatar(2 ,  'green' , Color(0x43b581))
 DefaultAvatar.orange = DefaultAvatar(3 , 'orange' , Color(0xfaa61a))
-DefaultAvatar.red    = DefaultAvatar(4 ,    'red' , Color(0xf04747))
+DefaultAvatar.red = DefaultAvatar(4 ,    'red' , Color(0xf04747))
 
 
 class WebhookType(PreinstancedBase):
@@ -1992,17 +1992,17 @@ class WebhookType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none      = NotImplemented
-    bot       = NotImplemented
-    server    = NotImplemented
+    none = NotImplemented
+    bot = NotImplemented
+    server = NotImplemented
     system_dm = NotImplemented
-    official  = NotImplemented
+    official = NotImplemented
 
-WebhookType.none      = WebhookType(0, 'NONE')
-WebhookType.bot       = WebhookType(1, 'BOT')
-WebhookType.server    = WebhookType(2, 'SERVER')
+WebhookType.none = WebhookType(0, 'NONE')
+WebhookType.bot = WebhookType(1, 'BOT')
+WebhookType.server = WebhookType(2, 'SERVER')
 WebhookType.system_dm = WebhookType(3, 'SYSTEM_DM')
-WebhookType.official  = WebhookType(4, 'OFFICIAL')
+WebhookType.official = WebhookType(4, 'OFFICIAL')
 
 
 class InviteTargetType(PreinstancedBase):
@@ -2043,12 +2043,12 @@ class InviteTargetType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none                 = NotImplemented
-    stream               = NotImplemented
+    none = NotImplemented
+    stream = NotImplemented
     embedded_application = NotImplemented
 
-InviteTargetType.none                 = InviteTargetType(0, 'none'                , )
-InviteTargetType.stream               = InviteTargetType(1, 'stream'              , )
+InviteTargetType.none = InviteTargetType(0, 'none'                , )
+InviteTargetType.stream = InviteTargetType(1, 'stream'              , )
 InviteTargetType.embedded_application = InviteTargetType(2, 'embedded_application', )
 
 
@@ -2093,14 +2093,14 @@ class StickerType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none   = NotImplemented
-    png    = NotImplemented
-    apng   = NotImplemented
+    none = NotImplemented
+    png = NotImplemented
+    apng = NotImplemented
     lottie = NotImplemented
 
-StickerType.none   = StickerType(0, 'none')
-StickerType.png    = StickerType(1, 'png')
-StickerType.apng   = StickerType(2, 'apng')
+StickerType.none = StickerType(0, 'none')
+StickerType.png = StickerType(1, 'png')
+StickerType.apng = StickerType(2, 'apng')
 StickerType.lottie = StickerType(3, 'lottie')
 
 
@@ -2157,18 +2157,18 @@ class RoleManagerType(PreinstancedBase):
         
         return boolean
     
-    none        = NotImplemented
-    unset       = NotImplemented
-    unknown     = NotImplemented
-    bot         = NotImplemented
-    booster     = NotImplemented
+    none = NotImplemented
+    unset = NotImplemented
+    unknown = NotImplemented
+    bot = NotImplemented
+    booster = NotImplemented
     integration = NotImplemented
 
-RoleManagerType.none        = RoleManagerType(0 , 'none'        ,)
-RoleManagerType.unset       = RoleManagerType(1 , 'unset'       ,)
-RoleManagerType.unknown     = RoleManagerType(2 , 'unknown'     ,)
-RoleManagerType.bot         = RoleManagerType(3 , 'bot'         ,)
-RoleManagerType.booster     = RoleManagerType(4 , 'booster'     ,)
+RoleManagerType.none = RoleManagerType(0 , 'none'        ,)
+RoleManagerType.unset = RoleManagerType(1 , 'unset'       ,)
+RoleManagerType.unknown = RoleManagerType(2 , 'unknown'     ,)
+RoleManagerType.bot = RoleManagerType(3 , 'bot'         ,)
+RoleManagerType.booster = RoleManagerType(4 , 'booster'     ,)
 RoleManagerType.integration = RoleManagerType(5 , 'integration' ,)
 
 
@@ -2223,25 +2223,25 @@ class ApplicationCommandOptionType(PreinstancedBase):
     
     __slots__ = ()
     
-    none              = NotImplemented
-    sub_command       = NotImplemented
+    none = NotImplemented
+    sub_command = NotImplemented
     sub_command_group = NotImplemented
-    string            = NotImplemented
-    integer           = NotImplemented
-    boolean           = NotImplemented
-    user              = NotImplemented
-    channel           = NotImplemented
-    role              = NotImplemented
+    string = NotImplemented
+    integer = NotImplemented
+    boolean = NotImplemented
+    user = NotImplemented
+    channel = NotImplemented
+    role = NotImplemented
 
-ApplicationCommandOptionType.none              = ApplicationCommandOptionType(0 , 'none'              ,)
-ApplicationCommandOptionType.sub_command       = ApplicationCommandOptionType(1 , 'sub_command'       ,)
+ApplicationCommandOptionType.none = ApplicationCommandOptionType(0 , 'none'              ,)
+ApplicationCommandOptionType.sub_command = ApplicationCommandOptionType(1 , 'sub_command'       ,)
 ApplicationCommandOptionType.sub_command_group = ApplicationCommandOptionType(2 , 'sub_command_group' ,)
-ApplicationCommandOptionType.string            = ApplicationCommandOptionType(3 , 'string'            ,)
-ApplicationCommandOptionType.integer           = ApplicationCommandOptionType(4 , 'integer'           ,)
-ApplicationCommandOptionType.boolean           = ApplicationCommandOptionType(5 , 'boolean'           ,)
-ApplicationCommandOptionType.user              = ApplicationCommandOptionType(6 , 'user'              ,)
-ApplicationCommandOptionType.channel           = ApplicationCommandOptionType(7 , 'channel'           ,)
-ApplicationCommandOptionType.role              = ApplicationCommandOptionType(8 , 'role'              ,)
+ApplicationCommandOptionType.string = ApplicationCommandOptionType(3 , 'string'            ,)
+ApplicationCommandOptionType.integer = ApplicationCommandOptionType(4 , 'integer'           ,)
+ApplicationCommandOptionType.boolean = ApplicationCommandOptionType(5 , 'boolean'           ,)
+ApplicationCommandOptionType.user = ApplicationCommandOptionType(6 , 'user'              ,)
+ApplicationCommandOptionType.channel = ApplicationCommandOptionType(7 , 'channel'           ,)
+ApplicationCommandOptionType.role = ApplicationCommandOptionType(8 , 'role'              ,)
 
 
 class InteractionType(PreinstancedBase):
@@ -2283,12 +2283,12 @@ class InteractionType(PreinstancedBase):
     
     __slots__ = ()
     
-    none                = NotImplemented
-    ping                = NotImplemented
+    none = NotImplemented
+    ping = NotImplemented
     application_command = NotImplemented
 
-InteractionType.none                = InteractionType(0, 'none')
-InteractionType.ping                = InteractionType(1, 'ping')
+InteractionType.none = InteractionType(0, 'none')
+InteractionType.ping = InteractionType(1, 'ping')
 InteractionType.application_command = InteractionType(2, 'application_command')
 
 
@@ -2407,9 +2407,9 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     
     __slots__ = ()
     
-    none    = NotImplemented
-    role    = NotImplemented
-    user    = NotImplemented
+    none = NotImplemented
+    role = NotImplemented
+    user = NotImplemented
 
 ApplicationCommandPermissionOverwriteType.none = ApplicationCommandPermissionOverwriteType(0 , 'none' ,)
 ApplicationCommandPermissionOverwriteType.role = ApplicationCommandPermissionOverwriteType(1 , 'role' ,)
@@ -2454,9 +2454,9 @@ class VideoQualityMode(PreinstancedBase):
     
     __slots__ = ()
     
-    none    = NotImplemented
-    auto    = NotImplemented
-    full    = NotImplemented
+    none = NotImplemented
+    auto = NotImplemented
+    full = NotImplemented
     
 VideoQualityMode.none = VideoQualityMode(0, 'none')
 VideoQualityMode.auto = VideoQualityMode(1, 'auto')

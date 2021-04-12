@@ -23,17 +23,17 @@ from .helpers import HttpVersion11, BasicAuth
 from .protocol import ProtocolBase, WS_OP_CONT, WS_OP_TEXT, WS_OP_BINARY , WS_OP_CLOSE, WS_OP_PING, WS_OP_PONG, \
     WS_DATA_OPCODES, WS_CTRL_OPCODES, Frame
 
-FORBIDDEN             = module_http.HTTPStatus.FORBIDDEN
-UPGRADE_REQUIRED      = module_http.HTTPStatus.UPGRADE_REQUIRED
-BAD_REQUEST           = module_http.HTTPStatus.BAD_REQUEST
+FORBIDDEN = module_http.HTTPStatus.FORBIDDEN
+UPGRADE_REQUIRED = module_http.HTTPStatus.UPGRADE_REQUIRED
+BAD_REQUEST = module_http.HTTPStatus.BAD_REQUEST
 INTERNAL_SERVER_ERROR = module_http.HTTPStatus.INTERNAL_SERVER_ERROR
-SERVICE_UNAVAILABLE   = module_http.HTTPStatus.SERVICE_UNAVAILABLE
-SWITCHING_PROTOCOLS   = module_http.HTTPStatus.SWITCHING_PROTOCOLS
+SERVICE_UNAVAILABLE = module_http.HTTPStatus.SERVICE_UNAVAILABLE
+SWITCHING_PROTOCOLS = module_http.HTTPStatus.SWITCHING_PROTOCOLS
 
 CONNECTING = 'CONNECTING'
-OPEN       = 'OPEN'
-CLOSING    = 'CLOSING'
-CLOSED     = 'CLOSED'
+OPEN = 'OPEN'
+CLOSING = 'CLOSING'
+CLOSED = 'CLOSED'
 
 WS_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
@@ -176,7 +176,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         self.state = CONNECTING
         
-        self.extensions  = None # set from outside
+        self.extensions = None # set from outside
         self.subprotocol = None # set from outside
         
         self.close_code = 0

@@ -1433,7 +1433,7 @@ def html_serialize_docs_extended(object_, get_html, get_structure):
             html = None
         
         if get_structure:
-            structure =  serializer.structurize()
+            structure = serializer.structurize()
         else:
             structure = None
     

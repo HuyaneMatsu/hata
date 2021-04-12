@@ -170,9 +170,9 @@ EventThread = NotImplemented
 
 #future states
 
-PENDING   = 'PENDING'
+PENDING = 'PENDING'
 CANCELLED = 'CANCELLED'
-FINISHED  = 'FINISHED'
+FINISHED = 'FINISHED'
 RETRIEVED = 'RETRIEVED'
 
 # If we run without `-o` or -oo` flag, we have 4 future states instead of the regular 3. Well, we have 4 anyways, we

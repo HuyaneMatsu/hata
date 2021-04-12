@@ -141,7 +141,7 @@ class ConnectionKey:
     ssl : `None`, ``SSLContext``, `bool`, ``Fingerprint``
         The connection's ssl type.
     """
-    __slots__  = ('host', 'is_ssl', 'port', 'proxy_auth',  'proxy_url', 'ssl',) # + 'proxy_header_hash',
+    __slots__ = ('host', 'is_ssl', 'port', 'proxy_auth',  'proxy_url', 'ssl',) # + 'proxy_header_hash',
     
     def __init__(self, request):
         # proxy_headers = request.proxy_headers

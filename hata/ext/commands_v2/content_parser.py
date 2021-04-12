@@ -268,7 +268,7 @@ class ContentParameterParser:
                     if element_type is str:
                         processed_element = element
                     elif issubclass(element_type, str):
-                        processed_element  = str(element)
+                        processed_element = str(element)
                         processed_separator[index] = processed_element
                     else:
                         raise TypeError(f'`tuple` separator\'s elements can be only `str` instances, meanwhile it\'s '

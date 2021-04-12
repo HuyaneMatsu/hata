@@ -19,11 +19,11 @@ from . import rate_limit as module_rate_limit, user as module_user
 
 create_partial_integration = NotImplemented
 
-ROLE_MANAGER_TYPE_NONE        = RoleManagerType.none
-ROLE_MANAGER_TYPE_UNSET       = RoleManagerType.unset
-ROLE_MANAGER_TYPE_UNKNOWN     = RoleManagerType.unknown
-ROLE_MANAGER_TYPE_BOT         = RoleManagerType.bot
-ROLE_MANAGER_TYPE_BOOSTER     = RoleManagerType.booster
+ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
+ROLE_MANAGER_TYPE_UNSET = RoleManagerType.unset
+ROLE_MANAGER_TYPE_UNKNOWN = RoleManagerType.unknown
+ROLE_MANAGER_TYPE_BOT = RoleManagerType.bot
+ROLE_MANAGER_TYPE_BOOSTER = RoleManagerType.booster
 ROLE_MANAGER_TYPE_INTEGRATION = RoleManagerType.integration
 
 if API_VERSION in (6, 7):

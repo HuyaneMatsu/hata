@@ -215,7 +215,7 @@ class IntegrationDetail:
             role = None
         else:
             role = create_partial_role(int(role_id))
-        self.role =  role
+        self.role = role
         
         self.expire_behavior = data.get('expire_behavior', -1)
         

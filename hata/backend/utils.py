@@ -590,7 +590,7 @@ class multidict(dict):
             The value for the given key if present.
         """
         try:
-            values =  dict.__getitem__(self, key)
+            values = dict.__getitem__(self, key)
         except KeyError:
             return default
         else:
@@ -676,7 +676,7 @@ class multidict(dict):
             if `key` is not present in the multidict and `default` value is not given either.
         """
         try:
-            values =  dict.__getitem__(self, key)
+            values = dict.__getitem__(self, key)
         except KeyError:
             if default is not _spaceholder:
                 return default

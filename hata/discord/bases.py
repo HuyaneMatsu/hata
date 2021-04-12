@@ -997,8 +997,8 @@ class IconType(PreinstancedBase):
     static = NotImplemented
     animated = NotImplemented
 
-IconType.none     = ICON_TYPE_NONE     = IconType(0, 'none'    )
-IconType.static   = ICON_TYPE_STATIC   = IconType(1, 'static'  )
+IconType.none = ICON_TYPE_NONE = IconType(0, 'none'    )
+IconType.static = ICON_TYPE_STATIC = IconType(1, 'static'  )
 IconType.animated = ICON_TYPE_ANIMATED = IconType(2, 'animated')
 
 
@@ -1223,7 +1223,7 @@ class IconSlot:
         self : ``IconSlot``
         """
         added_instance_attribute_name_hash = internal_name+'_hash'
-        added_internal_attribute_name_type  = internal_name+'_type'
+        added_internal_attribute_name_type = internal_name+'_type'
         
         added_class_attributes = []
         if (url_property is not None):

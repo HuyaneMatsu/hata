@@ -19,8 +19,8 @@ from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snaps
 EXTENSIONS = WeakValueDictionary()
 
 EXTENSION_STATE_UNDEFINED = 0
-EXTENSION_STATE_LOADED    = 1
-EXTENSION_STATE_UNLOADED  = 2
+EXTENSION_STATE_LOADED = 1
+EXTENSION_STATE_UNLOADED = 2
 
 class ExtensionError(Exception):
     """

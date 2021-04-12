@@ -1090,17 +1090,17 @@ class MultipartWriter(PayloadBase):
         
         # Refer to RFCs 7231, 7230, 5234.
         #
-        # parameter      = token "=" ( token / quoted-string )
-        # token          = 1*tchar
-        # quoted-string  = DQUOTE *( qdtext / quoted-pair ) DQUOTE
-        # qdtext         = HTAB / SP / %x21 / %x23-5B / %x5D-7E / obs-text
-        # obs-text       = %x80-FF
-        # quoted-pair    = "\" ( HTAB / SP / VCHAR / obs-text )
-        # tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+        # parameter = token "=" ( token / quoted-string )
+        # token = 1*tchar
+        # quoted-string = DQUOTE *( qdtext / quoted-pair ) DQUOTE
+        # qdtext = HTAB / SP / %x21 / %x23-5B / %x5D-7E / obs-text
+        # obs-text = %x80-FF
+        # quoted-pair = "\" ( HTAB / SP / VCHAR / obs-text )
+        # tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*"
         #                  / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
         #                  / DIGIT / ALPHA
         #                  ; any VCHAR, except delimiters
-        # VCHAR          = %x21-7E
+        # VCHAR = %x21-7E
         
         if VALID_TCHAR_RP.match(boundary) is None:
             if INVALID_QDTEXT_CHAR_RP.search(boundary) is not None:
@@ -1462,16 +1462,16 @@ class MultipartPayloadWriter:
         
         if transfer_encoding is None:
             transfer_encoding = TRANSFER_ENCODING_NONE
-            encoding_buffer   = None
+            encoding_buffer = None
         elif transfer_encoding == 'base64':
             transfer_encoding = TRANSFER_ENCODING_BASE64
-            encoding_buffer   = bytearray()
+            encoding_buffer = bytearray()
         elif transfer_encoding == 'quoted-printable':
             transfer_encoding = TRANSFER_ENCODING_QUOTED_PRINTABLE
-            encoding_buffer   = None
+            encoding_buffer = None
         else:
             transfer_encoding = TRANSFER_ENCODING_NONE
-            encoding_buffer   = None
+            encoding_buffer = None
         
         self = object.__new__(cls)
         self.writer = writer

@@ -263,7 +263,7 @@ class OA2Access:
     
     def __repr__(self):
         """Returns the representation of the achievement."""
-        state =  'active' if (self.created_at.timestamp()+self.expires_in > time_now()) else 'expired'
+        state = 'active' if (self.created_at.timestamp()+self.expires_in > time_now()) else 'expired'
         return (f'<{self.__class__.__name__} {state}, access_token={self.access_token!r}, scopes count='
             f'{len(self.scopes)}>')
 

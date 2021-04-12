@@ -2,14 +2,14 @@
 from string import ascii_letters, ascii_lowercase, digits
 
 BIN_ASCII_LOWERCASE = ascii_lowercase.encode('ascii')
-BIN_PERCENTAGE_ALLOWED  = {f'%{index:02X}'.encode('ascii') for index in range(256)}
-GEN_DELIMS       = ':/?#[]@'
+BIN_PERCENTAGE_ALLOWED = {f'%{index:02X}'.encode('ascii') for index in range(256)}
+GEN_DELIMS = ':/?#[]@'
 SUB_DELIMS_WO_QS = '!$\'()*,;'
 QUERY_STRING_NOT_SAFE = '+&='
-SUB_DELIMS       = f'{SUB_DELIMS_WO_QS}{QUERY_STRING_NOT_SAFE}'
-RESERVED         = f'{GEN_DELIMS}{SUB_DELIMS}'
-UNRESERVED       = f'{ascii_letters}{digits}-._~'
-ALLOWED          = f'{UNRESERVED}{SUB_DELIMS_WO_QS}'
+SUB_DELIMS = f'{SUB_DELIMS_WO_QS}{QUERY_STRING_NOT_SAFE}'
+RESERVED = f'{GEN_DELIMS}{SUB_DELIMS}'
+UNRESERVED = f'{ascii_letters}{digits}-._~'
+ALLOWED = f'{UNRESERVED}{SUB_DELIMS_WO_QS}'
 
 
 def quote(value, safe='', protected='', query_string=False):

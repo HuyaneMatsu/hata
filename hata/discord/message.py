@@ -22,13 +22,13 @@ from .preinstanced import MessageType, MessageActivityType, StickerType, Interac
 
 from . import rate_limit as module_rate_limit
 
-Client           = NotImplemented
-ChannelBase      = NotImplemented
-ChannelTextBase  = NotImplemented
+Client = NotImplemented
+ChannelBase = NotImplemented
+ChannelTextBase = NotImplemented
 ChannelGuildBase = NotImplemented
-ChannelText      = NotImplemented
-ChannelPrivate   = NotImplemented
-ChannelGroup     = NotImplemented
+ChannelText = NotImplemented
+ChannelPrivate = NotImplemented
+ChannelGroup = NotImplemented
 
 class MessageFlag(FlagBase):
     """

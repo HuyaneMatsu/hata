@@ -6,31 +6,31 @@ from .utils import function, MethodLike
 is_coroutine_function = NotImplemented
 is_coroutine_generator_function = NotImplemented
 
-CO_OPTIMIZED   = 1
-CO_NEWLOCALS   = 2
-CO_VARARGS     = 4
+CO_OPTIMIZED = 1
+CO_NEWLOCALS = 2
+CO_VARARGS = 4
 CO_VARKEYWORDS = 8
-CO_NESTED      = 16
-CO_GENERATOR   = 32
-CO_NOFREE      = 64
+CO_NESTED = 16
+CO_GENERATOR = 32
+CO_NOFREE = 64
 
-CO_COROUTINE           = 128
-CO_ITERABLE_COROUTINE  = 256
-CO_ASYNC_GENERATOR     = 512
+CO_COROUTINE = 128
+CO_ITERABLE_COROUTINE = 256
+CO_ASYNC_GENERATOR = 512
 # matches `async def` functions and `@coroutine` functions.
-CO_COROUTINE_ALL       = CO_COROUTINE|CO_ITERABLE_COROUTINE
+CO_COROUTINE_ALL = CO_COROUTINE|CO_ITERABLE_COROUTINE
 
-INSTANCE_TO_ASYNC_FALSE           = 0
-INSTANCE_TO_ASYNC_TRUE            = 1
-INSTANCE_TO_ASYNC_CANNOT          = 2
+INSTANCE_TO_ASYNC_FALSE = 0
+INSTANCE_TO_ASYNC_TRUE = 1
+INSTANCE_TO_ASYNC_CANNOT = 2
 INSTANCE_TO_ASYNC_GENERATOR_FALSE = 3
-INSTANCE_TO_ASYNC_GENERATOR_TRUE  = 4
+INSTANCE_TO_ASYNC_GENERATOR_TRUE = 4
 
-ARGUMENT_POSITIONAL_ONLY        = 0
+ARGUMENT_POSITIONAL_ONLY = 0
 ARGUMENT_POSITIONAL_AND_KEYWORD = 1
-ARGUMENT_KEYWORD_ONLY           = 2
-ARGUMENT_ARGS                   = 3
-ARGUMENT_KWARGS                 = 4
+ARGUMENT_KEYWORD_ONLY = 2
+ARGUMENT_ARGS = 3
+ARGUMENT_KWARGS = 4
 
 class Argument:
     """
@@ -454,8 +454,8 @@ class CallableAnalyzer:
                     
                     names_to_defaults[name] = default
                     
-                    argument_index +=1
-                    default_index +=1
+                    argument_index += 1
+                    default_index += 1
             
             if (default_keyword_only_argument_values is not None) and default_keyword_only_argument_values:
                 argument_index = keyword_only_argument_count - len(default_keyword_only_argument_values)
@@ -463,9 +463,9 @@ class CallableAnalyzer:
                     name = keyword_only_argument_names[argument_index]
                     default = default_keyword_only_argument_values[name]
                     
-                    names_to_defaults[name]=default
+                    names_to_defaults[name] = default
                     
-                    argument_index+=1
+                    argument_index += 1
             
             if (method_allocation>argument_count) and (args_name is None):
                 raise TypeError(f'The passed object is a method like, but has not enough positional arguments: '
@@ -826,6 +826,3 @@ class CallableAnalyzer:
         accepts_kwargs : `bool`
         """
         return (self.kwargs_argument is not None)
-
-
-

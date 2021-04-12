@@ -142,10 +142,10 @@ class ChooseMenu:
     EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)`
         Emojis added to the choose menu.
     """
-    UP     = BUILTIN_EMOJIS['arrow_up_small']
-    DOWN   = BUILTIN_EMOJIS['arrow_down_small']
-    LEFT   = BUILTIN_EMOJIS['arrow_backward']
-    RIGHT  = BUILTIN_EMOJIS['arrow_forward']
+    UP = BUILTIN_EMOJIS['arrow_up_small']
+    DOWN = BUILTIN_EMOJIS['arrow_down_small']
+    LEFT = BUILTIN_EMOJIS['arrow_backward']
+    RIGHT = BUILTIN_EMOJIS['arrow_forward']
     SELECT = BUILTIN_EMOJIS['ok']
     CANCEL = BUILTIN_EMOJIS['x']
     EMOJIS_RESTRICTED = (UP, DOWN, SELECT, CANCEL)

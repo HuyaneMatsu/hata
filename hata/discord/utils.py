@@ -152,13 +152,13 @@ def parse_time(timestamp):
         sys.stderr.write(f'Cannot parse timestamp: `{timestamp}`, returning `DISCORD_EPOCH_START`\n')
         return DISCORD_EPOCH_START
     
-    year   = int(parsed.group(1))
-    month  = int(parsed.group(2))
-    day    = int(parsed.group(3))
-    hour   = int(parsed.group(4))
+    year = int(parsed.group(1))
+    month = int(parsed.group(2))
+    day = int(parsed.group(3))
+    hour = int(parsed.group(4))
     minute = int(parsed.group(5))
     second = int(parsed.group(6))
-    micro  = parsed.group(7)
+    micro = parsed.group(7)
     
     if micro is None:
         micro = 0

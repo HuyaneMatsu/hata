@@ -31,9 +31,9 @@ Client = NotImplemented
 
 LARGE_LIMIT = 250 # can be between 50 and 250
 
-EMOJI_UPDATE_NEW    = 0
+EMOJI_UPDATE_NEW = 0
 EMOJI_UPDATE_DELETE = 1
-EMOJI_UPDATE_EDIT   = 2
+EMOJI_UPDATE_EDIT = 2
 
 VOICE_STATE_NONE = 0
 VOICE_STATE_JOIN = 1
@@ -100,10 +100,10 @@ class SystemChannelFlag(ReverseFlagBase):
         return (self == self.ALL)
     
     NONE = NotImplemented
-    ALL  = NotImplemented
+    ALL = NotImplemented
 
 SystemChannelFlag.NONE = SystemChannelFlag(0b111)
-SystemChannelFlag.ALL  = SystemChannelFlag(0b000)
+SystemChannelFlag.ALL = SystemChannelFlag(0b000)
 
 class GuildWidgetUser(DiscordEntity):
     """
@@ -207,7 +207,7 @@ class GuildWidgetChannel(DiscordEntity):
     position : `int`
         The channel's position.
     """
-    __slots__  = ('name', 'position')
+    __slots__ = ('name', 'position')
     
     def __init__(self, data):
         """
@@ -2889,7 +2889,7 @@ class GuildDiscovery:
         keywords = data['keywords']
         if (keywords is not None):
             if keywords :
-                keywords  = set(keywords)
+                keywords = set(keywords)
             else:
                 keywords = None
         self.keywords = keywords

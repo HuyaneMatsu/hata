@@ -125,10 +125,10 @@ PYTHON_IDENTIFIERS = {'python', 'py', 'sage', 'python3', 'py3'}
 
 COMPLEX_RP = re.compile('((?:\d(?:_?\d)*\.\d(?:_?\d)*|\d(?:_?\d)*\.|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?[jJ])')
 FLOAT_RP = re.compile('((?:\d(?:_?\d)*\.\d(?:_?\d)*|\d(?:_?\d)*\.|\.\d(?:_?\d)*)(?:[eE][+-]?\d(?:_?\d)*)?)')
-INTEGER_HEXADECIMAL_RP =  re.compile('(0[xX](?:_?[0-9a-fA-F])+)')
+INTEGER_HEXADECIMAL_RP = re.compile('(0[xX](?:_?[0-9a-fA-F])+)')
 INTEGER_DECIMAL_RP = re.compile('(\d(?:_?\d)*)')
-INTEGER_OCTAL_RP =  re.compile('(0[oO](?:_?[0-7])+)')
-INTEGER_BINARY_RP =  re.compile('(0[bB](?:_?[01])+)')
+INTEGER_OCTAL_RP = re.compile('(0[oO](?:_?[0-7])+)')
+INTEGER_BINARY_RP = re.compile('(0[bB](?:_?[01])+)')
 IDENTIFIER_RP = re.compile('([a-zA-Z_][a-zA-Z_0-9]*)')
 
 ATTRIBUTE_ACCESS_OPERATOR = '.'

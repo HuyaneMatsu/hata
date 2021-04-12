@@ -96,9 +96,9 @@ class Pagination:
     EMOJIS : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)`
         The emojis to add on the respective message in order.
     """
-    LEFT2  = BUILTIN_EMOJIS['track_previous']
-    LEFT   = BUILTIN_EMOJIS['arrow_backward']
-    RIGHT  = BUILTIN_EMOJIS['arrow_forward']
+    LEFT2 = BUILTIN_EMOJIS['track_previous']
+    LEFT = BUILTIN_EMOJIS['arrow_backward']
+    RIGHT = BUILTIN_EMOJIS['arrow_forward']
     RIGHT2 = BUILTIN_EMOJIS['track_next']
     CANCEL = BUILTIN_EMOJIS['x']
     EMOJIS = (LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)

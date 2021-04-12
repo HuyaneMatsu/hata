@@ -489,7 +489,7 @@ class TableConverter:
                     longest_lengths[index] += length
             
             for index in range(x):
-                length =  average_lengths[index] / y
+                length = average_lengths[index] / y
                 length = ceil(length)
                 average_lengths[index] = length
             
@@ -1116,7 +1116,7 @@ class DescriptionConverter:
         self : ``DescriptionConverter``
         """
         words = builder_context.word_converter(description.content)
-        lines  = sizify(words, optimal_fit)
+        lines = sizify(words, optimal_fit)
         
         indention = builder_context.indent*indent_level
         lines = [f'{indention}{line}\n' for line in lines]
@@ -1518,7 +1518,7 @@ class AttributeDescriptionConverter(DescriptionConverter):
         words = [f'{attribute_description.name}{spacing}{separator}']
         
         words.extend(builder_context.word_converter(attribute_description.content))
-        lines  = sizify(words, optimal_fit)
+        lines = sizify(words, optimal_fit)
         
         indention = builder_context.indent*indent_level
         lines = [f'{indention}{line}\n' for line in lines]

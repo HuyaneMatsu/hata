@@ -1494,7 +1494,7 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return PERMISSION_NONE
         
-        default_role =  guild.roles.get(guild.id, None)
+        default_role = guild.roles.get(guild.id, None)
         if default_role is None:
             base = 0
         else:
@@ -1635,7 +1635,7 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return PERMISSION_NONE
         
-        default_role =  guild.roles.get(guild.id, None)
+        default_role = guild.roles.get(guild.id, None)
         if default_role is None:
             base = 0
         else:
@@ -4524,7 +4524,7 @@ class ChannelThread(ChannelGuildBase):
             
             channel._cache_perm = None
             channel.category = None
-            channel.guild  = None
+            channel.guild = None
             channel.overwrites = []
             channel.position = 0
             channel.name = ''

@@ -33,7 +33,7 @@ setup(
         'hata.ext.patchouli',
         'hata.ext.prettyprint',
         'hata.ext.slash',
-            ],
+    ],
     url = 'https://github.com/HuyaneMatsu/hata',
     license = 'MIT',
     author = 'HuyaneMatsu',
@@ -62,27 +62,27 @@ setup(
         'Topic :: Communications :: Chat',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
-            ],
+    ],
     include_package_data = True,
     package_data = {
         'hata.discord.bin' : [
             'libopus-0.x64.dll',
             'libopus-0.x86.dll',
-                ],
-            },
+        ],
+    },
     python_requires = '>=3.6',
     install_requires = [
         'chardet>=2.0',
-            ],
+    ],
     extras_require = {
         'voice' : [
             'PyNaCl>=1.3.0',
-                ],
+        ],
         'relativedelta' : [
             'python-dateutil>=2.0',
-                ],
+        ],
         'cpythonspeedups': [
             'cchardet>=2.0',
-                ],
-            },
-        )
+        ],
+    },
+)

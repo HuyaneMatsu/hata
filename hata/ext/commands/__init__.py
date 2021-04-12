@@ -14,7 +14,7 @@ __all__ = (
     *content_parser.__all__,
     *utils.__all__,
     *module_command_utils.__all__,
-        )
+)
 
 del module_command_utils
 

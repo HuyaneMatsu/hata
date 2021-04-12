@@ -7,9 +7,9 @@ from collections import deque
 
 from .futures import Future, _ignore_frame, render_exc_to_list, CancelledError
 
-_ignore_frame(__spec__.origin,  'wait'          , 'raise exception'     ,)
-_ignore_frame(__spec__.origin,  'result_no_wait', 'raise exception'     ,)
-_ignore_frame(__spec__.origin,  'run'           , 'result=func()'       ,)
+_ignore_frame(__spec__.origin, 'wait', 'raise exception', )
+_ignore_frame(__spec__.origin, 'result_no_wait', 'raise exception', )
+_ignore_frame(__spec__.origin, 'run', 'result=func()', )
 
 EventThread = NotImplemented
 
@@ -237,7 +237,7 @@ class SyncQueue:
             result = [
                 self.__class__.__name__,
                 '([',
-                    ]
+            ]
             
             results = self._results
             

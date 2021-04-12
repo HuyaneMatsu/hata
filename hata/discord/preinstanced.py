@@ -271,31 +271,31 @@ class VoiceRegion(PreinstancedBase):
     # vip + deprecated
     vip_amsterdam = NotImplemented
 
-VoiceRegion.brazil = VoiceRegion('Brazil',         'brazil',       False,  False)
-VoiceRegion.dubai = VoiceRegion('Dubai',          'dubai',        False,  False)
-VoiceRegion.eu_central = VoiceRegion('Central Europe', 'eu-central',   False,  False)
-VoiceRegion.eu_west = VoiceRegion('Western Europe', 'eu-west',      False,  False)
-VoiceRegion.europe = VoiceRegion('Europe',         'europe',       False,  False)
-VoiceRegion.hongkong = VoiceRegion('Hong Kong',      'hongkong',     False,  False)
-VoiceRegion.india = VoiceRegion('India',          'india',        False,  False)
-VoiceRegion.japan = VoiceRegion('Japan',          'japan',        False,  False)
-VoiceRegion.russia = VoiceRegion('Russia',         'russia',       False,  False)
-VoiceRegion.singapore = VoiceRegion('Singapore',      'singapore',    False,  False)
-VoiceRegion.africa_south = VoiceRegion('South Africa',   'southafrica',  False,  False)
-VoiceRegion.sydney = VoiceRegion('Sydney',         'sydney',       False,  False)
-VoiceRegion.us_central = VoiceRegion('US Central',     'us-central',   False,  False)
-VoiceRegion.us_east = VoiceRegion('US East',        'us-east',      False,  False)
-VoiceRegion.us_south = VoiceRegion('US South',       'us-south',     False,  False)
-VoiceRegion.us_west = VoiceRegion('US West',        'us-west',      False,  False)
+VoiceRegion.brazil = VoiceRegion('Brazil', 'brazil', False, False)
+VoiceRegion.dubai = VoiceRegion('Dubai', 'dubai', False, False)
+VoiceRegion.eu_central = VoiceRegion('Central Europe', 'eu-central', False, False)
+VoiceRegion.eu_west = VoiceRegion('Western Europe', 'eu-west', False, False)
+VoiceRegion.europe = VoiceRegion('Europe', 'europe', False, False)
+VoiceRegion.hongkong = VoiceRegion('Hong Kong', 'hongkong', False, False)
+VoiceRegion.india = VoiceRegion('India', 'india', False, False)
+VoiceRegion.japan = VoiceRegion('Japan', 'japan', False, False)
+VoiceRegion.russia = VoiceRegion('Russia', 'russia', False, False)
+VoiceRegion.singapore = VoiceRegion('Singapore', 'singapore', False, False)
+VoiceRegion.africa_south = VoiceRegion('South Africa', 'southafrica', False, False)
+VoiceRegion.sydney = VoiceRegion('Sydney', 'sydney', False, False)
+VoiceRegion.us_central = VoiceRegion('US Central', 'us-central', False, False)
+VoiceRegion.us_east = VoiceRegion('US East', 'us-east', False, False)
+VoiceRegion.us_south = VoiceRegion('US South', 'us-south', False, False)
+VoiceRegion.us_west = VoiceRegion('US West', 'us-west', False, False)
 # deprecated
-VoiceRegion.amsterdam = VoiceRegion('Amsterdam',      'amsterdam',    True,   False)
-VoiceRegion.frankfurt = VoiceRegion('Frankfurt',      'frankfurt',    True,   False)
-VoiceRegion.london = VoiceRegion('London',         'london',       True,   False)
+VoiceRegion.amsterdam = VoiceRegion('Amsterdam', 'amsterdam', True, False)
+VoiceRegion.frankfurt = VoiceRegion('Frankfurt', 'frankfurt', True, False)
+VoiceRegion.london = VoiceRegion('London', 'london', True, False)
 # vip
-VoiceRegion.vip_us_east = VoiceRegion('VIP US West',    'vip-us-west',  False,  True)
-VoiceRegion.vip_us_west = VoiceRegion('VIP US East',    'vip-us-east',  False,  True)
+VoiceRegion.vip_us_east = VoiceRegion('VIP US West', 'vip-us-west', False, True)
+VoiceRegion.vip_us_west = VoiceRegion('VIP US East', 'vip-us-east', False, True)
 # vip + deprecated
-VoiceRegion.vip_amsterdam = VoiceRegion('VIP Amsterdam',  'vip-amsterdam',True,   True)
+VoiceRegion.vip_amsterdam = VoiceRegion('VIP Amsterdam', 'vip-amsterdam',True, True)
 
 
 class ContentFilterLevel(PreinstancedBase):
@@ -604,7 +604,7 @@ class Status(PreinstancedBase):
         
         return False
     
-    def __lt__(self ,other):
+    def __lt__(self,other):
         """Returns whether this status's position is less than the other's."""
         other_type = other.__class__
         self_type = self.__class__
@@ -630,10 +630,10 @@ class Status(PreinstancedBase):
     offline = NotImplemented
     invisible = NotImplemented
 
-Status.online = Status('online',    0)
-Status.idle = Status('idle',      1)
-Status.dnd = Status('dnd',       2)
-Status.offline = Status('offline',   3)
+Status.online = Status('online', 0)
+Status.idle = Status('idle', 1)
+Status.dnd = Status('dnd', 2)
+Status.offline = Status('offline', 3)
 Status.invisible = Status('invisible', 3)
 
 class MessageNotificationLevel(PreinstancedBase):
@@ -1943,11 +1943,11 @@ class DefaultAvatar(PreinstancedBase):
     orange = NotImplemented
     red = NotImplemented
 
-DefaultAvatar.blue = DefaultAvatar(0 ,   'blue' , Color(0x7289da))
-DefaultAvatar.gray = DefaultAvatar(1 ,   'gray' , Color(0x747f8d))
-DefaultAvatar.green = DefaultAvatar(2 ,  'green' , Color(0x43b581))
-DefaultAvatar.orange = DefaultAvatar(3 , 'orange' , Color(0xfaa61a))
-DefaultAvatar.red = DefaultAvatar(4 ,    'red' , Color(0xf04747))
+DefaultAvatar.blue = DefaultAvatar(0, 'blue', Color(0x7289da))
+DefaultAvatar.gray = DefaultAvatar(1, 'gray', Color(0x747f8d))
+DefaultAvatar.green = DefaultAvatar(2, 'green', Color(0x43b581))
+DefaultAvatar.orange = DefaultAvatar(3, 'orange', Color(0xfaa61a))
+DefaultAvatar.red = DefaultAvatar(4, 'red', Color(0xf04747))
 
 
 class WebhookType(PreinstancedBase):
@@ -2047,8 +2047,8 @@ class InviteTargetType(PreinstancedBase):
     stream = NotImplemented
     embedded_application = NotImplemented
 
-InviteTargetType.none = InviteTargetType(0, 'none'                , )
-InviteTargetType.stream = InviteTargetType(1, 'stream'              , )
+InviteTargetType.none = InviteTargetType(0, 'none', )
+InviteTargetType.stream = InviteTargetType(1, 'stream', )
 InviteTargetType.embedded_application = InviteTargetType(2, 'embedded_application', )
 
 
@@ -2164,12 +2164,12 @@ class RoleManagerType(PreinstancedBase):
     booster = NotImplemented
     integration = NotImplemented
 
-RoleManagerType.none = RoleManagerType(0 , 'none'        ,)
-RoleManagerType.unset = RoleManagerType(1 , 'unset'       ,)
-RoleManagerType.unknown = RoleManagerType(2 , 'unknown'     ,)
-RoleManagerType.bot = RoleManagerType(3 , 'bot'         ,)
-RoleManagerType.booster = RoleManagerType(4 , 'booster'     ,)
-RoleManagerType.integration = RoleManagerType(5 , 'integration' ,)
+RoleManagerType.none = RoleManagerType(0, 'none',)
+RoleManagerType.unset = RoleManagerType(1, 'unset',)
+RoleManagerType.unknown = RoleManagerType(2, 'unknown',)
+RoleManagerType.bot = RoleManagerType(3, 'bot',)
+RoleManagerType.booster = RoleManagerType(4, 'booster',)
+RoleManagerType.integration = RoleManagerType(5, 'integration',)
 
 
 class ApplicationCommandOptionType(PreinstancedBase):
@@ -2233,15 +2233,15 @@ class ApplicationCommandOptionType(PreinstancedBase):
     channel = NotImplemented
     role = NotImplemented
 
-ApplicationCommandOptionType.none = ApplicationCommandOptionType(0 , 'none'              ,)
-ApplicationCommandOptionType.sub_command = ApplicationCommandOptionType(1 , 'sub_command'       ,)
-ApplicationCommandOptionType.sub_command_group = ApplicationCommandOptionType(2 , 'sub_command_group' ,)
-ApplicationCommandOptionType.string = ApplicationCommandOptionType(3 , 'string'            ,)
-ApplicationCommandOptionType.integer = ApplicationCommandOptionType(4 , 'integer'           ,)
-ApplicationCommandOptionType.boolean = ApplicationCommandOptionType(5 , 'boolean'           ,)
-ApplicationCommandOptionType.user = ApplicationCommandOptionType(6 , 'user'              ,)
-ApplicationCommandOptionType.channel = ApplicationCommandOptionType(7 , 'channel'           ,)
-ApplicationCommandOptionType.role = ApplicationCommandOptionType(8 , 'role'              ,)
+ApplicationCommandOptionType.none = ApplicationCommandOptionType(0, 'none',)
+ApplicationCommandOptionType.sub_command = ApplicationCommandOptionType(1, 'sub_command',)
+ApplicationCommandOptionType.sub_command_group = ApplicationCommandOptionType(2, 'sub_command_group',)
+ApplicationCommandOptionType.string = ApplicationCommandOptionType(3, 'string',)
+ApplicationCommandOptionType.integer = ApplicationCommandOptionType(4, 'integer',)
+ApplicationCommandOptionType.boolean = ApplicationCommandOptionType(5, 'boolean',)
+ApplicationCommandOptionType.user = ApplicationCommandOptionType(6, 'user',)
+ApplicationCommandOptionType.channel = ApplicationCommandOptionType(7, 'channel',)
+ApplicationCommandOptionType.role = ApplicationCommandOptionType(8, 'role',)
 
 
 class InteractionType(PreinstancedBase):
@@ -2411,9 +2411,9 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     role = NotImplemented
     user = NotImplemented
 
-ApplicationCommandPermissionOverwriteType.none = ApplicationCommandPermissionOverwriteType(0 , 'none' ,)
-ApplicationCommandPermissionOverwriteType.role = ApplicationCommandPermissionOverwriteType(1 , 'role' ,)
-ApplicationCommandPermissionOverwriteType.user = ApplicationCommandPermissionOverwriteType(2 , 'user' ,)
+ApplicationCommandPermissionOverwriteType.none = ApplicationCommandPermissionOverwriteType(0, 'none',)
+ApplicationCommandPermissionOverwriteType.role = ApplicationCommandPermissionOverwriteType(1, 'role',)
+ApplicationCommandPermissionOverwriteType.user = ApplicationCommandPermissionOverwriteType(2, 'user',)
 
 
 class VideoQualityMode(PreinstancedBase):

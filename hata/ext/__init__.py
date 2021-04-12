@@ -74,4 +74,4 @@ def add_library_extension_hook(hook, requirements):
         KOKORO.render_exc_maybe_async(err, [
             'add_library_extension_hook(', repr(hook), ', ', repr(requirements), ') ignores occurred exception '
             'meanwhile calling ', repr(hook), ' satisfied library extension hook.\n.'
-                ])
+        ])

@@ -7,7 +7,7 @@ from threading import current_thread
 from uuid import UUID
 from importlib.util import find_spec
 
-from .utils import imultidict, methodize
+from .utils import imultidict
 from .futures import WaitTillAll, Future, Task, CancelledError
 from .protocol import ProtocolBase
 from .exceptions import PayloadError

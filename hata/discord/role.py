@@ -1131,15 +1131,15 @@ def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0,
         id_ = random_id()
     
     return {
-        'id'          : id_,
-        'name'        : name,
-        'color'       : color,
-        'hoist'       : separated,
-        'position'    : position,
-        'permissions' : permissions,
-        'managed'     : managed,
-        'mentionable' : mentionable,
-            }
+        'id': id_,
+        'name': name,
+        'color': color,
+        'hoist': separated,
+        'position': position,
+        'permissions': permissions,
+        'managed': managed,
+        'mentionable': mentionable,
+    }
 
 def cr_p_overwrite_object(target, allow, deny):
     """
@@ -1158,11 +1158,11 @@ def cr_p_overwrite_object(target, allow, deny):
     permission_overwrite_data : `dict` of (`str`, `Any) items
     """
     return {
-        'allow' : allow,
-        'deny'  : deny,
-        'id'    : target.id,
-        'type'  : PERM_OW_TYPE_ROLE if type(target) is Role else PERM_OW_TYPE_USER,
-            }
+        'allow': allow,
+        'deny': deny,
+        'id': target.id,
+        'type': PERM_OW_TYPE_ROLE if type(target) is Role else PERM_OW_TYPE_USER,
+    }
 
 module_rate_limit.Role = Role
 module_user.create_partial_role = create_partial_role

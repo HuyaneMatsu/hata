@@ -51,29 +51,29 @@ class EmbedThumbnail:
     
     def __repr__(self):
         """Returns the representation of the embed thumbnail."""
-        text = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' url=',
-                ]
+        ]
         
         url = self.url
         if url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             url = url_cutter(url)
-            text.append(url)
-            text.append('\'')
+            repr_parts.append(url)
+            repr_parts.append('\'')
         
-        text.append(', size=')
-        text.append(str(self.width))
-        text.append('x')
-        text.append(str(self.height))
+        repr_parts.append(', size=')
+        repr_parts.append(str(self.width))
+        repr_parts.append('x')
+        repr_parts.append(str(self.height))
     
-        text.append('>')
+        repr_parts.append('>')
         
-        return ''.join(text)
+        return ''.join(repr_parts)
     
     def __eq__(self, other):
         """Returns whether the two embed thumbnails are equal."""
@@ -114,7 +114,7 @@ class EmbedThumbnail:
         """
         return {
             'url' : self.url,
-                }
+        }
 
 
 class EmbedVideo:
@@ -156,29 +156,29 @@ class EmbedVideo:
     
     def __repr__(self):
         """Returns the representation of the embed video."""
-        text = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' url=',
-                ]
+        ]
         
         url = self.url
         if url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             url = url_cutter(url)
-            text.append(url)
-            text.append('\'')
+            repr_parts.append(url)
+            repr_parts.append('\'')
         
-        text.append(', size=')
-        text.append(str(self.width))
-        text.append('x')
-        text.append(str(self.height))
+        repr_parts.append(', size=')
+        repr_parts.append(str(self.width))
+        repr_parts.append('x')
+        repr_parts.append(str(self.height))
     
-        text.append('>')
+        repr_parts.append('>')
         
-        return ''.join(text)
+        return ''.join(repr_parts)
     
     def __eq__(self, other):
         """Returns whether the two embed videos are equal."""
@@ -263,29 +263,29 @@ class EmbedImage:
     
     def __repr__(self):
         """Returns the representation of the embed image."""
-        text = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' url=',
-                ]
+        ]
         
         url = self.url
         if url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             url = url_cutter(url)
-            text.append(url)
-            text.append('\'')
+            repr_parts.append(url)
+            repr_parts.append('\'')
             
-        text.append(', size=')
-        text.append(str(self.width))
-        text.append('x')
-        text.append(str(self.height))
+        repr_parts.append(', size=')
+        repr_parts.append(str(self.width))
+        repr_parts.append('x')
+        repr_parts.append(str(self.height))
         
-        text.append('>')
+        repr_parts.append('>')
         
-        return ''.join(text)
+        return ''.join(repr_parts)
     
     def __eq__(self, other):
         """Returns whether the two embed images are equal."""
@@ -369,26 +369,26 @@ class EmbedProvider:
     
     def __repr__(self):
         """Returns the representation of the embed provider."""
-        text = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' length=',
             str(len(self)),
             ', url='
-                ]
+        ]
         
         url = self.url
         if url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             url = url_cutter(url)
-            text.append(url)
-            text.append('\'')
+            repr_parts.append(url)
+            repr_parts.append('\'')
         
-        text.append('>')
+        repr_parts.append('>')
         
-        return ''.join(text)
+        return ''.join(repr_parts)
     
     def __eq__(self, other):
         """Returns whether the two embed providers are equal."""
@@ -486,36 +486,36 @@ class EmbedAuthor:
     
     def __repr__(self):
         """Returns the representation of the embed author."""
-        text = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' length=',
             str(len(self)),
             ', url='
-                ]
+        ]
         
         url = self.url
         if url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             url = url_cutter(url)
-            text.append(url)
-            text.append('\'')
+            repr_parts.append(url)
+            repr_parts.append('\'')
         
-        text.append(', icon_url=')
+        repr_parts.append(', icon_url=')
         icon_url = self.icon_url
         if icon_url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             icon_url = url_cutter(icon_url)
-            text.append(icon_url)
-            text.append('\'')
+            repr_parts.append(icon_url)
+            repr_parts.append('\'')
             
-        text.append('>')
+        repr_parts.append('>')
         
-        return ''.join(text)
+        return ''.join(repr_parts)
     
     def __eq__(self, other):
         """Returns whether the two embed authors are equal."""
@@ -626,26 +626,26 @@ class EmbedFooter:
     
     def __repr__(self):
         """Returns the representation of the embed footer."""
-        text = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' length=',
             str(len(self)),
             ', url='
-                ]
+        ]
         
         icon_url = self.icon_url
         if icon_url is None:
-            text.append('None')
+            repr_parts.append('None')
         else:
-            text.append('\'')
+            repr_parts.append('\'')
             icon_url = url_cutter(icon_url)
-            text.append(icon_url)
-            text.append('\'')
+            repr_parts.append(icon_url)
+            repr_parts.append('\'')
         
-        text.append('>')
+        repr_parts.append('>')
         
-        return ''.join(text)
+        return ''.join(repr_parts)
     
     def __eq__(self,other):
         """Returns whether the two embed footers are equal."""
@@ -691,7 +691,7 @@ class EmbedFooter:
         """
         footer_data = {
             'text' : self.text,
-                }
+        }
         
         icon_url = self.icon_url
         if (icon_url is not None):
@@ -843,19 +843,19 @@ class EmbedBase:
     
     __slots__ = ()
     
-    author      : {None, EmbedAuthor}
-    color       : {None, Color, int}
+    author : {None, EmbedAuthor}
+    color : {None, Color, int}
     description : {None, str}
-    fields      : (list, EmbedField)
-    footer      : {None, EmbedFooter}
-    image       : {None, EmbedImage}
-    provider    : {None, EmbedProvider}
-    thumbnail   : {None, EmbedThumbnail}
-    timestamp   : {None, datetime}
-    title       : {None, str}
-    type        : {None, str}
-    url         : {None, str}
-    video       : {None, EmbedVideo}
+    fields : (list, EmbedField)
+    footer : {None, EmbedFooter}
+    image : {None, EmbedImage}
+    provider : {None, EmbedProvider}
+    thumbnail : {None, EmbedThumbnail}
+    timestamp : {None, datetime}
+    title : {None, str}
+    type : {None, str}
+    url : {None, str}
+    video : {None, EmbedVideo}
     
     
     @property

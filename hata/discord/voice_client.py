@@ -1312,7 +1312,7 @@ class VoiceClient:
             ' client=',
             repr(self.client.full_name),
             ', channel='
-                ]
+        ]
         
         channel = self.channel
         result.append(repr(channel.name))

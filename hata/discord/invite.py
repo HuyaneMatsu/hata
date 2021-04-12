@@ -3,8 +3,6 @@ __all__ = ('Invite', )
 
 from datetime import datetime
 
-from ..backend.utils import DOCS_ENABLED
-
 from .bases import DiscordEntity, instance_or_id_to_instance
 from .preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
 from .utils import parse_time, DISCORD_EPOCH_START
@@ -160,15 +158,6 @@ class Invite(DiscordEntity, immortal=True):
         return hash(self.code)
     
     url = property(URLS.invite_url)
-    if DOCS_ENABLED:
-        url.__doc__ = (
-        """
-        Returns the invite's url.
-        
-        Returns
-        -------
-        url : `str`
-        """)
     
     @property
     def id(self):

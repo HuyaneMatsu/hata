@@ -626,7 +626,7 @@ class reaction_mapping_line(set):
         result = [
             self.__class__.__name__,
             '({',
-                ]
+        ]
         
         # set indexing is not public, so we need to do a check, like this
         if set.__len__(self):

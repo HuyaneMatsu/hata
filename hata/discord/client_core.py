@@ -489,7 +489,7 @@ class Kokoro:
             ' client=',
             repr(self.gateway.client.full_name),
             ' state=',
-                ]
+        ]
         
         if self.task is None:
             state = 'stopped'

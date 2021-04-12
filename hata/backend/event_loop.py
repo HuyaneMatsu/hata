@@ -25,10 +25,10 @@ if IS_UNIX:
 
 import threading
 from .futures import _ignore_frame
-_ignore_frame(__spec__.origin           , '_run'            , 'self.func(*self.args)'           ,)
-_ignore_frame(__spec__.origin           , 'run'             , 'handle._run()'                   ,)
-_ignore_frame(threading.__spec__.origin , '_bootstrap'      , 'self._bootstrap_inner()'         ,)
-_ignore_frame(threading.__spec__.origin , '_bootstrap_inner', 'self.run()'                      ,)
+_ignore_frame(__spec__.origin, '_run', 'self.func(*self.args)', )
+_ignore_frame(__spec__.origin, 'run', 'handle._run()', )
+_ignore_frame(threading.__spec__.origin, '_bootstrap', 'self._bootstrap_inner()', )
+_ignore_frame(threading.__spec__.origin, '_bootstrap_inner', 'self.run()', )
 del threading, _ignore_frame
 
 from . import executor as module_executor, futures as module_futures
@@ -1662,7 +1662,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     """
     Event loops run asynchronous tasks and callbacks, perform network IO operations, and runs subprocesses.
     
-    At hata event loops are represented by ``EventThread``-s, which do not block the source thread , as they say, they
+    At hata event loops are represented by ``EventThread``-s, which do not block the source thread, as they say, they
     use their own thread for it.
     
     Attributes

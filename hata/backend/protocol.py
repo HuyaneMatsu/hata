@@ -642,7 +642,7 @@ class ReadProtocolBase:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         if self._at_eof:
             result.append(' at eof')

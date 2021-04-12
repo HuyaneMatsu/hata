@@ -1784,7 +1784,10 @@ class sortedlist(list):
                 other = sorted(iterable, reverse=True)
             elif not iterable._reversed:
                 other = reversed(iterable)
-            for value in iterable:
+            else:
+                other = iterable
+            
+            for value in other:
                 top = ln
                 while True:
                     if bot < top:
@@ -1796,13 +1799,16 @@ class sortedlist(list):
                         continue
                     break
                 insert(self, bot, value)
-                ln +=1
+                ln += 1
         else:
             if type(self) is not type(iterable):
                 other = sorted(iterable)
             elif iterable._reversed:
                 other = reversed(iterable)
-            for value in iterable:
+            else:
+                other = iterable
+            
+            for value in other:
                 top = ln
                 while True:
                     if bot < top:
@@ -2024,6 +2030,9 @@ except TypeError:
 else:
     NEEDS_DUMMY_INIT = False
 
+del dummy_init_tester
+
+
 class WeakHasher:
     """
     Object to store unhashable weakreferences.
@@ -2108,6 +2117,8 @@ class WeakReferer(WeakrefType):
             pass
     else:
         __init__ = object.__init__
+
+del WeakrefType
 
 class KeyedReferer(WeakReferer):
     """
@@ -4873,7 +4884,3 @@ def copy_docs(source):
     ```
     """
     return partial_func(_do_copy_docs, source)
-
-
-del WeakrefType
-del dummy_init_tester

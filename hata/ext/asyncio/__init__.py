@@ -34,9 +34,10 @@ for sub_module_name, feature_names, extra_features in (
             'coroutine',
             'iscoroutinefunction',
             'iscoroutine',
-                ), (
+            ), (
             ('_DEBUG', False), # Required by aiohttp 3.8
-                )),
+            )
+        ),
         ('events', (
             'AbstractEventLoopPolicy',
             'AbstractEventLoop',
@@ -53,7 +54,8 @@ for sub_module_name, feature_names, extra_features in (
             '_set_running_loop',
             'get_running_loop',
             '_get_running_loop',
-                ), None),
+            ), None,
+        ),
         ('exceptions', (
             'CancelledError',
             'InvalidStateError',
@@ -61,58 +63,69 @@ for sub_module_name, feature_names, extra_features in (
             'IncompleteReadError',
             'LimitOverrunError',
             'SendfileNotAvailableError',
-                ), None),
+            ), None,
+        ),
         ('format_helpers', None, None),
         ('futures', (
             'Future',
             'wrap_future',
             'isfuture',
-                ), None),
+            ), None,
+        ),
         ('locks', (
             'Lock',
             'Event',
             'Condition',
             'Semaphore',
             'BoundedSemaphore',
-                ), None),
+            ), None,
+        ),
         ('proactor_events', (
             'BaseProactorEventLoop',
-                ), None),
+            ), None,
+        ),
         ('protocols', (
             'BaseProtocol',
             'Protocol',
             'DatagramProtocol',
             'SubprocessProtocol',
             'BufferedProtocol',
-                ), None),
+            ), None,
+        ),
         ('queues', (
             'Queue',
             'PriorityQueue',
             'LifoQueue',
             'QueueFull',
             'QueueEmpty',
-                ), None),
+            ), None,
+        ),
         ('runners', (
             'run',
-                ), None),
+            ), None,
+        ),
         ('selector_events', (
             'BaseSelectorEventLoop',
-                ), None),
+            ), None,
+        ),
         ('sslproto', None, None),
         ('staggered_race', (
             'staggered_race',
-                ), None),
+            ), None,
+        ),
         ('streams', (
             'StreamReader',
             'StreamWriter',
             'StreamReaderProtocol',
             'open_connection',
             'start_server',
-                ), None),
+            ), None,
+        ),
         ('subprocess', (
             'create_subprocess_exec',
             'create_subprocess_shell',
-                ), None),
+            ), None,
+        ),
         ('tasks', (
             'Task',
             'create_task',
@@ -133,10 +146,12 @@ for sub_module_name, feature_names, extra_features in (
             '_unregister_task',
             '_enter_task',
             '_leave_task',
-                ), None),
+            ), None,
+        ),
         ('threads', (
             'to_thread',
-                ), None),
+            ), None,
+        ),
         ('transports', (
             'BaseTransport',
             'ReadTransport',
@@ -144,7 +159,8 @@ for sub_module_name, feature_names, extra_features in (
             'Transport',
             'DatagramTransport',
             'SubprocessTransport',
-                ), None),
+            ), None,
+        ),
         ('trsock', None, None),
         ('unix_events', (
             'SelectorEventLoop',
@@ -155,7 +171,8 @@ for sub_module_name, feature_names, extra_features in (
             'MultiLoopChildWatcher',
             'ThreadedChildWatcher',
             'DefaultEventLoopPolicy',
-                ), None),
+            ), None,
+        ),
         ('windows_events', (
             'SelectorEventLoop',
             'ProactorEventLoop',
@@ -163,13 +180,15 @@ for sub_module_name, feature_names, extra_features in (
             'DefaultEventLoopPolicy',
             'WindowsSelectorEventLoopPolicy',
             'WindowsProactorEventLoopPolicy',
-                ), None),
+            ), None,
+        ),
         ('windows_utils', (
             'pipe',
             'Popen',
             'PIPE',
             'PipeHandle',
-                ), None)
+            ), None,
+        )
             ):
     
     module_name = f'asyncio.{sub_module_name}'

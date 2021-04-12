@@ -55,14 +55,14 @@ class MessageFlag(FlagBase):
     +---------------------------+-------------------+
     """
     __keys__ = {
-        'crossposted'            : 0,
-        'is_crosspost'           : 1,
-        'embeds_suppressed'      : 2,
-        'source_message_deleted' : 3,
-        'urgent'                 : 4,
-        'has_thread'             : 5,
-        'invoking_user_only'     : 6,
-            }
+        'crossposted': 0,
+        'is_crosspost': 1,
+        'embeds_suppressed': 2,
+        'source_message_deleted': 3,
+        'urgent': 4,
+        'has_thread': 5,
+        'invoking_user_only': 6,
+    }
 
 class MessageActivity:
     """
@@ -154,7 +154,7 @@ class Attachment(DiscordEntity):
             '<', self.__class__.__name__,
             ' id=', repr(self.id),
             ', name=', repr(self.name),
-                ]
+        ]
         
         x = self.width
         y = self.height
@@ -482,7 +482,7 @@ class MessageReference:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         message_id = self.message_id
         if message_id:

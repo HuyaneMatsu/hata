@@ -128,7 +128,7 @@ class GatewayRateLimiter:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         resets_at = self.resets_at
         if resets_at <= LOOP_TIME():

@@ -190,4 +190,4 @@ SNAPSHOT_TAKERS['client.command_processer'] = (
     take_command_processer_snapshot,
     calculate_command_processer_snapshot_difference,
     revert_command_processer_snapshot,
-        )
+)

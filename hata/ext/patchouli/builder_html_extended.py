@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ()
 
-import re
 from html import escape as html_escape
 
 from .graver import GravedDescription, GravedAttributeDescription

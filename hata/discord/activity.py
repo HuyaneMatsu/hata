@@ -20,9 +20,9 @@ create_partial_emoji = NotImplemented
 DEFAULT_CUSTOM_ID = 'UNKNOWN'
 
 CUSTOM_IDS = {
-    2 : 'spotify:1',
-    4 : 'custom',
-        }
+    2: 'spotify:1',
+    4: 'custom',
+}
 
 class ActivityFlag(FlagBase):
     """
@@ -34,27 +34,27 @@ class ActivityFlag(FlagBase):
     +-------------------+-------------------+
     | Respective name   | Bitwise position  |
     +===================+===================+
-    | INSTANCE          | 0                 |
+    | instance          | 0                 |
     +-------------------+-------------------+
-    | JOIN              | 1                 |
+    | join              | 1                 |
     +-------------------+-------------------+
-    | SPECTATE          | 2                 |
+    | spectate          | 2                 |
     +-------------------+-------------------+
-    | JOIN_REQUEST      | 3                 |
+    | join_request      | 3                 |
     +-------------------+-------------------+
-    | SYNC              | 4                 |
+    | sync              | 4                 |
     +-------------------+-------------------+
-    | PLAY              | 5                 |
+    | play              | 5                 |
     +-------------------+-------------------+
     """
     __keys__ = {
-        'INSTANCE'    : 0,
-        'JOIN'        : 1,
-        'SPECTATE'    : 2,
-        'JOIN_REQUEST': 3,
-        'SYNC'        : 4,
-        'PLAY'        : 5,
-            }
+        'instance': 0,
+        'join': 1,
+        'spectate': 2,
+        'join_request': 3,
+        'sync': 4,
+        'play': 5,
+    }
 
 
 @modulize
@@ -93,7 +93,7 @@ ACTIVITY_TYPE_NAMES = {
     3: 'watching',
     4: 'custom',
     5: 'competing',
-        }
+}
 
 ACTIVITY_TYPE_NAME_UNKNOWN = 'unknown'
 

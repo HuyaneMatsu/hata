@@ -237,21 +237,21 @@ def _should_ignore_frame(file, name, line):
     
     return (line in name_s)
 
-_ignore_frame(__spec__.origin   , 'result'          , 'raise exception'                 ,)
-_ignore_frame(__spec__.origin   , 'result_no_wait'  , 'raise exception'                 ,)
-_ignore_frame(__spec__.origin   , '__call__'        , 'raise exception'                 ,)
-_ignore_frame(__spec__.origin   , '__step'          , 'result = coro.throw(exception)'  ,)
-_ignore_frame(__spec__.origin   , '__iter__'        , 'yield self'                      ,)
-_ignore_frame(__spec__.origin   , '__step'          , 'result = coro.send(None)'        ,)
-_ignore_frame(__spec__.origin   , '__wake_up'        , 'future.result()'                 ,)
-_ignore_frame(__spec__.origin   , 'wait'            , 'return self.result()'            ,)
-_ignore_frame(__spec__.origin   , '__call__'        , 'future.result()'                 ,)
-_ignore_frame(__spec__.origin   , '__aexit__'       , 'raise exception'                 ,)
+_ignore_frame(__spec__.origin, 'result', 'raise exception', )
+_ignore_frame(__spec__.origin, 'result_no_wait', 'raise exception', )
+_ignore_frame(__spec__.origin, '__call__', 'raise exception', )
+_ignore_frame(__spec__.origin, '__step', 'result = coro.throw(exception)', )
+_ignore_frame(__spec__.origin, '__iter__', 'yield self', )
+_ignore_frame(__spec__.origin, '__step', 'result = coro.send(None)', )
+_ignore_frame(__spec__.origin, '__wake_up', 'future.result()', )
+_ignore_frame(__spec__.origin, 'wait', 'return self.result()', )
+_ignore_frame(__spec__.origin, '__call__', 'future.result()', )
+_ignore_frame(__spec__.origin, '__aexit__', 'raise exception', )
 
 
 from . import utils
-_ignore_frame(utils.__spec__.origin  , '__call__', 'return self.func(*self.args)'            ,)
-_ignore_frame(utils.__spec__.origin  , '__call__', 'return self.func(*self.args, **kwargs)'  ,)
+_ignore_frame(utils.__spec__.origin, '__call__', 'return self.func(*self.args)', )
+_ignore_frame(utils.__spec__.origin, '__call__', 'return self.func(*self.args, **kwargs)', )
 del utils
 
 def render_frames_to_list(frames, extend=None):

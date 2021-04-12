@@ -121,7 +121,7 @@ INTENT_DIRECT_REACTIONS = 13
 INTENT_DIRECT_TYPINGS = 14
 
 INTENT_EVENTS = {
-    INTENT_GUILDS : (
+    INTENT_GUILDS: (
         'GUILD_CREATE',
         'GUILD_DELETE',
         'GUILD_UPDATE',
@@ -132,71 +132,71 @@ INTENT_EVENTS = {
         'CHANNEL_UPDATE',
         'CHANNEL_DELETE',
         'CHANNEL_PINS_UPDATE',
-            ),
-    INTENT_GUILD_USERS : (
+    ),
+    INTENT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
         'GUILD_MEMBER_UPDATE',
         'GUILD_MEMBER_REMOVE',
         'GUILD_JOIN_REQUEST_DELETE',
-            ),
-    INTENT_GUILD_BANS : (
+    ),
+    INTENT_GUILD_BANS: (
         'GUILD_BAN_ADD',
         'GUILD_BAN_REMOVE',
-            ),
-    INTENT_GUILD_EMOJIS : (
+    ),
+    INTENT_GUILD_EMOJIS: (
         'GUILD_EMOJIS_UPDATE',
-            ),
-    INTENT_GUILD_INTEGRATIONS : (
+    ),
+    INTENT_GUILD_INTEGRATIONS: (
         'INTEGRATION_CREATE',
         'INTEGRATION_DELETE',
         'INTEGRATION_UPDATE',
         'GUILD_INTEGRATIONS_UPDATE',
-            ),
-    INTENT_GUILD_WEBHOOKS : (
+    ),
+    INTENT_GUILD_WEBHOOKS: (
         'WEBHOOKS_UPDATE',
-            ),
-    INTENT_GUILD_INVITES : (
+    ),
+    INTENT_GUILD_INVITES: (
         'INVITE_CREATE',
         'INVITE_DELETE',
-            ),
-    INTENT_GUILD_VOICE_STATES : (
+    ),
+    INTENT_GUILD_VOICE_STATES: (
         'VOICE_STATE_UPDATE',
-            ),
-    INTENT_GUILD_PRESENCES : (
+    ),
+    INTENT_GUILD_PRESENCES: (
         'PRESENCE_UPDATE',
-            ),
-    INTENT_GUILD_MESSAGES : (
+    ),
+    INTENT_GUILD_MESSAGES: (
         'MESSAGE_CREATE',
         'MESSAGE_UPDATE',
         'MESSAGE_DELETE',
         'MESSAGE_DELETE_BULK', # Not listed by Discord, yayyyy
-            ),
-    INTENT_GUILD_REACTIONS : (
+    ),
+    INTENT_GUILD_REACTIONS: (
         'MESSAGE_REACTION_ADD',
         'MESSAGE_REACTION_REMOVE',
         'MESSAGE_REACTION_REMOVE_ALL',
         'MESSAGE_REACTION_REMOVE_EMOJI',
-            ),
-    INTENT_GUILD_TYPINGS : (
+    ),
+    INTENT_GUILD_TYPINGS: (
         'TYPING_START',
-            ),
-    INTENT_DIRECT_MESSAGES : (
+    ),
+    INTENT_DIRECT_MESSAGES: (
         'CHANNEL_CREATE',
         'CHANNEL_PINS_UPDATE',
         'MESSAGE_CREATE',
         'MESSAGE_UPDATE',
         'MESSAGE_DELETE',
-            ),
-    INTENT_DIRECT_REACTIONS : (
+    ),
+    INTENT_DIRECT_REACTIONS: (
         'MESSAGE_REACTION_ADD',
         'MESSAGE_REACTION_REMOVE',
         'MESSAGE_REACTION_REMOVE_ALL',
         'MESSAGE_REACTION_REMOVE_EMOJI',
-            ),
+    ),
     INTENT_DIRECT_TYPINGS : (
         'TYPING_START',
-            ),
-        }
+    ),
+}
 
 GLOBAL_INTENT_EVENTS = (
     'READY',
@@ -221,7 +221,7 @@ GLOBAL_INTENT_EVENTS = (
     'APPLICATION_COMMAND_PERMISSIONS_UPDATE',
     'USER_GUILD_SETTINGS_UPDATE', # User account only
     'CHANNEL_UNREAD_UPDATE', # User account only
-        )
+)
 
 INTENT_SHIFT_DEFAULT_EVENT = 255
 INTENT_SHIFT_MISSING_EVENT = 254
@@ -320,22 +320,22 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +---------------------------+---------------+-----------------------+-----------------------------------+
     """
     __keys__ = {
-        'guilds'            : INTENT_GUILDS,
-        'guild_users'       : INTENT_GUILD_USERS,
-        'guild_bans'        : INTENT_GUILD_BANS,
-        'guild_emojis'      : INTENT_GUILD_EMOJIS,
+        'guilds': INTENT_GUILDS,
+        'guild_users': INTENT_GUILD_USERS,
+        'guild_bans': INTENT_GUILD_BANS,
+        'guild_emojis': INTENT_GUILD_EMOJIS,
         'guild_integrations': INTENT_GUILD_INTEGRATIONS,
-        'guild_webhooks'    : INTENT_GUILD_WEBHOOKS,
-        'guild_invites'     : INTENT_GUILD_INVITES,
+        'guild_webhooks': INTENT_GUILD_WEBHOOKS,
+        'guild_invites': INTENT_GUILD_INVITES,
         'guild_voice_states': INTENT_GUILD_VOICE_STATES,
-        'guild_presences'   : INTENT_GUILD_PRESENCES,
-        'guild_messages'    : INTENT_GUILD_MESSAGES,
-        'guild_reactions'   : INTENT_GUILD_REACTIONS,
-        'guild_typings'     : INTENT_GUILD_TYPINGS,
-        'direct_messages'   : INTENT_DIRECT_MESSAGES,
-        'direct_reactions'  : INTENT_DIRECT_REACTIONS,
-        'direct_typings'    : INTENT_DIRECT_TYPINGS,
-            }
+        'guild_presences': INTENT_GUILD_PRESENCES,
+        'guild_messages': INTENT_GUILD_MESSAGES,
+        'guild_reactions': INTENT_GUILD_REACTIONS,
+        'guild_typings': INTENT_GUILD_TYPINGS,
+        'direct_messages': INTENT_DIRECT_MESSAGES,
+        'direct_reactions': INTENT_DIRECT_REACTIONS,
+        'direct_typings': INTENT_DIRECT_TYPINGS,
+    }
     
     def __new__(cls, int_ = -1):
         """
@@ -7404,7 +7404,7 @@ async def default_error_event(client, name, err):
         ' ignores occurred exception at ',
         name,
         '\n',
-            ]
+    ]
     
     if isinstance(err, BaseException):
         await KOKORO.render_exc_async(err, extracted)

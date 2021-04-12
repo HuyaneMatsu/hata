@@ -15,7 +15,7 @@ __all__ = (
     *builder_html_extended.__all__,
     *highlight.__all__,
     'highlight',
-        )
+)
 
 from .. import register_library_extension
 register_library_extension('HuyaneMatsu.patchouli')

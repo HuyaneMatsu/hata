@@ -73,24 +73,24 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     """
     __keys__ = {
-        'staff'                     :  0,
-        'partner'                   :  1,
-        'hypesquad'                 :  2,
-        'bug_hunter_level_1'        :  3,
-        'mfa_sms'                   :  4,
-        'premium_promo_dismissed'   :  5,
-        'hypesquad_bravery'         :  6,
-        'hypesquad_brilliance'      :  7,
-        'hypesquad_balance'         :  8,
-        'early_supporter'           :  9,
-        'team_user'                 : 10,
-        'team_pseudo_user'          : 11,
-        'system'                    : 12,
+        'staff': 0,
+        'partner': 1,
+        'hypesquad': 2,
+        'bug_hunter_level_1': 3,
+        'mfa_sms': 4,
+        'premium_promo_dismissed': 5,
+        'hypesquad_bravery': 6,
+        'hypesquad_brilliance': 7,
+        'hypesquad_balance': 8,
+        'early_supporter': 9,
+        'team_user': 10,
+        'team_pseudo_user': 11,
+        'system': 12,
         'has_unread_urgent_messages': 13,
-        'bug_hunter_level_2'        : 14,
-        'underage_deleted'          : 15,
-        'verified_bot'              : 16,
-        'early_verified_developer'  : 17,
+        'bug_hunter_level_2': 14,
+        'underage_deleted': 15,
+        'verified_bot': 16,
+        'early_verified_developer': 17,
             }
 
 def create_partial_user(user_id):
@@ -416,7 +416,7 @@ class UserBase(DiscordEntity, immortal=True):
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         if self.partial:
             result.append(' partial')
@@ -2021,7 +2021,7 @@ class ActivityChange:
         """Returns the representation of the activity change."""
         result = ['<',
             self.__class__.__name__,
-                ]
+        ]
         
         added = self.added
         if added is None:

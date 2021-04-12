@@ -1,5 +1,10 @@
 #### 1.1.65  *\[2021-04-??\]*
 
+##### Internal:
+
+- Fix some spacing. (sleep-cult#3040)
+- `ActivityFlag` now use lower case flag names.
+
 #### 1.1.64  *\[2021-04-12\]*
 
 ##### Public API:

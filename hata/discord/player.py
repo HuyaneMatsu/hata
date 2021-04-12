@@ -29,7 +29,7 @@ STREAM_OPTIONS = (
     '-reconnect', '1',
     # '-reconnect_streamed', '1',
     # '-reconnect_delay_max', '3',
-        )
+)
 
 
 class AudioSource:
@@ -379,7 +379,7 @@ else:
         'no_warnings'       : True,
         'default_search'    : 'auto',
         'source_address'    : '0.0.0.0',
-            })
+    })
     
     class YTAudio(LocalAudio):
         """

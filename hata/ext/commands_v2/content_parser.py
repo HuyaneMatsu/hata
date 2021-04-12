@@ -548,12 +548,12 @@ class ConverterFlag(FlagBase):
     Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
     """
     __keys__ = {
-        'url'       : 0,
-        'mention'   : 1,
-        'name'      : 2,
-        'id'        : 3,
+        'url': 0,
+        'mention': 1,
+        'name': 2,
+        'id': 3,
         'everywhere': 4,
-        'profile'   : 5,
+        'profile': 5,
             }
     
     user_default = NotImplemented
@@ -777,7 +777,7 @@ class ConverterSetting:
             self.__class__.__name__,
             ' converter=',
             self.converter.__name__,
-                ]
+        ]
         
         default_type = self.default_type
         if default_type is None:
@@ -842,7 +842,7 @@ CONVERTER_NONE = ConverterSetting(
     default_type = None,
     alternative_types = None,
     requires_part = False
-        )
+)
 
 
 async def command_context_converter(command_context, content_parser_parameter_detail):
@@ -857,7 +857,7 @@ CONVERTER_SELF_CONTEXT = ConverterSetting(
     default_type = CommandContext,
     alternative_types = None,
     requires_part = False
-        )
+)
 
 
 async def self_client_converter(command_context, content_parser_parameter_detail):
@@ -872,7 +872,7 @@ CONVERTER_SELF_CLIENT = ConverterSetting(
     default_type = None,
     alternative_types = None,
     requires_part = False
-        )
+)
 
 
 async def self_message_converter(command_context, content_parser_parameter_detail):
@@ -887,7 +887,7 @@ CONVERTER_SELF_MESSAGE = ConverterSetting(
     default_type = None,
     alternative_types = None,
     requires_part = False
-        )
+)
 
 
 
@@ -1054,9 +1054,9 @@ CONVERTER_USER = ConverterSetting(
     default_type = User,
     alternative_types = [
         UserBase,
-            ],
+    ],
     requires_part = True,
-        )
+)
 
 async def client_converter(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
@@ -1137,7 +1137,7 @@ CONVERTER_CLIENT = ConverterSetting(
     default_type = Client,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 async def channel_converter(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
@@ -1212,9 +1212,9 @@ CONVERTER_CHANNEL = ConverterSetting(
         ChannelStore,
         ChannelThread,
         ChannelStage,
-            ],
+    ],
     requires_part = True,
-        )
+)
 
 async def role_converter(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
@@ -1266,7 +1266,7 @@ CONVERTER_ROLE = ConverterSetting(
     default_type = Role,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 async def emoji_converter(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
@@ -1317,7 +1317,7 @@ CONVERTER_EMOJI = ConverterSetting(
     default_type = Emoji,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 async def guild_converter(command_context, part, content_parser_parameter_detail):
     parsed = ID_RP.fullmatch(part)
@@ -1348,7 +1348,7 @@ CONVERTER_GUILD = ConverterSetting(
     default_type = Guild,
     alternative_types = None,
     requires_part = True
-        )
+)
 
 # Gets a message by it's id
 async def _message_converter_m_id(command_context, content_parser_parameter_detail, message_id):
@@ -1506,7 +1506,7 @@ CONVERTER_MESSAGE = ConverterSetting(
     default_type = Message,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 async def invite_converter(command_context, part, content_parser_parameter_detail):
     flags = content_parser_parameter_detail.flags
@@ -1548,7 +1548,7 @@ CONVERTER_INVITE = ConverterSetting(
     default_type = Invite,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 
 async def color_converter(command_context, content_parser_parameter_detail, part):
@@ -1563,7 +1563,7 @@ CONVERTER_COLOR = ConverterSetting(
     default_type = Color,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 
 async def str_converter(command_context, content_parser_parameter_detail, part):
@@ -1578,7 +1578,7 @@ CONVERTER_STR = ConverterSetting(
     default_type = str,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 
 async def int_converter(command_context, content_parser_parameter_detail, part):
@@ -1601,7 +1601,7 @@ CONVERTER_INT = ConverterSetting(
     default_type = int,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 async def tdelta_converter(command_context, content_parser_parameter_detail, part):
     return parse_tdelta(part)
@@ -1615,7 +1615,7 @@ CONVERTER_TDELTA = ConverterSetting(
     default_type = timedelta,
     alternative_types = None,
     requires_part = True,
-        )
+)
 
 if (relativedelta is not None):
     async def rdelta_converter(command_context, content_parser_parameter_detail, part):
@@ -1630,7 +1630,7 @@ if (relativedelta is not None):
         default_type = relativedelta,
         alternative_types = None,
         requires_part = True,
-            )
+    )
 
 else:
     rdelta_converter = None
@@ -2671,7 +2671,7 @@ CONTENT_PARSER_PARAMETER_POSTPROCESSORS = [
     content_parser_parameter_postprocessor_try_find_message_and_client,
     content_parser_parameter_postprocessor_try_find_rest_parser,
     convert_parser_parameter_postprocessor_try_find_string,
-        ]
+]
 
 
 

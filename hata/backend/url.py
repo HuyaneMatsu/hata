@@ -10,11 +10,11 @@ from .quote import quote, unquote
 NoneType = type(None)
 
 DEFAULT_PORTS = {
-    'http'  : 80,
-    'https' : 443,
-    'ws'    : 80,
-    'wss'   : 443,
-        }
+    'http': 80,
+    'https': 443,
+    'ws': 80,
+    'wss': 443,
+}
 
 class URL:
     """

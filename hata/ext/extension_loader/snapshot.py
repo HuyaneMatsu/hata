@@ -160,7 +160,7 @@ SNAPSHOT_TAKERS['client.events'] = (
     take_event_handler_snapshot,
     calculate_event_handler_snapshot_difference,
     revert_event_handler_snapshot,
-        )
+)
 
 
 # General snapshot functions

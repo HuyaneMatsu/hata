@@ -540,7 +540,7 @@ CONVERTER_TABLE = {
     GravedCodeBlock : code_block_serializer,
     GravedAttributeDescription : attribute_description_serializer,
     GravedBlockQuote : block_quote_serializer,
-        }
+}
 
 
 def html_serialize_docs(docs, object_):

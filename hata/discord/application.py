@@ -40,16 +40,16 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     """
     __keys__ = {
-        'managed_emoji'                    :  2,
-        'group_dm_create'                  :  4,
-        'rpc_hash_connected'               : 11,
-        'gateway_presence'                 : 12,
-        'gateway_presence_limited'         : 13,
-        'gateway_guild_members'            : 14,
-        'gateway_guild_members_limited'    : 15,
-        'verification_pending_guild_limit' : 16,
-        'embedded'                         : 17,
-            }
+        'managed_emoji':  2,
+        'group_dm_create':  4,
+        'rpc_hash_connected': 11,
+        'gateway_presence': 12,
+        'gateway_presence_limited': 13,
+        'gateway_guild_members': 14,
+        'gateway_guild_members_limited': 15,
+        'verification_pending_guild_limit': 16,
+        'embedded': 17,
+    }
 
 class Application(DiscordEntity, immortal=True):
     """
@@ -276,7 +276,7 @@ class Application(DiscordEntity, immortal=True):
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         id_ = self.id
         if id_:
@@ -826,7 +826,7 @@ class ApplicationExecutable:
             repr(self.name),
             ', os=',
             repr(self.os),
-                ]
+        ]
         
         arguments = self.arguments
         if (arguments is not None):

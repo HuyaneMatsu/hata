@@ -5,8 +5,7 @@ __all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift', 'Relationship', 'Unk
     'sanitize_mentions', 'time_to_id',)
 
 import random, sys
-from re import escape as re_escape, compile as re_compile
-from math import floor
+from re import compile as re_compile
 from datetime import datetime, timedelta
 from base64 import b64encode
 from time import time as time_now

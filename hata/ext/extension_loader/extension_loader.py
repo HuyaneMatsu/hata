@@ -1794,7 +1794,7 @@ class ExtensionLoader:
             self.__class__.__name__,
             ' extension count=',
             repr(len(self.extensions)),
-                ]
+        ]
         
         entry_point = self._default_entry_point
         if (entry_point is not None):

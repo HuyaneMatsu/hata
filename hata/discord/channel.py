@@ -5402,7 +5402,7 @@ CHANNEL_TYPES = {
      6: ChannelStore,
      9: ChannelThread,
     13: ChannelStage,
-        }
+}
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
         user_limit=None, region=None, video_quality_mode=None, category=None, guild=None):
@@ -5525,10 +5525,10 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     
     
     channel_data = {
-        'name'                  : name,
-        'type'                  : channel_type_value,
-        'permission_overwrites' : overwrites,
-            }
+        'name': name,
+        'type': channel_type_value,
+        'permission_overwrites': overwrites,
+    }
     
     
     if (topic is not None):

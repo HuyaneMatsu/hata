@@ -15,7 +15,7 @@ __all__ = (
     *pagination.__all__,
     *utils.__all__,
     *waiters.__all__,
-        )
+)
 
 def setup_ext_command_utils(client):
     """

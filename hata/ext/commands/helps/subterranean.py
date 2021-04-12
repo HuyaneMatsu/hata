@@ -33,27 +33,27 @@ ARGUMENT_OPTIONAL_END = '*'
 ARGUMENT_NAME_REST = 'rest'
 
 ARGUMENT_TYPE_TO_NAME = {
-    UserBase : 'user',
-    User : 'user',
-    ChannelBase : 'channel',
-    ChannelGuildBase : 'guild-channel',
-    ChannelTextBase : 'any-text-channel',
-    ChannelText : 'text-channel',
-    ChannelPrivate : 'private-channel',
-    ChannelVoice : 'voice-channel',
-    ChannelGroup : 'group-channel',
-    ChannelCategory : 'category-channel',
-    ChannelStore : 'store-channel',
-    ChannelThread : 'thread-channel',
-    Invite : 'invite',
-    Role : 'role',
-    Guild : 'guild',
-    Message : 'message',
-    str : 'string',
-    int : 'integer',
-    timedelta : 'time-delta',
-    Emoji : 'emoji',
-        }
+    UserBase: 'user',
+    User: 'user',
+    ChannelBase: 'channel',
+    ChannelGuildBase: 'guild-channel',
+    ChannelTextBase: 'any-text-channel',
+    ChannelText: 'text-channel',
+    ChannelPrivate: 'private-channel',
+    ChannelVoice: 'voice-channel',
+    ChannelGroup: 'group-channel',
+    ChannelCategory: 'category-channel',
+    ChannelStore: 'store-channel',
+    ChannelThread: 'thread-channel',
+    Invite: 'invite',
+    Role: 'role',
+    Guild: 'guild',
+    Message: 'message',
+    str: 'string',
+    int: 'integer',
+    timedelta: 'time-delta',
+    Emoji: 'emoji',
+}
 
 if (relativedelta is not None):
     ARGUMENT_TYPE_TO_NAME[relativedelta] = 'relative-time-delta'
@@ -66,7 +66,7 @@ ARGUMENT_SEPARATOR_SPACE_AFTER_ONLY = {
     ',',
     ':',
     ';',
-        }
+}
 
 COLOR_GETTER_TYPE_STATIC = 0
 COLOR_GETTER_TYPE_CALLABLE = 1
@@ -429,7 +429,7 @@ class SubterraneanHelpCommand:
         result = [
             self.__class__.__name__,
             '(',
-                ]
+        ]
         
         result.append('color_getter=')
         result.append(repr(self.color_getter))
@@ -641,7 +641,8 @@ class SubterraneanHelpCommand:
         
         embeds = [
             Embed('Categories', page, color=color).add_field(field_name, f'page {index}/{page_count}')
-                for index, page in enumerate(pages, 1)]
+                for index, page in enumerate(pages, 1)
+        ]
         
         embed_postprocessor = self.embed_postprocessor
         if (embed_postprocessor is not None):

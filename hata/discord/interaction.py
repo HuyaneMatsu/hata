@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption',
-    'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes', 'ApplicationCommandPermission',
-    'ApplicationCommandPermissionOverwrite',)
+    'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes',
+    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite',)
 
 from ..backend.utils import modulize
 
@@ -2004,7 +2004,7 @@ class ApplicationCommandInteractionOption:
         result = [
             '<', self.__class__.__name__,
             ', name=', repr(self.name),
-                ]
+        ]
         
         type_ = self.type
         if type_ is not ApplicationCommandOptionType.none:

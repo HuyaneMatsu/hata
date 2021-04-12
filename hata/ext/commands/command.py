@@ -3693,25 +3693,9 @@ class CommandProcesser(EventWaitforBase):
         A get-set-del property for changing the command processer's command name rule.
         """)
     
-    def _get_precheck(self):
-        return self._precheck
-    
-    def _set_precheck(self, precheck):
-        if precheck is None:
-            precheck = self.__class__._default_precheck
-        else:
-            test_precheck(precheck)
-        
-        self._precheck = precheck
-    
-    def _del_precheck(self):
-        self._precheck = self.__class__._default_precheck
-    
-    precheck = property(_get_precheck, _set_precheck, _del_precheck)
-    del _get_precheck, _set_precheck, _del_precheck
-    
-    if DOCS_ENABLED:
-        precheck.__doc__ = ("""
+    @property
+    def precheck(self):
+        """
         A get-set-del property for changing the command processer's precheck.
         
         Precheck is a function, which decides whether a reviewed message should be processed. Defaults to
@@ -3732,4 +3716,18 @@ class CommandProcesser(EventWaitforBase):
         +===================+===========+
         | should_process    | `bool`    |
         +-------------------+-----------+
-        """)
+        """
+        return self._precheck
+    
+    @precheck.setter
+    def precheck(self, precheck):
+        if precheck is None:
+            precheck = self.__class__._default_precheck
+        else:
+            test_precheck(precheck)
+        
+        self._precheck = precheck
+    
+    @precheck.deleter
+    def precheck(self):
+        self._precheck = self.__class__._default_precheck

@@ -118,7 +118,7 @@ class EventThread:
         
         extracted = [
             'Unexpected exception occurred',
-                ]
+        ]
         
         if (in_ is not None):
             extracted.append('at ')
@@ -1126,7 +1126,7 @@ class StreamWriter:
             self.__class__.__name__,
             'transport=',
             repr(self._transport)
-                ]
+        ]
         
         reader = self._reader
         if reader is not None:
@@ -1200,7 +1200,7 @@ class StreamReader:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         buffer = self._buffer
         if buffer:

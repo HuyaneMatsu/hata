@@ -72,10 +72,10 @@ class SystemChannelFlag(ReverseFlagBase):
     +-----------------------+-----------------------+
     """
     __keys__ = {
-        'welcome'       : 0,
-        'boost'         : 1,
-        'setup_tips'    : 2,
-            }
+        'welcome': 0,
+        'boost': 1,
+        'setup_tips': 2,
+    }
     
     @property
     def none(self):

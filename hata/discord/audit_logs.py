@@ -666,7 +666,7 @@ class AuditLogEntry:
             '<',self.__class__.__name__,
             ' id=',repr(self.id),
             ', type=',self.type.name,
-                ]
+        ]
         
         result.append(', user=')
         user = self.user

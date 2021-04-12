@@ -2616,24 +2616,24 @@ class is_in_any_category(_check_base):
 
 
 CHECK_INVERT_TABLE = {
-    bot_account_only    : user_account_only     ,
-    guild_only          : private_only          ,
-    private_only        : guild_only            ,
-    user_account_only   : bot_account_only      ,
-        }
+    bot_account_only: user_account_only,
+    guild_only: private_only,
+    private_only: guild_only,
+    user_account_only: bot_account_only,
+}
 
 CHECKS_ENTITY_SLOTS = {
-    is_channel              : 'channel_id'   ,
-    is_guild                : 'guild_id'     ,
-    is_in_category          : 'category_id'  ,
-    has_role                : 'role'         ,
-    owner_or_has_role       : 'role'         ,
-    is_any_channel          : 'channel_ids'  ,
-    is_any_guild            : 'guild_ids'    ,
-    is_in_any_category      : 'category_ids' ,
-    has_any_role            : 'roles'        ,
-    owner_or_has_any_role   : 'roles'        ,
-        }
+    is_channel: 'channel_id',
+    is_guild: 'guild_id',
+    is_in_category: 'category_id',
+    has_role: 'role',
+    owner_or_has_role: 'role',
+    is_any_channel: 'channel_ids',
+    is_any_guild: 'guild_ids',
+    is_in_any_category: 'category_ids',
+    has_any_role: 'roles',
+    owner_or_has_any_role: 'roles',
+}
 
 CHECKS_ENTITY_TYPES = (
     is_channel,
@@ -2646,53 +2646,53 @@ CHECKS_ENTITY_TYPES = (
     is_in_any_category,
     has_any_role,
     owner_or_has_any_role,
-        )
+)
 
 CHECKS_OR_ONLY_TYPES = (
     owner_only,
     client_only,
-        )
+)
 
 CHECK_OR_TABLE = {
-    frozenset((guild_only             , client_has_guild_permissions    )): guild_only                      ,
-    frozenset((guild_only             , booster_only                    )): guild_only                      ,
-    frozenset((guild_only             , has_guild_permissions           )): guild_only                      ,
-    frozenset((guild_only             , guild_only                      )): guild_only                      ,
-    frozenset((guild_only             , guild_owner                     )): guild_only                      ,
-    frozenset((guild_only             , has_guild_permissions           )): guild_only                      ,
-    frozenset((guild_only             , is_guild                        )): guild_only                      ,
-    frozenset((guild_only             , is_any_guild                    )): guild_only                      ,
-    frozenset((guild_only             , is_in_category                  )): guild_only                      ,
-    frozenset((guild_only             , is_in_any_category              )): guild_only                      ,
-    frozenset((guild_only             , owner_or_guild_owner            )): guild_only                      ,
-    frozenset((guild_only             , owner_or_has_guild_permissions  )): guild_only                      ,
+    frozenset((guild_only, client_has_guild_permissions)): guild_only,
+    frozenset((guild_only, booster_only)): guild_only,
+    frozenset((guild_only, has_guild_permissions)): guild_only,
+    frozenset((guild_only, guild_only)): guild_only,
+    frozenset((guild_only, guild_owner)): guild_only,
+    frozenset((guild_only, has_guild_permissions)): guild_only,
+    frozenset((guild_only, is_guild)): guild_only,
+    frozenset((guild_only, is_any_guild)): guild_only,
+    frozenset((guild_only, is_in_category)): guild_only,
+    frozenset((guild_only, is_in_any_category)): guild_only,
+    frozenset((guild_only, owner_or_guild_owner)): guild_only,
+    frozenset((guild_only, owner_or_has_guild_permissions)): guild_only,
     
 #   Note, that `guild_owner` and `has_guild_permissions` require to be inside of a `guild`, so we cannot take them.
-#   frozenset((owner_only             , guild_owner                     )): owner_or_guild_owner            ,
-#   frozenset((owner_only             , has_guild_permissions           )): owner_or_has_guild_permissions  ,
+#   frozenset((owner_only, guild_owner)): owner_or_guild_owner,
+#   frozenset((owner_only, has_guild_permissions)): owner_or_has_guild_permissions,
     
-    frozenset((owner_only             , has_any_role                    )): owner_or_has_any_role           ,
-    frozenset((owner_only             , has_permissions                 )): owner_or_has_permissions        ,
-    frozenset((owner_only             , has_role                        )): owner_or_has_role               ,
+    frozenset((owner_only, has_any_role)): owner_or_has_any_role,
+    frozenset((owner_only, has_permissions)): owner_or_has_permissions,
+    frozenset((owner_only, has_role)): owner_or_has_role,
     
-    frozenset((client_only            , user_account_only               )): user_account_or_client          ,
+    frozenset((client_only, user_account_only)): user_account_or_client,
     
-    frozenset((is_channel             , is_channel                      )): is_any_channel                  ,
-    frozenset((is_channel             , is_any_channel                  )): is_any_channel                  ,
-    frozenset((is_any_channel         , is_any_channel                  )): is_any_channel                  ,
-    frozenset((is_guild               , is_guild                        )): is_any_guild                    ,
-    frozenset((is_guild               , is_any_guild                    )): is_any_guild                    ,
-    frozenset((is_any_guild           , is_any_guild                    )): is_any_guild                    ,
-    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
-    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
-    frozenset((is_in_any_category     , is_in_any_category              )): is_in_any_category              ,
-    frozenset((has_role               , has_role                        )): has_any_role                    ,
-    frozenset((has_role               , has_any_role                    )): has_any_role                    ,
-    frozenset((has_any_role           , has_any_role                    )): has_any_role                    ,
-    frozenset((owner_or_has_role      , owner_or_has_role               )): owner_or_has_any_role           ,
-    frozenset((owner_or_has_role      , owner_or_has_any_role           )): owner_or_has_any_role           ,
-    frozenset((owner_or_has_any_role  , owner_or_has_any_role           )): owner_or_has_any_role           ,
-        }
+    frozenset((is_channel, is_channel)): is_any_channel,
+    frozenset((is_channel, is_any_channel)): is_any_channel,
+    frozenset((is_any_channel, is_any_channel)): is_any_channel,
+    frozenset((is_guild, is_guild)): is_any_guild,
+    frozenset((is_guild, is_any_guild)): is_any_guild,
+    frozenset((is_any_guild, is_any_guild)): is_any_guild,
+    frozenset((is_in_category, is_in_any_category)): is_in_any_category,
+    frozenset((is_in_category, is_in_any_category)): is_in_any_category,
+    frozenset((is_in_any_category, is_in_any_category)): is_in_any_category,
+    frozenset((has_role, has_role)): has_any_role,
+    frozenset((has_role, has_any_role)): has_any_role,
+    frozenset((has_any_role, has_any_role)): has_any_role,
+    frozenset((owner_or_has_role, owner_or_has_role)): owner_or_has_any_role,
+    frozenset((owner_or_has_role, owner_or_has_any_role)): owner_or_has_any_role,
+    frozenset((owner_or_has_any_role, owner_or_has_any_role)): owner_or_has_any_role,
+}
 
 
 CHECK_PERMISSION_TABLE = {
@@ -2702,39 +2702,39 @@ CHECK_PERMISSION_TABLE = {
     has_permissions,
     owner_or_has_guild_permissions,
     owner_or_has_permissions,
-        }
+}
 
 CHECKS_AND_ONLY_TYPES = (
     guild_only,
-        )
+)
 
 CHECK_AND_TABLE = {
-    frozenset((guild_only             , client_has_guild_permissions    )): client_has_guild_permissions    ,
-    frozenset((guild_only             , booster_only                    )): booster_only                    ,
-    frozenset((guild_only             , has_guild_permissions           )): has_guild_permissions           ,
-    frozenset((guild_only             , guild_only                      )): guild_only                      ,
-    frozenset((guild_only             , guild_owner                     )): guild_owner                     ,
-    frozenset((guild_only             , has_guild_permissions           )): has_guild_permissions           ,
-    frozenset((guild_only             , is_guild                        )): is_guild                        ,
-    frozenset((guild_only             , is_any_guild                    )): is_any_guild                    ,
-    frozenset((guild_only             , is_in_category                  )): is_in_category                  ,
-    frozenset((guild_only             , is_in_any_category              )): is_in_any_category              ,
-    frozenset((guild_only             , owner_or_guild_owner            )): owner_or_guild_owner            ,
-    frozenset((guild_only             , owner_or_has_guild_permissions  )): owner_or_has_guild_permissions  ,
+    frozenset((guild_only, client_has_guild_permissions)): client_has_guild_permissions,
+    frozenset((guild_only, booster_only)): booster_only,
+    frozenset((guild_only, has_guild_permissions)): has_guild_permissions,
+    frozenset((guild_only, guild_only)): guild_only,
+    frozenset((guild_only, guild_owner)): guild_owner,
+    frozenset((guild_only, has_guild_permissions)): has_guild_permissions,
+    frozenset((guild_only, is_guild)): is_guild,
+    frozenset((guild_only, is_any_guild)): is_any_guild,
+    frozenset((guild_only, is_in_category)): is_in_category,
+    frozenset((guild_only, is_in_any_category)): is_in_any_category,
+    frozenset((guild_only, owner_or_guild_owner)): owner_or_guild_owner,
+    frozenset((guild_only, owner_or_has_guild_permissions)): owner_or_has_guild_permissions,
     
-    frozenset((is_channel             , is_channel                      )): is_any_channel                  ,
-    frozenset((is_channel             , is_any_channel                  )): is_any_channel                  ,
-    frozenset((is_any_channel         , is_any_channel                  )): is_any_channel                  ,
-    frozenset((is_guild               , is_guild                        )): is_any_guild                    ,
-    frozenset((is_guild               , is_any_guild                    )): is_any_guild                    ,
-    frozenset((is_any_guild           , is_any_guild                    )): is_any_guild                    ,
-    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
-    frozenset((is_in_category         , is_in_any_category              )): is_in_any_category              ,
-    frozenset((is_in_any_category     , is_in_any_category              )): is_in_any_category              ,
-    frozenset((has_role               , has_role                        )): has_any_role                    ,
-    frozenset((has_role               , has_any_role                    )): has_any_role                    ,
-    frozenset((has_any_role           , has_any_role                    )): has_any_role                    ,
-    frozenset((owner_or_has_role      , owner_or_has_role               )): owner_or_has_any_role           ,
-    frozenset((owner_or_has_role      , owner_or_has_any_role           )): owner_or_has_any_role           ,
-    frozenset((owner_or_has_any_role  , owner_or_has_any_role           )): owner_or_has_any_role           ,
-        }
+    frozenset((is_channel, is_channel)): is_any_channel,
+    frozenset((is_channel, is_any_channel)): is_any_channel,
+    frozenset((is_any_channel, is_any_channel)): is_any_channel,
+    frozenset((is_guild, is_guild)): is_any_guild,
+    frozenset((is_guild, is_any_guild)): is_any_guild,
+    frozenset((is_any_guild, is_any_guild)): is_any_guild,
+    frozenset((is_in_category, is_in_any_category)): is_in_any_category,
+    frozenset((is_in_category, is_in_any_category)): is_in_any_category,
+    frozenset((is_in_any_category, is_in_any_category)): is_in_any_category,
+    frozenset((has_role, has_role)): has_any_role,
+    frozenset((has_role, has_any_role)): has_any_role,
+    frozenset((has_any_role, has_any_role)): has_any_role,
+    frozenset((owner_or_has_role, owner_or_has_role)): owner_or_has_any_role,
+    frozenset((owner_or_has_role, owner_or_has_any_role)): owner_or_has_any_role,
+    frozenset((owner_or_has_any_role, owner_or_has_any_role)): owner_or_has_any_role,
+}

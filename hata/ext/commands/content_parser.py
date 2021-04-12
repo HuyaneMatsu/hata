@@ -410,13 +410,13 @@ class ConverterFlag(FlagBase):
     Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
     """
     __keys__ = {
-        'url'       : 0,
-        'mention'   : 1,
-        'name'      : 2,
-        'id'        : 3,
+        'url': 0,
+        'mention': 1,
+        'name': 2,
+        'id': 3,
         'everywhere': 4,
-        'profile'   : 5,
-            }
+        'profile': 5,
+    }
     
     user_default = NotImplemented
     user_all = NotImplemented
@@ -674,7 +674,7 @@ class RestParserContext(ParserContextBase):
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         default_type = self.default_type
         if default_type:
@@ -758,10 +758,10 @@ class ParserContext(ParserContextBase):
         result = [
             '<',
             self.__class__.__name__,
-            'converter=',
+            ' converter=',
             self.converter.__name__,
             ' type=',
-                ]
+        ]
         
         type_ = self.type
         if (type_ is None):
@@ -892,7 +892,7 @@ class ChainedArgsParserContext(ParserContextBase):
             '<',
             self.__class__.__name__,
             ' parser_contexts=[',
-                ]
+        ]
         
         parser_contexts = self.parser_contexts
         index = 0
@@ -1025,7 +1025,7 @@ class SingleParserContext(ParserContext):
             '<',
             self.__class__.__name__,
             ' type=',
-                ]
+        ]
         
         type_ = self.type
         if (type_ is None):
@@ -1169,7 +1169,7 @@ class ChainedParserContext(ChainedArgsParserContext):
             '<',
             self.__class__.__name__,
             ' parser_contexts=[',
-                ]
+        ]
         
         parser_contexts = self.parser_contexts
         index = 0
@@ -1380,7 +1380,7 @@ class ConverterSetting:
             self.__class__.__name__,
             ' converter=',
             self.converter.__name__,
-                ]
+        ]
         
         default_type = self.default_type
         if default_type is None:
@@ -1603,8 +1603,8 @@ ConverterSetting(
     default_type = User,
     alternative_types = [
         UserBase,
-            ],
-        )
+    ],
+)
 
 async def client_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -1688,7 +1688,7 @@ ConverterSetting(
     alternative_type_name = 'client',
     default_type = Client,
     alternative_types = None,
-        )
+)
 
 async def channel_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -1765,8 +1765,8 @@ ConverterSetting(
         ChannelCategory,
         ChannelStore,
         ChannelThread,
-            ],
-        )
+    ],
+)
 
 async def role_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -1821,7 +1821,7 @@ ConverterSetting(
     alternative_type_name = 'role',
     default_type = Role,
     alternative_types = None,
-        )
+)
 
 async def emoji_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -1875,7 +1875,7 @@ ConverterSetting(
     alternative_type_name = 'emoji',
     default_type = Emoji,
     alternative_types = None,
-        )
+)
 
 async def guild_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -1909,7 +1909,7 @@ ConverterSetting(
     alternative_type_name = 'guild',
     default_type = Guild,
     alternative_types = None,
-        )
+)
 
 # Gets a message by it's id
 async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
@@ -2113,7 +2113,7 @@ ConverterSetting(
     alternative_type_name = 'invite',
     default_type = Invite,
     alternative_types = None,
-        )
+)
 
 
 async def color_converter(parser_ctx, content_parser_ctx):
@@ -2131,7 +2131,7 @@ ConverterSetting(
     alternative_type_name = 'color',
     default_type = Color,
     alternative_types = None,
-        )
+)
 
 
 async def str_converter(parser_ctx, content_parser_ctx):
@@ -2145,7 +2145,7 @@ ConverterSetting(
     alternative_type_name = None,
     default_type = str,
     alternative_types = None,
-        )
+)
 
 
 async def int_converter(parser_ctx, content_parser_ctx):
@@ -2171,7 +2171,7 @@ ConverterSetting(
     alternative_type_name = None,
     default_type = int,
     alternative_types = None,
-        )
+)
 
 async def tdelta_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -2188,7 +2188,7 @@ ConverterSetting(
     alternative_type_name = 'tdelta',
     default_type = timedelta,
     alternative_types = None,
-        )
+)
 
 if (relativedelta is not None):
     async def rdelta_converter(parser_ctx, content_parser_ctx):
@@ -2206,7 +2206,7 @@ if (relativedelta is not None):
         alternative_type_name = 'rdelta',
         default_type = relativedelta,
         alternative_types = None,
-            )
+    )
 
 else:
     rdelta_converter = None
@@ -2669,7 +2669,7 @@ class Converter:
         result = [
             self.__class__.__name__,
             '(annotation=',
-                ]
+        ]
         
         is_default_only = True
         
@@ -3052,7 +3052,7 @@ class CommandContentParser:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         parsers = self._parsers
         if (parsers is not None):
@@ -3353,7 +3353,7 @@ class ContentParser(CommandContentParser):
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         func = self._func
         result.append(' func=')

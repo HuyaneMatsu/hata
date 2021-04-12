@@ -609,31 +609,32 @@ build_type_token_nodes({
         TOKEN_TYPE_SPACE : None,
         TOKEN_TYPE_LINEBREAK : {
             TOKEN_TYPE_LINEBREAK_ESCAPED : None,
-                },
+        },
         TOKEN_TYPE_NON_SPACE : {
             TOKEN_TYPE_NON_SPACE_UNIDENTIFIED : None,
             TOKEN_TYPE_CONSTANT : {
                 TOKEN_TYPE_NUMERIC : {
                     TOKEN_TYPE_NUMERIC_FLOAT : {
                         TOKEN_TYPE_NUMERIC_FLOAT_COMPLEX : None,
-                            },
+                    },
                     TOKEN_TYPE_NUMERIC_INTEGER : {
                         TOKEN_TYPE_NUMERIC_INTEGER_HEXADECIMAL : None,
                         TOKEN_TYPE_NUMERIC_INTEGER_DECIMAL : None,
                         TOKEN_TYPE_NUMERIC_INTEGER_OCTAL : None,
                         TOKEN_TYPE_NUMERIC_INTEGER_BINARY : None,
-                            },
-                TOKEN_TYPE_STRING : {
-                    TOKEN_TYPE_STRING_BINARY : None,
-                    TOKEN_TYPE_STRING_UNICODE : {
-                        TOKEN_TYPE_STRING_UNICODE_FORMAT : {
-                            TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK : None,
-                            TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE : None,
-                            TOKEN_TYPE_STRING_UNICODE_FORMAT_POSTFIX : None,
-                                },
+                    },
+                    TOKEN_TYPE_STRING : {
+                        TOKEN_TYPE_STRING_BINARY : None,
+                        TOKEN_TYPE_STRING_UNICODE : {
+                            TOKEN_TYPE_STRING_UNICODE_FORMAT : {
+                                TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK : None,
+                                TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE : None,
+                                TOKEN_TYPE_STRING_UNICODE_FORMAT_POSTFIX : None,
                             },
                         },
                     },
+                },
+            },
             TOKEN_TYPE_IDENTIFIER : {
                 TOKEN_TYPE_IDENTIFIER_VARIABLE : None,
                 TOKEN_TYPE_IDENTIFIER_ATTRIBUTE : None,
@@ -642,25 +643,24 @@ build_type_token_nodes({
                     TOKEN_TYPE_IDENTIFIER_BUILTIN_VARIABLE : None,
                     TOKEN_TYPE_IDENTIFIER_BUILTIN_CONSTANT : None,
                     TOKEN_TYPE_IDENTIFIER_BUILTIN_EXCEPTION : None,
-                        },
+                },
                 TOKEN_TYPE_IDENTIFIER_MAGIC : {
                     TOKEN_TYPE_IDENTIFIER_MAGIC_FUNCTION : None,
                     TOKEN_TYPE_IDENTIFIER_MAGIC_VARIABLE : None,
-                        },
-                    },
-                },
-        TOKEN_TYPE_SPECIAL : {
-            TOKEN_TYPE_SPECIAL_OPERATOR : {
-                TOKEN_TYPE_SPECIAL_OPERATOR_ATTRIBUTE : None,
-                TOKEN_TYPE_SPECIAL_OPERATOR_WORD : None,
-                    },
-            TOKEN_TYPE_SPECIAL_PUNCTUATION : None,
-            TOKEN_TYPE_SPECIAL_CONSOLE_PREFIX : None,
                 },
             },
-    TOKEN_TYPE_COMMENT : None,
+            TOKEN_TYPE_SPECIAL : {
+                TOKEN_TYPE_SPECIAL_OPERATOR : {
+                    TOKEN_TYPE_SPECIAL_OPERATOR_ATTRIBUTE : None,
+                    TOKEN_TYPE_SPECIAL_OPERATOR_WORD : None,
+                },
+                TOKEN_TYPE_SPECIAL_PUNCTUATION : None,
+                TOKEN_TYPE_SPECIAL_CONSOLE_PREFIX : None,
+            },
         },
-    },)
+    TOKEN_TYPE_COMMENT : None,
+    },
+},)
 
 
 MERGE_TOKEN_TYPES = {
@@ -679,7 +679,7 @@ MERGE_TOKEN_TYPES = {
     TOKEN_TYPE_SPECIAL_OPERATOR_WORD,
     # Yes, space may be duped as well.
     TOKEN_TYPE_SPACE,
-        }
+}
 
 
 class Token:
@@ -1979,4 +1979,4 @@ PYTHON_PARSERS_FORMAT_STRING = (
     _try_match_operator,
     _try_match_format_string_postfix,
     _try_match_anything,
-      )
+)

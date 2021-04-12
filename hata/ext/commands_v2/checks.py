@@ -123,7 +123,7 @@ class CheckBase(metaclass=CheckMeta):
         result = [
             self.__class__.__name__,
             '(',
-                ]
+        ]
         
         slots = self.__all_slot__
         limit = len(slots)

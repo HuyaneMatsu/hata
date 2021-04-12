@@ -719,11 +719,11 @@ class DiscordGatewayException(BaseException):
     RESHARD_ERROR_CODES = (4011,)
     
     CODETABLE = {
-        4011 : 'A gateway would have handled too many guilds, resharding is required.',
-        4013 : 'An invalid intent is one that is not meaningful and not documented.',
-        4014 : 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not '
-               'whitelisted to use.',
-            }
+        4011: 'A gateway would have handled too many guilds, resharding is required.',
+        4013: 'An invalid intent is one that is not meaningful and not documented.',
+        4014: 'A disallowed intent is one which you have not enabled for your bot or one that your bot is not '
+              'whitelisted to use.',
+    }
     
     def __init__(self, code):
         """
@@ -742,7 +742,7 @@ class DiscordGatewayException(BaseException):
         result = [
             self.__class__.__name__,
             '(code=',
-                ]
+        ]
         
         code = self.code
         result.append(repr(code))

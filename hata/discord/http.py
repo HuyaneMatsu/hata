@@ -7,12 +7,12 @@ from ..backend.utils import imultidict, WeakMap, WeakKeyDictionary
 from ..backend.futures import sleep, Future
 from ..backend.http import HTTPClient, RequestCM
 from ..backend.connector import TCPConnector
-from ..backend.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_POST, METHOD_PUT, CONTENT_TYPE, USER_AGENT, \
-    AUTHORIZATION
+from ..backend.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_POST, METHOD_PUT, CONTENT_TYPE, \
+    USER_AGENT, AUTHORIZATION
 from ..backend.quote import quote
 from ..backend.event_loop import LOOP_TIME
 
-from .. env import API_VERSION
+from ..env import API_VERSION
 
 from .exceptions import DiscordException
 from .utils import to_json, from_json
@@ -31,7 +31,7 @@ version_l = [
     '.',
     str(implement.version[1]),
     ' '
-        ]
+]
 
 if implement.version[3] != 'final':
     version_l.append(implement.version[3])

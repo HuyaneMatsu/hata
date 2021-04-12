@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('CallableAnalyzer', )
 
-from .utils import function, MethodLike
+from .utils import FunctionType, MethodLike
 
 is_coroutine_function = NotImplemented
 is_coroutine_generator_function = NotImplemented
@@ -290,7 +290,7 @@ class CallableAnalyzer:
             If the given object is not callable, or could not be used as probably intended.
         """
         while True:
-            if isinstance(callable_, function):
+            if isinstance(callable_, FunctionType):
                 
                 real_function = callable_
                 if is_coroutine_function(real_function):
@@ -326,7 +326,7 @@ class CallableAnalyzer:
                 else:
                     instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                     
-                if type(real_function) is function:
+                if type(real_function) is FunctionType:
                     method_allocation = 1
                 else:
                     method_allocation = MethodLike.get_reserved_argcount(real_function)
@@ -357,7 +357,7 @@ class CallableAnalyzer:
                             else:
                                 instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                         
-                        if type(real_function) is function:
+                        if type(real_function) is FunctionType:
                             method_allocation = 1
                         else:
                             method_allocation = MethodLike.get_reserved_argcount(real_function)
@@ -380,7 +380,7 @@ class CallableAnalyzer:
                         else:
                             instance_to_async = INSTANCE_TO_ASYNC_CANNOT
                         
-                        if type(real_function) is function:
+                        if type(real_function) is FunctionType:
                             method_allocation = 1
                         else:
                             method_allocation = MethodLike.get_reserved_argcount(real_function)
@@ -406,7 +406,7 @@ class CallableAnalyzer:
             
             raise TypeError(f'Expected function, method or a callable object, got {callable_!r}.')
         
-        if as_method and type(callable_) is function:
+        if as_method and type(callable_) is FunctionType:
             method_allocation += 1
         
         if (real_function is not None) and ( not hasattr(real_function, '__code__')):

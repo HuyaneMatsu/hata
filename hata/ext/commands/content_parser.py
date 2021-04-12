@@ -11,7 +11,7 @@ except ImportError:
     relativedelta = None
 
 from ...env import CACHE_USER
-from ...backend.utils import function, _spaceholder, MethodLike, method, module_property, DOCS_ENABLED
+from ...backend.utils import MethodLike, module_property, MethodType, FunctionType
 from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.bases import FlagBase
@@ -1265,8 +1265,8 @@ class ConverterSetting:
             `ConverterFlag(0)`
         """
         converter_type = converter.__class__
-        if (converter_type is not function):
-            raise TypeError(f'`converter` should have been given as `{function.__name__}` instance, got '
+        if (converter_type is not FunctionType):
+            raise TypeError(f'`converter` should have been given as `{FunctionType.__name__}` instance, got '
                 f'{converter_type.__name__}.')
         
         analyzed = CallableAnalyzer(converter)
@@ -2577,7 +2577,7 @@ class Converter:
         +-----------------------+-------+
     """
     __slots__ = ('annotation', 'default_type', 'default', )
-    def __new__(cls, annotation, flags=None, default=_spaceholder, default_code=_spaceholder):
+    def __new__(cls, annotation, flags=None, default=..., default_code=...):
         """
         Creates a ``Converter`` instance with the given parameters.
         
@@ -2643,14 +2643,14 @@ class Converter:
         
         annotation = validate_annotation(annotation, flags=flags)
         
-        if (default is _spaceholder):
+        if (default is ...):
             default_type = DEFAULT_TYPE_NONE
             default_value = None
         else:
             default_type = DEFAULT_TYPE_OBJ
             default_value = default
         
-        if (default_code is not _spaceholder):
+        if (default_code is not ...):
             if default_type:
                 raise TypeError(f'`default` and `default_code` are mutually exclusive, meanwhile both was given,'
                     f'default = {default!r}, default_code = {default_code!r}.')
@@ -3150,7 +3150,7 @@ class ContentParser(CommandContentParser):
             return cls._wrapper(handler, is_method, separator)
         
         if is_method:
-            func = method(func, object())
+            func = MethodType(func, object())
         self, func = CommandContentParser.__new__(cls, func, separator)
         if is_method:
             func = func.__func__

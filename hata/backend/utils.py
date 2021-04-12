@@ -5,13 +5,7 @@ __all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescripto
     'name_property', 'weakmethod', )
 
 from functools import partial as partial_func
-
-from types import \
-    MethodType              as method, \
-    FunctionType            as function, \
-    MappingProxyType        as mapping_proxy, \
-    GetSetDescriptorType    as getset_descriptor, \
-    ModuleType              as module
+from types import MethodType, FunctionType, MappingProxyType, GetSetDescriptorType, ModuleType
 
 NoneType = type(None)
 
@@ -360,9 +354,6 @@ class KeepType:
         
         return old_class
 
-_spaceholder = object()
-
-
 class _multidict_items:
     """
     ``multidict`` item iterator.
@@ -626,7 +617,7 @@ class multidict(dict):
         dict.__setitem__(self, key, [default])
         return default
     
-    def pop_all(self, key, default=_spaceholder):
+    def pop_all(self, key, default=...):
         """
         Removes all the values from the multidict which the given `key` matched.
         
@@ -650,11 +641,11 @@ class multidict(dict):
         try:
             return dict.pop(self, key)
         except KeyError:
-            if default is not _spaceholder:
+            if default is not ...:
                 return default
             raise
     
-    def pop_one(self, key, default=_spaceholder):
+    def pop_one(self, key, default=...):
         """
         Removes the first value from the multidict, which matches the given `key`.
         
@@ -678,7 +669,7 @@ class multidict(dict):
         try:
             values = dict.__getitem__(self, key)
         except KeyError:
-            if default is not _spaceholder:
+            if default is not ...:
                 return default
             raise
         else:
@@ -921,7 +912,7 @@ class imultidict(multidict):
         key = istr(key)
         return multidict.setdefault(self, key, default)
     
-    def pop_all(self, key, default=_spaceholder):
+    def pop_all(self, key, default=...):
         """
         Removes all the values from the multidict which the given `key` matched.
         
@@ -945,7 +936,7 @@ class imultidict(multidict):
         key = istr(key)
         return multidict.pop_all(self, key, default)
 
-    def pop_one(self, key, default=_spaceholder):
+    def pop_one(self, key, default=...):
         """
         Removes the first value from the multidict, which matches the given `key`.
         
@@ -1183,8 +1174,8 @@ class cached_property:
         if obj is None:
             return self
         
-        value = obj._cache.get(self.name, _spaceholder)
-        if value is _spaceholder:
+        value = obj._cache.get(self.name, ...)
+        if value is ...:
             value = self.fget(obj)
             obj._cache[self.name] = value
         
@@ -1273,7 +1264,7 @@ class MethodLike(metaclass=SubCheckType):
     __reserved_argcount__ : `int` = `1`
         The amount of reserved arguments by a method subclass.
     """
-    __subclasses__ = {method}
+    __subclasses__ = {MethodType}
     __slots__ = ()
     def __init_subclass__(cls):
         cls.__subclasses__.add(cls)
@@ -1421,23 +1412,18 @@ class BaseMethodDescriptor:
         raise AttributeError('can\'t delete attribute')
 
 # This 2 type can be function
-wrapper_descriptor = type(object.__ne__)
-method_descriptor = type(object.__format__)
+WrapperDescriptorType = type(object.__ne__)
+MethodDescriptorType = type(object.__format__)
 
-DO_NOT_MODULIZE_TYPES = [mapping_proxy, getset_descriptor, ]
+DO_NOT_MODULIZE_TYPES = [MappingProxyType, GetSetDescriptorType]
 
-if wrapper_descriptor is not function:
-    DO_NOT_MODULIZE_TYPES.append(wrapper_descriptor)
+if WrapperDescriptorType is not FunctionType:
+    DO_NOT_MODULIZE_TYPES.append(WrapperDescriptorType)
 
-if method_descriptor is not function:
-    DO_NOT_MODULIZE_TYPES.append(method_descriptor)
+if MethodDescriptorType is not FunctionType:
+    DO_NOT_MODULIZE_TYPES.append(MethodDescriptorType)
 
 DO_NOT_MODULIZE_TYPES = tuple(DO_NOT_MODULIZE_TYPES)
-
-del mapping_proxy
-del getset_descriptor
-del wrapper_descriptor
-del method_descriptor
 
 def _modulize_function(old, globals_, source_module, module_name, module_path):
     """
@@ -1464,7 +1450,7 @@ def _modulize_function(old, globals_, source_module, module_name, module_path):
     if old.__module__ != source_module:
         return old
     
-    new = function(old.__code__, globals_, old.__name__, old.__defaults__, old.__closure__)
+    new = FunctionType(old.__code__, globals_, old.__name__, old.__defaults__, old.__closure__)
     new.__module__ = module_path
     qualname = old.__qualname__
     if (qualname is not None) and (len(qualname) > len(module_name)) and qualname[len(module_name)] =='.' and \
@@ -1505,7 +1491,7 @@ def _modulize_type(klass, globals_, source_module, module_name, module_path):
         value = getattr(klass, name)
         
         value_type = value.__class__
-        if value_type is function:
+        if value_type is FunctionType:
             value = _modulize_function(value, globals_, source_module, module_name, module_path)
             setattr(klass, name, value)
         
@@ -1543,7 +1529,7 @@ def modulize(klass):
     try:
         result_module = sys.modules['module_path']
     except KeyError:
-        result_module = module(module_path)
+        result_module = ModuleType(module_path)
         sys.modules[module_path] = result_module
         globals_ = result_module.__dict__
         globals_['__builtins__'] = __builtins__
@@ -1570,13 +1556,13 @@ def modulize(klass):
         if value_type in DO_NOT_MODULIZE_TYPES:
             continue
         
-        if value_type is function:
+        if value_type is FunctionType:
             value = _modulize_function(value, globals_, source_module, module_name, module_path)
         
         if issubclass(value_type, type):
             _modulize_type(value, globals_, source_module, module_name, module_path)
         
-        module.__setattr__(result_module, name, value)
+        ModuleType.__setattr__(result_module, name, value)
     
     return result_module
 
@@ -1606,7 +1592,7 @@ class methodize:
         if obj is None:
             return klass
         
-        return method(klass, obj)
+        return MethodType(klass, obj)
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
@@ -1628,7 +1614,8 @@ def copy_func(old):
     new : `functions`
         The new created function.
     """
-    new = function(old.__code__, old.__globals__, name=old.__name__, argdefs=old.__defaults__, closure=old.__closure__)
+    new = FunctionType(old.__code__, old.__globals__, name=old.__name__, argdefs=old.__defaults__,
+        closure=old.__closure__)
     new.__kwdefaults__ = old.__kwdefaults__
     return new
 
@@ -2576,7 +2563,7 @@ class HybridValueDictionary(dict):
     
     Class Attributes
     ----------------
-    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+    MAX_REPR_ELEMENT_LIMIT : `int` = `50`
         The maximal amount of items to render by ``.__repr__``.
     
     Notes
@@ -2585,7 +2572,7 @@ class HybridValueDictionary(dict):
     """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
-    MAX_RERP_ELEMENT_LIMIT = 50
+    MAX_REPR_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
         """
@@ -2711,7 +2698,7 @@ class HybridValueDictionary(dict):
         """Returns the representation of the hybrid value dictionary."""
         result = [self.__class__.__name__, '({']
         if len(self):
-            limit = self.MAX_RERP_ELEMENT_LIMIT
+            limit = self.MAX_REPR_ELEMENT_LIMIT
             collected = 0
             for key, (value_weakreferable, value_or_reference) in dict.items(self):
                 if value_weakreferable:
@@ -2861,7 +2848,7 @@ class HybridValueDictionary(dict):
         return _HybridValueDictionaryKeyIterator(self)
     
     # Need goto for better code-style
-    def pop(self, key, default=_spaceholder):
+    def pop(self, key, default=...):
         """
         Pops the value of the hybrid value dictionary which matches the given key.
         
@@ -2882,7 +2869,7 @@ class HybridValueDictionary(dict):
         KeyError
             If `key` could not be matched and `default` value is was not given either.
         """
-        value_pair = dict.pop(self, key, _spaceholder)
+        value_pair = dict.pop(self, key, ...)
         
         if (value_pair is not default):
             value_weakreferable, value_or_reference = value_pair
@@ -2894,7 +2881,7 @@ class HybridValueDictionary(dict):
             if (value is not None):
                 return value
         
-        if default is _spaceholder:
+        if default is ...:
             raise KeyError(key)
         
         return default
@@ -3270,7 +3257,7 @@ class WeakValueDictionary(dict):
     
     Class Attributes
     ----------------
-    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+    MAX_REPR_ELEMENT_LIMIT : `int` = `50`
         The maximal amount of items to render by ``.__repr__``.
     
     Notes
@@ -3279,7 +3266,7 @@ class WeakValueDictionary(dict):
     """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
-    MAX_RERP_ELEMENT_LIMIT = 50
+    MAX_REPR_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
         """
@@ -3397,7 +3384,7 @@ class WeakValueDictionary(dict):
         result = [self.__class__.__name__, '({']
         
         if len(self):
-            limit = self.MAX_RERP_ELEMENT_LIMIT
+            limit = self.MAX_REPR_ELEMENT_LIMIT
             collected = 0
             for key, value_reference in dict.items(self):
                 value = value_reference()
@@ -3527,7 +3514,7 @@ class WeakValueDictionary(dict):
         """
         return _WeakValueDictionaryKeyIterator(self)
     
-    def pop(self, key, default=_spaceholder):
+    def pop(self, key, default=...):
         """
         Pops the value of the weak value dictionary which matches the given key.
         
@@ -3548,13 +3535,13 @@ class WeakValueDictionary(dict):
         KeyError
             If `key` could not be matched and `default` value is was not given either.
         """
-        value_reference = dict.pop(self, key, _spaceholder)
-        if (value_reference is not _spaceholder):
+        value_reference = dict.pop(self, key, ...)
+        if (value_reference is not ...):
             value = value_reference()
             if (value is not None):
                 return value
         
-        if default is _spaceholder:
+        if default is ...:
             raise KeyError(key)
         
         return default
@@ -3600,8 +3587,8 @@ class WeakValueDictionary(dict):
         value : `default` or `Any`
             The matched value, or `default` if none.
         """
-        value_reference = dict.get(self, key, _spaceholder)
-        if (value_reference is not _spaceholder):
+        value_reference = dict.get(self, key, ...)
+        if (value_reference is not ...):
             value = value_reference()
             if (value is not None):
                 return value
@@ -3963,7 +3950,7 @@ class WeakKeyDictionary(dict):
     
     Class Attributes
     ----------------
-    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+    MAX_REPR_ELEMENT_LIMIT : `int` = `50`
         The maximal amount of items to render by ``.__repr__``.
     
     Notes
@@ -3972,7 +3959,7 @@ class WeakKeyDictionary(dict):
     """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
-    MAX_RERP_ELEMENT_LIMIT = 50
+    MAX_REPR_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
         """
@@ -4067,7 +4054,7 @@ class WeakKeyDictionary(dict):
         result = [self.__class__.__name__, '({']
         
         if len(self):
-            limit = self.MAX_RERP_ELEMENT_LIMIT
+            limit = self.MAX_REPR_ELEMENT_LIMIT
             collected = 0
             for key_reference, value in dict.items(self):
                 key = key_reference()
@@ -4185,7 +4172,7 @@ class WeakKeyDictionary(dict):
         """
         return _WeakKeyDictionaryKeyIterator(self)
     
-    def pop(self, key, default=_spaceholder):
+    def pop(self, key, default=...):
         """
         Pops the value of the weak key dictionary which matches the given key.
         
@@ -4211,11 +4198,11 @@ class WeakKeyDictionary(dict):
         except TypeError:
             raise KeyError(key) from None
         
-        value = dict.pop(self, key_reference, _spaceholder)
-        if (value is not _spaceholder):
+        value = dict.pop(self, key_reference, ...)
+        if (value is not ...):
             return value
         
-        if default is _spaceholder:
+        if default is ...:
             raise KeyError(key)
         
         return default
@@ -4267,8 +4254,8 @@ class WeakKeyDictionary(dict):
         value : `default` or `Any`
             The matched value, or `default` if none.
         """
-        value = dict.get(self, key, _spaceholder)
-        if (value is not _spaceholder):
+        value = dict.get(self, key, ...)
+        if (value is not ...):
             return value
         
         self[key] = default
@@ -4483,7 +4470,7 @@ class WeakMap(dict):
     
     Class Attributes
     ----------------
-    MAX_RERP_ELEMENT_LIMIT : `int` = `50`
+    MAX_REPR_ELEMENT_LIMIT : `int` = `50`
         The maximal amount of items to render by ``.__repr__``.
     
     Notes
@@ -4492,7 +4479,7 @@ class WeakMap(dict):
     """
     __slots__ = ('__weakref__', '_pending_removals', '_iterating', '_callback')
     
-    MAX_RERP_ELEMENT_LIMIT = 50
+    MAX_REPR_ELEMENT_LIMIT = 50
     
     def _commit_removals(self):
         """
@@ -4600,7 +4587,7 @@ class WeakMap(dict):
         """Returns the weak map's representation."""
         result = [self.__class__.__name__, '({']
         if len(self):
-            limit = self.MAX_RERP_ELEMENT_LIMIT
+            limit = self.MAX_REPR_ELEMENT_LIMIT
             collected = 0
             
             for reference in dict.__iter__(self):
@@ -4714,7 +4701,7 @@ class WeakMap(dict):
     items = RemovedDescriptor()
     keys = RemovedDescriptor()
     
-    def pop(self, key, default=_spaceholder):
+    def pop(self, key, default=...):
         """
         Pops a key from the weak map which matches the given one.
         
@@ -4740,8 +4727,8 @@ class WeakMap(dict):
         except TypeError:
             pass
         else:
-            real_reference = dict.pop(self, reference, _spaceholder)
-            if (real_reference is not _spaceholder):
+            real_reference = dict.pop(self, reference, ...)
+            if (real_reference is not ...):
                 real_key = real_reference()
                 if (real_key is not None):
                     return real_key
@@ -4751,7 +4738,7 @@ class WeakMap(dict):
                 else:
                     dict.__delitem__(self, real_reference)
         
-        if default is _spaceholder:
+        if default is ...:
             raise KeyError(key)
         
         return default

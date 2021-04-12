@@ -11,7 +11,7 @@ from collections import deque
 from ssl import SSLContext, create_default_context
 from stat import S_ISSOCK
 
-from .utils import alchemy_incendiary, WeakReferer, weakmethod, method, WeakCallable, doc_property, DOCS_ENABLED
+from .utils import alchemy_incendiary, WeakReferer, weakmethod, MethodType, WeakCallable, doc_property, DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
@@ -127,7 +127,7 @@ class Handle:
                 '._run\nAt running ',
                 repr(self.func),
                 '\n',
-                    ])
+            ])
         
         self = None  # Needed to break cycles when an exception occurs.
 
@@ -297,7 +297,7 @@ class TimerWeakHandle(TimerHandle):
         self.when = when
         callback = self._callback(self)
         try:
-            if type(func) is method:
+            if type(func) is MethodType:
                 func = weakmethod.from_method(func, callback)
             else:
                 func = WeakCallable(func, callback)

@@ -5,7 +5,7 @@ __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 
 
 from datetime import datetime
 
-from ..backend.utils import _spaceholder, BaseMethodDescriptor
+from ..backend.utils import BaseMethodDescriptor
 
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
@@ -407,9 +407,9 @@ class MessageReference:
         self.message_id = message_id
         self.channel_id = channel_id
         self.guild_id = guild_id
-        self._message = _spaceholder
-        self._channel = _spaceholder
-        self._guild = _spaceholder
+        self._message = ...
+        self._channel = ...
+        self._guild = ...
         
         return self
     
@@ -423,7 +423,7 @@ class MessageReference:
         channel : `None` or ``ChannelBase`` instance
         """
         channel = self._channel
-        if channel is _spaceholder:
+        if channel is ...:
             channel_id = self.channel_id
             if channel_id:
                 channel = CHANNELS.get(channel_id, None)
@@ -444,7 +444,7 @@ class MessageReference:
         guild : `None` or ``Guild``
         """
         guild = self.guild
-        if guild is _spaceholder:
+        if guild is ...:
             guild_id = self.guild_id
             if guild_id:
                 guild = GUILDS.get(guild_id, None)
@@ -465,7 +465,7 @@ class MessageReference:
         message : `None` or ``Message``
         """
         message = self.message
-        if message is _spaceholder:
+        if message is ...:
             message_id = self.message_id
             if message_id:
                 message = GUILDS.get(message_id, None)
@@ -1057,7 +1057,7 @@ class Message(DiscordEntity, immortal=True):
         if guild is None:
             channel_mentions = None
         else:
-            channel_mentions = _spaceholder
+            channel_mentions = ...
         
         self._channel_mentions = channel_mentions
         
@@ -1236,7 +1236,7 @@ class Message(DiscordEntity, immortal=True):
         if isinstance(channel, ChannelGuildBase):
             _channel_mentions = None
         else:
-            _channel_mentions = _spaceholder
+            _channel_mentions = ...
         
         try:
             activity = kwargs.pop('activity')
@@ -1719,7 +1719,7 @@ class Message(DiscordEntity, immortal=True):
         channel_mentions : `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMentions`` instances))
         """
         channel_mentions = self._channel_mentions
-        if channel_mentions is _spaceholder:
+        if channel_mentions is ...:
             channel_mentions = self._parse_channel_mentions()
         return channel_mentions
     
@@ -1961,7 +1961,7 @@ class Message(DiscordEntity, immortal=True):
         if guild is None:
             return old_attributes
         
-        self._channel_mentions = _spaceholder
+        self._channel_mentions = ...
         
         cross_mention_datas = data.get('mention_channels', None)
         if cross_mention_datas is None:
@@ -2083,7 +2083,7 @@ class Message(DiscordEntity, immortal=True):
         if guild is None:
             return
         
-        self._channel_mentions = _spaceholder
+        self._channel_mentions = ...
         
         cross_mention_datas = data.get('mention_channels', None)
         if cross_mention_datas is None:

@@ -3,7 +3,7 @@ import re
 from datetime import timedelta
 
 from ...env import CACHE_USER
-from ...backend.utils import cached_property, copy_docs, function
+from ...backend.utils import cached_property, copy_docs, FunctionType
 from ...backend.analyzer import CallableAnalyzer
 from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, parse_tdelta, parse_rdelta, \
     INVITE_CODE_RP, CHANNEL_MESSAGE_RP
@@ -671,8 +671,8 @@ class ConverterSetting:
             If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
             `ConverterFlag(0)`
         """
-        if not isinstance(converter, function):
-            raise TypeError(f'`converter` should have been given as `{function.__name__}` instance, got '
+        if not isinstance(converter, FunctionType):
+            raise TypeError(f'`converter` should have been given as `{FunctionType.__name__}` instance, got '
                 f'{converter.__class__.__name__}.')
         
         if type(requires_part) is not bool:

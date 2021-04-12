@@ -7,7 +7,7 @@ import re
 from collections import deque
 from weakref import WeakSet
 
-from ..backend.utils import _spaceholder, DOCS_ENABLED, copy_docs
+from ..backend.utils import DOCS_ENABLED, copy_docs
 from ..backend.event_loop import LOOP_TIME
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
@@ -4750,10 +4750,10 @@ class ChannelGuildUndefined(ChannelGuildBase):
             if key in self.IGNORED_NAMES:
                 continue
             
-            old_value = getattr(self, key, _spaceholder)
+            old_value = getattr(self, key, ...)
             new_value = data[key]
             
-            if old_value is _spaceholder:
+            if old_value is ...:
                 setattr(self, key, new_value)
             else:
                 if old_value != new_value:

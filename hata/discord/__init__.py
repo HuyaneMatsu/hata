@@ -25,6 +25,7 @@ from .permission import *
 from .player import *
 from .preinstanced import *
 from .rate_limit import *
+from .urls import *
 from .role import *
 from .user import *
 from .voice_client import *
@@ -57,6 +58,7 @@ __all__ = (
     *player.__all__,
     *preinstanced.__all__,
     *rate_limit.__all__,
+    *urls.__all__,
     *role.__all__,
     *user.__all__,
     *voice_client.__all__,

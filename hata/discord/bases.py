@@ -4,7 +4,7 @@ __all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_S
 
 import sys
 
-from ..backend.utils import _spaceholder, DOCS_ENABLED, doc_property
+from ..backend.utils import DOCS_ENABLED, doc_property
 
 id_to_time = NotImplemented
 
@@ -387,10 +387,10 @@ class FlagMeta(type):
             if (not class_parents) or (not issubclass(class_parents[0], int)):
                 raise TypeError(f'`{class_name}` is not derived directly from `int`.')
             
-            class_keys = class_attributes.get('__keys__', _spaceholder)
+            class_keys = class_attributes.get('__keys__', ...)
             if class_keys is NotImplemented:
                 pass
-            elif class_keys is _spaceholder:
+            elif class_keys is ...:
                 class_attributes['__keys__'] = NotImplemented
             else:
                 raise TypeError(f'`{class_name}` has `__keys__` defined and not as `NotImplemented`.')
@@ -1195,11 +1195,11 @@ class IconSlot:
     __slots__ = ('internal_name', 'discord_side_name', 'added_instance_attributes', 'added_class_attributes')
     
     _compile_globals = {
-        'ICON_TYPE_NONE'     : ICON_TYPE_NONE     ,
-        'ICON_TYPE_STATIC'   : ICON_TYPE_STATIC   ,
-        'ICON_TYPE_ANIMATED' : ICON_TYPE_ANIMATED ,
-        'Icon'               : Icon               ,
-            }
+        'ICON_TYPE_NONE': ICON_TYPE_NONE     ,
+        'ICON_TYPE_STATIC': ICON_TYPE_STATIC   ,
+        'ICON_TYPE_ANIMATED': ICON_TYPE_ANIMATED ,
+        'Icon': Icon               ,
+    }
     
     def __new__(cls, internal_name, discord_side_name, url_property, url_as_method, add_updater=True):
         """
@@ -1251,7 +1251,7 @@ class IconSlot:
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
             f'    self.{added_instance_attribute_name_hash} = icon_hash\n'
-                ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+        ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
         
         added_class_attributes.append((func_name, locals_[func_name]),)
         
@@ -1279,7 +1279,7 @@ class IconSlot:
                 f'        old_attributes[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
                 f'        self.{added_internal_attribute_name_type} = icon_type\n'
                 f'        self.{added_instance_attribute_name_hash} = icon_hash\n'
-                    ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+            ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
             
             added_class_attributes.append((func_name, locals_[func_name]),)
         

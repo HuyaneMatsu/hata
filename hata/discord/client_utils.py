@@ -4,7 +4,7 @@ __all__ = ('BanEntry', 'ClientWrapper', 'Typer', )
 from math import inf
 from collections import namedtuple
 
-from ..backend.utils import basemethod, _spaceholder
+from ..backend.utils import basemethod
 from ..backend.event_loop import LOOP_TIME
 from ..backend.futures import Future, sleep, Task
 
@@ -226,7 +226,7 @@ class DiscoveryCategoryRequestCacher:
         The time interval between what the requests should be done.
     """
     __slots__ = ('_active_request', '_last_update', '_waiter', 'cached', 'func', 'timeout',)
-    def __init__(self, func, timeout, cached=_spaceholder):
+    def __init__(self, func, timeout, cached=...):
         """
         Creates a ``DiscoveryCategoryRequestCacher`` instance.
         
@@ -292,7 +292,7 @@ class DiscoveryCategoryRequestCacher:
             result = await self.func(client)
         except ConnectionError as err:
             result = self.cached
-            if (result is _spaceholder):
+            if (result is ...):
                 waiter = self._waiter
                 if (waiter is not None):
                     self._waiter = None
@@ -332,7 +332,7 @@ class DiscoveryCategoryRequestCacher:
                 ]
         
         cached = self.cached
-        if (cached is not _spaceholder):
+        if (cached is not ...):
             result.append(' cached=')
             result.append(repr(cached))
         

@@ -3,7 +3,7 @@ __all__ = ('Category', 'Command', 'CommandProcesser', 'normalize_description', )
 
 import re, reprlib
 
-from ...backend.utils import sortedlist, function, DOCS_ENABLED, name_property
+from ...backend.utils import sortedlist, DOCS_ENABLED, name_property, FunctionType
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.futures import is_coroutine_generator
 
@@ -1936,8 +1936,8 @@ def test_name_rule(rule, rule_name, nullable):
         return
     
     rule_type = rule.__class__
-    if (rule_type is not function):
-        raise TypeError(f'`{rule_name}` should have been given as `{function.__name__}` instance, got '
+    if (rule_type is not FunctionType):
+        raise TypeError(f'`{rule_name}` should have been given as `{FunctionType.__name__}` instance, got '
             f'{rule_type.__name__}.')
     
     analyzed = CallableAnalyzer(rule)

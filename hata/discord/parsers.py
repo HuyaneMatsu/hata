@@ -13,8 +13,8 @@ except ImportError:
 
 from ..env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
 from ..backend.futures import Future, Task, is_coroutine_function as is_coro
-from ..backend.utils import function, RemovedDescriptor, _spaceholder, MethodLike, NEEDS_DUMMY_INIT, \
-    WeakKeyDictionary, WeakReferer, DOCS_ENABLED
+from ..backend.utils import RemovedDescriptor, MethodLike, NEEDS_DUMMY_INIT, FunctionType, WeakKeyDictionary, \
+    WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
 from ..backend.event_loop import LOOP_TIME
 
@@ -1019,7 +1019,7 @@ def READY(client, data):
     
     # 'client.events.ready' gonna be called by _delay_ready at the end
     
-    return _spaceholder
+    return ...
 
 PARSER_DEFAULTS(
     'READY',
@@ -1030,7 +1030,7 @@ PARSER_DEFAULTS(
 del READY
 
 def RESUMED(client, data):
-    return _spaceholder
+    return ...
 
 PARSER_DEFAULTS(
     'RESUMED',
@@ -5124,7 +5124,7 @@ def check_argcount_and_convert(func, expected, *, name='event', can_be_async_gen
 
 def compare_converted(converted, non_converted):
     # function, both should be functions
-    if isinstance(non_converted, function):
+    if isinstance(non_converted, FunctionType):
         return (converted is non_converted)
     
     # method, both should be methods
@@ -7484,29 +7484,29 @@ class asynclist(list):
         except AttributeError:
             pass
         else:
-            if attribute is not _spaceholder:
+            if attribute is not ...:
                 return attribute
         
         for coro in list.__iter__(self):
-            attribute = getattr(coro, name, _spaceholder)
-            if attribute is _spaceholder:
+            attribute = getattr(coro, name, ...)
+            if attribute is ...:
                 continue
             
             return attribute
         
         raise AttributeError(f'`{self.__class__.__name__}` object has no attribute `{name}`.')
     
-    append = _spaceholder
-    clear = _spaceholder
-    copy = _spaceholder
-    count = _spaceholder
-    extend = _spaceholder
-    index = _spaceholder
-    insert = _spaceholder
-    pop = _spaceholder
-    remove = _spaceholder
-    reverse = _spaceholder
-    sort = _spaceholder
+    append = ...
+    clear = ...
+    copy = ...
+    count = ...
+    extend = ...
+    index = ...
+    insert = ...
+    pop = ...
+    remove = ...
+    reverse = ...
+    sort = ...
 
 
 async def DEFAULT_EVENT_HANDLER(*args):

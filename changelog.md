@@ -11,6 +11,7 @@
 ##### Public API:
 
 `CLIENTS` now uses `dict` type instead of `ClientDictionary`.
+Fix type `MAX_RERP_ELEMENT_LIMIT` -> MAX_REPR_ELEMENT_LIMIT`.
 
 ##### Internal:
 

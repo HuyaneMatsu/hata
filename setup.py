@@ -13,7 +13,7 @@ if parsed is None:
 version = literal_eval(parsed.group(1))
 
 # Lookup readme
-README = (HERE / 'README.md').read_text()
+README = (HERE / 'README.md').read_text('utf-8')
 
 setup(
     name = 'hata',

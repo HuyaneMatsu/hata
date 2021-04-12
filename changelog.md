@@ -14,6 +14,7 @@
 - `Icon.__repr__` did not upper case `IconType.name`. (Pichu#0357)
 - `Icon.__repr__` displayed incorrect names. (Zeref Draganeel#3524)
 - Dupe client check was not working. (Zeref Draganeel#3524)
+- Fix reading readme issue on windows. (Zeref Draganeel#3524)
 
 #### 1.1.63  *\[2021-04-11\]*
 

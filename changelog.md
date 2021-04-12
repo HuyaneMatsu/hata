@@ -7,7 +7,7 @@
 
 ##### Internal:
 
-- `Client._delete` could construct not a fully built `User` object. Add `User._from_cleint` to fix this.
+- `Client._delete` could construct not a fully built `User` object. Add `User._from_client` to fix this.
 - Remove `ClientDictionary`.
 - Speed up `dict.get` by passing default value.
 - Fix some bad assignments in `Client._delete`.

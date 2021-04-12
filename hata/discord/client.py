@@ -623,6 +623,7 @@ class Client(UserBase):
         
         
         alter_ego = User._from_client(self)
+        USERS[client_id] = alter_ego
         
         if CACHE_USER:
             USERS[client_id] = alter_ego
@@ -637,10 +638,6 @@ class Client(UserBase):
                             relationship.user = alter_ego
         
         else:
-            try:
-                del USERS[client_id]
-            except KeyError:
-                pass
             guild_profiles = self.guild_profiles
             for guild in guild_profiles:
                 try:

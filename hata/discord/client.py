@@ -2895,7 +2895,7 @@ class Client(UserBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoice):
                         raise AssertionError(f'`video_quality_mode` is a valid parameter only for '
-                            f'`{ChannelVoice.__name__}` instances, but got {channel_type.__name__}.')
+                            f'`{ChannelVoice.__name__}` instances, but got {channel.__class__.__name__}.')
             
             if isinstance(video_quality_mode, VideoQualityMode):
                 video_quality_mode_value = video_quality_mode.value
@@ -7593,7 +7593,7 @@ class Client(UserBase):
         if (name is not None):
             if __debug__:
                 if not isinstance(name, str):
-                    raise AssertionErrror(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
                 
                 name_length = len(name)
                 if name_length < 2 or name_length > 100:

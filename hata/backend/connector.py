@@ -788,9 +788,9 @@ class TCPConnector(ConnectorBase):
         
         Parameters
         ----------
-        host : `None` or `str`, Optional
+        host : `None` or `str`
             To what network interfaces should the connection be bound.
-        port : `None` or `int`, Optional
+        port : `None` or `int`
             The port of the `host`.
         
         Returns

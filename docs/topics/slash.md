@@ -736,6 +736,7 @@ Here is an example how to do it:
 ```py
 from time import perf_counter
 from hata import Embed
+from hata.ext.slash import abort
 
 @Nitori.interactions
 async def ping(client, event):

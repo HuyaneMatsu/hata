@@ -2509,9 +2509,9 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The protocol of the transport.
         waiter : `None` or ``Future``, Optional
             Waiter, what's result should be set, when the transport is ready to use.
-        extra : `None` or `dict` of (`str`, `Any`) item, Optional
+        extra : `None` or `dict` of (`str`, `Any`) item, Optional (Keyword only)
             Optional transport information.
-        server : `None` or ``Server``, Optional
+        server : `None` or ``Server``, Optional (Keyword only)
             The server to what the created socket will be attached to.
         
         Returns
@@ -2535,16 +2535,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Ssl context of the respective connection.
         waiter : `None` or ``Future``, Optional
             Waiter, what's result should be set, when the transport is ready to use.
-        server_side : `bool`, Optional
+        server_side : `bool`, Optional (Keyword only)
             Whether the created ssl transport is a server side. Defaults to `False`.
-        server_hostname : `None` or `str`, Optional
+        server_hostname : `None` or `str`, Optional (Keyword only)
             Overwrites the hostname that the target server’s certificate will be matched against.
             By default the value of the host argument is used. If host is empty, there is no default and you must pass
             a value for `server_hostname`. If `server_hostname` is an empty string, hostname matching is disabled
             (which is a serious security risk, allowing for potential man-in-the-middle attacks).
-        extra : `None` or `dict` of (`str`, `Any`) item, Optional
+        extra : `None` or `dict` of (`str`, `Any`) item, Optional (Keyword only)
             Optional transport information.
-        server : `None` or ``Server``, Optional
+        server : `None` or ``Server``, Optional (Keyword only)
             The server to what the created socket will be attached to.
         
         Returns
@@ -2686,7 +2686,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Factory function for creating an asynchronous compatible protocol.
         connection_socket : `socket.socket`
             The accepted connection.
-        extra : `None` or `dict` of (`str`, `Any`) item, Optional
+        extra : `None` or `dict` of (`str`, `Any`) item
             Optional transport information.
         ssl : `None` or `ssl.SSLContext`
             The ssl type of the connection if any.
@@ -2866,7 +2866,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Callable returning an asynchronous protocol implementation.
         socket : `socket.socket`
             A preexisting socket object returned from `socket.accept`.
-        ssl : `None` or `ssl.SSLContext`, Optional
+        ssl : `None` or `ssl.SSLContext`, Optional (Keyword only)
             Whether ssl should be enabled.
         
         Returns
@@ -2906,22 +2906,22 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The port of the `host`.
             
             Mutually exclusive with the `socket` parameter.
-        ssl : `None`, `bool` or `ssl.SSLContext`, Optional
+        ssl : `None`, `bool` or `ssl.SSLContext`, Optional (Keyword only)
             Whether ssl should be enabled.
-        family : `AddressFamily` or `int`, Optional
+        family : `AddressFamily` or `int`, Optional (Keyword only)
             Can be either `AF_INET`, `AF_INET6` or `AF_UNIX`.
-        protocol : `int`, Optional
+        protocol : `int`, Optional (Keyword only)
             Can be used to narrow host resolution. Is passed to ``.get_address_info``.
-        flags : `int`, Optional
+        flags : `int`, Optional (Keyword only)
             Can be used to narrow host resolution. Is passed to ``.get_address_info``.
-        socket : `None` or `socket.socket`, Optional
+        socket : `None` or `socket.socket`, Optional (Keyword only)
             Whether should use an existing, already connected socket.
             
             Mutually exclusive with the `host` and the `port` parameters.
-        local_address : `tuple` of (`None` or  `str`, `None` or `int`), Optional
+        local_address : `tuple` of (`None` or  `str`, `None` or `int`), Optional (Keyword only)
             Can be given as a `tuple` (`local_host`, `local_port`) to bind the socket locally. The `local_host` and
             `local_port` are looked up by ``.get_address_info``.
-        server_hostname : `None` or `str`, Optional
+        server_hostname : `None` or `str`, Optional (Keyword only)
             Overwrites the hostname that the target server’s certificate will be matched against.
             Should only be passed if `ssl` is not `None`. By default the value of the host argument is used. If host is
             empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
@@ -3108,13 +3108,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             To respective network interface.
         port : `None` or `int`
             The port of the `host`.
-        family :  `AddressFamily` or `int`, Optional
+        family :  `AddressFamily` or `int`, Optional (Keyword only)
             The address family.
-        type : `SocketKind` or `int`, Optional
+        type : `SocketKind` or `int`, Optional (Keyword only)
             Socket type.
-        protocol : `int`, Optional
+        protocol : `int`, Optional (Keyword only)
             Protocol type. Can be used to narrow host resolution.
-        flags : `int`, Optional
+        flags : `int`, Optional (Keyword only)
             Can be used to narrow host resolution.
         
         Returns
@@ -3503,26 +3503,26 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             If `family` is given as `AF_UNIX`, then also can be given as path of a file or a file descriptor.
             
             Mutually exclusive with the `socket` parameter.
-        family : `AddressFamily` or `int`, Optional
+        family : `AddressFamily` or `int`, Optional (Keyword only)
             Can be either `AF_INET`, `AF_INET6` or `AF_UNIX`.
             
             Mutually exclusive with the `socket` parameter.
-        protocol : `int`, Optional
+        protocol : `int`, Optional (Keyword only)
             Can be used to narrow host resolution. Is passed to ``.get_address_info``.
             
             Mutually exclusive with the `socket` parameter.
-        flags : `int`, Optional
+        flags : `int`, Optional (Keyword only)
             Can be used to narrow host resolution. Is passed to ``.get_address_info``.
             
             Mutually exclusive with the `socket` parameter.
-        reuse_port : `bool`, Optional
+        reuse_port : `bool`, Optional (Keyword only)
             Tells to the kernel to allow this endpoint to be bound to the same port as an other existing endpoint
             already might be bound to.
             
             Not supported on Windows.
-        allow_broadcast : `bool`, Optional
+        allow_broadcast : `bool`, Optional (Keyword only)
             Tells the kernel to allow this endpoint to send messages to the broadcast address.
-        socket : `None` or `socket.socket`, Optional
+        socket : `None` or `socket.socket`, Optional (Keyword only)
             Can be specified in order to use a preexisting socket object.
             
             Mutually exclusive with `host` and `port` parameters.
@@ -3723,7 +3723,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Parameters
         ----------
-        host : `None` or `str`, `iterable` of (`None` or `str`), Optional
+        host : `None` or `str`, `iterable` of (`None` or `str`)
             Network interfaces should the server be bound.
         port : `None` or `int`
             The port to use by the `host`.
@@ -3759,23 +3759,23 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The port to use by the `host`(s).
             
             Mutually exclusive with the `socket` parameter.
-        family : `AddressFamily` or `int`
+        family : `AddressFamily` or `int`, Optional (Keyword only)
             Can be given either as `socket.AF_INET` or `socket.AF_INET6` to force the socket to use `IPv4` or `IPv6`.
             If not given, then  will be determined from host name.
-        flags : `int`
+        flags : `int`, Optional (Keyword only)
             Bit-mask for `get_address_info`.
-        socket : `None` or `socket.socket`, Optional
+        socket : `None` or `socket.socket`, Optional (Keyword only)
             Can be specified in order to use a preexisting socket object.
             
             Mutually exclusive with `host` and `port` parameters.
         backlog : `int`
             The maximum number of queued connections passed to `listen()` (defaults to 100).
-        ssl : `None` or ``SSLContext``, Optional
+        ssl : `None` or ``SSLContext``, Optional (Keyword only)
             Whether and what ssl is enabled for the connections.
-        reuse_address : `bool`, Optional
+        reuse_address : `bool`, Optional (Keyword only)
             Tells the kernel to reuse a local socket in `TIME_WAIT` state, without waiting for its natural timeout to
             expire. If not specified will automatically be set to True on Unix.
-        reuse_port : `bool`, Optional
+        reuse_port : `bool`, Optional (Keyword only)
             Tells to the kernel to allow this endpoint to be bound to the same port as an other existing endpoint
             already might be bound to.
             
@@ -4043,23 +4043,23 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Standard output for the created shell. Defaults to `subprocess.PIPE`.
         stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`, Optional
             Standard error for the created shell. Defaults to `subprocess.PIPE`.
-        extra : `None` or `dict` of (`str`, `Any`) items, Optional
+        extra : `None` or `dict` of (`str`, `Any`) items, Optional (Keyword only)
             Optional transport information.
-        preexecution_function : `None` or `callable`, Optional
+        preexecution_function : `None` or `callable`, Optional (Keyword only)
             This object is called in the child process just before the child is executed. POSIX only, defaults to
             `None`.
-        close_fds : `bool`, Optional
+        close_fds : `bool`, Optional (Keyword only)
             Defaults to `True`
             
             If `close_fds` is True, all file descriptors except `0`, `1` and `2` will be closed before the child
             process is executed. Otherwise when `close_fds` is False, file descriptors obey their inheritable flag as
             described in Inheritance of File Descriptors.
-        cwd : `str`, `bytes`, `path-like` or `None`, Optional
+        cwd : `str`, `bytes`, `path-like` or `None`, Optional (Keyword only)
             If `cwd` is not `None`, the function changes the working directory to cwd before executing the child.
             Defaults to `None`
-        startup_info : `subprocess.STARTUPINFO` or `None`, Optional
+        startup_info : `subprocess.STARTUPINFO` or `None`, Optional (Keyword only)
             Is passed to the underlying `CreateProcess` function.
-        creation_flags : `int`, Optional
+        creation_flags : `int`, Optional (Keyword only)
             Can be given as 1 of the following flags:
             
             - `CREATE_NEW_CONSOLE`
@@ -4112,29 +4112,29 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The program executable.
         *args : `str`
             Arguments to open the `program` with.
-        stdin : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
+        stdin : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional (Keyword only)
             Standard input for the created shell. Defaults to `subprocess.PIPE`.
-        stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional
+        stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional (Keyword only)
             Standard output for the created shell. Defaults to `subprocess.PIPE`.
-        stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`, Optional
+        stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`, Optional (Keyword only)
             Standard error for the created shell. Defaults to `subprocess.PIPE`.
-        extra : `None` or `dict` of (`str`, `Any`) items, Optional
+        extra : `None` or `dict` of (`str`, `Any`) items, Optional (Keyword only)
             Optional transport information.
-        preexecution_function : `None` or `callable`, Optional
+        preexecution_function : `None` or `callable`, Optional (Keyword only)
             This object is called in the child process just before the child is executed. POSIX only, defaults to
             `None`.
-        close_fds : `bool`, Optional
+        close_fds : `bool`, Optional (Keyword only)
             Defaults to `True`
             
             If `close_fds` is True, all file descriptors except `0`, `1` and `2` will be closed before the child
             process is executed. Otherwise when `close_fds` is False, file descriptors obey their inheritable flag as
             described in Inheritance of File Descriptors.
-        cwd : `str`, `bytes`, `path-like` or `None`, Optional
+        cwd : `str`, `bytes`, `path-like` or `None`, Optional (Keyword only)
             If `cwd` is not `None`, the function changes the working directory to cwd before executing the child.
             Defaults to `None`
-        startup_info : `subprocess.STARTUPINFO` or `None`, Optional
+        startup_info : `subprocess.STARTUPINFO` or `None`, Optional (Keyword only)
             Is passed to the underlying `CreateProcess` function.
-        creation_flags : `int`, Optional
+        creation_flags : `int`, Optional (Keyword only)
             Can be given as 1 of the following flags:
             
             - `CREATE_NEW_CONSOLE`
@@ -4151,14 +4151,14 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             - `CREATE_BREAKAWAY_FROM_JOB`
             
             Defaults to `0`.
-        restore_signals : `bool`, Optional
+        restore_signals : `bool`, Optional (Keyword only)
             If given as `True`, so by default, all signals that Python has set to `SIG_IGN` are restored to `SIG_DFL`
             in the child process before the exec. Currently this includes the `SIGPIPE`, `SIGXFZ` and `SIGXFSZ`
             signals. POSIX only.
-        start_new_session : `bool`, Optional
+        start_new_session : `bool`, Optional (Keyword only)
             If given as `True` the `setsid()` system call will be made in the child process prior to the execution of
             the subprocess. POSIX only, defaults to `False`.
-        pass_fds : `tuple`, Optional
+        pass_fds : `tuple`, Optional (Keyword only)
             An optional sequence of file descriptors to keep open between the parent and the child. Providing any
             `pass_fds` forces `close_fds` to be `True`. POSIX only, defaults to empty tuple.
         

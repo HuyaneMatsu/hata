@@ -1725,8 +1725,8 @@ class ContentParserParameter:
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('converter', 'converter_setting', 'default', 'description', 'detail', 'details', 'display_name',
-        'flags', 'has_default', 'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name')
+    __slots__ = ('converter', 'default', 'description', 'detail', 'details', 'display_name', 'flags', 'has_default',
+        'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name')
     
     def __new__(cls, parameter, index):
         """
@@ -1908,16 +1908,16 @@ class ContentParserParameter:
     
     def __repr__(self):
         """Returns the inter's representation."""
-        result = ['<', self.__class__.__name__,
+        repr_parts = ['<', self.__class__.__name__,
             ' name=', repr(self.name),
-                 ]
+         ]
         
         if self.has_default:
-            result.append(', default=')
-            result.append(repr(self.default))
+            repr_parts.append(', default=')
+            repr_parts.append(repr(self.default))
         
-        result.append('>')
-        return ''.join(result)
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     def set_converter_setting(self, converter_setting):
         """
@@ -1936,6 +1936,42 @@ class ContentParserParameter:
             raise RuntimeError('Converter setting cannot be set if the parser is multi type parsers.')
         
         self.detail = ContentParserParameterDetail(converter_setting, converter_setting.default_type)
+
+    async def parse(self, command_context, part):
+        """
+        Tries to parse the parameter from the given part.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        command_context : ``CommandContext``
+            The respective command's context.
+        part : `str` or `None`
+            The received content's part to check.
+        
+        Returns
+        -------
+        parsed : `None` or `Any`
+            The parsed object if any.
+        """
+        detail = self.detail
+        if (detail is None):
+            for converter_setting in self.details:
+                parsed = await converter_setting.converter(command_context, detail, part)
+                if (parsed is not None):
+                    break
+            else:
+                parsed = None
+        else:
+            converter_setting = detail.converter_setting
+            converter = converter_setting.converter
+            if converter_setting.requires_part:
+                parsed = await converter(command_context, detail, part)
+            else:
+                parsed = await converter(command_context, detail)
+        
+        return parsed
 
 
 COMMAND_CONTENT_PARSER_POST_PROCESSORS = []
@@ -2107,10 +2143,7 @@ class CommandContentParser:
         parameter_parsing_states = create_parameter_parsing_states(self)
         
         for parameter_parsing_state in iter_no_part_parameter_states(parameter_parsing_states):
-            
-            content_parser_parameter = parameter_parsing_state.content_parser_parameter
-            converter = content_parser_parameter.converter_setting.converter
-            parsed_value = await converter(command_context, content_parser_parameter)
+            parsed_value = parameter_parsing_state.parse(command_context, None)
             parameter_parsing_state.add_parsed_value(parsed_value, None)
         
         index = 0
@@ -2133,9 +2166,7 @@ class CommandContentParser:
                 if parameter_parsing_state is None:
                     continue
                 
-                content_parser_parameter = parameter_parsing_state.content_parser_parameter
-                converter = content_parser_parameter.converter_setting.converter
-                parsed_value = await converter(command_context, content_parser_parameter, part)
+                parsed_value = parameter_parsing_state.parse(command_context, part)
                 parameter_parsing_state.add_parsed_value(parsed_value, None)
             else:
                 keyword = raw_name_to_display(keyword)
@@ -2143,9 +2174,7 @@ class CommandContentParser:
                 if parameter_parsing_state is None:
                     continue
                 
-                content_parser_parameter = parameter_parsing_state.content_parser_parameter
-                converter = content_parser_parameter.converter_setting.converter
-                parsed_value = await converter(command_context, content_parser_parameter)
+                parsed_value = parameter_parsing_state.parse(command_context, part)
                 parameter_parsing_state.add_parsed_value(parsed_value, keyword)
         
         return parameter_parsing_states
@@ -2194,8 +2223,18 @@ def iter_no_part_parameter_states(parameter_parsing_states):
     parameter_parsing_state : ``ParameterParsingState``
     """
     for parameter_parsing_state in parameter_parsing_states:
-        if not parameter_parsing_state.content_parser_parameter.converter_setting.requires_part:
-            yield parameter_parsing_state
+        content_parser_parameter = parameter_parsing_state.content_parser_parameter
+        if content_parser_parameter.is_rest:
+            continue
+        
+        detail = content_parser_parameter.detail
+        if detail is None:
+            continue
+        
+        if detail.converter_setting.requires_part:
+            continue
+        
+        yield parameter_parsing_state
 
 
 def get_keyword_parameter_state(parameter_parsing_states, keyword):

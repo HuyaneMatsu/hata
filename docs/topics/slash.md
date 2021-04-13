@@ -754,10 +754,10 @@ async def enable_ping(client, event,
     """Enables the ping command in your guild."""
     guild = event.guild
     if guild is None:
-        return Embed('Error', 'Guild only command.')
+        abort('Guild only command.')
     
     if not event.user_permissions.can_administrator:
-        return Embed('Permission denied', 'You must have administrator permission to use this command.')
+        abort('You must have administrator permission to use this command.')
     
     application_commands = await client.application_command_guild_get_all(guild)
     for application_command in application_commands:

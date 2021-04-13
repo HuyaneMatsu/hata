@@ -9,7 +9,6 @@ from re import compile as re_compile
 from datetime import datetime, timedelta
 from base64 import b64encode
 from time import time as time_now
-from json import dumps as dump_to_json, loads as from_json
 
 
 try:
@@ -207,47 +206,6 @@ def random_id():
     """
     return (((time_now()*1000.).__int__()-DISCORD_EPOCH)<<22)+(random.random()*4194304.).__int__()
 
-def added_json_serializer(obj):
-    """
-    Default json encoder function for supporting additional object types.
-    
-    Parameters
-    ----------
-    obj : `iterable`
-    
-    Returns
-    -------
-    result : `Any`
-    
-    Raises
-    ------
-    TypeError
-        If the given object is not json serializable.
-    """
-    obj_type = obj.__class__
-    if hasattr(obj_type, '__iter__'):
-        return list(obj)
-    
-    raise TypeError(f'Object of type {obj_type.__name__!r} is not JSON serializable.',)
-
-def to_json(data):
-    """
-    Converts the given object to json.
-    
-    Parameters
-    ----------
-    data : `Any`
-    
-    Returns
-    -------
-    json : `str`
-    
-    Raises
-    ------
-    TypeError
-        If the given object is /or contains an object with a non convertable type.
-    """
-    return dump_to_json(data, separators=(',',':'), ensure_ascii=True, default=added_json_serializer)
 
 def log_time_converter(value):
     """

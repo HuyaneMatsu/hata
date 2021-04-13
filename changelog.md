@@ -5,13 +5,14 @@
 - Fix some spacing. (sleep-cult#3040)
 - `ActivityFlag` now use lower case flag names.
 - Create `urls.py` from `http.URLS` module.
+- Fix type `MAX_RERP_ELEMENT_LIMIT` -> `MAX_REPR_ELEMENT_LIMIT`.
+- Move json conversion to backend.
 
 #### 1.1.64  *\[2021-04-12\]*
 
 ##### Public API:
 
 `CLIENTS` now uses `dict` type instead of `ClientDictionary`.
-Fix type `MAX_RERP_ELEMENT_LIMIT` -> MAX_REPR_ELEMENT_LIMIT`.
 
 ##### Internal:
 

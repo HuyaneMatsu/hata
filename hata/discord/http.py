@@ -3,7 +3,7 @@ __all__ = ('DiscordHTTPClient', )
 
 import sys
 
-from ..backend.utils import imultidict, WeakMap, WeakKeyDictionary
+from ..backend.utils import imultidict, WeakMap, WeakKeyDictionary, to_json, from_json
 from ..backend.futures import sleep, Future
 from ..backend.http import HTTPClient, RequestCM
 from ..backend.connector import TCPConnector
@@ -15,7 +15,6 @@ from ..backend.event_loop import LOOP_TIME
 from ..env import API_VERSION
 
 from .exceptions import DiscordException
-from .utils import to_json, from_json
 from .utils.DISCORD_HEADERS import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION
 from .rate_limit import RATE_LIMIT_GROUPS, RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
 from .client_core import KOKORO

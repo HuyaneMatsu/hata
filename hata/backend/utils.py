@@ -1,11 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable', 'WeakKeyDictionary',
-    'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any', 'cached_property',
-    'imultidict', 'istr', 'is_weakreferable', 'list_difference', 'methodize', 'module_property', 'modulize', 'multidict',
-    'name_property', 'weakmethod', )
+__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable',
+    'WeakKeyDictionary', 'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any',
+    'cached_property', 'from_json', 'imultidict', 'is_weakreferable', 'istr', 'list_difference', 'methodize',
+    'module_property', 'modulize', 'multidict', 'name_property', 'to_json', 'weakmethod',)
 
 from functools import partial as partial_func
 from types import MethodType, FunctionType, MappingProxyType, GetSetDescriptorType, ModuleType
+from json import dumps as dump_to_json, loads as from_json
 
 NoneType = type(None)
 
@@ -4871,3 +4872,46 @@ def copy_docs(source):
     ```
     """
     return partial_func(_do_copy_docs, source)
+
+
+def added_json_serializer(obj):
+    """
+    Default json encoder function for supporting additional object types.
+    
+    Parameters
+    ----------
+    obj : `iterable`
+    
+    Returns
+    -------
+    result : `Any`
+    
+    Raises
+    ------
+    TypeError
+        If the given object is not json serializable.
+    """
+    obj_type = obj.__class__
+    if hasattr(obj_type, '__iter__'):
+        return list(obj)
+    
+    raise TypeError(f'Object of type {obj_type.__name__!r} is not JSON serializable.',)
+
+def to_json(data):
+    """
+    Converts the given object to json.
+    
+    Parameters
+    ----------
+    data : `Any`
+    
+    Returns
+    -------
+    json : `str`
+    
+    Raises
+    ------
+    TypeError
+        If the given object is /or contains an object with a non convertable type.
+    """
+    return dump_to_json(data, separators=(',', ':'), ensure_ascii=True, default=added_json_serializer)

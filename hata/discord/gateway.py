@@ -15,8 +15,8 @@ from ..env import CACHE_PRESENCE
 from ..backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 from ..backend.event_loop import LOOP_TIME
+from ..backend.utils import to_json, from_json
 
-from .utils import to_json, from_json
 from .activity import ActivityUnknown
 from .parsers import PARSERS
 from .guild import LARGE_LIMIT

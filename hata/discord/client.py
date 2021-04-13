@@ -10,7 +10,7 @@ from math import inf
 from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
-from ..backend.utils import imultidict, methodize, change_on_switch
+from ..backend.utils import imultidict, methodize, change_on_switch, to_json
 from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
     future_or_timeout
 from ..backend.event_loop import EventThread, LOOP_TIME
@@ -19,8 +19,7 @@ from ..backend.headers import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 from ..backend.url import URL
 
-from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, to_json, get_image_extension, \
-    Relationship
+from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, get_image_extension, Relationship
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \

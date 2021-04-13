@@ -184,10 +184,18 @@ async def show_emoji(client, event,
 ### Choice parameters
 
 Slash commands support choice parameters, for string and integer types. Each choice has a `name` and a
-`value` field, where the values must be the same type, either `str` or `int` as mentioned above.
+`value` field. All values must be the same type, either `str` or `int` as mentioned above.
 
-Choice parameters go to the "annotation type field" and they can be either a dictionary of `name - value` items or a 
-list of tuples of again `name - value` pairs.
+Choice parameters go to the "annotation type field" and they can be either:
+- Dictionary of `name - value` items.
+- List of tuple `name - value` pairs.
+- Set of tuple `name - value` pairs.
+- List of `value`-s.
+- Set of `value`-s.
+
+> Dictionary and set choices are sorted alphabetically, so if order matters for you, use list.
+>
+> Formatting choices into a table-like appearance might help, but it is up to you.
 
 ```py
 from hata import Embed
@@ -250,16 +258,25 @@ async def guild_icon(client, event,
     # Code goes brr..
 ```
 
-Formatting choice into a table-like appearance might help as well.
+Same as list:
 
-List example:
+```py
+GUILD_ICON_CHOICES = [
+    ('Icon'             , 'icon'             ),
+    ('Banner'           , 'banner'           ),
+    ('Discovery-splash' , 'discovery_splash' ),
+    ('Invite-splash'    , 'invite_splash'    ),
+        ]
+```
+
+When defining annotations only as `value`-s, the `name`-s will set as `str(value)`.
 
 ```py
 from random import random
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def roll(client, event,
-        dice_count: ([(str(v), v) for v in range(1, 7)], 'With how much dice do you wanna roll?') = 1,
+        dice_count: (list(range(1, 7)), 'With how much dice do you wanna roll?') = 1,
             ):
     """Rolls with dices."""
     amount = 0

@@ -1150,6 +1150,7 @@ class UserBase(DiscordEntity, immortal=True):
             
             return False
 
+
 class User(UserBase):
     if DOCS_ENABLED: __doc__ = ''.join([
     """
@@ -1375,7 +1376,7 @@ class User(UserBase):
         user : ``User``
         """
         self = object.__new__(cls)
-        self.id = client.name
+        self.id = client.id
         self.discriminator = client.discriminator
         self.name = client.name
         
@@ -1385,9 +1386,15 @@ class User(UserBase):
         self.partial = client.partial
         
         if CACHE_PRESENCE:
-            self.activities = client.activities.copy()
+            activities = client.activities
+            if (activities is not None):
+                activities = activities.copy()
+            self.activities = activities
             self.status = client.status
-            self.statuses = client.statuses.copy()
+            statuses = client.statuses
+            if (statuses is not None):
+                statuses = statuses.copy()
+            self.statuses = statuses
         
         return self
     

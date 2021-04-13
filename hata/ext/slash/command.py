@@ -330,6 +330,123 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_NUMBER     : ApplicationCommandOptionType.integer ,
         }
 
+
+def create_annotation_choice_from_int(value):
+    """
+    Creates an annotation choice form an int.
+    
+    Parameters
+    -------
+    value : `int`
+        The validated annotation choice.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, `str` or `int`)
+        The validated annotation choice.
+    """
+    return (str(value), value)
+
+def create_annotation_choice_from_str(value):
+    """
+    Creates an annotation choice form an int.
+    
+    Parameters
+    -------
+    value : `str`
+        The validated annotation choice.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, `str` or `int`)
+        The validated annotation choice.
+    """
+    # make sure
+    return (value, value)
+
+def parse_annotation_choice_from_tuple(annotation):
+    """
+    Creates an annotation choice form an int.
+    
+    Parameters
+    -------
+    annotation : `tuple`
+        Annotation choice.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, `str` or `int`)
+        The validated annotation choice.
+    
+    Raises
+    ------
+    TypeError
+        - `annotation`'s name's type is incorrect.
+        - `annotation`'s value's type is incorrect.
+    ValueError
+        `annotation`'s length is invalid.
+    """
+    annotation_length = len(annotation)
+    if (annotation_length < 1 or annotation_length > 2):
+        raise ValueError(f'`tuple` annotation length can be in range [1:2], got {annotation_length!r}; {annotation!r}')
+    
+    if annotation_length == 1:
+        value = annotation[0]
+        if isinstance(value, str):
+            return create_annotation_choice_from_str(value)
+        
+        if isinstance(value, int):
+            return create_annotation_choice_from_int(value)
+        
+        raise TypeError(f'`annotation-value` can be either `str` or `int`, got {value.__class__.__name__}.')
+    
+    # if annotation_length == 2:
+    
+    name, value = annotation
+    if not isinstance(name, str):
+        raise TypeError(f'`annotation-name` can be `str` instance, got {name.__class__.__name__}.')
+    
+    if not isinstance(value, (str, int)):
+        raise TypeError(f'`annotation-value` can be either `str` or `int`, got {value.__class__.__name__}.')
+    
+    return (name, value)
+
+
+def parse_annotation_choice(annotation_choice):
+    """
+    Parses annotation choice.
+    
+    Parameters
+    ----------
+    annotation_choice : `tuple`, `str`, `int`
+        A choice.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, `str` or `int`)
+        The validated annotation choice.
+    
+    Raises
+    ------
+    TypeError
+        - `annotation`'s name's type is incorrect.
+        - `annotation`'s value's type is incorrect.
+    ValueError
+        `annotation`'s length is invalid.
+    """
+    if isinstance(annotation_choice, tuple):
+        return parse_annotation_choice_from_tuple(annotation_choice)
+    
+    if isinstance(annotation_choice, str):
+        return create_annotation_choice_from_str(annotation_choice)
+    
+    if isinstance(annotation_choice, int):
+        return create_annotation_choice_from_int(annotation_choice)
+    
+    raise TypeError(f'`annotation-choice` can be either given as `tuple`, `str` or `int` instance, got '
+        f'{annotation_choice.__class__.__name__}.')
+
+
 def parse_annotation_type_and_choice(annotation_value, annotation_name):
     """
     Parses annotation type and choices out from an an annotation value.
@@ -345,7 +462,7 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
     -------
     annotation_type : `int`
         Internal identifier about the annotation.
-    choices : `None` or `dict` of (`int` or `str`, `str`)
+    choices : `None` or `dict` of (`int` or `str`, `str`) items
         Choices if applicable.
     
     TypeError
@@ -378,41 +495,33 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
         
         choices = None
     else:
+        choice_elements = []
         if isinstance(annotation_value, list):
-            for index, annotation_choice in enumerate(annotation_value):
-                if (not isinstance(annotation_choice, tuple)) or (len(annotation_choice) != 2):
-                    raise TypeError(f'Argument `{annotation_name}` was given as a `list` annotation, but it\'s element '
-                        f'{index} not matches the expected structure: `tuple` (`str`, `str` or `int`), got '
-                        f'{annotation_choice!r}.')
+            for annotation_choice in annotation_value:
+                choice_element = parse_annotation_choice(annotation_choice)
+                choice_elements.append(choice_element)
         
-        elif isinstance(annotation_value, dict):
-            annotation_value = list(annotation_value.items())
-        else:
-            raise TypeError(f'Argument `{annotation_name}` has annotation not set neither as `tuple`, `str`, `type`, '
-                f'`list` or `dict`, got {annotation_value.__class__.__name__}.')
-        
-        choices_length = len(annotation_value)
-        if choices_length < 1 or choices_length > APPLICATION_COMMAND_CHOICES_MAX:
-            raise ValueError(f'Argument `{annotation_name}` choice length out of expected range '
-                f'[1:{APPLICATION_COMMAND_CHOICES_MAX}], got {choices_length!r}.')
-        
-        names = []
-        values = []
-        
-        for index, annotation_choice in enumerate(annotation_value):
-            name, value = annotation_choice
-            if (not isinstance(name, str)) or (not isinstance(value, (str, int))):
-                raise TypeError(f'Argument `{annotation_name}` was given as a `list` or `dict` annotation, but it\'s '
-                    f'element {index} not matches the expected structure: `tuple` (`str`, `str` or `int`), got '
-                    f'{annotation_choice!r}.')
+        elif isinstance(annotation_value, set):
+            for annotation_choice in annotation_value:
+                choice_element = parse_annotation_choice(annotation_choice)
+                choice_elements.append(choice_element)
             
-            names.append(name)
-            values.append(value)
+            choice_elements.sort()
+        elif isinstance(annotation_value, dict):
+            for annotation_choice in annotation_value.items():
+                choice_element = parse_annotation_choice_from_tuple(annotation_choice)
+                choice_elements.append(choice_element)
+            
+            choice_elements.sort()
+        
+        else:
+            raise TypeError(f'Parameter `{annotation_name}` has annotation not set neither as `tuple`, `str`, `type`, '
+                f'`list`, `set` or `dict`, got {annotation_value.__class__.__name__}.')
         
         # Filter dupe names
-        length = 0
         dupe_checker = set()
-        for name in names:
+        length = 0
+        for name, value in choice_elements:
             dupe_checker.add(name)
             new_length = len(dupe_checker)
             if new_length == length:
@@ -420,9 +529,9 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
             
             length = new_length
         
-        # Filter dupe types
+        # Check annotation type
         expected_type = None
-        for value in values:
+        for name, value in choice_elements:
             if isinstance(value, str):
                 type_ = str
             else:
@@ -440,7 +549,7 @@ def parse_annotation_type_and_choice(annotation_value, annotation_name):
         else:
             annotation_type = ANNOTATION_TYPE_INT
         
-        choices = {value:name for value, name in zip(values, names)}
+        choices = {value:name for name, value in choice_elements}
     
     return annotation_type, choices
 

@@ -294,6 +294,8 @@ class CommandState:
         
         Returns
         -------
+        command : `None` or ``SlashCommand``
+            The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
             
@@ -308,9 +310,6 @@ class CommandState:
             +-----------------------------------+-------+
             | COMMAND_STATE_IDENTIFIER_REMOVED  | 2     |
             +-----------------------------------+-------+
-        
-        command : `None` or ``SlashCommand``
-            The purged command if any.
         """
         changes = self._changes
         if (changes is not None):
@@ -331,7 +330,7 @@ class CommandState:
                 
                 return purged_from_identifier, command
         
-        return COMMAND_STATE_IDENTIFIER_NONE, None
+        return None, COMMAND_STATE_IDENTIFIER_NONE
     
     def _try_purge(self, name):
         """
@@ -344,6 +343,8 @@ class CommandState:
         
         Returns
         -------
+        command : `None` or ``SlashCommand``
+            The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
             
@@ -362,9 +363,6 @@ class CommandState:
             +-----------------------------------+-------+
             | COMMAND_STATE_IDENTIFIER_KEPT     | 4     |
             +-----------------------------------+-------+
-        
-        command : `None` or ``SlashCommand``
-            The purged command if any.
         """
         from_changes_result = self._try_purge_from_changes(name)
         
@@ -377,7 +375,7 @@ class CommandState:
                     if not active:
                         self._active = None
                     
-                    return COMMAND_STATE_IDENTIFIER_ACTIVE, command
+                    return command, COMMAND_STATE_IDENTIFIER_ACTIVE
         
         kept = self._kept
         if (kept is not None):
@@ -388,7 +386,7 @@ class CommandState:
                     if not kept:
                         self._kept = None
                     
-                    return COMMAND_STATE_IDENTIFIER_KEPT, command
+                    return command, COMMAND_STATE_IDENTIFIER_KEPT
         
         return from_changes_result
     
@@ -1065,11 +1063,11 @@ class Slasher(EventHandlerBase):
             except KeyError:
                 command_state = self._command_states[sync_id] = CommandState(is_non_global)
             
-            command, change_identifier = command_state.remove(command, self._command_unloading_behaviour)
+            removed_command, change_identifier = command_state.remove(command, self._command_unloading_behaviour)
             
             if change_identifier == COMMAND_STATE_IDENTIFIER_REMOVED:
                 if sync_id == SYNC_ID_NON_GLOBAL:
-                    for guild_id in command._iter_guild_ids():
+                    for guild_id in removed_command._iter_guild_ids():
                         self._sync_should.add(sync_id)
                         self._sync_done.discard(sync_id)
                 else:
@@ -1079,7 +1077,7 @@ class Slasher(EventHandlerBase):
                 continue
             
             if change_identifier == COMMAND_STATE_IDENTIFIER_ACTIVE:
-                for application_command_id in command._iter_application_command_ids():
+                for application_command_id in removed_command._iter_application_command_ids():
                     try:
                         del self.command_id_to_command[application_command_id]
                     except KeyError:
@@ -1090,8 +1088,8 @@ class Slasher(EventHandlerBase):
                 continue
     
             if change_identifier == COMMAND_STATE_IDENTIFIER_NON_GLOBAL:
-                if (command is not None):
-                    for guild_id in command._iter_guild_ids():
+                if (removed_command is not None):
+                    for guild_id in removed_command._iter_guild_ids():
                         self._sync_done.discard(guild_id)
                         self._sync_should.add(guild_id)
                 continue

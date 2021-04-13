@@ -1,4 +1,6 @@
-#### 1.1.65  *\[2021-04-??\]*
+#### 1.1.66  *\[2021-04-??\]*
+
+#### 1.1.65  *\[2021-04-14\]*
 
 ##### Internal:
 
@@ -7,6 +9,10 @@
 - Create `urls.py` from `http.URLS` module.
 - Fix type `MAX_RERP_ELEMENT_LIMIT` -> `MAX_REPR_ELEMENT_LIMIT`.
 - Move json conversion to backend.
+- `CommandState._try_purge_from_changes` returned values in bad order. (Zeref Draganeel#3524)
+- `CommandState._try_purge` returned values in bad order. (Zeref Draganeel#3524)
+- Fix an `AttributeError` in `User._from_client`. (Zeref Draganeel#3524)
+- Add lazy interaction choice definition. (Zeref Draganeel#3524)
 
 #### 1.1.64  *\[2021-04-12\]*
 

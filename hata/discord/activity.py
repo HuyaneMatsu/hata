@@ -4,7 +4,7 @@ __all__ = ('ActivityAssets', 'ActivityBase', 'ActivityCustom', 'ActivityParty', 
 
 from datetime import datetime
 
-
+from ..backend.export import export, include
 from ..backend.utils import modulize
 
 from .utils import DISCORD_EPOCH_START
@@ -12,9 +12,9 @@ from .bases import FlagBase
 from .color import Color
 from .preconverters import preconvert_str, preconvert_int
 
-from . import preinstanced as module_preinstanced, urls as module_urls
+from . import urls as module_urls
 
-create_partial_emoji = NotImplemented
+create_partial_emoji = include('create_partial_emoji')
 
 DEFAULT_CUSTOM_ID = 'UNKNOWN'
 
@@ -56,6 +56,7 @@ class ActivityFlag(FlagBase):
     }
 
 
+@export
 @modulize
 class ActivityTypes:
     """
@@ -1538,6 +1539,3 @@ def create_activity(activity_data):
         activity_type = ActivityRich
     
     return activity_type.from_data(activity_data)
-
-
-module_preinstanced.ActivityTypes = ActivityTypes

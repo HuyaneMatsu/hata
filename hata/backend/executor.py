@@ -5,13 +5,14 @@ import sys
 from threading import Lock as SyncLock, Event as SyncEvent, Thread, current_thread
 from collections import deque
 
+from .export import include
 from .futures import Future, _ignore_frame, render_exc_to_list, CancelledError
+
+EventThread = include('EventThread')
 
 _ignore_frame(__spec__.origin, 'wait', 'raise exception', )
 _ignore_frame(__spec__.origin, 'result_no_wait', 'raise exception', )
 _ignore_frame(__spec__.origin, 'run', 'result=func()', )
-
-EventThread = NotImplemented
 
 class SyncWait:
     """

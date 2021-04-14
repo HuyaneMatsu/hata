@@ -11,6 +11,7 @@ from collections import deque
 from ssl import SSLContext, create_default_context
 from stat import S_ISSOCK
 
+from .export import export
 from .utils import alchemy_incendiary, WeakReferer, weakmethod, MethodType, WeakCallable, doc_property, DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError
@@ -31,10 +32,10 @@ _ignore_frame(threading.__spec__.origin, '_bootstrap', 'self._bootstrap_inner()'
 _ignore_frame(threading.__spec__.origin, '_bootstrap_inner', 'self.run()', )
 del threading, _ignore_frame
 
-from . import executor as module_executor, futures as module_futures
 
 LOOP_TIME = module_time.monotonic
 LOOP_TIME_RESOLUTION = module_time.get_clock_info('monotonic').resolution
+del module_time
 
 class Handle:
     """
@@ -73,7 +74,7 @@ class Handle:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         if self.cancelled:
             result.append(' cancelled')
@@ -1658,6 +1659,7 @@ class EventThreadType(type):
         return obj
 
 
+@export
 class EventThread(Executor, Thread, metaclass=EventThreadType):
     """
     Event loops run asynchronous tasks and callbacks, perform network IO operations, and runs subprocesses.
@@ -4171,10 +4173,3 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         NotImplementedError
             Not supported on windows by the library.
         """)
-
-module_executor.EventThread = EventThread
-module_futures.EventThread = EventThread
-
-del module_time
-del module_futures
-del module_executor

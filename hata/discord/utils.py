@@ -16,15 +16,15 @@ try:
 except ImportError:
     relativedelta = None
 
+from ..backend.export import export, include
 from ..backend.utils import istr, modulize
 
 from .bases import DiscordEntity
 from .client_core import USERS, CHANNELS, ROLES
 
-from . import bases as module_bases
-
-create_partial_user = NotImplemented
-RelationshipType = NotImplemented
+MESSAGE_JUMP_URL_RP = include('MESSAGE_JUMP_URL_RP')
+create_partial_user = include('create_partial_user')
+RelationshipType = include('RelationshipType')
 
 DATETIME_FORMAT_CODE = '%Y-%m-%d %H:%M:%S'
 
@@ -165,6 +165,7 @@ def parse_time(timestamp):
     
     return datetime(year, month, day, hour, minute, second, micro)
 
+@export
 def id_to_time(id_):
     """
     Converts the given id to datetime.
@@ -963,7 +964,6 @@ else:
             return relativedelta(**result)
 
 CHANNEL_MESSAGE_RP = re_compile('(\d{7,21})-(\d{7,21})')
-MESSAGE_JUMP_URL_RP = NotImplemented
 
 def parse_message_reference(text):
     """
@@ -1072,7 +1072,3 @@ def sanitize_mentions(content, guild=None):
     
     return re_compile('|'.join(transformations)).sub(
         lambda mention: transformations[mention.group(0)], content)
-
-module_bases.id_to_time = id_to_time
-
-del module_bases

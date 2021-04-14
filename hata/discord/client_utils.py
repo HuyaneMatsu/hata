@@ -7,13 +7,14 @@ from collections import namedtuple
 from ..backend.utils import basemethod
 from ..backend.event_loop import LOOP_TIME
 from ..backend.futures import Future, sleep, Task
+from ..backend.export import include
 
 from .permission import Permission
 from .role import PERMISSION_KEY
 from .client_core import KOKORO, CLIENTS
 from .rate_limit import RateLimitProxy
 
-Client = NotImplemented
+Client = include('Client')
 
 USER_CHUNK_TIMEOUT = 2.5
 

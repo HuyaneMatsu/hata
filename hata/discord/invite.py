@@ -3,6 +3,8 @@ __all__ = ('Invite', )
 
 from datetime import datetime
 
+from ..backend.export import include
+
 from .bases import DiscordEntity, instance_or_id_to_instance
 from .preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
 from .utils import parse_time, DISCORD_EPOCH_START
@@ -16,7 +18,7 @@ from .application import Application
 
 from . import urls as module_urls
 
-Client = NotImplemented
+Client = include('Client')
 
 class Invite(DiscordEntity, immortal=True):
     """

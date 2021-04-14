@@ -3,6 +3,8 @@ __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
 from ..env import API_VERSION
 
+from ..backend.export import include
+
 from .utils import Unknown, now_as_id, id_to_time
 from .client_core import CHANNELS, USERS, ROLES, MESSAGES
 from .permission import Permission
@@ -17,7 +19,7 @@ from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, 
     MFA
 from.client_utils import maybe_snowflake
 
-Client = NotImplemented
+Client = include('Client')
 
 class AuditLog:
     """

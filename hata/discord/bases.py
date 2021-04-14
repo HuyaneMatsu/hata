@@ -5,8 +5,9 @@ __all__ = ('DiscordEntity', 'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_S
 import sys
 
 from ..backend.utils import DOCS_ENABLED, doc_property
+from ..backend.export import include
 
-id_to_time = NotImplemented
+id_to_time = include('id_to_time')
 
 class DiscordEntityMeta(type):
     """

@@ -3,6 +3,7 @@ __all__ = ('BUILTIN_EMOJIS', 'UNICODE_TO_EMOJI', 'Emoji', 'parse_emoji', 'parse_
     'reaction_mapping_line',)
 
 from ..backend.utils import DOCS_ENABLED
+from ..backend.export import export
 
 from .bases import DiscordEntity
 from .client_core import EMOJIS
@@ -11,13 +12,14 @@ from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 from .role import create_partial_role
 
-from . import activity as module_activity, urls as module_urls
+from . import urls as module_urls
 
 UNICODE_EMOJI_LIMIT = 1<<21
 
 BUILTIN_EMOJIS = {}
 UNICODE_TO_EMOJI = {}
 
+@export
 def create_partial_emoji(data):
     """
     Creates an emoji from partial emoji data sent by Discord.
@@ -4559,8 +4561,3 @@ def generate_builtin_emojis():
                 break
 
 generate_builtin_emojis()
-
-module_activity.create_partial_emoji = create_partial_emoji
-
-del module_activity
-del module_urls

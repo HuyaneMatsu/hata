@@ -9,6 +9,7 @@ from weakref import WeakSet
 
 from ..backend.utils import DOCS_ENABLED, copy_docs
 from ..backend.event_loop import LOOP_TIME
+from ..backend.export import export, include
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from .client_core import CHANNELS, USERS
@@ -27,10 +28,10 @@ from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
 from .preinstanced import VoiceRegion, VideoQualityMode
 
-from . import webhook as module_webhook, message as module_message, rate_limit as module_rate_limit, urls as module_urls
+from . import urls as module_urls
 
-Client = NotImplemented
-Guild = NotImplemented
+Client = include('Client')
+Guild = include('Guild')
 
 TURN_MESSAGE_LIMITING_ON = WeakSet()
 
@@ -91,6 +92,8 @@ def create_partial_channel(data, partial_guild=None):
     
     return channel
 
+
+@export
 class ChannelBase(DiscordEntity, immortal=True):
     """
     Base class for Discord channels.
@@ -738,6 +741,8 @@ def message_relative_index(messages, message_id):
 # The newer messages are at the start, meanwhile the older ones at the end.
 # Do not try to delete not existing message's id, or it will cause de-sync.
 # Use pypy?
+
+@export
 class ChannelTextBase:
     """
     Base class of the message-able channel types.
@@ -1249,6 +1254,7 @@ class ChannelTextBase:
         return received
 
 
+@export
 class ChannelGuildBase(ChannelBase):
     """
     Base class for guild channels.
@@ -1935,6 +1941,8 @@ class ChannelGuildBase(ChannelBase):
 
         return result
 
+
+@export
 class ChannelText(ChannelGuildBase, ChannelTextBase):
     """
     Represents a ``Guild`` text channel or an announcements channel. So the type of the channel is interchangeable
@@ -2409,6 +2417,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         return channel
 
 
+@export
 class ChannelPrivate(ChannelBase, ChannelTextBase):
     """
     Represents a private (/ direct message) channel.
@@ -2726,6 +2735,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         return channel
 
 
+@export
 class ChannelVoiceBase(ChannelGuildBase):
     """
     Base class for guild voice channels.
@@ -2796,6 +2806,8 @@ class ChannelVoiceBase(ChannelGuildBase):
         """
         return self.name
 
+
+@export
 class ChannelVoice(ChannelVoiceBase):
     """
     Represents a ``Guild`` voice channel.
@@ -3231,6 +3243,7 @@ class ChannelVoice(ChannelVoiceBase):
         return channel
 
 
+@export
 class ChannelGroup(ChannelBase, ChannelTextBase):
     """
     Represents a group channel.
@@ -3609,6 +3622,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         return channel
 
+
+@export
 class ChannelCategory(ChannelGuildBase):
     """
     Represents a ``Guild`` channel category.
@@ -3892,6 +3907,7 @@ class ChannelCategory(ChannelGuildBase):
         return sorted(channel for channel in guild.channels.values() if channel.category is self)
 
 
+@export
 class ChannelStore(ChannelGuildBase):
     """
     Represents a ``Guild`` store channel.
@@ -4241,6 +4257,7 @@ class ChannelStore(ChannelGuildBase):
         return channel
 
 
+@export
 class ChannelThread(ChannelGuildBase):
     """
     Represents a ``Guild`` thread channel.
@@ -4540,6 +4557,8 @@ class ChannelThread(ChannelGuildBase):
         
         return channel
 
+
+@export
 class ChannelGuildUndefined(ChannelGuildBase):
     """
     Represents an undefined  ``Guild`` channel. This class is a place-holder for future classes. Expectedly for channel
@@ -4896,6 +4915,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
         return channel
 
 
+@export
 class ChannelStage(ChannelVoiceBase):
     """
     Represents a Discord stage channel.
@@ -5671,22 +5691,3 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         channel_data['parent_id'] = category_id
     
     return channel_data
-
-
-# Scopes
-
-module_webhook.ChannelText = ChannelText
-module_message.ChannelBase = ChannelBase
-module_message.ChannelTextBase = ChannelTextBase
-module_message.ChannelGuildBase = ChannelGuildBase
-module_message.ChannelText = ChannelText
-module_message.ChannelPrivate = ChannelPrivate
-module_message.ChannelGroup = ChannelGroup
-module_rate_limit.ChannelBase = ChannelBase
-module_rate_limit.ChannelGuildBase = ChannelGuildBase
-module_urls.ChannelGuildBase = ChannelGuildBase
-
-del module_message
-del module_webhook
-del module_rate_limit
-del module_urls

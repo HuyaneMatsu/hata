@@ -10,18 +10,19 @@ from ..backend.utils import modulize, WeakReferer, DOCS_ENABLED
 from ..backend.futures import Future, ScarletLock
 from ..backend.headers import DATE
 from ..backend.event_loop import LOOP_TIME
+from ..backend.export import include
 
 from .client_core import KOKORO
 from .utils.DISCORD_HEADERS import RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER, RATE_LIMIT_REMAINING, RATE_LIMIT_LIMIT
 
-ChannelBase = NotImplemented
-ChannelGuildBase = NotImplemented
-Message = NotImplemented
-Role = NotImplemented
-Webhook = NotImplemented
-WebhookRepr = NotImplemented
-Guild = NotImplemented
-InteractionEvent = NotImplemented
+ChannelBase = include('ChannelBase')
+ChannelGuildBase = include('ChannelGuildBase')
+Message = include('Message')
+Role = include('Role')
+Webhook = include('Webhook')
+WebhookRepr = include('WebhookRepr')
+Guild = include('Guild')
+InteractionEvent = include('InteractionEvent')
 
 #parsing time
 #email.utils.parse_date_to_datetime

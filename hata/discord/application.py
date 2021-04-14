@@ -2,6 +2,8 @@
 __all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA', 'Team', 'TeamMember',
     'ThirdPartySKU', )
 
+from ..backend.export import include
+
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, FlagBase
 from .user import ZEROUSER, User
 from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
@@ -10,7 +12,7 @@ from .preconverters import preconvert_snowflake, preconvert_bool, preconvert_str
 
 from . import urls as module_urls
 
-Client = NotImplemented
+Client = include('Client')
 
 class ApplicationFlag(FlagBase):
     """

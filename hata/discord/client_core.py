@@ -10,8 +10,9 @@ from threading import current_thread
 from ..backend.utils import WeakValueDictionary
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
 from ..backend.event_loop import EventThread
+from ..backend.export import include
 
-Client = NotImplemented
+Client = include('Client')
 
 if (sys.hash_info.width >= 64):
     #if we have 64 bit system we can use array instead of list

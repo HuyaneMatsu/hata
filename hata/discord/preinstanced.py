@@ -6,14 +6,15 @@ __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwrit
     'VerificationLevel', 'VideoQualityMode', 'VoiceRegion', 'WebhookType', )
 
 from ..backend.utils import any_to_any
+from ..backend.export import export, include
 
 from .bases import PreinstancedBase
 from .color import Color
 from .utils import sanitize_mentions
 
-from . import utils as module_utils, urls as module_urls
+from . import urls as module_urls
 
-ActivityTypes = NotImplemented
+ActivityTypes = include('ActivityTypes')
 
 class VerificationLevel(PreinstancedBase):
     """
@@ -779,6 +780,7 @@ PremiumType.nitro_classic = PremiumType(1, 'nitro_classic')
 PremiumType.nitro = PremiumType(2, 'nitro')
 
 
+@export
 class RelationshipType(PreinstancedBase):
     """
     Represents a ``Relationship``'s type.
@@ -2460,8 +2462,3 @@ class VideoQualityMode(PreinstancedBase):
 VideoQualityMode.none = VideoQualityMode(0, 'none')
 VideoQualityMode.auto = VideoQualityMode(1, 'auto')
 VideoQualityMode.full = VideoQualityMode(2, 'full')
-
-
-module_utils.RelationshipType = RelationshipType
-
-del module_utils

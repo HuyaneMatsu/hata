@@ -4,6 +4,7 @@ __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCo
     'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite',)
 
 from ..backend.utils import modulize
+from ..backend.export import include
 
 from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType
@@ -23,7 +24,7 @@ from .client_utils import maybe_snowflake
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
 
-Client = NotImplemented
+Client = include('Client')
 
 class ApplicationCommand(DiscordEntity, immortal=True):
     """

@@ -2,9 +2,10 @@
 __all__ = ('CallableAnalyzer', )
 
 from .utils import FunctionType, MethodLike
+from .export import include
 
-is_coroutine_function = NotImplemented
-is_coroutine_generator_function = NotImplemented
+is_coroutine_function = include('is_coroutine_function')
+is_coroutine_generator_function = include('is_coroutine_generator_function')
 
 CO_OPTIMIZED = 1
 CO_NEWLOCALS = 2

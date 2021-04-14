@@ -17,6 +17,7 @@ from ..backend.utils import RemovedDescriptor, MethodLike, NEEDS_DUMMY_INIT, Fun
     WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
 from ..backend.event_loop import LOOP_TIME
+from ..backend.export import export, include
 
 from .bases import FlagBase, DiscordEntity
 from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS
@@ -35,9 +36,7 @@ from .integration import Integration
 from .permission import Permission, PERMISSION_PRIVATE
 from .preinstanced import InteractionType
 
-from . import rate_limit as module_rate_limit
-
-Client = NotImplemented
+Client = include('Client')
 
 class EVENT_SYSTEM_CORE:
     """
@@ -4508,6 +4507,8 @@ INTERACTION_EVENT_RESPONSE_STATE_NONE = 0
 INTERACTION_EVENT_RESPONSE_STATE_DEFERRED = 1
 INTERACTION_EVENT_RESPONSE_STATE_RESPONDED = 2
 
+
+@export
 class InteractionEvent(DiscordEntity, EventBase):
     """
     Represents a processed `INTERACTION_CREATE` dispatch event.
@@ -8387,8 +8388,3 @@ async def _with_error(client, task):
         await task
     except BaseException as err:
         await client.events.error(client, repr(task), err)
-
-
-module_rate_limit.InteractionEvent = InteractionEvent
-
-del module_rate_limit

@@ -6,6 +6,7 @@ __all__ = ('Attachment', 'EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 
 from datetime import datetime
 
 from ..backend.utils import BaseMethodDescriptor
+from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
@@ -19,15 +20,15 @@ from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflak
     preconvert_preinstanced_type
 from .preinstanced import MessageType, MessageActivityType, StickerType, InteractionType
 
-from . import rate_limit as module_rate_limit, urls as module_urls
+from . import urls as module_urls
 
-Client = NotImplemented
-ChannelBase = NotImplemented
-ChannelTextBase = NotImplemented
-ChannelGuildBase = NotImplemented
-ChannelText = NotImplemented
-ChannelPrivate = NotImplemented
-ChannelGroup = NotImplemented
+Client = include('Client')
+ChannelBase = include('ChannelBase')
+ChannelTextBase = include('ChannelTextBase')
+ChannelGuildBase = include('ChannelGuildBase')
+ChannelText = include('ChannelText')
+ChannelPrivate = include('ChannelPrivate')
+ChannelGroup = include('ChannelGroup')
 
 class MessageFlag(FlagBase):
     """
@@ -801,6 +802,7 @@ class MessageRepr(DiscordEntity):
         return NotImplemented
 
 
+@export
 class Message(DiscordEntity, immortal=True):
     """
     Represents a message from Discord.
@@ -2404,8 +2406,3 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             return False
         return (user in reactors)
-
-module_rate_limit.Message = Message
-
-del module_rate_limit
-del module_urls

@@ -4,6 +4,7 @@ from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedRe
 from urllib.parse import urlencode as url_encode
 from .quote import unquote
 
+from .export import export
 from .utils import imultidict, multidict
 from .ios import AsyncIO
 
@@ -11,8 +12,6 @@ from .headers import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONT
 from .helpers import content_disposition_header, CHAR, TOKEN
 from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
 from .exceptions import ContentEncodingError
-
-from . import protocol as module_protocol
 
 BIG_CHUNK_LIMIT = 1<<16
 DEFAULT_CONTENT_TYPE = 'application/octet-stream'
@@ -736,6 +735,8 @@ class BodyPartReaderPayload(PayloadBase):
             else:
                 break
 
+
+@export
 class MimeType:
     # Parses a MIME type into its components
     
@@ -1543,6 +1544,3 @@ class MultipartPayloadWriter:
             pass
         
         await self.writer.write(chunk)
-
-module_protocol.MimeType = MimeType
-del module_protocol

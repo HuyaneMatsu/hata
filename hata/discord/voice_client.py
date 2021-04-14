@@ -8,6 +8,7 @@ from ..backend.utils import DOCS_ENABLED
 from ..backend.futures import Future, Task, sleep, future_or_timeout, Lock, Event
 from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 from ..backend.protocol import DatagramMergerReadProtocol
+from ..backend.export import export
 
 from .client_core import KOKORO
 from .opus import OpusEncoder
@@ -18,8 +19,8 @@ from .channel import ChannelVoiceBase, ChannelStage
 from .exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from .user import User
 
-from . import guild as module_guild
 
+@export
 class VoiceClient:
     """
     Represents a client what is joined to a voice channel.
@@ -1330,8 +1331,3 @@ class VoiceClient:
         result.append('>')
         
         return ''.join(result)
-
-
-module_guild.VoiceClient = VoiceClient
-
-del module_guild

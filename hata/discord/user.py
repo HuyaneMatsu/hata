@@ -6,6 +6,7 @@ from datetime import datetime
 from ..env import CACHE_USER, CACHE_PRESENCE
 
 from ..backend.utils import DOCS_ENABLED, WeakKeyDictionary
+from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import USERS
@@ -16,9 +17,9 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
     preconvert_flag
 from .preinstanced import Status, DefaultAvatar
 
-from . import utils as module_utils, urls as module_urls
+from . import urls as module_urls
 
-create_partial_role = NotImplemented
+create_partial_role = include('create_partial_role')
 
 if CACHE_USER:
     GUILD_PROFILES_TYPE = dict
@@ -90,8 +91,9 @@ class UserFlag(FlagBase):
         'underage_deleted': 15,
         'verified_bot': 16,
         'early_verified_developer': 17,
-            }
+    }
 
+@export
 def create_partial_user(user_id):
     """
     Creates a partial user from the given `user_id`. If the user already exists returns that instead.
@@ -2348,8 +2350,3 @@ class VoiceState:
         return f'<{self.__class__.__name__} user={self.user.full_name!r}, channel={self.channel!r}>'
 
 ZEROUSER = User._create_empty(0)
-
-module_utils.create_partial_user = create_partial_user
-
-del module_utils
-del module_urls

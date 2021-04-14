@@ -2,12 +2,14 @@
 __all__ = ()
 
 import re
-from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
-from . import utils as module_utils
-
-ChannelGuildBase = NotImplemented
 
 from ..env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
+
+from ..backend.export import export, include
+
+from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
+
+ChannelGuildBase = include('ChannelGuildBase')
 
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
 CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
@@ -22,6 +24,7 @@ VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS, 'gif',)
 STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
 
 MESSAGE_JUMP_URL_RP = re.compile('(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
+export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
 #returns a URL that allows the client to jump to this message
 #guild is guild's id, or @me if there is no guild
@@ -1044,8 +1047,3 @@ def achievement_icon_url_as(achievement, ext='png', size=None):
             prefix = 'a_'
     
     return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}{achievement.icon_hash:0>32x}.{ext}{end}'
-
-
-# export
-
-module_utils.MESSAGE_JUMP_URL_RP = MESSAGE_JUMP_URL_RP

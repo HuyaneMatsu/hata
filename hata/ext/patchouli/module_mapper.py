@@ -9,13 +9,15 @@ from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodTy
 from difflib import get_close_matches
 
 from ...backend.utils import cached_property, MethodLike, module_property, basemethod, weakmethod
+from ...backend.export import include
 from ...discord.bases import IconSlot
+
 from .qualpath import QualPath
 from .parser import DocString
 from .builder_text import serialize_docs_embed_sized, serialize_docs, serialize_docs_source_text, generate_preview_for
 from .builder_html import html_serialize_docs
 
-html_serialize_docs_extended = NotImplemented
+html_serialize_docs_extended = include('html_serialize_docs_extended')
 
 WrapperDescriptorType = object.__eq__.__class__
 MethodDescriptorType = int.bit_length.__class__

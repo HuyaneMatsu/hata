@@ -18,6 +18,7 @@ from ..backend.formdata import Formdata
 from ..backend.headers import AUTHORIZATION
 from ..backend.helpers import BasicAuth
 from ..backend.url import URL
+from ..backend.export import export
 
 from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, get_image_extension, Relationship
 from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
@@ -64,11 +65,6 @@ from .color import Color
 from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 
-from . import client_core as module_client_core, message as module_message, webhook as module_webhook, \
-    channel as module_channel, invite as module_invite, parsers as module_parsers, client_utils as module_client_utils,\
-    guild as module_guild, audit_logs as module_audit_logs, application as module_application, \
-    interaction as module_interaction
-
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -76,6 +72,8 @@ MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_us
 
 AUTO_CLIENT_ID_LIMIT = (1<<22)
 
+
+@export
 class Client(UserBase):
     """
     Discord client class used to interact with the Discord API.
@@ -16000,28 +15998,3 @@ class Client(UserBase):
             gateway = gateway.gateways[(guild_id>>22)%shard_count]
         
         return gateway
-
-
-module_client_core.Client = Client
-module_message.Client = Client
-module_webhook.Client = Client
-module_channel.Client = Client
-module_invite.Client = Client
-module_parsers.Client = Client
-module_client_utils.Client = Client
-module_guild.Client = Client
-module_audit_logs.Client = Client
-module_application.Client = Client
-module_interaction.Client = Client
-
-del module_client_core
-del module_message
-del module_webhook
-del module_invite
-del module_parsers
-del module_client_utils
-del module_channel
-del module_guild
-del module_audit_logs
-del module_application
-del module_interaction

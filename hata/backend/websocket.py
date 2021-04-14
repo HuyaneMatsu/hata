@@ -11,6 +11,7 @@ from os import urandom
 
 from .utils import imultidict
 from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, is_coroutine, Lock
+from .export import include
 
 from .url import URL
 from .headers import CONNECTION, SEC_WEBSOCKET_KEY, AUTHORIZATION, SEC_WEBSOCKET_VERSION, build_subprotocols, \
@@ -39,7 +40,7 @@ WS_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
 EXTERNAL_CLOSE_CODES = (1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011,)
 
-HTTPClient = NotImplemented
+HTTPClient = include('HTTPClient')
 
 class WebSocketCommonProtocol(ProtocolBase):
     """

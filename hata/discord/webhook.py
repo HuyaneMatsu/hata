@@ -1,6 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Webhook', 'WebhookRepr', )
 
+from ..backend.export import export, include
+
 from .user import User, ZEROUSER, USERS, UserBase
 from .exceptions import DiscordException, ERROR_CODES
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
@@ -8,10 +10,10 @@ from .bases import ICON_TYPE_NONE, Icon
 from .urls import WEBHOOK_URL_PATTERN
 from .preinstanced import WebhookType
 
-from . import rate_limit as module_webhook, urls as module_urls
+from . import urls as module_urls
 
-ChannelText = NotImplemented
-Client = NotImplemented
+ChannelText = include('ChannelText')
+Client = include('Client')
 
 def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=None):
     """
@@ -56,7 +58,7 @@ def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=Non
     webhook.token = token
     return webhook
 
-
+@export
 class Webhook(UserBase):
     """
     Represents a Discord webhook. At some cases it might be used as webhook's user representation.
@@ -437,6 +439,8 @@ class Webhook(UserBase):
         
         return webhook
 
+
+@export
 class WebhookRepr(UserBase):
     """
     Represents a Discord webhook's user representation.
@@ -529,8 +533,3 @@ class WebhookRepr(UserBase):
         guild : ``Guild`` or `None`
         """
         return self.channel.guild
-
-module_webhook.Webhook = Webhook
-module_webhook.WebhookRepr = WebhookRepr
-
-del module_webhook

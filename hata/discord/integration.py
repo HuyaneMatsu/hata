@@ -1,16 +1,19 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('Integration', 'IntegrationAccount', 'IntegrationApplication', 'IntegrationDetail')
 
+from ..backend.export import export
+
 from .bases import DiscordEntity, IconSlot
 from .client_core import INTEGRATIONS
 from .user import User, ZEROUSER
 from .utils import parse_time, DISCORD_EPOCH_START
 from .role import create_partial_role
 
-from . import role as module_role, urls as module_urls
+from . import urls as module_urls
 
 INTEGRATION_TYPE_DISCORD = 'discord'
 
+@export
 def create_partial_integration(integration_id, role=None):
     """
     Creates an integration with the given id.
@@ -359,10 +362,3 @@ class IntegrationApplication(DiscordEntity):
             bot = User(bot_data)
         
         self.bot = bot
-
-
-
-# Scopes
-module_role.create_partial_integration = create_partial_integration
-
-del module_role

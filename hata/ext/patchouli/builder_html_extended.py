@@ -3,12 +3,12 @@ __all__ = ()
 
 from html import escape as html_escape
 
+from ...backend.export import export
+
 from .graver import GravedDescription, GravedAttributeDescription
 from .parser import ATTRIBUTE_SECTION_NAME_RP, ATTRIBUTE_NAME_RP
 from .builder_html import sub_section_serializer, create_relative_link, graved_to_escaped
 from .module_mapper import TypeUnit, ModuleUnit, PropertyUnit, InstanceAttributeUnit, FunctionUnit, MAPPED_OBJECTS
-
-from . import module_mapper as module_module_mapper
 
 class Structure:
     """
@@ -1395,8 +1395,9 @@ UNIT_CONVERSION_TABLE = {
     FunctionUnit : FunctionOrPropertySerializer,
     TypeUnit : TypeSerializer,
     ModuleUnit : ModuleSerializer,
-        }
+}
 
+@export
 def html_serialize_docs_extended(object_, get_html, get_structure):
     """
     Serializes the given docs to one big html code.
@@ -1437,7 +1438,3 @@ def html_serialize_docs_extended(object_, get_html, get_structure):
             structure = None
     
     return html, structure
-
-module_module_mapper.html_serialize_docs_extended = html_serialize_docs_extended
-
-del module_module_mapper

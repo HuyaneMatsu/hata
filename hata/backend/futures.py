@@ -7,13 +7,16 @@ __all__ = ('AsyncQue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper'
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType as method, FunctionType as function, \
     coroutine
+
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
 from .utils import alchemy_incendiary, DOCS_ENABLED, copy_func
 from .analyzer import CO_ASYNC_GENERATOR, CO_COROUTINE_ALL
+from .export import export, include
 
-from . import analyzer as module_analyzer
+EventThread = include('EventThread')
+
 
 class CancelledError(BaseException):
     """The Future or Task was cancelled."""
@@ -77,6 +80,8 @@ class InvalidStateError(Exception):
         
         return message
 
+
+@export
 def is_coroutine_function(func):
     """
     Returns whether the given `obj` is a coroutine function, so is created with `async def`.
@@ -91,6 +96,8 @@ def is_coroutine_function(func):
     """
     return isinstance(func, (function, method)) and func.__code__.co_flags&CO_COROUTINE_ALL
 
+
+@export
 def is_coroutine_generator_function(func):
     """
     Returns whether the given `obj` is a coroutine generator function, so is created with `async def` and uses `yield`
@@ -106,6 +113,7 @@ def is_coroutine_generator_function(func):
     """
     return isinstance(func, (function, method)) and func.__code__.co_flags&CO_ASYNC_GENERATOR
 
+
 def is_coroutine(obj):
     """
     Returns whether the given `obj` is a coroutine created by an `async def` function.
@@ -119,6 +127,7 @@ def is_coroutine(obj):
     is_coroutine : `bool`
     """
     return isinstance(obj, (CoroutineType, GeneratorType))
+
 
 def is_awaitable(obj):
     """
@@ -143,6 +152,7 @@ def is_awaitable(obj):
     
     return False
 
+
 def is_coroutine_generator(obj):
     """
     Returns whether the given `obj` is a coroutine generator created by an `async def` function, and can be used inside
@@ -166,9 +176,7 @@ def is_coroutine_generator(obj):
     
     return False
 
-EventThread = NotImplemented
-
-#future states
+# future states
 
 PENDING = 'PENDING'
 CANCELLED = 'CANCELLED'
@@ -6203,8 +6211,3 @@ class WaitContinuously(WaitTillFirst):
     # `clear` same as ``WaitTilLFirst.clear``
     # `sync_wrap` is same as ``Future.sync_wrap``
     # `async_wrap` is same as ``Future.async_wrap``
-
-module_analyzer.is_coroutine_function = is_coroutine_function
-module_analyzer.is_coroutine_generator_function = is_coroutine_generator_function
-
-del module_analyzer

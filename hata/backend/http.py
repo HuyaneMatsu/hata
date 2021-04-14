@@ -10,10 +10,11 @@ from .cookiejar import CookieJar
 from .headers import CONTENT_LENGTH, AUTHORIZATION, METHOD_HEAD, LOCATION, URI, METHOD_GET, METHOD_POST, \
     METHOD_OPTIONS, METHOD_PUT, METHOD_PATCH, METHOD_DELETE
 from .websocket import WSClient
-from . import websocket as module_websocket
+from .export import export
 
 DEFAULT_TIMEOUT = 60.0
 
+@export
 class HTTPClient:
     """
     HTTP client implementation.
@@ -1014,7 +1015,3 @@ class WebsocketCM:
         if (websocket is not None):
             self.websocket = None
             await websocket.close()
-
-module_websocket.HTTPClient = HTTPClient
-
-del module_websocket

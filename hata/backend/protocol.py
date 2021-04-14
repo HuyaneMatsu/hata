@@ -6,11 +6,14 @@ from collections import deque
 
 from .utils import imultidict, DOCS_ENABLED
 from .futures import Future, CancelledError, Task, future_or_timeout
+from .export import include
 
 from .headers import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METHOD_CONNECT, CONTENT_TYPE, \
     CONTENT_TRANSFER_ENCODING
 from .exceptions import PayloadError, WebSocketProtocolError, ContentEncodingError
 from .helpers import HttpVersion, HttpVersion11
+
+MimeType = include('MimeType')
 
 try:
     import brotli
@@ -44,7 +47,6 @@ else:
             def compress(self, value):
                 return self._compressor.process(value)
 
-MimeType = NotImplemented
 
 ZLIB_DECOMPRESSOR = zlib.decompressobj
 ZLIB_COMPRESSOR = zlib.compressobj

@@ -1,9 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 __all__ = ('PermissionOverwrite', 'Role', 'cr_p_overwrite_object', 'cr_p_role_object', )
 
-from ..backend.utils import DOCS_ENABLED
-
 from ..env import API_VERSION
+
+from ..backend.utils import DOCS_ENABLED
+from ..backend.export import export, include
 
 from .bases import DiscordEntity
 from .client_core import ROLES
@@ -15,9 +16,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_colo
     preconvert_flag
 from .preinstanced import RoleManagerType
 
-from . import rate_limit as module_rate_limit, user as module_user
-
-create_partial_integration = NotImplemented
+create_partial_integration = include('create_partial_integration')
 
 ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
 ROLE_MANAGER_TYPE_UNSET = RoleManagerType.unset
@@ -72,6 +71,7 @@ else:
         return int(data['type'])
 
 
+@export
 def create_partial_role(role_id):
     """
     Creates a partial role from the given `role_id`. If the role already exists returns that instead.
@@ -109,6 +109,7 @@ def create_partial_role(role_id):
     return role
 
 
+@export
 class Role(DiscordEntity, immortal=True):
     """
     Represents a Discord guild's role.
@@ -191,6 +192,7 @@ class Role(DiscordEntity, immortal=True):
             role.mentionable = data.get('mentionable', False)
         
         return role
+    
     
     @classmethod
     def precreate(cls, role_id, **kwargs):
@@ -1163,9 +1165,3 @@ def cr_p_overwrite_object(target, allow, deny):
         'id': target.id,
         'type': PERM_OW_TYPE_ROLE if type(target) is Role else PERM_OW_TYPE_USER,
     }
-
-module_rate_limit.Role = Role
-module_user.create_partial_role = create_partial_role
-
-del module_rate_limit
-del module_user

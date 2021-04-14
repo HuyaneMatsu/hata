@@ -114,3 +114,5 @@ else:
         *discord.__all__,
     )
 
+from .backend.export import check_satisfaction
+check_satisfaction()

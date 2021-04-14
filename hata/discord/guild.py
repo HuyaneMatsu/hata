@@ -8,6 +8,7 @@ import re, reprlib
 from ..env import CACHE_PRESENCE
 from ..backend.utils import cached_property, BaseMethodDescriptor
 from ..backend.futures import Task
+from ..backend.export import export, include
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
@@ -23,10 +24,10 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_prei
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, VerificationScreenStepType
 
-from . import rate_limit as module_rate_limit, channel as module_channel, urls as module_urls
+from . import urls as module_urls
 
-VoiceClient = NotImplemented
-Client = NotImplemented
+VoiceClient = include('VoiceClient')
+Client = include('VoiceClient')
 
 LARGE_LIMIT = 250 # can be between 50 and 250
 
@@ -525,7 +526,9 @@ def create_partial_guild(data):
     
     return guild
 
-#discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
+# discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
+
+@export
 class Guild(DiscordEntity, immortal=True):
     """
     Represents a Discord guild (or server).
@@ -3838,10 +3841,3 @@ class VerificationScreenStep:
             return False
         
         return True
-
-
-module_rate_limit.Guild = Guild
-module_channel.Guild = Guild
-
-del module_rate_limit
-del module_channel

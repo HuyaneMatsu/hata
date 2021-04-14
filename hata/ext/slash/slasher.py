@@ -1405,52 +1405,53 @@ class Slasher(EventHandlerBase):
                 if not non_global_keep_commands:
                     non_global_keep_commands = None
             
-            command_create_coroutines = None
-            command_edit_coroutines = None
-            command_delete_coroutines = None
-            command_register_coroutines = None
+            command_create_callbacks = None
+            command_edit_callbacks = None
+            command_delete_callbacks = None
+            command_register_callbacks = None
             
             guild_added_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._register_command(client, command, guild_command_state, guild_id,
+                    callback = (type(self)._register_command, self, client, command, guild_command_state, guild_id,
                         application_command)
                     
-                    if command_register_coroutines is None:
-                        command_register_coroutines = []
-                    command_register_coroutines.append(coroutine)
+                    if command_register_callbacks is None:
+                        command_register_callbacks = []
+                    command_register_callbacks.append(callback)
             
             non_global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 non_global_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._register_command(client, command, non_global_command_state, guild_id,
+                    callback = (type(self)._register_command, self, client, command, non_global_command_state, guild_id,
                         application_command)
                     
-                    if command_register_coroutines is None:
-                        command_register_coroutines = []
-                    command_register_coroutines.append(coroutine)
+                    if command_register_callbacks is None:
+                        command_register_callbacks = []
+                    command_register_callbacks.append(callback)
             
             guild_added_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_added_commands, False)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._edit_command(client, command, guild_command_state, guild_id,
+                    callback = (type(self)._edit_command, self, client, command, guild_command_state, guild_id,
                         application_command,)
-                    if command_edit_coroutines is None:
-                        command_edit_coroutines = []
-                    command_edit_coroutines.append(coroutine)
+                    
+                    if command_edit_callbacks is None:
+                        command_edit_callbacks = []
+                    command_edit_callbacks.append(callback)
             
             non_global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 non_global_added_commands, False)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._edit_guild_command_to_non_global(client, command, non_global_command_state,
-                        guild_id, application_command)
-                    if command_edit_coroutines is None:
-                        command_edit_coroutines = []
-                    command_edit_coroutines.append(coroutine)
+                    callback = (type(self)._edit_guild_command_to_non_global, self, client, command,
+                        non_global_command_state, guild_id, application_command)
+                    if command_edit_callbacks is None:
+                        command_edit_callbacks = []
+                    command_edit_callbacks.append(callback)
             
             guild_keep_commands, matched = match_application_commands_to_commands(application_commands,
                 guild_keep_commands, True)
@@ -1468,35 +1469,37 @@ class Slasher(EventHandlerBase):
                 guild_removed_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._delete_command(client, command, guild_command_state, guild_id,
+                    callback = (type(self)._delete_command, self, client, command, guild_command_state, guild_id,
                         application_command)
-                    if command_delete_coroutines is None:
-                        command_delete_coroutines = []
-                    command_delete_coroutines.append(coroutine)
+                    if command_delete_callbacks is None:
+                        command_delete_callbacks = []
+                    command_delete_callbacks.append(callback)
             
             if (guild_added_commands is not None):
                 while guild_added_commands:
                     command = guild_added_commands.pop()
                     
-                    coroutine = self._create_command(client, command, guild_command_state, guild_id)
-                    if command_create_coroutines is None:
-                        command_create_coroutines = []
-                    command_create_coroutines.append(coroutine)
+                    callback = (type(self)._create_command, self, client, command, guild_command_state, guild_id)
+                    if command_create_callbacks is None:
+                        command_create_callbacks = []
+                    command_create_callbacks.append(callback)
                     continue
             
             while application_commands:
                 application_command = application_commands.pop()
                 
-                coroutine = self._delete_command(client, None, None, guild_id, application_command)
-                if command_delete_coroutines is None:
-                    command_delete_coroutines = []
-                command_delete_coroutines.append(coroutine)
+                callback = (type(self)._delete_command, self, client, None, None, guild_id, application_command)
+                if command_delete_callbacks is None:
+                    command_delete_callbacks = []
+                command_delete_callbacks.append(callback)
             
             success = True
-            for coroutines in (command_register_coroutines, command_delete_coroutines, command_edit_coroutines, \
-                    command_create_coroutines):
-                if (coroutines is not None):
-                    done, pending = await WaitTillAll([Task(coroutine, KOKORO) for coroutine in coroutines], KOKORO)
+            for callbacks in (command_register_callbacks, command_delete_callbacks, command_edit_callbacks, \
+                    command_create_callbacks):
+                if (callbacks is not None):
+                    done, pending = await WaitTillAll(
+                        [Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks],
+                        KOKORO)
                     
                     for future in done:
                         if not future.result():
@@ -1557,21 +1560,21 @@ class Slasher(EventHandlerBase):
                 if not global_removed_commands:
                     global_removed_commands = None
             
-            command_create_coroutines = None
-            command_edit_coroutines = None
-            command_delete_coroutines = None
-            command_register_coroutines = None
+            command_create_callbacks = None
+            command_edit_callbacks = None
+            command_delete_callbacks = None
+            command_register_callbacks = None
             
             global_added_commands, matched = match_application_commands_to_commands(application_commands,
                 global_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._register_command(client, command, global_command_state, SYNC_ID_GLOBAL,
-                        application_command)
+                    callback = (type(self)._register_command, self, client, command, global_command_state,
+                        SYNC_ID_GLOBAL, application_command)
                     
-                    if command_register_coroutines is None:
-                        command_register_coroutines = []
-                    command_register_coroutines.append(coroutine)
+                    if command_register_callbacks is None:
+                        command_register_callbacks = []
+                    command_register_callbacks.append(callback)
             
             global_keep_commands, matched = match_application_commands_to_commands(application_commands,
                 global_keep_commands, True)
@@ -1583,34 +1586,36 @@ class Slasher(EventHandlerBase):
                 global_removed_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    coroutine = self._delete_command(client, command, global_command_state, SYNC_ID_GLOBAL,
+                    callback = (type(self)._delete_command, self, client, command, global_command_state, SYNC_ID_GLOBAL,
                         application_command)
-                    if command_delete_coroutines is None:
-                        command_delete_coroutines = []
-                    command_delete_coroutines.append(coroutine)
+                    if command_delete_callbacks is None:
+                        command_delete_callbacks = []
+                    command_delete_callbacks.append(callback)
             
             if (global_added_commands is not None):
                 while global_added_commands:
                     command = global_added_commands.pop()
                     
-                    coroutine = self._create_command(client, command, global_command_state, SYNC_ID_GLOBAL)
-                    if command_create_coroutines is None:
-                        command_create_coroutines = []
-                    command_create_coroutines.append(coroutine)
+                    callback = (type(self)._create_command, self, client, command, global_command_state, SYNC_ID_GLOBAL)
+                    if command_create_callbacks is None:
+                        command_create_callbacks = []
+                    command_create_callbacks.append(callback)
             
             while application_commands:
                 application_command = application_commands.pop()
                 
-                coroutine = self._delete_command(client, None, None, SYNC_ID_GLOBAL, application_command)
-                if command_delete_coroutines is None:
-                    command_delete_coroutines = []
-                command_delete_coroutines.append(coroutine)
+                callback = (type(self)._delete_command, self, client, None, None, SYNC_ID_GLOBAL, application_command)
+                if command_delete_callbacks is None:
+                    command_delete_callbacks = []
+                command_delete_callbacks.append(callback)
             
             success = True
-            for coroutines in (command_register_coroutines, command_delete_coroutines, command_edit_coroutines,
-                    command_create_coroutines):
-                if (coroutines is not None):
-                    done, pending = await WaitTillAll([Task(coroutine, KOKORO) for coroutine in coroutines], KOKORO)
+            for callbacks in (command_register_callbacks, command_delete_callbacks, command_edit_callbacks,
+                    command_create_callbacks):
+                if (callbacks is not None):
+                    done, pending = await WaitTillAll(
+                        [Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks],
+                        KOKORO)
                     
                     for future in done:
                         if not future.result():

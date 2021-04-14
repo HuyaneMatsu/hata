@@ -1,5 +1,9 @@
 #### 1.1.66  *\[2021-04-??\]*
 
+Internal:
+
+- Move slash sync coroutine creation to task creation to avoid resource warning at edge cases.
+
 #### 1.1.65  *\[2021-04-14\]*
 
 ##### Internal:

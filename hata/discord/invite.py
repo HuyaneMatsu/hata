@@ -395,31 +395,31 @@ class Invite(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``, Optional
+        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``, Optional (Keyword only)
             The channel where the invite redirects.
-        created_at : `datetime`, Optional
+        created_at : `datetime`, Optional (Keyword only)
             When the invite was created.
-        guild : `None` or ``Guild``, Optional
+        guild : `None` or ``Guild``, Optional (Keyword only)
             The guild the invite is for.
-        inviter : `int`, `str`, ``Client`` or ``User``, Optional
+        inviter : `int`, `str`, ``Client`` or ``User``, Optional (Keyword only)
             The creator of the invite.
-        max_age : `None` or `int`, Optional
+        max_age : `None` or `int`, Optional (Keyword only)
             The time in seconds after the invite will expire.
-        max_uses : `None` or `int`, Optional
+        max_uses : `None` or `int`, Optional (Keyword only)
             How much times the invite can be used.
-        online_count : `int`, Optional
+        online_count : `int`, Optional (Keyword only)
             The amount of online users at the respective guild (or group channel).
-        target_type : `int` or ``InviteTargetType``, Optional
+        target_type : `int` or ``InviteTargetType``, Optional (Keyword only)
             The invite's target type.
-        target_application : `int`, `str` or ``Application``, Optional
+        target_application : `int`, `str` or ``Application``, Optional (Keyword only)
             The target application of the invite.
-        target_user : `int`, `str`, ``Client`` or ``User``, Optional
+        target_user : `int`, `str`, ``Client`` or ``User``, Optional (Keyword only)
             The target user of the invite.
-        temporary : `bool`, Optional
+        temporary : `bool`, Optional (Keyword only)
             Whether this invite only grants temporary membership.
-        user_count : `int`, Optional
+        user_count : `int`, Optional (Keyword only)
             The amount of users at the respective guild (or group channel).
-        uses : `None` or `int`, Optional
+        uses : `None` or `int`, Optional (Keyword only)
             The amount how much times the invite was used.
         
         Returns

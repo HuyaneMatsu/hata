@@ -208,21 +208,21 @@ class Role(DiscordEntity, immortal=True):
         
         Other parameters
         ----------------
-        name : `str`
+        name : `str`, Optional (Keyword only)
             The role's ``.name``.
-        manager_id : `None`, `int` or `str`
+        manager_id : `None`, `int` or `str`, Optional (Keyword only)
             The role's manager's id.
-        manager_type : `RoleManagerType`
+        manager_type : ``RoleManagerType``, Optional (Keyword only)
             The role's ``.manager_type``.
-        mentionable : `bool`
+        mentionable : `bool`, Optional (Keyword only)
             The role's ``.mentionable``.
-        separated : `bool`
+        separated : `bool`, Optional (Keyword only)
             The role's ``.separated``.
-        position : `int`
+        position : `int`, Optional (Keyword only)
             The role's ``.position``.
-        permissions : `int` or ``Permission``
+        permissions : `int` or ``Permission``, Optional (Keyword only)
             The role's ``.permissions``.
-        color : `int` or ``Color``
+        color : `int` or ``Color``, Optional (Keyword only)
             The role's ``.color``.
         
         Returns
@@ -1112,15 +1112,15 @@ def cr_p_role_object(name, id_=None, color=Color(), separated=False, position=0,
         The role's unique identifier number. If given as `None`, then a random `id` will be generated.
     color : ``Color``, Optional
         The role's color. Defaults to `Color(0)`
-    separated : `bool`
+    separated : `bool`, Optional
         Users show up in separated groups by their highest `separated` role. Defaults to `False`.
-    position : `int`
+    position : `int`, Optional
         The role's position at the guild. Defaults to `0`.
-    permissions : ``Permission``
+    permissions : ``Permission``, Optional
         The permissions of the users having the role.
-    managed : `bool`
+    managed : `bool`, Optional
         Whether the role is managed by an integration.
-    mentionable : `bool`
+    mentionable : `bool`, Optional
         Whether the role can be mentioned.
     
     Returns

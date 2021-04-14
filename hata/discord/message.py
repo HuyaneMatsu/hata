@@ -1103,104 +1103,105 @@ class Message(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        activity : `None` or ``MessageActivity``, Optional
+        activity : `None` or ``MessageActivity``, Optional (Keyword only)
             The ``.activity`` attribute the message.
             
             If called as classmethod defaults to `None`.
-        application : `None` or ``MessageApplication``., Optional
+        application : `None` or ``MessageApplication``., Optional (Keyword only)
             The ``.application`` attribute the message.
             
             If called as a classmethod defaults to `None`.
-        attachments : `None` or (`list` of ``Attachment``), Optional
+        attachments : `None` or (`list` of ``Attachment``), Optional (Keyword only)
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
             
             If called as a classmethod defaults to `None`.
-        author : `None`, ``Client``, ``User``, ``Webhook`` or ``WebhookRepr``, Optional
+        author : `None`, ``Client``, ``User``, ``Webhook`` or ``WebhookRepr``, Optional (Keyword only)
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
             
             If called as a classmethod, defaults to `ZEROUSER`.
-        channel : `ChannelTextBase` instance, Optional if called as method
+        channel : `ChannelTextBase` instance, Optional if called as method (Keyword only)
             The ``.channel`` attribute of the message.
             
             If called as a classmethod this attribute must be passed, or `TypeError` is raised.
-        content : `str`, Optional
+        content : `str`, Optional (Keyword only)
             The ``.content`` attribute of the message. Can be between length `0` and `2000`.
             
             If called as a classmethod defaults to `''` (empty string).
-        cross_mentions : `None` or (`list` of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances)), Optional
+        cross_mentions : `None` or (`list` of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances))
+                , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
             If called as a classmethod defaults to `None`.
-        referenced_message : `None`, ``Message`` ``MessageReference``, Optional
+        referenced_message : `None`, ``Message`` ``MessageReference``, Optional (Keyword only)
             The ``.referenced_message`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
-        deleted : `bool`, Optional
+        deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
-        edited : `None` or `datetime`, Optional.
+        edited : `None` or `datetime`, Optional (Keyword only)
             The ``.edited`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
-        embeds : `None` or (`list` of ( ``EmbedCore`` or any embed compatible)), Optional
+        embeds : `None` or (`list` of ( ``EmbedCore`` or any embed compatible)), Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
             passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
             to ``EmbedCore`` as well.
             
             If called as a classmethod defaults to `None`.
-        everyone_mention : `bool` or `int` instance (`0` or `1`), Optional
+        everyone_mention : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
             The ``.everyone_mention`` attribute of the message. Accepts other `int` instance as `bool` as well, but
             their value still cannot be other than `0` or `1`.
             
             If called as a classmethod, defaults to `False`.
-        flags : ``MessageFlag`` or `int`, Optional
+        flags : ``MessageFlag`` or `int`, Optional (Keyword only)
             The ``.flags`` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
             
             If called as a classmethod defaults to `MessageFlag(0)`.
-        id : `int` or `str`, Optional
+        id : `int` or `str`, Optional (Keyword only)
             The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`.
             
             If called as a classmethod defaults to `0`.
-        id_ : `int` or `str`, Optional.
+        id_ : `int` or `str`, Optional (Keyword only)
             Alias of `id`.
-        message_id : `int` or `str`, Optional
+        message_id : `int` or `str`, Optional (Keyword only)
             Alias of `id`.
-        nonce : `None` or `str`, Optional.
+        nonce : `None` or `str`, Optional (Keyword only)
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
             If called as a classmethod defaults to `None`.
-        pinned :  : `bool` or `int` instance (`0` or `1`), Optional
+        pinned :  : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
             The ``.pinned`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
             
             If called as a classmethod, defaults to `False`.
-        reactions : `None` or ``reaction_mapping``, Optional.
+        reactions : `None` or ``reaction_mapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message. If passed as `None` will be set as an empty
             ``reaction_mapping``.
             
             If called as a classmethod defaults to empty ``reaction_mapping``.
-        role_mentions : `None` or (`list` of ``Role``), Optional
+        role_mentions : `None` or (`list` of ``Role``), Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
             
             If called as a classmethod defaults to `None`.
-        stickers : `None` or `list` of ``Sticker``, Optional
+        stickers : `None` or `list` of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
-        tts :  : `bool` or `int` instance (`0` or `1`), Optional
+        tts :  : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
             The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
             
             If called as a classmethod, defaults to `False`.
-        type : ``MessageType`` or `int`, Optional
+        type : ``MessageType`` or `int`, Optional (Keyword only)
             The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
             ``MessageType`` representation.
             
             If called as a classmethod defaults to ``MessageType.default`
-        type_ : ``MessageType`` or `int`, Optional
+        type_ : ``MessageType`` or `int`, Optional (Keyword only)
             Alias of ``type`.
-        user_mentions : `None` or (`list` of (``User`` or ``Client``)), Optional
+        user_mentions : `None` or (`list` of (``User`` or ``Client``)), Optional (Keyword only)
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
             
             If called as a classmethod defaults to `None`.

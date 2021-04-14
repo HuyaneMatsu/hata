@@ -108,9 +108,9 @@ class CommandCheckWrapper(CommandWrapper):
         ----------
         check_type : ``CheckBase`` subclass
             The check's type.
-        *args : Arguments, Optional
+        *args : Arguments,
             Additional parameters to pass to the `check_type`'s constructor.
-        **kwargs : Keyword arguments, Optional
+        **kwargs : Keyword arguments
             Additional parameters to pass to the `check_type`'s constructor.
         """
         check = check_type(*args, **kwargs)

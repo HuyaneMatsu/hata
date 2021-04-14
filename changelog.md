@@ -3,6 +3,7 @@
 Internal:
 
 - Move slash sync coroutine creation to task creation to avoid resource warning at edge cases.
+- Mark keyword only parameters as keyword only in docstrings as well. (Zeref Draganeel#3524)
 
 #### 1.1.65  *\[2021-04-14\]*
 

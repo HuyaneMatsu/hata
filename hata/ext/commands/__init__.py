@@ -41,9 +41,9 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     
     Parameters
     ----------
-    client : ``Client``
+    client : ``Client`
         The client on what the extension will be setuped.
-    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, or `callable` -> `str`
+    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, or `callable` -> `str`, Optional
         The prefix of the client's command processer.
         
         Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` argument,
@@ -56,20 +56,20 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     
     Other Parameters
     ----------------
-    ignorecase : `bool`
+    ignorecase : `bool`, Optional (Keyword only)
         Whether the prefix should be case insensitive. Defaults to `True`.
-    mention_prefix : `bool`
+    mention_prefix : `bool`, Optional (Keyword only)
         Whether user mentioning the client as first word in a message's content should be interpreted as a prefix.
         Defaults to `true`
-    default_category_name : `None` or `str`
+    default_category_name : `None` or `str`, Optional (Keyword only)
         The command processer's default category's name. Defaults to `None`.
-    category_name_rule : `None` or `function`
+    category_name_rule : `None` or `function`, Optional (Keyword only)
         Function to generate display names for categories.
         Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
-    command_name_rule : `None` or `function`
+    command_name_rule : `None` or `function`, Optional (Keyword only)
         Function to generate display names for commands.
         Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
-    precheck : `None` or `callable`, Optional
+    precheck : `None` or `callable`, Optional (Keyword only)
         Function, which decides whether a received message should be processed
         
         The default one filters out every message what's author is a bot account and the channels where the client

@@ -395,7 +395,7 @@ class SimpleSection:
             Contained section part.
         object_ : ``TypeUnit``
             The owner type-unit.
-        path : `None` or ``QualPath``, Optional
+        path : `None` or ``QualPath``
             Path to use instead of the objects's.
         """
         self.title = title

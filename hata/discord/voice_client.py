@@ -607,7 +607,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        request : `bool`, Optional
+        request : `bool`, Optional (Keyword only)
             Whether the client should only request to speak.
         
         Raises

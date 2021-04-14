@@ -2099,7 +2099,7 @@ def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
         The docstring to serialize.
     length : `int`, Optional.
         The maximal length of the generated preview. Defaults to `200`.
-    min_cut_off : `int`
+    min_cut_off : `int`, Optional
         The minimal length after with new section part will not be added to the preview.
     end : `str`, Optional
         Ending string, what is added to the preview if a section would be cut in half. Defaults to `'...`'.

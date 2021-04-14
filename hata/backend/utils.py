@@ -310,7 +310,7 @@ class KeepType:
         ----------
         old_class : `type` instance
             The old class to extend.
-        new_class : `None` or `type` instance, Optional
+        new_class : `None` or `type` instance, Optional (Keyword only)
             The new class to extend the old class's functionality with.
         
         Returns

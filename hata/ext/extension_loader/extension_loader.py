@@ -1051,9 +1051,9 @@ class ExtensionLoader:
             Extension specific entry point, to use over the extension loader's default.
         exit_point : `None, `str` or `callable`, Optional
             Extension specific exit point, to use over the extension loader's default.
-        locked : `bool`
+        locked : `bool`, Optional
             Whether the given extension(s) should not be affected by `.{}_all` methods.
-        take_snapshot_difference : `bool`
+        take_snapshot_difference : `bool`, Optional
             Whether snapshot feature should be used.
         **variables : Keyword arguments
             Variables to assign to an extension(s)'s module before they are loaded.
@@ -1249,13 +1249,13 @@ class ExtensionLoader:
         
         Other Parameters
         ----------------
-        entry_point : `None, `str` or `callable`, Optional
+        entry_point : `None, `str` or `callable`, Optional (Keyword only)
             Extension specific entry point, to use over the extension loader's default.
-        exit_point : `None, `str` or `callable`, Optional
+        exit_point : `None, `str` or `callable`, Optional (Keyword only)
             Extension specific exit point, to use over the extension loader's default.
-        locked : `bool`
+        locked : `bool`, Optional (Keyword only)
             Whether the given extension(s) should not be affected by `.{}_all` methods.
-        take_snapshot_difference : `bool`
+        take_snapshot_difference : `bool`, Optional (Keyword only)
             Whether snapshot feature should be used.
         **variables : Keyword arguments
             Variables to assign to an extension(s)'s module before they are loaded.

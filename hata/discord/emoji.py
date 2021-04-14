@@ -189,9 +189,9 @@ class Emoji(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        name : `str`
+        name : `str`, Optional (Keyword only)
             The emoji's ``.name``. Can be between length `2` and `32`.
-        animated : `bool`
+        animated : `bool`, Optional (Keyword only)
             Whether the emoji is animated.
         
         Returns

@@ -2298,15 +2298,15 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        topic : `None` or `str`, Optional
+        topic : `None` or `str`, Optional (Keyword only)
             The channel's ``.topic``.
-        slowmode : `int`, Optional
+        slowmode : `int`, Optional (Keyword only)
             The channel's ``.slowmode``.
-        type : `int`, Optional
+        type : `int`, Optional (Keyword only)
             The channel's ``.type``.
-        nsfw : `int`, Optional
+        nsfw : `int`, Optional (Keyword only)
             Whether the channel is marked as nsfw.
         
         Returns
@@ -3130,15 +3130,15 @@ class ChannelVoice(ChannelVoiceBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        bitrate : `int`, Optional
+        bitrate : `int`, Optional (Keyword only)
             The channel's ``.bitrate``.
-        user_limit : `int`, Optional
+        user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.
-        region : `None`, ``VoiceRegion`` or `str`, Optional
+        region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
             The channel's voice region.
-        video_quality_mode : ``VideoQualityMode``
+        video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
         
         Returns
@@ -3534,11 +3534,11 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        icon : `int`, Optional
+        icon : `int`, Optional (Keyword only)
             The channel's ``.icon``.
-        owner_id : `int` Optional
+        owner_id : `int`, Optional (Keyword only)
             The channel's owner's id.
         
         Returns
@@ -3817,7 +3817,7 @@ class ChannelCategory(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
         
         Returns
@@ -4169,9 +4169,9 @@ class ChannelStore(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        nsfw : `int`, Optional
+        nsfw : `int`, Optional (Keyword only)
             Whether the channel is marked as nsfw.
         
         Returns
@@ -4481,7 +4481,7 @@ class ChannelThread(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
         
         Returns
@@ -4825,9 +4825,9 @@ class ChannelGuildUndefined(ChannelGuildBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        type : `int`, Optional
+        type : `int`, Optional (Keyword only)
             The channel's ``.type``.
         
         Returns
@@ -5225,15 +5225,15 @@ class ChannelStage(ChannelVoiceBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        bitrate : `int`, Optional
+        bitrate : `int`, Optional (Keyword only)
             The channel's ``.bitrate``.
-        user_limit : `int`, Optional
+        user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.
-        region : `None`, ``VoiceRegion`` or `str`, Optional
+        region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
             The channel's voice region.
-        topic : `None` or `str`, Optional
+        topic : `None` or `str`, Optional (Keyword only)
             The channel's topic.
         
         Returns
@@ -5414,26 +5414,26 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         The name of the channel. Can be between `2` and `100` characters.
     type_ : `int` or ``ChannelGuildBase`` subclass
         The channel's type.
-    overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional
+    overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional (Keyword only)
         A list of permission overwrites of the channel. The list should contain json serializable permission
         overwrites made by the ``cr_p_overwrite_object`` function.
-    topic : `str`, Optional
+    topic : `str`, Optional (Keyword only)
         The channel's topic.
-    nsfw : `bool`, Optional
+    nsfw : `bool`, Optional (Keyword only)
         Whether the channel is marked as nsfw.
-    slowmode : int`, Optional
+    slowmode : int`, Optional (Keyword only)
         The channel's slowmode value.
-    bitrate : `int`, Optional
+    bitrate : `int`, Optional (Keyword only)
         The channel's bitrate.
-    user_limit : `int`, Optional
+    user_limit : `int`, Optional (Keyword only)
         The channel's user limit.
-    region : `None`, ``VoiceRegion`` or `str`, Optional
+    region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
         The channel's voice region.
-    video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional
+    video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional (Keyword only)
         The channel's video quality mode.
-    category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
+    category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional (Keyword only)
         The channel's category. If the category is under a guild, leave it empty.
-    guild : `None` or ``Guild``, Optional
+    guild : `None` or ``Guild``, Optional (Keyword only)
         Reference guild used for validation purposes. Defaults to `None`.
     
     Returns

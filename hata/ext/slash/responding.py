@@ -284,22 +284,23 @@ class SlashResponse:
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file to send. Check ``Client._create_file_form`` for details.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        show_for_invoking_user_only : `bool`, Optional
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to the value passed when adding
             the command.
             
             If given as `True` only the message's content will be processed by Discord.
-        force_new_message : `int` or `bool`, Optional
+        force_new_message : `int` or `bool`, Optional (Keyword only)
             Whether a new message should be forced out from Discord allowing the client to retrieve a new ``Message``
             object as well. Defaults to `False`.
             
@@ -484,17 +485,18 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., sh
         if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
         
         If given as ``EmbedBase`` instance, then is sent as the message's embed.
-    embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+    embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
         The embedded content of the message.
         
         If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-    file : `Any`, Optional
+    file : `Any`, Optional (Keyword only)
         A file to send. Check ``Client._create_file_form`` for details.
-    allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+    allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+            , Optional (Keyword only)
         Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
-    tts : `bool`, Optional
+    tts : `bool`, Optional (Keyword only)
         Whether the message is text-to-speech.
-    show_for_invoking_user_only : `bool`, Optional
+    show_for_invoking_user_only : `bool`, Optional (Keyword only)
         Whether the sent message should only be shown to the invoking user.
         
         If given as `True`, only the message's content will be processed by Discord.

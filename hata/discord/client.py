@@ -224,25 +224,25 @@ class Client(UserBase):
         ----------
         token : `str`
             A valid Discord token, what the client can use to interact with the Discord API.
-        secret: `str`, optional
+        secret: `str`, Optional (Keyword only)
             Client secret used when interacting with oauth2 endpoints.
-        client_id : `None`, `int` or `str`, Optional
+        client_id : `None`, `int` or `str`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alter_ego of the
             client exists anywhere, and if does will replace it.
-        application_id : `None`, `int` or `str`, Optional
+        application_id : `None`, `int` or `str`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
-        activity : ``ActivityBase``, optional
+        activity : ``ActivityBase``, Optional (Keyword only)
             The client's preferred activity.
-        status : `str` or ``Status``, optional
+        status : `str` or ``Status``, Optional (Keyword only)
             The client's preferred status.
-        is_bot : `bool`, optional
+        is_bot : `bool`, Optional (Keyword only)
             Whether the client is a bot user or a user account. Defaults to False.
-        shard_count : `int`, optional
+        shard_count : `int`, Optional (Keyword only)
             The client's shard count. If passed as lower as the recommended one, will reshard itself.
-        intents : ``IntentFlag``, optional
+        intents : ``IntentFlag``, Optional (Keyword only)
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
         **kwargs : keyword arguments
@@ -250,17 +250,17 @@ class Client(UserBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The client's ``.name``.
-        discriminator : `int` or `str` instance, Optional
+        discriminator : `int` or `str` instance, Optional (Keyword only)
             The client's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
-        avatar : `None`, ``Icon`` or `str`, Optional
+        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The client's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``IconType``, Optional
+        avatar_type : ``IconType``, Optional (Keyword only)
             The client's avatar's type. Mutually exclusive with `avatar_type`.
-        avatar_hash : `int`, Optional
+        avatar_hash : `int`, Optional (Keyword only)
             The client's avatar hash. Mutually exclusive with `avatar`.
-        flags : ``UserFlag`` or `int` instance, Optional
+        flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
             The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
         Returns
@@ -740,18 +740,18 @@ class Client(UserBase):
         
         Parameters
         ----------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The client's new name.
-        avatar : `bytes-like` or `None`, Optional
+        avatar : `bytes-like` or `None`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
-        password : `str`, Optional
+        password : `str`, Optional (Keyword only)
             The actual password of the client.
-        new_password : `str`, Optional
+        new_password : `str`, Optional (Keyword only)
             The client's new password.
-        email : `str`, Optional
+        email : `str`, Optional (Keyword only)
             The client's new email.
-        house : `int`, ``HypesquadHouse`` or `None`, Optional
+        house : `int`, ``HypesquadHouse`` or `None`, Optional (Keyword only)
             Remove or change the client's hypesquad house.
         
         Raises
@@ -879,7 +879,7 @@ class Client(UserBase):
             returns instantly.
         nick : `str` or `None`
             The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -977,11 +977,11 @@ class Client(UserBase):
         
         Parameters
         ----------
-        activity : ``ActivityBase`` instance, Optional
+        activity : ``ActivityBase`` instance, Optional (Keyword only)
             The new activity of the Client.
-        status : `str` or ``Status``, Optional
+        status : `str` or ``Status``, Optional (Keyword only)
             The new status of the client.
-        afk : `bool`, Optional
+        afk : `bool`, Optional (Keyword only)
             Whether the client is afk or not (?). Defaults to `False`.
         
         Raises
@@ -1380,17 +1380,17 @@ class Client(UserBase):
             The guild, where the user is going to be added.
         access: ``OA2Access``, ``UserOA2`` or `str` instance
             The access of the user, who will be added.
-        user : ``Client``, ``User`` or `int` Optional
+        user : ``Client``, ``User`` or `int`, Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
             This field is optional if access is passed as an ``UserOA2`` object.
-        nick : `str`, Optional
+        nick : `str`, Optional (Keyword only)
             The nickname, which with the user will be added.
-        roles : `None` or `list` of (``Role`` or `int`, Optional
+        roles : `None` or `list` of (``Role`` or `int`, Optional (Keyword only)
             The roles to add the user with.
-        mute : `bool`, Optional
+        mute : `bool`, Optional (Keyword only)
             Whether the user should be added as muted.
-        deaf : `bool`, Optional
+        deaf : `bool`, Optional (Keyword only)
             Whether the user should be added as deafen.
         
         Raises
@@ -1638,9 +1638,9 @@ class Client(UserBase):
             The achievement's description.
         icon : `bytes-like`
             The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'` or `'gif'` format.
-        secret : `bool`, Optional
+        secret : `bool`, Optional (Keyword only)
             Secret achievements will *not* be shown to the user until they've unlocked them.
-        secure : `bool`, Optional
+        secure : `bool`, Optional (Keyword only)
             Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
         
         Returns
@@ -1713,15 +1713,15 @@ class Client(UserBase):
         ----------
         achievement : ``Achievement`` or `int` instance
             The achievement, what will be edited.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The new name of the achievement.
-        description : `str`, Optional
+        description : `str`, Optional (Keyword only)
             The achievement's new description.
-        secret : `bool`, Optional
+        secret : `bool`, Optional (Keyword only)
             The achievement's new secret value.
-        secure : `bool`, Optional
+        secure : `bool`, Optional (Keyword only)
             The achievement's new secure value.
-        icon : `bytes-like`, Optional
+        icon : `bytes-like`, Optional (Keyword only)
             The achievement's new icon.
         
         Returns
@@ -2251,9 +2251,9 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGroup`` or `int` instance
             The channel to edit.
-        name : `None` or `str`, Optional
+        name : `None` or `str`, Optional (Keyword only)
             The new name of the channel. By passing `None` or an empty string you can remove the actual one.
-        icon : `None` or `bytes-like`, Optional
+        icon : `None` or `bytes-like`, Optional (Keyword only)
             The new icon of the channel. By passing `None` your can remove the actual one.
         
         Raises
@@ -2465,13 +2465,13 @@ class Client(UserBase):
             The channel to be moved.
         visual_position : `int`
             The visual position where the channel should go.
-        category : `None` or ``ChannelGroup`` or ``Guild``, Optional
+        category : `None` or ``ChannelGroup`` or ``Guild``, Optional (Keyword only)
             If not set, then the channel will keep it's current parent. If the argument is set ``Guild`` instance or to
             `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory.md``,
             then the channel will be moved under it.
-        lock_permissions : `bool`, Optional
+        lock_permissions : `bool`, Optional (Keyword only)
             If you want to sync the permissions with the new category set it to `True`. Defaults to `False`.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -2674,27 +2674,27 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGuildBase`` or `int` instance
             The channel to edit.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The `channel`'s new name.
-        topic : `str`, Optional
+        topic : `str`, Optional (Keyword only)
             The new topic of the `channel`.
-        nsfw : `bool`, Optional
+        nsfw : `bool`, Optional (Keyword only)
             Whether the `channel` will be nsfw or not.
-        slowmode : `int`, Optional
+        slowmode : `int`, Optional (Keyword only)
             The new slowmode value of the `channel`.
-        user_limit : `int`, Optional
+        user_limit : `int`, Optional (Keyword only)
             The new user limit of the `channel`.
-        bitrate : `int`, Optional
+        bitrate : `int`, Optional (Keyword only)
             The new bitrate of the `channel`.
-        type_ : `int`, Optional
+        type_ : `int`, Optional (Keyword only)
             The `channel`'s new type value.
-        region : `None`, ``VoiceRegion``, `str`, Optional
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
             The channel's new voice region.
             
             > By giving as `None`, you can remove the old value.
-        video_quality_mode : ``VideoQualityMode`` or `int`, Optional
+        video_quality_mode : ``VideoQualityMode`` or `int`, Optional (Keyword only)
             The channel's new video quality mode.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -2924,31 +2924,31 @@ class Client(UserBase):
             The created channel's name.
         type_ : `int` or ``ChannelGuildBase`` subclass, Optional
             The type of the created channel. Defaults to ``ChannelText``.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
         **kwargs : Keyword arguments
             Additional keyword arguments to describe the created channel.
         
         Other Parameters
         ----------------
-        overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional
+        overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional (Keyword only)
             A list of permission overwrites of the channel. The list should contain json serializable permission
             overwrites made by the ``cr_p_overwrite_object`` function.
-        topic : `str`, Optional
+        topic : `str`, Optional (Keyword only)
             The channel's topic.
-        nsfw : `bool`, Optional
+        nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as nsfw.
-        slowmode : int`, Optional
+        slowmode : int`, Optional (Keyword only)
             The channel's slowmode value.
-        bitrate : `int`, Optional
+        bitrate : `int`, Optional (Keyword only)
             The channel's bitrate.
-        user_limit : `int`, Optional
+        user_limit : `int`, Optional (Keyword only)
             The channel's user limit.
-        category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional
+        category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional (Keyword only)
             The channel's category. If the category is under a guild, leave it empty.
-        region : `None`, ``VoiceRegion`` or `str`, Optional
+        region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
             The channel's voice region.
-        video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional
+        video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional (Keyword only)
             The channel's video quality mode.
         
         Returns
@@ -3018,7 +3018,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGuildBase`` or `int` instance
             The channel to delete.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3175,11 +3175,11 @@ class Client(UserBase):
             The channel from where we want to request the messages.
         limit : `int`, Optional
             The amount of messages to request. Can be between 1 and 100.
-        after : `int`, ``DiscordEntity`` or `datetime`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the requested messages were created.
-        around : `int`, ``DiscordEntity`` or `datetime`, Optional
+        around : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp around the requested messages were created.
-        before : `int`, ``DiscordEntity`` or `datetime`, Optional
+        before : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp before the requested messages were created.
         
         Returns
@@ -3386,23 +3386,24 @@ class Client(UserBase):
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        reply_fail_fallback : `bool`, Optional
+        reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        nonce : `str`, Optional
+        nonce : `str`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
         
         Returns
@@ -3953,7 +3954,7 @@ class Client(UserBase):
         ----------
         message : ``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to delete.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4005,7 +4006,7 @@ class Client(UserBase):
         messages : (`list`, `set`, `tuple`) of \
                 (``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`))
             The messages to delete.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4314,15 +4315,15 @@ class Client(UserBase):
         ----------
         channel : ``ChannelTextBase`` instance
             The channel, where the deletion should take place.
-        after : `int`, ``DiscordEntity`` or `datetime`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `int`, ``DiscordEntity`` or `datetime`, Optional
+        before : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
-        limit : `int`, Optional
+        limit : `int`, Optional (Keyword only)
             The maximal amount of messages to delete.
-        filter : `callable`, Optional
+        filter : `callable`, Optional (Keyword only)
             A callable filter, what should accept a message object as argument and return either `True` or `False`.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4647,15 +4648,15 @@ class Client(UserBase):
         ----------
         channel : ``ChannelTextBase`` instance
             The channel, where the deletion should take place.
-        after : `int`, ``DiscordEntity`` or `datetime`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `int`, ``DiscordEntity`` or `datetime`, Optional
+        before : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
-        limit : `int`, Optional
+        limit : `int`, Optional (Keyword only)
             The maximal amount of messages to delete.
-        filter : `callable`, Optional
+        filter : `callable`, Optional (Keyword only)
             A callable filter, what should accept a message object as argument and return either `True` or `False`.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -5042,16 +5043,17 @@ class Client(UserBase):
             By passing it as empty string, you can remove the message's content.
             
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
-        suppress : `bool`, Optional
+        suppress : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
         
         Raises
@@ -5721,7 +5723,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelTextBase``  or `int` instance
             The channel from were the messages will be requested.
-        chunk_size : `int`, Optional
+        chunk_size : `int`, Optional (Keyword only)
             The amount of messages to request when the currently loaded history is exhausted. For message chaining
             it is preferably `99`.
         
@@ -6131,9 +6133,9 @@ class Client(UserBase):
             The message, what's reactions will be requested.
         emoji : ``Emoji`` object
             The emoji, what's reactors will be requested.
-        limit : `None` or `int`
+        limit : `None` or `int`, Optional (Keyword only)
             The amount of users to request. Can be in range [1:100]. Defaults to 25 by Discord.
-        after : `int`, ``DiscordEntity`` or `datetime`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the message's reactors were created.
         
         Returns
@@ -6471,7 +6473,7 @@ class Client(UserBase):
             The guild from where the user will be removed.
         user : ``User``, ``Client`` or `int` instance
             The user to delete from the guild.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -6568,11 +6570,12 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild, what's welcome screen will be edited.
-        enabled : `bool`, Optional
+        enabled : `bool`, Optional (Keyword only)
             Whether the guild's welcome screen should be enabled.
-        description : `None` or `str`, Optional
+        description : `None` or `str`, Optional (Keyword only)
             The welcome screen's new description. It's length can be in range [0:140].
         welcome_channels : `None`, ``WelcomeChannel`` or  (`tuple` or `list`) of ``WelcomeChannel``
+                , Optional (Keyword only)
             The channels mentioned on the welcome screen.
         
         Returns
@@ -6732,11 +6735,12 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild, what's verification screen will be requested.
-        enabled : `bool`, Optional
+        enabled : `bool`, Optional (Keyword only)
             Whether the guild should have verification screen enabled.
-        description : `None` or `str`, Optional
+        description : `None` or `str`, Optional (Keyword only)
             The guild's new description showed on the verification screen. It's length can be in range [0:300].
-        steps : `None`, ``VerificationScreenStep`` or  (`tuple` or `list`) of ``VerificationScreenStep``, Optional
+        steps : `None`, ``VerificationScreenStep`` or  (`tuple` or `list`) of ``VerificationScreenStep``
+                , Optional (Keyword only)
             The new steps of the verification screen.
         
         Returns
@@ -6844,9 +6848,9 @@ class Client(UserBase):
             The guild from where the user will be banned.
         user : ``User``, ``Client`` or `int` instance
             The user to ban from the guild.
-        delete_message_days : `int`, optional
+        delete_message_days : `int`, Optional (Keyword only)
             How much days back the user's messages should be deleted. Can be in range [0:7].
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -6913,7 +6917,7 @@ class Client(UserBase):
             The guild from where the user will be unbanned.
         user : ``User``, ``Client`` or `int` instance
             The user to unban at the guild.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -7131,27 +7135,27 @@ class Client(UserBase):
         ----------
         name : `str`
             The name of the new guild.
-        icon : `None` or `bytes-like`, Optional
+        icon : `None` or `bytes-like`, Optional (Keyword only)
             The icon of the new guild.
-        roles : `None` or `list` of ``cr_p_role_object`` returns, Optional
+        roles : `None` or `list` of ``cr_p_role_object`` returns, Optional (Keyword only)
             A list of roles of the new guild. It should contain json serializable roles made by the
             ``cr_p_role_object`` function.
-        channels : `None` or `list` of ``cr_pg_channel_object`` returns, Optional
+        channels : `None` or `list` of ``cr_pg_channel_object`` returns, Optional (Keyword only)
             A list of channels of the new guild.  It should contain json serializable channels made by the
             ``cr_p_role_object`` function.
-        afk_channel_id : `int`, Optional
+        afk_channel_id : `int`, Optional (Keyword only)
             The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
-        system_channel_id: `int`, Optional
+        system_channel_id: `int`, Optional (Keyword only)
             The id of the guild's system channel. The id should be one of the channel's id from `channels`.
-        afk_timeout : `int`, Optional
+        afk_timeout : `int`, Optional (Keyword only)
             The afk timeout for the users at the guild's afk channel.
-        region : ``VoiceRegion`` or `str`, Optional
+        region : ``VoiceRegion`` or `str`, Optional (Keyword only)
             The voice region of the new guild.
-        verification_level : ``VerificationLevel`` or `int` instance, Optional
+        verification_level : ``VerificationLevel`` or `int` instance, Optional (Keyword only)
             The verification level of the new guild.
-        message_notification : ``MessageNotificationLevel`` or `int`, Optional
+        message_notification : ``MessageNotificationLevel`` or `int`, Optional (Keyword only)
             The message notification level of the new guild.
-        content_filter : ``ContentFilterLevel`` or `int`, Optional
+        content_filter : ``ContentFilterLevel`` or `int`, Optional (Keyword only)
             The content filter level of the guild.
         
         Returns
@@ -7308,12 +7312,12 @@ class Client(UserBase):
             Where the pruning will be executed.
         days : `int`
             The amount of days since at least the users need to inactive. Can be in range [1:30].
-        roles : `None` or `list` of (``Role`` or `int` instances), Optional
+        roles : `None` or `list` of (``Role`` or `int` instances), Optional (Keyword only)
             By default pruning will kick only the users without any roles, but it can defined which roles to include.
-        count : `bool`, Optional
+        count : `bool`, Optional (Keyword only)
             Whether the method should return how much user were pruned, but if the guild is large it will be set to
             `False` anyways. Defaults to `False`.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Returns
@@ -7407,7 +7411,7 @@ class Client(UserBase):
             Where the counting of prunable users will be done.
         days : `int`
             The amount of days since at least the users need to inactive. Can be in range [1:30].
-        roles : `None` or `list` of ``Role`` objects, Optional
+        roles : `None` or `list` of ``Role`` objects, Optional (Keyword only)
             By default pruning would kick only the users without any roles, but it can be defined which roles to
             include.
         
@@ -7487,58 +7491,58 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild to edit.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The guild's new name.
-        icon : `None` or `bytes-like`, Optional
+        icon : `None` or `bytes-like`, Optional (Keyword only)
             The new icon of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. If the guild has
             `ANIMATED_ICON` feature, it can be `'gif'` as well. By passing `None` you can remove the current one.
-        invite_splash : `None` or `bytes-like`, Optional
+        invite_splash : `None` or `bytes-like`, Optional (Keyword only)
             The new invite splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `INVITE_SPLASH` feature. By passing it as `None` you can remove the current one.
-        discovery_splash : `None` or `bytes-like`, Optional
+        discovery_splash : `None` or `bytes-like`, Optional (Keyword only)
             The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `DISCOVERABLE` feature. By passing it as `None` you can remove the current one.
-        banner : `None` or `bytes-like`, Optional
+        banner : `None` or `bytes-like`, Optional (Keyword only)
             The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `BANNER` feature. By passing it as `None` you can remove the current one.
-        afk_channel : `None`, ``ChannelVoice`` or `int`, Optional
+        afk_channel : `None`, ``ChannelVoice`` or `int`, Optional (Keyword only)
             The new afk channel of the guild. You can remove the current one by passing is as `None`.
-        system_channel : `None`, ``ChannelText`` or `int`, Optional
+        system_channel : `None`, ``ChannelText`` or `int`, Optional (Keyword only)
             The new system channel of the guild. You can remove the current one by passing is as `None`.
-        rules_channel : `None`, ``ChannelText`` or `int`, Optional
+        rules_channel : `None`, ``ChannelText`` or `int`, Optional (Keyword only)
             The new rules channel of the guild. The guild must be a Community guild. You can remove the current
             one by passing is as `None`.
-        public_updates_channel : `None`, ``ChannelText`` or `int`, Optional
+        public_updates_channel : `None`, ``ChannelText`` or `int`, Optional (Keyword only)
             The new public updates channel of the guild. The guild must be a Community guild. You can remove the
             current one by passing is as `None`.
-        owner : ``User``, ``Client`` or `int`, Optional
+        owner : ``User``, ``Client`` or `int`, Optional (Keyword only)
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
-        region : ``VoiceRegion``, Optional
+        region : ``VoiceRegion``, Optional (Keyword only)
             The new voice region of the guild.
-        afk_timeout : `int`, Optional
+        afk_timeout : `int`, Optional (Keyword only)
             The new afk timeout for the users at the guild's afk channel.
             
             Can be one of: `60, 300, 900, 1800, 3600`.
-        verification_level : ``VerificationLevel`` or `int`, Optional
+        verification_level : ``VerificationLevel`` or `int`, Optional (Keyword only)
             The new verification level of the guild.
-        content_filter : ``ContentFilterLevel`` or `int`, Optional
+        content_filter : ``ContentFilterLevel`` or `int`, Optional (Keyword only)
             The new content filter level of the guild.
-        message_notification : ``MessageNotificationLevel``, Optional
+        message_notification : ``MessageNotificationLevel``, Optional (Keyword only)
             The new message notification level of the guild.
-        description : `None` or `str` instance, Optional
+        description : `None` or `str` instance, Optional (Keyword only)
             The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
             guild must be a Community guild.
-        preferred_locale : `str`, Optional
+        preferred_locale : `str`, Optional (Keyword only)
             The guild's preferred locale. The guild must be a Community guild.
-        system_channel_flags : ``SystemChannelFlag``, Optional
+        system_channel_flags : ``SystemChannelFlag``, Optional (Keyword only)
             The guild's system channel's new flags.
-        add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
+        add_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional (Keyword only)
             Guild feature(s) to add to the guild.
             
             If `guild` is given as an id, then `add_feature` should contain all the features of the guild to set.
-        remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional
+        remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional (Keyword only)
             Guild feature(s) to remove from the guild's.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -8133,13 +8137,13 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or ``GuildDiscovery``
             The guild what's discovery metadata will be edited or an existing discovery metadata object.
-        primary_category : `None` or ``DiscoveryCategory`` or `int`, Optional
+        primary_category : `None` or ``DiscoveryCategory`` or `int`, Optional (Keyword only)
             The guild discovery's new primary category's id. Can be given as a ``DiscoveryCategory`` object as well.
             If given as `None`, then resets the guild discovery's primary category id to it's default, what is `0`.
-        keywords : `None` or (`iterable` of `str`), Optional
+        keywords : `None` or (`iterable` of `str`), Optional (Keyword only)
             The guild discovery's new keywords. Can be given as `None` to reset to the default value, what is `None`,
             or as an `iterable` of strings.
-        emoji_discovery : `None`, `bool` or `int` (`0`, `1`), Optional
+        emoji_discovery : `None`, `bool` or `int` (`0`, `1`), Optional (Keyword only)
             Whether the guild info should be shown when the respective guild's emojis are clicked. If passed as `None`
             then will reset the guild discovery's `emoji_discovery` value to it's default, what is `True`.
         
@@ -8696,13 +8700,13 @@ class Client(UserBase):
             The guild, what's audit logs will be requested.
         limit : `int`, Optional
             The amount of audit logs to request. Can b between 1 and 100. Defaults to 100.
-        before : `int`, ``DiscordEntity` or `datetime`, Optional
+        before : `int`, ``DiscordEntity` or `datetime`, Optional (Keyword only)
             The timestamp before the audit log entries wer created.
-        after : `int`, ``DiscordEntity`` or `datetime`, Optional
+        after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the audit log entries wer created.
-        user : `None`, ``Client``, ``User`` or `int` instance, Optional
+        user : `None`, ``Client``, ``User`` or `int` instance, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent``, `int`, Optional
+        event : `None`, ``AuditLogEvent``, `int`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
         
         Returns
@@ -8789,9 +8793,9 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int` instance
             The guild, what's audit logs will be requested.
-        user : `None`, ``Client``, ``User`` or `int` instance, Optional
+        user : `None`, ``Client``, ``User`` or `int` instance, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent` or `int`, Optional
+        event : `None`, ``AuditLogEvent` or `int`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
         
         Returns
@@ -8815,19 +8819,19 @@ class Client(UserBase):
             Where the user will be edited.
         user : ``User``, ``Client`` or `int` instance
             The user to edit
-        nick : `None` or `str`, Optional
+        nick : `None` or `str`, Optional (Keyword only)
             The new nick of the user. You can remove the current one by passing it as `None` or as an empty string.
-        deaf : `bool`, Optional
+        deaf : `bool`, Optional (Keyword only)
             Whether the user should be deafen at the voice channels.
-        mute : `bool`, Optional
+        mute : `bool`, Optional (Keyword only)
             Whether the user should be muted at the voice channels.
-        voice_channel : `None`, ``ChannelVoiceBase``, `int` instance , Optional
+        voice_channel : `None`, ``ChannelVoiceBase``, `int` instance , Optional (Keyword only)
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
             Pass it as `None` to kick the user from it's voice channel.
-        roles : `None` or (`tuple`, `set`, `list`) of (``Role``, `int`), Optional
+        roles : `None` or (`tuple`, `set`, `list`) of (``Role``, `int`), Optional (Keyword only)
             The new roles of the user. Give it as `None` to remove all of the user's roles.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Raises
@@ -8965,7 +8969,7 @@ class Client(UserBase):
             The user who will get the role.
         role : ``Role`` or `tuple` (`int`, `int`)
             The role to add on the user.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -9016,7 +9020,7 @@ class Client(UserBase):
             The user from who the role will be removed.
         role : ``Role`` or `tuple` (`int`, `int`)
             The role to remove from the user.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -9579,11 +9583,11 @@ class Client(UserBase):
         ----------
         integration : ``Integration``
             The integration to edit.
-        expire_behavior : `None` or `int`, Optional
+        expire_behavior : `None` or `int`, Optional (Keyword only)
             Can be `0` for kick or `1` for role  remove.
-        expire_grace_period : `None` or `int`, Optional
+        expire_grace_period : `None` or `int`, Optional (Keyword only)
             The time in days, after the subscription will be ignored. Can be any of `(1, 3, 7, 14, 30)`.
-        enable_emojis : `None` or `bool`, Optional
+        enable_emojis : `None` or `bool`, Optional (Keyword only)
             Whether the users can use the integration's emojis in Discord.
         
         Raises
@@ -9751,11 +9755,11 @@ class Client(UserBase):
             The channel where the permission overwrite is.
         overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
-        allow : `None`, ``Permission`` or `int`, Optional
+        allow : `None`, ``Permission`` or `int`, Optional (Keyword only)
             The permission overwrite's new allowed permission's value.
-        deny : `None`, ``Permission`` or `int`, Optional
+        deny : `None`, ``Permission`` or `int`, Optional (Keyword only)
             The permission overwrite's new denied permission's value.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -9833,7 +9837,7 @@ class Client(UserBase):
             The channel where the permission overwrite is.
         overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
 
         Raises
@@ -9879,7 +9883,7 @@ class Client(UserBase):
             The permission overwrite's allowed permission's value.
         deny : ``Permission`` or `int` instance
             The permission overwrite's denied permission's value.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Returns
@@ -9949,7 +9953,7 @@ class Client(UserBase):
             The channel of the created webhook.
         name : `str`
             The name of the new webhook. It's length can be in range [1:80].
-        avatar : `bytes-like`, Optional
+        avatar : `bytes-like`, Optional (Keyword only)
             The webhook's avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation.
             
@@ -10350,12 +10354,12 @@ class Client(UserBase):
         ----------
         webhook : ``Webhook`` or `int`
             The webhook to edit.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The webhook's new name. It's length can be in range [1:80].
-        avatar : `None` or `bytes-like`, Optional
+        avatar : `None` or `bytes-like`, Optional (Keyword only)
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
-        channel : ``ChannelText`` or `int`
+        channel : ``ChannelText`` or `int`, Optional (Keyword only)
             The webhook's channel.
         
         Raises
@@ -10447,9 +10451,9 @@ class Client(UserBase):
         ----------
         webhook : ``Webhook``
             The webhook to edit.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The webhook's new name. It's length can be between `1` and `80`.
-        avatar : `None` or `bytes-like`, Optional
+        avatar : `None` or `bytes-like`, Optional (Keyword only)
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
         
@@ -10536,21 +10540,22 @@ class Client(UserBase):
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The message's author's new name. Default to the webhook's name by Discord.
-        avatar_url : `str`, Optional
+        avatar_url : `str`, Optional (Keyword only)
             The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
-        wait : `bool`, Optional
+        wait : `bool`, Optional (Keyword only)
             Whether we should wait for the message to send and receive it's data as well.
         
         Returns
@@ -10734,13 +10739,14 @@ class Client(UserBase):
             By passing it as empty string, you can remove the message's content.
             
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
         
@@ -11084,9 +11090,9 @@ class Client(UserBase):
             The emoji's name. It's length can be between `2` and `32`.
         image : `bytes-like`
             The emoji's icon.
-        roles : None` or (`list`, `set`, `tuple`) of (``Role`` or `int`), Optional
+        roles : None` or (`list`, `set`, `tuple`) of (``Role`` or `int`), Optional (Keyword only)
             Whether the created emoji should be limited only to users with any of the specified roles.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Returns
@@ -11177,7 +11183,7 @@ class Client(UserBase):
         ----------
         emoji : ``Emoji``
             The emoji to delete.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -11210,12 +11216,12 @@ class Client(UserBase):
         ----------
         emoji : ``Emoji``
             The emoji to edit.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The emoji's new name. It's length can be in range [2:32].
-        roles : `None` or (`list`, `set`, `tuple`) of (``Role``, `int`), Optional
+        roles : `None` or (`list`, `set`, `tuple`) of (``Role``, `int`), Optional (Keyword only)
             The roles to what is the role limited. By passing it as `None`, or as an empty `list` you can remove the
             current ones.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -11362,7 +11368,7 @@ class Client(UserBase):
             Th guild, what's invite will be edited.
         vanity_code : `str`
             The new code of the guild's vanity invite.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -11401,13 +11407,13 @@ class Client(UserBase):
         ----------
         channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
             The channel of the created invite.
-        max_age : `int`, Optional
+        max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional
+        max_uses : `int`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional
+        unique : `bool`, Optional (Keyword only)
             Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional
+        temporary : `bool`, Optional (Keyword only)
             Whether the invite should give only temporary membership. Defaults to `False`.
         
         Returns
@@ -11428,7 +11434,6 @@ class Client(UserBase):
             - If `max_uses` was not given as `int` instance.
             - If `unique` was not given as `bool` instance.
             - If `temporary` was not given as `bool` instance.
-            
         """
         if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
             channel_id = channel.id
@@ -11492,13 +11497,13 @@ class Client(UserBase):
             The guild where the user streams.
         user : ``Client``, ``User`` or `int`
             The streaming user.
-        max_age : `int`, Optional
+        max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional
+        max_uses : `int`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional
+        unique : `bool`, Optional (Keyword only)
             Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional
+        temporary : `bool`, Optional (Keyword only)
             Whether the invite should give only temporary membership. Defaults to `False`.
         
         Returns
@@ -11589,13 +11594,13 @@ class Client(UserBase):
             The embedded application to open in the voice channel.
             
             > The application must have `EMBEDDED_APPLICATION` flag.
-        max_age : `int`, Optional
+        max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional
+        max_uses : `int`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional
+        unique : `bool`, Optional (Keyword only)
             Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional
+        temporary : `bool`, Optional (Keyword only)
             Whether the invite should give only temporary membership. Defaults to `False`.
         
         Returns
@@ -11691,13 +11696,13 @@ class Client(UserBase):
         
         Other Parameters
         ----------------
-        max_age : `int`, Optional
+        max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional
+        max_uses : `int`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional
+        unique : `bool`, Optional (Keyword only)
             Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional
+        temporary : `bool`, Optional (Keyword only)
             Whether the invite should give only temporary membership. Defaults to `False`.
         
         Returns
@@ -11775,7 +11780,7 @@ class Client(UserBase):
         ----------
         invite : ``Invite``, `str`
             The invites code.
-        with_count : `bool`, Optional
+        with_count : `bool`, Optional (Keyword only)
             Whether the invite should contain the respective guild's user and online user count. Defaults to `True`.
         
         Returns
@@ -11918,7 +11923,7 @@ class Client(UserBase):
         ----------
         invite : ``Invite``
             The invite to delete.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -11961,19 +11966,19 @@ class Client(UserBase):
         ----------
         role : ``Role`` or `tuple` (`int`, `int`)
             The role to edit.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The role's new name. It's length ca be in range [2:32].
-        color : `None`, ``Color`` or `int`, Optional
+        color : `None`, ``Color`` or `int`, Optional (Keyword only)
             The role's new color.
-        separated : `None`, `bool`, Optional
+        separated : `None`, `bool`, Optional (Keyword only)
             Whether the users with this role should be shown up as separated from the others.
-        mentionable : `None`, `bool`, Optional
+        mentionable : `None`, `bool`, Optional (Keyword only)
             Whether the role should be mentionable.
-        permissions : `None`, ``Permission`` or `int`, Optional
+        permissions : `None`, ``Permission`` or `int`, Optional (Keyword only)
             The new permission value of the role.
-        position : `None`, `int`, Optional
+        position : `None`, `int`, Optional (Keyword only)
             The role's new position.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12072,7 +12077,7 @@ class Client(UserBase):
         ----------
         role : ``Role`` or `tuple` (`int`, `int`)
             The role to delete
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12112,17 +12117,17 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild where the role will be created.
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The created role's name. It's length can be in range [2:32].
-        color : ``Color`` or `int` Optional
+        color : ``Color`` or `int`, Optional (Keyword only)
             The created role's color.
-        separated : `bool`, Optional
+        separated : `bool`, Optional (Keyword only)
             Whether the users with the created role should show up as separated from the others.
-        mentionable : `bool`, Optional
+        mentionable : `bool`, Optional (Keyword only)
             Whether the created role should be mentionable.
-        permissions : ``Permission`` or `int`, Optional
+        permissions : ``Permission`` or `int`, Optional (Keyword only)
             The permission value of the created role.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -12217,7 +12222,7 @@ class Client(UserBase):
             The role to move.
         position : `int`
             The position to move the given role.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12375,7 +12380,7 @@ class Client(UserBase):
         ----------
         roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
             A `dict`, `list`, `set`, or `tuple`, which contains role-position items.
-        reason : `None` or `str`, Optional
+        reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -13458,15 +13463,16 @@ class Client(UserBase):
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
         
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the interaction response.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        show_for_invoking_user_only : `bool`, Optional
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
             If given as `True` only the message's content will be processed by Discord.
@@ -13686,13 +13692,14 @@ class Client(UserBase):
             By passing it as empty string, you can remove the message's content.
             
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
         
         Raises
@@ -13926,17 +13933,18 @@ class Client(UserBase):
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         file : `Any`, Optional
             A file to send. Check ``._create_file_form`` for details.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech. Defaults to `False`.
-        show_for_invoking_user_only : `bool`, Optional
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
             If given as `True` only the message's content will be processed by Discord.
@@ -14153,13 +14161,14 @@ class Client(UserBase):
             By passing it as empty string, you can remove the message's content.
             
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
         
@@ -14438,7 +14447,7 @@ class Client(UserBase):
         ----------
         user : ``Client``, ``User``, `int`
             The user with who the relationship will be created.
-        relationship_type : `None`, ``RelationshipType``, `int` Optional
+        relationship_type : `None`, ``RelationshipType``, `int`, Optional
             The type of the relationship. Defaults to `None`.
         
         Raises
@@ -15087,7 +15096,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelStage``
             The stage channel to join.
-        request : `bool`, Optional
+        request : `bool`, Optional (Keyword only)
             Whether the client should only request to speak.
         
         Raises

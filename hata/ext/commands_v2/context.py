@@ -140,23 +140,24 @@ class CommandContext(object):
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        reply_fail_fallback : `bool`, Optional
+        reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        nonce : `str`, Optional
+        nonce : `str`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
         
         Returns
@@ -202,23 +203,24 @@ class CommandContext(object):
             
             If given as ``EmbedBase`` instance, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional
+        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        file : `Any`, Optional
+        file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``._create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` ), Optional
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        reply_fail_fallback : `bool`, Optional
+        reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
-        tts : `bool`, Optional
+        tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        nonce : `str`, Optional
+        nonce : `str`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
         
         Returns

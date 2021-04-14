@@ -40,11 +40,11 @@ class HTTPClient:
         ----------
         loop : ``EventThread``
             The event loop used by the http client.
-        proxy_url : `None`, `str` or ``URL`` Optional
+        proxy_url : `None`, `str` or ``URL``, Optional
             Proxy url to use with all of the requests of the http client. Defaults to `None`.
         proxy_auth : `None` or ``BasicAuth``, Optional
             Proxy authorization to send with all the requests of the http client. Defaults to `None`.
-        connector : `None` or ``ConnectorBase`` instance
+        connector : `None` or ``ConnectorBase`` instance, Optional (Keyword only)
             Connector to be used by the ``HTTPClient``. If not given or given as `None`, a new ``TCPConnector`` is
             created and used.
         """
@@ -210,7 +210,7 @@ class HTTPClient:
             The maximal amount of allowed redirects. Defaults to `3`.
         auth : `None` or ``BasicAuth``, Optional
             Authorization to use.
-        proxy_url : `None`, `str` or ``URL`` Optional
+        proxy_url : `None`, `str` or ``URL``, Optional
             Proxy url to use instead of the client's own.
         proxy_auth : `None` or ``BasicAuth``, Optional
             Proxy authorization to use instead of the client's.
@@ -404,11 +404,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
         
         Returns
@@ -448,19 +448,19 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
-        auth : `None` or ``BasicAuth``, Optional
+        auth : `None` or ``BasicAuth``, Optional (Keyword only)
             Authorization to use.
-        proxy_url : `None`, `str` or ``URL`` Optional
+        proxy_url : `None`, `str` or ``URL``, Optional
             Proxy url to use instead of the client's own.
-        proxy_auth : `None` or ``BasicAuth``, Optional
+        proxy_auth : `None` or ``BasicAuth``, Optional (Keyword only)
             Proxy authorization to use instead of the client's.
-        timeout : `float`, Optional
+        timeout : `float`, Optional (Keyword only)
             The maximal duration to wait for server response. Defaults to `60.0` seconds.
         ssl : `ssl.SSLContext`, `bool`, ``Fingerprint``, `NoneType`
             Whether and what type of ssl should the connector use.
@@ -500,11 +500,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -542,11 +542,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -584,11 +584,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -626,11 +626,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -668,11 +668,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -710,11 +710,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -752,11 +752,11 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        data : `None` or `Any`, Optional
+        data : `None` or `Any`, Optional (Keyword only)
             Data to send a the body of the request. Defaults to `None`.
-        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional
+        params : `None` or `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items, Optional (Keyword only)
             Query string parameters. Defaults to `None`.
-        redirects : `int`, Optional
+        redirects : `int`, Optional (Keyword only)
             The maximal amount of allowed redirects. Defaults to `3`.
 
         Returns
@@ -792,9 +792,9 @@ class HTTPClient:
         
         Other Parameters
         ----------------
-        origin : `None` or `str`, Optional
+        origin : `None` or `str`, Optional (Keyword only)
             Value of the Origin header.
-        available_extensions : `None` or (`list` of `Any`), Optional
+        available_extensions : `None` or (`list` of `Any`), Optional (Keyword only)
             Available websocket extensions. Defaults to `None`.
             
             Each websocket extension should have the following `4` attributes / methods:
@@ -805,18 +805,18 @@ class HTTPClient:
                 maximal size of a received frame. If it is passed, ``PayloadError`` is raised.
             - `encode` : `callable`. Encoder method, what processes the websocket frames to send. Should accept `1`
                 parameter, the respective websocket ``Frame``.
-        available_subprotocols : `None` or (`list` of `str`), Optional
+        available_subprotocols : `None` or (`list` of `str`), Optional (Keyword only)
             A list of supported subprotocols in order of decreasing preference.
-        extra_request_headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional
+        extra_request_headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional (Keyword only)
             Extra request headers.
-        http_client : `None` or ``HTTPClient`` instance, Optional
+        http_client : `None` or ``HTTPClient`` instance, Optional (Keyword only)
             Http client to use to connect the websocket.
-        close_timeout : `float`, Optional
+        close_timeout : `float`, Optional (Keyword only)
             The maximal duration in seconds what is waited for response after close frame is sent. Defaults to `10.0`.
-        max_size : `int`, Optional
+        max_size : `int`, Optional (Keyword only)
             Max payload size to receive. If a payload exceeds it, ``PayloadError`` is raised. Defaults to `67108864`
             bytes.
-        max_queue : `None` or `int`, Optional
+        max_queue : `None` or `int`, Optional (Keyword only)
             Max queue size of ``.messages``. If a new payload is added to a full queue, the oldest element of it is
             removed. Defaults to `None`.
         """

@@ -30,23 +30,23 @@ METHOD_TYPES = {
     MethodLike,
     basemethod,
     weakmethod,
-        }
+}
 
 FUNCTION_TYPES = {
     *METHOD_TYPES,
     FunctionType,
     BuiltinFunctionType,
     BuiltinMethodType,
-        }
+}
 
 IGNORED_TYPES = {
     type,
     object,
-        }
+}
 
 IGNORED_CLASS_ATTRIBUTE_TYPES = {
     *METHOD_TYPES,
-        }
+}
 
 if (SlotWrapperType is not FunctionType) and (SlotWrapperType is not MethodType):
     IGNORED_CLASS_ATTRIBUTE_TYPES.add(SlotWrapperType)
@@ -122,11 +122,11 @@ PROPERTY_TYPES = {
     cached_property,
     module_property,
     IconSlot,
-        }
+}
 
 ATTRIBUTE_TYPES = {
     MemberDescriptorType,
-        }
+}
 
 IGNORED_CLASS_ATTRIBUTE_NAMES = {
     '__ne__',
@@ -191,7 +191,7 @@ IGNORED_CLASS_ATTRIBUTE_NAMES = {
     '__subclasses__',
     '__iter__',
     '__weakref__',
-        }
+}
 
 def map_types_and_functions(obj, references, path, from_type):
     """

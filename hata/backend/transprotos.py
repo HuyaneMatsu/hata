@@ -1553,7 +1553,7 @@ class _SelectorSocketTransport:
                 'Exception occurred at:\n',
                 repr(self),
                 '._maybe_resume_protocol\n',
-                    ])
+            ])
     
     def _set_write_buffer_limits(self, high=None, low=None):
         """
@@ -1606,7 +1606,7 @@ class _SelectorSocketTransport:
                 ' exception occurred\n',
                 repr(self),
                 '\n',
-                    ])
+            ])
         
         self._force_close(exception)
     

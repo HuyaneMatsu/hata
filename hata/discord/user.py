@@ -1415,23 +1415,23 @@ class User(UserBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The user's ``.name``.
-        discriminator : `int` or `str` instance, Optional
+        discriminator : `int` or `str` instance, Optional (Keyword only)
             The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
-        avatar : `None`, ``Icon`` or `str`, Optional
+        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The user's avatar.
             
             > Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``IconType``, Optional
+        avatar_type : ``IconType``, Optional (Keyword only)
             The user's avatar's type.
             
             > Mutually exclusive with `avatar_type`.
-        avatar_hash : `int`, Optional
+        avatar_hash : `int`, Optional (Keyword only)
             The user's avatar's hash.
             
             > Mutually exclusive with `avatar`.
-        flags : ``UserFlag`` or `int` instance, Optional
+        flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
         Returns

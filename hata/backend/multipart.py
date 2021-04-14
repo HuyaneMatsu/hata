@@ -1,8 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 import base64, binascii, json, os, re, mimetypes as mime_types, uuid, zlib
 from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedReader
-from collections import deque
-from urllib.parse import parse_qsl as parse_query_string_list, urlencode, urlencode as url_encode
+from urllib.parse import urlencode as url_encode
 from .quote import unquote
 
 from .utils import imultidict, multidict

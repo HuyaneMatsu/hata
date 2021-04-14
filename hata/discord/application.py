@@ -441,23 +441,23 @@ class Application(DiscordEntity, immortal=True):
         
         Other parameters
         ----------------
-        bot_public : `bool`, Optional
+        bot_public : `bool`, Optional (Keyword only)
             Whether not only the application's owner can join the application's bot to guilds.
-        bot_require_code_grant : `bool`, Optional
+        bot_require_code_grant : `bool`, Optional (Keyword only)
             Whether the application's bot will only join a guild, when completing the full `oauth2` code grant flow.
-        description : `str`, Optional
+        description : `str`, Optional (Keyword only)
             The description of the application.
-        flags : `int` or ``ApplicationFlag``, Optional
+        flags : `int` or ``ApplicationFlag``, Optional (Keyword only)
             The application's public flags. If not given as ``ApplicationFlag`` instance, then is converted to it.
-        icon : `None`, ``Icon`` or `str`, Optional
+        icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The application's icon.
             
             > Mutually exclusive with `icon_type` and `icon_hash`.
-        icon_type : ``IconType``, Optional
+        icon_type : ``IconType``, Optional (Keyword only)
             The application's icon's type.
             
             > Mutually exclusive with `icon`.
-        icon_hash : `int`, Optional
+        icon_hash : `int`, Optional (Keyword only)
             The application's icon's hash.
             
             > Mutually exclusive with `icon`.
@@ -466,27 +466,27 @@ class Application(DiscordEntity, immortal=True):
             
             This field cannot be given as `snowflake`, because it might represent both ``UserBase`` instances  and
             ``Team``-s as well.
-        privacy_policy_url : `None` or `str`, Optional
+        privacy_policy_url : `None` or `str`, Optional (Keyword only)
             The url of the application's privacy policy.
         slug : `str` or `None`
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
-        splash : `None`, ``Icon`` or `str`, Optional
+        splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The application's splash.
             
             > Mutually exclusive with `icon_type` and `icon_hash`.
-        splash_type : ``IconType``, Optional
+        splash_type : ``IconType``, Optional (Keyword only)
             The application's icon's type.
             
             > Mutually exclusive with `icon`.
-        splash_hash : `int`, Optional
+        splash_hash : `int`, Optional (Keyword only)
             The application's icon's hash.
             
             > Mutually exclusive with `icon`.
         
-        summary : `str`, Optional
+        summary : `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the summary field for the store page of
             its primary sku.
-        terms_of_service_url : `str` or `None`, Optional
+        terms_of_service_url : `str` or `None`, Optional (Keyword only)
             The url of the application's terms of service.
         
         Returns

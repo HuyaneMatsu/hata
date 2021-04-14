@@ -61,11 +61,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             The name of the command. It's length can be in range [1:32].
         description : `str`
             The command's description. It's length can be in range [2:100].
-        allow_by_default : `bool`, Optional
+        allow_by_default : `bool`, Optional (Keyword only)
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
             
             Defaults to `True`.
-        options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional
+        options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
         Raises
@@ -659,13 +659,13 @@ class ApplicationCommandOption:
             The command's description. It's length can be in range [2:100].
         type_ : `int` or ``ApplicationCommandOptionType``
             The application command option's type.
-        default : `bool`, Optional
+        default : `bool`, Optional (Keyword only)
             Whether the option is the default one. Defaults to `False`.
-        required : `bool`, Optional
+        required : `bool`, Optional (Keyword only)
             Whether the parameter is required. Defaults to `False`.
-        choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional
+        choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
-        options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional
+        options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
         Raises
@@ -1264,7 +1264,8 @@ class ApplicationCommandPermission:
         ----------
         application_command : ``ApplicationCommand`` or `int`
             The application command's identifier.
-        overwrites : `None` or (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite``, Optional
+        overwrites : `None` or (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
+                , Optional (Keyword only)
             Overwrites for the application command.
         
         Raises

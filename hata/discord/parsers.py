@@ -5048,11 +5048,11 @@ def check_argcount_and_convert(func, expected, *, name='event', can_be_async_gen
         The callable, what's type and argument count will checked.
     expected : `int`
         The amount of arguments, what would be passed to the given `func` when called at the future.
-    name : `str`, Optional
+    name : `str`, Optional (Keyword only)
         The event's name, what is checked and converted. Defaults to `'event'`.
-    can_be_async_generator : `bool`
+    can_be_async_generator : `bool`, Optional (Keyword only)
         Whether async generators are accepted as well.
-    error_message : `str`, Optional
+    error_message : `str`, Optional (Keyword only)
         A specified error message with what a `TypeError` will be raised at the end, if the given `func` is not async
         and neither cannot be converted to an async callable.
     
@@ -5430,7 +5430,7 @@ class _EventHandlerManager:
         ----------
         func : `callable`, Optional
             The event to be added to the respective event handler.
-        name : `str` or `None`
+        name : `str` or `None`, Optional
             A name to be used instead of the passed `func`'s.
         **kwargs : Keyword arguments
             Additionally passed keyword arguments to be passed with the given `func` to the event handler.
@@ -5440,15 +5440,6 @@ class _EventHandlerManager:
         func : `callable`
             - The created instance by the respective event handler.
             - If `func` was not passed, then returns a ``._wrapper`` instance.
-        
-        Parameters
-        ----------
-        func : `callable`, Optional
-            The event to be added to the eventlist.
-        name : `str` or `None`
-            A name to be used instead of the passed `func`'s when adding it.
-        **kwargs : Keyword arguments
-            Additionally passed keyword arguments to be used when the passed `func` is used up.
         """
         if func is ...:
             return self._wrapper(self, name, kwargs)
@@ -5776,7 +5767,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         ----------
         func : `callable`, Optional
             The event to be added to the respective event handler.
-        name : `str` or `None` or `tuple` of `str`
+        name : `str` or `None` or `tuple` of `str`, optional
             A name to be used instead of the passed `func`'s.
         **kwargs : Keyword arguments
             Additionally passed keyword arguments to be passed with the given `func` to the event handler.
@@ -5785,15 +5776,6 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         -------
         func : ``Routed``
            The added functions.
-        
-        Parameters
-        ----------
-        func : `callable`, Optional
-            The event to be added to the eventlist.
-        name : `str`, `tuple` of `str` or `None`
-            A name to be used instead of the passed `func`'s when adding it.
-        **kwargs : Keyword arguments
-            Additionally passed keyword arguments to be used when the passed `func` is used up.
         """
         if func is ...:
             return self._wrapper(self, name, kwargs)
@@ -6581,7 +6563,7 @@ class eventlist(list):
         ----------
         func : `callable`, Optional
             The event to be added to the eventlist.
-        name : `str` or `None`
+        name : `str` or `None`, Optional
             A name to be used instead of the passed `func`'s when adding it.
         **kwargs : Keyword arguments
             Additionally passed keyword arguments to be used when the passed `func` is used up.
@@ -7186,7 +7168,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
                 else:
                     return None
 
-    def get_waiters(self, target, waiter, by_type = False, is_method=False):
+    def get_waiters(self, target, waiter, by_type=False, is_method=False):
         """
         Looks up the waiters of `target` - `waiter` relation stored inside of `.waiters` and returns all the matched
         one.

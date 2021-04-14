@@ -231,21 +231,21 @@ class Webhook(UserBase):
         
         Other Parameters
         ----------------
-        name : `str`, Optional
+        name : `str`, Optional (Keyword only)
             The webhook's ``.name``.
-        token : `str`, Optional
+        token : `str`, Optional (Keyword only)
             The webhook's ``.token``.
-        avatar : `None`, ``Icon`` or `str`, Optional
+        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The webhooks's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``IconType``, Optional
+        avatar_type : ``IconType``, Optional (Keyword only)
             The webhooks's avatar's type. Mutually exclusive with `avatar_type`.
-        avatar_hash : `int`, Optional
+        avatar_hash : `int`, Optional (Keyword only)
             The webhooks's avatar hash. Mutually exclusive with `avatar`.
-        user : ``Client`` or ``User``, Optional
+        user : ``Client`` or ``User``, Optional (Keyword only)
             The webhook's ``.user``.
-        channel : ``ChannelText``, Optional
+        channel : ``ChannelText``, Optional (Keyword only)
             The webhook's ``.channel``.
-        application_id : `int`
+        application_id : `int`, Optional (Keyword only)
             The application's id what created the webhook.
         
         Returns

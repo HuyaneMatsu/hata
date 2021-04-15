@@ -14,7 +14,7 @@ from .integration import Integration
 from .guild import SystemChannelFlag, Guild
 from .bases import Icon
 from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, MessageNotificationLevel, VoiceRegion, \
-    MFA
+    MFA, VideoQualityMode
 from .client_utils import maybe_snowflake
 
 
@@ -411,14 +411,14 @@ def convert_detail_perm_ow_processed(key, value, all_):
 
 DETAIL_CONVERSIONS = {
     'delete_member_days': convert_detail_days,
-    'members_removed'   : convert_detail_users_removed,
-    'channel_id'        : convert_detail_channel,
-    'message_id'        : convert_detail_message,
-    'count'             : convert_detail_amount,
-    'id'                : convert_detail_perm_ow_target,
-    'type'              : convert_detail_perm_ow_processed,
-    'role_name'         : convert_detail_perm_ow_processed,
-        }
+    'members_removed': convert_detail_users_removed,
+    'channel_id': convert_detail_channel,
+    'message_id': convert_detail_message,
+    'count': convert_detail_amount,
+    'id': convert_detail_perm_ow_target,
+    'type': convert_detail_perm_ow_processed,
+    'role_name': convert_detail_perm_ow_processed,
+}
 
 del convert_detail_days
 del convert_detail_users_removed
@@ -547,7 +547,7 @@ CONVERSIONS = (
     convert_emoji,
     convert_message,
     convert_integration,
-        )
+)
 
 del convert_guild
 del convert_channel
@@ -779,6 +779,15 @@ def transform_content_filter(name, data):
     change.after = None if value is None else ContentFilterLevel.get(value)
     return change
 
+def transform_video_quality_mode(name, data):
+    change = AuditLogChange()
+    change.attr = 'video_quality_mode'
+    value = data.get('old_value', None)
+    change.before = None if value is None else VideoQualityMode.get(value)
+    value = data.get('new_value', None)
+    change.after = None if value is None else VideoQualityMode.get(value)
+    return change
+
 def transform_int__days(name, data):
     change = AuditLogChange()
     change.attr = 'days'
@@ -944,63 +953,64 @@ def transform_verification_level(name, data):
     return change
 
 TRANSFORMERS = {
-    '$add'                  : transform_role,
-    '$remove'               : transform_role,
-    'account_id'            : transform_snowflake,
-    'afk_channel_id'        : transform_channel,
-    'allow'                 : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
-    'allow_new'             : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
-    'application_id'        : transform_snowflake,
-    'avatar_hash'           : transform_icon,
-    'banner_hash'           : transform_icon,
+    '$add': transform_role,
+    '$remove': transform_role,
+    'account_id': transform_snowflake,
+    'afk_channel_id': transform_channel,
+    'allow': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'allow_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
+    'application_id': transform_snowflake,
+    'avatar_hash': transform_icon,
+    'banner_hash': transform_icon,
     # bitrate (int)
-    'channel_id'            : transform_channel,
+    'channel_id': transform_channel,
     # code (str)
-    'color'                 : transform_color,
+    'color': transform_color,
     # deaf (bool)
     # description (None or str)
     'default_message_notifications':transform_message_notification,
-    'deny'                  : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
-    'deny_new'              : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
+    'deny': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'deny_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'discovery_splash_hash' : transform_icon,
     # enable_emoticons (bool)
     # expire_behavior (int)
     # expire_grace_period (int)
     'explicit_content_filter':transform_content_filter,
-    'hoist'                 : transform_bool__separated,
-    'icon_hash'             : transform_icon,
-    'id'                    : transform_snowflake,
-    'inviter_id'            : transform_user,
+    'hoist': transform_bool__separated,
+    'icon_hash': transform_icon,
+    'id': transform_snowflake,
+    'inviter_id': transform_user,
     # mentionable (bool)
     # max_age (int)
     # max_uses (int)
-    'mfa_level'             : transform_mfa,
+    'mfa_level': transform_mfa,
     # mute (mute)
     # name (str)
     # nick (None or str)
     # nsfw (bool)
-    'owner_id'              : transform_user,
+    'owner_id': transform_user,
     # position (int)
-    'prune_delete_days'     : transform_int__days,
+    'prune_delete_days': transform_int__days,
     'permission_overwrites' : transform_overwrites,
-    'permissions'           : transform_deprecated if API_VERSION in (6, 7) else transform_permission,
-    'permissions_new'       : transform_permission if API_VERSION in (6, 7) else transform_deprecated,
+    'permissions': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
+    'permissions_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'public_updates_channel_id' : transform_channel,
-    'rate_limit_per_user'   : transform_int__slowmode,
-    'region'                : transform_region,
-    'rules_channel_id'      : transform_channel,
-    'splash_hash'           : transform_icon,
-    'system_channel_id'     : transform_channel,
-    'system_channel_flags'  : transform_system_channel_flags,
+    'rate_limit_per_user': transform_int__slowmode,
+    'region': transform_region,
+    'rules_channel_id': transform_channel,
+    'splash_hash': transform_icon,
+    'system_channel_id': transform_channel,
+    'system_channel_flags': transform_system_channel_flags,
     # temporary (bool)
     # topic (str)
-    'type'                  : transform_type,
+    'type': transform_type,
     # uses (int)
-    'vanity_url_code'       : transform_str__vanity_code,
-    'verification_level'    : transform_verification_level,
-    'widget_channel_id'     : transform_channel,
+    'vanity_url_code': transform_str__vanity_code,
+    'verification_level': transform_verification_level,
+    'video_quality_mode': transform_video_quality_mode,
+    'widget_channel_id': transform_channel,
     # widget_enabled (bool)
-        }
+}
 
 del transform_deprecated
 del transform_icon
@@ -1022,7 +1032,7 @@ del transform_system_channel_flags
 del transform_type
 del transform_user
 del transform_verification_level
-
+del transform_video_quality_mode
 
 class AuditLogChange:
     """

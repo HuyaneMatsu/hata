@@ -4,6 +4,7 @@
 
 - Add `ClientUserBase`. (base class for clients and users).
 - Add `ClientUserPBase`. (base class for clients and of users if presences are enabled).
+- Add `video_quality_mode` transformer to audit logs.
 
 #### 1.1.66  *\[2021-04-15\]*
 

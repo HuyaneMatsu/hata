@@ -5475,7 +5475,7 @@ class _EventHandlerManager:
         
         return self.parent.__setevent_from_class__(klass)
         
-    def remove(self, func, name, **kwargs):
+    def remove(self, func, name=None, **kwargs):
         """
         Removes the given `func` - `name` relation from the event handler manager's parent.
         
@@ -5483,7 +5483,7 @@ class _EventHandlerManager:
         ----------
         func : `callable`
             The event to be removed to the respective event handler.
-        name : `str` or `None`
+        name : `str` or `None`, Optional
             A name to be used instead of the passed `func`'s.
         **kwargs : Keyword arguments
             Additional keyword arguments.
@@ -7755,6 +7755,8 @@ class EventDescriptor:
         | mfa                       | ``MFA``                       |
         +---------------------------+-------------------------------+
         | name                      | `str`                         |
+        +---------------------------+-------------------------------+
+        | nsfw                      | `bool`                        |
         +---------------------------+-------------------------------+
         | owner_id                  | `int`                         |
         +---------------------------+-------------------------------+

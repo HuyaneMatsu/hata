@@ -1,9 +1,16 @@
-#### 1.1.66  *\[2021-04-??\]*
+#### 1.1.66  *\[2021-04-15\]*
 
-Internal:
+##### Public API:
+
+- Add `Guild.nsfw`.
+
+##### Internal:
 
 - Move slash sync coroutine creation to task creation to avoid resource warning at edge cases.
 - Mark keyword only parameters as keyword only in docstrings as well. (Zeref Draganeel#3524)
+- `export`. (sleep-cult#3040)
+- `_EventHandlerManager.remove`'s `name` parameter should be optional. (Zeref Draganeel#3524)
+- `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Zeref Draganeel#3524)
 
 #### 1.1.65  *\[2021-04-14\]*
 

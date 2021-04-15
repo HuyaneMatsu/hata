@@ -20,7 +20,7 @@ from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL
 from .emoji import Emoji, create_partial_emoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
-from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
+from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type, preconvert_bool
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, VerificationScreenStepType
 
@@ -491,6 +491,7 @@ def create_partial_guild(data):
     guild.webhooks_up_to_date = False
     guild.widget_channel = None
     guild.widget_enabled = False
+    guild.nsfw = False
     
     if len(data) < restricted_data_limit:
         guild.name = ''
@@ -591,6 +592,8 @@ class Guild(DiscordEntity, immortal=True):
         The required Multi-factor authentication level for the guild.
     name : `str`
         The name of the guild.
+    nsfw : `bool`
+        Whether IOS users are blocked from the guild.
     owner_id : `int`
         The guild's owner's id. Defaults to `0`.
     preferred_locale : `str`
@@ -642,7 +645,7 @@ class Guild(DiscordEntity, immortal=True):
     """
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'available', 'booster_count', 'channels',
         'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large', 'max_presences', 'max_users',
-        'max_video_channel_users', 'message_notification', 'mfa', 'name', 'owner_id', 'preferred_locale',
+        'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw', 'owner_id', 'preferred_locale',
         'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel',
         'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'webhooks',
         'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
@@ -867,6 +870,9 @@ class Guild(DiscordEntity, immortal=True):
         region : ``VoiceRegion`` or `str`, Optional (Keyword only)
             The guild's voice region.
         
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the guild iis marked as nfw.
+        
         Returns
         -------
         guild : ``Guild``
@@ -903,6 +909,14 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 region = preconvert_preinstanced_type(region, 'type_', VoiceRegion)
                 processable.append(('region', region))
+            
+            try:
+                nsfw = kwargs.pop('nsfw')
+            except KeyError:
+                pass
+            else:
+                nsfw = preconvert_bool(nsfw, 'nsfw')
+                processable.append(('nsfw', nsfw))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -960,6 +974,7 @@ class Guild(DiscordEntity, immortal=True):
             guild.webhooks_up_to_date = False
             guild.widget_channel = None
             guild.widget_enabled = False
+            guild.nsfw = False
             GUILDS[guild_id] = guild
         else:
             if guild.clients:
@@ -2086,6 +2101,8 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | name                      | `str`                         |
         +---------------------------+-------------------------------+
+        | nsfw                      | `bool`                        |
+        +---------------------------+-------------------------------+
         | owner_id                  | `int`                         |
         +---------------------------+-------------------------------+
         | preferred_locale          | `str`                         |
@@ -2301,6 +2318,12 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['preferred_locale'] = self.preferred_locale
             self.preferred_locale = preferred_locale
         
+        
+        nsfw = data['nsfw']
+        if self.nsfw != nsfw:
+            old_attributes['nsfw'] = self.nsfw
+            self.nsfw = nsfw
+        
         return old_attributes
     
     def _update_no_return(self, data):
@@ -2425,6 +2448,8 @@ class Guild(DiscordEntity, immortal=True):
         self._boosters = None
         
         self.preferred_locale = parse_preferred_locale(data)
+        
+        self.nsfw = data['nsfw']
     
     def _update_emojis(self, data):
         """

@@ -659,7 +659,7 @@ class CommandState:
         if changes is None:
             self._changes = changes = []
         
-        change = CommandChange(True, command)
+        change = CommandChange(False, command)
         changes.append(change)
         return command, COMMAND_STATE_IDENTIFIER_REMOVED
 
@@ -1053,6 +1053,7 @@ class Slasher(EventHandlerBase):
             The command to remove.
         """
         for sync_id in command._iter_sync_ids():
+            
             if sync_id == SYNC_ID_NON_GLOBAL:
                 is_non_global = True
             else:
@@ -1086,7 +1087,7 @@ class Slasher(EventHandlerBase):
             
             if change_identifier == COMMAND_STATE_IDENTIFIER_KEPT:
                 continue
-    
+            
             if change_identifier == COMMAND_STATE_IDENTIFIER_NON_GLOBAL:
                 if (removed_command is not None):
                     for guild_id in removed_command._iter_guild_ids():

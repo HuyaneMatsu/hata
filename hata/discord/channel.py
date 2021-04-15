@@ -249,7 +249,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``User``, ``Client`` or `None`
+        user : ``ClientUserBase`` or `None`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -289,7 +289,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``User``, ``Client`` or `default`
+        user : ``ClientUserBase`` or `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -1780,7 +1780,7 @@ class ChannelGuildBase(ChannelBase):
         
         Returns
         -------
-        user : ``User``, ``Client`` or `default`
+        user : ``ClientUserBase`` or `default`
         """
         if self.guild is None:
             return default
@@ -1833,7 +1833,7 @@ class ChannelGuildBase(ChannelBase):
         
         Returns
         -------
-        user : ``User``, ``Client`` or `default`
+        user : ``ClientUserBase`` or `default`
         """
         guild = self.guild
         if guild is None:
@@ -5354,7 +5354,7 @@ class ChannelStage(ChannelVoiceBase):
         
         Returns
         -------
-        users : `list` of (``User``, ``Client``)
+        users : `list` of ``ClientUserBase``
         """
         users = []
         guild = self.guild
@@ -5374,7 +5374,7 @@ class ChannelStage(ChannelVoiceBase):
         
         Returns
         -------
-        users : `list` of (``User``, ``Client``)
+        users : `list` of ``ClientUserBase``
         """
         users = []
         guild = self.guild
@@ -5394,7 +5394,7 @@ class ChannelStage(ChannelVoiceBase):
         
         Returns
         -------
-        users : `list` of (``User``, ``Client``)
+        users : `list` of ``ClientUserBase``
         """
         users = []
         guild = self.guild

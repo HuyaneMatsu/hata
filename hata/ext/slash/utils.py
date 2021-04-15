@@ -140,7 +140,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         ----------
         guild : ``Guild`` or `int`
             The guild's identifier where the overwrite is applied.
-        target : ``User``, ``Client`` or ``Role``, `tuple` ((``User``, ``UserBase``, ``Role`` type) or \
+        target : ``ClientUserBase`` or ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
                 `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
             The target entity of the overwrite
             
@@ -148,11 +148,9 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
             To avoid confusing, here is a list of the expected structures:
             
             - ``Role`` instance
-            - ``User`` instance
-            - ``Client`` instance
+            - ``ClientUserBase`` instance
             - `tuple` (``Role`` type, `int`)
-            - `tuple` (``User`` type, `int`)
-            - `tuple` (``UserBase`` type, `int`)
+            - `tuple` (``ClientUserBase``, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)

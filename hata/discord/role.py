@@ -666,7 +666,7 @@ class Role(DiscordEntity, immortal=True):
         
         Returns
         -------
-        manager : `None`, ``User``, ``Client`` or ``Integration``
+        manager : `None`, ``ClientUserBase`` or ``Integration``
         """
         manager_type = self.manager_type
         if manager_type is ROLE_MANAGER_TYPE_NONE:
@@ -813,7 +813,7 @@ class PermissionOverwrite:
         
         Returns
         -------
-        target : ``Client``, ``User`` or ``Role``
+        target : ``ClientUserBase`` or ``Role``
         """
         target = self.target_role
         if target is None:
@@ -1149,7 +1149,7 @@ def cr_p_overwrite_object(target, allow, deny):
     
     Parameters
     ----------
-    target : ``Client``, ``User`` or ``Role``
+    target : ``ClientUserBase`` or ``Role``
         The target entity of the overwrite.
         The allowed permissions by the overwrite.
     deny : `int`

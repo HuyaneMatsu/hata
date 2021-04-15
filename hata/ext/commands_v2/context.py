@@ -103,7 +103,7 @@ class CommandContext(object):
         
         Returns
         -------
-        author : ``User``, ``Client``, ``Webhook``, ``WebhookRepr``
+        author : ``ClientUserBase``, ``Webhook``, ``WebhookRepr``
         """
         return self.message.author
     

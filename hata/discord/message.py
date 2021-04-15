@@ -11,7 +11,7 @@ from ..backend.export import export, include
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from .client_core import MESSAGES, CHANNELS, GUILDS, ROLES
-from .user import ZEROUSER, User
+from .user import ZEROUSER, User, ClientUserBase
 from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
 from .webhook import WebhookRepr, create_partial_webhook, WebhookType, Webhook
@@ -22,7 +22,6 @@ from .preinstanced import MessageType, MessageActivityType, StickerType, Interac
 
 from . import urls as module_urls
 
-Client = include('Client')
 ChannelBase = include('ChannelBase')
 ChannelTextBase = include('ChannelTextBase')
 ChannelGuildBase = include('ChannelGuildBase')
@@ -302,7 +301,7 @@ class MessageInteraction(DiscordEntity):
         The invoked interaction's name.
     type : ``InteractionType``
         The interaction's type.
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         Who invoked the interaction.
     """
     __slots__ = ('name', 'type', 'user')
@@ -866,7 +865,7 @@ class Message(DiscordEntity, immortal=True):
         Whether the message is "text to speech".
     type : ``MessageType``
         The type of the message.
-    user_mentions : `None` or `list` of (``Client`` or ``User``)
+    user_mentions : `None` or `list` of ``ClientUserBase``
         The mentioned users by the message if any.
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
@@ -1117,7 +1116,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
             
             If called as a classmethod defaults to `None`.
-        author : `None`, ``Client``, ``User``, ``Webhook`` or ``WebhookRepr``, Optional (Keyword only)
+        author : `None`, ``ClientUserBase``, ``Webhook`` or ``WebhookRepr``, Optional (Keyword only)
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
             
             If called as a classmethod, defaults to `ZEROUSER`.
@@ -1203,7 +1202,7 @@ class Message(DiscordEntity, immortal=True):
             If called as a classmethod defaults to ``MessageType.default`
         type_ : ``MessageType`` or `int`, Optional (Keyword only)
             Alias of ``type`.
-        user_mentions : `None` or (`list` of (``User`` or ``Client``)), Optional (Keyword only)
+        user_mentions : `None` or (`list` of ``ClientUserBase``, Optional (Keyword only)
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
             
             If called as a classmethod defaults to `None`.
@@ -1305,12 +1304,12 @@ class Message(DiscordEntity, immortal=True):
             if author is None:
                 # Author cannot be None, but accept it as `ZEROUSER`
                 author = ZEROUSER
-            elif isinstance(author, (User, Client, Webhook, WebhookRepr)):
+            elif isinstance(author, (ClientUserBase, Webhook, WebhookRepr)):
                 # This should be the case
                 pass
             else:
                 raise TypeError(
-                    f'`author` can be type `None`, `{User.__name__}`, `{Client.__name__}`, `{Webhook.__name__}` or '
+                    f'`author` can be type `None`, `{ClientUserBase.__name__}`, `{Webhook.__name__}` or '
                     f'`{WebhookRepr.__name__}`, got `{author!r}`')
         
         try:
@@ -1633,16 +1632,16 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (user_mentions is not None):
                 if (type(user_mentions) is not list):
-                    raise TypeError(f'`user_mentions` should be type `list` of `{Client.__name__}` / '
-                        f'`{User.__name__}`, got `{user_mentions!r}`')
+                    raise TypeError(f'`user_mentions` should be type `list` of `{ClientUserBase.__name__}`, got '
+                        f'`{user_mentions!r}`')
                 
                 if user_mentions:
                     for user in user_mentions:
-                        if type(user) in (Client, User):
+                        if isinstance(user, ClientUserBase):
                             continue
                         
-                        raise TypeError(f'`user_mentions` contains at least 1 non `{Client.__name__}` or '
-                            f'`{User.__name__}` object; `{user!r}`')
+                        raise TypeError(f'`user_mentions` contains at least 1 non `{ClientUserBase.__name__}` '
+                            f'instance; `{user!r}`')
                 else:
                     user_mentions = None
         
@@ -1677,7 +1676,7 @@ class Message(DiscordEntity, immortal=True):
         self.user_mentions = user_mentions
         
         return self
-        
+    
     def _parse_channel_mentions(self):
         """
         Looks up the ``.contents`` of the message and searches channel mentions in them. If non, then sets
@@ -1850,7 +1849,7 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | pinned            | `bool`                                                                |
         +-------------------+-----------------------------------------------------------------------+
-        | user_mentions     | `None` or (`list` of (``User`` or ``Client``))                        |
+        | user_mentions     | `None` or (`list` of ``ClientUserBase``)                              |
         +-------------------+-----------------------------------------------------------------------+
         | role_mentions     | `None` or (`list` of ``Role``)                                        |
         +-------------------+-----------------------------------------------------------------------+
@@ -2317,7 +2316,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        mentions : `list` of (`str` (`'everyone'`), ``User``, ``Client``, ``Role``, ``ChannelBase`` or
+        mentions : `list` of (`str` (`'everyone'`), ``ClientUserBase``, ``Role``, ``ChannelBase`` or
                 ``UnknownCrossMention``)
         """
         mentions = []
@@ -2394,7 +2393,7 @@ class Message(DiscordEntity, immortal=True):
         ----------
         emoji : ``Emoji``
             The reacted emoji.
-        user : ``User`` or ``Client``
+        user : ``ClientUserBase``
             The reactor.
         
         Returns

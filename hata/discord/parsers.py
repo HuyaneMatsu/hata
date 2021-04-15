@@ -4552,7 +4552,7 @@ class InteractionEvent(DiscordEntity, EventBase):
     
     Class Attributes
     ----------------
-    _USER_GUILD_CACHE : `dict` of (`tuple` ((``User``, ``Client``), ``Guild``), `int`)
+    _USER_GUILD_CACHE : `dict` of (`tuple` (``ClientUserBase``, ``Guild``), `int`)
         A cache which stores `user-guild` pairs as keys and their reference count as values to remember
         ``InteractionEvent``'s ``.user``-s' guild profiles of the respective ``.guild`` even if the ``Guild`` is
         uncached.
@@ -7601,10 +7601,10 @@ class EventDescriptor:
         | video_quality_mode    | ``VideoQualityMode``                  |
         +-----------------------+---------------------------------------+
     
-    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: {``Client``, ``User``}):
+    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: {``ClientUserBase``}):
         Called when a user is added to a group channel.
     
-    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: {``Client``, ``User``}):
+    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: {``ClientUserBase``}):
         Called when a user is removed from a group channel.
     
     channel_pin_update(client: ``Client``, channel: ``ChannelTextBase``):
@@ -7700,10 +7700,10 @@ class EventDescriptor:
     gift_update(client: ``Client``, gift: ``Gift``):
         Called when a gift code is sent to a channel.
     
-    guild_ban_add(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
+    guild_ban_add(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
         Called when a user is banned from a guild.
     
-    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
+    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
         Called when a user is unbanned at a guild.
     
     guild_create(client: ``Client``, guild: ``Guild``):
@@ -7783,12 +7783,12 @@ class EventDescriptor:
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
     
-    guild_join_reject(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
+    guild_join_reject(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
         Called when a user leaves from a guild before completing it's verification screen.
         
         > ``.guild_user_delete`` is called as well.
     
-    guild_user_add(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}):
+    guild_user_add(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
         Called when a user joins a guild.
     
     guild_user_chunk(client: ``Client``, event: GuildUserChunkEvent):
@@ -7796,7 +7796,7 @@ class EventDescriptor:
         
         The event has a default handler called ``ChunkWaiter``.
     
-    guild_user_delete(client: ``Client``, guild: ``Guild``, user: {``Client``, ``User``}, \
+    guild_user_delete(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}, \
             profile: ``GuildProfile``):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
         respective guild profile for the guild.
@@ -7953,12 +7953,12 @@ class EventDescriptor:
         | separated     | `bool`            |
         +---------------+-------------------+
     
-    typing(client: ``Client``, channel: ``ChannelTextBase``, user: {``Client``, ``User``}, timestamp: `datetime`):
+    typing(client: ``Client``, channel: ``ChannelTextBase``, user: {``ClientUserBase``}, timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
-    user_edit(client: ``Client``, user: {``Client``, ``User``}, old_attributes: `dict`):
+    user_edit(client: ``Client``, user: {``ClientUserBase``}, old_attributes: `dict`):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
         argument contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -7976,7 +7976,7 @@ class EventDescriptor:
         | name          | `str`         |
         +---------------+---------------+
     
-    user_presence_update(client: ``Client``, user: {``Client``, ``User``}, old_attributes: `dict`):
+    user_presence_update(client: ``Client``, user: {``ClientUserBase``}, old_attributes: `dict`):
         Called when a user's presence is updated.
         
         The passed `old_attributes` argument contain the user's changed presence related attributes in
@@ -7993,7 +7993,7 @@ class EventDescriptor:
         | statuses      | `dict` of (`str`, `str`) items    |
         +---------------+-----------------------------------+
         
-    user_profile_edit(client : Client, user: {``Client``, ``User``}, guild: ``Guild``, old_attributes: `dict`):
+    user_profile_edit(client : Client, user: {``ClientUserBase``}, guild: ``Guild``, old_attributes: `dict`):
         Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
         overwritten attributes in `attribute-name` - `old-value` relation.
         

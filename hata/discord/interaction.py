@@ -4,7 +4,6 @@ __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCo
     'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite',)
 
 from ..backend.utils import modulize
-from ..backend.export import include
 
 from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType
@@ -17,14 +16,12 @@ from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAM
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from .channel import create_partial_channel
-from .user import User, UserBase
+from .user import User, UserBase, ClientUserBase
 from .role import Role
 from .client_utils import maybe_snowflake
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
-
-Client = include('Client')
 
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
@@ -1491,7 +1488,7 @@ class ApplicationCommandPermissionOverwrite:
         
         Parameters
         ----------
-        target : ``User``, ``Client`` or ``Role``, `tuple` ((``User``, ``UserBase``, ``Role`` type) or \
+        target : ``ClientUserBase`` or ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
                 `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
             The target entity of the application command permission overwrite.
             
@@ -1499,11 +1496,9 @@ class ApplicationCommandPermissionOverwrite:
             To avoid confusing, here is a list of the expected structures:
             
             - ``Role`` instance
-            - ``User`` instance
-            - ``Client`` instance
+            - ``ClientUserBase`` instance
             - `tuple` (``Role`` type, `int`)
-            - `tuple` (``User`` type, `int`)
-            - `tuple` (``UserBase`` type, `int`)
+            - `tuple` (``ClientUserBase`` instance, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)
@@ -1527,7 +1522,7 @@ class ApplicationCommandPermissionOverwrite:
                 target_lookup_failed = False
                 break
             
-            if isinstance(target, (User, Client)):
+            if isinstance(target, ClientUserBase):
                 type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
                 target_id = target.id
                 target_lookup_failed = False
@@ -1539,7 +1534,7 @@ class ApplicationCommandPermissionOverwrite:
                 if isinstance(target_type_maybe, type):
                     if issubclass(target_type_maybe, Role):
                         type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE
-                    elif issubclass(target_type_maybe, (User, UserBase)):
+                    elif issubclass(target_type_maybe, ClientUserBase):
                         type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
                     else:
                         target_lookup_failed = True
@@ -1573,7 +1568,7 @@ class ApplicationCommandPermissionOverwrite:
             break
         
         if target_lookup_failed:
-            raise TypeError(f'`target` can be given either as {Role.__name__}, {User.__name__}, {Client.__name__} '
+            raise TypeError(f'`target` can be given either as {Role.__name__}, {ClientUserBase.__name__}, '
                 f'or as a `tuple` (({Role.__name__}, {User.__name__}, {UserBase.__name__} type or `str` '
                 f'(`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`)), `int`), got {target.__class__.__name__}: '
                 f'{target!r}.')
@@ -1630,7 +1625,7 @@ class ApplicationCommandPermissionOverwrite:
         
         Returns
         -------
-        target : ``Role``, ``User``, ``Client``
+        target : ``Role``, ``ClientUserBase``
         """
         type_ = self.type
         target_id = self.target_id
@@ -1807,7 +1802,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         Resolved received channels stored by their identifier as keys if any.
     resolved_roles : `None` or `dict` of (`int`, ``Role``) items
         Resolved received roles stored by their identifier as keys if any.
-    resolved_users : `None` or `dict` of (`int`, ``User`` or ``Client``) items
+    resolved_users : `None` or `dict` of (`int`, ``ClientUserBase``) items
         Resolved received users stored by their identifier as keys if any.
     """
     __slots__ = ('name', 'options', 'resolved_channels', 'resolved_roles', 'resolved_users')
@@ -1821,14 +1816,14 @@ class ApplicationCommandInteraction(DiscordEntity):
             The received application command interaction data.
         guild : `None` or ``Guild``
             The respective guild.
-        cached_users : `None` or `list` of (``User``, ``Client``)
+        cached_users : `None` or `list` of ``ClientUserBase``
             Users, which might need temporary caching.
         
         Returns
         -------
         self : ``ApplicationCommandInteraction``
             The created object.
-        cached_users : `None` or `list` of (``User``, ``Client``)
+        cached_users : `None` or `list` of ``ClientUserBase``
             Users, which might need temporary caching.
         """
         try:

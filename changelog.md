@@ -1,3 +1,10 @@
+#### 1.1.66  *\[2021-04-??\]*
+
+##### Public API:
+
+- Add `ClientUserBase`. (base class for clients and users).
+- Add `ClientUserPBase`. (base class for clients and of users if presences are enabled).
+
 #### 1.1.66  *\[2021-04-15\]*
 
 ##### Public API:

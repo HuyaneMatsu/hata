@@ -58,7 +58,7 @@ class Integration(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the integration.
-    account : ``IntegrationAccount``, ``Client``, ``User``
+    account : ``IntegrationAccount``, ``ClientUserBase``
         The integration's respective account. If the integration type is `'discord'`, then set as a discord user
         itself.
     application : `None` or ``Application``
@@ -287,7 +287,7 @@ class IntegrationAccount:
         
         Returns
         -------
-        self : ``IntegrationAccount``, ``User``, ``Client``
+        self : ``IntegrationAccount``, ``ClientUserBase``
         """
         name = data['name']
         id_ = data['id']

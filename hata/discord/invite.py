@@ -36,7 +36,7 @@ class Invite(DiscordEntity, immortal=True):
     guild : `None` or ``Guild``
         The guild the invite is for. If not included or if the invite's channel is a group channel, then set as
         `None`.
-    inviter : ``Client`` or ``User``
+    inviter : ``ClientUserBase``
         The creator of the invite. If not included, then set as `ZEROUSER`.
     max_age : `None` or `int`
         The time in seconds after the invite will expire. If not included, then set as `None`.
@@ -54,7 +54,7 @@ class Invite(DiscordEntity, immortal=True):
         The invite's target type.
     target_application : `None` or ``Application``
         The invite's target application.
-    target_user : ``Client`` or ``User``
+    target_user : ``ClientUserBase``
         The target of the invite if applicable. Defaults to `ZEROUSER`.
     temporary : `bool`
         Whether this invite only grants temporary membership.
@@ -403,7 +403,7 @@ class Invite(DiscordEntity, immortal=True):
             When the invite was created.
         guild : `None` or ``Guild``, Optional (Keyword only)
             The guild the invite is for.
-        inviter : `int`, `str`, ``Client`` or ``User``, Optional (Keyword only)
+        inviter : `int`, `str`, ``ClientUserBase``, Optional (Keyword only)
             The creator of the invite.
         max_age : `None` or `int`, Optional (Keyword only)
             The time in seconds after the invite will expire.
@@ -415,7 +415,7 @@ class Invite(DiscordEntity, immortal=True):
             The invite's target type.
         target_application : `int`, `str` or ``Application``, Optional (Keyword only)
             The target application of the invite.
-        target_user : `int`, `str`, ``Client`` or ``User``, Optional (Keyword only)
+        target_user : `int`, `str`, ``ClientUserBase``, Optional (Keyword only)
             The target user of the invite.
         temporary : `bool`, Optional (Keyword only)
             Whether this invite only grants temporary membership.

@@ -1549,7 +1549,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``User``, ``Client`` or `default`
+        user : ``ClientUserBase`` or `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -1597,7 +1597,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``User``, ``Client`` or `default`
+        user : ``ClientUserBase`` or `default`
         """
         if (not 1 < len(name) < 38):
             return default

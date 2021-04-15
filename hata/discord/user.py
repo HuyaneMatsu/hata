@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ActivityChange', 'ActivityUpdate', 'GuildProfile', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER')
+__all__ = ('ActivityChange', 'ActivityUpdate', 'ClientUserBase', 'ClientUserPBase', 'GuildProfile', 'User', 'UserBase',
+    'UserFlag', 'VoiceState', 'ZEROUSER')
 
 from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE
 
-from ..backend.utils import DOCS_ENABLED, WeakKeyDictionary
+from ..backend.utils import DOCS_ENABLED, WeakKeyDictionary, copy_docs
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
@@ -362,6 +363,7 @@ class GuildProfile:
     def colour(self):
         """Alias of ``.color``."""
         return self.color
+
 
 class UserBase(DiscordEntity, immortal=True):
     """
@@ -1153,10 +1155,9 @@ class UserBase(DiscordEntity, immortal=True):
             return False
 
 
-class User(UserBase):
-    if DOCS_ENABLED: __doc__ = ''.join([
+class ClientUserBase(UserBase):
     """
-    Represents a Discord user.
+    Base class for discord users and clients.
     
     Attributes
     ----------
@@ -1178,329 +1179,9 @@ class User(UserBase):
     flags : ``UserFlag``
         The user's user flags.
     partial : `bool`
-        Partial users have only their `.id` set and every other field might not reflect the reality.""", """
-    activities : `None` or `list` of ``ActivityBase`` instances
-        A list of the client's activities. Defaults to `None`
-    status : `Status`
-        The user's display status.
-    statuses : `dict` of (`str`, `str`) items
-        The user's statuses for each platform.
-    """ if CACHE_PRESENCE else "", """
-    
-    Notes
-    -----
-    Instances of this class are weakreferable.
-    """])
-    
-    if CACHE_PRESENCE:
-        __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', #default User
-            'activities', 'status', 'statuses', ) #Presence
-    else:
-        __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', ) #default User
-    
-    if CACHE_PRESENCE:
-        def __new__(cls, data, guild=None):
-            try:
-                user_data = data['user']
-            except KeyError:
-                user_data = data
-                guild_profile_data = data.get('member', None)
-            else:
-                guild_profile_data = data
-            
-            user_id = int(user_data['id'])
-            
-            try:
-                user = USERS[user_id]
-                update = user.partial
-            except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
-                user.status = Status.offline
-                user.statuses = {}
-                user.activities = None
-                update = True
-                
-                USERS[user_id] = user
-            
-            if update:
-                user.partial = False
-                user.is_bot = user_data.get('bot', False)
-                user._update_no_return(user_data)
-            
-            if (guild_profile_data is not None) and (guild is not None):
-                try:
-                    profile = user.guild_profiles[guild]
-                except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-                else:
-                    profile._set_joined(guild_profile_data)
-            
-            return user
-            
-    elif CACHE_USER:
-        def __new__(cls, data, guild=None):
-            try:
-                user_data = data['user']
-                guild_profile_data = data
-            except KeyError:
-                user_data = data
-                guild_profile_data = data.get('member', None)
-                
-            user_id = int(user_data['id'])
-
-            try:
-                user = USERS[user_id]
-                update = user.partial
-            except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
-                update = True
-                
-                USERS[user_id] = user
-
-            if update:
-                user.partial = False
-                user.is_bot = user_data.get('bot', False)
-                user._update_no_return(user_data)
-
-            if (guild_profile_data is not None) and (guild is not None):
-                try:
-                    profile = user.guild_profiles[guild]
-                except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-                else:
-                    profile._set_joined(guild_profile_data)
-                    
-            return user
-    
-    else:
-        def __new__(cls, data, guild=None):
-            try:
-                user_data = data['user']
-                guild_profile_data = data
-            except KeyError:
-                user_data = data
-                guild_profile_data = data.get('member', None)
-            
-            user_id = int(user_data['id'])
-            
-            try:
-                user = USERS[user_id]
-            except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
-                
-                USERS[user_id] = user
-            
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
-            
-            if (guild_profile_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-            
-            return user
-    
-    if DOCS_ENABLED:
-        __new__.__doc__ = (
-        """
-        First tries to find the user by id. If fails, then creates a new ``User`` object. If guild was given
-        and the given data contains member data as well, then it will create a respective guild profile for the user
-        too.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Received user data.
-        guild : ``Guild`` or `None`, Optional
-            A respective guild from where the user data was received. It is picked up if the given data includes
-            guild member data as well.
-        
-        Returns
-        -------
-        user : ``User`` or ``Client``
-        """)
-    
-    if (not CACHE_PRESENCE):
-        @staticmethod
-        def _bypass_no_cache(data, guild):
-            """
-            Sets a ``Client``'s guild profile.
-            
-            > Only available when user or presence caching is disabled.
-            
-            Parameters
-            ----------
-            data : `dict`
-                Received user data.
-            guild : ``Guild``
-                A respective guild from where the user data was received. Picked up if the given data includes
-                guild member data as well.
-            """
-            user_data = data['user']
-            guild_profile_data = data
-            
-            user_id = int(user_data['id'])
-            
-            try:
-                user = USERS[user_id]
-            except KeyError:
-                return
-            
-            try:
-                profile = user.guild_profiles[guild]
-            except KeyError:
-                guild.users[user_id] = user
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-            else:
-                profile._set_joined(guild_profile_data)
-                profile._update_no_return(guild_profile_data, guild)
-    
-    
-    @classmethod
-    def _from_client(cls, client):
-        """
-        Creates a client alter ego.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client to copy.
-        
-        Returns
-        -------
-        user : ``User``
-        """
-        self = object.__new__(cls)
-        self.id = client.id
-        self.discriminator = client.discriminator
-        self.name = client.name
-        
-        self.guild_profiles = client.guild_profiles.copy()
-        self.is_bot = client.is_bot
-        self.flags = client.flags
-        self.partial = client.partial
-        
-        if CACHE_PRESENCE:
-            activities = client.activities
-            if (activities is not None):
-                activities = activities.copy()
-            self.activities = activities
-            self.status = client.status
-            statuses = client.statuses
-            if (statuses is not None):
-                statuses = statuses.copy()
-            self.statuses = statuses
-        
-        return self
-    
-    
-    @classmethod
-    def precreate(cls, user_id, **kwargs):
-        """
-        Precreates a user by creating a partial one with the given parameters. When the user is loaded, the precreated
-        one is picked up and is updated. If an already existing user would be precreated, returns that instead of
-        creating a new one, and updates it only, if it is still a partial one.
-        
-        Parameters
-        ----------
-        user_id : `int` or `str`
-            The user's id.
-        **kwargs : keyword arguments
-            Additional predefined attributes for the user.
-        
-        Other Parameters
-        ----------------
-        name : `str`, Optional (Keyword only)
-            The user's ``.name``.
-        discriminator : `int` or `str` instance, Optional (Keyword only)
-            The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
-        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
-            The user's avatar.
-            
-            > Mutually exclusive with `avatar_type` and `avatar_hash`.
-        avatar_type : ``IconType``, Optional (Keyword only)
-            The user's avatar's type.
-            
-            > Mutually exclusive with `avatar_type`.
-        avatar_hash : `int`, Optional (Keyword only)
-            The user's avatar's hash.
-            
-            > Mutually exclusive with `avatar`.
-        flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
-            The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
-        
-        Returns
-        -------
-        user : ``User`` or ``Client``
-        
-        Raises
-        ------
-        TypeError
-            If any argument's type is bad or if unexpected argument is passed.
-        ValueError
-            If an argument's type is good, but it's value is unacceptable.
-        """
-        user_id = preconvert_snowflake(user_id, 'user_id')
-        
-        if kwargs:
-            processable = []
-            
-            try:
-                name = kwargs.pop('name')
-            except KeyError:
-                pass
-            else:
-                name = preconvert_str(name, 'name', 2, 32)
-                processable.append(('name', name))
-            
-            try:
-                discriminator = kwargs.pop('discriminator')
-            except KeyError:
-                pass
-            else:
-                discriminator = preconvert_discriminator(discriminator)
-                processable.append(('discriminator', discriminator))
-            
-            cls.avatar.preconvert(kwargs, processable)
-            
-            try:
-                is_bot = kwargs.pop('is_bot')
-            except KeyError:
-                pass
-            else:
-                is_bot = preconvert_bool(is_bot, 'is_bot')
-                processable.append(('is_bot', is_bot))
-            
-            try:
-                flags = kwargs.pop('flags')
-            except KeyError:
-                pass
-            else:
-                flags = preconvert_flag(flags, 'flags', UserFlag)
-                processable.append(('flags', flags))
-            
-            if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
-        
-        else:
-            processable = None
-        
-        user = create_partial_user(user_id)
-        if not user.partial:
-            return user
-        
-        if (processable is not None):
-            for item in processable:
-                setattr(user, *item)
-        
-        return user
+        Partial users have only their `.id` set and every other field might not reflect the reality.
+    """
+    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', )
     
     def _update_no_return(self, data):
         """
@@ -1517,294 +1198,6 @@ class User(UserBase):
         self._set_avatar(data)
         
         self.flags = UserFlag(data.get('public_flags', 0))
-    
-    if CACHE_PRESENCE:
-        @classmethod
-        def _create_and_update(cls, data, guild=None):
-            try:
-                user_data = data['user']
-                guild_profile_data = data
-            except KeyError:
-                user_data = data
-                guild_profile_data = None
-            
-            user_id = int(user_data['id'])
-            
-            try:
-                user = USERS[user_id]
-            except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
-                user.status = Status.offline
-                user.statuses = {}
-                user.activities = None
-                
-                USERS[user_id] = user
-            
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
-            
-            if (guild_profile_data is not None) and (guild is not None):
-                try:
-                    profile = user.guild_profiles[guild]
-                except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-                else:
-                    profile._set_joined(guild_profile_data)
-                    profile._update_no_return(guild_profile_data, guild)
-            
-            return user
-        
-    elif CACHE_USER:
-        @classmethod
-        def _create_and_update(cls, data, guild=None):
-            try:
-                user_data = data['user']
-                guild_profile_data = data
-            except KeyError:
-                user_data = data
-                guild_profile_data = None
-            
-            user_id = int(user_data['id'])
-            
-            try:
-                user = USERS[user_id]
-            except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
-                
-                USERS[user_id] = user
-            
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
-            
-            if (guild_profile_data is not None) and (guild is not None):
-                try:
-                    profile = user.guild_profiles[guild]
-                except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-                else:
-                    profile._set_joined(guild_profile_data)
-                    profile._update_no_return(guild_profile_data, guild)
-            
-            return user
-        
-    else:
-        @classmethod
-        def _create_and_update(cls, data, guild=None):
-            try:
-                user_data = data['user']
-            except KeyError:
-                user_data = data
-                guild_profile_data = None
-            else:
-                guild_profile_data = data
-            
-            user_id = int(user_data['id'])
-            
-            try:
-                user = USERS[user_id]
-            except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
-                
-                USERS[user_id] = user
-            
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
-            
-            if (guild_profile_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
-            
-            return user
-    
-    if DOCS_ENABLED:
-        __new__.__doc__ = (
-        """
-        Creates a user with the given data. If the user already exists, updates it.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Received user data.
-        guild : ``Guild`` or `None`, Optional
-            A respective guild from where the user data was received. Picked up if the given data includes
-            guild member data as well.
-        
-        Returns
-        -------
-        user : ``User`` or ``Client``
-        """)
-    
-    def _delete(self):
-        """
-        Deletes the user from it's guilds.
-        """
-        #we cannot full delete a user, because of the mentions, so we delete it only from the guilds
-        guild_profiles = self.guild_profiles
-        while guild_profiles:
-            guild, profile = guild_profiles.popitem()
-            try:
-                del guild.users[self.id]
-            except KeyError:
-                pass
-    
-    # if CACHE_PRESENCE is False, this should be never called from this class
-    def _update_presence(self, data):
-        """
-        Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
-        `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange`` instance
-        containing all the changes of the user's activities.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Received guild member data.
-        
-        Returns
-        -------
-        old_attributes : `dict` of (`str`, `Any`) items
-            All item in the returned dict is optional.
-        
-        Returned Data Structure
-        -----------------------
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | activities    | ``ActivityChange``                |
-        +---------------+-----------------------------------+
-        | status        | ``Status``                        |
-        +---------------+-----------------------------------+
-        | statuses      | `dict` of (`str`, `str`) items    |
-        +---------------+-----------------------------------+
-        """
-        old_attributes = {}
-        
-        statuses = data['client_status']
-        if self.statuses != statuses:
-            old_attributes['statuses'] = self.statuses
-            self.statuses = statuses
-            
-            status = data['status']
-            if self.status.value != status:
-                old_attributes['status'] = self.status
-                self.status = Status.get(status)
-        
-        activity_datas = data['activities']
-        
-        old_activities = self.activities
-        new_activities = None
-        
-        if activity_datas:
-            if old_activities is None:
-                for activity_data in activity_datas:
-                    activity = create_activity(activity_data)
-                    
-                    if new_activities is None:
-                        new_activities = []
-                    
-                    new_activities.append(activity)
-                
-                activity_change = ActivityChange(new_activities, None, None)
-                
-            else:
-                added_activities = None
-                updated_activities = None
-                removed_activities = old_activities.copy()
-                
-                for activity_data in activity_datas:
-                    activity_type = activity_data['type']
-                    for index in range(len(removed_activities)):
-                        activity = removed_activities[index]
-                        
-                        if activity_type != activity.type:
-                            continue
-                            
-                        if activity_data['id'] != activity.discord_side_id:
-                            continue
-                        
-                        del removed_activities[index]
-                        
-                        activity_old_attributes = activity._update(activity_data)
-                        if activity_old_attributes:
-                            activity_update = ActivityUpdate(activity, activity_old_attributes)
-                            
-                            if updated_activities is None:
-                                updated_activities = []
-                            
-                            updated_activities.append(activity_update)
-                        
-                        if new_activities is None:
-                            new_activities = []
-                        
-                        new_activities.append(activity)
-                        break
-                    else:
-                        activity = create_activity(activity_data)
-                        
-                        if new_activities is None:
-                            new_activities = []
-                        
-                        new_activities.append(activity)
-                        
-                        if added_activities is None:
-                            added_activities = []
-                        
-                        added_activities.append(activity)
-                
-                if not removed_activities:
-                    removed_activities = None
-                
-                if None is added_activities is updated_activities is removed_activities:
-                    activity_change = None
-                else:
-                    activity_change = ActivityChange(added_activities, updated_activities, removed_activities)
-        
-        else:
-            if old_activities is None:
-                activity_change = None
-            else:
-                activity_change = ActivityChange(None, None, old_activities)
-        
-        if (activity_change is not None):
-            old_attributes['activities'] = activity_change
-        
-        self.activities = new_activities
-        
-        return old_attributes
-    
-    def _update_presence_no_return(self, data):
-        """
-        Updates the user's presences with the given data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Received guild member data.
-        """
-        self.status = Status.get(data['status'])
-        
-        try:
-            # not included sometimes
-            self.statuses = data['client_status']
-        except KeyError:
-            pass
-        
-        activity_datas = data['activities']
-        if activity_datas:
-            new_activities = [create_activity(activity_data) for activity_data in activity_datas]
-        else:
-            new_activities = None
-        
-        self.activities = new_activities
     
     def _update(self, data):
         """
@@ -1944,48 +1337,69 @@ class User(UserBase):
         
         return user
     
-    if CACHE_PRESENCE:
-        @classmethod
-        def _create_empty(cls, user_id):
-            user = object.__new__(cls)
-            user.id = user_id
-            
-            user.name = ''
-            user.discriminator = 0
-            user.avatar_hash = 0
-            user.avatar_type = ICON_TYPE_NONE
-            user.is_bot = False
-            user.flags = UserFlag()
-            
-            user.guild_profiles = GUILD_PROFILES_TYPE()
-            user.partial = True
-            
-            user.status = Status.offline
-            user.statuses = {}
-            user.activities = None
-            
-            return user
+    @staticmethod
+    def _bypass_no_cache(data, guild):
+        """
+        Sets a ``Client``'s guild profile.
+        
+        > Only available when user or presence caching is disabled.
+        
+        Parameters
+        ----------
+        data : `dict`
+            Received user data.
+        guild : ``Guild``
+            A respective guild from where the user data was received. Picked up if the given data includes
+            guild member data as well.
+        """
+        user_data = data['user']
+        guild_profile_data = data
+        
+        user_id = int(user_data['id'])
+        
+        try:
+            user = USERS[user_id]
+        except KeyError:
+            return
+        
+        try:
+            profile = user.guild_profiles[guild]
+        except KeyError:
+            guild.users[user_id] = user
+            user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+        else:
+            profile._set_joined(guild_profile_data)
+            profile._update_no_return(guild_profile_data, guild)
+
     
-    else:
-        @classmethod
-        def _create_empty(cls, user_id):
-            user = object.__new__(cls)
-            user.id = user_id
-            
-            user.name = ''
-            user.discriminator = 0
-            user.avatar_hash = 0
-            user.avatar_type = ICON_TYPE_NONE
-            user.is_bot = False
-            user.flags = UserFlag()
-            
-            user.guild_profiles = GUILD_PROFILES_TYPE()
-            user.partial = True
-            
-            return user
+    @classmethod
+    def _from_client(cls, client):
+        """
+        Creates a client alter ego.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client to copy.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+        """
+        self = object.__new__(cls)
+        self.id = client.id
+        self.discriminator = client.discriminator
+        self.name = client.name
+        
+        self.guild_profiles = client.guild_profiles.copy()
+        self.is_bot = client.is_bot
+        self.flags = client.flags
+        self.partial = client.partial
+        
+        return self
     
-    if DOCS_ENABLED:
-        _create_empty.__doc__ = (
+    @classmethod
+    def _create_empty(cls, user_id):
         """
         Creates a user instance with the given `user_id` and with the default user attributes.
         
@@ -1993,7 +1407,671 @@ class User(UserBase):
         ----------
         user_id : `int`
             The user's id.
+        
+        Returns
+        -------
+        self : ``ClientUserBase``
+        """
+        self = object.__new__(cls)
+        self.id = user_id
+        self._set_default_attributes()
+        return self
+    
+    def _set_default_attributes(self):
+        """
+        Sets the user's attribute's to their default.
+        """
+        self.name = ''
+        self.discriminator = 0
+        self.avatar_hash = 0
+        self.avatar_type = ICON_TYPE_NONE
+        self.is_bot = False
+        self.flags = UserFlag()
+        
+        self.guild_profiles = GUILD_PROFILES_TYPE()
+        self.partial = True
+    
+    
+    # if CACHE_PRESENCE is False, this should be never called from this class
+    def _update_presence(self, data):
+        """
+        Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
+        `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange`` instance
+        containing all the changes of the user's activities.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+-----------------------------------+
+        | Keys          | Values                            |
+        +===============+===================================+
+        | activities    | ``ActivityChange``                |
+        +---------------+-----------------------------------+
+        | status        | ``Status``                        |
+        +---------------+-----------------------------------+
+        | statuses      | `dict` of (`str`, `str`) items    |
+        +---------------+-----------------------------------+
+        """
+        return {}
+    
+    def _update_presence_no_return(self, data):
+        """
+        Updates the user's presences with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        """
+        pass
+
+    
+    def _delete(self):
+        """
+        Deletes the user from it's guilds.
+        """
+        # we cannot full delete a user, because of the mentions, so we delete it only from the guilds
+        guild_profiles = self.guild_profiles
+        while guild_profiles:
+            guild, profile = guild_profiles.popitem()
+            try:
+                del guild.users[self.id]
+            except KeyError:
+                pass
+
+
+class ClientUserPBase(ClientUserBase):
+    """
+    Base class for discord users and clients. This class is used as ``user`` superclass only if presence is enabled,
+    so by default.
+    
+    Attributes
+    ----------
+    id : `int`
+        The user's unique identifier number.
+    name : str
+        The user's name.
+    discriminator : `int`
+        The user's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The user's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The user's avatar's type.
+    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+        A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
+        have a respective guild profile accordingly.
+    is_bot : `bool`
+        Whether the user is a bot or a user account.
+    flags : ``UserFlag``
+        The user's user flags.
+    partial : `bool`
+        Partial users have only their `.id` set and every other field might not reflect the reality.
+    activities : `None` or `list` of ``ActivityBase`` instances
+        A list of the client's activities. Defaults to `None`
+    status : `Status`
+        The user's display status.
+    statuses : `dict` of (`str`, `str`) items
+        The user's statuses for each platform.
+    """
+    __slots__ = ('activities', 'status', 'statuses')
+    
+    @classmethod
+    @copy_docs(ClientUserBase._from_client)
+    def _from_client(cls, client):
+        self = ClientUserBase._from_client(cls, client)
+        
+        activities = client.activities
+        if (activities is not None):
+            activities = activities.copy()
+        self.activities = activities
+        self.status = client.status
+        statuses = client.statuses
+        if (statuses is not None):
+            statuses = statuses.copy()
+        self.statuses = statuses
+        
+        return self
+
+    @copy_docs(ClientUserBase._set_default_attributes)
+    def _set_default_attributes(self):
+        ClientUserBase._set_default_attributes(self)
+        
+        self.status = Status.offline
+        self.statuses = {}
+        self.activities = None
+    
+    @copy_docs(ClientUserBase._update_presence)
+    def _update_presence(self, data):
+        old_attributes = {}
+        
+        statuses = data['client_status']
+        if self.statuses != statuses:
+            old_attributes['statuses'] = self.statuses
+            self.statuses = statuses
+            
+            status = data['status']
+            if self.status.value != status:
+                old_attributes['status'] = self.status
+                self.status = Status.get(status)
+        
+        activity_datas = data['activities']
+        
+        old_activities = self.activities
+        new_activities = None
+        
+        if activity_datas:
+            if old_activities is None:
+                for activity_data in activity_datas:
+                    activity = create_activity(activity_data)
+                    
+                    if new_activities is None:
+                        new_activities = []
+                    
+                    new_activities.append(activity)
+                
+                activity_change = ActivityChange(new_activities, None, None)
+                
+            else:
+                added_activities = None
+                updated_activities = None
+                removed_activities = old_activities.copy()
+                
+                for activity_data in activity_datas:
+                    activity_type = activity_data['type']
+                    for index in range(len(removed_activities)):
+                        activity = removed_activities[index]
+                        
+                        if activity_type != activity.type:
+                            continue
+                            
+                        if activity_data['id'] != activity.discord_side_id:
+                            continue
+                        
+                        del removed_activities[index]
+                        
+                        activity_old_attributes = activity._update(activity_data)
+                        if activity_old_attributes:
+                            activity_update = ActivityUpdate(activity, activity_old_attributes)
+                            
+                            if updated_activities is None:
+                                updated_activities = []
+                            
+                            updated_activities.append(activity_update)
+                        
+                        if new_activities is None:
+                            new_activities = []
+                        
+                        new_activities.append(activity)
+                        break
+                    else:
+                        activity = create_activity(activity_data)
+                        
+                        if new_activities is None:
+                            new_activities = []
+                        
+                        new_activities.append(activity)
+                        
+                        if added_activities is None:
+                            added_activities = []
+                        
+                        added_activities.append(activity)
+                
+                if not removed_activities:
+                    removed_activities = None
+                
+                if None is added_activities is updated_activities is removed_activities:
+                    activity_change = None
+                else:
+                    activity_change = ActivityChange(added_activities, updated_activities, removed_activities)
+        
+        else:
+            if old_activities is None:
+                activity_change = None
+            else:
+                activity_change = ActivityChange(None, None, old_activities)
+        
+        if (activity_change is not None):
+            old_attributes['activities'] = activity_change
+        
+        self.activities = new_activities
+        
+        return old_attributes
+    
+    @copy_docs(ClientUserBase._update_presence_no_return)
+    def _update_presence_no_return(self, data):
+        self.status = Status.get(data['status'])
+        
+        try:
+            # not included sometimes
+            self.statuses = data['client_status']
+        except KeyError:
+            pass
+        
+        activity_datas = data['activities']
+        if activity_datas:
+            new_activities = [create_activity(activity_data) for activity_data in activity_datas]
+        else:
+            new_activities = None
+        
+        self.activities = new_activities
+
+if CACHE_PRESENCE:
+    USER_BASE_CLASS = ClientUserPBase
+else:
+    USER_BASE_CLASS = ClientUserBase
+
+class User(USER_BASE_CLASS):
+    """
+    Represents a Discord user.
+    
+    Attributes
+    ----------
+    id : `int`
+        The user's unique identifier number.
+    name : str
+        The user's name.
+    discriminator : `int`
+        The user's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The user's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The user's avatar's type.
+    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+        A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
+        have a respective guild profile accordingly.
+    is_bot : `bool`
+        Whether the user is a bot or a user account.
+    flags : ``UserFlag``
+        The user's user flags.
+    partial : `bool`
+        Partial users have only their `.id` set and every other field might not reflect the reality.
+    activities : `None` or `list` of ``ActivityBase`` instances
+        A list of the client's activities. Defaults to `None`
+        
+        > Only available if presence caching is enabled.
+    status : `Status`
+        The user's display status.
+        
+        > Only available if presence caching is enabled.
+    statuses : `dict` of (`str`, `str`) items
+        The user's statuses for each platform.
+        
+        > Only available if presence caching is enabled.
+    
+    Notes
+    -----
+    Instances of this class are weakreferable.
+    """
+    __slots__ = ()
+    
+    if CACHE_PRESENCE:
+        def __new__(cls, data, guild=None):
+            try:
+                user_data = data['user']
+            except KeyError:
+                user_data = data
+                guild_profile_data = data.get('member', None)
+            else:
+                guild_profile_data = data
+            
+            user_id = int(user_data['id'])
+            
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.status = Status.offline
+                user.statuses = {}
+                user.activities = None
+                update = True
+                
+                USERS[user_id] = user
+            else:
+                update = user.partial
+            
+            if update:
+                user.partial = False
+                user.is_bot = user_data.get('bot', False)
+                user._update_no_return(user_data)
+            
+            if (guild_profile_data is not None) and (guild is not None):
+                try:
+                    profile = user.guild_profiles[guild]
+                except KeyError:
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                else:
+                    profile._set_joined(guild_profile_data)
+            
+            return user
+    
+    elif CACHE_USER:
+        def __new__(cls, data, guild=None):
+            try:
+                user_data = data['user']
+                guild_profile_data = data
+            except KeyError:
+                user_data = data
+                guild_profile_data = data.get('member', None)
+                
+            user_id = int(user_data['id'])
+
+            try:
+                user = USERS[user_id]
+                update = user.partial
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                update = True
+                
+                USERS[user_id] = user
+            
+            if update:
+                user.partial = False
+                user.is_bot = user_data.get('bot', False)
+                user._update_no_return(user_data)
+            
+            if (guild_profile_data is not None) and (guild is not None):
+                try:
+                    profile = user.guild_profiles[guild]
+                except KeyError:
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                else:
+                    profile._set_joined(guild_profile_data)
+                    
+            return user
+    
+    else:
+        def __new__(cls, data, guild=None):
+            try:
+                user_data = data['user']
+                guild_profile_data = data
+            except KeyError:
+                user_data = data
+                guild_profile_data = data.get('member', None)
+            
+            user_id = int(user_data['id'])
+            
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                
+                USERS[user_id] = user
+            
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
+            user._update_no_return(user_data)
+            
+            if (guild_profile_data is not None) and (guild is not None):
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+            
+            return user
+    
+    if DOCS_ENABLED:
+        __new__.__doc__ = (
+        """
+        First tries to find the user by id. If fails, then creates a new ``User`` object. If guild was given
+        and the given data contains member data as well, then it will create a respective guild profile for the user
+        too.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received user data.
+        guild : ``Guild`` or `None`, Optional
+            A respective guild from where the user data was received. It is picked up if the given data includes
+            guild member data as well.
+        
+        Returns
+        -------
+        user : ``User`` or ``Client``
         """)
+    
+    
+    @classmethod
+    def precreate(cls, user_id, **kwargs):
+        """
+        Precreates a user by creating a partial one with the given parameters. When the user is loaded, the precreated
+        one is picked up and is updated. If an already existing user would be precreated, returns that instead of
+        creating a new one, and updates it only, if it is still a partial one.
+        
+        Parameters
+        ----------
+        user_id : `int` or `str`
+            The user's id.
+        **kwargs : keyword arguments
+            Additional predefined attributes for the user.
+        
+        Other Parameters
+        ----------------
+        name : `str`, Optional (Keyword only)
+            The user's ``.name``.
+        discriminator : `int` or `str` instance, Optional (Keyword only)
+            The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
+        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
+            The user's avatar.
+            
+            > Mutually exclusive with `avatar_type` and `avatar_hash`.
+        avatar_type : ``IconType``, Optional (Keyword only)
+            The user's avatar's type.
+            
+            > Mutually exclusive with `avatar_type`.
+        avatar_hash : `int`, Optional (Keyword only)
+            The user's avatar's hash.
+            
+            > Mutually exclusive with `avatar`.
+        flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
+            The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
+        
+        Returns
+        -------
+        user : ``User`` or ``Client``
+        
+        Raises
+        ------
+        TypeError
+            If any argument's type is bad or if unexpected argument is passed.
+        ValueError
+            If an argument's type is good, but it's value is unacceptable.
+        """
+        user_id = preconvert_snowflake(user_id, 'user_id')
+        
+        if kwargs:
+            processable = []
+            
+            try:
+                name = kwargs.pop('name')
+            except KeyError:
+                pass
+            else:
+                name = preconvert_str(name, 'name', 2, 32)
+                processable.append(('name', name))
+            
+            try:
+                discriminator = kwargs.pop('discriminator')
+            except KeyError:
+                pass
+            else:
+                discriminator = preconvert_discriminator(discriminator)
+                processable.append(('discriminator', discriminator))
+            
+            cls.avatar.preconvert(kwargs, processable)
+            
+            try:
+                is_bot = kwargs.pop('is_bot')
+            except KeyError:
+                pass
+            else:
+                is_bot = preconvert_bool(is_bot, 'is_bot')
+                processable.append(('is_bot', is_bot))
+            
+            try:
+                flags = kwargs.pop('flags')
+            except KeyError:
+                pass
+            else:
+                flags = preconvert_flag(flags, 'flags', UserFlag)
+                processable.append(('flags', flags))
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+        
+        else:
+            processable = None
+        
+        user = create_partial_user(user_id)
+        if not user.partial:
+            return user
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(user, *item)
+        
+        return user
+    
+    
+    if CACHE_PRESENCE:
+        @classmethod
+        def _create_and_update(cls, data, guild=None):
+            try:
+                user_data = data['user']
+                guild_profile_data = data
+            except KeyError:
+                user_data = data
+                guild_profile_data = None
+            
+            user_id = int(user_data['id'])
+            
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.status = Status.offline
+                user.statuses = {}
+                user.activities = None
+                
+                USERS[user_id] = user
+            
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
+            user._update_no_return(user_data)
+            
+            if (guild_profile_data is not None) and (guild is not None):
+                try:
+                    profile = user.guild_profiles[guild]
+                except KeyError:
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                else:
+                    profile._set_joined(guild_profile_data)
+                    profile._update_no_return(guild_profile_data, guild)
+            
+            return user
+        
+    elif CACHE_USER:
+        @classmethod
+        def _create_and_update(cls, data, guild=None):
+            try:
+                user_data = data['user']
+                guild_profile_data = data
+            except KeyError:
+                user_data = data
+                guild_profile_data = None
+            
+            user_id = int(user_data['id'])
+            
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                
+                USERS[user_id] = user
+            
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
+            user._update_no_return(user_data)
+            
+            if (guild_profile_data is not None) and (guild is not None):
+                try:
+                    profile = user.guild_profiles[guild]
+                except KeyError:
+                    guild.users[user_id] = user
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                else:
+                    profile._set_joined(guild_profile_data)
+                    profile._update_no_return(guild_profile_data, guild)
+            
+            return user
+        
+    else:
+        @classmethod
+        def _create_and_update(cls, data, guild=None):
+            try:
+                user_data = data['user']
+            except KeyError:
+                user_data = data
+                guild_profile_data = None
+            else:
+                guild_profile_data = data
+            
+            user_id = int(user_data['id'])
+            
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = object.__new__(cls)
+                user.id = user_id
+                user.guild_profiles = GUILD_PROFILES_TYPE()
+                
+                USERS[user_id] = user
+            
+            user.partial = False
+            user.is_bot = user_data.get('bot', False)
+            user._update_no_return(user_data)
+            
+            if (guild_profile_data is not None) and (guild is not None):
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+            
+            return user
+    
+    if DOCS_ENABLED:
+        _create_and_update.__doc__ = (
+        """
+        Creates a user with the given data. If the user already exists, updates it.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received user data.
+        guild : ``Guild`` or `None`, Optional
+            A respective guild from where the user data was received. Picked up if the given data includes
+            guild member data as well.
+        
+        Returns
+        -------
+        user : ``User`` or ``Client``
+        """)
+
 
 class ActivityChange:
     """

@@ -21,7 +21,8 @@ from ..backend.url import URL
 from ..backend.export import export
 
 from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, get_image_extension, Relationship
-from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE
+from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE, \
+    ClientUserBase, ClientUserPBase
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
@@ -74,7 +75,7 @@ AUTO_CLIENT_ID_LIMIT = (1<<22)
 
 
 @export
-class Client(UserBase):
+class Client(ClientUserPBase):
     """
     Discord client class used to interact with the Discord API.
     
@@ -202,8 +203,6 @@ class Client(UserBase):
     Client supports weakreferencing and dynamic attribute names as well for extension support.
     """
     __slots__ = (
-        'guild_profiles', 'is_bot', 'flags', 'partial', # default user
-        'activities', 'status', 'statuses', # presence
         'email', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
         '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
         '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
@@ -558,9 +557,6 @@ class Client(UserBase):
         self.locale = parse_locale(data)
         
         self.partial = False
-    
-    _update_presence = User._update_presence
-    _update_presence_no_return = User._update_presence_no_return
     
     
     @property
@@ -1378,7 +1374,7 @@ class Client(UserBase):
             The guild, where the user is going to be added.
         access: ``OA2Access``, ``UserOA2`` or `str` instance
             The access of the user, who will be added.
-        user : ``Client``, ``User`` or `int`, Optional
+        user : ```ClientUserBase`` or `int`, Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
             This field is optional if access is passed as an ``UserOA2`` object.
@@ -1394,7 +1390,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError:
-            - If `user` was not given neither as `None`, ``User``, ``Client`` or `int` instance.
+            - If `user` was not given neither as `None`, ``ClientUserBase`` or `int` instance.
             - If `user` was passed as `None` and `access` was passed as ``OA2Access`` or as `str` instance.
             - If `access` was not given as ``OA2Access``, ``UserOA2``, nether as `str` instance.
             - If the given `access` not grants `'guilds.join'` scope.
@@ -1414,12 +1410,12 @@ class Client(UserBase):
         """
         if user is None:
             user_id = 0
-        elif isinstance(user, (User, Client)):
+        elif isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `None`, `{User.__name__}`, `{Client.__name__}` or `int` '
+                raise TypeError(f'`user` can be given as `None`, `{ClientUserBase.__name__}` or `int` '
                     f'instance, got {user.__class__.__name__}.')
         
         
@@ -1905,7 +1901,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user, who's achievement will be updated.
         achievement : ``Achievement`` or `int` instance
             The achievement, which's state will be updated
@@ -1915,7 +1911,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
+            - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
             - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
         ConnectionError
             No internet connection.
@@ -1934,12 +1930,12 @@ class Client(UserBase):
         - When updating secure achievement: `DiscordException NOT FOUND (404), code=10029: Unknown Entitlement`
         - When updating non secure: `DiscordException FORBIDDEN (403), code=40001: Unauthorized`
         """
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         
@@ -2155,14 +2151,14 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGroup`` or `int` instance
             The channel to add the `users` to.
-        *users : ``User``, ``Client`` or `int` instances
+        *users : ``ClientUserBase`` or `int` instances
             The users to add to the `channel`.
         
         Raises
         ------
         TypeError
             - If `channel` was not given neither as ``ChannelGroup`` nor `int` instance.
-            - If `users` contains non ``User``, ``Client``, neither `int` instance.
+            - If `users` contains non ``ClientUserBase``, neither `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2179,12 +2175,12 @@ class Client(UserBase):
         user_ids = []
         
         for user in users:
-            if isinstance(user, (User, Client)):
+            if isinstance(user, ClientUserBase):
                 user_id = user.id
             else:
                 user_id = maybe_snowflake(user)
                 if user_id is None:
-                    raise TypeError(f'`users` can be given as `{User.__name__}`, `{Client.__name__}` or `int` '
+                    raise TypeError(f'`users` can be given as `{ClientUserBase.__name__}` or `int` '
                         f'instances, but got {user.__class__.__name__}.')
                 
             user_ids.append(user_id)
@@ -2202,14 +2198,14 @@ class Client(UserBase):
         ----------
         channel : `ChannelGroup`` or `int` instance
             The channel from where the `users` will be removed.
-        *users : ``User``, ``Client`` or `int` instances
+        *users : ``ClientUserBase`` or `int` instances
             The users to remove from the `channel`.
         
         Raises
         ------
         TypeError
             - If `channel` was not given neither as ``ChannelGroup`` nor `int` instance.
-            - If `users` contains non ``User``, ``Client``, neither `int` instance.
+            - If `users` contains non ``ClientUserBase``, neither `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2226,12 +2222,12 @@ class Client(UserBase):
         user_ids = []
         
         for user in users:
-            if isinstance(user, (User, Client)):
+            if isinstance(user, ClientUserBase):
                 user_id = user.id
             else:
                 user_id = maybe_snowflake(user)
                 if user_id is None:
-                    raise TypeError(f'`users` can be given as `{User.__name__}`, `{Client.__name__}` or `int` '
+                    raise TypeError(f'`users` can be given as `{ClientUserBase.__name__}` or `int` '
                         f'instances, but got {user.__class__.__name__}.')
             
             user_ids.append(user_id)
@@ -2332,7 +2328,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        *users : ``User``, ``Client`` or `int` instances
+        *users : ``ClientUserBase`` or `int` instances
             The users to create the channel with.
         
         Returns
@@ -2358,12 +2354,12 @@ class Client(UserBase):
         user_ids = set()
         
         for user in users:
-            if isinstance(user, (User, Client)):
+            if isinstance(user, ClientUserBase):
                 user_id = user.id
             else:
                 user_id = maybe_snowflake(user)
                 if user_id is None:
-                    raise TypeError(f'`users` can be given as `{User.__name__}`, `{Client.__name__}` or `int` '
+                    raise TypeError(f'`users` can be given as `{ClientUserBase.__name__}` or `int` '
                         f'instances, but got {user.__class__.__name__}.')
                 
             user_ids.add(user_id)
@@ -2389,7 +2385,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user to create the private with.
         
         Returns
@@ -2400,18 +2396,18 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
+            If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         try:
@@ -5886,7 +5882,7 @@ class Client(UserBase):
             The message from which the reaction will be removed.
         emoji : ``Emoji``
             The emoji to remove.
-        user : ``Client``, ``User`` or `int` instance
+        user : ```ClientUserBase`` or `int` instance
             The user, who's reaction will be removed.
         
         Raises
@@ -5894,7 +5890,7 @@ class Client(UserBase):
         TypeError
             - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
                 (`int`, `int`) instance.
-            - If `user` was not given neither as ``User``, ``Client`` nor `int` instance.
+            - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5931,12 +5927,12 @@ class Client(UserBase):
                 raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
                     f'{emoji.__class__.__name__}.')
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         if user_id == self.id:
@@ -6138,7 +6134,7 @@ class Client(UserBase):
         
         Returns
         -------
-        users : `list` of (``Client``, ``User``)
+        users : `list` of (```ClientUserBase``)
         
         Raises
         ------
@@ -6253,7 +6249,7 @@ class Client(UserBase):
         
         Returns
         -------
-        users : `list` of (``Client`` or ``User``) objects
+        users : `list` of ``ClientUserBase``
         
         Raises
         ------
@@ -6469,7 +6465,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild from where the user will be removed.
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user to delete from the guild.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
@@ -6478,7 +6474,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, nor `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6494,13 +6490,13 @@ class Client(UserBase):
                     f'{guild.__class__.__name__}.')
         
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, got '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, got '
                     f'{user.__class__.__name__}.')
         
         
@@ -6844,7 +6840,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild from where the user will be banned.
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user to ban from the guild.
         delete_message_days : `int`, Optional (Keyword only)
             How much days back the user's messages should be deleted. Can be in range [0:7].
@@ -6855,7 +6851,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, nor `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6874,13 +6870,13 @@ class Client(UserBase):
                     f'{guild.__class__.__name__}.')
         
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, got '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, got '
                     f'{user.__class__.__name__}.')
         
         
@@ -6913,7 +6909,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild from where the user will be unbanned.
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user to unban at the guild.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
@@ -6922,7 +6918,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, nor `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6938,13 +6934,13 @@ class Client(UserBase):
                     f'{guild.__class__.__name__}.')
         
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, got '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, got '
                     f'{user.__class__.__name__}.')
         
         await self.http.guild_ban_delete(guild_id, user_id, reason)
@@ -7513,7 +7509,7 @@ class Client(UserBase):
         public_updates_channel : `None`, ``ChannelText`` or `int`, Optional (Keyword only)
             The new public updates channel of the guild. The guild must be a Community guild. You can remove the
             current one by passing is as `None`.
-        owner : ``User``, ``Client`` or `int`, Optional (Keyword only)
+        owner : ``ClientUserBase`` or `int`, Optional (Keyword only)
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
         region : ``VoiceRegion``, Optional (Keyword only)
             The new voice region of the guild.
@@ -7553,7 +7549,7 @@ class Client(UserBase):
             - If `afk_channel` was given, but not as `None`, ``ChannelVoice``, neither as `int` instance.
             - If `system_channel`, `rules_channel` or `public_updates_channel` was given, but not as `None`,
                 ``ChannelText``, neither as `int` instance.
-            - If `owner` was not given neither as ``User``, ``Client`` or `int` instance.
+            - If `owner` was not given neither as ``ClientUserBase`` or `int` instance.
             - If `region` was given neither as ``VoiceRegion`` or `str` instance.
             - If `verification_level` was not given neither as ``VerificationLevel`` or `int` instance.
             - If `content_filter` was not given neither as ``ContentFilterLevel`` or `int` instance.
@@ -7765,7 +7761,7 @@ class Client(UserBase):
                 if (guild is not None) and (guild.owner_id != self.id):
                     raise AssertionError('You must be owner to transfer ownership.')
             
-            if isinstance(owner, (User, Client)):
+            if isinstance(owner, ClientUserBase):
                 owner_id = owner.id
             else:
                 owner_id = maybe_snowflake(owner)
@@ -8017,7 +8013,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int` instance
             The guild where the user banned.
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user's id, who's entry is requested.
         
         Returns
@@ -8029,7 +8025,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not passed neither as ``Guild`` or `int` instance.
-            - If `user` was not given neither as ``User``, ``Client`` or `int` instance.
+            - If `user` was not given neither as ``ClientUserBase`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8043,12 +8039,12 @@ class Client(UserBase):
                 raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
                     f'{guild.__class__.__name__}.')
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         data = await self.http.guild_ban_get(guild_id, user_id)
@@ -8702,7 +8698,7 @@ class Client(UserBase):
             The timestamp before the audit log entries wer created.
         after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the audit log entries wer created.
-        user : `None`, ``Client``, ``User`` or `int` instance, Optional (Keyword only)
+        user : `None`, ```ClientUserBase`` or `int` instance, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
         event : `None`, ``AuditLogEvent``, `int`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
@@ -8717,7 +8713,7 @@ class Client(UserBase):
         TypeError
             - If `guild` was not given neither as ``Guild``, nor as `int` instance.
             - If `after` or `before` was passed with an unexpected type.
-            - If `user` was not given neither as `None`, ``User``, ``Client`` nor as `int` instance.
+            - If `user` was not given neither as `None`, ``ClientUserBase`` nor as `int` instance.
             - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int` instance.
         ConnectionError
             No internet connection.
@@ -8753,13 +8749,13 @@ class Client(UserBase):
             data['after'] = log_time_converter(after)
         
         if (user is not None):
-            if isinstance(user, (User, Client)):
+            if isinstance(user, ClientUserBase):
                 user_id = user.id
             
             else:
                 user_id = maybe_snowflake(user)
                 if user_id is None:
-                    raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                    raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                         f'got {user.__class__.__name__}.')
             
             data['user_id'] = user_id
@@ -8791,7 +8787,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int` instance
             The guild, what's audit logs will be requested.
-        user : `None`, ``Client``, ``User`` or `int` instance, Optional (Keyword only)
+        user : `None`, ```ClientUserBase`` or `int` instance, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
         event : `None`, ``AuditLogEvent` or `int`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
@@ -8815,7 +8811,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int` instance
             Where the user will be edited.
-        user : ``User``, ``Client`` or `int` instance
+        user : ``ClientUserBase`` or `int` instance
             The user to edit
         nick : `None` or `str`, Optional (Keyword only)
             The new nick of the user. You can remove the current one by passing it as `None` or as an empty string.
@@ -8836,7 +8832,7 @@ class Client(UserBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` neither as `int` instance.
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `voice_channel` was not given neither as `None`, ``ChannelVoiceBase``, neither as `int` instance.
             - If `roles` contains neither ``Role`` or `int` element.
         ConnectionError
@@ -8860,12 +8856,12 @@ class Client(UserBase):
             
             guild = GUILDS.get(guild_id, None)
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
             
             user = USERS.get(user_id, None)
@@ -8963,7 +8959,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User``, `int`
+        user : ```ClientUserBase``, `int`
             The user who will get the role.
         role : ``Role`` or `tuple` (`int`, `int`)
             The role to add on the user.
@@ -8973,7 +8969,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `role` was not given neither as ``Role`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
@@ -8995,12 +8991,12 @@ class Client(UserBase):
             
             guild_id, role_id = snowflake_pair
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         await self.http.user_role_add(guild_id, user_id, role_id, reason)
@@ -9014,7 +9010,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The user from who the role will be removed.
         role : ``Role`` or `tuple` (`int`, `int`)
             The role to remove from the user.
@@ -9024,7 +9020,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `role` was not given neither as ``Role`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
@@ -9046,12 +9042,12 @@ class Client(UserBase):
             
             guild_id, role_id = snowflake_pair
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         await self.http.user_role_delete(guild_id, user_id, role_id, reason)
@@ -9065,7 +9061,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The user to move.
         channel : ``ChannelVoiceBase`` or `tuple` (`int`, `int`)
             The channel where the user will be moved.
@@ -9073,7 +9069,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `channel` was not given neither as ``ChannelVoiceBase`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
@@ -9095,12 +9091,12 @@ class Client(UserBase):
             
             guild_id, channel_id = snowflake_pair
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
        
         await self.http.user_move(guild_id, user_id, {'channel_id': channel_id})
@@ -9114,7 +9110,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The user to move.
         channel : ``ChannelStage`` or `tuple` (`int`, `int`)
             The channel where the user will be moved.
@@ -9122,7 +9118,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `channel` was not given neither as ``ChannelStage`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
@@ -9144,12 +9140,12 @@ class Client(UserBase):
             
             guild_id, channel_id = snowflake_pair
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
        
         data = {
@@ -9168,7 +9164,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The user to move.
         channel : ``ChannelStage`` or `tuple` (`int`, `int`)
             The channel where the user will be moved.
@@ -9176,7 +9172,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `channel` was not given neither as ``ChannelStage`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
@@ -9198,12 +9194,12 @@ class Client(UserBase):
             
             guild_id, channel_id = snowflake_pair
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
        
         data = {
@@ -9222,7 +9218,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The user who will be kicked from the voice channel.
         guild : ``Guild`` or `int`
             The guild from what's voice channel the user will be kicked.
@@ -9230,19 +9226,19 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         if isinstance(guild, Guild):
@@ -9264,19 +9260,19 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``User``, `Client`` or `int`
+        user : ``ClientUserBase`` or `int`
             The user, who will be requested.
         force_update : `bool`
             Whether the user should be requested even if it supposed to be up to date.
         
         Returns
         -------
-        user : ``Client`` or ``User``
+        user : ``ClientUserBase`` instance
         
         Raises
         ------
         TypeError
-            If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9287,12 +9283,12 @@ class Client(UserBase):
         TypeError
             If `user_id` was not given as `int` instance.
         """
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
             
             user = None
@@ -9328,29 +9324,29 @@ class Client(UserBase):
         ----------
         guild : ``Guild`` or `int`
             The guild, where the user is.
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The user's id, who will be requested.
         
         Returns
         -------
-        user : ``Client`` or ``User``
+        user : ``ClientUserBase``
         
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``User``, ``Client``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase``, neither as `int` instance.
             - If `guild` was not given neither as ``Guild`` nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         if isinstance(guild, Guild):
@@ -9387,7 +9383,7 @@ class Client(UserBase):
         
         Returns
         -------
-        users : `list` of (``Client`` or ``User``)
+        users : `list` of ``ClientUserBase``
         
         Raises
         ------
@@ -9565,7 +9561,7 @@ class Client(UserBase):
         data = {
             'id'   : integration_id_value,
             'type' : type_,
-                }
+        }
         
         data = await self.http.integration_create(guild_id, data)
         return Integration(data)
@@ -9875,7 +9871,7 @@ class Client(UserBase):
         ----------
         channel : ``ChannelGuildBase`` or `int` instance
             The channel to what the permission overwrite will be added.
-        target : ``Role``, ``User``, ``Client`` instance
+        target : ``Role``, ``ClientUserBase`` instance
             The permission overwrite's target.
         allow : ``Permission`` or `int` instance
             The permission overwrite's allowed permission's value.
@@ -9912,10 +9908,10 @@ class Client(UserBase):
         
         if isinstance(target, Role):
             type_ = PERM_OW_TYPE_ROLE
-        elif isinstance(target, (User, Client)):
+        elif isinstance(target, ClientUserBase):
             type_ = PERM_OW_TYPE_USER
         else:
-            raise TypeError(f'`target` can be either `{Role.__name__}`, `{User.__name__}` or `{Client.__name__}` '
+            raise TypeError(f'`target` can be either `{Role.__name__}` or `{ClientUserBase.__name__}` '
                 f'instance, got {target.__class__.__name__}.')
         
         if __debug__:
@@ -11493,7 +11489,7 @@ class Client(UserBase):
         ----------
         guild : ``Guild``
             The guild where the user streams.
-        user : ``Client``, ``User`` or `int`
+        user : ```ClientUserBase`` or `int`
             The streaming user.
         max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
@@ -11511,7 +11507,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            If `user` was not given neither as ``User``, ``Client`` neither as `int` instance.
+            If `user` was not given neither as ``ClientUserBase`` neither as `int` instance.
         ValueError
             If the user is not streaming at the guild.
         ConnectionError
@@ -11530,12 +11526,12 @@ class Client(UserBase):
                 raise AssertionError(f'`guild` can be given as `{Guild.__name__}` instance, got '
                     f'{guild.__class__.__name__}.')
         
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `{User.__name__}`, `{Client.__name__}` or `int` instance, '
+                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
                     f'got {user.__class__.__name__}.')
         
         try:
@@ -14406,14 +14402,14 @@ class Client(UserBase):
         
         Parameters
         ----------
-        relationship : ``Relationship``, ``User``, ``Client`` or `int`
+        relationship : ``Relationship``, ``ClientUserBase`` or `int`
             The relationship to delete. Also can be given the respective user with who the client hast he relationship
             with.
 
         Raises
         ------
         TypeError
-            If `relationship` was not given neither as ``Relationship``, ``User``, ``Client`` not as `int` instance.
+            If `relationship` was not given neither as ``Relationship``, ``ClientUserBase`` not as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -14425,7 +14421,7 @@ class Client(UserBase):
         """
         if isinstance(relationship, Relationship):
             user_id = relationship.user.id
-        elif isinstance(relationship, (User, Client)):
+        elif isinstance(relationship, ClientUserBase):
             user_id = relationship.id
         else:
             user_id = maybe_snowflake(relationship)
@@ -14443,7 +14439,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User``, `int`
+        user : ```ClientUserBase``, `int`
             The user with who the relationship will be created.
         relationship_type : `None`, ``RelationshipType``, `int`, Optional
             The type of the relationship. Defaults to `None`.
@@ -14451,7 +14447,7 @@ class Client(UserBase):
         Raises
         ------
         TypeError
-            - If `user` is not given neither as ``User``, ``Client`` or `int` instance.
+            - If `user` is not given neither as ``ClientUserBase`` or `int` instance.
             - If `relationship_type` was not given neither as `None`, ``RelationshipType`` neither as `int` instance.
         ConnectionError
             No internet connection.
@@ -14462,12 +14458,12 @@ class Client(UserBase):
         -----
         This endpoint is available only for user accounts.
         """
-        if isinstance(user, (User, Client)):
+        if isinstance(user, ClientUserBase):
             user_id = user.id
         else:
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `None`, `{User.__name__}`, `{Client.__name__}` or `int` '
+                raise TypeError(f'`user` can be given as `None`, `{ClientUserBase.__name__}` or `int` '
                     f'instance, got {user.__class__.__name__}.')
         
         if relationship_type is None:
@@ -14494,13 +14490,13 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client``, ``User``, `int`
+        user : ```ClientUserBase``, `int`
             The user, who will receive the friend request.
         
         Raises
         ------
         TypeError
-            If `user` was not given neither as ``Client``, ``User`` or `int` instance.
+            If `user` was not given neither as ```ClientUserBase`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -14510,10 +14506,10 @@ class Client(UserBase):
         -----
         This endpoint is available only for user accounts.
         """
-        if not isinstance(user, (User, Client)):
+        if not isinstance(user, ClientUserBase):
             user_id = maybe_snowflake(user)
             if user_id is None:
-                raise TypeError(f'`user` can be given as `None`, `{User.__name__}`, `{Client.__name__}` or `int` '
+                raise TypeError(f'`user` can be given as `None`, `{ClientUserBase.__name__}` or `int` '
                     f'instance, got {user.__class__.__name__}.')
             
             user = await self.user_get(user_id)
@@ -15417,7 +15413,7 @@ class Client(UserBase):
         
         Returns
         -------
-        users : `list` of (``Client`` or ``User``) objects
+        users : `list` of ``ClientUserBase``
         
         Raises
         ------
@@ -15607,7 +15603,7 @@ class Client(UserBase):
         
         Returns
         -------
-        owner : ``User``, ``Client``
+        owner : ``ClientUserBase``
         """
         application_owner = self.application.owner
         if isinstance(application_owner, Team):
@@ -15623,7 +15619,7 @@ class Client(UserBase):
         
         Parameters
         ----------
-        user : ``Client`` or ``User`` object
+        user : ``ClientUserBase``
             The user who will be checked.
         
         Returns
@@ -15737,7 +15733,7 @@ class Client(UserBase):
         
         Returns
         -------
-        owners : `set` of (``Client`` or ``User``)
+        owners : `set` of ``ClientUserBase``
         """
         owners = set()
         
@@ -15793,19 +15789,7 @@ class Client(UserBase):
         | verified              | `bool`            |
         +-----------------------+-------------------+
         """
-        old_attributes = {}
-            
-        name = data['username']
-        if self.name != name:
-            old_attributes['name'] = self.name
-            self.name = name
-                
-        discriminator = int(data['discriminator'])
-        if self.discriminator != discriminator:
-            old_attributes['discriminator'] = self.discriminator
-            self.discriminator = discriminator
-
-        self._update_avatar(data, old_attributes)
+        old_attributes = ClientUserPBase._update(self, data)
         
         email = data.get('email', None)
         if self.email != email:
@@ -15832,11 +15816,6 @@ class Client(UserBase):
             old_attributes['mfa'] = self.mfa
             self.mfa = mfa
         
-        flags = UserFlag(data.get('flags', 0))
-        if self.flags != flags:
-            old_attributes['flags'] = self.flags
-            self.flags = flags
-        
         locale = parse_locale(data)
         if self.locale != locale:
             old_attributes['locale'] = self.locale
@@ -15853,11 +15832,7 @@ class Client(UserBase):
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         """
-        self.name = data['username']
-        
-        self.discriminator = int(data['discriminator'])
-        
-        self._set_avatar(data)
+        ClientUserPBase._update_no_return(self, data)
         
         self.system = data.get('system', False)
         
@@ -15868,8 +15843,6 @@ class Client(UserBase):
         self.premium_type = PremiumType.get(data.get('premium_type', 0))
         
         self.mfa = data.get('mfa_enabled', False)
-        
-        self.flags = UserFlag(data.get('flags', 0))
         
         self.locale = parse_locale(data)
     
@@ -15998,3 +15971,38 @@ class Client(UserBase):
             gateway = gateway.gateways[(guild_id>>22)%shard_count]
         
         return gateway
+    
+    @classmethod
+    def _from_client(self, client):
+        """
+        Creates a client alter ego.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client to copy.
+        
+        Raises
+        ------
+        RuntimeError
+            Not applicable for ``Client`` instances.
+        """
+        raise RuntimeError('Cannot create client copy from client.')
+    
+    @classmethod
+    def _create_empty(cls, client):
+        """
+        Creates a user instance with the given `user_id` and with the default user attributes.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The user's id.
+        
+        Raises
+        ------
+        RuntimeError
+            Not applicable for ``Client`` instances.
+        """
+        raise RuntimeError('Cannot create empty client.')
+

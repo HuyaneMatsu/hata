@@ -2,17 +2,13 @@
 __all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA', 'Team', 'TeamMember',
     'ThirdPartySKU', )
 
-from ..backend.export import include
-
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, FlagBase
-from .user import ZEROUSER, User
+from .user import ZEROUSER, User, ClientUserBase
 from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
 from .preinstanced import TeamMembershipState
 from .preconverters import preconvert_snowflake, preconvert_bool, preconvert_str, preconvert_flag
 
 from . import urls as module_urls
-
-Client = include('Client')
 
 class ApplicationFlag(FlagBase):
     """
@@ -102,7 +98,7 @@ class Application(DiscordEntity, immortal=True):
         Defaults to `False`.
     overlay_compatibility_hook : `bool`
         Defaults to `False`.
-    owner : ``User``, ``Client`` or ``Team``
+    owner : ``ClientUserBase`` or ``Team``
         The application's owner. Defaults to `ZEROUSER`.
     primary_sku_id : `int`
         If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
@@ -463,7 +459,7 @@ class Application(DiscordEntity, immortal=True):
             The application's icon's hash.
             
             > Mutually exclusive with `icon`.
-        owner : ``User``, ``Client`` or ``Team``
+        owner : ``ClientUserBase`` or ``Team``
             The application's owner. Defaults to `ZEROUSER`.
             
             This field cannot be given as `snowflake`, because it might represent both ``UserBase`` instances  and
@@ -540,8 +536,8 @@ class Application(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                if not isinstance(owner, (User, Client, Team)):
-                    raise TypeError(f'`owner` can be given as {User.__name__}, {Client.__name__}  or as '
+                if not isinstance(owner, (ClientUserBase, Team)):
+                    raise TypeError(f'`owner` can be given as `{ClientUserBase.__name__}`  or as '
                         f'{Team.__name__} instance, got {owner.__class__.__name__}.')
                 
                 processable.append(('owner', owner))
@@ -648,7 +644,7 @@ class Team(DiscordEntity, immortal=True):
         
         Returns
         -------
-        owner : ``Client`` or ``User``
+        owner : ``ClientUserBase``
             Defaults to `ZEROUSER`.
         """
         owner_id = self.owner_id
@@ -666,7 +662,7 @@ class Team(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase``
         """
         target_state = TeamMembershipState.invited
         return [team_member.user for team_member in self.members if team_member.state is target_state]
@@ -678,7 +674,7 @@ class Team(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase``
         """
         target_state = TeamMembershipState.accepted
         return [team_member.user for team_member in self.members if team_member.state is target_state]
@@ -702,7 +698,7 @@ class TeamMember:
         one element : `'*'`, what represents all the permissions.
     state : ``TeamMembershipState``
         The state of the team member. A member can be invited or can have the invite already accepted.
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         The corresponding user account of the team member object.
     """
     __slots__ = ('permissions', 'state', 'user',)

@@ -166,7 +166,7 @@ class CommandCheckWrapper(CommandWrapper):
 
 def raw_name_to_display(raw_name):
     """
-    Converts the given raw command or it's parameter's name to it's display name
+    Converts the given raw command or it's parameter's name to it's display name.
     
     Parameters
     ----------

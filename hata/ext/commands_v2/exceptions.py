@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('CommandParameterParsingError', 'CommandProcessingError', )
+__all__ = ('CommandCheckError', 'CommandParameterParsingError', 'CommandProcessingError', )
 
 class CommandProcessingError(BaseException):
     """
@@ -7,6 +7,7 @@ class CommandProcessingError(BaseException):
     
     This is a superclass for various exceptions types raised around the table.
     """
+
 
 class CommandParameterParsingError(CommandProcessingError):
     """
@@ -28,3 +29,27 @@ class CommandParameterParsingError(CommandProcessingError):
         """
         self.content_parser_parameter = content_parser_parameter
         CommandProcessingError.__init__(self, content_parser_parameter)
+
+
+class CommandCheckError(CommandProcessingError):
+    """
+    Raised when a check fails.
+    
+    Attributes
+    ----------
+    check : ``CheckBase``
+        The failed check.
+    """
+    def __init__(self, check):
+        """
+        Creates a new ``CommandCheckError`` instance.
+        
+        Parameters
+        ----------
+        check : ``ContentParserParameter``
+            The failed check.
+        """
+        self.check = check
+        CommandProcessingError.__init__(self, check)
+
+

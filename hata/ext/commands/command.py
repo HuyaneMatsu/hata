@@ -262,8 +262,6 @@ class Command:
         The command's display name.
     name : `str`
         The command's name. Always lower case.
-        
-        Always lower case.
     _alters : `set` of `str`
         Alternative name, with what the command can be called.
     _category_hint : `str` or `None`

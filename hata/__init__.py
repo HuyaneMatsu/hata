@@ -96,6 +96,8 @@ If you wonder, how to run up more clients, just put the two code snippet into th
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
+
+We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """
 __version__ = '1.1.66'
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ('show_warnings',)
-import sys
+import sys, re
 from ast import literal_eval
 
 GRAVE_TYPE_BUILTIN = 0
@@ -8,8 +8,11 @@ GRAVE_TYPE_EXPRESSION = 1
 GRAVE_TYPE_LOCAL_REFERENCE = 2
 GRAVE_TYPE_GLOBAL_REFERENCE = 3
 GRAVE_TYPE_QUOTE = 4
+GRAVE_TYPE_LINK = 5
 
 WARNINGS = []
+
+GRAVE_URL_MATCHER = re.compile(f'(.*?):(https?://.*)')
 
 class DocWarning:
     """
@@ -52,7 +55,7 @@ class DocWarning:
     @property
     def message(self):
         """
-        A message representing the warning
+        A message representing the warning.
         
         Returns
         -------
@@ -100,7 +103,7 @@ EXPECTED_BUILTIN_NAMES = {
     'method-like',
     'function-like',
     'Any',
-        }
+}
 
 GRAMMAR_CHARS = {
     '.',
@@ -114,12 +117,12 @@ GRAMMAR_CHARS = {
     ')',
     ']',
     '[',
-        }
+}
 
 DO_NOT_ADD_SPACE_AFTER = {
     '(',
     '[',
-        }
+}
 
 class Grave:
     """
@@ -302,17 +305,20 @@ def build_graves(text):
             # single graves cannot be empty
             reference = text[grave_start:grave_end]
             if reference in EXPECTED_BUILTIN_NAMES:
-                content.append(Grave(reference, GRAVE_TYPE_BUILTIN))
+                grave_type = GRAVE_TYPE_BUILTIN
+            elif GRAVE_URL_MATCHER.fullmatch(reference) is not None:
+                grave_type = GRAVE_TYPE_LINK
             else:
                 try:
                     literal_eval(reference)
                 except SyntaxError as err:
                     # warnings.append(f'{err.__class__.__name__}({err}) at a single grave: {reference!r}')
-                    content.append(Grave(reference, GRAVE_TYPE_QUOTE))
+                    grave_type = GRAVE_TYPE_QUOTE
                 except ValueError:
-                    content.append(Grave(reference, GRAVE_TYPE_LOCAL_REFERENCE))
+                    grave_type = GRAVE_TYPE_LOCAL_REFERENCE
                 else:
-                    content.append(Grave(reference, GRAVE_TYPE_EXPRESSION))
+                    grave_type = GRAVE_TYPE_EXPRESSION
+            content.append(Grave(reference, grave_type))
         
         grave_end += 1
     

@@ -4,7 +4,8 @@ from html import escape as html_escape
 from ...backend.quote import quote
 
 from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
-    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription, GravedBlockQuote
+    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription, GravedBlockQuote, GRAVE_TYPE_LINK, \
+    GRAVE_URL_MATCHER
 from .highlight import HighlightContext, PYTHON_IDENTIFIERS
 
 def create_relative_link(source, target):
@@ -71,9 +72,9 @@ def create_relative_link(source, target):
     return quote(url, safe=':@', protected='/')
 
 
-def graved_link(reference, object_, path, linker):
+def graved_global_link(reference, object_, path, linker):
     """
-    Converts the given graved link to it's html text form.
+    Converts the given graved global reference link to it's html text form.
     
     Parameters
     ----------
@@ -113,6 +114,35 @@ def graved_link(reference, object_, path, linker):
             '</code>'
         '</a>'
             )
+
+
+def graved_link(reference):
+    """
+    Converts the given graved link to it's html text form.
+    
+    Parameters
+    ----------
+    reference : `str`
+        A reference, what's link should be clickable.
+    
+    Returns
+    -------
+    html : `str`
+    """
+    name, url = GRAVE_URL_MATCHER.fullmatch(reference).groups()
+    name = html_escape(name)
+    url = quote(url, safe=':@', protected='/')
+    
+    return (
+        f'<a href="{url}">'
+            '<code>'
+                '<span>'
+                    f'{name}'
+                '</span>'
+            '</code>'
+        '</a>'
+            )
+
 
 def graved_text(text):
     """
@@ -181,8 +211,11 @@ def graved_to_escaped(graved, object_, path, linker):
         else:
             content = element.content
             
-            if element.type == GRAVE_TYPE_GLOBAL_REFERENCE:
-                local_word = graved_link(content, object_, path, linker)
+            element_type = element.type
+            if element_type == GRAVE_TYPE_GLOBAL_REFERENCE:
+                local_word = graved_global_link(content, object_, path, linker)
+            elif element_type == GRAVE_TYPE_LINK:
+                local_word = graved_link(content)
             else:
                 local_word = graved_text(content)
             

@@ -152,7 +152,7 @@ class CommandCheckWrapper(CommandWrapper):
         new._check = self._check|other._check
         new._wrapped = None
         return new
-
+    
     def __and__(self, other):
         """Connects the condition of two wrapped in `and` relation and returns a new command check wrapper."""
         if not isinstance(other, type(self)):

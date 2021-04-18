@@ -385,7 +385,7 @@ class CheckInvert(CheckBase):
         self = object.__new__(cls)
         self.check = check
         return self
-
+    
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         return not await self.check(context)

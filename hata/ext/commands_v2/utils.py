@@ -135,6 +135,33 @@ class CommandCheckWrapper(CommandWrapper):
     def __repr__(self):
         """Returns the command wrapper's representation."""
         return f'<{self.__class__.__name__} wrapped={self._wrapped!r} check={self._check!r}>'
+    
+    def __invert__(self):
+        """Inverts the condition of the wrapped checks and returns a new command check wrapper."""
+        new = object.__new__(type(self))
+        new._check = ~self._check
+        new._wrapped = None
+        return new
+    
+    def __or__(self, other):
+        """Connects the condition of two wrapped in `or` relation and returns a new command check wrapper."""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        
+        new = object.__new__(type(self))
+        new._check = self._check|other._check
+        new._wrapped = None
+        return new
+
+    def __and__(self, other):
+        """Connects the condition of two wrapped in `and` relation and returns a new command check wrapper."""
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        
+        new = object.__new__(type(self))
+        new._check = self._check&other._check
+        new._wrapped = None
+        return new
 
 
 def raw_name_to_display(raw_name):

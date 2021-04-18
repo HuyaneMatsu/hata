@@ -324,17 +324,38 @@ class CheckBase(metaclass=CheckMeta):
     
     def __invert__(self):
         """Inverts the check's condition returning a new check."""
-        return InvertCheck(self)
+        return CheckInvert(self)
     
     def __or__(self, other):
         """Connects the two check with `or` relation."""
-        if not isinstance(other, CheckBase):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
             return NotImplemented
         
+        if other_type is CheckBase:
+            return self
+        
+        if type(self) is CheckBase:
+            return other
+        
         return CheckOrRelation(self, other)
+    
+    def __and__(self, other):
+        """Connects teh two checks which `and` relation."""
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if type(self) is CheckBase:
+            return self
+        
+        return CheckAndRelation(self, other)
 
 
-class InvertCheck(CheckBase):
+class CheckInvert(CheckBase):
     """
     Inverts the wrapped check's result.
     
@@ -370,14 +391,14 @@ class InvertCheck(CheckBase):
         return not await self.check(context)
 
 
-class CheckOrRelation(CheckBase):
+class CheckRelationBase(CheckBase):
     """
-    Connects checks with `or` relation.
+    Base class for relation checks.
     
     Attributes
     ----------
     checks : `tuple` of ``CheckBase``
-        The check to connect
+        The check to connect.
     """
     __slots__ = ('checks', )
     def __new__(cls, *checks):
@@ -402,6 +423,18 @@ class CheckOrRelation(CheckBase):
         self = object.__new__(cls)
         self.checks = checks
         return self
+
+
+class CheckOrRelation(CheckRelationBase):
+    """
+    Connects checks with `or` relation.
+    
+    Attributes
+    ----------
+    checks : `tuple` of ``CheckBase``
+        The check to connect.
+    """
+    __slots__ = ()
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
@@ -412,20 +445,58 @@ class CheckOrRelation(CheckBase):
         return False
 
 
+class CheckAndRelation(CheckRelationBase):
+    """
+    Connects checks with `and` relation.
+    
+    Attributes
+    ----------
+    checks : `tuple` of ``CheckBase``
+        The check to connect.
+    """
+    __slots__ = ()
+    
+    @copy_docs(CheckBase.__call__)
+    async def __call__(self, context):
+        for check in self.checks:
+            if not await check(context):
+                return False
+        
+        return True
+
+
+
 class CheckSingleBase(CheckBase):
     """
     Base class for single condition checks without attributes.
     """
+    @copy_docs(CheckBase.__or__)
     def __or__(self, other):
-        """Connects the two check with `or` relation."""
         other_type = type(other)
         if not issubclass(other_type, CheckBase):
             return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
         
         if other_type is type(self):
             return self
         
         return CheckOrRelation(self, other)
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if other_type is type(self):
+            return self
+        
+        return CheckAndRelation(self, other)
 
 
 class CheckIsOwner(CheckSingleBase):
@@ -455,6 +526,27 @@ class CheckIsOwner(CheckSingleBase):
         
         # Let the other check decide
         return other|self
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if type(self) is other_type:
+            return self
+        
+        if issubclass(other, CheckIsOwner):
+            if (type(self) is CheckIsOwner):
+                return self
+            
+            if type(other) is CheckIsOwner:
+                return other
+        
+        return CheckAndRelation(self, other)
 
 
 class CheckHasRoleBase(CheckBase):
@@ -488,6 +580,34 @@ class CheckHasRoleBase(CheckBase):
             check_type = HasAnyRoleCheckOrRelationIsOwner
         
         return check_type(*roles)
+    
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if not issubclass(other_type, CheckHasRoleBase):
+            return CheckAndRelation(self, other)
+        
+        roles = {*self._iter_roles()}&{*other._iter_roles()}
+        
+        if isinstance(self, CheckIsOwner) or issubclass(other_type, CheckIsOwner):
+            owner_required = True
+        else:
+            owner_required = False
+        
+        if owner_required:
+            check_type = CheckHasRoleOrIsOwner
+        else:
+            check_type = HasAnyRoleCheckOrRelationIsOwner
+        
+        return check_type(*roles)
+    
     
     def _iter_roles(self):
         """
@@ -813,6 +933,14 @@ class CheckHasPermissionBase(CheckBase):
         permission = _convert_permission(permission)
         permission = permission.update_by_keys(**kwargs)
         
+        if not permission:
+            if issubclass(cls, CheckIsOwner):
+                permission_type = CheckIsOwner
+            else:
+                permission_type = CheckBase
+            
+            return permission_type()
+        
         self = object.__new__(cls)
         self.permission = permission
         return self
@@ -848,9 +976,9 @@ class CheckHasPermission(CheckHasPermissionBase):
             return self
         
         if not issubclass(other_type, CheckHasPermission):
-            return CheckOrRelation(self, other)
+            return CheckAndRelation(self, other)
         
-        if isinstance(self, CheckIsOwner) or issubclass(other, CheckIsOwner):
+        if isinstance(self, CheckIsOwner) or issubclass(other_type, CheckIsOwner):
             owner_allowed = True
         else:
             owner_allowed = False
@@ -858,11 +986,46 @@ class CheckHasPermission(CheckHasPermissionBase):
         permission = Permission(self.permission&other.permission)
         
         if owner_allowed:
-            check_type = CheckHasPermission
-        else:
             check_type = CheckHasPermissionOrIsOwner
+        else:
+            check_type = CheckHasPermission
         
         return check_type(permission)
+    
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return self
+        
+        if not issubclass(other_type, CheckHasPermission):
+            return CheckOrRelation(self, other)
+        
+        if isinstance(self, CheckIsOwner) or issubclass(other_type, CheckIsOwner):
+            owner_required = True
+        else:
+            owner_required = False
+        
+        permission = Permission(self.permission|other.permission)
+        if permission:
+            if owner_required:
+                check_type = CheckHasPermissionOrIsOwner
+            else:
+                check_type = CheckHasPermission
+            
+            return check_type(permission)
+        else:
+            if owner_required:
+                check_type = CheckIsOwner
+            else:
+                check_type = CheckBase
+            
+            return check_type()
+
 
 
 class CheckHasPermissionOrIsOwner(CheckHasPermission, CheckIsOwner):
@@ -924,7 +1087,7 @@ class CheckHasGuildPermission(CheckHasPermissionBase):
         if not issubclass(other_type, CheckHasGuildPermission):
             return CheckOrRelation(self, other)
         
-        if isinstance(self, CheckIsOwner) or issubclass(other, CheckIsOwner):
+        if isinstance(self, CheckIsOwner) or issubclass(other_type, CheckIsOwner):
             owner_allowed = True
         else:
             owner_allowed = False
@@ -932,11 +1095,45 @@ class CheckHasGuildPermission(CheckHasPermissionBase):
         permission = Permission(self.permission&other.permission)
         
         if owner_allowed:
-            check_type = CheckHasGuildPermission
-        else:
             check_type = CheckHasGuildPermissionOrIsOwner
+        else:
+            check_type = CheckHasGuildPermission
         
         return check_type(permission)
+    
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return self
+        
+        if not issubclass(other_type, CheckHasGuildPermission):
+            return CheckAndRelation(self, other)
+        
+        if isinstance(self, CheckIsOwner) or issubclass(other_type, CheckIsOwner):
+            owner_required = True
+        else:
+            owner_required = False
+        
+        permission = Permission(self.permission|other.permission)
+        if permission:
+            if owner_required:
+                check_type = CheckHasGuildPermissionOrIsOwner
+            else:
+                check_type = CheckHasGuildPermission
+            
+            return check_type(permission)
+        else:
+            if owner_required:
+                check_type = CheckIsOwner
+            else:
+                check_type = CheckBase
+            
+            return check_type()
 
 
 class CheckHasGuildPermissionOrIsOwner(CheckHasGuildPermission, CheckIsOwner):
@@ -1001,9 +1198,29 @@ class CheckHasClientPermission(CheckHasPermissionBase):
         permission = Permission(self.permission&other.permission)
         
         return type(self)(permission)
+    
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if type(self) is not other_type:
+            return CheckOrRelation(self, other)
+        
+        permission = Permission(self.permission|other.permission)
+        
+        if not permission:
+            return CheckBase()
+        
+        return type(self)(permission)
 
 
-class CheckHasClientGuildPermission(CheckHasPermissionBase):
+class CheckHasClientGuildPermission(CheckHasClientPermission):
     """
     Checks whether the client has the given permissions in the message's guild.
     
@@ -1044,6 +1261,22 @@ class CheckIsGuildBase(CheckBase):
             return CheckOrRelation(self, other)
         
         guild_ids = {*self._iter_guild_ids(), *other._iter_guild_ids()}
+        
+        return CheckIsAnyGuild(*guild_ids)
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if not issubclass(other_type, CheckIsGuildBase):
+            return CheckAndRelation(self, other)
+    
+        guild_ids = {*self._iter_guild_ids()}&{*other._iter_guild_ids()}
         
         return CheckIsAnyGuild(*guild_ids)
     
@@ -1238,7 +1471,7 @@ class CheckIsChannelBase(CheckBase):
     Base class for channel checks.
     """
     __slots__ = ()
-
+    
     @copy_docs(CheckBase.__or__)
     def __or__(self, other):
         other_type = type(other)
@@ -1252,6 +1485,22 @@ class CheckIsChannelBase(CheckBase):
             return CheckOrRelation(self, other)
         
         channel_ids = {*self._iter_channel_ids(), *other._iter_channel_ids()}
+        
+        return CheckIsAnyChannel(*channel_ids)
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if not issubclass(other_type, CheckIsChannelBase):
+            return CheckAndRelation(self, other)
+    
+        channel_ids = {*self._iter_channel_ids()}&{*other._iter_channel_ids()}
         
         return CheckIsAnyChannel(*channel_ids)
     
@@ -1469,6 +1718,23 @@ class CheckIsClient(CheckSingleBase):
             return CheckIsUserAccountOrIsClient()
         
         return CheckOrRelation(self, other)
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if other_type is type(self):
+            return self
+        
+        if (other_type is CheckIsUserAccountOrIsClient):
+            return self
+        
+        return CheckAndRelation(self, other)
 
 
 class CheckUserAccount(CheckSingleBase):
@@ -1500,6 +1766,23 @@ class CheckUserAccount(CheckSingleBase):
             return CheckIsUserAccountOrIsClient()
         
         return CheckOrRelation(self, other)
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if other_type is type(self):
+            return self
+        
+        if (other_type is CheckIsUserAccountOrIsClient):
+            return self
+        
+        return CheckAndRelation(self, other)
 
 
 class CheckBotAccount(CheckSingleBase):
@@ -1548,6 +1831,23 @@ class CheckIsUserAccountOrIsClient(CheckSingleBase, CheckIsClient, CheckUserAcco
         
         return CheckOrRelation(self, other)
 
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if other_type is type(self):
+            return self
+        
+        if (other_type is CheckIsClient) or (other_type is CheckUserAccount):
+            return other
+        
+        return CheckAndRelation(self, other)
+
 
 class CheckIsCategoryBase(CheckBase):
     """
@@ -1568,6 +1868,22 @@ class CheckIsCategoryBase(CheckBase):
             return CheckOrRelation(self, other)
         
         category_ids = {*self._iter_category_ids(), *other._iter_category_ids()}
+        
+        return CheckIsAnyCategory(*category_ids)
+    
+    @copy_docs(CheckBase.__and__)
+    def __and__(self, other):
+        other_type = type(other)
+        if not issubclass(other_type, CheckBase):
+            return NotImplemented
+        
+        if other_type is CheckBase:
+            return other
+        
+        if not issubclass(other_type, CheckIsCategoryBase):
+            return CheckAndRelation(self, other)
+        
+        category_ids = {*self._iter_category_ids()}&{*other._iter_category_ids()}
         
         return CheckIsAnyCategory(*category_ids)
     

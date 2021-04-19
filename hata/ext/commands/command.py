@@ -1892,7 +1892,7 @@ class Category:
         result = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         name = self.name
         if (name is not None):
             result.append(' ')

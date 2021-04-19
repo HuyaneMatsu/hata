@@ -133,7 +133,7 @@ def _validate_hidden_if_checks_fail(hidden_if_checks_fail):
     
     return hidden_if_checks_fail
 
-    
+
 class Command:
     """
     Represents a command.
@@ -222,6 +222,6 @@ class Command:
                 if (error_handlers is not None):
                     yield from error_handlers
 
-        
+
 
 

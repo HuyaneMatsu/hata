@@ -1047,9 +1047,9 @@ class ExtensionLoader:
         ----------
         name : `str` or `iterable` of `str`
             The extension(s)'s name(s) to add.
-        entry_point : `None, `str` or `callable`, Optional
+        entry_point : `None`, `str` or `callable`, Optional
             Extension specific entry point, to use over the extension loader's default.
-        exit_point : `None, `str` or `callable`, Optional
+        exit_point : `None`, `str` or `callable`, Optional
             Extension specific exit point, to use over the extension loader's default.
         locked : `bool`, Optional
             Whether the given extension(s) should not be affected by `.{}_all` methods.

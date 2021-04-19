@@ -198,6 +198,7 @@ for sub_module_name, feature_names, extra_features in (
     except KeyError:
         module = ModuleType(module_name)
         sys.modules[module_name] = module
+    else:
         module.__dict__.clear()
     
     asyncio.__dict__[sub_module_name] = module

@@ -27,7 +27,7 @@ from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, 
 from . import urls as module_urls
 
 VoiceClient = include('VoiceClient')
-Client = include('VoiceClient')
+Client = include('Client')
 
 LARGE_LIMIT = 250 # can be between 50 and 250
 

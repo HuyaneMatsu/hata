@@ -898,6 +898,30 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.discovery_validate_term, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET, f'{API_ENDPOINT}/discovery/valid-term', params=data)
     
+    async def discovery_stage_get_all(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.discovery_stage_get_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/discovery')
+    
+    async def discovery_guild_get_all(self):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.discovery_guild_get_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/guild-discovery')
+    
+    async def stage_get_all(self, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.stage_get_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET, f'{API_ENDPOINT}/stage-instances', data)
+    
+    async def stage_create(self, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.stage_create, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST, f'{API_ENDPOINT}/stage-instances', data)
+    
+    async def stage_edit(self, channel_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.stage_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PATCH, f'{API_ENDPOINT}/stage-instances/{channel_id}', data)
+    
+    async def stage_delete(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.stage_delete, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE, f'{API_ENDPOINT}/stage-instances/{channel_id}')
+    
     # hooman only
     async def bulk_ack(self):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.bulk_ack, NO_SPECIFIC_RATE_LIMITER),

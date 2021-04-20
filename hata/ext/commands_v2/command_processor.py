@@ -107,7 +107,10 @@ class CommandProcessor(EventWaitforBase):
     _ignore_prefix_case : `bool`
         Whether casing in prefix is ignored.
     
+    _raw_prefix : `str`, `tuple` of `str`, `callable`
+        Raw prefix of the command processor.
     
+    _prefix_
     
     Notes
     -----
@@ -174,6 +177,8 @@ class CommandProcessor(EventWaitforBase):
             - If `command_name_rule` not returns `str`, when `str` is passed to it.
             - If `default_category_name` was not given neither as `None` nor as `str` instance.
             - If `ignore_prefix_case` was not given as `bool` instance.
+        - Prefix's type is incorrect.
+        - Prefix is a callable but accepts bad amount of parameters.
         ValueError
             - If `default_category_name`'s length is out of range [1:128].
         """

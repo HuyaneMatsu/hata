@@ -27,6 +27,7 @@ from .preinstanced import *
 from .rate_limit import *
 from .urls import *
 from .role import *
+from .stage import *
 from .user import *
 from .voice_client import *
 from .webhook import *
@@ -60,6 +61,7 @@ __all__ = (
     *rate_limit.__all__,
     *urls.__all__,
     *role.__all__,
+    *stage.__all__,
     *user.__all__,
     *voice_client.__all__,
     *webhook.__all__,

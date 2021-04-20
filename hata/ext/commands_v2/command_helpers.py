@@ -8,7 +8,7 @@ from ...backend.analyzer import CallableAnalyzer
 from .utils import raw_name_to_display
 
 SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\S*')
-COMMAND_NAME_RP = re_compile('[ \t\\n]*([^ \t\\n]*)[ \t\\n]*', re_multi_line|re_dotall)
+COMMAND_NAME_RP = re_compile('\S*([^\S]*)\S*', re_multi_line|re_dotall)
 
 async def run_checks(checks, command_context):
     """
@@ -508,6 +508,12 @@ def validate_prefix(prefix, ignore_prefix_case):
     -------
     prefix : `Any`
         Async callable prefix.
+    
+    Raises
+    ------
+    TypeError
+        - Prefix's type is incorrect.
+        - Prefix is a callable but accepts bad amount of parameters.
     """
     if ignore_prefix_case:
         re_flags = re_ignore_case
@@ -533,8 +539,11 @@ def validate_prefix(prefix, ignore_prefix_case):
     else:
         if isinstance(prefix, str):
             escaped_prefix = re_escape(prefix)
-        else:
+        elif isinstance(prefix, tuple):
             escaped_prefix = '|'.join(re_escape(prefix_part) for prefix_part in prefix)
+        else:
+            raise TypeError(f'`prefix` can be either given as `callable`, `async-callable`, `str` or as `tuple` of '
+                f'`str`, got {prefix.__class__.__name__}.')
         
         compiled_prefix = re_compile(escaped_prefix, re_flags)
         

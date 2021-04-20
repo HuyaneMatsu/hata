@@ -1,12 +1,43 @@
-#### 1.1.67  *\[2021-04-??\]*
+#### 1.1.68  *\[2021-04-??\]*
+
+
+#### 1.1.67  *\[2021-04-20\]*
 
 
 ##### Public API:
 
 - Add `ClientUserBase`. (base class for clients and users).
 - Add `ClientUserPBase`. (base class for clients and of users if presences are enabled).
-- Add `video_quality_mode` transformer to audit logs.
 - Add normal link graves to `hata.ext.patchouli`.
+- Add `StagePrivacyLevel`.
+- Add `Stage`.
+- Add `Client.stage_create`.
+- Add `Client.stage_edit`.
+- Add `Client.stage_delete`.
+- Add `Client.events.stage_create`.
+- Add `Client.events.stage_edit`.
+- Add `Client.events.stage_delete`.
+
+##### Internal:
+
+- Add `video_quality_mode` transformer to audit logs.
+- Up `Client.guild_create` for staff to 200.
+- Add `DiscordHTTPClient.discovery_stage_get_all`.
+- Add `RATE_LIMIT_GROUPS.discovery_stage_get_all`.
+- Add `DiscordHTTPClient.stage_get_all`.
+- Add `DiscordHTTPClient.stage_create`.
+- Add `RATE_LIMIT_GROUPS.stage_get_all`.
+- Add `RATE_LIMIT_GROUPS.stage_create`.
+- Add `RATE_LIMIT_GROUPS.stage_edit`.
+- Add `DiscordHTTPClient.stage_edit`.
+- Fix a bad `include` call in `guild.py`.
+- Add `DiscordHTTPClient.discovery_guild_get_all`.
+- Add `RATE_LIMIT_GROUPS.discovery_guild_get_all`.
+- Add `RATE_LIMIT_GROUPS.GROUP_PERMISSION_OVERWRITE_MODIFY`.
+- Update `RATE_LIMIT_GROUPS.permission_overwrite_delete`.
+- Update `RATE_LIMIT_GROUPS.permission_overwrite_create`.
+- Add `RATE_LIMIT_GROUPS.stage_delete`.
+- Add `DiscordHTTPClient.stage_delete`.
 
 #### 1.1.66  *\[2021-04-15\]*
 

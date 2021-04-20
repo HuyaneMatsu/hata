@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'AuditLogEvent', 'ContentFilterLevel',
-    'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature', 'HypesquadHouse', 'InteractionType', 'InviteTargetType',
-    'MFA', 'VerificationScreenStepType', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
-    'PremiumType', 'RelationshipType', 'RoleManagerType', 'Status', 'StickerType', 'TeamMembershipState', 'Theme',
-    'VerificationLevel', 'VideoQualityMode', 'VoiceRegion', 'WebhookType', )
+__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'AuditLogEvent',
+    'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature', 'HypesquadHouse', 'InteractionType',
+    'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType', 'PremiumType',
+    'RelationshipType', 'RoleManagerType', 'StagePrivacyLevel', 'Status', 'StickerType', 'TeamMembershipState',
+    'Theme', 'VerificationLevel', 'VerificationScreenStepType', 'VideoQualityMode', 'VoiceRegion', 'WebhookType')
 
 from ..backend.utils import any_to_any
 from ..backend.export import export, include
@@ -2462,3 +2462,49 @@ class VideoQualityMode(PreinstancedBase):
 VideoQualityMode.none = VideoQualityMode(0, 'none')
 VideoQualityMode.auto = VideoQualityMode(1, 'auto')
 VideoQualityMode.full = VideoQualityMode(2, 'full')
+
+class StagePrivacyLevel(PreinstancedBase):
+    """
+    Represents a stage channel's privacy level.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the stage privacy level.
+    value : `int`
+        The identifier value the stage privacy level.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``StagePrivacyLevel``) items
+        Stores the predefined ``StagePrivacyLevel`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The stage privacy level' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the stage privacy levels.
+    
+    Every predefined stage privacy level can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | Name          | Value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | public                | public        | 1     |
+    +-----------------------+---------------+-------+
+    | guild_only            | guild_only    | 2     |
+    +-----------------------+---------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = NotImplemented
+    public = NotImplemented
+    guild_only = NotImplemented
+    
+StagePrivacyLevel.none = StagePrivacyLevel(0, 'none')
+StagePrivacyLevel.public = StagePrivacyLevel(1, 'public')
+StagePrivacyLevel.guild_only = StagePrivacyLevel(2, 'guild_only')

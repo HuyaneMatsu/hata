@@ -54,7 +54,7 @@ from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
     preconvert_flag, preconvert_preinstanced_type
 from .permission import Permission
 from .bases import ICON_TYPE_NONE
-from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, \
+from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, StagePrivacyLevel, \
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
@@ -65,6 +65,7 @@ from .interaction import ApplicationCommand, InteractionResponseTypes, Applicati
 from .color import Color
 from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+from .stage import Stage
 
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
@@ -7120,8 +7121,8 @@ class Client(ClientUserPBase):
             verification_level=VerificationLevel.medium, message_notification=MessageNotificationLevel.only_mentions,
             content_filter=ContentFilterLevel.disabled):
         """
-        Creates a guild with the given parameter. A user account cant be member of 100 guilds maximum and a bot
-        account can create a guild only if it is member of less than 10 guilds.
+        Creates a guild with the given parameter. Bot accounts can create guilds only when they have less than 10.
+        User account guild limit is 100, meanwhile staff guild limit is 200.
         
         This method is a coroutine.
         
@@ -7178,11 +7179,13 @@ class Client(ClientUserPBase):
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
         """
         if __debug__:
-            if len(self.guild_profiles) > (9 if self.is_bot else 99):
+            if len(self.guild_profiles) > (9 if self.is_bot else 199 if self.flags.staff else 99):
                 if self.is_bot:
-                    message = 'Bots cannot create a new server if they have 10 or more.'
+                    message = 'Guild create limit for bot accounts is `10`.'
+                elif self.flags.staff:
+                    message = 'Guild create limit for staff is `200`.'
                 else:
-                    message = 'Hooman cannot have more than 100 guilds.'
+                    message = 'Guild create limit for generic user accounts is `100`.'
                 raise AssertionError(message)
         
         
@@ -9252,6 +9255,174 @@ class Client(ClientUserPBase):
         await self.http.user_move(guild_id, user_id, {'channel_id': None})
     
     
+    async def stage_create(self, channel, topic, *, privacy_level=StagePrivacyLevel.guild_only):
+        """
+        Edits the given stage channel.
+        
+        Will trigger a `stage_create` event.
+        
+        > The endpoint has a long rate limit, so please use ``.stage_edit`` to edit just the stage's topic.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelStage`` or `int`
+            The channel to edit.
+        topic : `str` or `None`
+            The new topic of the stage.
+        privacy_level : ``StagePrivacyLevel``, `int`, Optional (Keyword only)
+            The new privacy level of the stage. Defaults to guild only.
+        
+        Returns
+        -------
+        stage : ``Stage``
+            The created stage instance.
+        
+        Raises
+        ------
+        TypeError
+            - If `channel` was not given as ``ChannelStage`` neither as `int` instance.
+            - If `privacy_level` was not given neither as ``StagePrivacyLevel`` nor as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `topic` was not given neither as `None` or as `str` instance.
+            - If `topic`'s length is out of range [1:120].
+        """
+        if isinstance(channel, ChannelStage):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
+                    f'int` instance, got {channel.__class__.__name__}.')
+        
+        if topic is None:
+            topic = ''
+        else:
+            if __debug__:
+                if not isinstance(topic, str):
+                    raise AssertionError(f'`topic` can be given as `None` or `sts` instance, got '
+                        f'{topic.__class__.__name__}.')
+                
+                topic_length = len(topic)
+                if (topic_length < 1) or (topic_length > 120):
+                    raise AssertionError(f'`topic` length can be in range [1:120], got {topic_length!r}; {topic!r}.')
+        
+        if isinstance(privacy_level, StagePrivacyLevel):
+            privacy_level = privacy_level.value
+        elif isinstance(privacy_level, int):
+            privacy_level = privacy_level
+        else:
+            raise TypeError(f'`privacy_level` can be given either as {StagePrivacyLevel.__name__} or `int` '
+                f'instance, got {privacy_level.__class__.__name__}.')
+        
+        data = {
+            'channel_id': channel_id,
+            'topic': topic,
+            'privacy_level': privacy_level,
+        }
+        
+        data = await self.http.stage_create(data)
+        return Stage(data)
+    
+    async def stage_edit(self, channel, topic):
+        """
+        Edits the given stage channel.
+        
+        Will trigger a `stage_edit` event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelStage`` or `int`
+            The channel to edit.
+        topic : `str` or `None`
+            The new topic of the stage.
+        
+        Returns
+        -------
+        stage : ``Stage``
+            The updated stage instance.
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given as ``ChannelStage`` neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `topic` was not given neither as `None` or as `str` instance.
+            - If `topic`'s length is out of range [0:120].
+        """
+        if isinstance(channel, ChannelStage):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
+                    f'int` instance, got {channel.__class__.__name__}.')
+        
+        if topic is None:
+            topic = ''
+        else:
+            if __debug__:
+                if not isinstance(topic, str):
+                    raise AssertionError(f'`topic` can be given as `None` or `sts` instance, got '
+                        f'{topic.__class__.__name__}.')
+                
+                topic_length = len(topic)
+                if topic_length > 120:
+                    raise AssertionError(f'`topic` length can be in range [0:120], got {topic_length!r}; {topic!r}.')
+        
+        data = {
+            'topic': topic,
+        }
+        
+        data = await self.http.stage_edit(channel_id, data)
+        return Stage(data)
+    
+    
+    async def stage_delete(self, channel):
+        """
+        Deletes the given stage channel.
+        
+        Will trigger a `stage_delete` event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelStage`` or `int`
+            The channel to edit.
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given as ``ChannelStage`` neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if isinstance(channel, ChannelStage):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
+                    f'int` instance, got {channel.__class__.__name__}.')
+        
+        await self.http.stage_delete(channel_id)
+        # We receive no data.
+    
+    
     async def user_get(self, user, *, force_update=False):
         """
         Gets an user by it's id. If the user is already loaded updates it.
@@ -9312,6 +9483,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.user_get(user_id)
         return User._create_and_update(data)
+    
     
     async def guild_user_get(self, guild, user):
         """

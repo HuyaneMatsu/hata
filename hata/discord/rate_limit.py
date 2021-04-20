@@ -1726,6 +1726,12 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `2.0`
     
+    - GROUP_PERMISSION_OVERWRITE_MODIFY
+        - Used by: `permission_overwrite_delete`, `permission_overwrite_create`
+        - Limiter : `channel_id`
+        - Limit : `10`
+        - Resets after : `15.0`
+    
     Group Details
     -----------
     - oauth2_token
@@ -2116,16 +2122,16 @@ class RATE_LIMIT_GROUPS:
         - Method : `DELETE`
         - Required auth : `bot`
         - Limiter : `channel_id`
-        - Limit : `OPT`
-        - Resets after : `OPT`
+        - Limit : `10`
+        - Resets after : `15.0`
     
     - permission_overwrite_create
         - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
         - Method : `PUT`
         - Required auth : `bot`
         - Limiter : `channel_id`
-        - Limit : `OPT`
-        - Resets after : `OPT`
+        - Limit : `10`
+        - Resets after : `15.0`
     
     - channel_pin_get_all
         - Endpoint : `/channels/{channel_id}/pins`
@@ -2247,6 +2253,15 @@ class RATE_LIMIT_GROUPS:
         - Limit : `OPT`
         - Resets after : `OPT`
     
+    - discovery_stage_get_all
+        - Endpoint : `/discovery`
+        - Method : `GET`
+        - Required auth : `UN`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested. `DiscordException Not Found (404): 404: Not Found`
+    
     - discovery_category_get_all
         - Endpoint : `/discovery/categories`
         - Method : `GET`
@@ -2279,6 +2294,15 @@ class RATE_LIMIT_GROUPS:
         - Limiter : `GLOBAL`
         - Limit : `2`
         - Resets after : `5`
+    
+    - discovery_guild_get_all
+        - Endpoint : `/guild-discovery`
+        - Method : `GET`
+        - Required auth : `UN`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested. `DiscordException Not Found (404): 404: Not Found`
     
     - guild_create
         - Endpoint : `/guilds`
@@ -2459,6 +2483,8 @@ class RATE_LIMIT_GROUPS:
         - Limiter : `GLOBAL`
         - Limit : `50`
         - Resets after : `3600.0`
+        - Notes : Creating an emoji with the same name of an existing one has a different rate limit.
+                  Please don't do that.
     
     - emoji_delete
         - Endpoint : `/guilds/{guild_id}/emojis`
@@ -2828,6 +2854,39 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `UN`
         - Notes : Untested.
     
+    - stage_get_all
+        - Endpoint : `/stage-instances`
+        - Method : `GET`
+        - Required auth : `user`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+        - Notes : `DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint`
+    
+    - stage_create
+        - Endpoint : `/stage-instances`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `100`
+        - Resets after : `86400.0`
+    
+    - stage_edit
+        - Endpoint : `/stage-instances/{channel_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `60.0`
+    
+    - stage_delete
+        - Endpoint : `/stage-instances/{channel_id}`
+        - Method : `DELETE`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `100`
+        - Resets after : `86400.0`
+    
     - eula_get
         - Endpoint : `/store/eulas/{eula_id}`
         - Method : `GET`
@@ -3133,6 +3192,7 @@ class RATE_LIMIT_GROUPS:
     GROUP_APPLICATION_COMMAND_CREATE = RateLimitGroup()
     GROUP_APPLICATION_COMMAND_DELETE = RateLimitGroup()
     GROUP_APPLICATION_COMMAND_EDIT = RateLimitGroup()
+    GROUP_PERMISSION_OVERWRITE_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
     
     oauth2_token = RateLimitGroup(optimistic=True)
     application_get = RateLimitGroup(optimistic=True) # untested
@@ -3181,8 +3241,8 @@ class RATE_LIMIT_GROUPS:
     reaction_add = GROUP_REACTION_MODIFY
     reaction_delete = GROUP_REACTION_MODIFY
     message_suppress_embeds = RateLimitGroup()
-    permission_overwrite_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
-    permission_overwrite_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+    permission_overwrite_delete = GROUP_PERMISSION_OVERWRITE_MODIFY
+    permission_overwrite_create = GROUP_PERMISSION_OVERWRITE_MODIFY
     channel_pin_get_all = RateLimitGroup()
     channel_pin_ack = RateLimitGroup(optimistic=True) # untested
     message_unpin = GROUP_PIN_MODIFY
@@ -3198,9 +3258,11 @@ class RATE_LIMIT_GROUPS:
     webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     discovery_category_get_all = RateLimitGroup()
+    discovery_stage_get_all = RateLimitGroup(optimistic=True) # untested, not yet added
     discovery_validate_term = RateLimitGroup()
     client_gateway_hooman = RateLimitGroup()
     client_gateway_bot = RateLimitGroup()
+    discovery_guild_get_all = RateLimitGroup(optimistic=True) # untested, not yet added
     guild_create = RateLimitGroup.unlimited()
     guild_delete = RateLimitGroup.unlimited()
     guild_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
@@ -3267,6 +3329,10 @@ class RATE_LIMIT_GROUPS:
     invite_get = RateLimitGroup()
     client_application_get = RateLimitGroup(optimistic=True)
     bulk_ack = RateLimitGroup(optimistic=True) # untested
+    stage_get_all = RateLimitGroup.unlimited()
+    stage_create = RateLimitGroup()
+    stage_edit = RateLimitGroup()
+    stage_delete = RateLimitGroup()
     eula_get = RateLimitGroup(optimistic=True)
     user_info_get = RateLimitGroup(optimistic=True)
     client_user_get = RateLimitGroup(optimistic=True)
@@ -3303,7 +3369,7 @@ class RATE_LIMIT_GROUPS:
     webhook_message_create = GROUP_WEBHOOK_EXECUTE
     webhook_message_edit = GROUP_WEBHOOK_EXECUTE
     webhook_message_delete = GROUP_WEBHOOK_EXECUTE
-
+    
     # Alternative static versions
     STATIC_MESSAGE_DELETE_SUB = StaticRateLimitGroup(5, 5.0, LIMITER_CHANNEL)
     static_message_delete = (STATIC_MESSAGE_DELETE_SUB, StaticRateLimitGroup(3, 1.0, LIMITER_CHANNEL))

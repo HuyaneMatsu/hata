@@ -35,6 +35,7 @@ from .interaction import ApplicationCommand, INTERACTION_TYPE_TABLE, Application
 from .integration import Integration
 from .permission import Permission, PERMISSION_PRIVATE
 from .preinstanced import InteractionType
+from .stage import Stage
 
 Client = include('Client')
 
@@ -220,6 +221,9 @@ GLOBAL_INTENT_EVENTS = (
     'APPLICATION_COMMAND_PERMISSIONS_UPDATE',
     'USER_GUILD_SETTINGS_UPDATE', # User account only
     'CHANNEL_UNREAD_UPDATE', # User account only
+    'STAGE_INSTANCE_CREATE',
+    'STAGE_INSTANCE_UPDATE',
+    'STAGE_INSTANCE_DELETE',
 )
 
 INTENT_SHIFT_DEFAULT_EVENT = 255
@@ -4873,6 +4877,60 @@ del APPLICATION_COMMAND_PERMISSIONS_UPDATE_CAL, \
     APPLICATION_COMMAND_PERMISSIONS_UPDATE_OPT
 
 
+def STAGE_INSTANCE_CREATE_CAL(client, data):
+    stage = Stage(data)
+    
+    Task(client.events.stage_create(client, stage), KOKORO)
+
+def STAGE_INSTANCE_CREATE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'STAGE_INSTANCE_CREATE',
+    STAGE_INSTANCE_CREATE_CAL,
+    STAGE_INSTANCE_CREATE_CAL,
+    STAGE_INSTANCE_CREATE_OPT,
+    STAGE_INSTANCE_CREATE_OPT)
+del STAGE_INSTANCE_CREATE_CAL, \
+    STAGE_INSTANCE_CREATE_OPT
+
+
+def STAGE_INSTANCE_UPDATE_CAL(client, data):
+    stage = Stage(data)
+    
+    Task(client.events.stage_edit(client, stage), KOKORO)
+
+def STAGE_INSTANCE_UPDATE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'STAGE_INSTANCE_UPDATE',
+    STAGE_INSTANCE_UPDATE_CAL,
+    STAGE_INSTANCE_UPDATE_CAL,
+    STAGE_INSTANCE_UPDATE_OPT,
+    STAGE_INSTANCE_UPDATE_OPT)
+del STAGE_INSTANCE_UPDATE_CAL, \
+    STAGE_INSTANCE_UPDATE_OPT
+
+
+def STAGE_INSTANCE_DELETE_CAL(client, data):
+    stage = Stage(data)
+    
+    Task(client.events.stage_delete(client, stage), KOKORO)
+
+def STAGE_INSTANCE_DELETE_OPT(client, data):
+    pass
+
+PARSER_DEFAULTS(
+    'STAGE_INSTANCE_DELETE',
+    STAGE_INSTANCE_DELETE_CAL,
+    STAGE_INSTANCE_DELETE_CAL,
+    STAGE_INSTANCE_DELETE_OPT,
+    STAGE_INSTANCE_DELETE_OPT)
+del STAGE_INSTANCE_DELETE_CAL, \
+    STAGE_INSTANCE_DELETE_OPT
+
+
 EVENTS = EVENT_SYSTEM_CORE()
 
 EVENTS.add_default('error'                                  , 3 , ()                                        , )
@@ -4932,7 +4990,9 @@ EVENTS.add_default('application_command_create'             , 3 , 'APPLICATION_C
 EVENTS.add_default('application_command_update'             , 4 , 'APPLICATION_COMMAND_UPDATE'              , )
 EVENTS.add_default('application_command_delete'             , 3 , 'APPLICATION_COMMAND_DELETE'              , )
 EVENTS.add_default('application_command_permission_update'  , 2 , 'APPLICATION_COMMAND_PERMISSIONS_UPDATE'  , )
-
+EVENTS.add_default('stage_create'                           , 2 , 'STAGE_INSTANCE_CREATE'                   , )
+EVENTS.add_default('stage_edit'                             , 2 , 'STAGE_INSTANCE_UPDATE'                   , )
+EVENTS.add_default('stage_delete'                           , 2 , 'STAGE_INSTANCE_DELETE'                   , )
 
 def _check_name_should_break(name):
     """
@@ -6661,7 +6721,7 @@ class eventlist(list):
         result = [
             self.__class__.__name__,
             '([',
-                ]
+        ]
         
         limit = list.__len__(self)
         if limit != 0:
@@ -7952,6 +8012,15 @@ class EventDescriptor:
         +---------------+-------------------+
         | separated     | `bool`            |
         +---------------+-------------------+
+    
+    stage_create(client: ``Client``, stage:: ``Stage``):
+        Called when a stage is created.
+    
+    stage_delete(client: ``Client``, stage:: ``Stage``):
+        Called when a stage is deleted.
+    
+    stage_edit(client: ``Client``, stage:: ``Stage``):
+        Called when a stage is edited.
     
     typing(client: ``Client``, channel: ``ChannelTextBase``, user: {``ClientUserBase``}, timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.

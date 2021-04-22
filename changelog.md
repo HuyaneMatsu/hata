@@ -91,7 +91,7 @@
 - Add `RATE_LIMIT_GROUPS.stage_edit`.
 - Add `DiscordHTTPClient.stage_edit`.
 - Fix a bad `include` call in `guild.py`.
-- Add `DiscordHTTPClient.discovery_guild_get_all`.partner_application_timestamp 
+- Add `DiscordHTTPClient.discovery_guild_get_all`. 
 - Add `RATE_LIMIT_GROUPS.discovery_guild_get_all`.
 - Add `RATE_LIMIT_GROUPS.GROUP_PERMISSION_OVERWRITE_MODIFY`.
 - Update `RATE_LIMIT_GROUPS.permission_overwrite_delete`.

@@ -446,7 +446,6 @@ class ChooseMenu(PaginationBase):
         if (event.emoji not in (self.EMOJIS if len(self.choices)>10 else self.EMOJIS_RESTRICTED)):
             return
         
-        client = self.client
         if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
             return
         
@@ -601,7 +600,7 @@ class ChooseMenu(PaginationBase):
         
         # Third party things go here
         repr_parts.append(', choices=')
-        repr_parts.append(repr(len(self.choices)))
+        repr_parts.append(repr(self.choices))
         repr_parts.append(', selected=')
         repr_parts.append(repr(self.selected))
         repr_parts.append(', selector=')

@@ -8,6 +8,7 @@ from ...discord.parsers import InteractionEvent
 from ...discord.message import Message
 from ...discord import ChannelTextBase
 from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.preconverters import preconvert_bool
 
 from .bases import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_CANCELLED, \
     GUI_STATE_SWITCHING_CTX, GUI_STATE_VALUE_TO_NAME, PaginationBase
@@ -149,6 +150,9 @@ class UserMenuFactory:
     """
     Attributes
     ----------
+    allow_third_party_emojis : `bool`
+        Whether the runner should pick up 3rd party emojis, listed outside of `emojis`.
+    
     check : `None` or `function`
         The function to call when checking whether an event should be called.
         
@@ -226,7 +230,8 @@ class UserMenuFactory:
         
         > Define it as non-positive to never timeout. Not recommended.
     """
-    __slots__ = ('check', 'close', 'close_emoji', 'emojis', 'initial_invoke', 'invoke', 'klass', 'timeout')
+    __slots__ = ('allow_third_party_emojis', 'check', 'close', 'close_emoji', 'emojis', 'initial_invoke', 'invoke',
+        'klass', 'timeout')
     
     def __new__(cls, klass):
         """
@@ -247,6 +252,7 @@ class UserMenuFactory:
             - If `initial_invoke` is not async callable or accepts any parameters.
             - If `timeout` is not convertable to float.
             - If `closed` is neither `None` nor `async-callable`.
+            - If `allow_third_party_emojis` was not given as `bool` instance.
         ValueError
             - If `emojis` length is over 20.
         """
@@ -278,7 +284,10 @@ class UserMenuFactory:
                         f'{emoji.__class__.__name__}.')
             
             emojis_length = len(emojis)
-            if emojis_length > 20:
+            if emojis_length == 0:
+                emojis = None
+            
+            elif emojis_length > 20:
                 raise ValueError(f'`emojis` can contain up to `20` emojis, got {emojis_length!r}.')
         
         initial_invoke = getattr(klass, 'initial_invoke', None)
@@ -297,6 +306,12 @@ class UserMenuFactory:
         close = getattr(klass, 'close', None)
         validate_close(close)
         
+        allow_third_party_emojis = getattr(klass, 'allow_third_party_emojis', None)
+        if (allow_third_party_emojis is None):
+            allow_third_party_emojis = False
+        else:
+            allow_third_party_emojis = preconvert_bool(allow_third_party_emojis, 'allow_third_party_emojis')
+        
         self = object.__new__(cls)
         self.klass = klass
         self.check = check
@@ -306,6 +321,7 @@ class UserMenuFactory:
         self.invoke = invoke
         self.timeout = timeout
         self.close = close
+        self.allow_third_party_emojis = allow_third_party_emojis
         
         return self
     
@@ -338,6 +354,11 @@ class UserMenuFactory:
         if (close_emoji is not None):
             repr_parts.append(', close_emoji=')
             repr_parts.append(close_emoji.name)
+        
+        allow_third_party_emojis = self.allow_third_party_emojis
+        if allow_third_party_emojis:
+            repr_parts.append(', allow_third_party_emojis=')
+            repr_parts.append(repr(allow_third_party_emojis))
         
         timeout = self.timeout
         if timeout > 0.0:
@@ -550,12 +571,12 @@ class UserMenuRunner(PaginationBase):
             return
         
         emojis = self._factory.emojis
-        if (emojis is not None) and (event.emoji not in emojis):
-            return
-        
-        client = self.client
-        if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
-            return
+        if (emojis is None) or (event.emoji not in emojis):
+            if not self._factory.allow_third_party_emojis:
+                return
+        else:
+            if (event.delete_reaction_with(client) == event.DELETE_REACTION_NOT_ADDED):
+                return
         
         check = self._factory.check
         if (check is not None):
@@ -625,7 +646,7 @@ class UserMenuRunner(PaginationBase):
         close = self._factory.close
         if (close is not None):
             try:
-                close(self._instance, exception)
+                await close(self._instance, exception)
             except BaseException as err:
                 client = self.client
                 await client.events.error(client, f'{self!r}.handle_close_exception', err)
@@ -653,7 +674,7 @@ class UserMenuRunner(PaginationBase):
         
         # Third party things go here
         repr_parts.append(', factory=')
-        repr_parts.append(repr(len(self._factory)))
+        repr_parts.append(repr(self._factory))
         repr_parts.append(', instance=')
         repr_parts.append(repr(self._instance))
         
@@ -689,6 +710,8 @@ class UserPagination:
         The emoji used to cancel the ``Pagination``.
     emojis : `tuple` (`Emoji`, `Emoji`, `Emoji`, `Emoji`, `Emoji`) = `(left2, left, right, right2, close_emoji,)`
         The emojis to add on the respective message in order.
+    timeout : `float`
+        The pagination's timeout.
     """
     left2 = BUILTIN_EMOJIS['track_previous']
     left = BUILTIN_EMOJIS['arrow_backward']
@@ -696,6 +719,8 @@ class UserPagination:
     right2 = BUILTIN_EMOJIS['track_next']
     close_emoji = BUILTIN_EMOJIS['x']
     emojis = (left2, left, right, right2, close_emoji,)
+    
+    timeout = 240.0
     
     __slots__ = ('menu', 'page_index', 'pages')
     

@@ -1510,7 +1510,9 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | discoverable                  | DISCOVERABLE                      |
     +-------------------------------+-----------------------------------+
-    | enabled_discoverable_before   | ENABLED_DISCOVERABLE_BEFORE       |
+    | discoverable_disabled         | DISCOVERABLE_DISABLED             |
+    +-------------------------------+-----------------------------------+
+    | discoverable_enabled_before   | ENABLED_DISCOVERABLE_BEFORE       |
     +-------------------------------+-----------------------------------+
     | featurable                    | FEATURABLE                        |
     +-------------------------------+-----------------------------------+
@@ -1593,7 +1595,8 @@ class GuildFeature(PreinstancedBase):
     commerce = NotImplemented
     community = NotImplemented
     discoverable = NotImplemented
-    enabled_discoverable_before = NotImplemented
+    discoverable_disabled = NotImplemented
+    discoverable_enabled_before = NotImplemented
     featurable = NotImplemented
     member_list_disabled = NotImplemented
     more_emoji = NotImplemented
@@ -1615,7 +1618,8 @@ GuildFeature.banner = GuildFeature('BANNER')
 GuildFeature.commerce = GuildFeature('COMMERCE')
 GuildFeature.community = GuildFeature('COMMUNITY')
 GuildFeature.discoverable = GuildFeature('DISCOVERABLE')
-GuildFeature.enabled_discoverable_before= GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
+GuildFeature.discoverable_disabled = GuildFeature('DISCOVERABLE_DISABLED')
+GuildFeature.discoverable_enabled_before = GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
 GuildFeature.featurable = GuildFeature('FEATURABLE')
 GuildFeature.member_list_disabled = GuildFeature('MEMBER_LIST_DISABLED')
 GuildFeature.more_emoji = GuildFeature('MORE_EMOJI')

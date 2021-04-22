@@ -342,7 +342,7 @@ class CheckBase(metaclass=CheckMeta):
         return CheckOrRelation(self, other)
     
     def __and__(self, other):
-        """Connects teh two checks which `and` relation."""
+        """Connects the two checks which `and` relation."""
         other_type = type(other)
         if not issubclass(other_type, CheckBase):
             return NotImplemented

@@ -5,7 +5,7 @@ from functools import partial as partial_func
 from ...backend.utils import FunctionType
 from ...backend.analyzer import CallableAnalyzer
 
-from .utils import raw_name_to_display
+from .exceptions import CommandProcessingError
 
 SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\S*')
 COMMAND_NAME_RP = re_compile('\S*([^\S]*)\S*', re_multi_line|re_dotall)
@@ -55,8 +55,10 @@ async def handle_exception(error_handlers, command_context, exception):
         if isinstance(result, int) and result:
             break
     else:
-        client = command_context.client
-        await client.events.error(client, '_handle_exception', exception)
+        # We can ignore command processing exceptions.
+        if not isinstance(exception, CommandProcessingError):
+            client = command_context.client
+            await client.events.error(client, '_handle_exception', exception)
 
 
 def get_sub_command_trace(command, content, index):
@@ -226,7 +228,7 @@ def test_error_handler(error_handler):
     Raises
     ------
     TypeError
-        - If `error_handler` accepts bad amount of arguments.
+        - If `error_handler` accepts bad amount of parameters.
         - If `error_handler` is not async.
     """
     analyzer = CallableAnalyzer(error_handler)
@@ -235,13 +237,13 @@ def test_error_handler(error_handler):
     
     min_, max_ = analyzer.get_non_reserved_positional_argument_range()
     if min_ > 2:
-        raise TypeError(f'`error_handler` should accept `2` arguments, meanwhile the given callable expects at '
+        raise TypeError(f'`error_handler` should accept `2` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{error_handler!r}`.')
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`error_handler` should accept `2` arguments, meanwhile the given callable expects '
+                raise TypeError(f'`error_handler` should accept `2` parameters, meanwhile the given callable expects '
                     f'up to `{max_!r}`, got `{error_handler!r}`.')
 
 
@@ -397,8 +399,10 @@ async def prefix_wrapper_async_callable(prefix_factory, re_flags, message):
     prefix = await prefix_factory(message)
     if isinstance(prefix, str):
         escaped_prefix = re_escape(prefix)
-    else:
+    elif isinstance(prefix, tuple) and (len(prefix) > 0):
         escaped_prefix = '|'.join(re_escape(prefix_part) for prefix_part in prefix)
+    else:
+        return None, -1
     
     content = message.content
     parsed = re_match(escaped_prefix, content, re_flags)
@@ -412,9 +416,40 @@ async def prefix_wrapper_async_callable(prefix_factory, re_flags, message):
     return prefix, end
 
 
+async def prefix_getter_async_callable(prefix_factory, message):
+    """
+    Returns a prefix for the message.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    prefix_factory : `async-callable`
+        Async callable returning the prefix.
+    message : ``Message``
+        The received message to parse the prefix from.
+    
+    Returns
+    -------
+    prefix : `str` or `None`
+        The respective prefix for the message. Returns `None` of non could be identified.
+    """
+    prefix = await prefix_factory(message)
+    if isinstance(prefix, str):
+        pass
+    elif isinstance(prefix, tuple) and (len(prefix) > 0):
+        prefix = prefix[0]
+    else:
+        prefix = None
+    
+    return prefix
+
+
 async def prefix_wrapper_sync_callable(prefix_factory, re_flags, message):
     """
     Function to execute not asynchronous callable prefix.
+    
+    This function is a coroutine.
     
     Parameters
     ----------
@@ -435,8 +470,10 @@ async def prefix_wrapper_sync_callable(prefix_factory, re_flags, message):
     prefix = prefix_factory(message)
     if isinstance(prefix, str):
         escaped_prefix = re_escape(prefix)
-    else:
+    elif isinstance(prefix, tuple) and (len(prefix) > 0):
         escaped_prefix = '|'.join(re_escape(prefix_part) for prefix_part in prefix)
+    else:
+        return None, -1
     
     content = message.content
     parsed = re_match(escaped_prefix, content, re_flags)
@@ -448,6 +485,36 @@ async def prefix_wrapper_sync_callable(prefix_factory, re_flags, message):
         end = parsed.end()
     
     return prefix, end
+
+
+async def prefix_getter_sync_callable(prefix_factory, message):
+    """
+    Returns a prefix for the message.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    prefix_factory : `callable`
+        Sync callable returning the prefix.
+    message : ``Message``
+        The received message to parse the prefix from.
+    
+    Returns
+    -------
+    prefix : `str` or `None`
+        The respective prefix for the message. Returns `None` of non could be identified.
+    """
+    prefix = prefix_factory(message)
+    if isinstance(prefix, str):
+        pass
+    elif isinstance(prefix, tuple) and (len(prefix) > 0):
+        prefix = prefix[0]
+    else:
+        prefix = None
+    
+    return prefix
+
 
 async def prefix_wrapper_regex(re_pattern, message):
     """
@@ -481,7 +548,28 @@ async def prefix_wrapper_regex(re_pattern, message):
     return prefix, end
 
 
-def validate_prefix(prefix, ignore_prefix_case):
+async def prefix_getter_static(prefix, message):
+    """
+    Returns a prefix for the message.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    prefix : `str`
+        The prefix to return.
+    message : ``Message``
+        The received message to parse the prefix from.
+    
+    Returns
+    -------
+    prefix : `str`
+        The respective prefix for the message.
+    """
+    return prefix
+
+
+def get_prefix_parser(prefix, prefix_ignore_case):
     """
     Validates whether the given prefix is correct.
     
@@ -506,8 +594,44 @@ def validate_prefix(prefix, ignore_prefix_case):
     
     Returns
     -------
-    prefix : `Any`
-        Async callable prefix.
+    prefix_parser : `async-callable`
+        Async callable prefix parser.
+        
+        Accepts the following parameters:
+        
+        +-----------+---------------+
+        | Name      | Type          |
+        +===========+===============+
+        | message   | ``Message``   |
+        +-----------+---------------+
+        
+        Returns the given values:
+        
+        +-----------+-------------------+
+        | Name      | Type              |
+        +===========+===================+
+        | prefix    | `None` or `str`   |
+        +-----------+-------------------+
+        | end       | `int`             |
+        +-----------+-------------------+
+    
+    prefix_getter : `async-callable`
+        
+        Accepts the following parameters:
+        
+        +-----------+---------------+
+        | Name      | Type          |
+        +===========+===============+
+        | message   | ``Message``   |
+        +-----------+---------------+
+        
+        Returns the given values:
+        
+        +-----------+-------------------+
+        | Name      | Type              |
+        +===========+===================+
+        | prefix    | `None` or `str`   |
+        +-----------+-------------------+
     
     Raises
     ------
@@ -515,7 +639,7 @@ def validate_prefix(prefix, ignore_prefix_case):
         - Prefix's type is incorrect.
         - Prefix is a callable but accepts bad amount of parameters.
     """
-    if ignore_prefix_case:
+    if prefix_ignore_case:
         re_flags = re_ignore_case
     else:
         re_flags = 0
@@ -530,22 +654,50 @@ def validate_prefix(prefix, ignore_prefix_case):
                 f'accepts: `{non_reserved_positional_argument_count}`.')
         
         if analyzed.is_async():
-            prefix_wrapper = prefix_wrapper_async_callable
+            prefix_wrapper_function = prefix_wrapper_async_callable
+            prefix_getter_function = prefix_getter_async_callable
         else:
-            prefix_wrapper = prefix_wrapper_sync_callable
-            
-        return partial_func(prefix_wrapper, prefix, re_flags)
+            prefix_wrapper_function = prefix_wrapper_sync_callable
+            prefix_getter_function = prefix_getter_sync_callable
+        
+        prefix_parser = partial_func(prefix_wrapper_function, prefix, re_flags)
+        prefix_getter = partial_func(prefix_getter_function, prefix)
     
     else:
         if isinstance(prefix, str):
             escaped_prefix = re_escape(prefix)
         elif isinstance(prefix, tuple):
+            if len(prefix) == 0:
+                raise ValueError(f'Empty prefix tuple.')
+            
             escaped_prefix = '|'.join(re_escape(prefix_part) for prefix_part in prefix)
+            prefix = prefix[0]
         else:
             raise TypeError(f'`prefix` can be either given as `callable`, `async-callable`, `str` or as `tuple` of '
                 f'`str`, got {prefix.__class__.__name__}.')
         
         compiled_prefix = re_compile(escaped_prefix, re_flags)
         
-        return partial_func(prefix_wrapper_regex, compiled_prefix)
+        prefix_parser = partial_func(prefix_wrapper_regex, compiled_prefix)
+        prefix_getter = partial_func(prefix_getter_static, prefix)
+    
+    return prefix_parser, prefix_getter
+
+
+def raw_name_to_display(raw_name):
+    """
+    Converts the given raw command or it's parameter's name to it's display name.
+    
+    Parameters
+    ----------
+    raw_name : `str`
+        The name to convert.
+    
+    Returns
+    -------
+    display_name : `str`
+        The converted name.
+    """
+    return '-'.join([w for w in raw_name.strip('_ ').lower().replace(' ', '-').replace('_', '-').split('-') if w])
+
 

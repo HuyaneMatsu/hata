@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY', 'GUI_STATE_SWITCHING_CTX',
-    'GUI_STATE_SWITCHING_PAGE', 'Timeouter', 'multievent', )
+__all__ = ('Timeouter', 'multievent', )
 
 from ...backend.futures import Task
 from ...backend.event_loop import LOOP_TIME
@@ -53,6 +52,7 @@ class multievent:
         for event in self.events:
             event.remove(target, waiter)
 
+
 class Timeouter:
     """
     Executes timing out feature on ``Pagination`` and on other familiar types.
@@ -60,7 +60,7 @@ class Timeouter:
     Attributes
     ----------
     handle : `None` or ``TimerHandle``
-        Handle to wake_up the timeouter with it's `.__step` function.
+        Handle to wake_up the timeouter with it's `._step` function.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     owner : `Any`
         The object what uses the timeouter.
@@ -69,6 +69,7 @@ class Timeouter:
         The time with what the timeout will be expired when it's current waiting cycle is over.
     """
     __slots__ = ('handle', 'owner', 'timeout')
+    
     def __init__(self, owner, timeout):
         """
         Creates a new ``Timeouter`` instance with the given `owner` and `timeout`.
@@ -82,10 +83,9 @@ class Timeouter:
         """
         self.owner = owner
         self.timeout = 0.0
-        self.handle = KOKORO.call_later(timeout, self.__step, self)
+        self.handle = KOKORO.call_later(timeout, type(self)._step, self)
     
-    @staticmethod
-    def __step(self):
+    def _step(self):
         """
         Executes a timeouter cycle.
         
@@ -94,7 +94,7 @@ class Timeouter:
         """
         timeout = self.timeout
         if timeout > 0.0:
-            self.handle = KOKORO.call_later(timeout, self.__step, self)
+            self.handle = KOKORO.call_later(timeout, type(self)._step, self)
             self.timeout = 0.0
             return
         
@@ -105,12 +105,7 @@ class Timeouter:
         
         self.owner = None
         
-        canceller = owner.canceller
-        if canceller is None:
-            return
-        
-        owner.canceller = None
-        Task(canceller(owner, TimeoutError()), KOKORO)
+        owner.cancel(TimeoutError())
     
     def cancel(self):
         """
@@ -147,7 +142,7 @@ class Timeouter:
         planed_end = now+value
         if planed_end < next_step:
             handle.cancel()
-            self.handle = KOKORO.call_at(planed_end, self.__step, self)
+            self.handle = KOKORO.call_at(planed_end, type(self)._step, self)
             return
         
         self.timeout = planed_end-next_step
@@ -167,9 +162,3 @@ class Timeouter:
             return 0.0
         
         return handle.when-LOOP_TIME()+self.timeout
-
-GUI_STATE_READY = 0
-GUI_STATE_SWITCHING_PAGE = 1
-GUI_STATE_CANCELLING = 2
-GUI_STATE_CANCELLED = 3
-GUI_STATE_SWITCHING_CTX = 4

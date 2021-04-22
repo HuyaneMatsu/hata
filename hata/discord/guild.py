@@ -371,13 +371,13 @@ class GuildWidget(DiscordEntity):
         return self._data.get('instant_invite', None)
     
     @property
-    def online_count(self):
+    def approximate_online_count(self):
         """
         Estimated online count of the respective guild.
         
         Returns
         -------
-        online_count : `int`
+        approximate_online_count : `int`
         """
         return self._data['presence_count']
     
@@ -492,6 +492,9 @@ def create_partial_guild(data):
     guild.widget_channel = None
     guild.widget_enabled = False
     guild.nsfw = False
+    guild.approximate_online_count = 0
+    guild.approximate_user_count = 0
+    guild.user_count = 1
     
     if len(data) < restricted_data_limit:
         guild.name = ''
@@ -546,6 +549,10 @@ class Guild(DiscordEntity, immortal=True):
         The afk channel of the guild if it has.
     afk_timeout : `int`
         The afk timeout at the `afk_channel`. Can be `60`, `300`, `900`, `1800`, `3600` in seconds.
+    approximate_online_count : `int`
+        The approximate amount of online users at the respective guild. Set as `0` if not yet requested.
+    approximate_user_count : `int`
+        The approximate amount of users at the respective guild. Set as `0` if not yet requested.
     available : `bool`
         Whether the guild is available.
     banner_hash : `int`
@@ -643,12 +650,13 @@ class Guild(DiscordEntity, immortal=True):
     - ``.widget_channel``
     - ``.widget_enabled``
     """
-    __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'available', 'booster_count', 'channels',
-        'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large', 'max_presences', 'max_users',
-        'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw', 'owner_id', 'preferred_locale',
-        'premium_tier', 'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel',
-        'system_channel_flags', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'webhooks',
-        'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
+    __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'approximate_online_count',
+        'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
+        'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
+        'message_notification', 'mfa', 'name', 'nsfw', 'owner_id', 'preferred_locale', 'premium_tier',
+        'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel', 'system_channel_flags',
+        'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'webhooks', 'webhooks_up_to_date',
+        'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner', module_urls.guild_banner_url, module_urls.guild_banner_url_as)
     icon = IconSlot('icon', 'icon', module_urls.guild_icon_url, module_urls.guild_icon_url_as)
@@ -675,37 +683,48 @@ class Guild(DiscordEntity, immortal=True):
         guild_id = int(data['id'])
         
         try:
-            guild = GUILDS[guild_id]
-            update = (not guild.clients)
+            self = GUILDS[guild_id]
+            update = (not self.clients)
         except KeyError:
-            guild = object.__new__(cls)
-            GUILDS[guild_id] = guild
-            guild.id = guild_id
+            self = object.__new__(cls)
+            GUILDS[guild_id] = self
+            self.id = guild_id
             
-            guild.clients = []
-            guild.users = {}
-            guild.emojis = {}
-            guild.voice_states = {}
-            guild.roles = {}
-            guild.channels = {}
-            guild.features = []
-            guild.webhooks = {}
-            guild.webhooks_up_to_date = False
-            guild._cache_perm = None
-            guild._boosters = None
+            self.clients = []
+            self.users = {}
+            self.emojis = {}
+            self.voice_states = {}
+            self.roles = {}
+            self.channels = {}
+            self.features = []
+            self.webhooks = {}
+            self.webhooks_up_to_date = False
+            self._cache_perm = None
+            self._boosters = None
+            self.user_count = 1
+            self.approximate_online_count = 0
+            self.approximate_user_count = 0
             
             update = True
         
-        guild.available = (not data.get('unavailable', False))
+        self.available = (not data.get('unavailable', False))
         
         if update:
-            guild.user_count = data.get('member_count', 1)
-            guild.booster_count = -1
+            try:
+                user_count = data['member_count']
+            except KeyError:
+                pass
+            else:
+                self.user_count = user_count
+            
+            self.booster_count = -1
             
             try:
-                guild.is_large = data['large']
+                is_large = data['large']
             except KeyError:
-                guild.is_large = (guild.user_count>=LARGE_LIMIT)
+                is_large = (self.user_count >= LARGE_LIMIT)
+            
+            self.is_large = is_large
             
             try:
                 role_datas = data['roles']
@@ -713,16 +732,16 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for role_data in role_datas:
-                    Role(role_data, guild)
+                    Role(role_data, self)
             
             try:
                 emoji_datas = data['emojis']
             except KeyError:
                 pass
             else:
-                emojis = guild.emojis
+                emojis = self.emojis
                 for emoji_data in emoji_datas:
-                    emoji = Emoji(emoji_data, guild)
+                    emoji = Emoji(emoji_data, self)
                     emojis[emoji.id] = emoji
             
             try:
@@ -734,14 +753,14 @@ class Guild(DiscordEntity, immortal=True):
                 for channel_data in channel_datas:
                     channel_type = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)
                     if channel_type is ChannelCategory:
-                        channel_type(channel_data, client, guild)
+                        channel_type(channel_data, client, self)
                     else:
                         later.append((channel_type, channel_data),)
                 
                 for channel_type, channel_data in later:
-                    channel_type(channel_data, client, guild)
+                    channel_type(channel_data, client, self)
             
-            guild._update_no_return(data)
+            self._update_no_return(data)
             
             if CACHE_PRESENCE:
                 try:
@@ -750,7 +769,7 @@ class Guild(DiscordEntity, immortal=True):
                     pass
                 else:
                     for user_data in user_datas:
-                        User(user_data, guild)
+                        User(user_data, self)
                 
                 # If user caching is disabled, then presence caching is too.
                 try:
@@ -758,7 +777,7 @@ class Guild(DiscordEntity, immortal=True):
                 except KeyError:
                     pass
                 else:
-                    guild._apply_presences(presence_data)
+                    self._apply_presences(presence_data)
             
             try:
                 voice_state_datas = data['voice_states']
@@ -767,15 +786,15 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 for voice_state_data in voice_state_datas:
                     user = create_partial_user(int(voice_state_data['user_id']))
-                    if user.id in guild.voice_states:
+                    if user.id in self.voice_states:
                         continue
                     
                     channel_id = voice_state_data.get('channel_id', None)
                     if channel_id is None:
                         continue
-                    channel = guild.channels[int(channel_id)]
+                    channel = self.channels[int(channel_id)]
                     
-                    guild.voice_states[user.id] = VoiceState(voice_state_data, channel)
+                    self.voice_states[user.id] = VoiceState(voice_state_data, channel)
         
         if (not CACHE_PRESENCE):
             #we get information about the client here
@@ -785,18 +804,19 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for user_data in user_datas:
-                    User._bypass_no_cache(user_data, guild)
+                    User._bypass_no_cache(user_data, self)
         
-        if client not in guild.clients:
+        if client not in self.clients:
             try:
-                ghost_state = guild.voice_states[client.id]
+                ghost_state = self.voice_states[client.id]
             except KeyError:
                 pass
             else:
                 Task(VoiceClient._kill_ghost(client, ghost_state.channel), KOKORO)
-            guild.clients.append(client)
+            
+            self.clients.append(client)
         
-        return guild
+        return self
     
     @classmethod
     def precreate(cls, guild_id, **kwargs):
@@ -925,66 +945,69 @@ class Guild(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            guild = GUILDS[guild_id]
+            self = GUILDS[guild_id]
         except KeyError:
-            guild = object.__new__(cls)
-            guild._boosters = None
-            guild._cache_perm = None
-            guild.afk_channel = None
-            guild.afk_timeout = 0
-            guild.channels = {}
-            guild.roles = {}
-            guild.available = False
-            guild.banner_hash = 0
-            guild.banner_type = ICON_TYPE_NONE
-            guild.booster_count = -1
-            guild.clients = []
-            guild.content_filter = ContentFilterLevel.disabled
-            guild.description = None
-            guild.discovery_splash_hash = 0
-            guild.discovery_splash_type = ICON_TYPE_NONE
-            guild.emojis = {}
-            guild.features = []
-            guild.icon_hash = 0
-            guild.icon_type = ICON_TYPE_NONE
-            guild.id = guild_id
-            guild.is_large = False
-            guild.max_presences = 25000
-            guild.max_users = 250000
-            guild.max_video_channel_users = 25
-            guild.message_notification = MessageNotificationLevel.only_mentions
-            guild.mfa = MFA.none
-            guild.name = ''
-            guild.owner_id = 0
-            guild.preferred_locale = DEFAULT_LOCALE
-            guild.premium_tier = 0
-            guild.public_updates_channel = None
-            guild.region = VoiceRegion.eu_central
-            guild.rules_channel = None
-            guild.invite_splash_hash = 0
-            guild.invite_splash_type = ICON_TYPE_NONE
-            guild.system_channel = None
-            guild.system_channel_flags = SystemChannelFlag.NONE
-            guild.user_count = 1
-            guild.users = {}
-            guild.vanity_code = None
-            guild.verification_level = VerificationLevel.none
-            guild.voice_states = {}
-            guild.webhooks = {}
-            guild.webhooks_up_to_date = False
-            guild.widget_channel = None
-            guild.widget_enabled = False
-            guild.nsfw = False
-            GUILDS[guild_id] = guild
+            self = object.__new__(cls)
+            self._boosters = None
+            self._cache_perm = None
+            self.afk_channel = None
+            self.afk_timeout = 0
+            self.channels = {}
+            self.roles = {}
+            self.available = False
+            self.banner_hash = 0
+            self.banner_type = ICON_TYPE_NONE
+            self.booster_count = -1
+            self.clients = []
+            self.content_filter = ContentFilterLevel.disabled
+            self.description = None
+            self.discovery_splash_hash = 0
+            self.discovery_splash_type = ICON_TYPE_NONE
+            self.emojis = {}
+            self.features = []
+            self.icon_hash = 0
+            self.icon_type = ICON_TYPE_NONE
+            self.id = guild_id
+            self.is_large = False
+            self.max_presences = 25000
+            self.max_users = 250000
+            self.max_video_channel_users = 25
+            self.message_notification = MessageNotificationLevel.only_mentions
+            self.mfa = MFA.none
+            self.name = ''
+            self.owner_id = 0
+            self.preferred_locale = DEFAULT_LOCALE
+            self.premium_tier = 0
+            self.public_updates_channel = None
+            self.region = VoiceRegion.eu_central
+            self.rules_channel = None
+            self.invite_splash_hash = 0
+            self.invite_splash_type = ICON_TYPE_NONE
+            self.system_channel = None
+            self.system_channel_flags = SystemChannelFlag.NONE
+            self.approximate_user_count = 1
+            self.users = {}
+            self.vanity_code = None
+            self.verification_level = VerificationLevel.none
+            self.voice_states = {}
+            self.webhooks = {}
+            self.webhooks_up_to_date = False
+            self.widget_channel = None
+            self.widget_enabled = False
+            self.nsfw = False
+            self.user_count = 0
+            self.approximate_online_count = 0
+            self.approximate_user_count = 0
+            GUILDS[guild_id] = self
         else:
-            if guild.clients:
-                return guild
+            if self.clients:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(guild, *item)
+                setattr(self, *item)
         
-        return guild
+        return self
     
     def __str__(self):
         """Returns the guild's name."""
@@ -1399,7 +1422,7 @@ class Guild(DiscordEntity, immortal=True):
         try:
             is_large = data['large']
         except KeyError:
-            is_large = (self.user_count >= LARGE_LIMIT)
+            is_large = (self.approximate_user_count >= LARGE_LIMIT)
         self.is_large = is_large
         
         self._update_no_return(data)
@@ -2136,7 +2159,7 @@ class Guild(DiscordEntity, immortal=True):
         #ignoring 'presence'
         #ignoring 'channels'
         #ignoring 'voice_states'
-        #ignoring 'member_count'
+        #ignoring 'user_count'
         #ignoring 'large'
         
         name = data['name']
@@ -2318,11 +2341,12 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['preferred_locale'] = self.preferred_locale
             self.preferred_locale = preferred_locale
         
-        
         nsfw = data['nsfw']
         if self.nsfw != nsfw:
             old_attributes['nsfw'] = self.nsfw
             self.nsfw = nsfw
+        
+        self.self._update_counts_only(data)
         
         return old_attributes
     
@@ -2450,6 +2474,33 @@ class Guild(DiscordEntity, immortal=True):
         self.preferred_locale = parse_preferred_locale(data)
         
         self.nsfw = data['nsfw']
+        
+        self._update_counts_only(data)
+    
+    
+    def _update_counts_only(self, data):
+        """
+        Updates the guilds's counts if given.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild data.
+        """
+        try:
+            approximate_online_count = data['approximate_presence_count']
+        except KeyError:
+            pass
+        else:
+            self.approximate_online_count = approximate_online_count
+        
+        try:
+            approximate_user_count = data['approximate_member_count']
+        except KeyError:
+            pass
+        else:
+            self.approximate_user_count = approximate_user_count
+    
     
     def _update_emojis(self, data):
         """
@@ -2756,12 +2807,12 @@ class GuildPreview(DiscordEntity):
         the guild's invite splash's type.
     name : `str`
         The name of the guild.
-    online_count : `int`
+    approximate_online_count : `int`
         Approximate amount of online users at the guild.
-    user_count : `int`
+    approximate_user_count : `int`
         Approximate amount of users at the guild.
     """
-    __slots__ = ('description', 'emojis', 'features', 'name', 'online_count', 'user_count', )
+    __slots__ = ('description', 'emojis', 'features', 'name', 'approximate_online_count', 'approximate_user_count', )
     
     icon = IconSlot('icon', 'icon', module_urls.guild_icon_url, module_urls.guild_icon_url_as)
     invite_splash = IconSlot('invite_splash', 'splash', module_urls.guild_invite_splash_url, module_urls.guild_invite_splash_url_as)
@@ -2810,11 +2861,11 @@ class GuildPreview(DiscordEntity):
         
         self.name = data['name']
         
-        self.online_count = data['approximate_presence_count']
+        self.approximate_online_count = data['approximate_presence_count']
         
         self._set_invite_splash(data)
         
-        self.user_count = data['approximate_member_count']
+        self.approximate_user_count = data['approximate_member_count']
     
     def __str__(self):
         """Returns the respective guild's name."""
@@ -2874,6 +2925,10 @@ class GuildDiscovery:
     
     Attributes
     ----------
+    application_actioned : `None` or `datetime`
+        When the guild's application was accepted or rejected.
+    application_requested : `None` or `datetime`
+        When the guild applied to guild discovery. Only set if pending.
     emoji_discovery : `bool`
         Whether guild info is shown when the respective guild's emojis are clicked.
     guild : `Guild`
@@ -2885,7 +2940,8 @@ class GuildDiscovery:
     sub_category_ids : `set` of `int`
         Guild Discovery sub-category id-s. Can be maximum 5.
     """
-    __slots__ = ('emoji_discovery', 'guild', 'keywords', 'primary_category', 'sub_categories')
+    __slots__ = ('application_actioned', 'application_requested', 'emoji_discovery', 'guild', 'keywords',
+        'primary_category', 'sub_categories')
     def __init__(self, data, guild):
         """
         Creates a new ``GuildDiscovery`` from the requested data.
@@ -2922,7 +2978,19 @@ class GuildDiscovery:
         self.keywords = keywords
         
         self.primary_category = DiscoveryCategory.from_id(data['primary_category_id'], primary=True)
-    
+        
+        application_actioned = data.get('partner_actioned_timestamp', None)
+        if (application_actioned is not None):
+            application_actioned = parse_time(application_actioned)
+        
+        self.application_actioned = application_actioned
+        
+        application_requested = data.get('partner_application_timestamp', None)
+        if (application_requested is not None):
+            application_requested = parse_time(application_requested)
+        
+        self.application_requested = application_requested
+        
     def __eq__(self, other):
         """Returns whether the two guild discoveries are the same."""
         if (type(self) is not type(other)):
@@ -2945,6 +3013,9 @@ class GuildDiscovery:
         if (self.keywords != other.keywords):
             return False
         
+        if (self.application_actioned != other.application_actioned):
+            return False
+        
         return True
     
     def __hash__(self):
@@ -2953,19 +3024,20 @@ class GuildDiscovery:
     
     def __repr__(self):
         """Returns the guild discovery's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' of guild ',
-                ]
+        ]
         
         guild = self.guild
-        result.append(repr(guild.name))
-        result.append(' (')
-        result.append(repr(guild.id))
-        result.append(')>')
+        repr_parts.append(repr(guild.name))
+        repr_parts.append(' (')
+        repr_parts.append(repr(guild.id))
+        repr_parts.append(')>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+
 
 class DiscoveryCategory(DiscordEntity, immortal=True):
     """
@@ -3196,21 +3268,21 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the discovery category's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' name=',
             repr(self.name),
             ' id=',
             repr(self.id),
-                ]
+        ]
         
         if self.primary:
-            result.append(' primary')
+            repr_parts.append(' primary')
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     general = NotImplemented
     gaming = NotImplemented

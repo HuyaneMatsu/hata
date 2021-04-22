@@ -1087,6 +1087,31 @@ class Message(DiscordEntity, immortal=True):
         
         MESSAGES[self.id] = self
     
+    
+    def _late_init(self, data):
+        """
+        Some message fields might be missing after receiving a payload. This method is called to check and set those
+        if multiple payload is received.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        """
+        if not self.content:
+            self.content = data['content']
+        
+        if (self.interaction is None):
+            interaction_data = data.get('interaction', None)
+            if (interaction_data is not None):
+                self.interaction = MessageInteraction(interaction_data)
+        
+        if (self.embeds is None):
+            embed_datas = data['embeds']
+            if embed_datas:
+                self.embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
+    
+    
     @BaseMethodDescriptor
     def custom(cls, base, validate=True, **kwargs):
         """
@@ -1171,7 +1196,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
             If called as a classmethod defaults to `None`.
-        pinned :  : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
+        pinned : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
             The ``.pinned`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
             
@@ -1190,7 +1215,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.stickers`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
-        tts :  : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
+        tts : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
             The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
             

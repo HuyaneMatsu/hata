@@ -753,7 +753,7 @@ class ActivityRich(ActivityBase):
         ----------
         name : `str`
             The name of the activity.
-        url : `str`, Optional
+        url : `None`, `str`, Optional
             The url of the activity. Only twitch and youtube urls are supported.
         type_ : `int`, Optional
             The type value of the activity.
@@ -772,7 +772,7 @@ class ActivityRich(ActivityBase):
         name = preconvert_str(name, 'name', 0, 2048)
         
         if (url is not None):
-            url = preconvert_str(name, 'url', 0, 2048)
+            url = preconvert_str(url, 'url', 0, 2048)
         
         type_ = preconvert_int(type_, 'type_', 0, 5)
         

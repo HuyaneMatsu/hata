@@ -3354,7 +3354,7 @@ class Client(ClientUserPBase):
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
-            raise TypeError(f'`message_id` can be given as  `int` instance, got {message_id.__class__.__name__}.')
+            raise TypeError(f'`message_id` can be given as `int` instance, got {message_id.__class__.__name__}.')
         
         message_data = await self.http.message_get(channel_id, message_id_value)
         
@@ -10747,7 +10747,19 @@ class Client(ClientUserPBase):
             - If `name` was not passed neither as `None` or `str` instance.
             - If `name` was passed as `str` instance, but it's length is out of range [1:32].
             - If `avatar_url` was not given as `str` instance.
+            - If `webhook` was not given as a ``Webhook`` instance.
+        
+        See Also
+        --------
+        - ``.message_create`` : Create a message with your client.
+        - ``.webhook_message_edit`` : Edit a message created by a webhook.
+        - ``.webhook_message_delete`` : Delete a message created by a webhook.
+        - ``.webhook_message_get`` : Get a message created by a webhook.
         """
+        if __debug__:
+            if not isinstance(webhook, Webhook):
+                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
+                    f'{webhoook.__class__.__name__}.')
         
         # Embed check order:
         # 1.: None
@@ -10886,6 +10898,7 @@ class Client(ClientUserPBase):
         
         return channel._create_new_message(data)
     
+    
     async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=None, allowed_mentions=...):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.
@@ -10932,13 +10945,15 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `message` was detectably not sent by the `webhook`.
+            - If `message` was detectably not sent by the `webhook`.
+            - If `webhook` was not given as ``Webhook`` instance.
         
         See Also
         --------
         - ``.message_edit`` : Edit your own messages.
         - ``.webhook_message_create`` : Create a message with a webhook.
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
+        - ``.webhook_message_get`` : Get a message created by a webhook.
         
         Notes
         -----
@@ -10946,6 +10961,10 @@ class Client(ClientUserPBase):
         
         Editing the message with empty string is broken.
         """
+        if __debug__:
+            if not isinstance(webhook, Webhook):
+                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
+                    f'{webhoook.__class__.__name__}.')
         
         # Detect message id
         # 1.: Message
@@ -11087,6 +11106,7 @@ class Client(ClientUserPBase):
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
         await self.http.webhook_message_edit(webhook, message_id, to_send)
     
+    
     async def webhook_message_delete(self, webhook, message):
         """
         Deletes the message sent by the webhook.
@@ -11098,7 +11118,7 @@ class Client(ClientUserPBase):
         webhook : ``Webhook``
             The webhook who created the message.
         message : ``Message`` or ``MessageRepr`` or `int`
-            The webhook's message to edit.
+            The webhook's message to delete.
         
         Raises
         ------
@@ -11109,14 +11129,20 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `message` was detectably not sent by the `webhook`.
+            - If `message` was detectably not sent by the `webhook`.
+            - If `webhook` was not given as ``Webhook`` instance.
         
         See Also
         --------
         - ``.message_delete`` : Delete a message.
         - ``.webhook_message_create`` : Create a message with a webhook.
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
+        - ``.webhook_message_get`` : Get a message created by a webhook.
         """
+        if __debug__:
+            if not isinstance(webhook, Webhook):
+                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
+                    f'{webhoook.__class__.__name__}.')
         
         # Detect message id
         # 1.: Message
@@ -11146,6 +11172,61 @@ class Client(ClientUserPBase):
                     f'`int` instance, got {message.__class__.__name__}`.')
         
         await self.http.webhook_message_delete(webhook, message_id)
+    
+    
+    async def webhook_message_get(self, webhook, message_id):
+        """
+        Gets a previously sent message with the webhook.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        webhook : ``Webhook``
+            The webhook who created the message.
+        message_id
+            The webhook's message's identifier to get.
+        
+        Returns
+        -------
+        message : ``Message``
+        
+        Raises
+        ------
+        TypeError
+            If `message_id` was not given as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If `webhook` was not given as ``Webhook`` instance.
+        
+        See Also
+        --------
+        - ``.message_get`` : Get a message.
+        - ``.webhook_message_create`` : Create a message with a webhook.
+        - ``.webhook_message_edit`` : Edit a message created by a webhook.
+        - ``.webhook_message_delete`` : Delete a message created by a webhook.
+        """
+        if __debug__:
+            if not isinstance(webhook, Webhook):
+                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
+                    f'{webhoook.__class__.__name__}.')
+        
+        message_id_value = maybe_snowflake(message_id)
+        if message_id_value is None:
+            raise TypeError(f'`message_id` can be given as `int` instance, got {message_id.__class__.__name__}.')
+        
+        message_data = await self.http.webhook_message_get(webhook, message_id_value)
+        
+        channel = webhook.channel
+        if channel is None:
+            channel_id = int(data['channel_id'])
+            channel = await self._maybe_get_channel(channel_id)
+        
+        return channel._create_unknown_message(message_data)
+    
     
     async def emoji_get(self, guild, emoji):
         """
@@ -14079,6 +14160,48 @@ class Client(ClientUserPBase):
         await self.http.interaction_response_message_delete(application_id, interaction.id, interaction.token)
     
     
+    async def interaction_response_message_get(self, interaction):
+        """
+        Gets the given `interaction`'s source response message.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction, what's source response message will be deleted.
+        
+        Returns
+        -------
+        message : ``Message``
+            The created message.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        message_data = await self.http.interaction_response_message_get(application_id, interaction.id,
+            interaction.token)
+        
+        return interaction.channel._create_unknown_message(message_data)
+    
+    
     async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, file=None,
             allowed_mentions=..., tts=False, show_for_invoking_user_only=False):
         """
@@ -16145,7 +16268,7 @@ class Client(ClientUserPBase):
         return gateway
     
     @classmethod
-    def _from_client(self, client):
+    def _from_client(cls, client):
         """
         Creates a client alter ego.
         

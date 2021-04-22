@@ -248,10 +248,10 @@ def _should_ignore_frame(file, name, line):
 _ignore_frame(__spec__.origin, 'result', 'raise exception', )
 _ignore_frame(__spec__.origin, 'result_no_wait', 'raise exception', )
 _ignore_frame(__spec__.origin, '__call__', 'raise exception', )
-_ignore_frame(__spec__.origin, '__step', 'result = coro.throw(exception)', )
+_ignore_frame(__spec__.origin, '_step', 'result = coro.throw(exception)', )
 _ignore_frame(__spec__.origin, '__iter__', 'yield self', )
-_ignore_frame(__spec__.origin, '__step', 'result = coro.send(None)', )
-_ignore_frame(__spec__.origin, '__wake_up', 'future.result()', )
+_ignore_frame(__spec__.origin, '_step', 'result = coro.send(None)', )
+_ignore_frame(__spec__.origin, '_wake_up', 'future.result()', )
 _ignore_frame(__spec__.origin, 'wait', 'return self.result()', )
 _ignore_frame(__spec__.origin, '__call__', 'future.result()', )
 _ignore_frame(__spec__.origin, '__aexit__', 'raise exception', )
@@ -2655,7 +2655,7 @@ class Task(Future):
         self._fut_waiter = None
         self._coro = coro
         
-        loop.call_soon(self.__step)
+        loop.call_soon(self._step)
 
         return self
     
@@ -2962,7 +2962,7 @@ class Task(Future):
     # We will not send an exception to a task, but we will cancel it.
     # The exception will show up as `._exception` tho.
     # We also wont change the state of the Task, it will be changed, when the
-    # next `.__step` is done with the cancelling.
+    # next `._step` is done with the cancelling.
     def set_exception(self, exception):
         """
         Cancels the task and sets the given exception as it's.
@@ -3039,10 +3039,26 @@ class Task(Future):
         """
         raise RuntimeError(f'{self.__class__.__name__} does not support `.clear` operation')
     
-    def __step(self, exception=None):
+    def _step(self, exception=None):
+        """
+        Does a step, by giving control to the wrapped coroutine by the task.
+        
+        If `exception` is given, then that exception will be raised to the internal coroutine, exception if the task
+        is already cancelled, because, then the exception to raise will be decided by ``._must_exception``.
+        
+        Parameters
+        ----------
+        exception : `None` or `BaseException`
+            Exception to raise into the wrapped coroutine.
+        
+        Raises
+        ------
+        InvalidStateError
+            If the task is already done.
+        """
         if self._state is not PENDING:
-            raise InvalidStateError(self, '__step', message = \
-                f'`{self.__class__.__name__}.__step` already done of {self!r}, exception={exception!r}')
+            raise InvalidStateError(self, '_step', message = \
+                f'`{self.__class__.__name__}._step` already done of {self!r}, exception={exception!r}')
         
         if self._must_cancel:
             exception = self._must_exception(exception)
@@ -3072,39 +3088,21 @@ class Task(Future):
         else:
             if isinstance(result, Future) and result._blocking:
                 result._blocking = False
-                result.add_done_callback(self.__wake_up)
+                result.add_done_callback(self._wake_up)
                 self._fut_waiter = result
                 if self._must_cancel:
                     if result.cancel():
                         self._must_cancel = False
             else:
-                self._loop.call_soon(self.__step)
+                self._loop.call_soon(self._step)
         finally:
             self._loop.current_task = None
             self = None # Need to set `self` as `None`, or `self` might never get garbage collected.
     
-    if DOCS_ENABLED:
-        __step.__doc__ = (
-        """
-        Does a step, by giving control to the wrapped coroutine by the task.
-        
-        If `exception` is given, then that exception will be raised to the internal coroutine, exception if the task
-        is already cancelled, because, then the exception to raise will be decided by ``._must_exception``.
-        
-        Parameters
-        ----------
-        exception : `None` or `BaseException`
-            Exception to raise into the wrapped coroutine.
-        
-        Raises
-        ------
-        InvalidStateError
-            If the task is already done.
-        """)
     
-    def __wake_up(self, future):
+    def _wake_up(self, future):
         """
-        Callback used by ``.__step``, when the wrapped coroutine waits on a future to be marked as done.
+        Callback used by ``._step``, when the wrapped coroutine waits on a future to be marked as done.
         
         Parameters
         ----------
@@ -3114,9 +3112,9 @@ class Task(Future):
         try:
             future.result()
         except BaseException as err:
-            self.__step(err)
+            self._step(err)
         else:
-            self.__step()
+            self._step()
         
         self = None # set self as `None`, so when exception occurs, self can be garbage collected.
     
@@ -5200,7 +5198,7 @@ class enter_executor:
                 if (local_fut_waiter is not None):
                     if local_fut_waiter is end_future:
                         end_future.set_result(None)
-                        loop.call_soon_thread_safe(task._Task__step, exception)
+                        loop.call_soon_thread_safe(task._step, exception)
                         break
                     
                     try:

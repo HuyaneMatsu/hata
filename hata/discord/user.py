@@ -388,28 +388,6 @@ class UserBase(DiscordEntity, immortal=True):
     
     avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
     
-    def __init_subclass__(cls):
-        """Replaces some methods of the subclasses depending on their instance attributes."""
-        rich = cls.__rich__
-        if 'guild_profiles' in cls.__slots__:
-            cls.color_at = rich.color_at
-            cls.name_at = rich.name_at
-            cls.has_role = rich.has_role
-            cls.top_role_at = rich.top_role_at
-            cls.can_use_emoji = rich.can_use_emoji
-            cls.has_higher_role_than = rich.has_higher_role_than
-            cls.has_higher_role_than_at = rich.has_higher_role_than_at
-        
-        if 'activities' in cls.__slots__:
-            cls.activity = rich.activity
-        
-        if 'statuses' in cls.__slots__:
-            cls.platform = rich.platform
-        
-        # webhook type
-        if hasattr(cls, 'guild'):
-            cls.can_use_emoji = rich.can_use_emoji__w_guild
-    
     def __str__(self):
         """Returns the user's name."""
         return self.name
@@ -672,6 +650,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return ActivityUnknown
     
+    
     @property
     def platform(self):
         """
@@ -682,7 +661,8 @@ class UserBase(DiscordEntity, immortal=True):
         platform : `str`
         """
         return ''
-
+    
+    
     def color_at(self, guild):
         """
         Returns the user's color at the given guild.
@@ -700,9 +680,11 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return Color()
     
+    
     def colour_at(self, guild):
         """Alias of ``.color_at``."""
         return self.color_at
+    
     
     def name_at(self, guild):
         """
@@ -720,6 +702,7 @@ class UserBase(DiscordEntity, immortal=True):
         name : `str`
         """
         return self.name
+    
     
     def mentioned_in(self, message):
         """
@@ -758,6 +741,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         return False
     
+    
     def has_role(self, role):
         """
         Returns whether the user has the given role.
@@ -772,6 +756,7 @@ class UserBase(DiscordEntity, immortal=True):
         has_role : `bool`
         """
         return False
+    
     
     def top_role_at(self, guild, default=None):
         """
@@ -793,6 +778,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return default
     
+    
     def can_use_emoji(self, emoji):
         """
         Returns whether the user can use the given emoji.
@@ -811,6 +797,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         return False
     
+    
     def has_higher_role_than(self, role):
         """
         Returns whether the user has higher role than the given role at it's respective guild.
@@ -827,6 +814,7 @@ class UserBase(DiscordEntity, immortal=True):
         has_higher_role_than : `bool`
         """
         return False
+    
     
     def has_higher_role_than_at(self, user, guild):
         """
@@ -846,313 +834,6 @@ class UserBase(DiscordEntity, immortal=True):
         has_higher_role_than_at : `bool`
         """
         return False
-    
-    class __rich__:
-        def color_at(self, guild):
-            """
-            Returns the user's color at the given guild.
-            
-            Parameters
-            ----------
-            guild : `None` or ``Guild``
-                The guild, where the user's color will be checked.
-                
-                Can be given as `None`.
-    
-            Returns
-            -------
-            color : ``Color``
-            """
-            if (guild is not None):
-                try:
-                    profile = self.guild_profiles[guild]
-                except KeyError:
-                    pass
-                else:
-                    return profile.color
-            
-            return Color()
-        
-        def name_at(self, guild):
-            """
-            Returns the user's name at the given guild.
-            
-            Parameters
-            ----------
-            guild : `None` or ``Guild``
-                The guild, where the user's nick will be checked.
-                
-                Can be given as `None`.
-    
-            Returns
-            -------
-            name : `str`
-            """
-            if (guild is not None):
-                try:
-                    profile = self.guild_profiles[guild]
-                except KeyError:
-                    pass
-                else:
-                    nick = profile.nick
-                    if nick is not None:
-                        return nick
-            
-            return self.name
-        
-        @property
-        def activity(self):
-            """
-            Returns the user's top activity if applicable. If not, returns ``ActivityUnknown``.
-            
-            Returns
-            -------
-            activity : ``ActivityBase`` instance
-            """
-            activities = self.activities
-            if activities is None:
-                activity = ActivityUnknown
-            else:
-                activity = activities[0]
-            return activity
-        
-        @property
-        def platform(self):
-            """
-            Returns the user's top status's platform. If the user is offline it will return `an empty string.
-            
-            Returns
-            -------
-            platform : `str`
-            """
-            statuses = self.statuses
-            if statuses:
-                status = self.status.value
-                for platform, l_status in statuses.items():
-                    if l_status == status:
-                        return platform
-            return ''
-        
-        def has_role(self,role):
-            """
-            Returns whether the user has the given role.
-            
-            Parameters
-            ----------
-            role : ``Role``
-                The role what will be checked.
-    
-            Returns
-            -------
-            has_role : `bool`
-            """
-            # if role is deleted, it's guild is None
-            guild = role.guild
-            if guild is None:
-                return False
-            
-            try:
-                profile = self.guild_profiles[guild]
-            except KeyError:
-                return False
-            
-            roles = profile.roles
-            if roles is None:
-                return False
-            
-            return (role in profile.roles)
-        
-        def top_role_at(self, guild, default=None):
-            """
-            Returns the top role of the user at the given guild.
-            
-            Parameters
-            ----------
-            guild : ``Guild`` or `None`
-                The guild where the user's top role will be looked up.
-                
-                Can be given as `None`.
-            default : `Any`
-                If the user is not a member of the guild, or if has no roles there, the given default value is returned.
-                Defaults to `None`.
-            
-            Returns
-            -------
-            top_role ``Role`` or `default`
-            """
-            if (guild is not None):
-                try:
-                    profile = self.guild_profiles[guild]
-                except KeyError:
-                    pass
-                else:
-                    return profile.get_top_role(default)
-            
-            return default
-        
-        def can_use_emoji(self, emoji):
-            """
-            Returns whether the user can use the given emoji.
-            
-            Parameters
-            ----------
-            emoji : ``Emoji``
-                The emoji to check.
-            
-            Returns
-            -------
-            can_use_emoji : `bool`
-            """
-            if emoji.is_unicode_emoji():
-                return True
-            
-            guild = emoji.guild
-            if guild is None:
-                return False
-            
-            try:
-                profile = self.guild_profiles[guild]
-            except KeyError:
-                return False
-            
-            emoji_roles = emoji.roles
-            if (emoji_roles is None):
-                return True
-            
-            if guild.owner_id == self.id:
-                return True
-            
-            profile_roles = profile.roles
-            if (profile_roles is None):
-                return False
-            
-            if emoji_roles.isdisjoint(profile_roles):
-                return False
-            
-            return True
-        
-        # For ``UserBase`` subclasses with `.guild` instance attribute
-        def can_use_emoji__w_guild(self, emoji):
-            """
-            Returns whether the user can use the given emoji.
-            
-            Parameters
-            ----------
-            emoji : ``Emoji``
-                The emoji to check.
-            
-            Returns
-            -------
-            can_use_emoji : `bool`
-            """
-            if emoji.is_unicode_emoji():
-                return True
-            
-            guild = emoji.guild
-            if guild is None:
-                return False
-            
-            webhook_guild = self.guild
-            if webhook_guild is None:
-                return False
-            
-            emoji_roles = emoji.emoji_roles
-            if (emoji_roles is None):
-                return True
-            
-            return False
-        
-        def has_higher_role_than(self, role):
-            """
-            Returns whether the user has higher role than the given role at it's respective guild.
-            
-            If the user is the owner of the guild, then returns `True` even if the role check fails.
-            
-            Parameters
-            ----------
-            role : ``Role``
-                The role to check.
-            
-            Returns
-            -------
-            has_higher_role_than : `bool`
-            """
-            guild = role.guild
-            if guild is None:
-                return False
-            
-            try:
-                profile = self.guild_profiles[guild]
-            except KeyError:
-                return False
-            
-            if guild.owner_id == self.id:
-                return True
-            
-            top_role = profile.get_top_role()
-            if top_role is None:
-                return False
-            
-            if top_role>role:
-                return True
-            
-            return False
-        
-        def has_higher_role_than_at(self, user, guild):
-            """
-            Returns whether the user has higher role as the other one at the given guild.
-            
-            Parameters
-            ----------
-            user : ``User``
-                The other user to check.
-            guild : ``Guild`` or `None`
-                The guild where the users' top roles will be checked.
-                
-                Can be given as `None`.
-            
-            Returns
-            -------
-            has_higher_role_than_at : `bool`
-            """
-            if (guild is None):
-                return False
-            
-            try:
-                own_profile = self.guild_profiles[guild]
-            except KeyError:
-                return False
-            
-            if guild.owner_id == self.id:
-                return True
-            
-            try:
-                other_profile = user.guild_profiles[guild]
-            except KeyError:
-                # We always have higher permissions if the other user is not in the guild or if it is a webhook.
-                # webhook_guild = getattr(user, 'guild', None)
-                # if (webhook_guild is not guild):
-                #     return True
-                #
-                # if (own_profile.roles is not None):
-                #    return True
-                return True
-            
-            if guild.owner_id == user.id:
-                return False
-            
-            own_top_role = own_profile.get_top_role()
-            if own_top_role is None:
-                return False
-            
-            other_top_role = other_profile.get_top_role()
-            if other_top_role is None:
-                return True
-            
-            if own_top_role > other_top_role:
-                return True
-            
-            return False
 
 
 class ClientUserBase(UserBase):
@@ -1198,6 +879,7 @@ class ClientUserBase(UserBase):
         self._set_avatar(data)
         
         self.flags = UserFlag(data.get('public_flags', 0))
+    
     
     def _update(self, data):
         """
@@ -1248,6 +930,7 @@ class ClientUserBase(UserBase):
             self.flags = UserFlag(flags)
         
         return old_attributes
+    
     
     @classmethod
     def _update_profile(cls, data, guild):
@@ -1300,6 +983,7 @@ class ClientUserBase(UserBase):
         profile._set_joined(data)
         return user, profile._update(data, guild)
     
+    
     @classmethod
     def _update_profile_no_return(cls, data, guild):
         """
@@ -1336,6 +1020,7 @@ class ClientUserBase(UserBase):
                 profile._update_no_return(data, guild)
         
         return user
+    
     
     @staticmethod
     def _bypass_no_cache(data, guild):
@@ -1398,6 +1083,7 @@ class ClientUserBase(UserBase):
         
         return self
     
+    
     @classmethod
     def _create_empty(cls, user_id):
         """
@@ -1416,6 +1102,7 @@ class ClientUserBase(UserBase):
         self.id = user_id
         self._set_default_attributes()
         return self
+    
     
     def _set_default_attributes(self):
         """
@@ -1463,6 +1150,7 @@ class ClientUserBase(UserBase):
         """
         return {}
     
+    
     def _update_presence_no_return(self, data):
         """
         Updates the user's presences with the given data.
@@ -1487,6 +1175,163 @@ class ClientUserBase(UserBase):
                 del guild.users[self.id]
             except KeyError:
                 pass
+    
+    
+    @copy_docs(UserBase.color_at)
+    def color_at(self, guild):
+        if (guild is not None):
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                pass
+            else:
+                return profile.color
+        
+        return Color()
+    
+    
+    @copy_docs(UserBase.name_at)
+    def name_at(self, guild):
+        if (guild is not None):
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                pass
+            else:
+                nick = profile.nick
+                if nick is not None:
+                    return nick
+        
+        return self.name
+    
+    
+    @copy_docs(UserBase.has_role)
+    def has_role(self, role):
+        # if role is deleted, it's guild is None
+        guild = role.guild
+        if guild is None:
+            return False
+        
+        try:
+            profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        roles = profile.roles
+        if roles is None:
+            return False
+        
+        return (role in profile.roles)
+    
+    
+    @copy_docs(UserBase.top_role_at)
+    def top_role_at(self, guild, default=None):
+        if (guild is not None):
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                pass
+            else:
+                return profile.get_top_role(default)
+        
+        return default
+    
+    
+    @copy_docs(UserBase.can_use_emoji)
+    def can_use_emoji(self, emoji):
+        if emoji.is_unicode_emoji():
+            return True
+        
+        guild = emoji.guild
+        if guild is None:
+            return False
+        
+        try:
+            profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        emoji_roles = emoji.roles
+        if (emoji_roles is None):
+            return True
+        
+        if guild.owner_id == self.id:
+            return True
+        
+        profile_roles = profile.roles
+        if (profile_roles is None):
+            return False
+        
+        if emoji_roles.isdisjoint(profile_roles):
+            return False
+        
+        return True
+    
+    
+    @copy_docs(UserBase.has_higher_role_than)
+    def has_higher_role_than(self, role):
+        guild = role.guild
+        if guild is None:
+            return False
+        
+        try:
+            profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        if guild.owner_id == self.id:
+            return True
+        
+        top_role = profile.get_top_role()
+        if top_role is None:
+            return False
+        
+        if top_role > role:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(UserBase.has_higher_role_than_at)
+    def has_higher_role_than_at(self, user, guild):
+        if (guild is None):
+            return False
+        
+        try:
+            own_profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        if guild.owner_id == self.id:
+            return True
+        
+        try:
+            other_profile = user.guild_profiles[guild]
+        except KeyError:
+            # We always have higher permissions if the other user is not in the guild or if it is a webhook.
+            # webhook_guild = getattr(user, 'guild', None)
+            # if (webhook_guild is not guild):
+            #     return True
+            #
+            # if (own_profile.roles is not None):
+            #    return True
+            return True
+        
+        if guild.owner_id == user.id:
+            return False
+        
+        own_top_role = own_profile.get_top_role()
+        if own_top_role is None:
+            return False
+        
+        other_top_role = other_profile.get_top_role()
+        if other_top_role is None:
+            return True
+        
+        if own_top_role > other_top_role:
+            return True
+        
+        return False
 
 
 class ClientUserPBase(ClientUserBase):
@@ -1527,7 +1372,7 @@ class ClientUserPBase(ClientUserBase):
     @classmethod
     @copy_docs(ClientUserBase._from_client)
     def _from_client(cls, client):
-        self = ClientUserBase._from_client(cls, client)
+        self = super(cls, cls)._from_client(client)
         
         activities = client.activities
         if (activities is not None):
@@ -1663,6 +1508,42 @@ class ClientUserPBase(ClientUserBase):
             new_activities = None
         
         self.activities = new_activities
+    
+    
+    @property
+    def activity(self):
+        """
+        Returns the user's top activity if applicable. If not, returns ``ActivityUnknown``.
+        
+        Returns
+        -------
+        activity : ``ActivityBase`` instance
+        """
+        activities = self.activities
+        if activities is None:
+            activity = ActivityUnknown
+        else:
+            activity = activities[0]
+        return activity
+    
+    @property
+    def platform(self):
+        """
+        Returns the user's top status's platform. If the user is offline it will return `an empty string.
+        
+        Returns
+        -------
+        platform : `str`
+        """
+        statuses = self.statuses
+        if statuses:
+            status = self.status.value
+            for platform, l_status in statuses.items():
+                if l_status == status:
+                    return platform
+        return ''
+
+
 
 if CACHE_PRESENCE:
     USER_BASE_CLASS = ClientUserPBase

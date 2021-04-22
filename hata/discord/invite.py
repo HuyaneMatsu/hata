@@ -26,6 +26,11 @@ class Invite(DiscordEntity, immortal=True):
     
     Attributes
     ---------
+    approximate_online_count : `int`
+        The approximate amount of online users at the respective guild (or group channel). If not included, then set
+        as `0`.
+    approximate_user_count : `int`
+        The approximate amount of users at the respective guild (or group channel). If not included, then set as `0`.
     channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``
         The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
         invite. If channel data was not sent with the invite's, then this attribute is set as `None`.
@@ -46,8 +51,6 @@ class Invite(DiscordEntity, immortal=True):
         How much times the invite can be used. If not included, then set as `None`.
         
         If the invite has no use limit, then this value is set as `0`.
-    online_count : `int`
-        The amount of online users at the respective guild (or group channel). If not included, then set as `0`.
     partial : `bool`
         Whether the invite is only partially loaded.
     target_type : ``InviteTargetType``
@@ -60,13 +63,12 @@ class Invite(DiscordEntity, immortal=True):
         Whether this invite only grants temporary membership.
         
         When the user goes offline, they get kicked, except if they got a role meanwhile.
-    user_count : `int`
-        The amount of users at the respective guild (or group channel). If not included, then set as `0`.
     uses : `None` or `int`
         The amount how much times the invite was used. If not included, set as `None`.
     """
-    __slots__ = ('channel', 'code', 'created_at', 'guild', 'inviter', 'max_age', 'max_uses', 'online_count', 'partial',
-        'target_application', 'target_type', 'target_user', 'temporary', 'user_count', 'uses',)
+    __slots__ = ('approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild',
+        'inviter', 'max_age', 'max_uses', 'partial', 'target_application', 'target_type', 'target_user', 'temporary',
+        'uses',)
     
     def __new__(cls, data, data_partial):
         """
@@ -140,8 +142,8 @@ class Invite(DiscordEntity, immortal=True):
         else:
             channel = create_partial_channel(channel_data, guild)
         self.channel = channel
-        self.online_count = 0
-        self.user_count = 0
+        self.approximate_online_count = 0
+        self.approximate_user_count = 0
         self.target_type = InviteTargetType.none
         self.target_user = ZEROUSER
         self.target_application = None
@@ -213,8 +215,25 @@ class Invite(DiscordEntity, immortal=True):
             channel = create_partial_channel(channel_data, guild)
         self.channel = channel
         
-        self.online_count = data.get('approximate_presence_count', 0)
-        self.user_count = data.get('approximate_member_count', 0)
+        try:
+            approximate_online_count = data['approximate_presence_count']
+        except KeyError:
+            approximate_online_count = 0
+        else:
+            if (guild is not None):
+                guild.approximate_online_count = approximate_online_count
+        
+        self.approximate_online_count = approximate_online_count
+        
+        try:
+            approximate_user_count = data['approximate_member_count']
+        except KeyError:
+            approximate_user_count = 0
+        else:
+            if (guild is not None):
+                guild.approximate_user_count = approximate_user_count
+            
+        self.approximate_user_count = approximate_user_count
         
         try:
             inviter_data = data['inviter']
@@ -299,15 +318,7 @@ class Invite(DiscordEntity, immortal=True):
             
             self.channel = channel
         
-        try:
-            self.online_count = data['approximate_presence_count']
-        except KeyError:
-            pass
-        
-        try:
-            self.user_count = data['approximate_member_count']
-        except KeyError:
-            pass
+        self._update_counts_only(data)
         
         try:
             inviter_data = data['inviter']
@@ -364,6 +375,7 @@ class Invite(DiscordEntity, immortal=True):
         else:
             self.target_application = Application(target_application_data)
         
+        
     def _update_counts_only(self, data):
         """
         Updates the invite's counts if given.
@@ -373,15 +385,25 @@ class Invite(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Received invite data.
         """
+        guild = self.guild
         try:
-            self.online_count = data['approximate_presence_count']
+            approximate_online_count = data['approximate_presence_count']
         except KeyError:
             pass
+        else:
+            self.approximate_online_count = approximate_online_count
+            if (guild is not None):
+                guild.approximate_online_count = approximate_online_count
         
         try:
-            self.user_count = data['approximate_member_count']
+            approximate_user_count = data['approximate_member_count']
         except KeyError:
             pass
+        else:
+            self.approximate_user_count = approximate_user_count
+            if (guild is not None):
+                guild.approximate_user_count = approximate_user_count
+    
     
     @classmethod
     def precreate(cls, code, **kwargs):
@@ -409,7 +431,7 @@ class Invite(DiscordEntity, immortal=True):
             The time in seconds after the invite will expire.
         max_uses : `None` or `int`, Optional (Keyword only)
             How much times the invite can be used.
-        online_count : `int`, Optional (Keyword only)
+        approximate_online_count : `int`, Optional (Keyword only)
             The amount of online users at the respective guild (or group channel).
         target_type : `int` or ``InviteTargetType``, Optional (Keyword only)
             The invite's target type.
@@ -419,7 +441,7 @@ class Invite(DiscordEntity, immortal=True):
             The target user of the invite.
         temporary : `bool`, Optional (Keyword only)
             Whether this invite only grants temporary membership.
-        user_count : `int`, Optional (Keyword only)
+        approximate_user_count : `int`, Optional (Keyword only)
             The amount of users at the respective guild (or group channel).
         uses : `None` or `int`, Optional (Keyword only)
             The amount how much times the invite was used.
@@ -476,7 +498,7 @@ class Invite(DiscordEntity, immortal=True):
                     value = instance_or_id_to_instance(value, (User, Client), key)
                     processable.append((key, value))
             
-            for key in ('online_count', 'user_count',):
+            for key in ('approximate_online_count', 'approximate_user_count',):
                 try:
                     value = kwargs.pop(key)
                 except KeyError:
@@ -522,32 +544,32 @@ class Invite(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            invite = INVITES[code]
+            self = INVITES[code]
         except KeyError:
-            invite = object.__new__(cls)
-            invite.code = code
-            invite.inviter = ZEROUSER
-            invite.uses = None
-            invite.max_age = None
-            invite.max_uses = None
-            invite.temporary = False
-            invite.created_at = DISCORD_EPOCH_START
-            invite.guild = None
-            invite.channel = None
-            invite.online_count = 0
-            invite.user_count = 0
-            invite.target_type = InviteTargetType.none
-            invite.target_user = None
-            invite.target_user = ZEROUSER
-            invite.partial = True
+            self = object.__new__(cls)
+            self.code = code
+            self.inviter = ZEROUSER
+            self.uses = None
+            self.max_age = None
+            self.max_uses = None
+            self.temporary = False
+            self.created_at = DISCORD_EPOCH_START
+            self.guild = None
+            self.channel = None
+            self.approximate_online_count = 0
+            self.approximate_user_count = 0
+            self.target_type = InviteTargetType.none
+            self.target_user = None
+            self.target_user = ZEROUSER
+            self.partial = True
             
-            INVITES[code] = invite
+            INVITES[code] = self
         else:
-            if not invite.partial:
-                return invite
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(invite, *item)
+                setattr(self, *item)
         
-        return invite
+        return self

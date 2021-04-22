@@ -67,9 +67,11 @@ class WaitAndContinue:
     
     Attributes
     -----------
-    canceller : `None` `function`
+    _canceller : `None` or `function`
         The canceller function of the ``WaitAndContinue``, what is set to ``._canceller`` by default.
         When ``.cancel`` is called, then this instance attribute is set to `None`.
+    _timeouter : ``TimeOuter``
+        Executes the ``WaitAndContinue`` timeout feature and raise `TimeoutError` to the waiter.
     check : `callable`
         The check what is called with the received parameters whenever an event is received.
     event : `async-callable`
@@ -78,10 +80,8 @@ class WaitAndContinue:
         The waiter future what's result will be set when the check returns non `False` value.
     target : ``DiscordEntity``
         The target entity on what the waiting is executed.
-    timeouter : ``TimeOuter``
-        Executes the ``WaitAndContinue`` timeout feature and raise `TimeoutError` to the waiter.
     """
-    __slots__ = ('canceller', 'check', 'event', 'future', 'target', 'timeouter', )
+    __slots__ = ('_canceller', 'check', 'event', 'future', 'target', '_timeouter', )
     def __init__(self, future, check, target, event, timeout):
         """
         Creates a new ``WaitAndContinue`` instance with the given parameters.
@@ -99,12 +99,12 @@ class WaitAndContinue:
         timeout : `float`
             The timeout after `TimeoutError` will be raised to the waiter future.
         """
-        self.canceller = self.__class__._canceller
+        self._canceller = type(self)._canceller_function
         self.future = future
         self.check = check
         self.event = event
         self.target = target
-        self.timeouter = Timeouter(self, timeout)
+        self._timeouter = Timeouter(self, timeout)
         event.append(target, self)
     
     async def __call__(self, client, *args):
@@ -140,7 +140,8 @@ class WaitAndContinue:
             self.future.set_result_if_pending(args)
             self.cancel()
     
-    async def _canceller(self, exception):
+    
+    async def _canceller_function(self, exception):
         """
         Cancels the ``WaitAndContinue`` with the given exception. If the given `exception` is `BaseException` instance,
         then raises it to the waiter future.
@@ -162,20 +163,23 @@ class WaitAndContinue:
         if not isinstance(exception, TimeoutError):
             return
         
-        timeouter = self.timeouter
+        timeouter = self._timeouter
         if (timeouter is not None):
             timeouter.cancel()
+    
     
     def cancel(self):
         """
         Cancels the ``WaitAndContinue``.
         """
-        canceller = self.canceller
+        canceller = self._canceller
         if canceller is None:
             return
         
+        self._canceller = None
+        
         self.event.remove(self.target, self)
-        timeouter = self.timeouter
+        timeouter = self._timeouter
         if (timeouter is not None):
             timeouter.cancel()
         

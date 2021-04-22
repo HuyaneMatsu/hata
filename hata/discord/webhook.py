@@ -1,7 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('Webhook', 'WebhookRepr', )
+__all__ = ('Webhook', 'WebhookBase', 'WebhookRepr', )
 
 from ..backend.export import export, include
+from ..backend.utils import copy_docs
 
 from .user import User, ZEROUSER, USERS, UserBase
 from .exceptions import DiscordException, ERROR_CODES
@@ -58,10 +59,10 @@ def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=Non
     webhook.token = token
     return webhook
 
-@export
-class Webhook(UserBase):
+
+class WebhookBase(UserBase):
     """
-    Represents a Discord webhook. At some cases it might be used as webhook's user representation.
+    Base class for webhook like-types.
     
     Attributes
     ----------
@@ -75,23 +76,11 @@ class Webhook(UserBase):
         The webhook's avatar's hash in `uint128`.
     avatar_type : `bool`
         The webhook's avatar's type.
-    application_id : `int`
-        The application's id what created the webhook. Defaults to `0` if not applicable.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
-    token : `str`
-        The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
-    type : ``WebhookType``
-        The webhook's type.
-    user : ``Client`` or ``User``
-        The creator of the webhook, or `ZEROUSER` if unknown.
-    
-    Notes
-    -----
-    Instances of this class are weakreferable.
     """
-    __slots__ = ('application_id', 'channel', 'token', 'type', 'user', ) # default webhook
-
+    __slots__ = ('channel',)
+    
     @property
     def is_bot(self):
         """
@@ -102,7 +91,8 @@ class Webhook(UserBase):
         is_bot : `bool`
         """
         return True
-
+    
+    
     @property
     def partial(self):
         """
@@ -123,6 +113,77 @@ class Webhook(UserBase):
         
         return False
     
+    
+    @property
+    def guild(self):
+        """
+        Returns the webhook's guild if applicable.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        channel = self.channel
+        if channel is None:
+            return
+        
+        return channel.guild
+    
+    
+    @copy_docs(UserBase.can_use_emoji)
+    def can_use_emoji(self, emoji):
+        if emoji.is_unicode_emoji():
+            return True
+        
+        emoji_roles = emoji.emoji_roles
+        if (emoji_roles is not None):
+            return False
+        
+        guild = self.guild
+        if guild is None:
+            return False
+        
+        default_role = guild.default_role
+        if (default_role.can_use_external_emojis):
+            return True
+        
+        return False
+
+
+@export
+class Webhook(WebhookBase):
+    """
+    Represents a Discord webhook. At some cases it might be used as webhook's user representation.
+    
+    Attributes
+    ----------
+    id : `int`
+        The webhook's unique identifier number.
+    name : str
+        The webhook's username.
+    discriminator : `int`
+        The webhook's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The webhook's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The webhook's avatar's type.
+    channel : `None` or ``ChannelText``
+        The channel, where the webhook is going to send it's messages.
+    application_id : `int`
+        The application's id what created the webhook. Defaults to `0` if not applicable.
+    token : `str`
+        The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
+    type : ``WebhookType``
+        The webhook's type.
+    user : ``Client`` or ``User``
+        The creator of the webhook, or `ZEROUSER` if unknown.
+    
+    Notes
+    -----
+    Instances of this class are weakreferable.
+    """
+    __slots__ = ('application_id', 'token', 'type', 'user', )
+    
     def __new__(cls, data):
         """
         Tries to get the webhook from the existing ones, then update it. If no webhook was found, creates a new one and
@@ -139,24 +200,24 @@ class Webhook(UserBase):
         """
         webhook_id = int(data['id'])
         try:
-            webhook = USERS[webhook_id]
+            self = USERS[webhook_id]
         except KeyError:
-            webhook = object.__new__(cls)
-            USERS[webhook_id] = webhook
-            webhook.id = webhook_id
-            webhook.token = ''
+            self = object.__new__(cls)
+            USERS[webhook_id] = self
+            self.id = webhook_id
+            self.token = ''
         
-        webhook._update_no_return(data)
-        webhook.type = WebhookType.get(data['type'])
+        self._update_no_return(data)
+        self.type = WebhookType.get(data['type'])
         
         application_id = data.get('application_id', None)
         if application_id is None:
             application_id = 0
         else:
             application_id = int(application_id)
-        webhook.application_id = application_id
+        self.application_id = application_id
         
-        return webhook
+        return self
     
     @classmethod
     def from_url(cls, url):
@@ -216,6 +277,7 @@ class Webhook(UserBase):
         else:
             user = User(user_data)
         self.user = user
+    
     
     @classmethod
     def precreate(cls, webhook_id, **kwargs):
@@ -310,45 +372,32 @@ class Webhook(UserBase):
             processable = None
         
         try:
-            webhook = USERS[webhook_id]
+            self = USERS[webhook_id]
         except KeyError:
-            webhook = object.__new__(cls)
+            self = object.__new__(cls)
             
-            webhook.id = webhook_id
-            webhook.token = ''
-            webhook.name = ''
-            webhook.discriminator = 0
-            webhook.avatar_hash = 0
-            webhook.avatar_type = ICON_TYPE_NONE
-            webhook.user = ZEROUSER
-            webhook.channel = None
-            webhook.type = WebhookType.bot
-            webhook.application_id = 0
+            self.id = webhook_id
+            self.token = ''
+            self.name = ''
+            self.discriminator = 0
+            self.avatar_hash = 0
+            self.avatar_type = ICON_TYPE_NONE
+            self.user = ZEROUSER
+            self.channel = None
+            self.type = WebhookType.bot
+            self.application_id = 0
             
-            USERS[webhook_id] = webhook
+            USERS[webhook_id] = self
         else:
-            if not webhook.partial:
-                return webhook
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(webhook, *item)
+                setattr(self, *item)
         
-        return webhook
-
-    @property
-    def guild(self):
-        """
-        Returns the webhook's guild if applicable.
-        
-        Returns
-        -------
-        guild : `None` or ``Guild``
-        """
-        channel = self.channel
-        if channel is None:
-            return
-        return channel.guild
+        return self
+    
     
     def _delete(self):
         """
@@ -441,7 +490,7 @@ class Webhook(UserBase):
 
 
 @export
-class WebhookRepr(UserBase):
+class WebhookRepr(WebhookBase):
     """
     Represents a Discord webhook's user representation.
     
@@ -466,7 +515,7 @@ class WebhookRepr(UserBase):
     -----
     Instances of the type support weakreferencing.
     """
-    __slots__ = ('type', 'channel')
+    __slots__ = ('type', )
     
     def __init__(self, data, webhook_id, type_, channel):
         """
@@ -500,36 +549,3 @@ class WebhookRepr(UserBase):
         webhook : ``Webhook``
         """
         return create_partial_webhook(self.id, '', self.type, self.channel)
-    
-    @property
-    def partial(self):
-        """
-        Webhook representations are not partial.
-        
-        Returns
-        -------
-        partial : `bool`
-        """
-        return False
-    
-    @property
-    def is_bot(self):
-        """
-        Webhook representations are always bot.
-        
-        Returns
-        -------
-        is_bot : `bool`
-        """
-        return True
-    
-    @property
-    def guild(self):
-        """
-        Returns the webhook representation's guild if applicable.
-        
-        Returns
-        -------
-        guild : ``Guild`` or `None`
-        """
-        return self.channel.guild

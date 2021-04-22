@@ -2,19 +2,23 @@
 from ...discord.parsers import asynclist, DEFAULT_EVENT_HANDLER, EventWaitforBase
 from ...discord.client import Client
 
+from .bases import *
 from .choose_menu import *
 from .closer import *
 from .pagination import *
+from .user_menu import *
 from .utils import *
 from .waiters import *
 
 __all__ = (
     'setup_ext_command_utils',
+    *bases.__all__,
     *choose_menu.__all__,
     *closer.__all__,
     *pagination.__all__,
     *utils.__all__,
     *waiters.__all__,
+    *user_menu.__all__,
 )
 
 def setup_ext_command_utils(client):

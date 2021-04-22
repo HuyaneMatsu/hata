@@ -816,6 +816,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook.id),
             METHOD_DELETE, f'{webhook.url}/messages/{message_id}', headers=imultidict())
     
+    async def webhook_message_get(self, webhook, message_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_get, webhook.id),
+            METHOD_GET, f'{webhook.url}/messages/{message_id}', headers=imultidict())
+    
     # user
     
     async def user_get(self, user_id):
@@ -1027,6 +1031,10 @@ class DiscordHTTPClient(HTTPClient):
     async def interaction_response_message_delete(self, application_id, interaction_id, interaction_token):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.interaction_response_message_delete, interaction_id),
             METHOD_DELETE, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/@original')
+    
+    async def interaction_response_message_get(self, application_id, interaction_id, interaction_token):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.interaction_response_message_get, interaction_id),
+            METHOD_GET, f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/@original')
     
     async def interaction_followup_message_create(self, application_id, interaction_id, interaction_token, data):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.interaction_followup_message_create, interaction_id),

@@ -1,8 +1,68 @@
 #### 1.1.68  *\[2021-04-??\]*
 
+##### Public API:
+
+- Add `Client.webhook_message_get`.
+- Add `Client.interaction_response_message_get`.
+- Add `GuildFeature.discoverable_disabled`.
+- Add `GuildDiscovery.application_actioned`.
+- Add `GuildDiscovery.application_requested`.
+- Add `Guild.approximate_user_count`. (sleep-cult#3040)
+- Add `Guild.approximate_online_count`. (sleep-cult#3040)
+- Add `PaginationBase` base class for pagination-like objects.
+- Add `PaginationBase.is_active`. (Zeref Draganeel#3524)
+- Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Zeref Draganeel#3524)
+
+##### Internal:
+
+- Add `webhook` tpe assertion to `Client.webhook_message_create`.
+- Add `webhook` tpe assertion to `Client.webhook_message_edit`.
+- Add `webhook` tpe assertion to `Client.webhook_message_delete`.
+- Add `RATE_LIMIT_GROUPS.webhook_message_get`.
+- Add `DiscordHTTPClient.webhook_message_get`.
+- Add `RATE_LIMIT_GROUPS.interaction_response_message_get`.
+- Add `DiscordHTTPClient.interaction_response_message_get`.
+- Rename `GuildFeature.enabled_discoverable_before` to `discoverable_enabled_before`.
+- Rename `GuildPreview.online_count` to `.approximate_online_count`.
+- Rename `GuildPreview.user_count` to `.approximate_user_count`.
+- Rename `Invite.online_count` to `.approximate_online_count`.
+- Rename `Invite.user_count` to `.approximate_user_count`.
+- Rename `GuildWidget.online_count` to `.approximate_online_count`.
+- Rename `Guild.member_count` to `.user_count`.
+- `create_partial_guild` was not setting `.user_count`.
+- `Guild.precreate` was not setting `.user_count`.
+- Add `Guild._update_counts_only`.
+- Move out `UserBase.__rich__` methods.
+- Add `WebhookBase` class. (base class for webhook likes).
+- Fix an inheritance error in `ClientUserPBase.from_client`.
+- Rename `Pagination._canceller` to `._canceller_function`.
+- Rename `Closer._canceller` to `._canceller_function`.
+- Rename `ChooseMenu._canceller` to `._canceller_function`.
+- Rename `Pagination.canceller` to `._canceller`.
+- Rename `Closer.canceller` to `._canceller`.
+- Rename `ChooseMenu.canceller` to `._canceller`.
+- Rename `Pagination.task_flag` to `._task_flag`.
+- Rename `Closer.task_flag` to `._task_flag`.
+- Rename `ChooseMenu.task_flag` to `._task_flag`.
+- Rename `Pagination.timeouter` to `._timeouter`.
+- Rename `Closer.timeouter` to `._timeouter`.
+- Rename `ChooseMenu.timeouter` to `._timeouter`.
+- Rename `WaitAndContinue._canceller` to `._canceller_function`
+- Rename `WaitAndContinue.timeouter` to `._timeouter`.
+- Rename `Pagiantion.page` to `.page_index`.
+- `ActivityRich.__new__` was not picking up `url` correctly. (Zeref Draganeel#3524)
+- Rename `Timeouter.__step` to `._step`.
+- Rename `Task.__step` to `._step`.
+- Rename `Task.__wake_up` to `._wake_up`.
+- `ChooseMenu.__new__` 's `timeout`, `message`, `prefix`, `check` are now keyword only parameters.
+- `Pagination.__new__`'s `timeout`, `message`, `check` are now keyword only parameters.
+- `Closer.__new__`'s `timeout`, `message`, `check` are now keyword only parameters.
+- Discord might not include `message.interaction` every time, so handle it.
+- Discord might not include `message.content` every time, so handle it.
+- Add `Message._late_init`.
+- Discord might not include `message.embeds` every time, so handle it.
 
 #### 1.1.67  *\[2021-04-20\]*
-
 
 ##### Public API:
 
@@ -21,7 +81,7 @@
 ##### Internal:
 
 - Add `video_quality_mode` transformer to audit logs.
-- Up `Client.guild_create` for staff to 200.
+- Update `Client.guild_create` for staff to 200.
 - Add `DiscordHTTPClient.discovery_stage_get_all`.
 - Add `RATE_LIMIT_GROUPS.discovery_stage_get_all`.
 - Add `DiscordHTTPClient.stage_get_all`.
@@ -31,13 +91,14 @@
 - Add `RATE_LIMIT_GROUPS.stage_edit`.
 - Add `DiscordHTTPClient.stage_edit`.
 - Fix a bad `include` call in `guild.py`.
-- Add `DiscordHTTPClient.discovery_guild_get_all`.
+- Add `DiscordHTTPClient.discovery_guild_get_all`.partner_application_timestamp 
 - Add `RATE_LIMIT_GROUPS.discovery_guild_get_all`.
 - Add `RATE_LIMIT_GROUPS.GROUP_PERMISSION_OVERWRITE_MODIFY`.
 - Update `RATE_LIMIT_GROUPS.permission_overwrite_delete`.
 - Update `RATE_LIMIT_GROUPS.permission_overwrite_create`.
 - Add `RATE_LIMIT_GROUPS.stage_delete`.
 - Add `DiscordHTTPClient.stage_delete`.
+- Add `ERROR_CODES.unknown_stage`.
 
 #### 1.1.66  *\[2021-04-15\]*
 

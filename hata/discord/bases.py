@@ -259,7 +259,6 @@ class FlagEnabler:
     
     def __call__(self):
         instance = self.instance
-        shift = self.shift
         return int.__new__(type(instance), (instance|(1<<self.shift)))
 
 class FlagEnableDescriptor(FlagGetDescriptor):
@@ -998,8 +997,8 @@ class IconType(PreinstancedBase):
     static = NotImplemented
     animated = NotImplemented
 
-IconType.none = ICON_TYPE_NONE = IconType(0, 'none'    )
-IconType.static = ICON_TYPE_STATIC = IconType(1, 'static'  )
+IconType.none = ICON_TYPE_NONE = IconType(0, 'none')
+IconType.static = ICON_TYPE_STATIC = IconType(1, 'static')
 IconType.animated = ICON_TYPE_ANIMATED = IconType(2, 'animated')
 
 
@@ -1058,7 +1057,11 @@ class Icon:
                 hash_value = 0
             else:
                 icon_hash = self.hash
-                hash_value = (icon_hash>>96)^((icon_hash>>64)&((1<<32)-1))^((icon_hash>>32)&((1<<32)-1))^(icon_hash&((1<<32)-1))
+                hash_value = (icon_hash>>96)^ \
+                             ((icon_hash>>64)&((1<<32)-1))^ \
+                             ((icon_hash>>32)&((1<<32)-1))^ \
+                             (icon_hash&((1<<32)-1))
+                
                 if icon_type is ICON_TYPE_ANIMATED:
                     hash_value ^= ((1<<32)-1)
             

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ChooseMenu', )
 
-from ...backend.futures import Task
-from ...discord.client_core import KOKORO
+from ...backend.futures import CancelledError
+from ...backend.utils import copy_docs
 from ...discord.emoji import BUILTIN_EMOJIS
 from ...discord.parsers import InteractionEvent
 from ...discord.message import Message
@@ -10,11 +10,12 @@ from ...discord.channel import ChannelTextBase
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import Embed
 
-from .utils import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_CANCELLED, \
-    GUI_STATE_SWITCHING_CTX, Timeouter
+from .bases import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_SWITCHING_CTX, \
+    GUI_STATE_VALUE_TO_NAME, PaginationBase
+from .utils import Timeouter
 
 
-class ChooseMenu:
+class ChooseMenu(PaginationBase):
     """
     Familiar to ``Pagination``, but instead of just displaying multiple pages of text, it allows the user to select
     a displayed option.
@@ -26,11 +27,41 @@ class ChooseMenu:
     
     Attributes
     ----------
-    canceller : `None` or `function`
+    _canceller : `None` or `function`
         The function called when the ``ChooseMenu`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
+    
+    _task_flag : `int`
+        A flag to store the state of the ``ChooseMenu``.
+        
+        Possible values:
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | Respective name           | Value | Description                                                           |
+        +===========================+=======+=======================================================================+
+        | GUI_STATE_READY           | 0     | The ChooseMenu does nothing, is ready to be used.                     |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_PAGE  | 1     | The ChooseMenu is currently changing it's page.                       |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLING      | 2     | The ChooseMenu is currently changing it's page, but it was cancelled  |
+        |                           |       | meanwhile.                                                            |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_CANCELLED       | 3     | The ChooseMenu is, or is being cancelled right now.                   |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+        | GUI_STATE_SWITCHING_CTX   | 4     | The ChooseMenu is switching context. Not used by the default class,   |
+        |                           |       | but expected.                                                         |
+        +---------------------------+-------+-----------------------------------------------------------------------+
+    
+    _timeouter : `None` or ``Timeouter``
+        Executes the timing out feature on the ``ChooseMenu``.
+    
     channel : ``ChannelTextBase`` instance
         The channel where the ``ChooseMenu`` is executed.
+    
+    client : ``Client``
+        The client who executes the ``ChooseMenu``.
+    message : `None` or ``Message``
+        The message on what the ``ChooseMenu`` is executed.
+    
     check : `None` or `callable`
         A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
         `None`.
@@ -51,15 +82,13 @@ class ChooseMenu:
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    client : ``Client``
-        The client who executes the ``ChooseMenu``.
     embed : ``EmbedBase`` instance
         An embed base, what's description and footer will be rendered with the given choices and with information
         about the respective page.
-    message : `None` or ``Message``
-        The message on what the ``ChooseMenu`` is executed.
+
     selected : `int`
         The currently selected option of the ``ChooseMenu``.
+    
     choices : `indexable` of `Any`
         An indexable container, what stores the displayable choices.
         
@@ -76,31 +105,12 @@ class ChooseMenu:
             will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple` option,
             then it's element will be passed to the respective function.
     
-    task_flag : `int`
-        A flag to store the state of the ``ChooseMenu``.
-        
-        Possible values:
-        +---------------------------+-------+-----------------------------------------------------------------------+
-        | Respective name           | Value | Description                                                           |
-        +===========================+=======+=======================================================================+
-        | GUI_STATE_READY           | 0     | The ChooseMenu does nothing, is ready to be used.                     |
-        +---------------------------+-------+-----------------------------------------------------------------------+
-        | GUI_STATE_SWITCHING_PAGE  | 1     | The ChooseMenu is currently changing it's page.                       |
-        +---------------------------+-------+-----------------------------------------------------------------------+
-        | GUI_STATE_CANCELLING      | 2     | The ChooseMenu is currently changing it's page, but it was cancelled  |
-        |                           |       | meanwhile.                                                            |
-        +---------------------------+-------+-----------------------------------------------------------------------+
-        | GUI_STATE_CANCELLED       | 3     | The ChooseMenu is, or is being cancelled right now.                   |
-        +---------------------------+-------+-----------------------------------------------------------------------+
-        | GUI_STATE_SWITCHING_CTX   | 4     | The ChooseMenu is switching context. Not used by the default class,   |
-        |                           |       | but expected.                                                         |
-        +---------------------------+-------+-----------------------------------------------------------------------+
     timeout : `float`
         The timeout of the ``ChooseMenu`` in seconds.
-    timeouter : `None` or ``Timeouter``
-        Executes the timing out feature on the ``ChooseMenu``.
+    
     prefix : `None` or `str`
         A prefix displayed before each option.
+    
     selector : `async-callable`
         An `async-callable`, what is ensured when an option is selected.
         
@@ -151,11 +161,10 @@ class ChooseMenu:
     EMOJIS_RESTRICTED = (UP, DOWN, SELECT, CANCEL)
     EMOJIS = (UP, DOWN, LEFT, RIGHT, SELECT, CANCEL)
     
-    __slots__ = ('canceller', 'channel', 'check', 'client', 'embed', 'message', 'selected', 'choices', 'task_flag',
-        'timeout', 'timeouter', 'prefix', 'selector')
+    __slots__ = ('check', 'embed', 'selected', 'choices', 'timeout', 'prefix', 'selector')
     
-    async def __new__(cls, client, channel, choices, selector, embed=Embed(), timeout=240., message=None, prefix=None,
-            check=None):
+    async def __new__(cls, client, channel, choices, selector, embed=Embed(), *, timeout=240., message=None,
+            prefix=None, check=None):
         """
         Creates a new choose menu with the given parameters.
         
@@ -207,17 +216,17 @@ class ChooseMenu:
             The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
             `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
             object will be passed.
-        embed : ``Embed`` (or any compatible)
+        embed : ``EmbedBase``
             An embed base, what's description and footer will be rendered with the given choices and with information
             about the respective page. Defaults to an empty ``Embed`` instance.
-        timeout : `float`, Optional
+        timeout : `float`, Optional (Keyword only)
             The timeout of the ``ChooseMenu`` in seconds. Defaults to `240.0`.
-        message : `None` or ``Message``, Optional
+        message : `None` or ``Message``, Optional (Keyword only)
             The message on what the ``ChooseMenu`` will be executed. If not given a new message will be created.
             Defaults to `None`.
-        prefix : `None` or `str`, Optional
+        prefix : `None` or `str`, Optional (Keyword only)
             A prefix displayed before each option. Defaults to `None`.
-        check : `None` or `callable`, Optional
+        check : `None` or `callable`, Optional (Keyword only)
             A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
             `None`.
             
@@ -236,7 +245,7 @@ class ChooseMenu:
             +===================+===========+
             | should_process    | `bool`    |
             +-------------------+-----------+
-            
+        
         Returns
         -------
         self : `None` or ``ChooseMenu``
@@ -283,11 +292,11 @@ class ChooseMenu:
         self.choices = choices
         self.selector = selector
         self.selected = 0
-        self.canceller = cls._canceller
-        self.task_flag = GUI_STATE_READY
+        self._canceller = cls._canceller_function
+        self._task_flag = GUI_STATE_READY
         self.message = message
         self.timeout = timeout
-        self.timeouter = None
+        self._timeouter = None
         self.prefix = prefix
         self.embed = embed
         
@@ -303,13 +312,8 @@ class ChooseMenu:
                 self.message = message
             else:
                 await client.message_edit(message, embed=self._render_embed())
-            
-            if not target_channel.cached_permissions_for(client).can_add_reactions:
-                return self
-            
-            for emoji in (self.EMOJIS if (len(choices) > 10) else self.EMOJIS_RESTRICTED):
-                await client.reaction_add(message, emoji)
         except BaseException as err:
+            self.cancel(err)
             if isinstance(err, ConnectionError):
                 return self
             
@@ -326,10 +330,37 @@ class ChooseMenu:
             
             raise
         
-        self.timeouter = Timeouter(self, timeout=timeout)
+            
+        if not target_channel.cached_permissions_for(client).can_add_reactions:
+            self.cancel(PermissionError())
+            return self
+        
+        
+        try:
+            for emoji in (self.EMOJIS if (len(choices) > 10) else self.EMOJIS_RESTRICTED):
+                await client.reaction_add(message, emoji)
+        except BaseException as err:
+            self.cancel(err)
+            if isinstance(err, ConnectionError):
+                return self
+            
+            if isinstance(err, DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                        ERROR_CODES.invalid_access, # client removed
+                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ):
+                    return self
+            
+            raise
+        
+        self._timeouter = Timeouter(self, timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
+    
     
     def _render_embed(self):
         """
@@ -407,19 +438,8 @@ class ChooseMenu:
         embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected+1}')
         return embed
     
+    @copy_docs(PaginationBase.__call__)
     async def __call__(self, client, event):
-        """
-        Called when a reaction is added or removed from the respective message.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client who executes the ``ChooseMenu``
-        event : ``ReactionAddEvent``, ``ReactionDeleteEvent``
-            The received event.
-        """
         if event.user.is_bot:
             return
         
@@ -441,11 +461,11 @@ class ChooseMenu:
             if not should_continue:
                 return
         
-        task_flag = self.task_flag
+        task_flag = self._task_flag
         if task_flag != GUI_STATE_READY:
             if task_flag == GUI_STATE_SWITCHING_PAGE:
                 if event.emoji is self.CANCEL:
-                    self.task_flag = GUI_STATE_CANCELLING
+                    self._task_flag = GUI_STATE_CANCELLING
                 return
             
             # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
@@ -472,33 +492,11 @@ class ChooseMenu:
                 break
             
             if emoji is self.CANCEL:
-                self.task_flag = GUI_STATE_CANCELLED
-                try:
-                    await client.message_delete(message)
-                except BaseException as err:
-                    self.cancel()
-                    
-                    if isinstance(err, ConnectionError):
-                        # no internet
-                        return
-                    
-                    if isinstance(err, DiscordException):
-                        if err.code in (
-                                ERROR_CODES.unknown_channel, # message's channel deleted
-                                ERROR_CODES.unknown_message, # message deleted
-                                ERROR_CODES.invalid_access, # client removed
-                                    ):
-                            return
-                    
-                    await client.events.error(client, f'{self!r}.__call__', err)
-                    return
-                
-                else:
-                    self.cancel()
-                    return
+                self.cancel(CancelledError())
+                return
             
             if emoji is self.SELECT:
-                self.task_flag = GUI_STATE_SWITCHING_CTX
+                self._task_flag = GUI_STATE_SWITCHING_CTX
                 self.cancel()
                 
                 try:
@@ -509,6 +507,7 @@ class ChooseMenu:
                         for emoji in self.EMOJIS:
                             await client.reaction_delete_own(message, emoji)
                 except BaseException as err:
+                    self.cancel(err)
                     if isinstance(err, ConnectionError):
                         # no internet
                         return
@@ -549,12 +548,11 @@ class ChooseMenu:
             return
         
         self.selected = selected
-        self.task_flag = GUI_STATE_SWITCHING_PAGE
+        self._task_flag = GUI_STATE_SWITCHING_PAGE
         try:
             await client.message_edit(message, embed=self._render_embed())
         except BaseException as err:
-            self.task_flag = GUI_STATE_CANCELLED
-            self.cancel()
+            self.cancel(err)
             
             if isinstance(err, ConnectionError):
                 # no internet
@@ -572,144 +570,47 @@ class ChooseMenu:
             await client.events.error(client, f'{self!r}.__call__', err)
             return
         
-        if self.task_flag == GUI_STATE_CANCELLING:
-            self.task_flag = GUI_STATE_CANCELLED
-            try:
-                await client.message_delete(message)
-            except BaseException as err:
-                
-                if isinstance(err, ConnectionError):
-                    # no internet
-                    return
-                
-                if isinstance(err, DiscordException):
-                    if err.code in (
-                            ERROR_CODES.unknown_channel, # channel deleted
-                            ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.invalid_access, # client removed
-                                ):
-                        return
-                
-                await client.events.error(client, f'{self!r}.__call__', err)
-                return
-            
-            self.cancel()
+        if self._task_flag == GUI_STATE_CANCELLING:
+            self.cancel(CancelledError())
             return
         
-        self.task_flag = GUI_STATE_READY
-        self.timeouter.set_timeout(self.timeout)
-    
-    async def _canceller(self, exception,):
-        """
-        Used when the ``ChooseMenu`` is cancelled.
+        self._task_flag = GUI_STATE_READY
         
-        First of all removes the choose menu from waitfors, so it will not wait for reaction events, then sets the
-        ``.task_flag`` of the it to `GUI_STATE_CANCELLED`.
-        
-        If `exception` is given as `TimeoutError`, then removes the ``ChooseMenu``'s reactions from the respective
-        message.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        exception : `None` or ``BaseException`` instance
-            Exception to cancel the ``ChooseMenu`` with.
-        """
-        client = self.client
-        message = self.message
-        
-        client.events.reaction_add.remove(message, self)
-        client.events.reaction_delete.remove(message, self)
-        
-        if self.task_flag == GUI_STATE_SWITCHING_CTX:
-            # the message is not our, we should not do anything with it.
-            return
-        
-        self.task_flag = GUI_STATE_CANCELLED
-        
-        if exception is None:
-            return
-        
-        if isinstance(exception, TimeoutError):
-            if self.channel.cached_permissions_for(client).can_manage_messages:
-                try:
-                    await client.reaction_clear(message)
-                except BaseException as err:
-                    
-                    if isinstance(err, ConnectionError):
-                        # no internet
-                        return
-                    
-                    if isinstance(err, DiscordException):
-                        if err.code in (
-                                ERROR_CODES.unknown_message, # message deleted
-                                ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.invalid_access, # client removed
-                                ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                                    ):
-                            return
-                    
-                    await client.events.error(client, f'{self!r}._canceller', err)
-                    return
-            return
-        
-        timeouter = self.timeouter
+        timeouter = self._timeouter
         if (timeouter is not None):
-            timeouter.cancel()
-        # we do nothing
-    
-    def cancel(self, exception=None):
-        """
-        Cancels the choose menu, if it is not cancelled yet.
-        
-        Parameters
-        ----------
-        exception : `None` or ``BaseException`` instance, Optional
-            Exception to cancel the choose menu with. Defaults to `None`
-        """
-        canceller = self.canceller
-        if canceller is None:
-            return
-        
-        self.canceller = None
-        
-        timeouter = self.timeouter
-        if timeouter is not None:
-            timeouter.cancel()
-        
-        return Task(canceller(self, exception), KOKORO)
+            timeouter.set_timeout(self.timeout)
 
+
+    @copy_docs(PaginationBase.__repr__)
     def __repr__(self):
-        """Returns the choose menu's representation."""
-        result = [
+        repr_parts = [
             '<', self.__class__.__name__,
             ' client=', repr(self.client),
-            ', choices=', repr(len(self.choices)),
-            ', selected=', repr(self.selected),
             ', channel=', repr(self.channel),
-            ', selector=', repr(self.selector),
-                ]
+            ', state='
+        ]
+        
+        task_flag = self._task_flag
+        repr_parts.append(repr(task_flag))
+        repr_parts.append(' (')
+        
+        task_flag_name = GUI_STATE_VALUE_TO_NAME[task_flag]
+        
+        repr_parts.append(task_flag_name)
+        repr_parts.append(')')
+        
+        # Third party things go here
+        repr_parts.append(', choices=')
+        repr_parts.append(repr(len(self.choices)))
+        repr_parts.append(', selected=')
+        repr_parts.append(repr(self.selected))
+        repr_parts.append(', selector=')
+        repr_parts.append(repr(self.selector))
         
         prefix = self.prefix
         if (prefix is not None):
-            result.append(', prefix=')
-            result.append(repr(prefix))
+            repr_parts.append(', prefix=')
+            repr_parts.append(repr(prefix))
         
-        result.append(', task_flag=')
-        task_flag = self.task_flag
-        result.append(repr(task_flag))
-        result.append(' (')
-        
-        task_flag_name = (
-            'GUI_STATE_READY',
-            'GUI_STATE_SWITCHING_PAGE',
-            'GUI_STATE_CANCELLING',
-            'GUI_STATE_CANCELLED',
-            'GUI_STATE_SWITCHING_CTX',
-                )[task_flag]
-        
-        result.append(task_flag_name)
-        result.append(')>')
-        
-        return ''.join(result)
+        repr_parts.append('>')
+        return ''.join(repr_parts)

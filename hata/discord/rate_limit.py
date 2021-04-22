@@ -1713,7 +1713,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `10.0`
     
     - GROUP_WEBHOOK_EXECUTE
-        - Used by : `webhook_message_create`, `webhook_message_delete`, `webhook_message_edit`
+        - Used by : `webhook_message_create`, `webhook_message_delete`, `webhook_message_get`, `webhook_message_edit`
         - Limiter : `webhook_id`
         - Limit : `5`
         - Resets after : `2.0`
@@ -1721,7 +1721,7 @@ class RATE_LIMIT_GROUPS:
     - GROUP_INTERACTION_EXECUTE
         - Used by: `interaction_followup_message_create`, `interaction_response_message_delete`,
             `interaction_response_message_edit`, `interaction_followup_message_delete`,
-            `interaction_followup_message_edit`
+            `interaction_response_message_get`, `interaction_followup_message_edit`
         - Limiter : `interaction_id`
         - Limit : `5`
         - Resets after : `2.0`
@@ -3087,6 +3087,14 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `2.0`
     
+    - interaction_response_message_get
+        - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/@original`
+        - Method : `GET`
+        - Required auth : `N/A`
+        - Limiter : `interaction_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
     - interaction_response_message_edit
         - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/@original`
         - Method : `PATCH`
@@ -3170,6 +3178,14 @@ class RATE_LIMIT_GROUPS:
     - webhook_message_delete
         - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}`
         - Method : `DELETE`
+        - Required auth : `N/A`
+        - Limiter : `webhook_id`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
+    - webhook_message_get
+        - Endpoint : `/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}`
+        - Method : `GET`
         - Required auth : `N/A`
         - Limiter : `webhook_id`
         - Limit : `5`
@@ -3357,6 +3373,7 @@ class RATE_LIMIT_GROUPS:
     voice_region_get_all = RateLimitGroup(optimistic=True)
     interaction_followup_message_create = GROUP_INTERACTION_EXECUTE
     interaction_response_message_delete = GROUP_INTERACTION_EXECUTE
+    interaction_response_message_get = GROUP_INTERACTION_EXECUTE
     interaction_response_message_edit = GROUP_INTERACTION_EXECUTE
     interaction_followup_message_delete = GROUP_INTERACTION_EXECUTE
     interaction_followup_message_edit = GROUP_INTERACTION_EXECUTE
@@ -3368,6 +3385,7 @@ class RATE_LIMIT_GROUPS:
     webhook_edit_token = RateLimitGroup(LIMITER_WEBHOOK, optimistic=True)
     webhook_message_create = GROUP_WEBHOOK_EXECUTE
     webhook_message_edit = GROUP_WEBHOOK_EXECUTE
+    webhook_message_get = GROUP_WEBHOOK_EXECUTE
     webhook_message_delete = GROUP_WEBHOOK_EXECUTE
     
     # Alternative static versions

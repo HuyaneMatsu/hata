@@ -624,7 +624,7 @@ class ConverterSetting:
     default_type : `None` or `type`
         The default annotation type of the converter.
     requires_part : `bool`
-        Whether teh converter requires data to parse or it just produces it's result on teh fly.
+        Whether the converter requires data to parse or it just produces it's result on the fly.
     uses_flags : `bool`
         Whether the converter processes any flags.
     """
@@ -653,7 +653,7 @@ class ConverterSetting:
         alternative_types : `None` `iterable` of `type`
             A list of the alternatively accepted types.
         requires_part : `bool`
-            Whether teh converter requires data to parse or it just produces it's result on the fly.
+            Whether the converter requires data to parse or it just produces it's result on the fly.
         
         Raises
         -------
@@ -2046,7 +2046,7 @@ class CommandContentParser:
     
     def __new__(cls, func, separator, assigner):
         """
-        Creates a new ``CommandContentParser`` instance returning the parser for teh function and the function itself
+        Creates a new ``CommandContentParser`` instance returning the parser for the function and the function itself
         as well.
         
         Parameters
@@ -2061,7 +2061,7 @@ class CommandContentParser:
         self : ``CommandContentParser``
             The created parser.
         func : `async-callable`
-            The function to which teh parser is created for.
+            The function to which the parser is created for.
         
         Raises
         ------

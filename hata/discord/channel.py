@@ -829,9 +829,12 @@ class ChannelTextBase:
         message_id = int(data['id'])
         
         try:
-            return MESSAGES[message_id]
+            message = MESSAGES[message_id]
         except KeyError:
             pass
+        else:
+            message._late_init(data)
+            return message
         
         messages = self._maybe_create_queue()
         
@@ -895,6 +898,8 @@ class ChannelTextBase:
             message = object.__new__(Message)
             message.id = message_id
             message._finish_init(data, self)
+        else:
+            message._late_init(data)
         
         messages = self.messages
         if (messages is not None) and messages and (message_id > messages[-1].id):
@@ -939,6 +944,8 @@ class ChannelTextBase:
             message = object.__new__(Message)
             message.id = message_id
             message._finish_init(data, self)
+        else:
+            message._late_init(data)
         
         if chained:
             self._maybe_increase_queue_size().append(message)

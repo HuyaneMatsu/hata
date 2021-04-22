@@ -6,6 +6,8 @@ from ...backend.utils import WeakReferer
 from ...discord.parsers import route_value, InteractionEvent, check_name, Router, route_name, _EventHandlerManager
 from ...discord.preconverters import preconvert_bool
 
+from .command_helpers import raw_name_to_display
+
 def _check_maybe_route(variable_name, variable_value, route_to, validator):
     """
     Helper class of ``Command`` parameter routing.

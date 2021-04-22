@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Pagination',)
 
-from ...backend.futures import Task
-from ...discord.client_core import KOKORO
+from ...backend.utils import copy_docs
+from ...backend.futures import CancelledError
 from ...discord.emoji import BUILTIN_EMOJIS
 from ...discord.parsers import InteractionEvent
 from ...discord.message import Message
 from ...discord import ChannelTextBase
 from ...discord.exceptions import DiscordException, ERROR_CODES
 
-from .utils import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_CANCELLED, \
-    GUI_STATE_SWITCHING_CTX, Timeouter
+from .bases import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_CANCELLED, \
+    GUI_STATE_VALUE_TO_NAME, PaginationBase
+from .utils import Timeouter
 
 
-class Pagination:
+class Pagination(PaginationBase):
     """
     A builtin option to display paginated messages, allowing the users moving between the pages with arrow emojis.
     
@@ -24,40 +25,11 @@ class Pagination:
     
     Attributes
     ----------
-    canceller : `None` or `function`
+    _canceller : `None` or `function`
         The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
-    channel : ``ChannelTextBase`` instance
-        The channel where the ``Pagination`` is executed.
-    check : `None` or `callable`
-        A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
-        `None`.
-        
-        Should accept the following parameters:
-        +-----------+---------------------------------------------------+
-        | Name      | Type                                              |
-        +===========+===================================================+
-        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
-        +-----------+---------------------------------------------------+
-        
-        Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
-        
-        Should return the following values:
-        +-------------------+-----------+
-        | Name              | Type      |
-        +===================+===========+
-        | should_process    | `bool`    |
-        +-------------------+-----------+
     
-    client : ``Client`` of ``Embed`` (or any compatible)
-        The client who executes the ``Pagination``.
-    message : `None` or ``Message``
-        The message on what the ``Pagination`` is executed.
-    page : `int`
-        The current page's index.
-    pages : `indexable`
-        An indexable container, what stores the displayable ``Embed``-s.
-    task_flag : `int`
+    _task_flag : `int`
         A flag to store the state of the ``Pagination``.
         
         Possible values:
@@ -76,10 +48,47 @@ class Pagination:
         | GUI_STATE_SWITCHING_CTX   | 4     | The Pagination is switching context. Not used by the default class,   |
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
+    
+    _timeouter : `None` or ``Timeouter``
+        Executes the timing out feature on the ``Pagination``.
+    
+    channel : ``ChannelTextBase`` instance
+        The channel where the ``Pagination`` is executed.
+    
+    client : ``Client`` of ``Embed`` (or any compatible)
+        The client who executes the ``Pagination``.
+    
+    message : `None` or ``Message``
+        The message on what the ``Pagination`` is executed.
+    
+    check : `None` or `callable`
+        A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
+        `None`.
+        
+        Should accept the following parameters:
+        +-----------+---------------------------------------------------+
+        | Name      | Type                                              |
+        +===========+===================================================+
+        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        +-----------+---------------------------------------------------+
+        
+        > ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
+        
+        Should return the following values:
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
+    
+    page_index : `int`
+        The current page's index.
+    
+    pages : `indexable`
+        An indexable container, what stores the displayable contents.
+    
     timeout : `float`
         The timeout of the ``Pagination`` in seconds.
-    timeouter : `None` or ``Timeouter``
-        Executes the timing out feature on the ``Pagination``.
     
     Class Attributes
     ----------------
@@ -103,9 +112,9 @@ class Pagination:
     CANCEL = BUILTIN_EMOJIS['x']
     EMOJIS = (LEFT2, LEFT, RIGHT, RIGHT2, CANCEL,)
     
-    __slots__ = ('canceller', 'channel', 'check', 'client', 'message', 'page', 'pages', 'task_flag', 'timeout', 'timeouter')
+    __slots__ = ('check', 'page_index', 'pages', 'timeout',)
     
-    async def __new__(cls, client, channel, pages, timeout=240., message=None, check=None):
+    async def __new__(cls, client, channel, pages, *, timeout=240., message=None, check=None):
         """
         Creates a new pagination with the given parameters.
         
@@ -123,12 +132,12 @@ class Pagination:
         
         pages : `indexable-container`
             An indexable container, what stores the displayable pages.
-        timeout : `float`, Optional
+        timeout : `float`, Optional (Keyword only)
             The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
-        message : `None` or ``Message``, Optional
+        message : `None` or ``Message``, Optional (Keyword only)
             The message on what the ``Pagination`` will be executed. If not given a new message will be created.
             Defaults to `None`.
-        check : `None` or `callable`, Optional
+        check : `None` or `callable`, Optional (Keyword only)
             A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
             `None`.
             
@@ -179,12 +188,12 @@ class Pagination:
         self.client = client
         self.channel = target_channel
         self.pages = pages
-        self.page = 0
-        self.canceller = cls._canceller
-        self.task_flag = GUI_STATE_READY
+        self.page_index = 0
+        self._canceller = cls._canceller_function
+        self._task_flag = GUI_STATE_READY
         self.message = message
         self.timeout = timeout
-        self.timeouter = None
+        self._timeouter = None
         
         try:
             if message is None:
@@ -198,18 +207,37 @@ class Pagination:
                 self.message = message
             else:
                 await client.message_edit(message, pages[0])
-            
-            if not target_channel.cached_permissions_for(client).can_add_reactions:
+        except BaseException as err:
+            self.cancel(err)
+            if isinstance(err, ConnectionError):
                 return self
             
+            if isinstance(err, DiscordException):
+                if err.code in (
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.invalid_access, # client removed
+                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                            ):
+                    return self
+            
+            raise
+        
+        if not target_channel.cached_permissions_for(client).can_add_reactions:
+            await self.cancel(PermissionError())
+            return self
+        
+        try:
             if len(self.pages)>1:
                 for emoji in self.EMOJIS:
                     await client.reaction_add(message, emoji)
             else:
                 await client.reaction_add(message, self.CANCEL)
         except BaseException as err:
+            self.cancel(err)
             if isinstance(err, ConnectionError):
-                return None
+                return self
             
             if isinstance(err, DiscordException):
                 if err.code in (
@@ -218,30 +246,18 @@ class Pagination:
                         ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
                         ERROR_CODES.invalid_access, # client removed
                         ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                             ):
-                    return None
+                    return self
             
             raise
         
-        self.timeouter = Timeouter(self, timeout=timeout)
+        self._timeouter = Timeouter(self, timeout=timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
     
+    @copy_docs(PaginationBase.__call__)
     async def __call__(self, client, event):
-        """
-        Called when a reaction is added or removed from the respective message.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client who executes the ``Pagination``
-        event : ``ReactionAddEvent``, ``ReactionDeleteEvent``
-            The received event.
-        """
         if event.user.is_bot:
             return
         
@@ -263,11 +279,11 @@ class Pagination:
                 return
         
         emoji = event.emoji
-        task_flag = self.task_flag
+        task_flag = self._task_flag
         if task_flag != GUI_STATE_READY:
             if task_flag == GUI_STATE_SWITCHING_PAGE:
                 if emoji is self.CANCEL:
-                    self.task_flag = GUI_STATE_CANCELLING
+                    self._task_flag = GUI_STATE_CANCELLING
                 return
             
             # ignore GUI_STATE_CANCELLED and GUI_STATE_SWITCHING_CTX
@@ -275,19 +291,21 @@ class Pagination:
         
         while True:
             if emoji is self.LEFT:
-                page = self.page-1
+                page_index = self.page_index-1
                 break
             
             if emoji is self.RIGHT:
-                page = self.page+1
+                page_index = self.page_index+1
                 break
             
             if emoji is self.CANCEL:
-                self.task_flag = GUI_STATE_CANCELLED
+                self._task_flag = GUI_STATE_CANCELLED
+                self.cancel()
+                
                 try:
                     await client.message_delete(self.message)
                 except BaseException as err:
-                    self.cancel()
+                    self.cancel(err)
                     
                     if isinstance(err, ConnectionError):
                         # no internet
@@ -308,31 +326,30 @@ class Pagination:
                     return
             
             if emoji is self.LEFT2:
-                page = 0
+                page_index = 0
                 break
             
             if emoji is self.RIGHT2:
-                page = len(self.pages)-1
+                page_index = len(self.pages)-1
                 break
             
             return
         
-        if page < 0:
-            page = 0
-        elif page >= len(self.pages):
-            page = len(self.pages)-1
+        if page_index < 0:
+            page_index = 0
+        elif page_index >= len(self.pages):
+            page_index = len(self.pages)-1
         
-        if self.page == page:
+        if self.page_index == page_index:
             return
         
-        self.page = page
-        self.task_flag = GUI_STATE_SWITCHING_PAGE
+        self.page_index = page_index
+        self._task_flag = GUI_STATE_SWITCHING_PAGE
         
         try:
-            await client.message_edit(self.message, self.pages[page])
+            await client.message_edit(self.message, self.pages[page_index])
         except BaseException as err:
-            self.task_flag = GUI_STATE_CANCELLED
-            self.cancel()
+            self.cancel(err)
             
             if isinstance(err, ConnectionError):
                 # no internet
@@ -350,139 +367,40 @@ class Pagination:
             await client.events.error(client, f'{self!r}.__call__', err)
             return
         
-        if self.task_flag == GUI_STATE_CANCELLING:
-            self.task_flag = GUI_STATE_CANCELLED
-            self.cancel()
-            
-            try:
-                await client.message_delete(self.message)
-            except BaseException as err:
-                
-                if isinstance(err, ConnectionError):
-                    # no internet
-                    return
-                
-                if isinstance(err, DiscordException):
-                    if err.code in (
-                            ERROR_CODES.unknown_channel, #message's channel deleted
-                            ERROR_CODES.invalid_access, # client removed
-                                ):
-                        return
-                
-                await client.events.error(client, f'{self!r}.__call__', err)
-                return
-            
-            return
-            
-        self.task_flag = GUI_STATE_READY
-        self.timeouter.set_timeout(self.timeout)
-    
-    async def _canceller(self, exception):
-        """
-        Used when the ``Pagination`` is cancelled.
-        
-        First of all removes the pagination from waitfors, so it will not wait for reaction events, then sets the
-        ``.task_flag`` of the it to `GUI_STATE_CANCELLED`.
-        
-        If `exception` is given as `TimeoutError`, then removes the ``Pagination``'s reactions from the respective
-        message.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        exception : `None` or ``BaseException`` instance
-            Exception to cancel the ``Pagination`` with.
-        """
-        client = self.client
-        message = self.message
-        
-        client.events.reaction_add.remove(message, self)
-        client.events.reaction_delete.remove(message, self)
-        
-        if self.task_flag == GUI_STATE_SWITCHING_CTX:
-            # the message is not our, we should not do anything with it.
+        if self._task_flag == GUI_STATE_CANCELLING:
+            self.cancel(CancelledError())
             return
         
-        self.task_flag = GUI_STATE_CANCELLED
+        self._task_flag = GUI_STATE_READY
         
-        if exception is None:
-            return
-        
-        if isinstance(exception, TimeoutError):
-            if self.channel.cached_permissions_for(client).can_manage_messages:
-                try:
-                    await client.reaction_clear(message)
-                except BaseException as err:
-                    
-                    if isinstance(err,ConnectionError):
-                        # no internet
-                        return
-                    
-                    if isinstance(err,DiscordException):
-                        if err.code in (
-                                ERROR_CODES.unknown_message, # message deleted
-                                ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.invalid_access, # client removed
-                                ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                                    ):
-                            return
-                    
-                    await client.events.error(client, f'{self!r}._canceller', err)
-                    return
-            return
-        
-        timeouter = self.timeouter
+        timeouter = self._timeouter
         if (timeouter is not None):
-            timeouter.cancel()
-        # We do nothing.
+            timeouter.set_timeout(self.timeout)
     
-    def cancel(self, exception=None):
-        """
-        Cancels the pagination, if it is not cancelled yet.
-        
-        Parameters
-        ----------
-        exception : `None` or ``BaseException`` instance, Optional
-            Exception to cancel the pagination with. Defaults to `None`
-        """
-        canceller = self.canceller
-        if canceller is None:
-            return
-        
-        self.canceller = None
-        
-        timeouter = self.timeouter
-        if (timeouter is not None):
-            timeouter.cancel()
-        
-        return Task(canceller(self, exception), KOKORO)
     
+    @copy_docs(PaginationBase.__repr__)
     def __repr__(self):
-        """Returns the pagination's representation."""
-        result = [
+        repr_parts = [
             '<', self.__class__.__name__,
             ' client=', repr(self.client),
-            ', pages=', repr(len(self.pages)),
-            ', page=', repr(self.page),
             ', channel=', repr(self.channel),
-            ', task_flag='
-                ]
+            ', state='
+        ]
         
-        task_flag = self.task_flag
-        result.append(repr(task_flag))
-        result.append(' (')
+        task_flag = self._task_flag
+        repr_parts.append(repr(task_flag))
+        repr_parts.append(' (')
         
-        task_flag_name = (
-            'GUI_STATE_READY',
-            'GUI_STATE_SWITCHING_PAGE',
-            'GUI_STATE_CANCELLING',
-            'GUI_STATE_CANCELLED',
-            'GUI_STATE_SWITCHING_CTX',
-                )[task_flag]
+        task_flag_name = GUI_STATE_VALUE_TO_NAME[task_flag]
         
-        result.append(task_flag_name)
-        result.append(')>')
+        repr_parts.append(task_flag_name)
+        repr_parts.append(')')
         
-        return ''.join(result)
-
+        # Third party things go here
+        repr_parts.append(', pages=')
+        repr_parts.append(repr(len(self.pages)))
+        repr_parts.append(', page_index=')
+        repr_parts.append(repr(self.page_index))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)

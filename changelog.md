@@ -1,4 +1,4 @@
-#### 1.1.68  *\[2021-04-??\]*
+#### 1.1.68  *\[2021-04-23\]*
 
 ##### Public API:
 
@@ -12,6 +12,7 @@
 - Add `PaginationBase` base class for pagination-like objects.
 - Add `PaginationBase.is_active`. (Zeref Draganeel#3524)
 - Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Zeref Draganeel#3524)
+- Allow `API_VERSION` `9`. (sleep-cult#3040)
 
 ##### Internal:
 
@@ -61,6 +62,7 @@
 - Discord might not include `message.content` every time, so handle it.
 - Add `Message._late_init`.
 - Discord might not include `message.embeds` every time, so handle it.
+- Fix a typo in `Client.role_edit` causing `AssertionError`. (Zeref Draganeel#3581)
 
 #### 1.1.67  *\[2021-04-20\]*
 

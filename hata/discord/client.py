@@ -9610,7 +9610,7 @@ class Client(ClientUserPBase):
     # integrations
     
     #TODO: decide if we should store integrations at Guild objects
-    if API_VERSION == 8:
+    if API_VERSION > 7:
         async def integration_get_all(self, guild):
             """
             Requests the integrations of the given guild.
@@ -12305,7 +12305,7 @@ class Client(ClientUserPBase):
         
         if (permissions is not None):
             if __debug__:
-                if not isinstance(color, int):
+                if not isinstance(permissions, int):
                     raise AssertionError(f'`permissions` can be given as `None`, `{Permission.__name__}` or as other '
                         f'`int` instance, got {permissions.__class__.__name__}.')
             

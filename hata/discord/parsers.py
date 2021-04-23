@@ -4543,8 +4543,10 @@ class InteractionEvent(DiscordEntity, EventBase):
     guild : `None` or ``Guild`
         The from where the interaction was called from. Might be `None` if the interaction was called from a private
         channel.
-    interaction : `None` or ``ApplicationCommandInteraction``
+    interaction : `None` or ``ApplicationCommandInteraction`` or ``ComponentInteraction``
         The called interaction by it's route by the user.
+    message : `None` or ``Message``
+        The message from where the interaction was received. Applicable for message components.
     token : `str`
         Interaction's token used when responding on it.
     type : ``InteractionType``
@@ -4569,7 +4571,8 @@ class InteractionEvent(DiscordEntity, EventBase):
     The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
     invalidated immediately.
     """
-    __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'token', 'type', 'user', 'user_permissions')
+    __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'message', 'token', 'type',
+        'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -4620,6 +4623,14 @@ class InteractionEvent(DiscordEntity, EventBase):
         else:
             user_permissions = Permission(user_permissions)
         
+        try:
+            message_data = data['message']
+        except KeyError:
+            message = None
+        else:
+            message = channel._create_unknown_message(message_data)
+        
+        
         type_value = data['type']
         interaction_type = INTERACTION_TYPE_TABLE.get(type_value, None)
         if interaction_type is None:
@@ -4639,6 +4650,7 @@ class InteractionEvent(DiscordEntity, EventBase):
         self.user_permissions = user_permissions
         self._response_state = INTERACTION_EVENT_RESPONSE_STATE_NONE
         self._cached_users = cached_users
+        self.message = message
         
         if (cached_users is not None):
             for user in cached_users:
@@ -7914,6 +7926,8 @@ class EventDescriptor:
         | application       | `None` or ``MessageApplication``                                      |
         +-------------------+-----------------------------------------------------------------------+
         | attachments       | `None` or (`list` of ``Attachment``)                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | components        | `None` or (`list` of ``MessageComponent``)                            |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `str`                                                                 |
         +-------------------+-----------------------------------------------------------------------+

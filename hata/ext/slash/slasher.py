@@ -8,18 +8,18 @@ from ...backend.event_loop import EventThread
 from ...backend.utils import WeakReferer
 
 from ...discord.client_core import KOKORO
-from ...discord.parsers import EventHandlerBase, InteractionEvent, Router
+from ...discord.parsers import EventHandlerBase, InteractionEvent, Router, EventWaitforBase, asynclist
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client import Client
 from ...discord.preinstanced import InteractionType
-from ...discord.interaction import ApplicationCommand
+from ...discord.interaction import ApplicationCommand, InteractionResponseTypes
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .command import SlashCommand
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
-
+INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
     """
@@ -664,7 +664,7 @@ class CommandState:
         return command, COMMAND_STATE_IDENTIFIER_REMOVED
 
 
-class Slasher(EventHandlerBase):
+class Slasher(EventWaitforBase):
     """
     Slash command processor.
     
@@ -702,6 +702,8 @@ class Slasher(EventHandlerBase):
         A nested dictionary, which contains application command permission overwrites per guild_id and per command_id.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
+    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+        An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
     ----------------
@@ -786,20 +788,48 @@ class Slasher(EventHandlerBase):
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
-        if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND:
+        interaction_event_type = interaction_event.type
+        if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+            try:
+                command = await self._try_get_command_by_id(client, interaction_event)
+            except ConnectionError:
+                return
+            except BaseException as err:
+                await client.events.error(client, f'{self!r}.__call__', err)
+                return
+            
+            if command is not None:
+                await command(client, interaction_event)
+            
             return
         
-        try:
-            command = await self._try_get_command_by_id(client, interaction_event)
-        except ConnectionError:
+        if interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+            await self.call_waitfors(client, interaction_event)
             return
-        except BaseException as err:
-            await client.events.error(client, f'{self!r}.__call__', err)
-            return
-        
-        if command is not None:
-            await command(client, interaction_event)
     
+    async def call_waitfors(self, client, interaction_event):
+        """
+        Calls the waiting events on components input.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the interaction.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        try:
+            waiter = interaction_event[interaction_event.message]
+        except KeyError:
+            return
+        
+        await client.http.interaction_response_message_create(interaction_event.id, interaction_event.token, {'type': InteractionResponseTypes.pong})
+        
+        await waiter(client, interaction_event)
+    
+    _run_waitfors_for = NotImplemented
     
     def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
             is_default=None, delete_on_unload=None, allow_by_default=None):

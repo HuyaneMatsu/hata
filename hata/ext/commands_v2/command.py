@@ -223,7 +223,20 @@ class Command:
                 error_handlers = command_processor._error_handlers
                 if (error_handlers is not None):
                     yield from error_handlers
+    
+    
+    def _iter_names(self):
+        """
+        Iterates overt he command's names.
 
-
-
+        This method is a generator, which should be used inside of a for loop.
+        
+        Yields
+        ------
+        command_name : `str`
+        """
+        yield self.name
+        aliases = self.aliases
+        if (aliases is not None):
+            yield from aliases
 

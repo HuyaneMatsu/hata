@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Timeouter', 'multievent', )
 
-from ...backend.futures import Task
 from ...backend.event_loop import LOOP_TIME
 from ...discord.client_core import KOKORO
 

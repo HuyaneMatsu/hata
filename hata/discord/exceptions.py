@@ -332,6 +332,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | unknown_webhook_service                           | 10016     | -     |
     +---------------------------------------------------+-----------+-------+
+    | unknown_approval_form                             | 10023     | -     |
+    +---------------------------------------------------+-----------+-------+
     | unknown_ban                                       | 10026     | -     |
     +---------------------------------------------------+-----------+-------+
     | unknown_SKU                                       | 10027     | -     |
@@ -340,7 +342,7 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | unknown_entitlement                               | 10029     | -     |
     +---------------------------------------------------+-----------+-------+
-    | unknown_build                                     | 10030     | -     |
+    | unknown_team                                      | 10030     | -     |
     +---------------------------------------------------+-----------+-------+
     | unknown_lobby                                     | 10031     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -349,6 +351,8 @@ class ERROR_CODES:
     | unknown_redistributable                           | 10036     | -     |
     +---------------------------------------------------+-----------+-------+
     | unknown_gift_code                                 | 10038     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | unknown_team_member                               | 10040     | -     |
     +---------------------------------------------------+-----------+-------+
     | unknown_guild_template                            | 10057     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -379,6 +383,8 @@ class ERROR_CODES:
     | account_disabled                                  | 20013     | -     |
     +---------------------------------------------------+-----------+-------+
     | slowmode_rate_limited                             | 20016     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | team_ownership_required                           | 20018     | -     |
     +---------------------------------------------------+-----------+-------+
     | channel_following_edit_rate_limited               | 20022     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -416,6 +422,12 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | max_guild_discovery_category                      | 30030     | 5     |
     +---------------------------------------------------+-----------+-------+
+    | max_application_game_SKUs                         | 30021     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | max_teams                                         | 30023     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | max_companies                                     | 30025     | -     |
+    +---------------------------------------------------+-----------+-------+
     | max_application_commands                          | 30032     | 50    |
     +---------------------------------------------------+-----------+-------+
     | unauthorized                                      | 40001     | -     |
@@ -434,11 +446,21 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | connection_rewoked                                | 40012     | -     |
     +---------------------------------------------------+-----------+-------+
+    | user_in_team                                      | 40024     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | team_users_must_be_verified                       | 40026     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | team_invitation_accepted                          | 40027     | -     |
+    +---------------------------------------------------+-----------+-------+
     | delete_account_transfer_team_ownership            | 40028     | -     |
     +---------------------------------------------------+-----------+-------+
     | user_not_connected                                | 40032     | -     |
     +---------------------------------------------------+-----------+-------+
     | message_already_crossposted                       | 40033     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | user_identity_verification_processing             | 40035     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | user_identity_verification_succeeded              | 40036     | -     |
     +---------------------------------------------------+-----------+-------+
     | invalid_access                                    | 50001     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -506,7 +528,7 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | invalid_API_version                               | 50041     | -     |
     +---------------------------------------------------+-----------+-------+
-    | invalid_gift_redemption_exhausted                 | 50050     | -     |
+    | invalid_application_name                          | 50050     | -     |
     +---------------------------------------------------+-----------+-------+
     | invalid_gift_redemption_owned                     | 50051     | -     |
     +---------------------------------------------------+-----------+-------+
@@ -552,6 +574,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | reaction_blocked                                  | 90001     | -     |
     +---------------------------------------------------+-----------+-------+
+    | authentication_required                           | 100029    | -     |
+    +---------------------------------------------------+-----------+-------+
     | listing_already_joined                            | 120000    | -     |
     +---------------------------------------------------+-----------+-------+
     | listing_too_many_member                           | 120001    | -     |
@@ -577,15 +601,17 @@ class ERROR_CODES:
     unknown_emoji = 10014
     unknown_webhook = 10015
     unknown_webhook_service = 10016
+    unknown_approval_form = 10023
     unknown_ban = 10026
     unknown_SKU = 10027
     unknown_store_listing = 10028
     unknown_entitlement = 10029
-    unknown_build = 10030
+    unknown_team = 10030
     unknown_lobby = 10031
     unknown_branch = 10032
     unknown_redistributable = 10036
     unknown_gift_code = 10038
+    unknown_team_member = 10040
     unknown_guild_template = 10057
     unknown_discovery_category = 10059
     unknown_interaction = 10062
@@ -602,6 +628,7 @@ class ERROR_CODES:
     user_not_authorized_for_application = 20012
     account_disabled = 20013
     slowmode_rate_limited = 20016
+    team_ownership_required = 20018
     channel_following_edit_rate_limited = 20022
     under_minimum_age = 20024
     channel_send_rate_limit = 20028
@@ -619,6 +646,9 @@ class ERROR_CODES:
     max_attachments = 30015 # 10
     max_invites = 30016 # 1000
     max_animated_emoji = 30018
+    max_application_game_SKUs = 30021
+    max_teams = 30023
+    max_companies = 30025
     not_enough_guild_members = 30029
     max_guild_discovery_category = 30030 # 5
     
@@ -630,9 +660,14 @@ class ERROR_CODES:
     feature_disabled = 40006
     user_banned = 40007
     connection_rewoked = 40012
+    user_in_team = 40024
+    team_users_must_be_verified = 40026
+    team_invitation_accepted = 40027
     delete_account_transfer_team_ownership = 40028
     user_not_connected = 40032
     message_already_crossposted = 40033
+    user_identity_verification_processing = 40035
+    user_identity_verification_succeeded = 40036
     
     invalid_access = 50001
     invalid_account_type = 50002
@@ -666,7 +701,7 @@ class ERROR_CODES:
     invalid_form_body = 50035
     cannot_add_user_to_guild_where_bot_is_not = 50036
     invalid_API_version = 50041
-    invalid_gift_redemption_exhausted = 50050
+    invalid_application_name = 50050
     invalid_gift_redemption_owned = 50051
     invalid_gift_self_redemption = 50054
     invalid_message_type = 50068
@@ -694,6 +729,8 @@ class ERROR_CODES:
     relationship_invalid_discord_tag = 80004
     
     reaction_blocked = 90001
+    
+    authentication_required = 100029
     
     listing_already_joined = 120000
     listing_too_many_member = 120001

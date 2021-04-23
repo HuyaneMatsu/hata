@@ -28,6 +28,7 @@ ChannelGuildBase = include('ChannelGuildBase')
 ChannelText = include('ChannelText')
 ChannelPrivate = include('ChannelPrivate')
 ChannelGroup = include('ChannelGroup')
+Component = include('Component')
 
 class MessageFlag(FlagBase):
     """
@@ -328,19 +329,19 @@ class MessageInteraction(DiscordEntity):
     
     def __repr__(self):
         """Returns the message interaction's representation."""
-        result = ['<', self.__class__.__name__, ' id=', repr(self.id), ', type=']
+        repr_parts = ['<', self.__class__.__name__, ' id=', repr(self.id), ', type=']
         
         interaction_type = self.type
-        result.append(interaction_type.name)
-        result.append(' (')
-        result.append(repr(interaction_type.value))
-        result.append(')')
+        repr_parts.append(interaction_type.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(interaction_type.value))
+        repr_parts.append(')')
         
-        result.append(', name=')
-        result.append(repr(self.name))
-        result.append('>')
+        repr_parts.append(', name=')
+        repr_parts.append(repr(self.name))
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 
 class MessageReference:
@@ -700,6 +701,7 @@ class UnknownCrossMention(DiscordEntity):
         """
         return True
 
+
 EMBED_UPDATE_NONE = 0
 EMBED_UPDATE_SIZE_UPDATE = 1
 EMBED_UPDATE_EMBED_ADD = 2
@@ -822,6 +824,8 @@ class Message(DiscordEntity, immortal=True):
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
     channel : ``ChannelTextBase`` instance
         The channel where the message is sent.
+    components : `None` or `list` of ``Component``
+        Message components.
     content : `str`
         The message's content.
     cross_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
@@ -868,9 +872,10 @@ class Message(DiscordEntity, immortal=True):
     user_mentions : `None` or `list` of ``ClientUserBase``
         The mentioned users by the message if any.
     """
-    __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'content',
-        'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'interaction', 'nonce', 'pinned',
-        'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts', 'type', 'user_mentions',)
+    __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'components',
+        'content', 'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'interaction',
+        'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts', 'type',
+        'user_mentions',)
     
     def __new__(cls, data, channel):
         """
@@ -1040,6 +1045,13 @@ class Message(DiscordEntity, immortal=True):
             interaction = MessageInteraction(interaction_data)
         self.interaction = interaction
         
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = [Component(component_data) for component_data in component_datas]
+        self.components = components
+        
         sticker_datas = data.get('stickers', None)
         if sticker_datas is  None:
             stickers = None
@@ -1105,6 +1117,11 @@ class Message(DiscordEntity, immortal=True):
             interaction_data = data.get('interaction', None)
             if (interaction_data is not None):
                 self.interaction = MessageInteraction(interaction_data)
+        
+        if (self.components is None):
+            component_datas = data.get('components', None)
+            if (component_datas is not None) and component_datas:
+                self.components = [Component(component_data) for component_data in component_datas]
         
         if (self.embeds is None):
             embed_datas = data['embeds']
@@ -1699,6 +1716,8 @@ class Message(DiscordEntity, immortal=True):
         self.tts = tts
         self.type = type_
         self.user_mentions = user_mentions
+        self.interaction = None
+        self.components = None
         
         return self
     
@@ -1752,23 +1771,23 @@ class Message(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the representation of the message."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         if self.deleted:
-            result.append(' deleted')
+            repr_parts.append(' deleted')
         
-        result.append(' id=')
-        result.append(repr(self.id))
-        result.append(', ln=')
-        result.append(repr(len(self)))
-        result.append(', author=')
-        result.append(repr(self.author.full_name))
-        result.append('>')
+        repr_parts.append(' id=')
+        repr_parts.append(repr(self.id))
+        repr_parts.append(', ln=')
+        repr_parts.append(repr(len(self)))
+        repr_parts.append(', author=')
+        repr_parts.append(repr(self.author.full_name))
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     __str__ = __repr__
     
@@ -1859,6 +1878,8 @@ class Message(DiscordEntity, immortal=True):
         | application       | `None` or ``MessageApplication``                                      |
         +-------------------+-----------------------------------------------------------------------+
         | attachments       | `None` or (`list` of ``Attachment``)                                  |
+        +-------------------+-----------------------------------------------------------------------+
+        | components        | `None` or (`list` of ``Component``)                            |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `str                                                                  |
         +-------------------+-----------------------------------------------------------------------+
@@ -2022,6 +2043,17 @@ class Message(DiscordEntity, immortal=True):
             old_attributes['role_mentions'] = self.role_mentions
             self.role_mentions = role_mentions
         
+        
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = [Component(component_data) for component_data in component_datas]
+        
+        if self.components != components:
+            old_attributes['components'] = self.components
+            self.components = components
+        
         return old_attributes
     
     def _update_no_return(self, data):
@@ -2139,6 +2171,13 @@ class Message(DiscordEntity, immortal=True):
         
         self.role_mentions = role_mentions
         
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = [Component(component_data) for component_data in component_datas]
+        self.components = components
+    
     def _update_embed(self, data):
         """
         After getting a message, it's embeds might be updated from links, or with image, video sizes. If it happens
@@ -2225,6 +2264,7 @@ class Message(DiscordEntity, immortal=True):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
         
         return EMBED_UPDATE_EMBED_ADD
+
 
     def _update_embed_no_return(self, data):
         """

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-__all__ = ('AsyncQue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper', 'FutureSyncWrapper', 'FutureWM',
-    'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task', 'WaitContinuously', 'WaitTillAll',
-    'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout', 'is_awaitable', 'is_coroutine',
-    'is_coroutine_function', 'is_coroutine_generator', 'is_coroutine_generator_function', 'shield', 'sleep', )
+__all__ = ('AsyncLifoQueue', 'AsyncQueue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper',
+    'FutureSyncWrapper', 'FutureWM', 'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task',
+    'WaitContinuously', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout',
+    'is_awaitable', 'is_coroutine', 'is_coroutine_function', 'is_coroutine_generator',
+    'is_coroutine_generator_function', 'shield', 'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType as method, FunctionType as function, \
@@ -11,7 +12,7 @@ from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType a
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
-from .utils import alchemy_incendiary, DOCS_ENABLED, copy_func
+from .utils import alchemy_incendiary, DOCS_ENABLED, copy_func, copy_docs
 from .analyzer import CO_ASYNC_GENERATOR, CO_COROUTINE_ALL
 from .export import export, include
 
@@ -3143,11 +3144,11 @@ class Task(Future):
         self._must_cancel = False
         return exception
 
-class AsyncQue:
+class AsyncQueue:
     """
     An asynchronous FIFO queue.
     
-    `AsyncQue` is async iterable, so if you iterate over it inside of an `async for` loop do
+    ``AsyncQueue`` is async iterable, so if you iterate over it inside of an `async for` loop do
     `.set_exception(CancelledError())` to stop it without any specific exception.
     
     Attributes
@@ -3165,7 +3166,7 @@ class AsyncQue:
     __slots__ = ('_exception', '_loop', '_results', '_waiter',)
     def __new__(cls, loop, iterable=None, max_length=None, exception=None):
         """
-        Creates a new ``AsyncQue`` instance with the given parameter.
+        Creates a new ``AsyncQueue`` instance with the given parameter.
         
         Parameters
         ----------
@@ -3312,10 +3313,10 @@ class AsyncQue:
     
     def __repr__(self):
         """Returns the async queue's representation."""
-        result = [
+        repr_parts = [
             self.__class__.__name__,
             '([',
-                ]
+        ]
         
         results = self._results
         limit = len(results)
@@ -3323,37 +3324,37 @@ class AsyncQue:
             index = 0
             while True:
                 element = results[index]
-                result.append(repr(element))
+                repr_parts.append(repr(element))
                 index += 1
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
             
-        result.append(']')
+        repr_parts.append(']')
         
         max_length = results.maxlen
         if (max_length is not None):
-            result.append(', max_length=')
-            result.append(repr(max_length))
+            repr_parts.append(', max_length=')
+            repr_parts.append(repr(max_length))
         
         exception = self._exception
         if (exception is not None):
-            result.append(', exception=')
-            result.append(str(exception))
+            repr_parts.append(', exception=')
+            repr_parts.append(str(exception))
         
-        result.append(')')
-        return ''.join(result)
+        repr_parts.append(')')
+        return ''.join(repr_parts)
     
     __str__ = __repr__
     
     def __aiter__(self):
         """
-        Async iterating over an ``AsyncQue``, returns itself
+        Async iterating over an ``AsyncQueue``, returns itself
         
         Returns
         -------
-        self : ``AsyncQue``
+        self : ``AsyncQueue``
         """
         return self
     
@@ -3425,7 +3426,7 @@ class AsyncQue:
         
         Returns
         -------
-        new : ``AsyncQue``
+        new : ``AsyncQueue``
         """
         new = object.__new__(type(self))
         new._loop = self._loop
@@ -3459,6 +3460,81 @@ class AsyncQue:
             waiter = self._waiter
             if waiter is not None:
                 waiter.__silence__()
+
+
+class AsyncLifoQueue(AsyncQueue):
+    """
+    An asynchronous LIFO queue.
+    
+    ``AsyncLifoQueue`` is async iterable, so if you iterate over it inside of an `async for` loop do
+    `.set_exception(CancelledError())` to stop it without any specific exception.
+    
+    Attributes
+    ----------
+    _exception : `None` or `BaseException` instance
+        The exception set as the queue's result to raise, when the queue gets empty.
+    _loop : ``EventThread``
+        The loop to what the queue is bound to.
+    _results : `deque`
+        The results of the queue, which can be retrieved by ``.result``, ``.result_no_wait``, or by awaiting it.
+    _waiter : `None` or ``Future``
+        If the queue is empty and it's result is already waited, then this future is set. It's result is set, by the
+        first ``.set_result``, or ``.set_exception`` call.
+    """
+    __slots__ = ()
+    
+    @copy_docs(AsyncQueue.__await__)
+    def __await__(self):
+        results = self._results
+        if results:
+            return results.pop()
+        
+        exception = self._exception
+        if exception is not None:
+            raise exception
+        
+        waiter = self._waiter
+        if waiter is None:
+            waiter = Future(self._loop)
+            self._waiter = waiter
+        
+        return (yield from waiter)
+    
+    @copy_docs(AsyncQueue.result_no_wait)
+    def result_no_wait(self):
+        results = self._results
+        if results:
+            return results.pop()
+        
+        exception = self._exception
+        if exception is None:
+            raise IndexError('The queue is empty')
+        
+        raise exception
+    
+    @copy_docs(AsyncQueue.__anext__)
+    async def __anext__(self):
+        results = self._results
+        if results:
+            return results.pop()
+        
+        exception = self._exception
+        if exception is not None:
+            if type(exception) is CancelledError:
+                raise StopAsyncIteration from CancelledError
+            
+            raise exception
+        
+        waiter = self._waiter
+        if waiter is None:
+            waiter = Future(self._loop)
+            self._waiter = waiter
+        
+        try:
+            return (await waiter)
+        except CancelledError as err:
+            raise StopAsyncIteration from err
+
 
 class FGElement:
     """

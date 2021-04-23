@@ -937,26 +937,40 @@ class DiscordHTTPClient(HTTPClient):
     
     # thread
     
-    # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
+    # DiscordException Bad Request (400), code=50001: Missing Access
     async def thread_create(self, channel_id, data):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_create, channel_id),
             METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/threads', data)
     
-    # DiscordException Not Found (404): 404: Not Found
-    async def thread_user_get_all(self, channel_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get_all, channel_id),
-            METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants')
+    async def thread_join(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_join, channel_id),
+            METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me')
     
-    # DiscordException Not Found (404): 404: Not Found
-    async def thread_user_delete(self, channel_id, user_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_delete, channel_id),
-            METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants/{user_id}')
+    async def thread_leave(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_leave, channel_id),
+            METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me')
     
-    # DiscordException Not Found (404): 404: Not Found
     async def thread_user_add(self, channel_id, user_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_add, channel_id),
-            METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/threads/participants/{user_id}')
+            METHOD_POST, f'{API_ENDPOINT}/channels/{channel_id}/thread-members/{user_id}')
     
+    async def thread_user_delete(self, channel_id, user_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_delete, channel_id),
+            METHOD_DELETE, f'{API_ENDPOINT}/channels/{channel_id}/thread-members/{user_id}')
+    
+    # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
+    async def thread_settings_edit(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_settings_edit, channel_id),
+            METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me/settings')
+    
+    async def thread_get_all_archived(self, channel_id, thread_type):
+        # `thread_type` can be either `'public'` and `'private'`
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_archived, channel_id),
+            METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/{thread_type}')
+    
+    async def thread_get_all_self_archived(self, channel_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_self_archived, channel_id),
+            METHOD_GET, f'{API_ENDPOINT}/channels/{channel_id}/users/@me/threads/archived/private')
     
     # application command & interaction
     

@@ -30,7 +30,7 @@ try:
 except ImportError:
     relativedelta = None
 
-from .utils import raw_name_to_display
+from .command_helpers import raw_name_to_display
 
 NUMERIC_CONVERSION_LIMIT = 100
 

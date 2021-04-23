@@ -13904,7 +13904,6 @@ class Client(ClientUserPBase):
         
         # Mark the interaction as responded.
         
-        response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
         if deferring:
             response_state = INTERACTION_EVENT_RESPONSE_STATE_DEFERRED
         else:

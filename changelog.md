@@ -1,3 +1,52 @@
+#### 1.1.69  *\[2021-04-??\]*
+
+##### Public API:
+
+- Hata now uses api version 9. (sleep-cult#3040)
+- Add `InteractionType.message_compontent`.
+- Add `Component`.
+- Add `Message.component`.
+- Add `ComponentType`.
+- Add `ButtonStyle`.
+- Add `AsyncLifoQueue`.
+- Add `InteractionEvent.message`.
+- Add `ComponentInteraction`.
+
+##### Internal:
+
+- Rename `AsyncQue` to `AsyncQueue`.
+- `Message.custom` never set `.interaction`.
+- Add `RATE_LIMIT_GROUPS.thread_join`.
+- Add `DiscordHTTPClient.thread_join`.
+- Add `RATE_LIMIT_GROUPS.thread_leave`.
+- Add `DiscordHTTPClient.thread_leave`.
+- Add `RATE_LIMIT_GROUPS.thread_settings_edit`.
+- Add `DiscordHTTPClient.thread_settings_edit`.
+- Add `RATE_LIMIT_GROUPS.thread_get_all_archived`.
+- Add `DiscordHTTPClient.thread_get_all_archived`.
+- Add `RATE_LIMIT_GROUPS.thread_get_all_self_archived`.
+- Add `DiscordHTTPClient.thread_get_all_self_archived`.
+- Remove `DiscordHTTPClient.thread_user_get_all`
+- Remove `RATE_LIMIT_GROUPS.thread_user_get_all`
+- Update `RATE_LIMIT_GROUPS.thread_user_add`.
+- Update `DiscordHTTPClient.thread_user_add`.
+- Update `RATE_LIMIT_GROUPS.thread_user_delete`.
+- Update `DiscordHTTPClient.thread_user_delete`.
+- Add `ERROR_CODES.unknown_approval_form`.
+- Rename `ERROR_CODES.unknown_build` to `.unknown_team`.
+- Add `ERROR_CODES.unknown_team_member`.
+- Add `ERROR_CODES.team_ownership_required`.
+- Add `ERROR_CODES.max_application_game_SKUs`.
+- Add `ERROR_CODES.max_teams`.
+- Add `ERROR_CODES.max_companies`.
+- Add `ERROR_CODES.user_in_team`.
+- Add `ERROR_CODES.team_users_must_be_verified`.
+- Add `ERROR_CODES.team_invitation_accepted`.
+- Add `ERROR_CODES.user_identity_verification_processing`.
+- Add `ERROR_CODES.user_identity_verification_succeeded`.
+- Rename `ERROR_CODES.invalid_gift_redemption_exhausted` to `.invalid_application_name`.
+- Add `ERROR_CODES.authentication_required`.
+
 #### 1.1.68  *\[2021-04-23\]*
 
 ##### Public API:
@@ -8,7 +57,7 @@
 - Add `GuildDiscovery.application_actioned`.
 - Add `GuildDiscovery.application_requested`.
 - Add `Guild.approximate_user_count`. (sleep-cult#3040)
-- Add `Guild.approximate_online_count`. (sleep-cult#3040)
+- dd `Guild.approximate_online_count`. (sleep-cult#3040)
 - Add `PaginationBase` base class for pagination-like objects.
 - Add `PaginationBase.is_active`. (Zeref Draganeel#3524)
 - Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Zeref Draganeel#3524)

@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption',
     'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes',
-    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite',)
+    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', 'Component', 'ComponentInteraction')
+
+import sys
 
 from ..backend.utils import modulize
+from ..backend.export import export
 
 from .bases import DiscordEntity
-from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType
+from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType, \
+    ComponentType, ButtonStyle
 from .client_core import APPLICATION_COMMANDS, ROLES
 from .preconverters import preconvert_preinstanced_type
 from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
@@ -19,6 +23,7 @@ from .channel import create_partial_channel
 from .user import User, UserBase, ClientUserBase
 from .role import Role
 from .client_utils import maybe_snowflake
+from .emoji import create_partial_emoji
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
@@ -1947,6 +1952,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         
         return ''.join(result)
 
+
 class ApplicationCommandInteractionOption:
     """
     Represents an option of a ``ApplicationCommandInteraction``.
@@ -1998,22 +2004,22 @@ class ApplicationCommandInteractionOption:
     
     def __repr__(self):
         """Returns the application command interaction option's representation."""
-        result = [
+        repr_parts = [
             '<', self.__class__.__name__,
             ', name=', repr(self.name),
         ]
         
         type_ = self.type
         if type_ is not ApplicationCommandOptionType.none:
-            result.append('type=')
-            result.append(type_.name)
-            result.append(' (')
-            result.append(repr(type_.value))
-            result.append(')')
+            repr_parts.append('type=')
+            repr_parts.append(type_.name)
+            repr_parts.append(' (')
+            repr_parts.append(repr(type_.value))
+            repr_parts.append(')')
         
         options = self.options
         if (options is not None):
-            result.append(', options=[')
+            repr_parts.append(', options=[')
             
             index = 0
             limit = len(options)
@@ -2021,27 +2027,152 @@ class ApplicationCommandInteractionOption:
             while True:
                 option = options[index]
                 index += 1
-                result.append(repr(option))
+                repr_parts.append(repr(option))
                 
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
             
-            result.append(']')
+            repr_parts.append(']')
         
         value = self.value
         if (value is not None):
-            result.append(', value=')
-            result.append(repr(value))
+            repr_parts.append(', value=')
+            repr_parts.append(repr(value))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+
+@export
+class Component:
+    """
+    Message component?
+    
+    Attributes
+    ----------
+    components : `None` or `list` of ``Component``
+        Sub-components.
+    custom_id : `None` or `str`
+        Custom identifier to detect which button was clicked by the user.
+        
+        > Mutually exclusive with the `url` field.
+    style : ``ButtonStyle``
+        The components's style. Applicable for buttons.
+    emoji : `None` or ``Emoji``
+        Emoji of the button if applicable.
+    type : ``ComponentType``
+        The component's type.
+    url : `None` or `str`
+        Url to redirect.
+        
+        > Mutually exclusive with the `custom_id` field.
+    """
+    __slots__ = ('components', 'custom_id', 'emoji', 'style', 'type', 'url',)
+    
+    def __new__(cls, data):
+        """
+        Creates a new message component from the received data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message component data.
+        """
+        sys.stdout.write(f'DEBUG: {cls.__name__} data received: {data!r}\n\n')
+        
+        self = object.__new__(cls)
+        
+        self.type = ComponentType.get(data['type'])
+        
+        emoji_data = data.get('emoji', None)
+        if emoji_data is None:
+            emoji = None
+        else:
+            emoji = create_partial_emoji(emoji_data)
+        self.emoji = emoji
+        
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = [Component(component_data) for component_data in component_datas]
+        self.components = components
+        
+        style = data.get('style')
+        if style is None:
+            style = ButtonStyle.none
+        else:
+            style = ButtonStyle.get(style)
+        self.style = style
+        
+        self.url = data.get('url', None)
+        
+        self.custom_id = data.get('custom_id', None)
+        
+        return self
+
+    def __repr__(self):
+        """Returns the message component's representation."""
+        repr_parts = ['<', self.__class__.__name__, ' type=']
+        
+        type_ = self.type
+        repr_parts.append(type_.name)
+        repr_parts.append(' (')
+        repr_parts.append(type_.value)
+        repr_parts.append(')')
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+
+
+class ComponentInteraction:
+    """
+    A component interaction of an ``InteractionEvent``.
+    
+    Attributes
+    ----------
+    component_type : ``ComponentType``
+        The component's type.
+    custom_id : `str` or `None`
+        The component's custom identifier.
+    """
+    __slots__ = ('component_type', 'custom_id',)
+    
+    def __new__(cls, data):
+        """
+        Creates a new component interaction with the given
+        """
+        self = object.__new__(cls)
+        
+        self.custom_id = data.get('custom_id', None)
+        self.component_type = ComponentType.get(data['component_type'])
+        
+        return self
+    
+    def __repr__(self):
+        """Returns the component interaction's representation."""
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' custom_id=', repr(self.custom_id),
+            ', component_type=',
+        ]
+        component_type = self.component_type
+        repr_parts.append(component_type.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(component_type.value))
+        repr_parts.append(')')
+        
+        repr_parts.append('>')
+        
+        return repr_parts
 
 
 INTERACTION_TYPE_TABLE = {
     InteractionType.ping.value: None,
     InteractionType.application_command.value: ApplicationCommandInteraction,
+    InteractionType.message_component.value: ComponentInteraction,
         }

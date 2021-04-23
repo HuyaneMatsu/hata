@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'AuditLogEvent',
-    'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature', 'HypesquadHouse', 'InteractionType',
-    'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType', 'PremiumType',
-    'RelationshipType', 'RoleManagerType', 'StagePrivacyLevel', 'Status', 'StickerType', 'TeamMembershipState',
-    'Theme', 'VerificationLevel', 'VerificationScreenStepType', 'VideoQualityMode', 'VoiceRegion', 'WebhookType')
+__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'AuditLogEvent', 'ButtonStyle',
+    'ComponentType', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature', 'HypesquadHouse',
+    'InteractionType', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
+    'PremiumType', 'RelationshipType', 'RoleManagerType', 'StagePrivacyLevel', 'Status', 'StickerType',
+    'TeamMembershipState', 'Theme', 'VerificationLevel', 'VerificationScreenStepType', 'VideoQualityMode',
+    'VoiceRegion', 'WebhookType')
 
 from ..backend.utils import any_to_any
 from ..backend.export import export, include
@@ -2281,6 +2282,8 @@ class InteractionType(PreinstancedBase):
     +-----------------------+-----------------------+-------+
     | application_command   | application_command   | 2     |
     +-----------------------+-----------------------+-------+
+    | message_component     | message_component     | 3     |
+    +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -2291,10 +2294,12 @@ class InteractionType(PreinstancedBase):
     none = NotImplemented
     ping = NotImplemented
     application_command = NotImplemented
+    message_component = NotImplemented
 
 InteractionType.none = InteractionType(0, 'none')
 InteractionType.ping = InteractionType(1, 'ping')
 InteractionType.application_command = InteractionType(2, 'application_command')
+InteractionType.message_component = InteractionType(3, 'message_component')
 
 
 class VerificationScreenStepType(PreinstancedBase):
@@ -2467,6 +2472,7 @@ VideoQualityMode.none = VideoQualityMode(0, 'none')
 VideoQualityMode.auto = VideoQualityMode(1, 'auto')
 VideoQualityMode.full = VideoQualityMode(2, 'full')
 
+
 class StagePrivacyLevel(PreinstancedBase):
     """
     Represents a stage channel's privacy level.
@@ -2512,3 +2518,109 @@ class StagePrivacyLevel(PreinstancedBase):
 StagePrivacyLevel.none = StagePrivacyLevel(0, 'none')
 StagePrivacyLevel.public = StagePrivacyLevel(1, 'public')
 StagePrivacyLevel.guild_only = StagePrivacyLevel(2, 'guild_only')
+
+
+class ComponentType(PreinstancedBase):
+    """
+    Represents a component's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the component type.
+    value : `int`
+        The identifier value the component type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ComponentType``) items
+        Stores the predefined ``ComponentType`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The component type's type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the component types.
+    
+    Every predefined component type can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | Name          | Value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | action_row            | action_row    | 1     |
+    +-----------------------+---------------+-------+
+    | button                | button        | 2     |
+    +-----------------------+---------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = NotImplemented
+    action_row = NotImplemented
+    button = NotImplemented
+    
+ComponentType.none = ComponentType(0, 'none')
+ComponentType.action_row = ComponentType(1, 'action_row')
+ComponentType.button = ComponentType(2, 'button')
+
+
+class ButtonStyle(PreinstancedBase):
+    """
+    Represents a component's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the button style.
+    value : `int`
+        The identifier value the button style
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ButtonStyle``) items
+        Stores the predefined ``ButtonStyle`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The button style's type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the button styles.
+    
+    Every predefined button style can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | Name          | Value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | primary               | primary       | 1     |
+    +-----------------------+---------------+-------+
+    | secondary             | secondary     | 2     |
+    +-----------------------+---------------+-------+
+    | success               | success       | 3     |
+    +-----------------------+---------------+-------+
+    | destructive           | destructive   | 4     |
+    +-----------------------+---------------+-------+
+    | link                  | link          | 5     |
+    +-----------------------+---------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = NotImplemented
+    primary = NotImplemented
+    secondary = NotImplemented
+    success = NotImplemented
+    destructive = NotImplemented
+    link = NotImplemented
+    
+ButtonStyle.none = ButtonStyle(0, 'none')
+ButtonStyle.primary = ButtonStyle(1, 'primary')
+ButtonStyle.secondary = ButtonStyle(2, 'secondary')
+ButtonStyle.success = ButtonStyle(3, 'success')
+ButtonStyle.destructive = ButtonStyle(4, 'destructive')
+ButtonStyle.link = ButtonStyle(5, 'link')

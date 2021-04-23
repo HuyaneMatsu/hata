@@ -147,14 +147,14 @@ CUSTOM_API_ENDPOINT = get_str_env('HATA_API_ENDPOINT')
 CUSTOM_CDN_ENDPOINT = get_str_env('HATA_CDN_ENDPOINT')
 CUSTOM_DIS_ENDPOINT = get_str_env('HATA_DIS_ENDPOINT')
 
-API_VERSION = get_int_env('HATA_API_VERSION', 8)
+API_VERSION = get_int_env('HATA_API_VERSION', 9)
 
 if API_VERSION not in (7, 8):
     if API_VERSION < 6:
         warnings.warn(f'`API_VERSION` given with a value less than `6`, got {API_VERSION!r}, defaulting to {7!r}!')
         API_VERSION = 7
     elif API_VERSION > 9:
-        warnings.warn(f'`API_VERSION` given with a value greater than `9`, got {API_VERSION!r}, defaulting to {8!r}!')
-        API_VERSION = 8
+        warnings.warn(f'`API_VERSION` given with a value greater than `9`, got {API_VERSION!r}, defaulting to {9!r}!')
+        API_VERSION = 9
     elif API_VERSION == 6:
         warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)

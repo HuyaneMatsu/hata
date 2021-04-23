@@ -153,7 +153,7 @@ class CommandProcessor(EventWaitforBase):
     _self_reference : `None` or ``WeakReferer`` to ``CommandProcessor``
         Reference to the command processor itself.
     
-    categories_name_to_categories : `dict` of (`str`, ``CommandCategory``) items
+    category_name_to_category : `dict` of (`str`, ``CommandCategory``) items
         Category name to category relation.
     
     command_name_to_command : `dict` of (`str`, ``Command``) items
@@ -166,7 +166,7 @@ class CommandProcessor(EventWaitforBase):
     
     __slots__ = ('__weakref__', '_category_name_rule', '_command_name_rule', '_default_category',
         '_error_handlers', '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case',
-        '_prefix_parser', '_prefix_raw', '_self_reference', 'categories_name_to_categories',
+        '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category',
         'command_name_to_command')
     
     def __new__(cls, prefix, *, precheck=None, mention_prefix_enabled=True, category_name_rule=None,
@@ -242,9 +242,6 @@ class CommandProcessor(EventWaitforBase):
         else:
             default_category_name = validate_category_or_command_name(default_category_name)
         
-        if (category_name_rule is not None):
-            default_category_name = category_name_rule(default_category_name)
-        
         default_category = CommandCategory(default_category_name)
         
         if precheck is None:
@@ -273,7 +270,7 @@ class CommandProcessor(EventWaitforBase):
         self._command_name_rule = command_name_rule
         self._category_name_rule = category_name_rule
         self.command_name_to_command = {}
-        self.categories_name_to_categories = {default_category.name: default_category}
+        self.category_name_to_category = {default_category.name: default_category}
         
         self._self_reference = WeakReferer(self)
         
@@ -488,7 +485,7 @@ class CommandProcessor(EventWaitforBase):
         
         category_name = raw_name_to_display(category_name)
         
-        return self.categories_name_to_categories.get(category_name, None)
+        return self.category_name_to_category.get(category_name, None)
     
     
     def get_default_category(self):
@@ -500,5 +497,94 @@ class CommandProcessor(EventWaitforBase):
         category : ``CommandCategory``
         """
         return self._default_category
+    
+    
+    def create_category(self, category_name, *, checks=None, description=None):
+        """
+        Creates a category with the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the category.
+        checks : `None`, ``CheckBase`` instance or `list` of ``CheckBase`` instances, Optional (Keyword only)
+            Checks to define in which circumstances a command should be called.
+        description : `Any`, Optional (Keyword only)
+            Optional description for the category. Defaults to `None`.
+        
+        Returns
+        -------
+        category : ``CommandCategory``
+        
+        Raises
+        ------
+        TypeError
+            If `checks` was not given neither as `None`, ``CheckBase`` instance or as `list` of ``CheckBase``
+            instances.
+        ValueError
+            If a category already exists with the given name.
+        """
+        category_name = validate_category_or_command_name(category_name)
+        if category_name in self.category_name_to_category:
+            raise ValueError(f'There is already a category added with that name: `{category_name!r}`')
+        
+        category = CommandCategory(category_name, checks=checks, description=description)
+        self.category_name_to_category[category.name] = category
+        category.set_command_processor(self)
+        
+        return category
+    
+    
+    def delete_category(self, category):
+        """
+        Deletes the given category form the command processor.
+        
+        Parameters
+        ----------
+        category : ``CommandCategory``, `str`
+            The category or the category's name to remove.
+        
+        Raises
+        ------
+        TypeError
+            If `category` was not given neither as ``CommandCategory`` nor as `str` instance.
+        ValueError
+            - Default category cannot be deleted.
+            - If te given category is not the same as the owned one with it's name.
+        """
+        if isinstance(category, CommandCategory):
+            category_name = category.name
+        elif isinstance(category, str):
+            category_name = validate_category_or_command_name(category)
+            category = None
+        else:
+            raise TypeError(f'`category` can be given either as `{CommandCategory.__name__}` or as `str` instance, '
+                f'got {category.__class__.__name__}.')
+        
+        try:
+            owned_category = self.category_name_to_category[category_name]
+        except KeyError:
+            return
+        
+        if (category is not None) and (category is not owned_category):
+            raise ValueError(f'The given category is not the same as the owned owned one with it\'s name: got '
+                f'{category!r}; owning: {owned_category!r}.')
+        
+        
+        del self.category_name_to_category[category_name]
+        
+        command_name_to_command = self.command_name_to_command
+        
+        for command in category.command_name_to_command.values():
+            for command_name in command._iter_names():
+                try:
+                    owned_command = command_name_to_command[command_name]
+                except KeyError:
+                    pass
+                else:
+                    if owned_command is command:
+                        del command_name_to_command[command_name]
+
+
 
 

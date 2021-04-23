@@ -23,9 +23,9 @@ from subprocess import PIPE
 from ...env import BACKEND_ONLY
 from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
 from ...backend.event_loop import EventThread
-from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQue, Task as HataTask, WaitTillFirst, \
+from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, \
     WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, \
-    Event as HataEvent
+    Event as HataEvent, AsyncLifoQueue
 from ...backend.executor import Executor
 
 IS_UNIX = (sys.platform != 'win32')
@@ -780,7 +780,7 @@ def Queue(maxsize=0, *, loop=None):
     else:
         max_length = None
     
-    return AsyncQue(loop, max_length=max_length)
+    return AsyncQueue(loop, max_length=max_length)
 
 def PriorityQueue(maxsize=0, *, loop=None):
     """
@@ -792,7 +792,16 @@ def PriorityQueue(maxsize=0, *, loop=None):
 
 def LifoQueue(maxsize=0, *, loop=None):
     """A subclass of Queue that retrieves most recently added entries first."""
-    raise NotImplementedError
+    if loop is None:
+        loop = get_event_loop()
+    
+    if maxsize:
+        max_length = maxsize
+    else:
+        max_length = None
+    
+    AsyncLifoQueue(loop, max_length=max_length)
+
 
 # asyncio.runners
 # Include: run

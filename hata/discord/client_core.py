@@ -71,6 +71,7 @@ EULAS = WeakValueDictionary()
 APPLICATIONS = WeakValueDictionary()
 INVITES = WeakValueDictionary()
 APPLICATION_COMMANDS = WeakValueDictionary()
+INTERACTION_EVENT_MESSAGE_WAITERS = WeakValueDictionary()
 
 def start_clients():
     """

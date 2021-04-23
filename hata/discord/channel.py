@@ -971,6 +971,8 @@ class ChannelTextBase:
             message = MESSAGES[message_id]
         except KeyError:
             message = Message._create_unlinked(message_id, data, self)
+        else:
+            message._late_init(data)
         
         return message
     

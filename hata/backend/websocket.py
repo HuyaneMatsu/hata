@@ -10,7 +10,7 @@ from email.utils import formatdate
 from os import urandom
 
 from .utils import imultidict
-from .futures import Future, Task, AsyncQue, future_or_timeout, shield, CancelledError, WaitTillAll, is_coroutine, Lock
+from .futures import Future, Task, AsyncQueue, future_or_timeout, shield, CancelledError, WaitTillAll, is_coroutine, Lock
 from .export import include
 
 from .url import URL
@@ -96,7 +96,7 @@ class WebSocketCommonProtocol(ProtocolBase):
          Defaults to `None`.
     max_size : `int`
         Max payload size to receive. If a payload exceeds it, ``PayloadError`` is raised. Defaults to `67108864` bytes.
-    messages : ``AsyncQue``
+    messages : ``AsyncQueue``
         An asynchronous queue of the received messages.
     is_ssl : `bool`
         Whether the connection is secure. Defaults to `False`.
@@ -184,7 +184,7 @@ class WebSocketCommonProtocol(ProtocolBase):
         self.close_reason = None
         
         self.connection_lost_waiter = Future(loop)
-        self.messages = AsyncQue(loop=loop, max_length=max_queue)
+        self.messages = AsyncQueue(loop=loop, max_length=max_queue)
         
         self.pings = OrderedDict()
         
@@ -509,7 +509,7 @@ class WebSocketCommonProtocol(ProtocolBase):
     async def transfer_data(self):
         """
         The transfer data task of a websocket keeps reading it's messages and putting it into it's ``.messages``
-        ``AsyncQue``.
+        ``AsyncQueue``.
         
         Meanwhile runs, it wrapped inside of a ``Task`` and can be accessed as ``.transfer_data_task``.
         
@@ -1077,7 +1077,7 @@ class WSClient(WebSocketCommonProtocol):
          Defaults to `None`.
     max_size : `int`
         Max payload size to receive. If a payload exceeds it, ``PayloadError`` is raised. Defaults to `67108864` bytes.
-    messages : ``AsyncQue``
+    messages : ``AsyncQueue``
         An asynchronous queue of the received messages.
     is_ssl : `bool`
         Whether the connection is secure. Defaults to `False`.
@@ -1387,7 +1387,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
          Defaults to `None`.
     max_size : `int`
         Max payload size to receive. If a payload exceeds it, ``PayloadError`` is raised. Defaults to `67108864` bytes.
-    messages : ``AsyncQue``
+    messages : ``AsyncQueue``
         An asynchronous queue of the received messages.
     is_ssl : `bool`
         Whether the connection is secure. Defaults to `False`.

@@ -821,11 +821,12 @@ class Slasher(EventWaitforBase):
             The received interaction event.
         """
         try:
-            waiter = interaction_event[interaction_event.message]
+            waiter = self.waitfors[interaction_event.message]
         except KeyError:
             return
         
-        await client.http.interaction_response_message_create(interaction_event.id, interaction_event.token, {'type': InteractionResponseTypes.pong})
+        await client.http.interaction_response_message_create(interaction_event.id, interaction_event.token,
+            {'type': InteractionResponseTypes.component})
         
         await waiter(client, interaction_event)
     

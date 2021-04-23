@@ -11,6 +11,8 @@
 - Add `AsyncLifoQueue`.
 - Add `InteractionEvent.message`.
 - Add `ComponentInteraction`.
+- Add `InteractionEvent.wait_for_response_message`.
+- Add `InteractionEvent.InteractionEvent`.
 
 ##### Internal:
 
@@ -46,6 +48,9 @@
 - Add `ERROR_CODES.user_identity_verification_succeeded`.
 - Rename `ERROR_CODES.invalid_gift_redemption_exhausted` to `.invalid_application_name`.
 - Add `ERROR_CODES.authentication_required`.
+- `InteractionEvent` instances are weakreferable.
+- Add `InteractionResponseTypes.component`.
+
 
 #### 1.1.68  *\[2021-04-23\]*
 

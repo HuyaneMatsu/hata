@@ -12,7 +12,7 @@ except ImportError:
     from weakref import WeakSet
 
 from ..env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
-from ..backend.futures import Future, Task, is_coroutine_function as is_coro
+from ..backend.futures import Future, Task, is_coroutine_function as is_coro, shield, future_or_timeout
 from ..backend.utils import RemovedDescriptor, MethodLike, NEEDS_DUMMY_INIT, FunctionType, WeakKeyDictionary, \
     WeakReferer, DOCS_ENABLED
 from ..backend.analyzer import CallableAnalyzer
@@ -20,7 +20,8 @@ from ..backend.event_loop import LOOP_TIME
 from ..backend.export import export, include
 
 from .bases import FlagBase, DiscordEntity
-from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS
+from .client_core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, \
+    INTERACTION_EVENT_RESPONSE_WAITERS, APPLICATION_ID_TO_CLIENT, INTERACTION_EVENT_MESSAGE_WAITERS
 from .user import User, create_partial_user, USERS
 from .channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGuildUndefined
 from .utils import Relationship, Gift
@@ -38,6 +39,8 @@ from .preinstanced import InteractionType
 from .stage import Stage
 
 Client = include('Client')
+
+INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 
 class EVENT_SYSTEM_CORE:
     """
@@ -1014,7 +1017,15 @@ def READY(client, data):
         for channel_private_data in channel_private_datas:
             CHANNEL_TYPES.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client)
     
+    old_application_id = client.application.id
     client.application._create_update(data['application'], True)
+    new_application_id = client.application.id
+    
+    if old_application_id != new_application_id:
+        if APPLICATION_ID_TO_CLIENT.get(old_application_id, None) is client:
+            del APPLICATION_ID_TO_CLIENT[old_application_id]
+        
+        APPLICATION_ID_TO_CLIENT[new_application_id] = client
     
     # ignore `'user_settings'`
     
@@ -4513,7 +4524,7 @@ INTERACTION_EVENT_RESPONSE_STATE_RESPONDED = 2
 
 
 @export
-class InteractionEvent(DiscordEntity, EventBase):
+class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     """
     Represents a processed `INTERACTION_CREATE` dispatch event.
     
@@ -4538,6 +4549,8 @@ class InteractionEvent(DiscordEntity, EventBase):
         +--------------------------------------------+----------+---------------------------------------------------+
         
         Can be used by extensions and is used by the the ``Client`` instances to ensure correct flow order.
+    application_id : `int`
+        The interaction's application's identifier.
     channel : ``ChannelText`` or ``ChannelPrivate``
         The channel from where the interaction was called. Might be a partial channel if not cached.
     guild : `None` or ``Guild`
@@ -4570,9 +4583,11 @@ class InteractionEvent(DiscordEntity, EventBase):
     -----
     The interaction token can be used for 15 minutes, tho if it is not used within the first 3 seconds, it is
     invalidated immediately.
+    
+    ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
-    __slots__ = ('_cached_users', '_response_state', 'channel', 'guild', 'interaction', 'message', 'token', 'type',
-        'user', 'user_permissions')
+    __slots__ = ('_cached_users', '_response_state', 'application_id', 'channel', 'guild', 'interaction', 'message',
+        'token', 'type', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -4638,8 +4653,11 @@ class InteractionEvent(DiscordEntity, EventBase):
         else:
             interaction, cached_users = interaction_type(data['data'], guild, cached_users)
         
+        application_id = int(data['application_id'])
+        
         self = object.__new__(cls)
         self.id = int(data['id'])
+        self.application_id = application_id
         self.type = InteractionType.get(type_value)
         self.channel = channel
         self.guild = guild
@@ -4665,7 +4683,51 @@ class InteractionEvent(DiscordEntity, EventBase):
                 
                 USER_GUILD_CACHE[key] = reference_count
         
+        if self.type is INTERACTION_TYPE_APPLICATION_COMMAND:
+            INTERACTION_EVENT_RESPONSE_WAITERS[self.id] = self
+        
         return self
+    
+    
+    async def wait_for_response_message(self, *, timeout=None):
+        """
+        Waits for response message. Applicable for application command interactions.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        timeout : `None` or `float`, Optional (Keyword only)
+            The maximal time to wait for message before `TimeoutError` is raised.
+        
+        Returns
+        -------
+        message : ``Message``
+            The received message.
+        
+        Raises
+        ------
+        TimeoutError
+            Message was not received before timeout.
+        """
+        message = self.message
+        if (message is not None):
+            return message
+        
+        try:
+            waiter = INTERACTION_EVENT_MESSAGE_WAITERS[self]
+        except KeyError:
+            waiter = Future(KOKORO)
+            INTERACTION_EVENT_MESSAGE_WAITERS[self] = waiter
+        
+        waiter = shield(waiter, KOKORO)
+        
+        if (timeout is not None):
+            future_or_timeout(waiter, timeout)
+        
+        await waiter
+        return self.message
+    
     
     def __del__(self):
         """
@@ -4741,6 +4803,12 @@ class InteractionEvent(DiscordEntity, EventBase):
         result.append('>')
         
         return ''.join(result)
+    
+    def _maybe_set_message(self, message):
+        """
+        Called when a message is received which is maybe linked to the interaction.
+        
+        """
     
     def is_acknowledged(self):
         """

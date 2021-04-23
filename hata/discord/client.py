@@ -44,7 +44,7 @@ from .message import Message, MessageRepr, MessageReference, Attachment, Sticker
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
-    MESSAGES, APPLICATION_COMMANDS
+    MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
 from .integration import Integration
@@ -466,6 +466,9 @@ class Client(ClientUserPBase):
         
         CLIENTS[client_id] = self
         
+        if application_id:
+            APPLICATION_ID_TO_CLIENT[application_id] = self
+        
         return self
     
     def _maybe_replace_alter_ego(self):
@@ -615,6 +618,9 @@ class Client(ClientUserPBase):
         if CLIENTS.get(client_id, None) is self:
             del CLIENTS[client_id]
         
+        application_id = self.application_id
+        if APPLICATION_ID_TO_CLIENT.get(application_id, None) is self:
+            del APPLICATION_ID_TO_CLIENT[application_id]
         
         alter_ego = User._from_client(self)
         USERS[client_id] = alter_ego

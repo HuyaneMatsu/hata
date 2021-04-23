@@ -10,7 +10,8 @@ from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
-from .client_core import MESSAGES, CHANNELS, GUILDS, ROLES
+from .client_core import MESSAGES, CHANNELS, GUILDS, ROLES, INTERACTION_EVENT_RESPONSE_WAITERS, \
+    INTERACTION_EVENT_MESSAGE_WAITERS
 from .user import ZEROUSER, User, ClientUserBase
 from .emoji import reaction_mapping
 from .embed import EmbedCore, EXTRA_EMBED_TYPES
@@ -1043,6 +1044,8 @@ class Message(DiscordEntity, immortal=True):
             interaction = None
         else:
             interaction = MessageInteraction(interaction_data)
+            _try_resolve_interaction_message(self, interaction)
+        
         self.interaction = interaction
         
         component_datas = data.get('components', None)
@@ -1116,7 +1119,9 @@ class Message(DiscordEntity, immortal=True):
         if (self.interaction is None):
             interaction_data = data.get('interaction', None)
             if (interaction_data is not None):
-                self.interaction = MessageInteraction(interaction_data)
+                interaction = MessageInteraction(interaction_data)
+                _try_resolve_interaction_message(self, interaction)
+                self.interaction = interaction
         
         if (self.components is None):
             component_datas = data.get('components', None)
@@ -2470,3 +2475,29 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             return False
         return (user in reactors)
+
+
+def _try_resolve_interaction_message(message, interaction):
+    """
+    Tries to resolve an interaction's message if not yet resolved.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        Received message.
+    interaction : ``MessageInteraction``
+        Received message interaction.
+    """
+    try:
+        interaction_event = INTERACTION_EVENT_RESPONSE_WAITERS.pop(interaction.id)
+    except KeyError:
+        pass
+    else:
+        interaction_event.message = message
+        
+        try:
+            waiter = INTERACTION_EVENT_MESSAGE_WAITERS[interaction_event]
+        except KeyError:
+            pass
+        else:
+            waiter.set_result_if_pending(None)

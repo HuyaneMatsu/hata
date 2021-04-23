@@ -7,7 +7,7 @@ import sys, gc
 from time import perf_counter
 from threading import current_thread
 
-from ..backend.utils import WeakValueDictionary
+from ..backend.utils import WeakValueDictionary, WeakKeyDictionary
 from ..backend.futures import Future, sleep, CancelledError, future_or_timeout, Task
 from ..backend.event_loop import EventThread
 from ..backend.export import include
@@ -71,7 +71,10 @@ EULAS = WeakValueDictionary()
 APPLICATIONS = WeakValueDictionary()
 INVITES = WeakValueDictionary()
 APPLICATION_COMMANDS = WeakValueDictionary()
-INTERACTION_EVENT_MESSAGE_WAITERS = WeakValueDictionary()
+INTERACTION_EVENT_RESPONSE_WAITERS = WeakValueDictionary()
+INTERACTION_EVENT_MESSAGE_WAITERS = WeakKeyDictionary()
+APPLICATION_ID_TO_CLIENT = {}
+
 
 def start_clients():
     """

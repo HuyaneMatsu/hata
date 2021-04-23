@@ -1782,6 +1782,8 @@ class InteractionResponseTypes:
     +-----------------------+-------+---------------+
     | source                | 5     | -             |
     +-----------------------+-------+---------------+
+    | component             | 6     | -             |
+    +-----------------------+-------+---------------+
     """
     none = 0
     pong = 1
@@ -1789,6 +1791,7 @@ class InteractionResponseTypes:
     message = 3
     message_and_source = 4
     source = 5
+    component = 6
 
 
 class ApplicationCommandInteraction(DiscordEntity):
@@ -2142,16 +2145,33 @@ class ComponentInteraction:
     """
     __slots__ = ('component_type', 'custom_id',)
     
-    def __new__(cls, data):
+    def __new__(cls, data, guild, cached_users):
         """
-        Creates a new component interaction with the given
+        Creates a new component interaction with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The received application command interaction data.
+        guild : `None` or ``Guild``
+            The respective guild.
+        cached_users : `None` or `list` of ``ClientUserBase``
+            Users, which might need temporary caching.
+        
+        Returns
+        -------
+        self : ``ComponentInteraction``
+            The created object.
+        cached_users : `None` or `list` of ``ClientUserBase``
+            Users, which might need temporary caching.
         """
         self = object.__new__(cls)
         
         self.custom_id = data.get('custom_id', None)
         self.component_type = ComponentType.get(data['component_type'])
         
-        return self
+        return self, cached_users
+    
     
     def __repr__(self):
         """Returns the component interaction's representation."""
@@ -2168,7 +2188,7 @@ class ComponentInteraction:
         
         repr_parts.append('>')
         
-        return repr_parts
+        return ''.join(repr_parts)
 
 
 INTERACTION_TYPE_TABLE = {

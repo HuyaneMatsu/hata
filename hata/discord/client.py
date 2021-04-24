@@ -61,7 +61,7 @@ from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryR
     BanEntry, maybe_snowflake_pair, _check_is_client_duped
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
-    ApplicationCommandPermissionOverwrite
+    ApplicationCommandPermissionOverwrite, Component
 from .color import Color
 from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
@@ -3370,7 +3370,7 @@ class Client(ClientUserPBase):
         return channel._create_unknown_message(message_data)
     
     async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=...,
-            sticker=None, reply_fail_fallback=False, tts=False, nonce=None):
+            sticker=None, components=None, reply_fail_fallback=False, tts=False, nonce=None):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
         
@@ -3397,6 +3397,10 @@ class Client(ClientUserPBase):
             A file or files to send. Check ``._create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
+        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
@@ -3420,8 +3424,10 @@ class Client(ClientUserPBase):
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `channel`'s type is incorrect.
-            - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
+            - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`) of \
                 (``Sticker``, `int).
+            - If `components` was not given neither as `None`, ``Component``, (`list`, `tuple`) of ``Component``
+                instances.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -3433,6 +3439,7 @@ class Client(ClientUserPBase):
             - If `tts` was not given as `bool` instance.
             - If `nonce` was not given neither as `None` nor as `str` instance.
             - If `reply_fail_fallback` was not given as `bool` instance.
+            - If `components` contains a non ``Component`` element.
         
         See Also
         --------
@@ -3557,19 +3564,20 @@ class Client(ClientUserPBase):
         # 1.: None -> None
         # 2.: Sticker -> [sticker.id]
         # 3.: int (str) -> [sticker]
-        # 4.: (`list`, `tuple`, `set`) of (Sticker, int (str)) -> [sticker.id / sticker, ...] / None
+        # 4.: (list, tuple) of (Sticker, int (str)) -> [sticker.id / sticker, ...] / None
         # 5.: raise
+        
         if sticker is None:
             sticker_ids = None
         else:
-            sticker_ids = set()
+            sticker_ids = []
             if isinstance(sticker, Sticker):
                 sticker_id = Sticker.id
-                sticker_ids.add(sticker_id)
+                sticker_ids.append(sticker_id)
             else:
                 sticker_id = maybe_snowflake(sticker)
                 if sticker_id is None:
-                    if isinstance(sticker, (list, tuple, set)):
+                    if isinstance(sticker, (list, tuple)):
                         for sticker in sticker:
                             if isinstance(sticker, Sticker):
                                 sticker_id = Sticker.id
@@ -3579,16 +3587,46 @@ class Client(ClientUserPBase):
                                     raise TypeError(f'`sticker` contains a non `{Sticker.__name__}` nor `int` element, '
                                         f'got {sticker.__class__.__name__}')
                             
-                            sticker_ids.add(sticker_id)
+                            sticker_ids.append(sticker_id)
                         
                         if not sticker_ids:
                             sticker_ids = None
                     else:
                         raise TypeError(f'`sticker` can be given as `None`, `{Sticker.__name__}`, `int` or '
-                            f'(`list`, `set`, `tuple`) of (`{Sticker.__name__}`, `int`), got '
+                            f'(`list`, `tuple`) of (`{Sticker.__name__}`, `int`), got '
                             f'{sticker.__class__.__name__}')
                 else:
-                    sticker_ids.add(sticker_id)
+                    sticker_ids.append(sticker_id)
+        
+        # Components check order:
+        # 1.: None -> None
+        # 2.: Component -> [component.to_data()]
+        # 3.: (list, tuple) of Component -> [component.to_data(), ...] / None
+        # 4.: raise
+        
+        if components is None:
+            component_datas = None
+        else:
+            if isinstance(components, Component):
+                component_datas = [components.to_data()]
+            elif isinstance(components, (list, tuple)):
+                component_datas = None
+                
+                for component in components:
+                    if __debug__:
+                        if not isinstance(component, Component):
+                            raise AssertionError(f'`components` contains non `{Component.__name__}` instance, got '
+                                f'{component.__class__.__name__}')
+                    
+                    if component_datas is None:
+                        component_datas = []
+                    
+                    component_datas.append(component.to_data())
+            
+            else:
+                raise TypeError(f'`components` can be given as `{Component.__name__}` or as `list`, `tuple` of '
+                    f'`{Component.__name__}` instances, got {components.__class__.__name__}')
+        
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -3618,6 +3656,9 @@ class Client(ClientUserPBase):
         if (sticker_ids is not None):
             message_data['sticker_ids'] = sticker_ids
             contains_content = True
+        
+        if (component_datas is not None):
+            message_data['components'] = component_datas
         
         if tts:
             message_data['tts'] = True
@@ -5025,7 +5066,7 @@ class Client(ClientUserPBase):
                 # Else case should happen.
                 continue
     
-    async def message_edit(self, message, content=..., *, embed=..., allowed_mentions=..., suppress=...):
+    async def message_edit(self, message, content=..., *, embed=..., allowed_mentions=..., components=..., suppress=...):
         """
         Edits the given `message`.
         
@@ -5054,6 +5095,8 @@ class Client(ClientUserPBase):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
+        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
+            Components attached to the message. Pass it as `None` remove the actual stickers.
         suppress : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
         
@@ -5064,6 +5107,8 @@ class Client(ClientUserPBase):
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
+            - If `components` was not given neither as `None`, ``Component``, (`list`, `tuple`) of ``Component``
+                instances.
         ValueError
             If `allowed_mentions` contains an element of invalid type.
         ConnectionError
@@ -5071,7 +5116,9 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If the message was not send by the client.
+            - If the message was not sent by the client.
+            - If `components` contains a non ``Component`` element.
+        
         See Also
         --------
         - ``.message_suppress_embeds`` : For suppressing only the embeds of the message.
@@ -5194,6 +5241,38 @@ class Client(ClientUserPBase):
             else:
                 content = str(content)
         
+        # Components check order:
+        # 1.: Ellipsis -> Ellipsis
+        # 2.: None -> None
+        # 3.: Component -> [component.to_data()]
+        # 4.: (list, tuple) of Component -> [component.to_data(), ...] / None
+        # 5.: raise
+        
+        if components is  ...:
+            component_datas = ...
+        elif components is None:
+            component_datas = None
+        else:
+            if isinstance(components, Component):
+                component_datas = [components.to_data()]
+            elif isinstance(components, (list, tuple)):
+                component_datas = None
+                
+                for component in components:
+                    if __debug__:
+                        if not isinstance(component, Component):
+                            raise AssertionError(f'`components` contains non `{Component.__name__}` instance, got '
+                                f'{component.__class__.__name__}')
+                    
+                    if component_datas is None:
+                        component_datas = []
+                    
+                    component_datas.append(component.to_data())
+            
+            else:
+                raise TypeError(f'`components` can be given as `{Component.__name__}` or as `list`, `tuple` of '
+                    f'`{Component.__name__}` instances, got {components.__class__.__name__}')
+        
         # Build payload
         message_data = {}
         
@@ -5208,6 +5287,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if (component_datas is not ...):
+            message_data['components'] = component_datas
         
         if (suppress is not ...):
             flags = message.flags

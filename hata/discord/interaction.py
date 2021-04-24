@@ -24,7 +24,7 @@ from .channel import create_partial_channel
 from .user import User, UserBase, ClientUserBase
 from .role import Role
 from .client_utils import maybe_snowflake
-from .emoji import create_partial_emoji
+from .emoji import create_partial_emoji, Emoji
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
@@ -2135,7 +2135,7 @@ class Component:
                     raise AssertionError(f'`If `type` is `{omponentType.button}`, style can be given either as '
                         f'`int` or as `{ButtonStyle.__name__}, got {style.__class__.__name__}.')
             
-            style = preconvert_preinstanced_type(type_, 'type_', ButtonStyle)
+            style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
         else:
             # ??? Future?
             if style is None:
@@ -2147,9 +2147,9 @@ class Component:
                     f'`{PreinstancedBase.__name__}` subclass instance, got {style.__class__.__name__}.')
         
         components_processed = None
-        if (components is None):
+        if (components is not None):
             if __debug__:
-                if not isinstance(components, (tuple, str)):
+                if not isinstance(components, (tuple, list)):
                     raise AssertionError(f'`components` can be given as `None`, `tuple` or `list`, got '
                         f'{components.__class__.__name__}.')
             
@@ -2179,7 +2179,7 @@ class Component:
                 raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
                     f'{custom_id.__class__.__name__}.')
             
-            if not isinstance(emoji, Emoji):
+            if (emoji is not None) and (not isinstance(emoji, Emoji)):
                 raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
                     f'{emoji.__class__.__name__}')
             
@@ -2301,7 +2301,8 @@ class Component:
         label = self.label
         if (label is not None):
             data['label'] = label
-    
+        
+        return data
     
     def __repr__(self):
         """Returns the message component's representation."""

@@ -38,6 +38,8 @@ Full Button support incoming.
 - Add `InteractionEvent.wait_for_response_message`.
 - Add `InteractionEvent.InteractionEvent`.
 - Add `Client.interaction_component_acknowledge`.
+- Add `components` parameter to `Client.message_cerate`.
+- Add `components` parameter to `Client.message_edit`.
 
 ##### Internal:
 

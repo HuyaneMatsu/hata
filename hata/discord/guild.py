@@ -821,7 +821,7 @@ class Guild(DiscordEntity, immortal=True):
     @classmethod
     def precreate(cls, guild_id, **kwargs):
         """
-        Precreates the guild with the given parameters. Precreated guilds ar picked up when a guild's data is received
+        Precreates the guild with the given parameters. Precreated guilds arr picked up when a guild's data is received
         with the same id.
         
         First tries to find whether a guild exists with the given id. If it does and it is partial, updates it with the

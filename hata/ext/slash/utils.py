@@ -423,7 +423,7 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None):
     try:
         client = APPLICATION_ID_TO_CLIENT[application_id]
     except KeyError as err:
-        raise RuntimeError(f'The message or interaction is bound ot a 3rd party application, got: '
+        raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
             f'{event_or_message!r}.') from err
     
     waiter = Future(KOKORO)

@@ -666,7 +666,7 @@ class ConverterSetting:
             - If `alternative_type_name` was not given as `None`, neither as `str` instance.
             - If `default_type` was not given as `None`, neither as `type` instance.
             - If `alternative_types` was not given as `None`, neither as `iterable` of `type`.
-            - If `requires_part` was not ot given as `bool` instance.
+            - If `requires_part` was not to given as `bool` instance.
         ValueError
             If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
             `ConverterFlag(0)`
@@ -2363,7 +2363,7 @@ class ParameterParsingStateBase:
         parsed_value : `Any`
             The parsed value.
         keyword : `None` or `str`
-            The keyword used ot reference the value.
+            The keyword used to reference the value.
         """
         pass
     

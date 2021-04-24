@@ -1778,7 +1778,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         Starts the event loop's thread.
         
-        If the event loop is already started will ot start it again.
+        If the event loop is already started will to start it again.
         """
         thread_waiter = self.ctx.thread_waiter
         # set as `None` if already started.

@@ -1764,7 +1764,7 @@ class Slasher(EventWaitforBase):
     
     async def _edit_guild_command_to_non_global(self, client, command, command_state, guild_id, application_command):
         """
-        Edits the given guild command ot a non local one.
+        Edits the given guild command to a non local one.
         
         This method is a coroutine.
         

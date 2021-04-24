@@ -14821,6 +14821,7 @@ class Client(ClientUserPBase):
         
         await self.http.relationship_friend_request(data)
     
+    
     async def update_application_info(self):
         """
         Updates the client's application's info.
@@ -14842,7 +14843,18 @@ class Client(ClientUserPBase):
         """
         if self.is_bot:
             data = await self.http.client_application_get()
-            self.application = self.application._create_update(data, False)
+            application = self.application
+            old_application_id = application.id
+            application = application._create_update(data, False)
+            self.application = application
+            new_application_id = application.id
+            
+            if old_application_id != new_application_id:
+                if APPLICATION_ID_TO_CLIENT.get(old_application_id, None) is self:
+                    del APPLICATION_ID_TO_CLIENT[old_application_id]
+                
+                APPLICATION_ID_TO_CLIENT[new_application_id] = self
+    
     
     async def client_gateway(self):
         """

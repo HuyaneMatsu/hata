@@ -2069,6 +2069,8 @@ class Component:
         > Mutually exclusive with the `url` field.
     emoji : `None` or ``Emoji``
         Emoji of the button if applicable.
+    label : `None` or `str`
+        Label of the component.
     type : ``ComponentType``
         The component's type.
     style : `None` or ``ButtonStyle``
@@ -2078,9 +2080,9 @@ class Component:
         
         > Mutually exclusive with the `custom_id` field.
     """
-    __slots__ = ('components', 'custom_id', 'emoji', 'style', 'type', 'url',)
+    __slots__ = ('components', 'custom_id', 'emoji', 'label', 'style', 'type', 'url',)
     
-    def __new__(cls, type_, *, components=None, custom_id=None, emoji=None, style=None, url=None):
+    def __new__(cls, type_, *, components=None, custom_id=None, emoji=None, label=None, style=None, url=None):
         """
         Creates a new component instance with the given parameters.
         
@@ -2102,6 +2104,8 @@ class Component:
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` field.
+        label : `None` or `str`
+            Label of the component.
         
         Raises
         ------
@@ -2119,6 +2123,7 @@ class Component:
             - If `type` is button type then `style` is required.
             - If `components`'s length is out of the expected range [0:5].
             - If an action row type component would be added as a sub-component.
+            - If `label` was not given neither as `None` nor as `int` instance.
         """
         type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
         
@@ -2186,6 +2191,15 @@ class Component:
                 raise AssertionError(f'`emoji` and `url` fields are mutually exclusive, got emoji={emoji!r}, '
                     f'url={url!r}.')
         
+        if (label is not None):
+            if __debug__:
+                if (not isinstance(label, str)):
+                    raise TypeError(f'`label` can be given either as `None` or as `str` instance, got '
+                        f'{label.__class__.__name__}.')
+            
+            if (not label):
+                label = None
+        
         self = object.__new__(cls)
         
         self.type = type_
@@ -2194,6 +2208,7 @@ class Component:
         self.custom_id = custom_id
         self.emoji = emoji
         self.url = url
+        self.label = label
         
         return self
     
@@ -2240,6 +2255,8 @@ class Component:
         
         self.custom_id = data.get('custom_id', None)
         
+        self.label = data.get('label', None)
+        
         return self
     
     
@@ -2280,6 +2297,10 @@ class Component:
         custom_id = self.custom_id
         if (custom_id is not None):
             data['custom_id'] = custom_id
+        
+        label = self.label
+        if (label is not None):
+            data['label'] = label
     
     
     def __repr__(self):
@@ -2289,7 +2310,7 @@ class Component:
         type_ = self.type
         repr_parts.append(type_.name)
         repr_parts.append(' (')
-        repr_parts.append(type_.value)
+        repr_parts.append(repr(type_.value))
         repr_parts.append(')')
         
         style = self.style
@@ -2310,6 +2331,11 @@ class Component:
             repr_parts.append(', emoji=')
             repr_parts.append(repr(emoji))
         
+        label = self.label
+        if (label is not None):
+            repr_parts.append(', label=')
+            repr_parts.append(reprlib.repr(label))
+        
         url = self.url
         if (url is not None):
             repr_parts.append(', url=')
@@ -2323,7 +2349,7 @@ class Component:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
-
+    
     
     def copy(self):
         """
@@ -2341,6 +2367,7 @@ class Component:
         new.style = self.style
         new.type = self.type
         new.url = self.url
+        new.label = self.label
         
         return new
     
@@ -2366,6 +2393,9 @@ class Component:
             return False
         
         if self.url != other.url:
+            return False
+        
+        if self.label != other.label:
             return False
         
         return True
@@ -2395,6 +2425,10 @@ class Component:
         url = self.url
         if (url is not None):
             hash_value ^= hash(url)
+        
+        label = self.label
+        if (label is not None):
+            hash_value ^= hash(label)
         
         return hash_value
 

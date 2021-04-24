@@ -2,9 +2,20 @@
 
 Full Button support incoming.
 
+
 ##### Internal
 
 - Add a missing return to `hata.ext.async.asyncio.LifoQueue`. (ᓚᘏᗢ | NeKo Mancer#1477)
+- Rename `Component.__init__` to `.from_data`.
+- Add `Component.to_data`.
+- `Component.style` defaults to `None`.
+- Add `Component.__new__` as a generic constructor.
+- Extend `Component.__repr__`.
+- Add `Component.copy`.
+- Add `Component.__eq__`.
+- Add `ComponentInteraction.__eq__`.
+- Add `ComponentInteraction.__hash__`.
+- Add `Component.__hash__`.
 
 #### 1.1.69  *\[2021-04-24\]*
 

@@ -1052,7 +1052,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component(component_data) for component_data in component_datas]
+            components = [Component.from_data(component_data) for component_data in component_datas]
         self.components = components
         
         sticker_datas = data.get('stickers', None)
@@ -1126,7 +1126,7 @@ class Message(DiscordEntity, immortal=True):
         if (self.components is None):
             component_datas = data.get('components', None)
             if (component_datas is not None) and component_datas:
-                self.components = [Component(component_data) for component_data in component_datas]
+                self.components = [Component.from_data(component_data) for component_data in component_datas]
         
         if (self.embeds is None):
             embed_datas = data['embeds']
@@ -2053,7 +2053,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component(component_data) for component_data in component_datas]
+            components = [Component.from_data(component_data) for component_data in component_datas]
         
         if self.components != components:
             old_attributes['components'] = self.components
@@ -2180,7 +2180,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component(component_data) for component_data in component_datas]
+            components = [Component.from_data(component_data) for component_data in component_datas]
         self.components = components
     
     def _update_embed(self, data):

@@ -3,22 +3,23 @@ __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCo
     'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes',
     'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', 'Component', 'ComponentInteraction')
 
-import sys
+import reprlib
 
 from ..backend.utils import modulize
 from ..backend.export import export
 
-from .bases import DiscordEntity
+from .bases import DiscordEntity, PreinstancedBase
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType, \
     ComponentType, ButtonStyle
 from .client_core import APPLICATION_COMMANDS, ROLES
 from .preconverters import preconvert_preinstanced_type
-from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
+from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE, url_cutter
 from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
     APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN, \
-    APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+    APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, \
+    COMPONENT_SUB_COMPONENT_LIMIT
 from .channel import create_partial_channel
 from .user import User, UserBase, ClientUserBase
 from .role import Role
@@ -1365,7 +1366,7 @@ class ApplicationCommandPermission:
             'id' : self.application_command_id,
             'application_id' : self.application_id,
             'guild_id' : self.guild_id,
-                }
+        }
         
         overwrites = self.overwrites
         if overwrites is None:
@@ -1621,7 +1622,7 @@ class ApplicationCommandPermissionOverwrite:
             'permission': self.allow,
             'id': self.target_id,
             'type': self.type.value,
-                }
+        }
     
     @property
     def target(self):
@@ -2049,10 +2050,11 @@ class ApplicationCommandInteractionOption:
         
         return ''.join(repr_parts)
 
+
 @export
 class Component:
     """
-    Message component?
+    Message component! Aka buttons!
     
     Attributes
     ----------
@@ -2062,20 +2064,134 @@ class Component:
         Custom identifier to detect which button was clicked by the user.
         
         > Mutually exclusive with the `url` field.
-    style : ``ButtonStyle``
-        The components's style. Applicable for buttons.
     emoji : `None` or ``Emoji``
         Emoji of the button if applicable.
     type : ``ComponentType``
         The component's type.
+    style : `None` or ``ButtonStyle``
+        The components's style. Applicable for buttons.
     url : `None` or `str`
-        Url to redirect.
+        Url to redirect to when clicking on the button.
         
         > Mutually exclusive with the `custom_id` field.
     """
     __slots__ = ('components', 'custom_id', 'emoji', 'style', 'type', 'url',)
     
-    def __new__(cls, data):
+    def __new__(cls, type_, *, components=None, custom_id=None, emoji=None, style=None, url=None):
+        """
+        Creates a new component instance with the given parameters.
+        
+        Parameters
+        ----------
+        type : ``ComponentType``, `int`
+            The component's type.
+        components : `None` or (`list`, `tuple`) of ``Component``, Optional (Keyword only)
+            Sub-components.
+        custom_id : `None` or `str`, Optional (Keyword only)
+            Custom identifier to detect which button was clicked by the user.
+            
+            > Mutually exclusive with the `url` field.
+        emoji : `None` or ``Emoji``, Optional (Keyword only)
+            Emoji of the button if applicable.
+        style : ``ButtonStyle``, `int`, Optional (Keyword only)
+            The components's style. Applicable for buttons.
+        url : `None` or `str`, Optional (Keyword only)
+            Url to redirect to when clicking on the button.
+            
+            > Mutually exclusive with the `custom_id` field.
+        
+        Raises
+        ------
+        TypeError
+            - If `type` was not given neither as ``ComponentType`` not `int` instance.
+            - If `style`'s type is unexpected.
+        AssertionError
+            - If `components` is neither `None`, `tuple` or `list`.
+            - If `components` contains a non ``Component`` instance.
+            - If `custom_id` was not given neither as `None` or `str` instance.
+            - `url` is mutually exclusive with `custom_id`.
+            - If `emoji` was not given as ``Emoji`` instance.
+            - If `url` was not given neither as `None` or `str` instance.
+            - If `style` was not given either as
+            - If `type` is button type then `style` is required.
+            - If `components`'s length is out of the expected range [0:5].
+        """
+        type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
+        
+        if type_ is ComponentType.action_row:
+            style = None
+        elif type_ is ComponentType.button:
+            if __debug__:
+                if style is None:
+                    raise AssertionError(f'`If `type` is `{omponentType.button}`, style can be given either as '
+                        f'`int` or as `{ButtonStyle.__name__}, got {style.__class__.__name__}.')
+            
+            style = preconvert_preinstanced_type(type_, 'type_', ButtonStyle)
+        else:
+            # ??? Future?
+            if style is None:
+                pass
+            if isinstance(style, PreinstancedBase):
+                style = style.value
+            else:
+                raise TypeError(f'`style` can be given either as `None` or as the style\'s respective '
+                    f'`{PreinstancedBase.__name__}` subclass instance, got {style.__class__.__name__}.')
+        
+        components_processed = None
+        if (components is None):
+            if __debug__:
+                if not isinstance(components, (tuple, str)):
+                    raise AssertionError(f'`components` can be given as `None`, `tuple` or `list`, got '
+                        f'{components.__class__.__name__}.')
+            
+            for component in components:
+                if __debug__:
+                    if not isinstance(component, Component):
+                        raise AssertionError(f'`component` can be given as `{Component.__name__}` instance, got '
+                        f'{component.__class__.__name__}.')
+                
+                if components_processed is None:
+                    components_processed = []
+                
+                components_processed.append(component)
+            
+            if __debug__:
+                if (components_processed is not None) and (len(components_processed) > COMPONENT_SUB_COMPONENT_LIMIT):
+                    raise AssertionError(f'A `{cls.__name__}` can have maximum 5 sub-components, got '
+                        f'{len(components_processed)}; {components_processed!r}.')
+        
+        
+        if __debug__:
+            if (custom_id is not None) and (not isinstance(custom_id, str)):
+                raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
+                    f'{custom_id.__class__.__name__}.')
+            
+            if not isinstance(emoji, Emoji):
+                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
+                    f'{emoji.__class__.__name__}')
+            
+            if (url is not None) and (not isinstance(url, str)):
+                raise TypeError(f'`url` can be given either as `None` or as `str` instance, got '
+                    f'{url.__class__.__name__}.')
+            
+            if (url is not None) and (emoji is not None):
+                raise AssertionError(f'`emoji` and `url` fields are mutually exclusive, got emoji={emoji!r}, '
+                    f'url={url!r}.')
+        
+        self = object.__new__(cls)
+        
+        self.type = type_
+        self.style = style
+        self.components = components_processed
+        self.custom_id = custom_id
+        self.emoji = emoji
+        self.url = url
+        
+        return self
+    
+    
+    @classmethod
+    def from_data(cls, data):
         """
         Creates a new message component from the received data.
         
@@ -2083,6 +2199,11 @@ class Component:
         ----------
         data : `dict` of (`str`, `Any`) items
             Message component data.
+        
+        Returns
+        -------
+        self : ``Component``
+            The created component instance.
         """
         self = object.__new__(cls)
         
@@ -2099,13 +2220,11 @@ class Component:
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component(component_data) for component_data in component_datas]
+            components = [Component.from_data(component_data) for component_data in component_datas]
         self.components = components
         
-        style = data.get('style')
-        if style is None:
-            style = ButtonStyle.none
-        else:
+        style = data.get('style', None)
+        if (style is not None):
             style = ButtonStyle.get(style)
         self.style = style
         
@@ -2114,7 +2233,47 @@ class Component:
         self.custom_id = data.get('custom_id', None)
         
         return self
-
+    
+    
+    def to_data(self):
+        """
+        Converts the component to json serializable object.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        data = {
+            'type' : self.type.value
+        }
+        
+        emoji = self.emoji
+        if (emoji is not None):
+            emoji_data = {}
+            unicode = emoji.unicode
+            if unicode is None:
+                emoji_data['id'] = emoji.id
+                emoji_data['name'] = emoji.name
+            else:
+                emoji_data['name'] = unicode
+        
+        components = self.components
+        if (components is not None):
+            data['components'] = [component.to_data() for component in components]
+        
+        style = self.style
+        if (style is not None):
+            data['style'] = style.value
+        
+        url = self.url
+        if (url is not None):
+            data['url'] = url
+        
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            data['custom_id'] = custom_id
+    
+    
     def __repr__(self):
         """Returns the message component's representation."""
         repr_parts = ['<', self.__class__.__name__, ' type=']
@@ -2125,9 +2284,110 @@ class Component:
         repr_parts.append(type_.value)
         repr_parts.append(')')
         
+        style = self.style
+        if (style is not None):
+            repr_parts.append(', style=')
+            repr_parts.append(style.name)
+            repr_parts.append(' (')
+            repr_parts.append(repr(style.value))
+            repr_parts.append(')')
+        
+        components = self.components
+        if (components is not None):
+            repr_parts.append(', components=')
+            repr_parts.append(repr(components))
+        
+        emoji = self.emoji
+        if (emoji is not None):
+            repr_parts.append(', emoji=')
+            repr_parts.append(repr(emoji))
+        
+        url = self.url
+        if (url is not None):
+            repr_parts.append(', url=')
+            repr_parts.append(url_cutter(url))
+        
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            repr_parts.append(', custom_id=')
+            repr_parts.append(reprlib.repr(custom_id))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+
+    
+    def copy(self):
+        """
+        Copies the component.
+        
+        Returns
+        -------
+        new : ``Component``
+        """
+        new = object.__new__(type(self))
+        
+        new.components = [component.copy() for component in self.components]
+        new.custom_id = self.custom_id
+        new.emoji = self.emoji
+        new.style = self.style
+        new.type = self.type
+        new.url = self.url
+        
+        return new
+    
+    def __eq__(self, other):
+        """Returns Whether the two component are equal."""
+        if type(other) is not type(self):
+            return NotImplemented
+        
+        if self.type is not other.type:
+            return False
+        
+        if self.emoji is not other.emoji:
+            return False
+        
+        if self.style is not other.style:
+            return False
+        
+        if self.components != other.components:
+            return False
+        
+        if self.custom_id != other.custom_id:
+            return False
+        
+        if self.url != other.url:
+            return False
+        
+        return True
+    
+    def __hash__(self):
+        """Returns the component's hash value."""
+        hash_value = self.type.value
+        
+        emoji = self.emoji
+        if (emoji is not None):
+            hash_value ^= emoji.id
+        
+        style = self.style
+        if (style is not None):
+            hash_value ^= style.value
+        
+        components = self.components
+        if (components is not None):
+            hash_value ^= len(components)<<12
+            for component in components
+                hash_value ^= hash(component)
+        
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            hash_value ^= hash(custom_id)
+        
+        url = self.url
+        if (url is not None):
+            hash_value ^= hash(url)
+        
+        return hash_value
 
 
 class ComponentInteraction:
@@ -2184,13 +2444,47 @@ class ComponentInteraction:
         repr_parts.append(repr(component_type.value))
         repr_parts.append(')')
         
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            repr_parts.append(', custom_id=')
+            repr_parts.append(reprlib.repr(custom_id))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Compares the two component or component interaction."""
+        other_type = type(other)
+        if other_type is type(self):
+            if self.component_type is not other.component_type:
+                return False
+            
+            if self.custom_id != other.custom_id:
+                return False
+            
+            return True
+        
+        if other_type is Component:
+            if self.component_type is not other.type:
+                return False
+            
+            if self.custom_id != other.custom_id:
+                return False
+            
+            return True
+        
+        return NotImplemented
+    
+    
+    def __hash__(self):
+        """Returns the component interaction's hash value."""
+        return self.component_type.value^hash(self.custom_id)
 
 
 INTERACTION_TYPE_TABLE = {
     InteractionType.ping.value: None,
     InteractionType.application_command.value: ApplicationCommandInteraction,
     InteractionType.message_component.value: ComponentInteraction,
-        }
+}

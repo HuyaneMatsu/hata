@@ -3,7 +3,7 @@ __all__ = ('SlashCommandPermissionOverwriteWrapper', 'SlashCommandWrapper', 'wai
 
 from functools import partial as partial_func
 
-from ...backend.futures import Task, Future, future_or_timeout
+from ...backend.futures import Future, future_or_timeout
 from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
@@ -234,132 +234,6 @@ def runtime_sync_hook_is_client_running(client):
     return client.running
 
 RUNTIME_SYNC_HOOKS.append(runtime_sync_hook_is_client_running)
-
-
-class WaitAndContinue:
-    """
-    Waits for the given event and if the check returns `True` called with the received parameters, then passes them to
-    it's waiter future. If check return anything else than `False`, then passes that as well to the future.
-    
-    Attributes
-    -----------
-    _canceller : `None` or `function`
-        The canceller function of the ``WaitAndContinue``, what is set to ``._canceller`` by default.
-        When ``.cancel`` is called, then this instance attribute is set to `None`.
-    _timeouter : ``TimeOuter``
-        Executes the ``WaitAndContinue`` timeout feature and raise `TimeoutError` to the waiter.
-    check : `callable`
-        The check what is called with the received parameters whenever an event is received.
-    event : `async-callable`
-        The respective event handler on what the waiting is executed.
-    future : ``Future``
-        The waiter future what's result will be set when the check returns non `False` value.
-    target : ``DiscordEntity``
-        The target entity on what the waiting is executed.
-    """
-    __slots__ = ('_canceller', 'future', 'target_entity', '_timeouter', )
-    def __init__(self, future, target, event, timeout):
-        """
-        Creates a new ``WaitAndContinue`` instance with the given parameters.
-        
-        Parameters
-        ----------
-        future : ``Future`
-            The waiter future `what's result will be set when the check returns non `False` value.
-        check : `callable`
-            The check what is called with the received parameters whenever an event is received.
-        target : ``DiscordEntity``
-            The target entity on what the waiting is executed.
-        event : `async-callable`
-            The respective event handler on what the waiting is executed.
-        timeout : `float`
-            The timeout after `TimeoutError` will be raised to the waiter future.
-        """
-        self._canceller = type(self)._canceller_function
-        self.future = future
-        self.check = check
-        self.event = event
-        self.target = target
-        self._timeouter = Timeouter(self, timeout)
-        event.append(target, self)
-    
-    async def __call__(self, client, *args):
-        """
-        Calls the ``WaitAndContinue`` and if it's check returns non `False`, then set's the waiter future's result to
-        the received parameters. If `check` returned non `bool`, then passes that value to the waiter as well.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client who received the respective event.
-        *args : `Any`
-            Received parameters given by the respective event handler.
-        """
-        try:
-            result = self.check(*args)
-        except BaseException as err:
-            self.future.set_exception_if_pending(err)
-            self.cancel()
-        else:
-            if type(result) is bool:
-                if not result:
-                    return
-                
-                if len(args) == 1:
-                    args = args[0]
-            
-            else:
-                args = (*args, result,)
-            
-            self.future.set_result_if_pending(args)
-            self.cancel()
-    
-    
-    async def _canceller_function(self, exception):
-        """
-        Cancels the ``WaitAndContinue`` with the given exception. If the given `exception` is `BaseException` instance,
-        then raises it to the waiter future.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        exception : `None` or `BaseException`
-            Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
-        """
-        if exception is None:
-            self.future.set_exception_if_pending(TimeoutError())
-            return
-        
-        self.event.remove(self.target, self)
-        self.future.set_exception_if_pending(exception)
-        
-        if not isinstance(exception, TimeoutError):
-            return
-        
-        timeouter = self._timeouter
-        if (timeouter is not None):
-            timeouter.cancel()
-    
-    
-    def cancel(self):
-        """
-        Cancels the ``WaitAndContinue``.
-        """
-        canceller = self._canceller
-        if canceller is None:
-            return
-        
-        self._canceller = None
-        
-        self.event.remove(self.target, self)
-        timeouter = self._timeouter
-        if (timeouter is not None):
-            timeouter.cancel()
-        
-        return Task(canceller(self, None), KOKORO)
 
 
 async def event_received_callback(waiter, client, event):

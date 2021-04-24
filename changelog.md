@@ -2,6 +2,10 @@
 
 Full Button support incoming.
 
+##### Internal
+
+- Add a missing return to `hata.ext.async.asyncio.LifoQueue`. (ᓚᘏᗢ | NeKo Mancer#1477)
+
 #### 1.1.69  *\[2021-04-24\]*
 
 ##### Public API:

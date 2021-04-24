@@ -800,7 +800,7 @@ def LifoQueue(maxsize=0, *, loop=None):
     else:
         max_length = None
     
-    AsyncLifoQueue(loop, max_length=max_length)
+    return AsyncLifoQueue(loop, max_length=max_length)
 
 
 # asyncio.runners

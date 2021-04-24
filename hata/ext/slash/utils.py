@@ -263,6 +263,8 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None):
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message to wait component on.
+    timeout : `None` or  `float`, Optional (Keyword only)
+        The maximal amount of time wait
     
     Returns
     ------

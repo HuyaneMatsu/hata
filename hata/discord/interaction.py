@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption',
     'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes',
-    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', 'Component', 'ComponentInteraction')
+    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', 'Component', 'ComponentBase',
+    'ComponentInteraction')
 
 import reprlib
 
-from ..backend.utils import modulize
+from ..backend.utils import modulize, copy_docs
 from ..backend.export import export
 
 from .bases import DiscordEntity, PreinstancedBase
@@ -2055,7 +2056,83 @@ class ApplicationCommandInteractionOption:
 
 
 @export
-class Component:
+class ComponentBase:
+    """
+    Base class for 3rd party components.
+    
+    Class attributes
+    ----------------
+    type : ``ComponentType`` = `ComponentType.none`
+        The component's type.
+    """
+    __slots__ = ()
+    
+    type = ComponentType.none
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates a new message component from the received data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message component data.
+        
+        Returns
+        -------
+        self : ``ComponentBase`` instance
+            The created component instance.
+        """
+        return None
+    
+    
+    def to_data(self):
+        """
+        Converts the component to json serializable object.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        data = {
+            'type' : self.type.value
+        }
+        
+        return data
+    
+    
+    def __repr__(self):
+        """Returns the message component's representation."""
+        return f'<{self.__class__.__name__}>'
+    
+    
+    def copy(self):
+        """
+        Copies the component.
+        
+        Returns
+        -------
+        new : ``ComponentBase``
+        """
+        return None
+    
+    
+    def __eq__(self, other):
+        """Returns Whether the two component are equal."""
+        if type(other) is not type(self):
+            return NotImplemented
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the component's hash value."""
+        return self.type.value
+
+
+@export
+class Component(ComponentBase):
     """
     Message component! Aka buttons!
     
@@ -2214,20 +2291,8 @@ class Component:
     
     
     @classmethod
+    @copy_docs(ComponentBase.from_data)
     def from_data(cls, data):
-        """
-        Creates a new message component from the received data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Message component data.
-        
-        Returns
-        -------
-        self : ``Component``
-            The created component instance.
-        """
         self = object.__new__(cls)
         
         self.type = ComponentType.get(data['type'])
@@ -2260,14 +2325,8 @@ class Component:
         return self
     
     
+    @copy_docs(ComponentBase.to_data)
     def to_data(self):
-        """
-        Converts the component to json serializable object.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `Any`) items
-        """
         data = {
             'type' : self.type.value
         }
@@ -2304,8 +2363,9 @@ class Component:
         
         return data
     
+    
+    @copy_docs(ComponentBase.__repr__)
     def __repr__(self):
-        """Returns the message component's representation."""
         repr_parts = ['<', self.__class__.__name__, ' type=']
         
         type_ = self.type
@@ -2351,15 +2411,8 @@ class Component:
         
         return ''.join(repr_parts)
     
-    
+    @copy_docs(ComponentBase.copy)
     def copy(self):
-        """
-        Copies the component.
-        
-        Returns
-        -------
-        new : ``Component``
-        """
         new = object.__new__(type(self))
         
         new.components = [component.copy() for component in self.components]
@@ -2373,8 +2426,8 @@ class Component:
         return new
     
     
+    @copy_docs(ComponentBase.__eq__)
     def __eq__(self, other):
-        """Returns Whether the two component are equal."""
         if type(other) is not type(self):
             return NotImplemented
         
@@ -2401,8 +2454,9 @@ class Component:
         
         return True
     
+    
+    @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
-        """Returns the component's hash value."""
         hash_value = self.type.value
         
         emoji = self.emoji

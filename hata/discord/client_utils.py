@@ -15,6 +15,7 @@ from .client_core import KOKORO, CLIENTS
 from .rate_limit import RateLimitProxy
 
 Client = include('Client')
+ComponentBase = include('ComponentBase')
 
 USER_CHUNK_TIMEOUT = 2.5
 
@@ -1084,3 +1085,58 @@ def _check_is_client_duped(client, client_id):
     if other_client is not client:
         raise RuntimeError(f'Creating the same client multiple times is not allowed; {client!r} already exists:, '
             f'{other_client!r}.')
+
+
+def get_components_data(components):
+    """
+    Gets component data from the given components.
+    
+    parameters
+    ----------
+    components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase`
+        Components to be attached to a message.
+    
+    Returns
+    -------
+    component_datas : `None` ot `list` of (`dict` of (`str`, `Any`) items)
+        The generated data if any.
+    
+    Raises
+    ------
+    TypeError
+        - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
+            instances.
+    AssertionError
+        - If `components` contains a non ``ComponentBase`` element.
+    """
+    
+    # Components check order:
+    # 1.: None -> None
+    # 2.: ComponentBase -> [component.to_data()]
+    # 3.: (list, tuple) of ComponentBase -> [component.to_data(), ...] / None
+    # 4.: raise
+    
+    if components is None:
+        component_datas = None
+    else:
+        if isinstance(components, ComponentBase):
+            component_datas = [components.to_data()]
+        elif isinstance(components, (list, tuple)):
+            component_datas = None
+            
+            for component in components:
+                if __debug__:
+                    if not isinstance(component, ComponentBase):
+                        raise AssertionError(f'`components` contains non `{ComponentBase.__name__}` instance, got '
+                            f'{component.__class__.__name__}')
+                
+                if component_datas is None:
+                    component_datas = []
+                
+                component_datas.append(component.to_data())
+        
+        else:
+            raise TypeError(f'`components` can be given as `{ComponentBase.__name__}` or as `list`, `tuple` of '
+                f'`{ComponentBase.__name__}` instances, got {components.__class__.__name__}')
+    
+    return component_datas

@@ -40,6 +40,10 @@ Full Button support incoming.
 - Add `Client.interaction_component_acknowledge`.
 - Add `components` parameter to `Client.message_cerate`.
 - Add `components` parameter to `Client.message_edit`.
+- Add `ComponentBase`, base class for `Component`-s for 3rd party support.
+- Add `components` parameter to `Client.interaction_response_message_create`.
+- Add `components` parameter to `Client.interaction_response_followup_create`.
+- Add `suppress` assertion to `Client.message_edit`.
 
 ##### Internal:
 

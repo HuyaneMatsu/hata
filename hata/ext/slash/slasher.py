@@ -827,7 +827,11 @@ class Slasher(EventWaitforBase):
         
         Task(self._acknowledge_component_event(client, interaction_event), KOKORO)
         
-        await waiter(client, interaction_event)
+        if isinstance(waiter, asynclist):
+            for waiter in waiter:
+                Task(waiter(client, interaction_event), KOKORO)
+        else:
+            await waiter(client, interaction_event)
     
     _run_waitfors_for = NotImplemented
     

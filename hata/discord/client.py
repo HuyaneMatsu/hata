@@ -58,10 +58,10 @@ from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, 
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
-    BanEntry, maybe_snowflake_pair, _check_is_client_duped
+    BanEntry, maybe_snowflake_pair, _check_is_client_duped, get_components_data
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
-    ApplicationCommandPermissionOverwrite, Component
+    ApplicationCommandPermissionOverwrite
 from .color import Color
 from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
@@ -3397,7 +3397,7 @@ class Client(ClientUserPBase):
             A file or files to send. Check ``._create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -3426,7 +3426,7 @@ class Client(ClientUserPBase):
             - If `channel`'s type is incorrect.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`) of \
                 (``Sticker``, `int).
-            - If `components` was not given neither as `None`, ``Component``, (`list`, `tuple`) of ``Component``
+            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
                 instances.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -3439,7 +3439,7 @@ class Client(ClientUserPBase):
             - If `tts` was not given as `bool` instance.
             - If `nonce` was not given neither as `None` nor as `str` instance.
             - If `reply_fail_fallback` was not given as `bool` instance.
-            - If `components` contains a non ``Component`` element.
+            - If `components` contains a non ``ComponentBase`` element.
         
         See Also
         --------
@@ -3598,35 +3598,7 @@ class Client(ClientUserPBase):
                 else:
                     sticker_ids.append(sticker_id)
         
-        # Components check order:
-        # 1.: None -> None
-        # 2.: Component -> [component.to_data()]
-        # 3.: (list, tuple) of Component -> [component.to_data(), ...] / None
-        # 4.: raise
-        
-        if components is None:
-            component_datas = None
-        else:
-            if isinstance(components, Component):
-                component_datas = [components.to_data()]
-            elif isinstance(components, (list, tuple)):
-                component_datas = None
-                
-                for component in components:
-                    if __debug__:
-                        if not isinstance(component, Component):
-                            raise AssertionError(f'`components` contains non `{Component.__name__}` instance, got '
-                                f'{component.__class__.__name__}')
-                    
-                    if component_datas is None:
-                        component_datas = []
-                    
-                    component_datas.append(component.to_data())
-            
-            else:
-                raise TypeError(f'`components` can be given as `{Component.__name__}` or as `list`, `tuple` of '
-                    f'`{Component.__name__}` instances, got {components.__class__.__name__}')
-        
+        components = get_components_data(components)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -3639,8 +3611,7 @@ class Client(ClientUserPBase):
             if not isinstance(reply_fail_fallback, bool):
                 raise AssertionError(f'`reply_fail_fallback` can be given as `bool` instance, got '
                     f'{reply_fail_fallback.__class__.__name__}.')
-        
-        
+            
         # Build payload
         message_data = {}
         contains_content = False
@@ -3657,8 +3628,8 @@ class Client(ClientUserPBase):
             message_data['sticker_ids'] = sticker_ids
             contains_content = True
         
-        if (component_datas is not None):
-            message_data['components'] = component_datas
+        if (components is not None):
+            message_data['components'] = components
         
         if tts:
             message_data['tts'] = True
@@ -5066,7 +5037,8 @@ class Client(ClientUserPBase):
                 # Else case should happen.
                 continue
     
-    async def message_edit(self, message, content=..., *, embed=..., allowed_mentions=..., components=..., suppress=...):
+    async def message_edit(self, message, content=..., *, embed=..., allowed_mentions=..., components=...,
+            suppress=...):
         """
         Edits the given `message`.
         
@@ -5095,8 +5067,10 @@ class Client(ClientUserPBase):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
             for details.
-        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
-            Components attached to the message. Pass it as `None` remove the actual stickers.
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+            Components attached to the message.
+            
+            Pass it as `None` remove the actual ones.
         suppress : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
         
@@ -5107,7 +5081,7 @@ class Client(ClientUserPBase):
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
-            - If `components` was not given neither as `None`, ``Component``, (`list`, `tuple`) of ``Component``
+            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
                 instances.
         ValueError
             If `allowed_mentions` contains an element of invalid type.
@@ -5117,7 +5091,8 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the message was not sent by the client.
-            - If `components` contains a non ``Component`` element.
+            - If `components` contains a non ``ComponentBase`` element.
+            - If `suppress` was not given as `bool` instance.
         
         See Also
         --------
@@ -5241,37 +5216,12 @@ class Client(ClientUserPBase):
             else:
                 content = str(content)
         
-        # Components check order:
-        # 1.: Ellipsis -> Ellipsis
-        # 2.: None -> None
-        # 3.: Component -> [component.to_data()]
-        # 4.: (list, tuple) of Component -> [component.to_data(), ...] / None
-        # 5.: raise
+        if (components is not ...):
+            components = get_components_data(components)
         
-        if components is  ...:
-            component_datas = ...
-        elif components is None:
-            component_datas = None
-        else:
-            if isinstance(components, Component):
-                component_datas = [components.to_data()]
-            elif isinstance(components, (list, tuple)):
-                component_datas = None
-                
-                for component in components:
-                    if __debug__:
-                        if not isinstance(component, Component):
-                            raise AssertionError(f'`components` contains non `{Component.__name__}` instance, got '
-                                f'{component.__class__.__name__}')
-                    
-                    if component_datas is None:
-                        component_datas = []
-                    
-                    component_datas.append(component.to_data())
-            
-            else:
-                raise TypeError(f'`components` can be given as `{Component.__name__}` or as `list`, `tuple` of '
-                    f'`{Component.__name__}` instances, got {components.__class__.__name__}')
+        if __debug__:
+            if (suppress is not ...) and (not isinstance(suppress, bool)):
+                raise AssertionError(f'`suppress` can be given as `bool` instance, got {suppress.__class__.__name__}.')
         
         # Build payload
         message_data = {}
@@ -5288,8 +5238,8 @@ class Client(ClientUserPBase):
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
         
-        if (component_datas is not ...):
-            message_data['components'] = component_datas
+        if (components is not ...):
+            message_data['components'] = components
         
         if (suppress is not ...):
             flags = message.flags
@@ -13772,7 +13722,7 @@ class Client(ClientUserPBase):
     
     
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
-            tts=False, show_for_invoking_user_only=False):
+            components=None, tts=False, show_for_invoking_user_only=False):
         """
         Sends an interaction response. After receiving an ``InteractionEvent``, you should acknowledge it within
         `3` seconds to perform followup actions.
@@ -13805,6 +13755,10 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
         tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
@@ -13818,6 +13772,8 @@ class Client(ClientUserPBase):
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
+                instances.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -13828,6 +13784,7 @@ class Client(ClientUserPBase):
             - If `interaction` was not given an ``InteractionEvent`` instance.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
+            - If `components` contains a non ``ComponentBase`` element.
         
         Notes
         -----
@@ -13942,6 +13899,8 @@ class Client(ClientUserPBase):
                 if not content:
                     content = None
         
+        components = get_components_data(components)
+        
         if __debug__:
             if not isinstance(tts, bool):
                 raise AssertionError(f'`tts` can be given as `bool` instance, got {tts.__class__.__name__}.')
@@ -13965,6 +13924,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not None):
+            message_data['components'] = components
         
         if tts:
             message_data['tts'] = True
@@ -14079,7 +14041,7 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        
+            
         Raises
         ------
         TypeError
@@ -14216,7 +14178,6 @@ class Client(ClientUserPBase):
             else:
                 content = str(content)
         
-        
         # Build payload
         message_data = {}
         
@@ -14256,6 +14217,7 @@ class Client(ClientUserPBase):
         
         if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
             interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+    
     
     async def interaction_response_message_delete(self, interaction):
         """
@@ -14334,7 +14296,7 @@ class Client(ClientUserPBase):
     
     
     async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, file=None,
-            allowed_mentions=..., tts=False, show_for_invoking_user_only=False):
+            allowed_mentions=..., components=None, tts=False, show_for_invoking_user_only=False):
         """
         Sends a followup message with the given interaction.
         
@@ -14362,6 +14324,10 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
         tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech. Defaults to `False`.
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
@@ -14381,6 +14347,8 @@ class Client(ClientUserPBase):
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
+            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
+                instances.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -14393,6 +14361,7 @@ class Client(ClientUserPBase):
             - If the client's application is not yet synced.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
+            - If `components` contains a non ``ComponentBase`` element.
         """
         if __debug__:
             if not isinstance(interaction, InteractionEvent):
@@ -14508,6 +14477,8 @@ class Client(ClientUserPBase):
                 if not content:
                     content = None
         
+        components = get_components_data(components)
+        
         if __debug__:
             if not isinstance(tts, bool):
                 raise AssertionError(f'`tts` can be given as `bool` instance, got {tts.__class__.__name__}.')
@@ -14531,6 +14502,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not None):
+            message_data['components'] = components
         
         if tts:
             message_data['tts'] = True
@@ -14560,7 +14534,7 @@ class Client(ClientUserPBase):
     
     
     async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=None,
-            allowed_mentions=...):
+            allowed_mentions=...,):
         """
         Edits the given interaction followup message.
         

@@ -1,4 +1,8 @@
-#### 1.1.69  *\[2021-04-??\]*
+#### 1.1.70 *\[2021-04-??\]*
+
+Full Button support incoming.
+
+#### 1.1.69  *\[2021-04-24\]*
 
 ##### Public API:
 
@@ -13,6 +17,7 @@
 - Add `ComponentInteraction`.
 - Add `InteractionEvent.wait_for_response_message`.
 - Add `InteractionEvent.InteractionEvent`.
+- Add `Client.interaction_component_acknowledge`.
 
 ##### Internal:
 

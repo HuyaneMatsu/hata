@@ -825,12 +825,38 @@ class Slasher(EventWaitforBase):
         except KeyError:
             return
         
-        await client.http.interaction_response_message_create(interaction_event.id, interaction_event.token,
-            {'type': InteractionResponseTypes.component})
+        Task(self._acknowledge_component_event(client, interaction_event), KOKORO)
         
         await waiter(client, interaction_event)
     
     _run_waitfors_for = NotImplemented
+    
+    async def _acknowledge_component_event(self, client, interaction_event):
+        """
+        Acknowledges the given interaction component event asynchronously to resolve race condition.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the interaction.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        try:
+            await client.interaction_component_acknowledge(interaction_event)
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                # No Internet connection
+                return
+            
+            if isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_interaction):
+                # We timed out, bad connection.
+                return
+            
+            await client.events.error(client, f'{self!r}._acknowledge_component_event', err)
+    
     
     def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
             is_default=None, delete_on_unload=None, allow_by_default=None):

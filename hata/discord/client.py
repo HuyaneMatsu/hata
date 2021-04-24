@@ -13920,6 +13920,50 @@ class Client(ClientUserPBase):
         return None
     
     
+    async def interaction_component_acknowledge(self, interaction):
+        """
+        Acknowledges the given component interaction.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent``
+            Interaction to acknowledge
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If `interaction` was not given an ``InteractionEvent`` instance.
+        
+        Notes
+        -----
+        If the interaction is already timed or out or was used, you will get:
+        
+        ```
+        DiscordException Not Found (404), code=10062: Unknown interaction
+        ```
+        """
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Do not ack twice
+        if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            return
+        
+        data = {'type': InteractionResponseTypes.component}
+        await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        
+        # Mark the interaction as responded.
+        interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+    
+    
     async def interaction_response_message_edit(self, interaction, content=..., embed=..., file=None,
             allowed_mentions=...):
         """

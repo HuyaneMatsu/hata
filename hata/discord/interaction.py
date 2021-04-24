@@ -2084,8 +2084,6 @@ class Component:
         data : `dict` of (`str`, `Any`) items
             Message component data.
         """
-        sys.stdout.write(f'DEBUG: {cls.__name__} data received: {data!r}\n\n')
-        
         self = object.__new__(cls)
         
         self.type = ComponentType.get(data['type'])

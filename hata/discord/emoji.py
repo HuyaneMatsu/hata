@@ -67,7 +67,32 @@ def create_partial_emoji(data):
     emoji.name = name
     
     return emoji
+
+
+def create_partial_emoji_data(emoji):
+    """
+    Creates partial emoji data form the given emoji.
     
+    Parameters
+    ----------
+    emoji : ``Emoji``
+        The emoji to serialize.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+        The serialized emoji data.
+    """
+    emoji_data = {}
+    unicode = emoji.unicode
+    if unicode is None:
+        emoji_data['id'] = emoji.id
+        emoji_data['name'] = emoji.name
+    else:
+        emoji_data['name'] = unicode
+    
+    return emoji_data
+
 class Emoji(DiscordEntity, immortal=True):
     """
     Represents a Discord emoji. It can be custom or builtin (unicode) emoji as well. Builtin emojis are loaded when the

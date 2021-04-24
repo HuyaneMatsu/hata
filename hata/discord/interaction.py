@@ -25,7 +25,7 @@ from .channel import create_partial_channel
 from .user import User, UserBase, ClientUserBase
 from .role import Role
 from .client_utils import maybe_snowflake
-from .emoji import create_partial_emoji, Emoji
+from .emoji import create_partial_emoji, Emoji, create_partial_emoji_data
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
@@ -283,7 +283,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +=======================+===================================================+
             | description           | `str`                                             |
             +-----------------------+---------------------------------------------------+
-            | allow_by_default    | `bool`                                            |
+            | allow_by_default      | `bool`                                            |
             +-----------------------+---------------------------------------------------+
             | name                  | `str`                                             |
             +-----------------------+---------------------------------------------------+
@@ -344,9 +344,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
         """
         data = {
-            'description' : self.description,
-            'name' : self.name,
-                }
+            'description': self.description,
+            'name': self.name,
+        }
     
         options = self.options
         if (options is not None):
@@ -359,30 +359,30 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the application command's representation."""
-        result = [
+        repr_parts = [
             '<', self.__class__.__name__,
-                ]
+        ]
         
         id_ = self.id
         if id_ == 0:
-            result.append(' partial')
+            repr_parts.append(' partial')
         else:
-            result.append(' id=')
-            result.append(repr(id_))
-            result.append(', application_id=')
-            result.append(repr(self.application_id))
+            repr_parts.append(' id=')
+            repr_parts.append(repr(id_))
+            repr_parts.append(', application_id=')
+            repr_parts.append(repr(self.application_id))
         
-        result.append(' name=')
-        result.append(repr(self.name))
-        result.append(', description=')
-        result.append(repr(self.description))
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
+        repr_parts.append(', description=')
+        repr_parts.append(repr(self.description))
         
         if not self.allow_by_default:
-            result.append(', allow_by_default=False')
+            repr_parts.append(', allow_by_default=False')
         
         options = self.options
         if (options is not None):
-            result.append(', options=[')
+            repr_parts.append(', options=[')
             
             index = 0
             limit = len(options)
@@ -390,19 +390,19 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             while True:
                 option = options[index]
                 index += 1
-                result.append(repr(option))
+                repr_parts.append(repr(option))
                 
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
             
-            result.append(']')
+            repr_parts.append(']')
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     @property
     def partial(self):
@@ -2062,11 +2062,14 @@ class ComponentBase:
     
     Class attributes
     ----------------
+    custom_id : `None` or `str`, Optional (Keyword only)
+        Custom identifier to detect which button was clicked by the user.
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.
     """
     __slots__ = ()
     
+    custom_id = None
     type = ComponentType.none
     
     @classmethod
@@ -2167,7 +2170,7 @@ class Component(ComponentBase):
         ----------
         type : ``ComponentType``, `int`
             The component's type.
-        components : `None` or (`list`, `tuple`) of ``Component``, Optional (Keyword only)
+        components : `None` or (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
             Sub-components.
         custom_id : `None` or `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
@@ -2181,7 +2184,7 @@ class Component(ComponentBase):
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` field.
-        label : `None` or `str`
+        label : `None` or `str`, Optional (Keyword only)
             Label of the component.
         
         Raises
@@ -2196,7 +2199,7 @@ class Component(ComponentBase):
             - `url` is mutually exclusive with `custom_id`.
             - If `emoji` was not given as ``Emoji`` instance.
             - If `url` was not given neither as `None` or `str` instance.
-            - If `style` was not given either as
+            - If `style` was not given as any of the `type`'s expected styles.
             - If `type` is button type then `style` is required.
             - If `components`'s length is out of the expected range [0:5].
             - If an action row type component would be added as a sub-component.
@@ -2209,7 +2212,7 @@ class Component(ComponentBase):
         elif type_ is COMPONENT_TYPE_BUTTON:
             if __debug__:
                 if style is None:
-                    raise AssertionError(f'`If `type` is `{omponentType.button}`, style can be given either as '
+                    raise AssertionError(f'`If `type` is `{ComponentType.button}`, style can be given either as '
                         f'`int` or as `{ButtonStyle.__name__}, got {style.__class__.__name__}.')
             
             style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
@@ -2232,8 +2235,8 @@ class Component(ComponentBase):
             
             for component in components:
                 if __debug__:
-                    if not isinstance(component, Component):
-                        raise AssertionError(f'`component` can be given as `{Component.__name__}` instance, got '
+                    if not isinstance(component, ComponentBase):
+                        raise AssertionError(f'`component` can be given as `{ComponentBase.__name__}` instance, got '
                             f'{component.__class__.__name__}.')
                     
                     if component.type is COMPONENT_TYPE_ACTION_ROW:
@@ -2252,6 +2255,10 @@ class Component(ComponentBase):
         
         
         if __debug__:
+            if (custom_id is not None) and (url is not None):
+                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
+                    f'custom_id={custom_id!r}, url={url!r}.')
+            
             if (custom_id is not None) and (not isinstance(custom_id, str)):
                 raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
                     f'{custom_id.__class__.__name__}.')
@@ -2263,10 +2270,6 @@ class Component(ComponentBase):
             if (url is not None) and (not isinstance(url, str)):
                 raise TypeError(f'`url` can be given either as `None` or as `str` instance, got '
                     f'{url.__class__.__name__}.')
-            
-            if (url is not None) and (emoji is not None):
-                raise AssertionError(f'`emoji` and `url` fields are mutually exclusive, got emoji={emoji!r}, '
-                    f'url={url!r}.')
         
         if (label is not None):
             if __debug__:
@@ -2333,13 +2336,7 @@ class Component(ComponentBase):
         
         emoji = self.emoji
         if (emoji is not None):
-            emoji_data = {}
-            unicode = emoji.unicode
-            if unicode is None:
-                emoji_data['id'] = emoji.id
-                emoji_data['name'] = emoji.name
-            else:
-                emoji_data['name'] = unicode
+            data['emoji'] = create_partial_emoji_data(emoji)
         
         components = self.components
         if (components is not None):
@@ -2564,7 +2561,7 @@ class ComponentInteraction:
             
             return True
         
-        if other_type is Component:
+        if issubclass(other_type, ComponentBase):
             if self.component_type is not other.type:
                 return False
             

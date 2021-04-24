@@ -44,6 +44,9 @@ Full Button support incoming.
 - Add `components` parameter to `Client.interaction_response_message_create`.
 - Add `components` parameter to `Client.interaction_response_followup_create`.
 - Add `suppress` assertion to `Client.message_edit`.
+- Add `create_partial_emoji_data`.
+- Add `Button`.
+- Add `Row`.
 
 ##### Internal:
 

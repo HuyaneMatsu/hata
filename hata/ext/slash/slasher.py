@@ -825,13 +825,14 @@ class Slasher(EventWaitforBase):
         except KeyError:
             return
         
+        # Later consider inlining it when all the features are added
         Task(self._acknowledge_component_event(client, interaction_event), KOKORO)
         
         if isinstance(waiter, asynclist):
             for waiter in waiter:
                 Task(waiter(client, interaction_event), KOKORO)
         else:
-            await waiter(client, interaction_event)
+            Task(waiter(client, interaction_event), KOKORO)
     
     _run_waitfors_for = NotImplemented
     

@@ -3,6 +3,7 @@
 Hata extensions for supporting interactions.
 """
 from .command import *
+from .components import *
 from .responding import *
 from .slasher import *
 from .utils import *
@@ -15,10 +16,11 @@ __all__ = (
     'set_permission',
     'setup_ext_slash',
     *command.__all__,
+    *components.__all__,
     *responding.__all__,
     *slasher.__all__,
     *utils.__all__,
-        )
+)
 
 set_permission = SlashCommandPermissionOverwriteWrapper
 

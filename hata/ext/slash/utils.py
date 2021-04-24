@@ -10,6 +10,7 @@ from ...discord.interaction import ApplicationCommandPermissionOverwrite
 from ...discord.client_core import APPLICATION_ID_TO_CLIENT, KOKORO
 from ...discord.message import Message
 from ...discord.parsers import InteractionEvent
+from ...discord.client import Client
 
 UNLOADING_BEHAVIOUR_DELETE = 0
 UNLOADING_BEHAVIOUR_KEEP = 1
@@ -278,27 +279,38 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None):
     RuntimeError
         The message or interaction is bound to a 3rd party application.
     """
+    
+    # Use goto
     if isinstance(event_or_message, Message):
-        message_interaction = event_or_message.interaction
-        if message_interaction:
-            raise ValueError(f'The given message has no bound interaction, got {event_or_message!r}.')
+        user = event_or_message.author
+        if isinstance(user, Client):
+            client = user
+        else:
+            message_interaction = event_or_message.interaction
+            if message_interaction is None:
+                raise ValueError(f'The given message has no bound interaction, got {event_or_message!r}.')
+            else:
+                try:
+                    client = APPLICATION_ID_TO_CLIENT[message_interaction.application_id]
+                except KeyError as err:
+                    raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
+                        f'{event_or_message!r}.') from err
         
         message = event_or_message
-        application_id = message_interaction.application_id
-    
+        
+        
     elif isinstance(event_or_message, InteractionEvent):
         message = await event_or_message.wait_for_response_message(timeout=timeout)
-        application_id = event_or_message.application_id
+        
+        try:
+            client = APPLICATION_ID_TO_CLIENT[event_or_message.application_id]
+        except KeyError as err:
+            raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
+                f'{event_or_message!r}.') from err
     
     else:
         raise TypeError(f'`event_or_message` can be either `{Message.__name__}` or `{InteractionEvent.__name__}` '
             f'instance, got {event_or_message.__class__.__name__}.')
-    
-    try:
-        client = APPLICATION_ID_TO_CLIENT[application_id]
-    except KeyError as err:
-        raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
-            f'{event_or_message!r}.') from err
     
     waiter = Future(KOKORO)
     if (timeout is not None):

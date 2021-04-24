@@ -29,6 +29,9 @@ from .emoji import create_partial_emoji
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
 
+COMPONENT_TYPE_ACTION_ROW = ComponentType.action_row
+COMPONENT_TYPE_BUTTON = ComponentType.button
+
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
     Represents a Discord slash command.
@@ -2115,12 +2118,13 @@ class Component:
             - If `style` was not given either as
             - If `type` is button type then `style` is required.
             - If `components`'s length is out of the expected range [0:5].
+            - If an action row type component would be added as a sub-component.
         """
         type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
         
-        if type_ is ComponentType.action_row:
+        if type_ is COMPONENT_TYPE_ACTION_ROW:
             style = None
-        elif type_ is ComponentType.button:
+        elif type_ is COMPONENT_TYPE_BUTTON:
             if __debug__:
                 if style is None:
                     raise AssertionError(f'`If `type` is `{omponentType.button}`, style can be given either as '
@@ -2148,7 +2152,11 @@ class Component:
                 if __debug__:
                     if not isinstance(component, Component):
                         raise AssertionError(f'`component` can be given as `{Component.__name__}` instance, got '
-                        f'{component.__class__.__name__}.')
+                            f'{component.__class__.__name__}.')
+                    
+                    if component.type is COMPONENT_TYPE_ACTION_ROW:
+                        raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ACTION_ROW}` type as sub components, got '
+                            f'{component!r}.')
                 
                 if components_processed is None:
                     components_processed = []
@@ -2336,6 +2344,7 @@ class Component:
         
         return new
     
+    
     def __eq__(self, other):
         """Returns Whether the two component are equal."""
         if type(other) is not type(self):
@@ -2376,7 +2385,7 @@ class Component:
         components = self.components
         if (components is not None):
             hash_value ^= len(components)<<12
-            for component in components
+            for component in components:
                 hash_value ^= hash(component)
         
         custom_id = self.custom_id

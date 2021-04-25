@@ -95,7 +95,10 @@ def is_coroutine_function(func):
     -------
     is_coroutine_function : `bool`
     """
-    return isinstance(func, (function, method)) and func.__code__.co_flags&CO_COROUTINE_ALL
+    if isinstance(func, (function, method)) and func.__code__.co_flags&CO_COROUTINE_ALL:
+        return True
+    else:
+        return False
 
 
 @export
@@ -112,7 +115,10 @@ def is_coroutine_generator_function(func):
     -------
     is_coroutine_function_generator : `bool`
     """
-    return isinstance(func, (function, method)) and func.__code__.co_flags&CO_ASYNC_GENERATOR
+    if isinstance(func, (function, method)) and func.__code__.co_flags&CO_ASYNC_GENERATOR:
+        return True
+    else:
+        return False
 
 
 def is_coroutine(obj):

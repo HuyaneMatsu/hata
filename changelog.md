@@ -23,6 +23,7 @@ Full Button support incoming.
 - Add `Component.enabled`.
 - Handle python3.10 things correctly. (Zeref Draganeel#3524)
 - Add `Message.application_id`.
+- Add `components` parameter to `SlashResponse`.
 
 ##### Internal
 
@@ -31,6 +32,8 @@ Full Button support incoming.
 - Add `application_id` keyword to `Message.custom`.
 - Add `Slasher.add_component_interaction_waiter`.
 - Add `Slasher.remove_component_interaction_waiter`.
+- `is_coroutine_function` returned non-bool. (ToxicKidz#6969)
+- `is_coroutine_generator_function` returned non-bool. 
 
 #### 1.1.69  *\[2021-04-24\]*
 

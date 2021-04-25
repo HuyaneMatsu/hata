@@ -24,6 +24,7 @@ Full Button support incoming.
 - Handle python3.10 things correctly. (Zeref Draganeel#3524)
 - Add `Message.application_id`.
 - Add `components` parameter to `SlashResponse`.
+- Add `iter_component_interaction`. (ToxicKidz#6969)
 
 ##### Internal
 

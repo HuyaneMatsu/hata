@@ -1,4 +1,6 @@
-__all__ = ('wait_for_component_interaction',)
+__all__ = ('iter_component_interaction', 'wait_for_component_interaction',)
+
+from collections import deque
 
 from ...backend.futures import Future
 from ...backend.event_loop import LOOP_TIME
@@ -240,6 +242,163 @@ class ComponentInteractionWaiter:
             future.set_exception_if_pending(exception)
 
 
+class ComponentInteractionIterator:
+    """
+    Component interaction iterator which goes brr.
+    
+    Parameters
+    ----------
+    _check : `None` or `callable`
+        The check to call to validate whether the response is sufficient.
+    _exception : `None` or ``BaseException``
+        Whether the waiter finished with an exception.
+    _future : `None` or ``Future``
+        The waiter future.
+    _message : ``Message``
+        The waited interaction component's message.
+    _queue : `None` or `collections.deque`
+        A deque used to queue up interactions if needed.
+    _timeouter : `None` or ``Timeouter``
+        Executes the timeout feature on the waiter.
+    timeout : `None` or `float`
+        The timeout after `TimeoutError` should be raised if no sufficient event is received.
+    """
+    __slots__ = ('_check', '_exception', '_future', '_message', '_queue', '_timeouter', 'timeout')
+    def __new__(cls, client, message, check, timeout):
+        """
+        Creates a new ``ComponentInteractionWaiter`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who will wait for component interaction.
+        message : ``Message``
+            The waited interaction component's message.
+        check : `None` or `callable`
+            The check to call to validate whether the response is sufficient.
+        timeout : `None` or `float`
+            The timeout till the waiting is done. If expires, `TimeoutError` is raised to ``._future``.
+        """
+        self = object.__new__(cls)
+        self._exception = None
+        self._future = None
+        self._message = message
+        self._check = check
+        self._timeouter = None
+        self._queue = None
+        self.timeout = timeout
+        
+        if timeout is None:
+            self._timeouter = Timeouter(self, timeout)
+        
+        client.slasher.add_component_interaction_waiter(message, self)
+        
+        return self
+    
+    
+    async def __call__(self, event):
+        """
+        Calls the component interaction iterator checking whether the respective event is sufficient setting the waiter's
+        result.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        event : ``InteractionEvent``
+            The received interaction event
+        """
+        check = self._check
+        if check is None:
+            self._feed_result(event)
+        else:
+            try:
+                result = check(event)
+            except BaseException as err:
+                self.cancel(err)
+            else:
+                if type(result) is bool:
+                    if result:
+                        self._feed_result(event)
+                    else:
+                        return
+                
+                else:
+                    self._feed_result((event, result))
+    
+    
+    def _feed_result(self, result):
+        """
+        Feeds result to the iterators output.
+        
+        Parameters
+        ----------
+        result : `Any`
+            The result to feed.
+        """
+        future = self._future
+        if future is None:
+            queue = self._queue
+            if queue is None:
+                queue = self._queue = deque()
+            
+            queue.append(result)
+        else:
+            self._future.set_result_if_pending(result)
+        
+        # Lol
+        timeout = self.timeout
+        timeouter = self._timeouter
+        if (timeout is not None) and (timeouter is not None):
+            self._timeouter.set_timeout(timeout)
+    
+    
+    def __await__(self):
+        """Awaits the iterator's next result."""
+        exception = self._exception
+        if (exception is not None):
+            raise exception
+        
+        future = self._future
+        if (future is None):
+            # As it should be
+            queue = self._queue
+            if queue is None:
+                future = self._future = Future(KOKORO)
+            else:
+                result = queue.popleft()
+                if not queue:
+                    self._queue = None
+                
+                return result
+        
+        try:
+            return (yield from future)
+        finally:
+            self._future = None
+    
+    
+    def cancel(self, exception=None):
+        set_exception = self._exception
+        if (set_exception is not None):
+            return
+        
+        if (exception is None):
+            exception = StopAsyncIteration()
+        
+        timeouter = self._timeouter
+        if (timeouter is not None):
+            timeouter.cancel()
+        
+        message = self._message
+        client = get_client_from_message(message)
+        client.slasher.remove_component_interaction_waiter(message, self)
+        
+        future = self._future
+        if (future is not None):
+            future.set_exception_if_pending(exception)
+
+
 def get_client_from_message(message):
     """
     Tries the get the respective client instance form the message.
@@ -263,6 +422,56 @@ def get_client_from_message(message):
     return client
 
 
+async def get_interaction_client_and_message(event_or_message, timeout):
+    """
+    Gets the respective client and message if the given interaction event or message.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    event_or_message : ``InteractionEvent``, ``Message``
+        The interaction event or the sent message.
+    timeout : `None` or `float`
+        The maximal amount of time wait for interaction response.
+    
+    Returns
+    -------
+    client : ``Client``
+        The client who executed the interaction or sent the message.
+    message : ``Message``
+        The interactions's message.
+    
+    Raises
+    ------
+    TimeoutError
+        If interaction even was not received before timeout.
+    TypeError
+        `event_or_message` is neither ``Message`` nor ``InteractionEvent`` instance.
+    RuntimeError
+        - The message or interaction is bound to a 3rd party application.
+        - The given message message has no bound interaction.
+    """
+    if isinstance(event_or_message, Message):
+        message = event_or_message
+        client = get_client_from_message(message)
+    
+    elif isinstance(event_or_message, InteractionEvent):
+        message = await event_or_message.wait_for_response_message(timeout=timeout)
+        
+        try:
+            client = APPLICATION_ID_TO_CLIENT[event_or_message.application_id]
+        except KeyError as err:
+            raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
+                f'{event_or_message!r}.') from err
+    
+    else:
+        raise TypeError(f'`event_or_message` can be either `{Message.__name__}` or `{InteractionEvent.__name__}` '
+            f'instance, got {event_or_message.__class__.__name__}.')
+    
+    return client, message
+
+
 async def wait_for_component_interaction(event_or_message, *, timeout=None, check=None):
     """
     Waits for interaction.
@@ -273,7 +482,7 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message to wait component on.
-    timeout : `None` or  `float`, Optional (Keyword only)
+    timeout : `None` or `float`, Optional (Keyword only)
         The maximal amount of time wait
     check : `None` or `callable`, Optional (Keyword only)
         Checks whether the received ``InteractionEvent`` instances pass the requirements.
@@ -292,23 +501,46 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
         - The message or interaction is bound to a 3rd party application.
         - The given message message has no bound interaction.
     """
-    
-    # Use goto
-    if isinstance(event_or_message, Message):
-        message = event_or_message
-        client = get_client_from_message(message)
-    
-    elif isinstance(event_or_message, InteractionEvent):
-        message = await event_or_message.wait_for_response_message(timeout=timeout)
-        
-        try:
-            client = APPLICATION_ID_TO_CLIENT[event_or_message.application_id]
-        except KeyError as err:
-            raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
-                f'{event_or_message!r}.') from err
-    
-    else:
-        raise TypeError(f'`event_or_message` can be either `{Message.__name__}` or `{InteractionEvent.__name__}` '
-            f'instance, got {event_or_message.__class__.__name__}.')
-    
+    client, message = await get_interaction_client_and_message(event_or_message, timeout)
     return await ComponentInteractionWaiter(client, message, check, timeout)
+
+
+async def iter_component_interaction(event_or_message, *, timeout=None, check=None):
+    """
+    Iterates component interactions.
+    
+    This function is a coroutine generator.
+    
+    Parameters
+    ----------
+    event_or_message : ``InteractionEvent``, ``Message``
+        The interaction event or the sent message to wait component on.
+    timeout : `None` or `float`, Optional (Keyword only)
+        The maximal amount of time wait
+    check : `None` or `callable`, Optional (Keyword only)
+        Checks whether the received ``InteractionEvent`` instances pass the requirements.
+    
+    Yields
+    ------
+    interaction_event : ``InteractionEvent``
+    
+    Raises
+    ------
+    TimeoutError
+        No component interaction was received in time
+    TypeError
+        `event_or_message` is neither ``Message`` nor ``InteractionEvent`` instance.
+    RuntimeError
+        - The message or interaction is bound to a 3rd party application.
+        - The given message message has no bound interaction.
+    """
+    client, message = await get_interaction_client_and_message(event_or_message, timeout)
+    
+    component_interaction_iterator = ComponentInteractionIterator(client, message, check, timeout)
+    while True:
+        try:
+            yield await component_interaction_iterator
+        except:
+            component_interaction_iterator.cancel()
+            raise
+

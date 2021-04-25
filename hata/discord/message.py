@@ -819,6 +819,8 @@ class Message(DiscordEntity, immortal=True):
         Sent with rich presence related embeds.
     application : `None` or ``MessageApplication``
         Sent with rich presence related embeds.
+    application_id : `int`
+        The application's identifier who sent the message. Defaults to `0`.
     attachments : `None` or `list` of ``Attachment``
         Attachments sent with the message.
     author : ``UserBase`` instance
@@ -873,10 +875,10 @@ class Message(DiscordEntity, immortal=True):
     user_mentions : `None` or `list` of ``ClientUserBase``
         The mentioned users by the message if any.
     """
-    __slots__ = ('_channel_mentions', 'activity', 'application', 'attachments', 'author', 'channel', 'components',
-        'content', 'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags', 'interaction',
-        'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts', 'type',
-        'user_mentions',)
+    __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author', 'channel',
+        'components', 'content', 'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags',
+        'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts',
+        'type', 'user_mentions',)
     
     def __new__(cls, data, channel):
         """
@@ -1100,6 +1102,17 @@ class Message(DiscordEntity, immortal=True):
         
         self.role_mentions = role_mentions
         
+        
+        try:
+            application_id = data['application_id']
+        except KeyError:
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        
+        self.application_id = application_id
+        
+        
         MESSAGES[self.id] = self
     
     
@@ -1159,6 +1172,10 @@ class Message(DiscordEntity, immortal=True):
             The ``.application`` attribute the message.
             
             If called as a classmethod defaults to `None`.
+        application_id : `int`, Optional (Keyword Only)
+            The ``.application_id`` attribute of the message.
+            
+            If called as a classmethod defaults to `0`.
         attachments : `None` or (`list` of ``Attachment``), Optional (Keyword only)
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
             
@@ -1309,6 +1326,18 @@ class Message(DiscordEntity, immortal=True):
             if (application is not None) and (type(application) is not MessageApplication):
                 raise TypeError(f'`application` should be `None` or type `{MessageApplication.__name__}`, got '
                     f'`{application!r}`')
+        
+        
+        try:
+            application_id = kwargs.pop('application_id')
+        except KeyError:
+            if base is None:
+                application_id = 0
+            else:
+                application_id = base.application_id
+        else:
+            application_id = preconvert_snowflake(application_id, 'application_id')
+        
         
         try:
             attachments = kwargs.pop('attachments')
@@ -1649,7 +1678,7 @@ class Message(DiscordEntity, immortal=True):
         
         for name in ('type_', 'type'):
             try:
-                type_ = kwargs.pop('type')
+                type_ = kwargs.pop(name)
             except KeyError:
                 continue
             
@@ -1701,6 +1730,7 @@ class Message(DiscordEntity, immortal=True):
         self._channel_mentions = _channel_mentions
         self.activity = activity
         self.application = application
+        self.application_id = application_id
         self.attachments = attachments
         self.author = author
         self.channel = channel

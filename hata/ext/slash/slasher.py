@@ -5,14 +5,14 @@ from threading import current_thread
 
 from ...backend.futures import Task, WaitTillAll
 from ...backend.event_loop import EventThread
-from ...backend.utils import WeakReferer
+from ...backend.utils import WeakReferer, WeakKeyDictionary
 
 from ...discord.client_core import KOKORO
-from ...discord.parsers import EventHandlerBase, InteractionEvent, Router, EventWaitforBase, asynclist
+from ...discord.parsers import InteractionEvent, Router, asynclist, EventHandlerBase
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client import Client
 from ...discord.preinstanced import InteractionType
-from ...discord.interaction import ApplicationCommand, InteractionResponseTypes
+from ...discord.interaction import ApplicationCommand
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
@@ -664,7 +664,7 @@ class CommandState:
         return command, COMMAND_STATE_IDENTIFIER_REMOVED
 
 
-class Slasher(EventWaitforBase):
+class Slasher(EventHandlerBase):
     """
     Slash command processor.
     
@@ -689,7 +689,9 @@ class Slasher(EventWaitforBase):
         +-------------------------------+-------+
         | UNLOADING_BEHAVIOUR_KEEP      | 1     |
         +-------------------------------+-------+
-    
+    _component_interaction_waiters : ``WeakKeyDictionary`` of (``Message``, `async-callable`) items
+        Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
+        a ``Task``.
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
     _sync_permission_tasks : `dict` of (`int`, ``Task``) items
@@ -702,8 +704,6 @@ class Slasher(EventWaitforBase):
         A nested dictionary, which contains application command permission overwrites per guild_id and per command_id.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
-        An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
     ----------------
@@ -717,8 +717,8 @@ class Slasher(EventWaitforBase):
     ``Slasher`` instances are weakreferable.
     """
     __slots__ = ('__weakref__', '_call_later', '_client_reference', '_command_states', '_command_unloading_behaviour',
-        '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks', '_synced_permissions',
-        'command_id_to_command', )
+        '_component_interaction_waiters', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
+        '_synced_permissions', 'command_id_to_command')
     
     __event_name__ = 'interaction_create'
     
@@ -770,6 +770,7 @@ class Slasher(EventWaitforBase):
         self._sync_done = set()
         self._sync_permission_tasks = {}
         self._synced_permissions = {}
+        self._component_interaction_waiters = WeakKeyDictionary()
         
         self.command_id_to_command = {}
         
@@ -790,26 +791,15 @@ class Slasher(EventWaitforBase):
         """
         interaction_event_type = interaction_event.type
         if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
-            try:
-                command = await self._try_get_command_by_id(client, interaction_event)
-            except ConnectionError:
-                return
-            except BaseException as err:
-                await client.events.error(client, f'{self!r}.__call__', err)
-                return
-            
-            if command is not None:
-                await command(client, interaction_event)
-            
-            return
+            await self._dispatch_command_event(client, interaction_event)
         
-        if interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-            await self.call_waitfors(client, interaction_event)
-            return
+        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+            await self._dispatch_component_event(client, interaction_event)
     
-    async def call_waitfors(self, client, interaction_event):
+    
+    async def _dispatch_command_event(self, client, interaction_event):
         """
-        Calls the waiting events on components input.
+        Dispatches an application command interaction event.
         
         This method is a coroutine.
         
@@ -821,46 +811,115 @@ class Slasher(EventWaitforBase):
             The received interaction event.
         """
         try:
-            waiter = self.waitfors[interaction_event.message]
+            command = await self._try_get_command_by_id(client, interaction_event)
+        except ConnectionError:
+            return
+        except BaseException as err:
+            await client.events.error(client, f'{self!r}.__call__', err)
+        else:
+            if (command is not None):
+                await command(client, interaction_event)
+    
+    
+    async def _dispatch_component_event(self, client, interaction_event):
+        """
+        Dispatches a component interaction event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the interaction.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        should_acknowledge = False
+        
+        try:
+            waiter = self._component_interaction_waiters[interaction_event.message]
+        except KeyError:
+            pass
+        else:
+            if isinstance(waiter, asynclist):
+                for waiter in waiter:
+                    Task(waiter(interaction_event), KOKORO)
+            else:
+                Task(waiter(interaction_event), KOKORO)
+            
+            should_acknowledge = True
+        
+        if should_acknowledge:
+            try:
+                await client.interaction_component_acknowledge(interaction_event)
+            except BaseException as err:
+                if isinstance(err, ConnectionError):
+                    # No Internet connection
+                    return
+                
+                if isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_interaction):
+                    # We timed out, bad connection.
+                    return
+                
+                await client.events.error(client, f'{self!r}._dispatch_component_event', err)
+    
+    
+    def add_component_interaction_waiter(self, message, waiter):
+        """
+        Adds an component interaction waiter for the given message.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The message to wait component interactions on.
+        waiter : `async-callable`
+            The waiter to call when the respective event occurs.
+        """
+        component_interaction_waiters = self._component_interaction_waiters
+        try:
+            actual_waiter = component_interaction_waiters[message]
+        except KeyError:
+            component_interaction_waiters[message] = waiter
+        else:
+            if type(actual_waiter) is asynclist:
+                list.append(actual_waiter, waiter)
+            else:
+                new_waiter = asynclist()
+                list.append(new_waiter, waiter)
+                list.append(new_waiter, actual_waiter)
+                component_interaction_waiters[message] = new_waiter
+    
+    
+    def remove_component_interaction_waiter(self, message, waiter):
+        """
+        Removes a component interaction waiter for the given message.
+        
+        Parameters
+        ----------
+        message : ``Message``
+            The message on which the waiter waits on.
+        waiter : `async-callable`
+            The waiter to remove.
+        """
+        component_interaction_waiters = self._component_interaction_waiters
+        try:
+            actual_waiter = component_interaction_waiters.pop(message)
         except KeyError:
             return
         
-        # Later consider inlining it when all the features are added
-        Task(self._acknowledge_component_event(client, interaction_event), KOKORO)
+        if type(actual_waiter) is not asynclist:
+            return
         
-        if isinstance(waiter, asynclist):
-            for waiter in waiter:
-                Task(waiter(client, interaction_event), KOKORO)
-        else:
-            Task(waiter(client, interaction_event), KOKORO)
-    
-    _run_waitfors_for = NotImplemented
-    
-    async def _acknowledge_component_event(self, client, interaction_event):
-        """
-        Acknowledges the given interaction component event asynchronously to resolve race condition.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The respective client who received the interaction.
-        interaction_event : ``InteractionEvent``
-            The received interaction event.
-        """
         try:
-            await client.interaction_component_acknowledge(interaction_event)
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
-                # No Internet connection
+            list.remove(actual_waiter, waiter)
+        except ValueError:
+            pass
+        else:
+            if len(actual_waiter) == 1:
+                self.waitfors[message] = actual_waiter[0]
                 return
-            
-            if isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_interaction):
-                # We timed out, bad connection.
-                return
-            
-            await client.events.error(client, f'{self!r}._acknowledge_component_event', err)
+        
+        self.waitfors[message] = actual_waiter
     
     
     def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,

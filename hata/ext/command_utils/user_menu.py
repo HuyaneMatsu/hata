@@ -435,7 +435,7 @@ class UserMenuRunner(PaginationBase):
     
     async def __new__(cls, factory, client, channel, *args, message=None, **kwargs):
         """
-        Creates a new user menu runner instance with teh given parameters.
+        Creates a new user menu runner instance with the given parameters.
         
         This method is a coroutine.
         
@@ -690,7 +690,7 @@ class UserPagination:
     Attributes
     ----------
     menu : ``UserMenuRunner``
-        The menu runner running teh pagination.
+        The menu runner running the pagination.
     page_index : `int`
         The current page's index.
     pages : `indexable`
@@ -726,7 +726,7 @@ class UserPagination:
     
     def __init__(self, menu, pages):
         """
-        Creates a new ``UserMenuRunner`` instance with teh given parameters.
+        Creates a new ``UserMenuRunner`` instance with the given parameters.
         
         Parameters
         ----------
@@ -765,7 +765,7 @@ class UserPagination:
     
     async def invoke(self, event):
         """
-        An emoji addition or deletion invoked teh pagination.
+        An emoji addition or deletion invoked the pagination.
         
         Parameters
         ----------

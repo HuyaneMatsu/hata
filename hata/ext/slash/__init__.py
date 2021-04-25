@@ -7,6 +7,7 @@ from .components import *
 from .responding import *
 from .slasher import *
 from .utils import *
+from .waiters import *
 
 from .event_handlers import _do_initial_sync, _application_command_create_watcher, \
     _application_command_delete_watcher, _application_command_permission_update_watcher
@@ -20,6 +21,7 @@ __all__ = (
     *responding.__all__,
     *slasher.__all__,
     *utils.__all__,
+    *waiters.__all__,
 )
 
 set_permission = SlashCommandPermissionOverwriteWrapper

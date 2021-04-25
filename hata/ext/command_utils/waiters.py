@@ -14,7 +14,7 @@ class ReactionAddWaitfor(EventWaitforBase):
     
     Attributes
     ----------
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+    waitfors : `WeakKeyDictionary` of (``DiscordEntity``, `async-callable`) items
         An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
@@ -31,7 +31,7 @@ class ReactionDeleteWaitfor(EventWaitforBase):
     
     Attributes
     ----------
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+    waitfors : `WeakKeyDictionary` of (``DiscordEntity``, `async-callable`) items
         An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
@@ -48,7 +48,7 @@ class MessageCreateWaitfor(EventWaitforBase):
     
     Attributes
     ----------
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+    waitfors : `WeakKeyDictionary` of (``DiscordEntity``, `async-callable`) items
         An auto-added container to store `entity` - `async-callable` pairs.
     
     Class Attributes
@@ -68,7 +68,7 @@ class WaitAndContinue:
     Attributes
     -----------
     _canceller : `None` or `function`
-        The canceller function of the ``WaitAndContinue``, what is set to ``._canceller`` by default.
+        The canceller function of the ``WaitAndContinue``, what is set to ``._canceller_function`` by default.
         When ``.cancel`` is called, then this instance attribute is set to `None`.
     _timeouter : ``TimeOuter``
         Executes the ``WaitAndContinue`` timeout feature and raise `TimeoutError` to the waiter.
@@ -168,9 +168,14 @@ class WaitAndContinue:
             timeouter.cancel()
     
     
-    def cancel(self):
+    def cancel(self, exception=None):
         """
         Cancels the ``WaitAndContinue``.
+        
+        Parameters
+        ----------
+        exception : `None` or ``BaseException``
+            Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
         """
         canceller = self._canceller
         if canceller is None:
@@ -179,11 +184,12 @@ class WaitAndContinue:
         self._canceller = None
         
         self.event.remove(self.target, self)
+        
         timeouter = self._timeouter
         if (timeouter is not None):
             timeouter.cancel()
         
-        return Task(canceller(self, None), KOKORO)
+        return Task(canceller(self, exception), KOKORO)
 
 
 def wait_for_reaction(client, message, check, timeout):

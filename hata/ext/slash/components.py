@@ -36,7 +36,7 @@ class Button(ComponentBase):
     
     __slots__ = ('_data', )
     
-    def __new__(cls, label=None, emoji=None, *, custom_id=None, url=None, style=None):
+    def __new__(cls, label=None, emoji=None, *, custom_id=None, url=None, style=None, enabled=True):
         """
         Creates a new component instance with the given parameters.
         
@@ -59,6 +59,9 @@ class Button(ComponentBase):
         style : ``ButtonStyle``, `int`, Optional (Keyword only)
             The components's style. Applicable for buttons.
         
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
+        
         Raises
         ------
         TypeError
@@ -70,6 +73,7 @@ class Button(ComponentBase):
             - If `url` was not given neither as `None` or `str` instance.
             - If `style` was not given as any of the `type`'s expected styles.
             - If `label` was not given neither as `None` nor as `int` instance.
+            - If `enabled` was not given as `bool` instance.
         """
         if style is None:
             style = cls.default_style
@@ -105,7 +109,7 @@ class Button(ComponentBase):
         if (url is not None):
             if __debug__:
                 if (not isinstance(url, str)):
-                    raise TypeError(f'`url` can be given either as `None` or as `str` instance, got '
+                    raise AssertionError(f'`url` can be given either as `None` or as `str` instance, got '
                         f'{url.__class__.__name__}.')
             
             data['url'] = url
@@ -113,11 +117,18 @@ class Button(ComponentBase):
         if (label is not None):
             if __debug__:
                 if (not isinstance(label, str)):
-                    raise TypeError(f'`label` can be given either as `None` or as `str` instance, got '
+                    raise AssertionError(f'`label` can be given either as `None` or as `str` instance, got '
                         f'{label.__class__.__name__}.')
             
             if label:
                 data['label'] = label
+        
+        if __debug__:
+            if not isinstance(enabled, bool):
+                raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
+        
+        if not enabled:
+            data['disabled'] = True
         
         self = object.__new__(cls)
         self._data = data
@@ -248,6 +259,30 @@ class Button(ComponentBase):
             pass
     
     
+    @property
+    def enabled(self):
+        """
+        A get-set property for accessing the button's `enabled` field.
+        
+        Accepts and returns `None` and `str` instance.
+        """
+        return (not self._data.get('disabled', False))
+    
+    @enabled.setter
+    def enabled(self, value):
+        if __debug__:
+            if not isinstance(enabled, bool):
+                raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
+        
+        if value:
+            try:
+                del self._data['disabled']
+            except KeyError:
+                pass
+        else:
+            self._data['disabled'] = True
+    
+    
     @classmethod
     @copy_docs(ComponentBase.from_data)
     def from_data(cls, data):
@@ -310,9 +345,19 @@ class Button(ComponentBase):
         if style != self.default_style:
             if added_field:
                 repr_parts.append(', ')
-            
+            else:
+                added_field = True
             repr_parts.append('style=')
             repr_parts.append(repr(style))
+        
+        
+        enabled = not data.get('disabled', False)
+        if (not enabled):
+            if added_field:
+                repr_parts.append(', ')
+            
+            repr_parts.append('enabled=')
+            repr_parts.append(repr(enabled))
         
         repr_parts.append(')')
         return ''.join(repr_parts)
@@ -357,6 +402,10 @@ class Button(ComponentBase):
                 pass
             else:
                 hash_value ^= hash(field_value)
+        
+        enabled = not data.get('disabled', False)
+        if enabled:
+            hash_value ^= 1<<8
         
         return hash_value
 

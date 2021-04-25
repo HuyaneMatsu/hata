@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 __all__ = ('CallableAnalyzer', )
 
+import sys
+
 from .utils import FunctionType, MethodLike
 from .export import include
+
+IS_PYTHON_STUPID = sys.version_info >= (3, 10, 0)
 
 is_coroutine_function = include('is_coroutine_function')
 is_coroutine_generator_function = include('is_coroutine_generator_function')
@@ -420,18 +424,25 @@ class CallableAnalyzer:
             keyword_only_argument_count = real_function.__code__.co_kwonlyargcount
             accepts_kwargs = real_function.__code__.co_flags&CO_VARKEYWORDS
             positional_only_argcount = getattr(real_function.__code__, 'co_posonlyargcount', 0)
-            default_argument_values=real_function.__defaults__
+            default_argument_values = real_function.__defaults__
             default_keyword_only_argument_values = real_function.__kwdefaults__
             annotations = getattr(real_function, '__annotations__', None)
             if (annotations is None):
                 annotations = {}
+            elif IS_PYTHON_STUPID:
+                global_variables = getattr(real_function, '__globals__', None)
+                if (global_variables is None):
+                    # Builtins go brrr
+                    annotations = {}
+                else:
+                    annotations = {key: eval(value, global_variables, None) for key, value in annotations.items()}
             
-            start=0
-            end=argument_count
+            start = 0
+            end = argument_count
             argument_names = real_function.__code__.co_varnames[start:end]
             
-            start=end
-            end=start+keyword_only_argument_count
+            start = end
+            end = start+keyword_only_argument_count
             keyword_only_argument_names = real_function.__code__.co_varnames[start:end]
             
             if accepts_args:

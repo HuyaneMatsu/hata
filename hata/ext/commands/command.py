@@ -2101,7 +2101,7 @@ class CommandProcesser(EventWaitforBase):
     
     Attributes
     ----------
-    waitfors : `WeakValueDictionary` of (``DiscordEntity``, `async-callable`) items
+    waitfors : `WeakKeyDictionary` of (``DiscordEntity``, `async-callable`) items
         Container to store the entities where message is expected to be sent and their waiters.
     _category_name_rule : `None` or `function`
         Function to generate display names for categories.

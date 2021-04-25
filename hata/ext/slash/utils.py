@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
-__all__ = ('SlashCommandPermissionOverwriteWrapper', 'SlashCommandWrapper', 'wait_for_component_interaction')
+__all__ = ('SlashCommandPermissionOverwriteWrapper', 'SlashCommandWrapper')
 
 from functools import partial as partial_func
 
-from ...backend.futures import Future, future_or_timeout
 from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
-from ...discord.client_core import APPLICATION_ID_TO_CLIENT, KOKORO
-from ...discord.message import Message
-from ...discord.parsers import InteractionEvent
+
 from ...discord.client import Client
 
 UNLOADING_BEHAVIOUR_DELETE = 0
@@ -181,6 +178,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         
         return partial_func(cls._decorate, cls, guild_id, overwrite)
     
+    
     def _decorate(cls, guild_id, overwrite, wrapped):
         """
         Wraps given command.
@@ -205,6 +203,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         self._wrapped = wrapped
         return self
 
+    
     def apply(self, slash_command):
         """
         Applies the wrapper's changes on the respective slash command.
@@ -214,6 +213,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         slash_command : ``SlashCommand``
         """
         slash_command.add_overwrite(self._guild_id, self._overwrite)
+    
     
     def __repr__(self):
         """Returns the slash command wrapper's representation."""
@@ -235,95 +235,3 @@ def runtime_sync_hook_is_client_running(client):
     return client.running
 
 RUNTIME_SYNC_HOOKS.append(runtime_sync_hook_is_client_running)
-
-
-async def event_received_callback(waiter, client, event):
-    """
-    Callback added to ``Slasher`` by ``wait_for_component_interaction``.
-    
-    Parameters
-    ----------
-    waiter : ``Future``
-        Interaction event waiter future.
-    client : ``Client``
-        The respective client instance.
-    event : ``InteractionEvent``
-        The received interaction event.
-    """
-    waiter.set_result_if_pending(event)
-
-
-async def wait_for_component_interaction(event_or_message, *, timeout=None):
-    """
-    Waits for interaction.
-    
-    This function is a coroutine.
-    
-    Parameters
-    ----------
-    event_or_message : ``InteractionEvent``, ``Message``
-        The interaction event or the sent message to wait component on.
-    timeout : `None` or  `float`, Optional (Keyword only)
-        The maximal amount of time wait
-    
-    Returns
-    ------
-    interaction_event : ``InteractionEvent``
-    
-    Raises
-    ------
-    TimeoutError
-        No component interaction was received in time
-    TypeError
-        `event_or_message` is neither ``Message`` nor ``InteractionEvent`` instance.
-    ValueError
-        The given message message has no bound interaction.
-    RuntimeError
-        The message or interaction is bound to a 3rd party application.
-    """
-    
-    # Use goto
-    if isinstance(event_or_message, Message):
-        user = event_or_message.author
-        if isinstance(user, Client):
-            client = user
-        else:
-            message_interaction = event_or_message.interaction
-            if message_interaction is None:
-                raise ValueError(f'The given message has no bound interaction, got {event_or_message!r}.')
-            else:
-                try:
-                    client = APPLICATION_ID_TO_CLIENT[message_interaction.application_id]
-                except KeyError as err:
-                    raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
-                        f'{event_or_message!r}.') from err
-        
-        message = event_or_message
-        
-        
-    elif isinstance(event_or_message, InteractionEvent):
-        message = await event_or_message.wait_for_response_message(timeout=timeout)
-        
-        try:
-            client = APPLICATION_ID_TO_CLIENT[event_or_message.application_id]
-        except KeyError as err:
-            raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
-                f'{event_or_message!r}.') from err
-    
-    else:
-        raise TypeError(f'`event_or_message` can be either `{Message.__name__}` or `{InteractionEvent.__name__}` '
-            f'instance, got {event_or_message.__class__.__name__}.')
-    
-    waiter = Future(KOKORO)
-    if (timeout is not None):
-        future_or_timeout(waiter, timeout)
-    
-    callback = partial_func(event_received_callback, waiter)
-    client.slasher.append(message, callback)
-    
-    try:
-        result = await waiter
-    finally:
-        client.slasher.remove(message, callback)
-    
-    return result

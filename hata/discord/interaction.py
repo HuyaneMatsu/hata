@@ -2147,6 +2147,8 @@ class Component(ComponentBase):
         Custom identifier to detect which button was clicked by the user.
         
         > Mutually exclusive with the `url` field.
+    enabled : `bool`
+        Whether the component is enabled.
     emoji : `None` or ``Emoji``
         Emoji of the button if applicable.
     label : `None` or `str`
@@ -2160,9 +2162,10 @@ class Component(ComponentBase):
         
         > Mutually exclusive with the `custom_id` field.
     """
-    __slots__ = ('components', 'custom_id', 'emoji', 'label', 'style', 'type', 'url',)
+    __slots__ = ('components', 'custom_id', 'enabled', 'emoji', 'label', 'style', 'type', 'url',)
     
-    def __new__(cls, type_, *, components=None, custom_id=None, emoji=None, label=None, style=None, url=None):
+    def __new__(cls, type_, *, components=None, custom_id=None, emoji=None, label=None, style=None, url=None,
+            enabled=True):
         """
         Creates a new component instance with the given parameters.
         
@@ -2176,6 +2179,7 @@ class Component(ComponentBase):
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `url` field.
+    
         emoji : `None` or ``Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
         style : ``ButtonStyle``, `int`, Optional (Keyword only)
@@ -2186,6 +2190,8 @@ class Component(ComponentBase):
             > Mutually exclusive with the `custom_id` field.
         label : `None` or `str`, Optional (Keyword only)
             Label of the component.
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
         
         Raises
         ------
@@ -2204,6 +2210,7 @@ class Component(ComponentBase):
             - If `components`'s length is out of the expected range [0:5].
             - If an action row type component would be added as a sub-component.
             - If `label` was not given neither as `None` nor as `int` instance.
+            - If `enabled` was not given as `bool` instance.
         """
         type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
         
@@ -2280,6 +2287,11 @@ class Component(ComponentBase):
             if (not label):
                 label = None
         
+        if __debug__:
+            if not isinstance(enabled, bool):
+                raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
+        
+        
         self = object.__new__(cls)
         
         self.type = type_
@@ -2289,6 +2301,7 @@ class Component(ComponentBase):
         self.emoji = emoji
         self.url = url
         self.label = label
+        self.enabled = enbaled
         
         return self
     
@@ -2325,6 +2338,8 @@ class Component(ComponentBase):
         
         self.label = data.get('label', None)
         
+        self.enabled = not data.get('disabled', False)
+        
         return self
     
     
@@ -2357,6 +2372,9 @@ class Component(ComponentBase):
         label = self.label
         if (label is not None):
             data['label'] = label
+        
+        if (not self.enabled):
+            data['disabled'] = True
         
         return data
     
@@ -2404,6 +2422,11 @@ class Component(ComponentBase):
             repr_parts.append(', custom_id=')
             repr_parts.append(reprlib.repr(custom_id))
         
+        enabled = self.enabled
+        if (not enabled):
+            repr_parts.append(', enabled=')
+            repr_parts.append(repr(enabled))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
@@ -2419,6 +2442,7 @@ class Component(ComponentBase):
         new.type = self.type
         new.url = self.url
         new.label = self.label
+        new.enabled = self.enabled
         
         return new
     
@@ -2447,6 +2471,9 @@ class Component(ComponentBase):
             return False
         
         if self.label != other.label:
+            return False
+        
+        if self.enabled != other.enabled:
             return False
         
         return True
@@ -2481,6 +2508,9 @@ class Component(ComponentBase):
         label = self.label
         if (label is not None):
             hash_value ^= hash(label)
+        
+        if self.enabled:
+            hash_value ^= 1<<8
         
         return hash_value
 

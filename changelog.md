@@ -17,10 +17,20 @@ Full Button support incoming.
 - Add `ComponentInteraction.__hash__`.
 - Add `Component.__hash__`.
 - Add `Component.label`.
+- Add `create_partial_emoji_data`.
+- Add `Button`.
+- Add `Row`.
+- Add `Component.enabled`.
+- Handle python3.10 things correctly. (Zeref Draganeel#3524)
+- Add `Message.application_id`.
 
 ##### Internal
 
 - Fix a `typeError` in `Component.__repr__`. (Zeref Draganeel#3524)
+- `Message.custom` was not checking `type_` parameter.
+- Add `application_id` keyword to `Message.custom`.
+- Add `Slasher.add_component_interaction_waiter`.
+- Add `Slasher.remove_component_interaction_waiter`.
 
 #### 1.1.69  *\[2021-04-24\]*
 
@@ -44,9 +54,6 @@ Full Button support incoming.
 - Add `components` parameter to `Client.interaction_response_message_create`.
 - Add `components` parameter to `Client.interaction_response_followup_create`.
 - Add `suppress` assertion to `Client.message_edit`.
-- Add `create_partial_emoji_data`.
-- Add `Button`.
-- Add `Row`.
 
 ##### Internal:
 

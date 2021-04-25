@@ -152,15 +152,35 @@ class DiscordException(Exception):
                             continue
                         
                         for error_data in error_datas:
-                            error_code = error_data.pop('code', 'ERROR')
-                            error_message = error_data.pop('message', '')
-                            if error_data:
-                                error_extra = ' '.join(f'{key}={value!r}' for key, value in error_data.items())
-                                if error_message:
-                                    error_message = f'{error_message!r} {error_extra}'
-                                else:
+                            error_data_length = len(error_data)
+                            try:
+                                error_code = error_data['code']
+                            except KeyError:
+                                error_code = 'ERROR'
+                            else:
+                                error_data_length -= 1
+                            
+                            try:
+                                error_message = error_data['message']
+                            except KeyError:
+                                error_message = None
+                            else:
+                                error_data_length -= 1
+                            
+                            if error_data_length:
+                                error_extra = ' '.join(
+                                    f'{key}={value!r}' for key, value in error_data.items()
+                                        if key not in ('code', 'message')
+                                )
+                                
+                                if (error_message is None):
                                     error_message = error_extra
-                            elif error_message:
+                                else:
+                                    error_message = f'{error_message!r} {error_extra}'
+                            
+                            elif (error_message is None):
+                                error_message = ''
+                            else:
                                 error_message = repr(error_message)
                             
                             if message_parts:

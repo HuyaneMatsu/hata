@@ -76,7 +76,10 @@ class Button(ComponentBase):
         else:
             style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
         
-        data = {'style' : style.value}
+        data = {
+            'type': cls.type.value,
+            'style' : style.value,
+        }
         
         if __debug__:
             if (custom_id is not None) and (url is not None):
@@ -398,7 +401,9 @@ class Row(ComponentBase):
                 raise AssertionError(f'A `{cls.__name__}` can have maximum 5 sub-components, got '
                     f'{len(component_datas)}; {component_datas!r}.')
         
-        data = {'type': COMPONENT_TYPE_ACTION_ROW.value}
+        data = {
+            'type': cls.type.value
+        }
         
         if (components is not None):
             data['components'] = component_datas

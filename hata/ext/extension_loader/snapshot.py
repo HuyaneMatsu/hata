@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+__all__ = ()
+
 from ...backend.utils import multidict
 from ...discord.parsers import asynclist, ChunkWaiter, EVENTS, DEFAULT_EVENT_HANDLER
 from ...discord.client_core import CLIENTS
@@ -11,7 +12,7 @@ SNAPSHOT_TAKERS = {}
 IGNORED_EVENT_HANDLER_TYPES = {
     WaitForHandler,
     ChunkWaiter,
-        }
+}
 
 def should_ignore_event_handler(event_handler):
     """

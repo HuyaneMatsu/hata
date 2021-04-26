@@ -1,6 +1,20 @@
-#### 1.1.71 *\[2021-04-??\]*
+#### 1.1.71 *\[2021-04-26\]*
 
+##### Public API
 
+- Add `Extension.name_short`.
+- Add `Extension.is_loaded`. (ᓚᘏᗢ | NeKo Mancer#1477)
+- Deprecate `EXTENSION_LOADER.extensions`.
+- Add `EXTENSION_LOADER.get_extension`.
+- Split up `extensionloader` to more parts.
+- Add `client.extensions`. (Charlotte|💻⭐#5644) (ᓚᘏᗢ | NeKo Mancer#1477)
+
+##### Internal
+
+- `Button.default_style` should be `ButtonStyle.primary.` (Zeref Draganeel#3581)
+- Rename `EXTENSION_LOADER.extensions` to `._extensions_by_name`.
+- `commands` snapshot was not correctly detecting empty snapshots.
+- Handle more python3.10 things correctly.
 
 #### 1.1.70 *\[2021-04-26\]*
 
@@ -22,22 +36,22 @@
 - Add `Button`.
 - Add `Row`.
 - Add `Component.enabled`.
-- Handle python3.10 things correctly. (Zeref Draganeel#3524)
 - Add `Message.application_id`.
 - Add `components` parameter to `SlashResponse`.
-- Add `iter_component_interaction`. (ToxicKidz#6969) (Zeref Draganeel#3524)
+- Add `iter_component_interactions`. (ToxicKidz#6969) (Zeref Draganeel#3581)
 
 ##### Internal
 
-- Fix a `typeError` in `Component.__repr__`. (Zeref Draganeel#3524)
+- Fix a `typeError` in `Component.__repr__`. (Zeref Draganeel#3581)
 - `Message.custom` was not checking `type_` parameter.
 - Add `application_id` keyword to `Message.custom`.
 - Add `Slasher.add_component_interaction_waiter`.
 - Add `Slasher.remove_component_interaction_waiter`.
 - `is_coroutine_function` returned non-bool. (ToxicKidz#6969)
 - `is_coroutine_generator_function` returned non-bool. 
-- Add `COMPONENT_LABEL_LENGTH_MAX`. (Zeref Draganeel#3524)
-- Add `COMPONENT_CUSTOM_ID_LENGTH_MAX`. (Zeref Draganeel#3524)
+- Add `COMPONENT_LABEL_LENGTH_MAX`. (Zeref Draganeel#3581)
+- Add `COMPONENT_CUSTOM_ID_LENGTH_MAX`. (Zeref Draganeel#3581)
+- Handle python3.10 things correctly. (Zeref Draganeel#3581)
 
 #### 1.1.69  *\[2021-04-24\]*
 
@@ -112,8 +126,8 @@
 - Add `Guild.approximate_user_count`. (sleep-cult#3040)
 - dd `Guild.approximate_online_count`. (sleep-cult#3040)
 - Add `PaginationBase` base class for pagination-like objects.
-- Add `PaginationBase.is_active`. (Zeref Draganeel#3524)
-- Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Zeref Draganeel#3524)
+- Add `PaginationBase.is_active`. (Zeref Draganeel#3581)
+- Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Zeref Draganeel#3581)
 - Allow `API_VERSION` `9`. (sleep-cult#3040)
 
 ##### Internal:
@@ -153,7 +167,7 @@
 - Rename `WaitAndContinue._canceller` to `._canceller_function`
 - Rename `WaitAndContinue.timeouter` to `._timeouter`.
 - Rename `Pagiantion.page` to `.page_index`.
-- `ActivityRich.__new__` was not picking up `url` correctly. (Zeref Draganeel#3524)
+- `ActivityRich.__new__` was not picking up `url` correctly. (Zeref Draganeel#3581)
 - Rename `Timeouter.__step` to `._step`.
 - Rename `Task.__step` to `._step`.
 - Rename `Task.__wake_up` to `._wake_up`.
@@ -213,10 +227,10 @@
 ##### Internal:
 
 - Move slash sync coroutine creation to task creation to avoid resource warning at edge cases.
-- Mark keyword only parameters as keyword only in docstrings as well. (Zeref Draganeel#3524)
+- Mark keyword only parameters as keyword only in docstrings as well. (Zeref Draganeel#3581)
 - `export`. (sleep-cult#3040)
-- `_EventHandlerManager.remove`'s `name` parameter should be optional. (Zeref Draganeel#3524)
-- `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Zeref Draganeel#3524)
+- `_EventHandlerManager.remove`'s `name` parameter should be optional. (Zeref Draganeel#3581)
+- `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Zeref Draganeel#3581)
 
 #### 1.1.65  *\[2021-04-14\]*
 
@@ -227,10 +241,10 @@
 - Create `urls.py` from `http.URLS` module.
 - Fix type `MAX_RERP_ELEMENT_LIMIT` -> `MAX_REPR_ELEMENT_LIMIT`.
 - Move json conversion to backend.
-- `CommandState._try_purge_from_changes` returned values in bad order. (Zeref Draganeel#3524)
-- `CommandState._try_purge` returned values in bad order. (Zeref Draganeel#3524)
-- Fix an `AttributeError` in `User._from_client`. (Zeref Draganeel#3524)
-- Add lazy interaction choice definition. (Zeref Draganeel#3524)
+- `CommandState._try_purge_from_changes` returned values in bad order. (Zeref Draganeel#3581)
+- `CommandState._try_purge` returned values in bad order. (Zeref Draganeel#3581)
+- Fix an `AttributeError` in `User._from_client`. (Zeref Draganeel#3581)
+- Add lazy interaction choice definition. (Zeref Draganeel#3581)
 
 #### 1.1.64  *\[2021-04-12\]*
 
@@ -245,9 +259,9 @@
 - Speed up `dict.get` by passing default value.
 - Fix some bad assignments in `Client._delete`.
 - `Icon.__repr__` did not upper case `IconType.name`. (Pichu#0357)
-- `Icon.__repr__` displayed incorrect names. (Zeref Draganeel#3524)
-- Dupe client check was not working. (Zeref Draganeel#3524)
-- Fix reading readme issue on windows. (Zeref Draganeel#3524)
+- `Icon.__repr__` displayed incorrect names. (Zeref Draganeel#3581)
+- Dupe client check was not working. (Zeref Draganeel#3581)
+- Fix reading readme issue on windows. (Zeref Draganeel#3581)
 - Fix a `TypeError` in `User._update_presence`. (from 1.1.63)
 - `EventWaitforMeta._call_channel_edit` passed bad args to guild waiters.
 - Fix a `NameError` in `EventLoop.create_datagram_endpoint`. (Charlotte|💻⭐#5644)
@@ -273,7 +287,7 @@
 ##### Public API:
 
 - Rework `Slasher.do_main_sync` and rename to `.sync`,
-- Slash commands now instant sync meanwhile added runtime. (Zeref Draganeel#3524)
+- Slash commands now instant sync meanwhile added runtime. (Zeref Draganeel#3581)
 - Add `ExtensionLoader.is_processing_extension`.
 
 ##### Internal:

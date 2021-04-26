@@ -1,4 +1,4 @@
-__all__ = ('iter_component_interaction', 'wait_for_component_interaction',)
+__all__ = ('iter_component_interactions', 'wait_for_component_interaction',)
 
 from collections import deque
 
@@ -531,7 +531,7 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
     return await ComponentInteractionWaiter(client, message, check, timeout)
 
 
-async def iter_component_interaction(event_or_message, *, timeout=None, check=None, count=-1):
+async def iter_component_interactions(event_or_message, *, timeout=None, check=None, count=-1):
     """
     Iterates component interactions.
     

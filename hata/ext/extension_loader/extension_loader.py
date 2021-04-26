@@ -1,633 +1,19 @@
-# -*- coding: utf-8 -*-
-__all__ = ('EXTENSION_LOADER', 'EXTENSIONS', 'ExtensionError', 'ExtensionLoader', )
+__all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 
-import sys
+import warnings
 from io import StringIO
-from importlib.util import find_spec, module_from_spec
-from importlib import reload as reload_module
 from threading import current_thread
 
 from ...backend.event_loop import EventThread
-from ...backend.utils import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary
+from ...backend.utils import alchemy_incendiary, HybridValueDictionary
 from ...backend.futures import is_coroutine_function as is_coro, Task
-from ...backend.analyzer import CallableAnalyzer
+from ...backend.export import export
 
 from ...discord.client_core import KOKORO
 
-from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snapshot
-
-EXTENSIONS = WeakValueDictionary()
-
-EXTENSION_STATE_UNDEFINED = 0
-EXTENSION_STATE_LOADED = 1
-EXTENSION_STATE_UNLOADED = 2
-
-class ExtensionError(Exception):
-    """
-    An exception raised by the ``ExtensionLoader``, if loading, reloading or unloading an extension fails with any
-    reason.
-    
-    Attributes
-    ----------
-    _message : `str` or `list` of `str`
-        The error's message.
-    """
-    
-    def __init__(self, message):
-        """
-        Creates a new extension error.
-        
-        Parameters
-        ----------
-        message : `str` or `list` of `str`
-            The error's message.
-        """
-        self._message = message
-    
-    @property
-    def message(self):
-        """
-        Returns the extension error's message.
-        
-        If the extension error contains more message,s connects them.
-        
-        Returns
-        -------
-        message : ``Message``
-        """
-        message = self._message
-        if type(message) is str:
-            return message
-        
-        return '\n\n'.join(message)
-    
-    @property
-    def messages(self):
-        """
-        Returns a list containing the exception error's messages.
-        
-        Returns
-        -------
-        messages : `list` of `str`
-        """
-        message = self._message
-        if type(message) is str:
-           return [message]
-        
-        return message
-    
-    def __len__(self):
-        """Returns the amount of messages, what the extension error contains."""
-        message = self._message
-        if type(message) is str:
-            return 1
-        
-        return len(message)
-    
-    def __repr__(self):
-        """Returns the exception error's representation."""
-        return f'{self.__class__.__name__} ({len(self)}):\n{self.message}\n'
-    
-    __str__ = __repr__
-
-def _validate_entry_or_exit(point):
-    """
-    Validates the given entry or exit point, returning `True`, if they passed.
-    
-    Parameters
-    ----------
-    point : `None`, `str` or `callable`
-        The point to validate.
-    
-    Raises
-    ------
-    TypeError
-        If `point` was given as `callable`, but accepts less or more positional arguments, as would be given.
-    """
-    if point is None:
-        return True
-    
-    if isinstance(point, str):
-        return True
-    
-    if callable(point):
-        analyzer = CallableAnalyzer(point)
-        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
-        if min_ > 1:
-            raise TypeError(f'`{point!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
-                'expects to pass `1`.')
-        
-        if min_ == 1:
-            return True
-        
-        #min<expected
-        if max_ >= 1:
-            return True
-        
-        if analyzer.accepts_args():
-            return True
-        
-        raise TypeError(f'`{point!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects '
-            'to pass `1`.')
-    
-    return False
-
-
-class Extension:
-    """
-    Represents an extension.
-    
-    Attributes
-    ----------
-    _added_variable_names : `list of `str`
-        A list of the added variables' names to the module.
-    _default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
-        An optionally weak value dictionary to store objects for assigning them to modules before loading them.
-        If it would be set as empty, then it is set as `None` instead.
-    _entry_point : `None`, `str`, or `callable`
-        Internal slot used by the ``.entry_point`` property.
-    _exit_point : `None`, `str`, or `callable`
-        Internal slot used by the ``.exit_point`` property.
-    _extend_default_variables : `bool`
-        Internal slot used by the ``.extend_default_variables`` property.
-    _lib : `None` or module`
-        The extension's module. Set as `module` object if it the extension was already loaded.
-    _locked : `bool`
-        The internal slot used for the ``.locked`` property.
-    _snapshot_difference : `None` or `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
-        Snapshot difference if applicable. Defaults to `None`.
-    _spec : `ModuleSpec`
-        The module specification for the extension's module's import system related state.
-    _state : `int`
-        The state of the extension. Can be:
-        +---------------------------+-------+
-        | Respective name           | Value |
-        +===========================+=======+
-        | EXTENSION_STATE_UNDEFINED | 0     |
-        +---------------------------+-------+
-        | EXTENSION_STATE_LOADED    | 1     |
-        +---------------------------+-------+
-        | EXTENSION_STATE_UNLOADED  | 2     |
-        +---------------------------+-------+
-    _take_snapshot : `bool`
-        Whether snapshot difference should be taken.
-    """
-    __slots__ = ('__weakref__', '_added_variable_names', '_default_variables', '_entry_point', '_exit_point',
-        '_extend_default_variables', '_lib', '_locked', '_snapshot_difference', '_spec', '_state',
-        '_take_snapshot', )
-    
-    def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
-            default_variables, ):
-        """
-        Creates an extension with the given parameters. If an extension already exists with the given name, returns
-        that.
-        
-        Parameters
-        ----------
-        name : `str`
-            The extension's name (or import path).
-        entry_point : `None`, `str` or `callable`
-            The entry point of the extension.
-        exit_point : `None`, `str` or `callable`
-            The exit point of the extension.
-        extend_default_variables : `bool`
-            Whether the extension should use the loader's default variables or just it's own's.
-        locked : `bool`
-            Whether the extension should be picked up by the `{}_all` methods of the extension loader.
-        take_snapshot_difference: `bool`
-            Whether snapshots should be taken before and after loading an extension, and when the extension is unloaded,
-            the snapshot difference should be reverted.
-        default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
-            An optionally weak value dictionary to store objects for assigning them to modules before loading them.
-            If would be empty, is set as `None` instead.
-        
-        Returns
-        -------
-        self : ``Extension``
-        
-        Raises
-        ------
-        ModuleNotFoundError
-            If the extension was not found.
-        """
-        try:
-            return EXTENSIONS[name]
-        except KeyError:
-            pass
-        
-        spec = find_spec(name)
-        if spec is None:
-            raise ModuleNotFoundError(name)
-        
-        self = object.__new__(cls)
-        self._state = EXTENSION_STATE_UNDEFINED
-        self._spec = spec
-        self._lib = None
-        self._entry_point = entry_point
-        self._exit_point = exit_point
-        self._extend_default_variables = extend_default_variables
-        self._locked = locked
-        self._default_variables = default_variables
-        self._added_variable_names = []
-        self._take_snapshot = take_snapshot_difference
-        self._snapshot_difference = None
-        EXTENSIONS[name] = self
-        
-        return self
-    
-    def __hash__(self):
-        """Returns the extension's ``._spec``'s `.origin`'s hash."""
-        return hash(self._spec.origin)
-    
-    def __repr__(self):
-        """Returns the extension's representation."""
-        result = []
-        result.append('<')
-        result.append(self.__class__.__name__)
-        result.append(' name=')
-        result.append(repr(self._spec.name))
-        
-        state = self._state
-        result.append(', state=')
-        result.append(repr(state))
-        result.append(' (')
-        result.append(('undefined', 'loaded', 'unloaded')[state])
-        result.append(')')
-        
-        if self._locked:
-            result.append(', locked=True')
-        
-        default_variables = self._default_variables
-        if self._extend_default_variables:
-            if (default_variables is not None):
-                result.append(' extends loader\'s defaults with: ')
-                result.append(repr(default_variables))
-        else:
-            if default_variables is None:
-                result.append(' clears loader\'s defaults')
-            else:
-                result.append(' clears loader\'s defaults and uses: ')
-                result.append(repr(default_variables))
-        
-        result.append('>')
-        
-        return ''.join(result)
-    
-    def add_default_variables(self, **variables):
-        """
-        Adds default variables to the extension.
-        
-        Parameters
-        ----------
-        **variables : Keyword Arguments
-            Variables to assigned to the extension's module before it is loaded.
-        
-        Raises
-        ------
-        ValueError
-             If a variable name is would be used, what is `module` attribute.
-        """
-        if not variables:
-            return
-        
-        default_variables = self._default_variables
-        if default_variables is None:
-            default_variables = HybridValueDictionary()
-            self._default_variables = default_variables
-        
-        for key, value in variables.items():
-            if key in PROTECTED_NAMES:
-                raise ValueError(f'The passed {key!r} is a protected variable name of module type.')
-            default_variables[key] = value
-    
-    def remove_default_variables(self, *names):
-        """
-        Removes the mentioned default variables of the extension.
-        
-        If a variable with a specified name is not found, no error is raised.
-        
-        Parameters
-        ----------
-        *names : `str`
-            Default variable names.
-        """
-        default_variables = self._default_variables
-        if default_variables is None:
-            return
-        
-        for name in names:
-            try:
-                del default_variables[name]
-            except KeyError:
-                pass
-        
-        if default_variables:
-            return
-        
-        self._default_variables = None
-    
-    def clear_default_variables(self):
-        """
-        Removes all the default variables of the extension.
-        """
-        self._default_variables = None
-    
-    @property
-    def entry_point(self):
-        """
-        Get-set-del descriptor for modifying the extension's entry point.
-        
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """
-        return self._entry_point
-    
-    @entry_point.setter
-    def entry_point(self, entry_point):
-        if not _validate_entry_or_exit(entry_point):
-            raise TypeError(f'`{self.__class__.__name__}.entry_point` expected `None`, `str` or a `callable`, got '
-                f'{entry_point.__class__.__name__}.')
-        
-        self._entry_point = entry_point
-    
-    @entry_point.deleter
-    def entry_point(self):
-        self._entry_point = None
-    
-    
-    @property
-    def exit_point(self):
-        """
-        Get-set-del descriptor for modifying the extension's exit point.
-        
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """
-        return self._exit_point
-    
-    @exit_point.setter
-    def exit_point(self, exit_point):
-        if not _validate_entry_or_exit(exit_point):
-            raise TypeError(f'`{self.__class__.__name__}.exit_point` expected `None`, `str` or a `callable`, got '
-                f'{exit_point.__class__.__name__}.')
-        
-        self._exit_point = exit_point
-    
-    @exit_point.deleter
-    def exit_point(self):
-        self._exit_point = None
-    
-    
-    @property
-    def extend_default_variables(self):
-        """
-        Get-set descriptor to define whether the extension uses the loader's default variables or just it's own's.
-        
-        Accepts and returns `bool`.
-        """
-        return self._extend_default_variables
-    
-    @extend_default_variables.setter
-    def extend_default_variables(self, extend_default_variables):
-        extend_default_variables_type = extend_default_variables.__class__
-        if extend_default_variables_type is bool:
-            pass
-        elif issubclass(extend_default_variables_type, int):
-            extend_default_variables = bool(extend_default_variables)
-        else:
-            raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got '
-                f'{extend_default_variables_type.__name__}.')
-        
-        self._extend_default_variables = extend_default_variables
-    
-    @property
-    def locked(self):
-        """
-        Get-set property to define whether the extension should be picked up by the `{}_all` methods of the
-        extension loader.
-        
-        Accepts and returns `bool`.
-        """
-        return self._locked
-    
-    @locked.setter
-    def locked(self, locked):
-        locked_type = locked.__class__
-        if locked_type is bool:
-            pass
-        elif issubclass(locked_type, int):
-            locked = bool(locked)
-        else:
-            raise TypeError(f'`locked` should have been passed as `bool`, got: {locked_type.__name__}.')
-        
-        self._locked = locked
-    
-    
-    def _load(self):
-        """
-        Loads the module and returns it. If it is already loaded returns `None`.
-        
-        Returns
-        -------
-        lib : `None` or `lib`
-        """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
-            
-            spec = self._spec
-            lib = sys.modules.get(spec.name, None)
-            if lib is None:
-                # lib is not imported yet, nice
-                lib = module_from_spec(spec)
-                
-                added_variable_names = self._added_variable_names
-                if self._extend_default_variables:
-                    for name, value in EXTENSION_LOADER._default_variables.items():
-                        setattr(lib, name, value)
-                        added_variable_names.append(name)
-                
-                default_variables = self._default_variables
-                if (default_variables is not None):
-                    for name, value in default_variables.items():
-                        setattr(lib, name, value)
-                        added_variable_names.append(name)
-                
-                if self._take_snapshot:
-                    snapshot_old = take_snapshot()
-                
-                spec.loader.exec_module(lib)
-                sys.modules[spec.name] = lib
-            
-                if self._take_snapshot:
-                    snapshot_new = take_snapshot()
-                    
-                    self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
-            
-            self._lib = lib
-            
-            self._state = EXTENSION_STATE_LOADED
-            return lib
-        
-        if state == EXTENSION_STATE_LOADED:
-            # return None -> already loaded
-            return None
-        
-        if state == EXTENSION_STATE_UNLOADED:
-            # reload
-            lib = self._lib
-            
-            added_variable_names = self._added_variable_names
-            if self._extend_default_variables:
-                for name, value in EXTENSION_LOADER._default_variables.items():
-                    setattr(lib, name, value)
-                    added_variable_names.append(name)
-            
-            default_variables = self._default_variables
-            if (default_variables is not None):
-                for name, value in default_variables.items():
-                    setattr(lib, name, value)
-                    added_variable_names.append(name)
-            
-            if self._take_snapshot:
-                snapshot_old = take_snapshot()
-            
-            reload_module(lib)
-            
-            if self._take_snapshot:
-                snapshot_new = take_snapshot()
-                
-                self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
-            
-            self._state = EXTENSION_STATE_LOADED
-            return lib
-        
-        # no more cases
-    
-    def _unload(self):
-        """
-        Unloads the module and returns it. If it is already unloaded returns `None`.
-        
-        Returns
-        -------
-        lib : `None` or `lib`
-        """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
-            return None
-        
-        if state == EXTENSION_STATE_LOADED:
-            
-            snapshot_difference = self._snapshot_difference
-            if (snapshot_difference is not None):
-                self._snapshot_difference = None
-                revert_snapshot(snapshot_difference)
-            
-            self._state = EXTENSION_STATE_UNLOADED
-            return self._lib
-        
-        if state == EXTENSION_STATE_UNLOADED:
-            return None
-        
-        # no more cases
-    
-    def _unassign_variables(self):
-        """
-        Unassigns the assigned variables to the respective module and clears ``._added_variable_names``.
-        """
-        lib = self._lib
-        if lib is None:
-            return
-        
-        added_variable_names = self._added_variable_names
-        for name in added_variable_names:
-            try:
-                delattr(lib, name)
-            except AttributeError:
-                pass
-        added_variable_names.clear()
-    
-    @property
-    def name(self):
-        """
-        Returns the extension's name.
-        
-        Returns
-        -------
-        name : `str`
-        """
-        return self._spec.name
-    
-    def _unlink(self):
-        """
-        Removes the extension's module from the loaded ones.
-        
-        Should not be called on loaded extensions.
-        """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
-            return
-        
-        if state == EXTENSION_STATE_LOADED:
-            self._state = EXTENSION_STATE_UNLOADED
-            lib = self._lib
-            
-            if self._extend_default_variables:
-                for name in EXTENSION_LOADER._default_variables:
-                    try:
-                        delattr(lib, name)
-                    except AttributeError:
-                        pass
-            
-            default_variables = self._default_variables
-            if (default_variables is not None):
-                for name in default_variables:
-                    delattr(lib, name)
-            
-            del sys.modules[self._spec.name]
-            return
-        
-        if state == EXTENSION_STATE_UNLOADED:
-            del sys.modules[self._spec.name]
-            return
-        
-        # no more cases
-
-PROTECTED_NAMES = {
-    '__class__',
-    '__delattr__',
-    '__dict__',
-    '__dir__',
-    '__doc__',
-    '__eq__',
-    '__format__',
-    '__ge__',
-    '__getattribute__',
-    '__gt__',
-    '__hash__',
-    '__init__',
-    '__init_subclass__',
-    '__le__',
-    '__lt__',
-    '__module__',
-    '__ne__',
-    '__new__',
-    '__reduce__',
-    '__reduce_ex__',
-    '__repr__',
-    '__setattr__',
-    '__sizeof__',
-    '__str__',
-    '__subclasshook__',
-    '__weakref__',
-    '_cached',
-    '_set_fileattr',
-    'cached',
-    'has_location',
-    'loader',
-    'loader_state',
-    'name',
-    'origin',
-    'parent',
-    'submodule_search_locations',
-        }
+from .extension import EXTENSIONS, Extension, EXTENSION_STATE_LOADED
+from .utils import PROTECTED_NAMES, _iter_extension_names, _validate_entry_or_exit
+from .exceptions import ExtensionError
 
 class ExtensionLoader:
     """
@@ -919,7 +305,7 @@ class ExtensionLoader:
         If it would be set as empty, then it is set as `None` instead.
     _execute_counter : `int`
         Whether the extension loader is executing an extension.
-    extensions : `dict` of (`str`, ``Extension``) items
+    _extensions_by_name : `dict` of (`str`, ``Extension``) items
         A dictionary of the added extensions to the extension loader in `extension-name` - ``Extension`` relation.
     
     Class Attributes
@@ -928,7 +314,7 @@ class ExtensionLoader:
         The already created instance of the ``ExtensionLoader`` if there is any.
     """
     __slots__ = ('_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter',
-        'extensions', )
+        '_extensions_by_name', )
     
     _instance = None
     def __new__(cls,):
@@ -945,7 +331,7 @@ class ExtensionLoader:
             self = object.__new__(cls)
             self._default_entry_point = 'setup'
             self._default_exit_point = 'teardown'
-            self.extensions = {}
+            self._extensions_by_name = {}
             self._default_variables = HybridValueDictionary()
             self._execute_counter = 0
         
@@ -1099,7 +485,7 @@ class ExtensionLoader:
             raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got: '
                 f'{extend_default_variables_type.__name__}.')
         
-        locked_type = locked.__class__
+        locked_type = type(locked)
         if locked_type is bool:
             pass
         elif issubclass(locked_type, int):
@@ -1107,58 +493,13 @@ class ExtensionLoader:
         else:
             raise TypeError(f'`locked` should have been passed as `bool`, got: {locked_type.__name__}.')
         
-        name_type = name.__class__
-        if name_type is str:
-            pass
-        
-        elif issubclass(name_type, str):
-            name = str(name)
-        
-        if hasattr(name_type, '__iter__'):
-            names = []
-            index = 1
-            for name_ in name:
-                name_type = name_.__class__
-                if name_type is str:
-                    pass
-                elif issubclass(name_type, str):
-                    name = str(name)
-                else:
-                    raise TypeError(f'`{self.__class__.__name__}.add` expected `str` or `iterable` of `str` as '
-                        f'`name`, got, `iterable`, but it\'s {index}. element is not `str` instance, got: '
-                        f'{name_type.__class__}')
-                
-                names.append(name)
-                index += 1
+        for name in _iter_extension_names(name):
+            extension = Extension(name, entry_point, exit_point, extend_default_variables, locked,
+                take_snapshot_difference, default_variables)
             
-            for name in names:
-                extension = Extension(name, entry_point, exit_point, extend_default_variables, locked,
-                    take_snapshot_difference, default_variables)
-                
-                self.extensions[name] = extension
-                
-                dot_index = name.rfind('.')
-                if dot_index != -1:
-                    name = name[dot_index+1:]
-                    
-                    self.extensions.setdefault(name, extension)
-            
-            return
-        else:
-            raise TypeError(f'`{self.__class__.__name__}.add` expected `str` or `iterable of str` as `name`, got '
-                f'`{name_type.__name__}`.')
-        
-        extension = Extension(name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
-            default_variables)
-        
-        self.extensions[name] = extension
-        
-        dot_index = name.rfind('.')
-        if dot_index != -1:
-            name = name[dot_index+1:]
-            
-            self.extensions.setdefault(name, extension)
-        
+            self._extensions_by_name[name] = extension
+            self._extensions_by_name.setdefault(extension.name_short, extension)
+    
     def remove(self, name):
         """
         Removes one or more extensions from the extension loader.
@@ -1177,62 +518,17 @@ class ExtensionLoader:
         RuntimeError
             If a loaded extension would be removed.
         """
-        name_type = name.__class__
-        if name_type is str:
-            pass
-        
-        elif issubclass(name_type, str):
-            name = str(name)
-        
-        elif hasattr(name_type, '__iter__'):
-            names = []
-            index = 1
-            for name in name:
-                name_type = name.__class__
-                if name_type is str:
-                    pass
-                elif issubclass(name_type, str):
-                    name = str(name)
-                else:
-                    raise TypeError(f'`{self.__class__.__name__}.remove` expected `str` or `iterable` of `str` as '
-                        f'`name`, got, `iterable`, but it\'s {index}. element is not `str` instance, got: '
-                        f'{name_type.__class__}')
-                
-                names.append(name)
-                index += 1
+        for name in _iter_extension_names(name):
+            try:
+                extension = self._extensions_by_name[name]
+            except KeyError:
+                return
             
-            collected = []
-            extensions = self.extensions
-            for name in names:
-                try:
-                    extension = extensions[name]
-                except KeyError:
-                    continue
-                
-                if extension._state == EXTENSION_STATE_LOADED:
-                    raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
-                
-                collected.append(extension)
-                
-            for extension in collected:
-                extension._unlink()
+            if extension._state == EXTENSION_STATE_LOADED:
+                raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
             
-            return
-        else:
-            #no more good case -> raise
-            raise TypeError(f'`{self.__class__.__name__}.remove` expected `str` or `iterable of str` as `name`, got '
-                f'{name_type.__name__}.')
-
-        try:
-            extension = self.extensions[name]
-        except KeyError:
-            return
-        
-        if extension._state == EXTENSION_STATE_LOADED:
-            raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
-        
-        extension._unlink()
-        return
+            extension._unlink()
+    
     
     def load_extension(self, name, *args, **kwargs):
         """
@@ -1335,7 +631,7 @@ class ExtensionLoader:
             - Loading the extension failed.
         """
         try:
-            extension = self.extensions[name]
+            extension = self._extensions_by_name[name]
         except KeyError:
             raise ExtensionError(f'No extension was added with name: `{name}`.') from None
         
@@ -1382,7 +678,7 @@ class ExtensionLoader:
             - Unloading the extension failed.
         """
         try:
-            extension = self.extensions[name]
+            extension = self._extensions_by_name[name]
         except KeyError:
             raise ExtensionError(f'No extension was added with name: `{name}`.') from None
         
@@ -1429,7 +725,7 @@ class ExtensionLoader:
             - Reloading the extension failed.
         """
         try:
-            extension = self.extensions[name]
+            extension = self._extensions_by_name[name]
         except KeyError:
             raise ExtensionError(f'No extension was added with name: `{name}`.') from None
         
@@ -1481,7 +777,7 @@ class ExtensionLoader:
         """
         error_messages = []
         
-        for extension in self.extensions.values():
+        for extension in self._extensions_by_name.values():
             if extension._locked:
                 continue
             
@@ -1489,10 +785,10 @@ class ExtensionLoader:
                 await self._load_extension(extension)
             except ExtensionError as err:
                 error_messages.append(err.message)
-            
+        
         if error_messages:
             raise ExtensionError(error_messages) from None
-        
+    
     def unload_all(self):
         """
         Unloads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
@@ -1538,7 +834,7 @@ class ExtensionLoader:
         """
         error_messages = []
         
-        for extension in self.extensions.values():
+        for extension in self._extensions_by_name.values():
             if extension._locked:
                 continue
             
@@ -1595,7 +891,7 @@ class ExtensionLoader:
         """
         error_messages = []
         
-        for extension in self.extensions.values():
+        for extension in self._extensions_by_name.values():
             if extension._locked:
                 continue
             
@@ -1789,32 +1085,32 @@ class ExtensionLoader:
     
     def __repr__(self):
         """Returns the extension loader's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' extension count=',
-            repr(len(self.extensions)),
+            repr(len(EXTENSIONS)),
         ]
         
         entry_point = self._default_entry_point
         if (entry_point is not None):
-            result.append(', default_entry_point=')
-            result.append(repr(entry_point))
+            repr_parts.append(', default_entry_point=')
+            repr_parts.append(repr(entry_point))
         
         exit_point = self._default_exit_point
         if (exit_point is not None):
-            result.append(', default_exit_point=')
-            result.append(repr(exit_point))
+            repr_parts.append(', default_exit_point=')
+            repr_parts.append(repr(exit_point))
         
         default_variables = self._default_variables
         if default_variables:
-            result.append(', default_variables=')
-            result.append(repr(default_variables))
+            repr_parts.append(', default_variables=')
+            repr_parts.append(repr(default_variables))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
-
+        return ''.join(repr_parts)
+    
     def is_processing_extension(self):
         """
         Returns whether the extension loader is processing an extension.
@@ -1830,5 +1126,37 @@ class ExtensionLoader:
         
         return is_processing_extension
 
+    @property
+    def extensions(self):
+        """
+        Deprecated, please use ``.get_extension`` instead. Will be removed in 2021 juli.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.extensions` is deprecated, and will be removed in 2021 juli. '
+            f'Please use `{self.__class__.__name__}.get_extension(name)` instead.',
+            FutureWarning)
+        
+        return self._extensions_by_name
+    
+    
+    def get_extension(self, name):
+        """
+        Returns the extension loader's extension with the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            An extension's name.
+        
+        Returns
+        -------
+        extension : ``Extension`` or `None`.
+            The matched extension if any.
+        """
+        return self._extensions_by_name.get(name, None)
+
 
 EXTENSION_LOADER = ExtensionLoader()
+export(EXTENSION_LOADER, 'EXTENSION_LOADER')

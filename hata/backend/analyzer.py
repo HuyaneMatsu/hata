@@ -192,6 +192,29 @@ class Argument:
         
         return False
 
+if IS_PYTHON_STUPID:
+    def compile_annotations(real_function, annotations):
+        new_annotations = {}
+        if not annotations:
+            return new_annotations
+        
+        global_variables = getattr(real_function, '__globals__', None)
+        if (global_variables is None):
+            # Builtins go brrr
+            return new_annotations
+        
+        for key, value in annotations.items():
+            if type(value) is str:
+                try:
+                    value = eval(value, global_variables, None)
+                except:
+                    pass
+            
+            new_annotations[key] = value
+        
+        return new_annotations
+
+
 class CallableAnalyzer:
     """
     Analyzer for callable-s.
@@ -430,12 +453,7 @@ class CallableAnalyzer:
             if (annotations is None):
                 annotations = {}
             elif IS_PYTHON_STUPID:
-                global_variables = getattr(real_function, '__globals__', None)
-                if (global_variables is None):
-                    # Builtins go brrr
-                    annotations = {}
-                else:
-                    annotations = {key: eval(value, global_variables, None) for key, value in annotations.items()}
+                annotations = compile_annotations(real_function, annotations)
             
             start = 0
             end = argument_count

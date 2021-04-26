@@ -101,7 +101,12 @@ def calculate_command_processer_snapshot_difference(client, snapshot_old, snapsh
     snapshot_difference = (*(None if e1==e2 else e1 for e1, e2 in zip(elements_old, elements_new)),
         element_category_difference, element_command_difference)
     
-    return snapshot_difference
+    for element in snapshot_difference:
+        if (element is not None):
+            return snapshot_difference
+    
+    return None
+
 
 def revert_command_processer_snapshot(client, snapshot_difference):
     """

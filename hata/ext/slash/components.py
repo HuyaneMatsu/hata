@@ -32,7 +32,7 @@ class Button(ComponentBase):
         The default button style to use if style is not given.
     """
     type = COMPONENT_TYPE_BUTTON
-    default_style = ButtonStyle.secondary
+    default_style = ButtonStyle.primary
     
     __slots__ = ('_data', )
     

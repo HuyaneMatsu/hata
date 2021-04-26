@@ -20,7 +20,7 @@ from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAM
     APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, \
-    COMPONENT_SUB_COMPONENT_LIMIT
+    COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX
 from .channel import create_partial_channel
 from .user import User, UserBase, ClientUserBase
 from .role import Role
@@ -2211,6 +2211,8 @@ class Component(ComponentBase):
             - If an action row type component would be added as a sub-component.
             - If `label` was not given neither as `None` nor as `int` instance.
             - If `enabled` was not given as `bool` instance.
+            - If `label`'s length is over `80`.
+            - If `custom_id`'s length is over `100`.
         """
         type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
         
@@ -2266,10 +2268,6 @@ class Component(ComponentBase):
                 raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
                     f'custom_id={custom_id!r}, url={url!r}.')
             
-            if (custom_id is not None) and (not isinstance(custom_id, str)):
-                raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
-                    f'{custom_id.__class__.__name__}.')
-            
             if (emoji is not None) and (not isinstance(emoji, Emoji)):
                 raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
                     f'{emoji.__class__.__name__}')
@@ -2277,6 +2275,15 @@ class Component(ComponentBase):
             if (url is not None) and (not isinstance(url, str)):
                 raise TypeError(f'`url` can be given either as `None` or as `str` instance, got '
                     f'{url.__class__.__name__}.')
+            
+            if (custom_id is not None):
+                if (not isinstance(custom_id, str)):
+                    raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
+                        f'{custom_id.__class__.__name__}.')
+                
+                if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
+                    raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
+                        f'{len(custom_id)!r}; {custom_id!r}.')
         
         if (label is not None):
             if __debug__:
@@ -2284,7 +2291,12 @@ class Component(ComponentBase):
                     raise TypeError(f'`label` can be given either as `None` or as `str` instance, got '
                         f'{label.__class__.__name__}.')
             
-            if (not label):
+            if label:
+                if __debug__:
+                    if len(label) > COMPONENT_LABEL_LENGTH_MAX:
+                        raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
+                            f'{len(label)!r}; {label!r}.')
+            else:
                 label = None
         
         if __debug__:
@@ -2599,6 +2611,7 @@ class ComponentInteraction:
                 return False
             
             return True
+        
         
         return NotImplemented
     

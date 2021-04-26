@@ -1,7 +1,8 @@
-#### 1.1.70 *\[2021-04-??\]*
+#### 1.1.71 *\[2021-04-??\]*
 
-Full Button support incoming.
 
+
+#### 1.1.70 *\[2021-04-26\]*
 
 ##### Public API
 
@@ -35,6 +36,8 @@ Full Button support incoming.
 - Add `Slasher.remove_component_interaction_waiter`.
 - `is_coroutine_function` returned non-bool. (ToxicKidz#6969)
 - `is_coroutine_generator_function` returned non-bool. 
+- Add `COMPONENT_LABEL_LENGTH_MAX`. (Zeref Draganeel#3524)
+- Add `COMPONENT_CUSTOM_ID_LENGTH_MAX`. (Zeref Draganeel#3524)
 
 #### 1.1.69  *\[2021-04-24\]*
 

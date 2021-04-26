@@ -8,7 +8,7 @@ from ...discord.preinstanced import ButtonStyle, ComponentType
 from ...discord.interaction import ComponentBase, Component
 from ...discord.preconverters import preconvert_preinstanced_type
 from ...discord.emoji import create_partial_emoji_data, create_partial_emoji, Emoji
-from ...discord.limits import COMPONENT_SUB_COMPONENT_LIMIT
+from ...discord.limits import COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX
 
 
 COMPONENT_TYPE_ACTION_ROW = ComponentType.action_row
@@ -74,6 +74,8 @@ class Button(ComponentBase):
             - If `style` was not given as any of the `type`'s expected styles.
             - If `label` was not given neither as `None` nor as `int` instance.
             - If `enabled` was not given as `bool` instance.
+            - If `label`'s length is over `80`.
+            - If `custom_id`'s length is over `100`.
         """
         if style is None:
             style = cls.default_style
@@ -82,7 +84,7 @@ class Button(ComponentBase):
         
         data = {
             'type': cls.type.value,
-            'style' : style.value,
+            'style': style.value,
         }
         
         if __debug__:
@@ -119,6 +121,10 @@ class Button(ComponentBase):
                 if (not isinstance(label, str)):
                     raise AssertionError(f'`label` can be given either as `None` or as `str` instance, got '
                         f'{label.__class__.__name__}.')
+                
+                if len(label) > COMPONENT_LABEL_LENGTH_MAX:
+                    raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
+                        f'{len(label)!r}; {label!r}.')
             
             if label:
                 data['label'] = label
@@ -171,6 +177,10 @@ class Button(ComponentBase):
                 if (not isinstance(custom_id, str)):
                     raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
                         f'{custom_id.__class__.__name__}.')
+                
+                if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
+                    raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
+                        f'{len(custom_id)!r}; {custom_id!r}.')
             
             self._data['custom_id'] = custom_id
     
@@ -248,6 +258,10 @@ class Button(ComponentBase):
                 if (not isinstance(url, str)):
                     raise TypeError(f'`label` can be given either as `None` or as `str` instance, got '
                         f'{label.__class__.__name__}.')
+                
+                if len(label) > COMPONENT_LABEL_LENGTH_MAX:
+                    raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
+                        f'{len(label)!r}; {label!r}.')
             
             if label:
                 self._data['label'] = label
@@ -372,13 +386,35 @@ class Button(ComponentBase):
     
     @copy_docs(ComponentBase.__eq__)
     def __eq__(self, other):
-        if type(other) is not type(self):
-            return NotImplemented
+        if type(other) is type(self):
+            if self._data == other._data:
+                return True
+            else:
+                return False
         
-        if self._data == other._data:
+        if isinstance(other, ComponentBase):
+            if self.type is not other.type:
+                return False
+            
+            if self.emoji is not other.emoji:
+                return False
+            
+            if self.style is not other.style:
+                return False
+            
+            if self.custom_id != other.custom_id:
+                return False
+            
+            if self.label != other.label:
+                return False
+            
+            if self.enabled != other.enabled:
+                return False
+            
             return True
         
-        return False
+        
+        return NotImplemented
     
     
     @copy_docs(ComponentBase.__hash__)
@@ -521,6 +557,7 @@ class Row(ComponentBase):
         repr_parts.append(')')
         return ''.join(repr_parts)
     
+    
     @copy_docs(ComponentBase.copy)
     def copy(self):
         old_data = self._data
@@ -536,15 +573,26 @@ class Row(ComponentBase):
         new._data = new_data
         return new
 
+
     @copy_docs(ComponentBase.__eq__)
     def __eq__(self, other):
-        if type(other) is not type(self):
-            return NotImplemented
+        if type(other) is  type(self):
+            if self._data == other._data:
+                return True
+            else:
+                return False
         
-        if self._data == other._data:
+        if isinstance(other, ComponentBase):
+            if self.type is not other.type:
+                return False
+            
+            if self.components != other.components:
+                return False
+            
             return True
         
-        return False
+        return NotImplemented
+    
     
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):

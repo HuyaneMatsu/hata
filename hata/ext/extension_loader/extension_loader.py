@@ -498,7 +498,7 @@ class ExtensionLoader:
                 take_snapshot_difference, default_variables)
             
             self._extensions_by_name[name] = extension
-            self._extensions_by_name.setdefault(extension.name_short, extension)
+            self._extensions_by_name.setdefault(extension.short_name, extension)
     
     def remove(self, name):
         """

@@ -170,9 +170,9 @@ def str_message(message, index=None, **kwargs):
     
     result.append(f'- created at: {message:c}', 1)
     
-    edited = message.edited
-    if (edited is not None):
-        result.append(f'- edited at: {edited:{DATETIME_FORMAT_CODE}}', 1)
+    edited_at = message.edited_at
+    if (edited_at is not None):
+        result.append(f'- edited at: {edited_at:{DATETIME_FORMAT_CODE}}', 1)
     
     reactions = message.reactions
     if reactions:

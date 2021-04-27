@@ -3414,7 +3414,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         else:
             future.set_result(data)
     
-    async def socket_sendall(self, socket, data):
+    async def socket_send_all(self, socket, data):
         """
         Send data to the socket. Asynchronous version of `socket.sendall`.
         
@@ -3438,12 +3438,12 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         if data:
             future = Future(self)
-            self._socket_sendall(future, False, socket, data)
+            self._socket_send_all(future, False, socket, data)
             await future
     
-    def _socket_sendall(self, future, registered, socket, data):
+    def _socket_send_all(self, future, registered, socket, data):
         """
-        Added writer callback by ``.socket_sendall``. This method is repeated till the whole data is exhausted.
+        Added writer callback by ``.socket_send_all``. This method is repeated till the whole data is exhausted.
         
         Parameters
         ----------
@@ -3478,7 +3478,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             if n:
                 data = data[n:]
             
-            self.add_writer(fd, self._socket_sendall, future, True, socket, data)
+            self.add_writer(fd, self._socket_send_all, future, True, socket, data)
     
     async def create_datagram_endpoint(self, protocol_factory, local_address=None, remote_address=None, *, family=0,
             protocol=0, flags=0, reuse_port=False, allow_broadcast=False, socket=None):

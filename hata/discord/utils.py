@@ -2,7 +2,7 @@
 __all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift', 'Relationship', 'Unknown', 'cchunkify', 'chunkify',
     'elapsed_time', 'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention',
     'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id',
-    'sanitize_mentions', 'time_to_id',)
+    'sanitize_content', 'sanitize_mentions', 'time_to_id',)
 
 import random, sys
 from re import compile as re_compile
@@ -1026,7 +1026,7 @@ def sanitize_mentions(content, guild=None):
     Parameters
     ----------
     content : `str`
-        The content to validate.
+        The content to sanitize.
     guild : `None` or ``Guild``, Optional
         Respective context to look up guild specific names of entities.
     
@@ -1037,7 +1037,7 @@ def sanitize_mentions(content, guild=None):
     transformations = {
         '@everyone':'@\u200beveryone',
         '@here':'@\u200bhere',
-            }
+    }
     
     for id_ in USER_MENTION_RP.findall(content):
         id_ = int(id_)
@@ -1072,3 +1072,28 @@ def sanitize_mentions(content, guild=None):
     
     return re_compile('|'.join(transformations)).sub(
         lambda mention: transformations[mention.group(0)], content)
+
+
+def sanitize_content(content, guild=None):
+    """
+    Sanitizes the markdown and the mentions in the given content.
+    
+    Parameters
+    ----------
+    content : `str`
+        The content to sanitize.
+    guild : `None` or ``Guild``, Optional
+        Respective context to look up guild specific names of entities.
+    
+    Returns
+    -------
+    content : `str`
+    """
+    content = content.replace('\\', '\\\\')
+    content = content.replace('_', '\\_')
+    content = content.replace('*', '\\*')
+    content = content.replace('|', '\\|')
+    content = content.replace('~', '\\~')
+    content = content.replace('`', '\\`')
+    content = sanitize_mentions(content, guild=guild)
+    return content

@@ -821,7 +821,7 @@ class AsyncIO:
             self.__class__.__name__,
             ' io=',
             repr(self._io),
-                ]
+        ]
         
         executor = self._executor
         if executor is None:
@@ -1175,7 +1175,7 @@ class ReuAsyncIO(AsyncIO):
         
         return await executor.execute(task)
     
-    async def readline(self,size=-1):
+    async def readline(self, size=-1):
         """
         Read until newline or EOF and return a single `str`. If the buffer is at EOF, returns an empty string.
         
@@ -1221,10 +1221,15 @@ class ReuAsyncIO(AsyncIO):
         
         Parameters
         ----------
-        hint : `int`
-            The upper limit if lines to read.
+        hint : `int`, Optional
+            The upper limit if lines to read. Defaults to `-1`.
             
             If given as negative `int`, then all the data till eof is read from the underlying stream.
+        
+        Returns
+        -------
+        lines : `list` of (`bytes` or `str`)
+            The red lines.
         
         Raises
         ------

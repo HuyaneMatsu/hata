@@ -5,6 +5,7 @@ from ...discord.client import Client
 from .bases import *
 from .choose_menu import *
 from .closer import *
+from .io import *
 from .pagination import *
 from .user_menu import *
 from .utils import *
@@ -15,6 +16,7 @@ __all__ = (
     *bases.__all__,
     *choose_menu.__all__,
     *closer.__all__,
+    *io.__all__,
     *pagination.__all__,
     *utils.__all__,
     *waiters.__all__,

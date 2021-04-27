@@ -1,8 +1,21 @@
+#### 1.1.72 *\[2021-04-??\]*
+
+##### Public API
+
+- Rename `Message.edited` to `.edited_at`.
+- Add `get_channel_stdin`. (experimental) (Charlotte|💻⭐#5644)
+- Add `get_channel_stdout`. (experimental) (Charlotte|💻⭐#5644)
+
+##### Internal
+
+- Rename `EventThread.socket_sendall` to `.socket_send_all`.
+- Add `sanitize_content`.
+
 #### 1.1.71 *\[2021-04-26\]*
 
 ##### Public API
 
-- Add `Extension.name_short`.
+- Add `Extension.short_name`.
 - Add `Extension.is_loaded`. (ᓚᘏᗢ | NeKo Mancer#1477)
 - Deprecate `EXTENSION_LOADER.extensions`.
 - Add `EXTENSION_LOADER.get_extension`.

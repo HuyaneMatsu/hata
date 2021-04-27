@@ -840,7 +840,7 @@ class Message(DiscordEntity, immortal=True):
         Set when the message is a reply, a crosspost or when is a pin message.
     deleted : `bool`
         Whether the message is deleted.
-    edited : `None` or `datetime`
+    edited_at : `None` or `datetime`
         The time when the message was edited, or `None` if it was not.
         
         Pinning or (un)suppressing a message will not change it's edited value.
@@ -876,7 +876,7 @@ class Message(DiscordEntity, immortal=True):
         The mentioned users by the message if any.
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author', 'channel',
-        'components', 'content', 'cross_mentions', 'deleted', 'edited', 'embeds', 'everyone_mention', 'flags',
+        'components', 'content', 'cross_mentions', 'deleted', 'edited_at', 'embeds', 'everyone_mention', 'flags',
         'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts',
         'type', 'user_mentions',)
     
@@ -1013,10 +1013,12 @@ class Message(DiscordEntity, immortal=True):
             activity = MessageActivity(activity_data)
         self.activity = activity
         
-        edited = data['edited_timestamp']
-        if (edited is not None):
-            edited = parse_time(edited)
-        self.edited = edited
+        edited_timestamp = data['edited_timestamp']
+        if (edited_timestamp is None):
+            edited_at = None
+        else:
+            edited_at = parse_time(edited_timestamp)
+        self.edited_at = edited_at
         
         self.pinned = data.get('pinned', False)
         self.everyone_mention = data.get('mention_everyone', False)
@@ -1203,8 +1205,8 @@ class Message(DiscordEntity, immortal=True):
             If called as a classmethod defaults to `None`.
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
-        edited : `None` or `datetime`, Optional (Keyword only)
-            The ``.edited`` attribute of the message.
+        edited_at : `None` or `datetime`, Optional (Keyword only)
+            The ``.edited_at`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
         embeds : `None` or (`list` of ( ``EmbedCore`` or any embed compatible)), Optional (Keyword only)
@@ -1472,19 +1474,19 @@ class Message(DiscordEntity, immortal=True):
                 message_id = base.id
         
         try:
-            edited = kwargs.pop('edited')
+            edited_at = kwargs.pop('edited_at')
         except KeyError:
             if base is None:
-                edited = None
+                edited_at = None
             else:
-                edited = base.edited
+                edited_at = base.edited_at
         else:
-            if (edited is not None) and (type(edited) is not datetime):
-                raise TypeError(f'`edited` can be `None` or type `datetime`, got `{edited!r}`')
+            if (edited_at is not None) and (type(edited_at) is not datetime):
+                raise TypeError(f'`edited_at` can be `None` or type `datetime`, got `{edited_at!r}`')
         
         if validate:
-            if (edited is not None) and (time_to_id(edited)<message_id):
-                raise ValueError('`edited` can not be lower, than `created_at`')
+            if (edited_at is not None) and (time_to_id(edited_at)<message_id):
+                raise ValueError('`edited_at` can not be lower, than `created_at`')
         
         try:
             embeds = kwargs.pop('embeds')
@@ -1738,7 +1740,7 @@ class Message(DiscordEntity, immortal=True):
         self.cross_mentions = cross_mentions
         self.referenced_message = referenced_message
         self.deleted = deleted
-        self.edited = edited
+        self.edited_at = edited_at
         self.embeds = embeds
         self.everyone_mention = everyone_mention
         self.flags = flags
@@ -1861,7 +1863,7 @@ class Message(DiscordEntity, immortal=True):
         >>>> f'{message:e}'
         'never'
         >>>> from datetime import datetime
-        >>>> message = message.custom(edited=datetime.now())
+        >>>> message = message.custom(edited_at=datetime.now())
         >>>> message
         <Message id=0, ln=12, author=#0000>
         >>>> f'{message:e}'
@@ -1875,12 +1877,12 @@ class Message(DiscordEntity, immortal=True):
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         if code == 'e':
-            edited = self.edited
-            if edited is None:
-                edited = 'never'
+            edited_at = self.edited_at
+            if edited_at is None:
+                edited_at = 'never'
             else:
-                edited = self.edited.__format__(DATETIME_FORMAT_CODE)
-            return edited
+                edited_at = self.edited_at.__format__(DATETIME_FORMAT_CODE)
+            return edited_at
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
@@ -1890,7 +1892,7 @@ class Message(DiscordEntity, immortal=True):
         relation.
 
         A special case is if a message is (un)pinned or (un)suppressed , because then the returned dict is not going to
-        contain `'edited'`, only `'pinned'` or `'flags'`. If the embeds are (un)suppressed of the message, then the
+        contain `'edited_at'`, only `'pinned'` or `'flags'`. If the embeds are (un)suppressed of the message, then the
         returned dict might contain also an `'embeds'` key.
         
         Parameters
@@ -1920,7 +1922,7 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMention``))    |
         +-------------------+-----------------------------------------------------------------------+
-        | edited            | `None`  or `datetime`                                                 |
+        | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
         | embeds            | `None`  or `(list` of ``EmbedCore``)                                  |
         +-------------------+-----------------------------------------------------------------------+
@@ -1964,12 +1966,12 @@ class Message(DiscordEntity, immortal=True):
         if edited_timestamp is None:
             return old_attributes
         
-        edited = parse_time(edited_timestamp)
-        if self.edited == edited:
+        edited_at = parse_time(edited_timestamp)
+        if self.edited_at == edited_at:
             return old_attributes
         
-        old_attributes['edited'] = self.edited
-        self.edited = edited
+        old_attributes['edited_at'] = self.edited_at
+        self.edited_at = edited_at
         
         try:
             application_data = data['application']
@@ -2119,10 +2121,10 @@ class Message(DiscordEntity, immortal=True):
         if edited_timestamp is None:
             return
         
-        edited = parse_time(edited_timestamp)
-        if self.edited == edited:
+        edited_at = parse_time(edited_timestamp)
+        if self.edited_at == edited_at:
             return
-        self.edited = edited
+        self.edited_at = edited_at
 
         try:
             application_data = data['application']

@@ -456,7 +456,7 @@ class Extension:
         return self._spec.name
     
     @property
-    def name_short(self):
+    def short_name(self):
         """
         Returns the extension's name's shortened version.
         
@@ -468,11 +468,11 @@ class Extension:
         
         dot_index = name.rfind('.')
         if dot_index == -1:
-            name_short = None
+            short_name = None
         else:
-            name_short = name[dot_index+1:]
+            short_name = name[dot_index+1:]
         
-        return name_short
+        return short_name
     
     
     @property

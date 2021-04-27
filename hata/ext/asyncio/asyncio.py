@@ -133,6 +133,10 @@ class EventThread:
         else:
             extracted.append('*no exception provided*\n')
             sys.stderr.write(''.join(extracted))
+    
+    
+    async def socket_sendall(self, socket, data):
+        return await self.socket_send_all(socket, data)
 
 
 async def in_coro(fut):

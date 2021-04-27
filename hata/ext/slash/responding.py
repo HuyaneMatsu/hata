@@ -510,7 +510,8 @@ class SlashResponse:
         return ''.join(result)
 
 
-def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., show_for_invoking_user_only=...,):
+def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
+        show_for_invoking_user_only=...,):
     """
     Aborts the slash response with sending the passed parameters as a response.
     
@@ -534,6 +535,8 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., sh
     allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
             , Optional (Keyword only)
         Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
+    components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        Components attached to the message.
     tts : `bool`, Optional (Keyword only)
         Whether the message is text-to-speech.
     show_for_invoking_user_only : `bool`, Optional (Keyword only)
@@ -555,6 +558,8 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., sh
             show_for_invoking_user_only = False
         elif (tts is not ...):
             show_for_invoking_user_only = False
+        elif (components is ...):
+            show_for_invoking_user_only = False
         elif (content is ...):
             show_for_invoking_user_only = True
         elif is_only_embed(content):
@@ -563,8 +568,8 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., sh
             show_for_invoking_user_only = True
     
     
-    response = SlashResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, tts=tts,
-        show_for_invoking_user_only=show_for_invoking_user_only, force_new_message=-1)
+    response = SlashResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, components=components,
+        tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, force_new_message=-1)
     
     raise InteractionAbortedError(response)
 

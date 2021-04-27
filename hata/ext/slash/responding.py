@@ -255,8 +255,10 @@ class SlashResponse:
     
     Attributes
     ----------
-    -force_new_message : `int`
+    _force_new_message : `int`
         Whether a new message should be forced out from Discord and being retrieved.
+    _message : `Ellipsis`, `None` or ``Message`` instance.
+        Whether a message should be edited instead of creating a new one.
     _parameters : `dict` of (`str`, `Any`) items
         Parameters to pass to the respective ``Client`` functions.
         
@@ -270,10 +272,10 @@ class SlashResponse:
         - `'show_for_invoking_user_only'`
         - `'tts'`
     """
-    __slots__ = ('_force_new_message', '_parameters',)
+    __slots__ = ('_force_new_message', '_message', '_parameters',)
     
     def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., components=None,
-            show_for_invoking_user_only=..., force_new_message=0):
+            show_for_invoking_user_only=..., force_new_message=0, edit=...):
         """
         Creates a new ``SlashResponse`` instance with the given parameters.
         
@@ -308,9 +310,12 @@ class SlashResponse:
             object as well. Defaults to `False`.
             
             If given as `-1` will only force new message if the event already deferred.
+        edit : `None`, ``Message``
+            Whether teh interaction's message should be edited
         """
         self._force_new_message = force_new_message
         self._parameters = parameters = {}
+        self._message = edit
         
         if (content is not ...):
             parameters['content'] = content
@@ -377,6 +382,17 @@ class SlashResponse:
         request_coro : `None` or `coroutine`
         """
         response_state = interaction_event._response_state
+        message = self._message
+        if message is not ...:
+            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file'))
+            
+            if message is None:
+                yield client.interaction_response_message_edit(interaction_event, message, **response_parameters)
+            else:
+                yield client.interaction_followup_message_edit(interaction_event, message, **response_parameters)
+            return
+        
+        
         force_new_message = self._force_new_message
         if force_new_message:
             if force_new_message > 0:

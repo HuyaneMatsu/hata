@@ -285,7 +285,14 @@ class ChannelOutputStream:
             future_or_timeout(waiter, timeout)
         
         return waiter
-
+    
+    def __enter__(self):
+        """Enters the stream returning itself."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exists the stream by closing it."""
+        self.close()
 
 class ChannelInputStream:
     """
@@ -801,6 +808,14 @@ class ChannelInputStream:
         return await self._set_payload_reader(self._read_lines(hint))
     
     readlines = read_lines
+    
+    def __enter__(self):
+        """Enters the stream returning itself."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exists the stream by closing it."""
+        self.close()
 
 
 def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):

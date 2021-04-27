@@ -14301,7 +14301,7 @@ class Client(ClientUserPBase):
         Sends a followup message with the given interaction.
         
         When calling ``.interaction_followup_message_create`` before calling ``.interaction_response_message_create``
-        on an interaction, will redirect to ``.interaction_followup_message_create` `and drop a warning.
+        on an interaction, will redirect to ``.interaction_response_message_create` `and drop a warning.
         
         This method is a coroutine.
         
@@ -14382,7 +14382,7 @@ class Client(ClientUserPBase):
                 ResourceWarning)
             
             return await self.interaction_response_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions, tts=tts)
+                allowed_mentions=allowed_mentions, components=components, tts=tts)
         
         # Ignore this case to allow more functionality at retrieving message object.
         # elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:

@@ -5,6 +5,7 @@
 - Rename `Message.edited` to `.edited_at`.
 - Add `get_channel_stdin`. (experimental) (Charlotte|💻⭐#5644)
 - Add `get_channel_stdout`. (experimental) (Charlotte|💻⭐#5644)
+- Add `edit` parameter to `SlashResponse`
 
 ##### Internal
 

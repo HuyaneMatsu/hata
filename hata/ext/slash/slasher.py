@@ -916,10 +916,10 @@ class Slasher(EventHandlerBase):
             pass
         else:
             if len(actual_waiter) == 1:
-                self.waitfors[message] = actual_waiter[0]
+                self._component_interaction_waiters[message] = actual_waiter[0]
                 return
         
-        self.waitfors[message] = actual_waiter
+        self._component_interaction_waiters[message] = actual_waiter
     
     
     def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,

@@ -5,10 +5,10 @@ import reprlib
 from ...backend.utils import copy_docs
 
 from ...discord.preinstanced import ButtonStyle, ComponentType
-from ...discord.interaction import ComponentBase, Component
+from ...discord.interaction import ComponentBase, Component, _debug_component_components, _debug_component_custom_id, \
+    _debug_component_emoji, _debug_component_label, _debug_component_enabled, _debug_component_url
 from ...discord.preconverters import preconvert_preinstanced_type
 from ...discord.emoji import create_partial_emoji_data, create_partial_emoji, Emoji
-from ...discord.limits import COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX
 
 
 COMPONENT_TYPE_ACTION_ROW = ComponentType.action_row
@@ -77,6 +77,17 @@ class Button(ComponentBase):
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
         """
+        if __debug__:
+            _debug_component_custom_id(custom_id)
+            _debug_component_emoji(emoji)
+            _debug_component_label(label)
+            _debug_component_enabled(enabled)
+            _debug_component_url(url)
+            
+            if (custom_id is not None) and (url is not None):
+                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
+                    f'custom_id={custom_id!r}, url={url!r}.')
+        
         if style is None:
             style = cls.default_style
         else:
@@ -87,53 +98,19 @@ class Button(ComponentBase):
             'style': style.value,
         }
         
-        if __debug__:
-            if (custom_id is not None) and (url is not None):
-                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
-                    f'custom_id={custom_id!r}, url={url!r}.')
-        
         if (custom_id is not None):
-            if __debug__:
-                if (not isinstance(custom_id, str)):
-                    raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
-                        f'{custom_id.__class__.__name__}.')
-            
             data['custom_id'] = custom_id
         
         if (emoji is not None):
-            if __debug__:
-                if (not isinstance(emoji, Emoji)):
-                    raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                        f'{emoji.__class__.__name__}')
-            
             data['emoji'] = create_partial_emoji_data(emoji)
         
         if (url is not None):
-            if __debug__:
-                if (not isinstance(url, str)):
-                    raise AssertionError(f'`url` can be given either as `None` or as `str` instance, got '
-                        f'{url.__class__.__name__}.')
-            
             data['url'] = url
             
-        if (label is not None):
-            if __debug__:
-                if (not isinstance(label, str)):
-                    raise AssertionError(f'`label` can be given either as `None` or as `str` instance, got '
-                        f'{label.__class__.__name__}.')
-                
-                if len(label) > COMPONENT_LABEL_LENGTH_MAX:
-                    raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
-                        f'{len(label)!r}; {label!r}.')
-            
-            if label:
-                data['label'] = label
+        if (label is not None) and label:
+            data['label'] = label
         
-        if __debug__:
-            if not isinstance(enabled, bool):
-                raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
-        
-        if not enabled:
+        if (not enabled):
             data['disabled'] = True
         
         self = object.__new__(cls)
@@ -167,21 +144,15 @@ class Button(ComponentBase):
     
     @custom_id.setter
     def custom_id(self, custom_id):
+        if __debug__:
+            _debug_component_custom_id(custom_id)
+        
         if (custom_id is None):
             try:
                 del self._data['custom_id']
             except KeyError:
                 pass
         else:
-            if __debug__:
-                if (not isinstance(custom_id, str)):
-                    raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
-                        f'{custom_id.__class__.__name__}.')
-                
-                if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
-                    raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
-                        f'{len(custom_id)!r}; {custom_id!r}.')
-            
             self._data['custom_id'] = custom_id
     
     
@@ -203,17 +174,15 @@ class Button(ComponentBase):
     
     @emoji.setter
     def emoji(self, emoji):
+        if __debug__:
+            _debug_component_emoji(emoji)
+        
         if (emoji is None):
             try:
                 del self._data['emoji']
             except KeyError:
                 pass
         else:
-            if __debug__:
-                if (not isinstance(emoji, Emoji)):
-                    raise TypeError(f'`emoji` can be given either as `None` or as `{Emoji.__name__}` instance, got '
-                        f'{Emoji.__class__.__name__}.')
-            
             self._data['Emoji'] = create_partial_emoji_data(emoji)
     
     
@@ -228,17 +197,15 @@ class Button(ComponentBase):
     
     @url.setter
     def url(self, url):
+        if __debug__:
+            _debug_component_url(url)
+        
         if (url is None):
             try:
                 del self._data['url']
             except KeyError:
                 pass
         else:
-            if __debug__:
-                if (not isinstance(url, str)):
-                    raise TypeError(f'`url` can be given either as `None` or as `str` instance, got '
-                        f'{url.__class__.__name__}.')
-            
             self._data['url'] = url
     
     
@@ -253,25 +220,16 @@ class Button(ComponentBase):
     
     @label.setter
     def label(self, label):
-        if (label is not None):
-            if __debug__:
-                if (not isinstance(url, str)):
-                    raise TypeError(f'`label` can be given either as `None` or as `str` instance, got '
-                        f'{label.__class__.__name__}.')
-                
-                if len(label) > COMPONENT_LABEL_LENGTH_MAX:
-                    raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
-                        f'{len(label)!r}; {label!r}.')
-            
-            if label:
-                self._data['label'] = label
-                return
+        if __debug__:
+            _debug_component_label(label)
         
-        try:
-            del self._data['label']
-        except KeyError:
-            pass
-    
+        if (label is None) or (not label):
+            try:
+                del self._data['label']
+            except KeyError:
+                pass
+        else:
+            self._data['label'] = label
     
     @property
     def enabled(self):
@@ -282,11 +240,11 @@ class Button(ComponentBase):
         """
         return (not self._data.get('disabled', False))
     
+    
     @enabled.setter
     def enabled(self, value):
         if __debug__:
-            if not isinstance(enabled, bool):
-                raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
+            _debug_component_emoji(emoji)
         
         if value:
             try:
@@ -452,8 +410,8 @@ class Row(ComponentBase):
     
     Attributes
     ----------
-    _data : `dict` of (`str`, `Any`) items
-        Serialized component data.
+    _components : `None` or `list` of ``Component``
+        Stored components.
     
     Class Attributes
     ----------------
@@ -462,39 +420,17 @@ class Row(ComponentBase):
     """
     type = COMPONENT_TYPE_ACTION_ROW
     
-    __slots__ = ('_data', )
+    __slots__ = ('_components', )
     
     def __new__(cls, *components):
-        component_datas = None
-        for component in components:
-            if __debug__:
-                if not isinstance(component, ComponentBase):
-                    raise AssertionError(f'`component` can be given as `{ComponentBase.__name__}` instance, got '
-                        f'{component.__class__.__name__}.')
-                
-                if component.type is COMPONENT_TYPE_ACTION_ROW:
-                    raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ACTION_ROW}` type as sub components, got '
-                        f'{component!r}.')
-            
-            if component_datas is None:
-                component_datas = []
-            
-            component_datas.append(component.to_data())
-        
         if __debug__:
-            if (component_datas is not None) and (len(component_datas) > COMPONENT_SUB_COMPONENT_LIMIT):
-                raise AssertionError(f'A `{cls.__name__}` can have maximum 5 sub-components, got '
-                    f'{len(component_datas)}; {component_datas!r}.')
+            _debug_component_components(components)
         
-        data = {
-            'type': cls.type.value
-        }
-        
-        if (components is not None):
-            data['components'] = component_datas
+        if not components:
+            components = None
         
         self = object.__new__(cls)
-        self._data = data
+        self._components = components
         return self
     
     
@@ -505,19 +441,28 @@ class Row(ComponentBase):
         
         Accepts `None` or a `list` of ``ComponentBase`` instances.
         """
-        try:
-            component_datas = self._data['components']
-        except KeyError:
-            components = None
-        else:
-            components = [
-                COMPONENT_TYPE_MAP.get(component_data['type'], Component).from_data(component_data)
-                    for component_data in component_datas
-            ]
+        components = self._components
+        if (components is not None):
+            components = components.copy()
         
         return components
-
-
+    
+    @components.setter
+    def components(self, components):
+        if __debug__:
+            _debug_component_components(components)
+        
+        components_processed = None
+        if (components is not None):
+            for component in components:
+                if components_processed is None:
+                    components_processed = []
+                
+                components_processed.append(component)
+        
+        self._components = components_processed
+    
+    
     @classmethod
     @copy_docs(ComponentBase.from_data)
     def from_data(cls, data):
@@ -525,52 +470,56 @@ class Row(ComponentBase):
             if data['type'] != cls.type.value:
                 raise AssertionError(f'The received data is not a {cls.type.name} component, got: {data!r}.')
         
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = [Component.from_data(component_data) for component_data in component_datas]
+        
         self = object.__new__(cls)
-        self._data = data
+        self._components = components
         return self
     
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
-        return self._data
-    
+        data = {
+            'type': self.type.value
+        }
+        
+        components = self._components
+        if (components is not None):
+            data['components'] = [component.to_data() for component in components]
+        
+        return data
     
     @copy_docs(ComponentBase.__repr__)
     def __repr__(self):
         repr_parts = [self.__class__.__name__, '(']
         
-        try:
-            component_datas = self._data['components']
-        except KeyError:
-            pass
-        else:
+        components = self.components
+        if (components is not None):
             field_added = False
-            for component_data in component_datas:
+            for component in components:
                 if field_added:
                     repr_parts.append(', ')
                 else:
                     field_added = True
                 
-                component = COMPONENT_TYPE_MAP.get(component_data['type'], Component).from_data(component_data)
                 repr_parts.append(component)
-                
+        
         repr_parts.append(')')
         return ''.join(repr_parts)
     
     
     @copy_docs(ComponentBase.copy)
     def copy(self):
-        old_data = self._data
-        new_data = {'type': old_data['style']}
-        try:
-            component_datas = old_data['components']
-        except KeyError:
-            pass
-        else:
-            new_data['components'] = [component_data.copy() for component_data in component_datas]
+        components = self._components
+        if (components is not None):
+            components = [component.copy() for component in components]
         
         new = object.__new__(type(self))
-        new._data = new_data
+        new._components = components
         return new
 
 
@@ -612,5 +561,3 @@ COMPONENT_TYPE_MAP = {
     COMPONENT_TYPE_ACTION_ROW.value: Row,
     COMPONENT_TYPE_BUTTON.value: Button,
 }
-
-

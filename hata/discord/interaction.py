@@ -33,6 +33,15 @@ APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissio
 COMPONENT_TYPE_ACTION_ROW = ComponentType.action_row
 COMPONENT_TYPE_BUTTON = ComponentType.button
 
+COMPONENT_TYPE_ATTRIBUTE_COMPONENTS = frozenset((COMPONENT_TYPE_ACTION_ROW.value,))
+COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID = frozenset((COMPONENT_TYPE_BUTTON.value,))
+COMPONENT_TYPE_ATTRIBUTE_ENABLED = frozenset((COMPONENT_TYPE_BUTTON.value,))
+COMPONENT_TYPE_ATTRIBUTE_EMOJI = frozenset((COMPONENT_TYPE_BUTTON.value,))
+COMPONENT_TYPE_ATTRIBUTE_LABEL = frozenset((COMPONENT_TYPE_BUTTON.value,))
+COMPONENT_TYPE_ATTRIBUTE_STYLE = frozenset((COMPONENT_TYPE_BUTTON.value,))
+COMPONENT_TYPE_ATTRIBUTE_URL = frozenset((COMPONENT_TYPE_BUTTON.value,))
+
+
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
     Represents a Discord slash command.
@@ -2134,6 +2143,157 @@ class ComponentBase:
         return self.type.value
 
 
+def _debug_component_components(components):
+    """
+    Checks whether given `component.components` value is correct.
+    
+    Parameters
+    ----------
+    components : `None` or (`list`, `tuple`) of ``ComponentBase``
+        Sub-components.
+    
+    Raises
+    ------
+    AssertionError
+        - If `components`'s length is out of the expected range [0:5].
+        - If `components` is neither `None`, `tuple` or `list`.
+        - If `components` contains a non ``Component`` instance.
+    """
+    if (components is None):
+        pass
+    elif isinstance(components, (tuple, list)):
+        if (components is not None) and (len(components) > COMPONENT_SUB_COMPONENT_LIMIT):
+            raise AssertionError(f'A `component.components` can have maximum 5 sub-components, got '
+                f'{len(components)}; {components!r}.')
+        
+        for component in components:
+            if not isinstance(component, ComponentBase):
+                raise AssertionError(f'`component` can be given as `{ComponentBase.__name__}` instance, got '
+                    f'{component.__class__.__name__}.')
+            
+            if component.type is COMPONENT_TYPE_ACTION_ROW:
+                raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ACTION_ROW}` type as sub components, got '
+                    f'{component!r}.')
+    else:
+        raise AssertionError(f'`components` can be given as `None`, `tuple` or `list`, got '
+            f'{components.__class__.__name__}.')
+
+
+def _debug_component_custom_id(custom_id):
+    """
+    Checks whether given `component.custom_id` value is correct.
+    
+    Parameters
+    ----------
+    custom_id : `None` or `str`
+        Custom identifier to detect which button was clicked by the user.
+    
+    Raises
+    ------
+    AssertionError
+        - If `custom_id` was not given neither as `None` or `str` instance.
+        - If `custom_id`'s length is over `100`.
+    """
+    if (custom_id is None):
+        pass
+    elif isinstance(custom_id, str):
+        if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
+            raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
+                f'{len(custom_id)!r}; {custom_id!r}.')
+    else:
+        raise AssertionError(f'`custom_id` can be given either as `None` or as `str` instance, got '
+            f'{custom_id.__class__.__name__}.')
+
+
+def _debug_component_emoji(emoji):
+    """
+    Checks whether the given `component.emoji` value is correct.
+    
+    Parameters
+    ----------
+    emoji : `None` or ``Emoji``
+        Emoji of the button if applicable.
+    
+    Raises
+    ------
+    AssertionError
+        -If `emoji` was not given as ``Emoji`` instance.
+    """
+    if emoji is None:
+        pass
+    elif isinstance(emoji, Emoji):
+        pass
+    else:
+        raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
+            f'{emoji.__class__.__name__}')
+
+
+def _debug_component_label(label):
+    """
+    Checks whether the given `component.label` value is correct.
+    
+    Parameters
+    ----------
+    label : `None` or `str`
+        Label of the component.
+    
+    Raises
+    ------
+    AssertionError
+        - If `label` was not given neither as `None` nor as `int` instance.
+        - If `label`'s length is over `80`.
+    """
+    if label is None:
+        pass
+    elif isinstance(label, str):
+        if len(label) > COMPONENT_LABEL_LENGTH_MAX:
+            raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
+                f'{len(label)!r}; {label!r}.')
+    else:
+        raise AssertionError(f'`label` can be given either as `None` or as `str` instance, got '
+            f'{label.__class__.__name__}.')
+
+
+def _debug_component_enabled(enabled):
+    """
+    Checks whether the given `component.enabled` value is correct.
+    
+    Parameters
+    ----------
+    enabled : `bool`
+        Whether the button is enabled.
+    
+    Raises
+    ------
+    - If `enabled` was not given as `bool` instance.
+    """
+    if not isinstance(enabled, bool):
+        raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
+
+
+def _debug_component_url(url):
+    """
+    Checks whether the given `component.url` value is correct.
+    
+    Parameters
+    ----------
+    url : `None` or `str`
+        Url to redirect to when clicking on a button.
+    
+    Raises
+    ------
+    AssertionError
+        - If `url` was not given neither as `None` or `str` instance.
+    """
+    if url is None:
+        pass
+    elif isinstance(url, str):
+        pass
+    else:
+        raise AssertionError(f'`url` can be given either as `None` or as `str` instance, got '
+            f'{url.__class__.__name__}.')
+
+
 @export
 class Component(ComponentBase):
     """
@@ -2214,95 +2374,36 @@ class Component(ComponentBase):
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
         """
+        if __debug__:
+            _debug_component_components(components)
+            _debug_component_custom_id(custom_id)
+            _debug_component_emoji(emoji)
+            _debug_component_label(label)
+            _debug_component_enabled(enabled)
+            _debug_component_url(url)
+            
+            if (custom_id is not None) and (url is not None):
+                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
+                    f'custom_id={custom_id!r}, url={url!r}.')
+        
         type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
         
-        if type_ is COMPONENT_TYPE_ACTION_ROW:
+        component_style_type = COMPONENT_TYPE_TO_STYLE.get(type_, None)
+        if component_style_type is None:
             style = None
-        elif type_ is COMPONENT_TYPE_BUTTON:
-            if __debug__:
-                if style is None:
-                    raise AssertionError(f'`If `type` is `{ComponentType.button}`, style can be given either as '
-                        f'`int` or as `{ButtonStyle.__name__}, got {style.__class__.__name__}.')
-            
-            style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
         else:
-            # ??? Future?
-            if style is None:
-                pass
-            if isinstance(style, PreinstancedBase):
-                style = style.value
-            else:
-                raise TypeError(f'`style` can be given either as `None` or as the style\'s respective '
-                    f'`{PreinstancedBase.__name__}` subclass instance, got {style.__class__.__name__}.')
+            style = preconvert_preinstanced_type(style, 'style', component_style_type)
         
         components_processed = None
         if (components is not None):
-            if __debug__:
-                if not isinstance(components, (tuple, list)):
-                    raise AssertionError(f'`components` can be given as `None`, `tuple` or `list`, got '
-                        f'{components.__class__.__name__}.')
-            
             for component in components:
-                if __debug__:
-                    if not isinstance(component, ComponentBase):
-                        raise AssertionError(f'`component` can be given as `{ComponentBase.__name__}` instance, got '
-                            f'{component.__class__.__name__}.')
-                    
-                    if component.type is COMPONENT_TYPE_ACTION_ROW:
-                        raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ACTION_ROW}` type as sub components, got '
-                            f'{component!r}.')
-                
                 if components_processed is None:
                     components_processed = []
                 
                 components_processed.append(component)
-            
-            if __debug__:
-                if (components_processed is not None) and (len(components_processed) > COMPONENT_SUB_COMPONENT_LIMIT):
-                    raise AssertionError(f'A `{cls.__name__}` can have maximum 5 sub-components, got '
-                        f'{len(components_processed)}; {components_processed!r}.')
         
-        
-        if __debug__:
-            if (custom_id is not None) and (url is not None):
-                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
-                    f'custom_id={custom_id!r}, url={url!r}.')
-            
-            if (emoji is not None) and (not isinstance(emoji, Emoji)):
-                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                    f'{emoji.__class__.__name__}')
-            
-            if (url is not None) and (not isinstance(url, str)):
-                raise TypeError(f'`url` can be given either as `None` or as `str` instance, got '
-                    f'{url.__class__.__name__}.')
-            
-            if (custom_id is not None):
-                if (not isinstance(custom_id, str)):
-                    raise TypeError(f'`custom_id` can be given either as `None` or as `str` instance, got '
-                        f'{custom_id.__class__.__name__}.')
-                
-                if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
-                    raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
-                        f'{len(custom_id)!r}; {custom_id!r}.')
-        
-        if (label is not None):
-            if __debug__:
-                if (not isinstance(label, str)):
-                    raise TypeError(f'`label` can be given either as `None` or as `str` instance, got '
-                        f'{label.__class__.__name__}.')
-            
-            if label:
-                if __debug__:
-                    if len(label) > COMPONENT_LABEL_LENGTH_MAX:
-                        raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
-                            f'{len(label)!r}; {label!r}.')
-            else:
-                label = None
-        
-        if __debug__:
-            if not isinstance(enabled, bool):
-                raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
-        
+        if (label is not None) and (not label):
+            label = None
         
         self = object.__new__(cls)
         
@@ -2357,36 +2458,44 @@ class Component(ComponentBase):
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
+        type_value = self.type.value
         data = {
-            'type' : self.type.value
+            'type' : type_value
         }
         
-        emoji = self.emoji
-        if (emoji is not None):
-            data['emoji'] = create_partial_emoji_data(emoji)
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_EMOJI:
+            emoji = self.emoji
+            if (emoji is not None):
+                data['emoji'] = create_partial_emoji_data(emoji)
         
-        components = self.components
-        if (components is not None):
-            data['components'] = [component.to_data() for component in components]
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_COMPONENTS:
+            components = self.components
+            if (components is not None):
+                data['components'] = [component.to_data() for component in components]
         
-        style = self.style
-        if (style is not None):
-            data['style'] = style.value
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_STYLE:
+            style = self.style
+            if (style is not None):
+                data['style'] = style.value
         
-        url = self.url
-        if (url is not None):
-            data['url'] = url
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_URL:
+            url = self.url
+            if (url is not None):
+                data['url'] = url
         
-        custom_id = self.custom_id
-        if (custom_id is not None):
-            data['custom_id'] = custom_id
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID:
+            custom_id = self.custom_id
+            if (custom_id is not None):
+                data['custom_id'] = custom_id
         
-        label = self.label
-        if (label is not None):
-            data['label'] = label
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_LABEL:
+            label = self.label
+            if (label is not None):
+                data['label'] = label
         
-        if (not self.enabled):
-            data['disabled'] = True
+        if type_value in COMPONENT_TYPE_ATTRIBUTE_ENABLED:
+            if (not self.enabled):
+                data['disabled'] = True
         
         return data
     
@@ -2625,4 +2734,9 @@ INTERACTION_TYPE_TABLE = {
     InteractionType.ping.value: None,
     InteractionType.application_command.value: ApplicationCommandInteraction,
     InteractionType.message_component.value: ComponentInteraction,
+}
+
+COMPONENT_TYPE_TO_STYLE = {
+    ComponentType.action_row: None,
+    ComponentType.button: ButtonStyle,
 }

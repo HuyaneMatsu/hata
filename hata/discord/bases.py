@@ -202,7 +202,7 @@ class FlagGetDescriptor:
     def __init__(self, shift):
         self.shift = shift
     
-    def __get__(self, instance, type_=None):
+    def __get__(self, instance, type_):
         if instance is None:
             return self
         else:
@@ -229,7 +229,7 @@ class ReverseFlagGetDescriptor(FlagGetDescriptor):
     shift : `int`
         The bitwise position of the attribute, what this flag represents.
     """
-    def __get__(self, instance, type_=None):
+    def __get__(self, instance, type_):
         if instance is None:
             return self
         else:
@@ -276,7 +276,7 @@ class FlagEnableDescriptor(FlagGetDescriptor):
     -----
     This type is used for disabling specific bitwise values when the source flag is a reversed flag.
     """
-    def __get__(self, instance, type_=None):
+    def __get__(self, instance, type_):
         if instance is None:
             return self
         else:
@@ -327,7 +327,7 @@ class FlagDisableDescriptor(FlagGetDescriptor):
     -----
     This type is used for enabling specific bitwise values when the source flag is a reversed flag.
     """
-    def __get__(self, instance, type_=None):
+    def __get__(self, instance, type_):
         if instance is None:
             return self
         else:

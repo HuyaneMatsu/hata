@@ -1,4 +1,7 @@
-### 1.1.72 *\[2021-04-??\]*
+## 1.1.73 *\[2021-05-??\]*
+
+
+## 1.1.72 *\[2021-04-30\]*
 
 #### Summary
 
@@ -15,6 +18,8 @@ Channel input and output.
 #### Improvements
 
 - Update changelog style. (Pichu#0357)
+- Reduce generated data size by badly built `Component` instances.
+- Add debug functions for components to avoid many repeated debug checks.
 
 ##### ext.slash
 - Add `edit` parameter to `SlashResponse`.
@@ -26,7 +31,7 @@ Channel input and output.
 - Rename `EventThread.socket_sendall` to `.socket_send_all`.
 
 
-### 1.1.71 *\[2021-04-26\]*
+## 1.1.71 *\[2021-04-26\]*
 
 #### Summary
 
@@ -61,7 +66,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 - Rename `EXTENSION_LOADER.extensions` to `._extensions_by_name`.
 
 
-### 1.1.70 *\[2021-04-26\]*
+## 1.1.70 *\[2021-04-26\]*
 
 #### Summary
 
@@ -111,7 +116,7 @@ Improve component usage.
 - Rename `Component.__init__` to `.from_data`.
 
 
-### 1.1.69  *\[2021-04-24\]*
+## 1.1.69  *\[2021-04-24\]*
 
 #### Summary
 
@@ -181,7 +186,7 @@ Add components.
 - Remove `DiscordHTTPClient.thread_user_get_all`.
 - Remove `RATE_LIMIT_GROUPS.thread_user_get_all`.
 
-### 1.1.68  *\[2021-04-23\]*
+## 1.1.68  *\[2021-04-23\]*
 
 #### Summary
 
@@ -263,7 +268,7 @@ Add components.
 - Rename `WaitAndContinue.timeouter` to `._timeouter`.
 - Rename `Pagiantion.page` to `.page_index`.
 
-### 1.1.67  *\[2021-04-20\]*
+## 1.1.67  *\[2021-04-20\]*
 
 #### Summary
 
@@ -311,7 +316,7 @@ Add stage events and endpoints.
 - Fix a bad `include` call in `guild.py`.
 
 
-### 1.1.66  *\[2021-04-15\]*
+## 1.1.66  *\[2021-04-15\]*
 
 #### Summary
 
@@ -336,7 +341,7 @@ Use `export` & `include`.
 - `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Zeref Draganeel#3581)
 
 
-### 1.1.65  *\[2021-04-14\]*
+## 1.1.65  *\[2021-04-14\]*
 
 #### Summary
 
@@ -364,7 +369,7 @@ Lazy choice definition.
 - `CommandState._try_purge` returned values in bad order. (Zeref Draganeel#3581)
 
 
-### 1.1.64  *\[2021-04-12\]*
+## 1.1.64  *\[2021-04-12\]*
 
 #### Summary
 
@@ -411,7 +416,7 @@ Fix duplicable client connections.
 - Remove `ClientDictionary`.
 
 
-### 1.1.63  *\[2021-04-11\]*
+## 1.1.63  *\[2021-04-11\]*
 
 #### Summary
 

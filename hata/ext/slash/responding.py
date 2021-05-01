@@ -311,7 +311,7 @@ class SlashResponse:
             
             If given as `-1` will only force new message if the event already deferred.
         edit : `None`, ``Message``
-            Whether teh interaction's message should be edited
+            Whether the interaction's message should be edited
         """
         self._force_new_message = force_new_message
         self._parameters = parameters = {}
@@ -558,7 +558,7 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
             show_for_invoking_user_only = False
         elif (tts is not ...):
             show_for_invoking_user_only = False
-        elif (components is ...):
+        elif (components is not ...):
             show_for_invoking_user_only = False
         elif (content is ...):
             show_for_invoking_user_only = True

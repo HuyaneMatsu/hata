@@ -66,7 +66,7 @@ from .color import Color
 from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from .stage import Stage
-
+from .allowed_mentions import parse_allowed_mentions
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -3403,7 +3403,7 @@ class Client(ClientUserPBase):
             > `components` do not count towards having any content in the message.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
         tts : `bool`, Optional (Keyword only)
@@ -3638,7 +3638,7 @@ class Client(ClientUserPBase):
             message_data['nonce'] = nonce
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
         
         if (message_id is not None):
             message_reference_data = {'message_id': message_id}
@@ -3775,136 +3775,6 @@ class Client(ClientUserPBase):
             raise ValueError('You can send maximum 10 files at once.')
         
         return form
-    
-    @staticmethod
-    def _parse_allowed_mentions(allowed_mentions):
-        """
-        If `allowed_mentions` is passed as `None`, then returns a `dict`, what will cause all mentions to be disabled.
-        
-        If passed as an `iterable`, then it's elements will be checked. They can be either type `str`
-        (any value from `('everyone', 'users', 'roles')`), ``UserBase`` or ``Role`` instances.
-        
-        Passing `everyone` will allow the message to mention `@everyone` (permissions can overwrite this behaviour).
-        
-        Passing `'users'` will allow the message to mention all the users, meanwhile passing ``UserBase`` instances
-        allow to mentioned the respective users. Using `users` and ``UserBase`` instances is mutually exclusive,
-        and the wrapper will register only `users` to avoid getting ``DiscordException``.
-        
-        `'roles'` and ``Role`` instances follow the same rules as `'users'` and the ``UserBase`` instances.
-        
-        By passing `'!replied_user'` you can disable mentioning the replied user, or by passing`'replied_user'` you can
-        re-enable mentioning the replied user.
-        
-        Parameters
-        ----------
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-            Which user or role can the message ping (or everyone).
-        
-        Returns
-        -------
-        allowed_mentions : `dict` of (`str`, `Any`) items
-        
-        Raises
-        ------
-        TypeError
-            If `allowed_mentions` contains an element of invalid type.
-        ValueError
-            If `allowed_mentions` contains en element of correct type, but an invalid value.
-        """
-        if (allowed_mentions is None):
-            return {'parse': []}
-        
-        if isinstance(allowed_mentions, list):
-            if (not allowed_mentions):
-                return {'parse': []}
-        else:
-            allowed_mentions = [allowed_mentions]
-        
-        allow_replied_user = 0
-        allow_everyone = 0
-        allow_users = 0
-        allow_roles = 0
-        
-        allowed_users = None
-        allowed_roles = None
-        
-        for element in allowed_mentions:
-            if isinstance(element, str):
-                if element == '!replied_user':
-                    allow_replied_user = -1
-                    continue
-                
-                if element == 'replied_user':
-                    allow_replied_user = 1
-                    continue
-                
-                if element == 'everyone':
-                    allow_everyone = 1
-                    continue
-                
-                if element == 'users':
-                    allow_users = 1
-                    continue
-                
-                if element == 'roles':
-                    allow_roles = 1
-                    continue
-                
-                raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` '
-                    f'elements can be one of: (\'everyone\', \'users\', \'roles\').')
-            
-            if isinstance(element, UserBase):
-                if allowed_users is None:
-                    allowed_users = []
-                
-                allowed_users.append(element.id)
-                continue
-            
-            if isinstance(element, Role):
-                if allowed_roles is None:
-                    allowed_roles = []
-                
-                allowed_roles.append(element.id)
-                continue
-            
-            raise TypeError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The allowed '
-                f'types are: `str`, `Role` and any `UserBase` instances.')
-        
-        
-        result = {}
-        parse_all_of = None
-        
-        if allow_replied_user:
-            result['replied_user'] = (allow_replied_user > 0)
-        
-        if allow_everyone:
-            if parse_all_of is None:
-                parse_all_of = []
-                result['parse'] = parse_all_of
-            
-            parse_all_of.append('everyone')
-        
-        if allow_users:
-            if parse_all_of is None:
-                parse_all_of = []
-                result['parse'] = parse_all_of
-            
-            parse_all_of.append('users')
-        else:
-            if (allowed_users is not None):
-                result['users'] = allowed_users
-        
-        if allow_roles:
-            if parse_all_of is None:
-                parse_all_of = []
-                result['parse'] = parse_all_of
-            
-            parse_all_of.append('roles')
-        else:
-            if (allowed_roles is not None):
-                result['roles'] = allowed_roles
-        
-        return result
     
     @staticmethod
     def _validate_message_to_delete(message):
@@ -5065,7 +4935,7 @@ class Client(ClientUserPBase):
             If embeds are given as a list, then the first embed is picked up.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
             Components attached to the message.
@@ -5236,7 +5106,7 @@ class Client(ClientUserPBase):
             message_data['embed'] = embed
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
         
         if (components is not ...):
             message_data['components'] = components
@@ -10752,7 +10622,7 @@ class Client(ClientUserPBase):
             A file or files to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
         name : `str`, Optional (Keyword only)
@@ -10887,7 +10757,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
         
         if tts:
             message_data['tts'] = True
@@ -10964,7 +10834,7 @@ class Client(ClientUserPBase):
             A file or files to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
         Raises
@@ -11126,7 +10996,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
             contains_content = True
         
         if file is None:
@@ -13754,7 +13624,7 @@ class Client(ClientUserPBase):
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
             Components attached to the message.
             
@@ -13923,7 +13793,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
         
         if (components is not None):
             message_data['components'] = components
@@ -14040,7 +13910,7 @@ class Client(ClientUserPBase):
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
             
         Raises
         ------
@@ -14195,7 +14065,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
             contains_content = True
         
         if file is None:
@@ -14323,7 +14193,7 @@ class Client(ClientUserPBase):
             A file to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
             Components attached to the message.
             
@@ -14501,7 +14371,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
         
         if (components is not None):
             message_data['components'] = components
@@ -14563,7 +14433,7 @@ class Client(ClientUserPBase):
             A file or files to send. Check ``._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions``
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
         Raises
@@ -14715,7 +14585,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (allowed_mentions is not ...):
-            message_data['allowed_mentions'] = self._parse_allowed_mentions(allowed_mentions)
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
             contains_content = True
         
         if file is None:

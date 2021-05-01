@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 from .activity import *
+from .allowed_mentions import *
 from .application import *
 from .audit_logs import *
 from .bases import *
@@ -34,6 +35,7 @@ from .webhook import *
 
 __all__ = (
     *activity.__all__,
+    *allowed_mentions.__all__,
     *application.__all__,
     *audit_logs.__all__,
     *bases.__all__,

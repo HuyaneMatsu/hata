@@ -1,4 +1,26 @@
-## 1.1.73 *\[2021-05-??\]*
+## 1.1.73 *\[2021-05-01\]*
+
+#### Summary
+
+Fix some bugs.
+
+#### New Features
+
+- Add `AllowedMentionProxy`.
+
+#### Improvements
+
+- `parse_allowed_mentions` is now a standalone function and not a `Client` static method.
+
+#### Bug Fixes
+
+##### ext.asyncio
+- Fix an `AttributeError` from `1.1.72`. (Zeref Draganeel#3581)
+- Add `Queue.put_nowait`. (ᓚᘏᗢ | NeKo Mancer#1477)
+- Add `LifoQueue.put_nowait`. (ᓚᘏᗢ | NeKo Mancer#1477)
+
+#### ext.slash
+- `abort`'s `show_for_invoking_user_only` detected went oof when adding components.
 
 
 ## 1.1.72 *\[2021-04-30\]*
@@ -50,7 +72,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 #### Improvements
 
 ##### ext.slash
-- `Button.default_style` should be `ButtonStyle.primary.` (Zeref Draganeel#3581)
+- `Button.default_style` should be `ButtonStyle.primary`. (Zeref Draganeel#3581)
 
 #### Bug Fixes
 

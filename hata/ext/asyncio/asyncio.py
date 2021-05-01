@@ -55,7 +55,7 @@ class EventThread:
     
     getnameinfo = EventThread.get_name_info
     sock_recv = EventThread.socket_receive
-    sock_sendall = EventThread.socket_sendall
+    sock_sendall = EventThread.socket_send_all
     sock_connect = EventThread.socket_connect
     sock_accept =EventThread.socket_accept
     
@@ -133,10 +133,6 @@ class EventThread:
         else:
             extracted.append('*no exception provided*\n')
             sys.stderr.write(''.join(extracted))
-    
-    
-    async def socket_sendall(self, socket, data):
-        return await self.socket_send_all(socket, data)
 
 
 async def in_coro(fut):
@@ -758,22 +754,14 @@ class BufferedProtocol(BaseProtocol):
 # Include Queue, PriorityQueue, LifoQueue, QueueFull, QueueEmpty
 
 class QueueEmpty(Exception):
-    """
-    Sendfile syscall is not available.
-    
-    Raised if OS does not support sendfile syscall for given socket or file type.
-    """
+    """Raised when Queue.get_nowait() is called on an empty Queue."""
     def __init__(cls, *args):
-        raise NotImplementedError
+        pass
 
 class QueueFull(Exception):
-    """
-    Sendfile syscall is not available.
-    
-    Raised if OS does not support sendfile syscall for given socket or file type.
-    """
+    """Raised when the Queue.put_nowait() method is called on a full Queue."""
     def __init__(self, *args):
-        raise NotImplementedError
+        pass
 
 def Queue(maxsize=0, *, loop=None):
     if loop is None:
@@ -785,6 +773,16 @@ def Queue(maxsize=0, *, loop=None):
         max_length = None
     
     return AsyncQueue(loop, max_length=max_length)
+
+@KeepType(AsyncQueue)
+class AsyncQueue:
+    def put_nowait(self, element):
+        if len(self) == self.max_length:
+            raise QueueFull()
+        
+        self.set_result(element)
+
+
 
 def PriorityQueue(maxsize=0, *, loop=None):
     """
@@ -805,6 +803,15 @@ def LifoQueue(maxsize=0, *, loop=None):
         max_length = None
     
     return AsyncLifoQueue(loop, max_length=max_length)
+
+
+@KeepType(AsyncLifoQueue)
+class AsyncLifoQueue:
+    def put_nowait(self, element):
+        if len(self) == self.max_length:
+            raise QueueFull()
+        
+        self.set_result(element)
 
 
 # asyncio.runners

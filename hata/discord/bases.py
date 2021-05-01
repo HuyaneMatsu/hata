@@ -111,6 +111,7 @@ class DiscordEntityMeta(type):
         
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
+
 class DiscordEntity(object, metaclass=DiscordEntityMeta):
     """
     Base class for Discord entities.

@@ -9,7 +9,7 @@ import reprlib
 from ..backend.utils import modulize, copy_docs
 from ..backend.export import export
 
-from .bases import DiscordEntity, PreinstancedBase
+from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType, \
     ComponentType, ButtonStyle
 from .client_core import APPLICATION_COMMANDS, ROLES
@@ -33,13 +33,13 @@ APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissio
 COMPONENT_TYPE_ACTION_ROW = ComponentType.action_row
 COMPONENT_TYPE_BUTTON = ComponentType.button
 
-COMPONENT_TYPE_ATTRIBUTE_COMPONENTS = frozenset((COMPONENT_TYPE_ACTION_ROW.value,))
-COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID = frozenset((COMPONENT_TYPE_BUTTON.value,))
-COMPONENT_TYPE_ATTRIBUTE_ENABLED = frozenset((COMPONENT_TYPE_BUTTON.value,))
-COMPONENT_TYPE_ATTRIBUTE_EMOJI = frozenset((COMPONENT_TYPE_BUTTON.value,))
-COMPONENT_TYPE_ATTRIBUTE_LABEL = frozenset((COMPONENT_TYPE_BUTTON.value,))
-COMPONENT_TYPE_ATTRIBUTE_STYLE = frozenset((COMPONENT_TYPE_BUTTON.value,))
-COMPONENT_TYPE_ATTRIBUTE_URL = frozenset((COMPONENT_TYPE_BUTTON.value,))
+COMPONENT_TYPE_ATTRIBUTE_COMPONENTS = frozenset((COMPONENT_TYPE_ACTION_ROW,))
+COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID = frozenset((COMPONENT_TYPE_BUTTON,))
+COMPONENT_TYPE_ATTRIBUTE_ENABLED = frozenset((COMPONENT_TYPE_BUTTON,))
+COMPONENT_TYPE_ATTRIBUTE_EMOJI = frozenset((COMPONENT_TYPE_BUTTON,))
+COMPONENT_TYPE_ATTRIBUTE_LABEL = frozenset((COMPONENT_TYPE_BUTTON,))
+COMPONENT_TYPE_ATTRIBUTE_STYLE = frozenset((COMPONENT_TYPE_BUTTON,))
+COMPONENT_TYPE_ATTRIBUTE_URL = frozenset((COMPONENT_TYPE_BUTTON,))
 
 
 class ApplicationCommand(DiscordEntity, immortal=True):
@@ -2458,42 +2458,42 @@ class Component(ComponentBase):
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
-        type_value = self.type.value
+        type_ = self.type
         data = {
-            'type' : type_value
+            'type' : type_.value
         }
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_EMOJI:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_EMOJI:
             emoji = self.emoji
             if (emoji is not None):
                 data['emoji'] = create_partial_emoji_data(emoji)
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_COMPONENTS:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_COMPONENTS:
             components = self.components
             if (components is not None):
                 data['components'] = [component.to_data() for component in components]
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_STYLE:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_STYLE:
             style = self.style
             if (style is not None):
                 data['style'] = style.value
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_URL:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_URL:
             url = self.url
             if (url is not None):
                 data['url'] = url
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID:
             custom_id = self.custom_id
             if (custom_id is not None):
                 data['custom_id'] = custom_id
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_LABEL:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_LABEL:
             label = self.label
             if (label is not None):
                 data['label'] = label
         
-        if type_value in COMPONENT_TYPE_ATTRIBUTE_ENABLED:
+        if type_ in COMPONENT_TYPE_ATTRIBUTE_ENABLED:
             if (not self.enabled):
                 data['disabled'] = True
         

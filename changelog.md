@@ -1,3 +1,22 @@
+## 1.1.74 *\[2021-05-??\]*
+
+#### Improvements
+
+- Rework `Client.webhook_get_token` to accept `webhook_id-webhook_token` pair.
+- Rework `Client.webhook_delete_token` to accept `webhook_id-webhook_token` pair.
+- Rework `Client.webhook_edit_token` to accept `webhook_id-webhook_token` pair.
+- Rework `Client.webhook_message_create` to accept `webhook_id-webhook_token` pair.
+- Rework `Client.webhook_message_edit` to accept `webhook_id-webhook_token` pair.
+- Rework `Client.webhook_message_get` to accept `webhook_id-webhook_token` pair.
+
+#### Bug Fixes
+
+##### ext.asyncio
+`Task.current_task`'s `loop` parameter should not be keyword only.
+- Add `Queue.get`.
+- Add `LifoQueue.get`.
+- `Client.webhook_message_get` could raise `NameError` if called with partial webhook.
+
 ## 1.1.73 *\[2021-05-01\]*
 
 #### Summary

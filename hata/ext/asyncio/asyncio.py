@@ -763,25 +763,29 @@ class QueueFull(Exception):
     def __init__(self, *args):
         pass
 
-def Queue(maxsize=0, *, loop=None):
-    if loop is None:
-        loop = get_event_loop()
+class Queue(AsyncQueue):
+    def __new__(cls, maxsize=0, *, loop=None):
+        if loop is None:
+            loop = get_event_loop()
+        
+        if maxsize:
+            max_length = maxsize
+        else:
+            max_length = None
+        
+        return AsyncQueue.__new__(cls, loop, max_length=max_length)
     
-    if maxsize:
-        max_length = maxsize
-    else:
-        max_length = None
-    
-    return AsyncQueue(loop, max_length=max_length)
-
-@KeepType(AsyncQueue)
-class AsyncQueue:
     def put_nowait(self, element):
         if len(self) == self.max_length:
             raise QueueFull()
         
         self.set_result(element)
-
+    
+    def get(self):
+        try:
+            return self.result_no_wait()
+        except IndexError:
+            raise QueueEmpty
 
 
 def PriorityQueue(maxsize=0, *, loop=None):
@@ -792,26 +796,30 @@ def PriorityQueue(maxsize=0, *, loop=None):
     """
     raise NotImplementedError
 
-def LifoQueue(maxsize=0, *, loop=None):
-    """A subclass of Queue that retrieves most recently added entries first."""
-    if loop is None:
-        loop = get_event_loop()
+class LifoQueue(AsyncLifoQueue):
+    def __new__(cls, maxsize=0, *, loop=None):
+        """A subclass of Queue that retrieves most recently added entries first."""
+        if loop is None:
+            loop = get_event_loop()
+        
+        if maxsize:
+            max_length = maxsize
+        else:
+            max_length = None
+        
+        return AsyncLifoQueue.__new__(cls, loop, max_length=max_length)
     
-    if maxsize:
-        max_length = maxsize
-    else:
-        max_length = None
-    
-    return AsyncLifoQueue(loop, max_length=max_length)
-
-
-@KeepType(AsyncLifoQueue)
-class AsyncLifoQueue:
     def put_nowait(self, element):
         if len(self) == self.max_length:
             raise QueueFull()
         
         self.set_result(element)
+    
+    def get(self):
+        try:
+            return self.result_no_wait()
+        except IndexError:
+            raise QueueEmpty
 
 
 # asyncio.runners
@@ -1540,7 +1548,7 @@ class Task(metaclass=TaskMeta, ignore=True):
         HataTask(coro, loop)
     
     # Required by aiohttp 3.6
-    def current_task(*, loop=None):
+    def current_task(loop=None):
         if loop is None:
             loop = get_event_loop()
         else:

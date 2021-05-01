@@ -784,41 +784,41 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_all_guild, guild_id),
             METHOD_GET, f'{API_ENDPOINT}/guilds/{guild_id}/webhooks')
     
-    async def webhook_get_token(self, webhook):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_token, webhook.id),
-            METHOD_GET, webhook.url, headers=imultidict())
+    async def webhook_get_token(self, webhook_id, webhook_token):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_token, webhook_id),
+            METHOD_GET, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}', headers=imultidict())
     
-    async def webhook_delete_token(self, webhook):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_delete_token, webhook.id),
-            METHOD_DELETE, webhook.url, headers=imultidict())
+    async def webhook_delete_token(self, webhook_id, webhook_token):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_delete_token, webhook_id),
+            METHOD_DELETE, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}', headers=imultidict())
     
     async def webhook_delete(self, webhook_id):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_delete, webhook_id),
             METHOD_DELETE, f'{API_ENDPOINT}/webhooks/{webhook_id}')
     
-    async def webhook_edit_token(self, webhook, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_edit_token, webhook.id),
-            METHOD_PATCH, webhook.url, data, headers=imultidict())
+    async def webhook_edit_token(self, webhook_id, webhook_token, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_edit_token, webhook_id),
+            METHOD_PATCH, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}', data, headers=imultidict())
     
     async def webhook_edit(self, webhook_id, data):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_edit, webhook_id),
             METHOD_PATCH, f'{API_ENDPOINT}/webhooks/{webhook_id}', data)
     
-    async def webhook_message_create(self, webhook, data, wait):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_create, webhook.id),
-            METHOD_POST, f'{webhook.url}?wait={wait:d}', data, headers=imultidict())
+    async def webhook_message_create(self, webhook_id, webhook_token, data, wait):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_create, webhook_id),
+            METHOD_POST, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}?wait={wait:d}', data, headers=imultidict())
     
-    async def webhook_message_edit(self, webhook, message_id, data):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook.id),
-            METHOD_PATCH, f'{webhook.url}/messages/{message_id}', data, headers=imultidict())
+    async def webhook_message_edit(self, webhook_id, webhook_token, message_id, data):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook_id),
+            METHOD_PATCH, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}', data, headers=imultidict())
     
-    async def webhook_message_delete(self, webhook, message_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook.id),
-            METHOD_DELETE, f'{webhook.url}/messages/{message_id}', headers=imultidict())
+    async def webhook_message_delete(self, webhook_id, webhook_token, message_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook_id),
+            METHOD_DELETE, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}', headers=imultidict())
     
-    async def webhook_message_get(self, webhook, message_id):
-        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_get, webhook.id),
-            METHOD_GET, f'{webhook.url}/messages/{message_id}', headers=imultidict())
+    async def webhook_message_get(self, webhook_id, webhook_token, message_id):
+        return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_get, webhook_id),
+            METHOD_GET, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}', headers=imultidict())
     
     # user
     

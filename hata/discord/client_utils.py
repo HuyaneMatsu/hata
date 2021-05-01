@@ -1069,6 +1069,44 @@ def maybe_snowflake_pair(value):
     return value
 
 
+def maybe_snowflake_token_pair(value):
+    """
+    Checks whether the given value is a `tuple` of `2` elements: an identifier and a token. If not, returns `None`.
+    
+    Parameters
+    ----------
+    value : `tuple` of (`str`, `int`) or `Any`
+        A value what might be snowflake.
+    
+    Returns
+    -------
+    value : `tuple` (`str`, `int`) or `None`
+    
+    Raises
+    ------
+    AssertionError
+        - If `value` contains a `str` element, what cannot be converted to `int`.
+        - If `value` contains a value, what is negative or it's bit length is over 64.
+    """
+    if isinstance(value, tuple):
+        if len(value) == 2:
+            value_1, value_2 = value
+            value_1 = maybe_snowflake(value_1)
+            if value_1 is None:
+                value = None
+            else:
+                if isinstance(value_2, str):
+                    value = (value_1, value_2)
+                else:
+                    value = None
+        else:
+            value = None
+    else:
+        value = None
+    
+    return value
+
+
 def _check_is_client_duped(client, client_id):
     """
     Checks whether the client is duplicated.

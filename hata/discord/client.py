@@ -58,7 +58,7 @@ from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, 
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
-    BanEntry, maybe_snowflake_pair, _check_is_client_duped, get_components_data
+    BanEntry, maybe_snowflake_pair, _check_is_client_duped, get_components_data, maybe_snowflake_token_pair
 from .embed import EmbedBase, EmbedImage
 from .interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite
@@ -10140,7 +10140,7 @@ class Client(ClientUserPBase):
         
         return webhook
     
-    async def webhook_get_token(self, webhook, webhook_token):
+    async def webhook_get_token(self, webhook):
         """
         Requests the webhook through Discord's webhook API. The client do not needs to be in the guild of the webhook.
         
@@ -10148,10 +10148,8 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook`` or `int` instance
-            The webhook to update or the webhook's id to get.
-        webhook_token : `str`
-            The webhook's token.
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
+            The webhook to update or the webhook's id and it's token.
         
         Returns
         -------
@@ -10160,13 +10158,11 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `webhook` was not given neither as ``Webhook`` neither as `int` instance.
+            If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `webhook_token` was not given as `str` instance.
         
         Notes
         -----
@@ -10174,18 +10170,15 @@ class Client(ClientUserPBase):
         """
         if isinstance(webhook, Webhook):
             webhook_id = webhook.id
+            webhook_token = webhook.token
         else:
-            webhook_id = maybe_snowflake(webhook)
-            if webhook_id is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
-                    f'{webhook.__class__.__name__}.')
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
             
+            webhook_id, webhook_token = snowflake_token_pair
             webhook = USERS.get(webhook_id, None)
-        
-        if __debug__:
-            if not isinstance(webhook_token, str):
-                raise AssertionError(f'`webhook_token` can be given as `str` instance, got '
-                    f'{webhook_token.__class__.__name__}')
         
         if (webhook is None):
             webhook = create_partial_webhook(webhook_id, webhook_token)
@@ -10196,7 +10189,7 @@ class Client(ClientUserPBase):
                 if (guild is not None) and guild.webhooks_up_to_date:
                     return webhook
         
-        data = await self.http.webhook_get_token(webhook)
+        data = await self.http.webhook_get_token(webhook_id, webhook_token)
         webhook._update_no_return(data)
         return webhook
     
@@ -10385,7 +10378,7 @@ class Client(ClientUserPBase):
                     f'{webhook.__class__.__name__}.')
         
         await self.http.webhook_delete(webhook_id)
-
+    
     async def webhook_delete_token(self, webhook):
         """
         Deletes the webhook through Discord's webhook API.
@@ -10394,7 +10387,8 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
+            The webhook to delete.
 
         Parameters
         ----------
@@ -10403,20 +10397,26 @@ class Client(ClientUserPBase):
         
         Raises
         ------
+        TypeError
+            If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `webhook` was not given as ``Webhook`` instance.
         """
-        if __debug__:
-            if not isinstance(webhook, Webhook):
-                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
-                    f'{webhook.__class__.__name__}.')
-        
-        await self.http.webhook_delete_token(webhook)
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+        else:
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
             
+            webhook_id, webhook_token = snowflake_token_pair
+        
+        await self.http.webhook_delete_token(webhook_id, webhook_token)
+    
     # later there gonna be more stuff that's why 2 different
     async def webhook_edit(self, webhook, *, name=None, avatar=..., channel=None):
         """
@@ -10515,6 +10515,7 @@ class Client(ClientUserPBase):
         data = await self.http.webhook_edit(webhook_id, data)
         webhook._update_no_return(data)
     
+    
     async def webhook_edit_token(self, webhook, *, name=None, avatar=...):
         """
         Edits and updates the given webhook through Discord's webhook API.
@@ -10523,7 +10524,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook to edit.
         name : `str`, Optional (Keyword only)
             The webhook's new name. It's length can be between `1` and `80`.
@@ -10531,10 +10532,15 @@ class Client(ClientUserPBase):
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
         
+        Returns
+        -------
+        webhook : ``Webhook``
+            The updated webhook.
+        
         Raises
         ------
         TypeError
-            - If `webhook` was not given as ``Webhook`` instance.
+            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `avatar` was not given neither as `None` nor as `bytes-like`.
         ConnectionError
             No internet connection.
@@ -10549,11 +10555,17 @@ class Client(ClientUserPBase):
         -----
         This endpoint cannot edit the webhook's channel, like ``.webhook_edit``.
         """
-        
-        if __debug__:
-            if not isinstance(webhook, Webhook):
-                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
-                    f'{webhook.__class__.__name__}.')
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+        else:
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
+            
+            webhook_id, webhook_token = snowflake_token_pair
+            webhook = USERS.get(webhook_id, None)
         
         data = {}
         
@@ -10593,8 +10605,14 @@ class Client(ClientUserPBase):
         if not data:
             return # Save 1 request
         
-        data = await self.http.webhook_edit_token(webhook, data)
-        webhook._update_no_return(data)
+        data = await self.http.webhook_edit_token(webhook_id, webhook_token, data)
+        
+        if webhook is None:
+            webhook = Webhook(data)
+        else:
+            webhook._update_no_return(data)
+        
+        return webhook
     
     async def webhook_message_create(self, webhook, content=None, *, embed=None, file=None, allowed_mentions=...,
             tts=False, name=None, avatar_url=None, wait=False):
@@ -10606,7 +10624,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook through what will the message be sent.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
@@ -10640,6 +10658,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
+            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
@@ -10655,7 +10674,6 @@ class Client(ClientUserPBase):
             - If `name` was not passed neither as `None` or `str` instance.
             - If `name` was passed as `str` instance, but it's length is out of range [1:32].
             - If `avatar_url` was not given as `str` instance.
-            - If `webhook` was not given as a ``Webhook`` instance.
         
         See Also
         --------
@@ -10664,10 +10682,17 @@ class Client(ClientUserPBase):
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         - ``.webhook_message_get`` : Get a message created by a webhook.
         """
-        if __debug__:
-            if not isinstance(webhook, Webhook):
-                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
-                    f'{webhoook.__class__.__name__}.')
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+        else:
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
+            
+            webhook_id, webhook_token = snowflake_token_pair
+            webhook = USERS.get(webhook_id, None)
         
         # Embed check order:
         # 1.: None
@@ -10795,16 +10820,22 @@ class Client(ClientUserPBase):
         if not contains_content:
             return None
         
-        data = await self.http.webhook_message_create(webhook, to_send, wait)
+        message_data = await self.http.webhook_message_create(webhook_id, webhook_token, to_send, wait)
         
         if not wait:
             return
         
-        channel = webhook.channel
-        if channel is None:
-            channel = ChannelText.precreate(int(data['channel_id']))
+        # Use goto
+        while True:
+            if (webhook is not None):
+                channel = webhook.channel
+                if (channel is not None):
+                    break
+            
+            channel = ChannelText.precreate(int(message_data['channel_id']))
+            break
         
-        return channel._create_new_message(data)
+        return channel._create_new_message(message_data)
     
     
     async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=None, allowed_mentions=...):
@@ -10813,7 +10844,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
         message : ``Message`` or ``MessageRepr``, `int` instance
             The webhook's message to edit.
@@ -10840,6 +10871,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
+            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
@@ -10853,8 +10885,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `message` was detectably not sent by the `webhook`.
-            - If `webhook` was not given as ``Webhook`` instance.
+            If `message` was detectably not sent by the `webhook`.
         
         See Also
         --------
@@ -10869,10 +10900,16 @@ class Client(ClientUserPBase):
         
         Editing the message with empty string is broken.
         """
-        if __debug__:
-            if not isinstance(webhook, Webhook):
-                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
-                    f'{webhoook.__class__.__name__}.')
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+        else:
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
+            
+            webhook_id, webhook_token = snowflake_token_pair
         
         # Detect message id
         # 1.: Message
@@ -10883,7 +10920,7 @@ class Client(ClientUserPBase):
         
         if isinstance(message, Message):
             if __debug__:
-                if message.author.id != webhook.id:
+                if message.author.id != webhook_id:
                     raise AssertionError('The message was not send by the webhook.')
             message_id = message.id
         else:
@@ -11012,7 +11049,7 @@ class Client(ClientUserPBase):
             return
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.webhook_message_edit(webhook, message_id, to_send)
+        await self.http.webhook_message_edit(webhook_id, webhook_token, message_id, to_send)
     
     
     async def webhook_message_delete(self, webhook, message):
@@ -11023,7 +11060,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
         message : ``Message`` or ``MessageRepr`` or `int`
             The webhook's message to delete.
@@ -11031,14 +11068,14 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`` neither as `int` instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`` neither as `int` instance.
+            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `message` was detectably not sent by the `webhook`.
-            - If `webhook` was not given as ``Webhook`` instance.
+            If `message` was detectably not sent by the `webhook`.
         
         See Also
         --------
@@ -11047,10 +11084,16 @@ class Client(ClientUserPBase):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_get`` : Get a message created by a webhook.
         """
-        if __debug__:
-            if not isinstance(webhook, Webhook):
-                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
-                    f'{webhoook.__class__.__name__}.')
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+        else:
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
+            
+            webhook_id, webhook_token = snowflake_token_pair
         
         # Detect message id
         # 1.: Message
@@ -11061,7 +11104,7 @@ class Client(ClientUserPBase):
         
         if isinstance(message, Message):
             if __debug__:
-                if message.author.id != webhook.id:
+                if message.author.id != webhook_id:
                     raise TypeError('The message was not send by the webhook.')
             message_id = message.id
         else:
@@ -11079,7 +11122,7 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
                     f'`int` instance, got {message.__class__.__name__}`.')
         
-        await self.http.webhook_message_delete(webhook, message_id)
+        await self.http.webhook_message_delete(webhook_id, webhook_token, message_id)
     
     
     async def webhook_message_get(self, webhook, message_id):
@@ -11090,7 +11133,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        webhook : ``Webhook``
+        webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
         message_id
             The webhook's message's identifier to get.
@@ -11102,13 +11145,12 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `message_id` was not given as `int` instance.
+            - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
+            - If `message_id` was not given as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `webhook` was not given as ``Webhook`` instance.
         
         See Also
         --------
@@ -11117,21 +11159,32 @@ class Client(ClientUserPBase):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         """
-        if __debug__:
-            if not isinstance(webhook, Webhook):
-                raise AssertionError(f'`webhook` can be given as `{Webhook.__name__}` instance, got '
-                    f'{webhoook.__class__.__name__}.')
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+        else:
+            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+            if snowflake_token_pair is None:
+                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                    f'got {webhook.__class__.__name__}.')
+            
+            webhook_id, webhook_token = snowflake_token_pair
+            webhook = USERS.get(webhook_id, None)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
             raise TypeError(f'`message_id` can be given as `int` instance, got {message_id.__class__.__name__}.')
         
-        message_data = await self.http.webhook_message_get(webhook, message_id_value)
+        message_data = await self.http.webhook_message_get(webhook_id, webhook_token, message_id_value)
         
-        channel = webhook.channel
-        if channel is None:
-            channel_id = int(data['channel_id'])
-            channel = await self._maybe_get_channel(channel_id)
+        while True:
+            if (webhook is not None):
+                channel = webhook.channel
+                if (channel is not None):
+                    break
+            
+            channel = ChannelText.precreate(int(message_data['channel_id']))
+            break
         
         return channel._create_unknown_message(message_data)
     

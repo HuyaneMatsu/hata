@@ -76,6 +76,12 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +---------------------------+-------------------+
     | request_to_speak          | 32                |
     +---------------------------+-------------------+
+    | manage_threads            | 34                |
+    +---------------------------+-------------------+
+    | use_public_threads        | 35                |
+    +---------------------------+-------------------+
+    | use_private_threads       | 36                |
+    +---------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -114,6 +120,9 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_emojis': 30,
         'use_application_commands': 31,
         'request_to_speak': 32,
+        'manage_threads': 34,
+        'use_public_threads': 35,
+        'use_private_threads': 36,
     }
     
     def handle_overwrite(self, allow, deny):
@@ -169,7 +178,10 @@ PERMISSION_ALL = Permission().update_by_keys(
     manage_emojis = True,
     use_application_commands = True,
     request_to_speak = True,
-        )
+    manage_threads = True,
+    use_public_threads = True,
+    use_private_threads = True,
+)
 
 PERMISSION_NONE = Permission()
 
@@ -205,21 +217,22 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     manage_roles = False,
     manage_webhooks = False,
     manage_emojis = False,
+    manage_threads = False,
     use_application_commands = True,
     request_to_speak = False,
-        )
+)
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
     read_message_history = False,
-        )
+)
 
 PERMISSION_GROUP = PERMISSION_PRIVATE.update_by_keys(
     create_instant_invite = True,
-        )
+)
 
 PERMISSION_GROUP_OWNER = PERMISSION_GROUP.update_by_keys(
     kick_users = True,
-        )
+)
 
 PERMISSION_TEXT_ALL = Permission().update_by_keys(
     create_instant_invite = False,
@@ -255,13 +268,16 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     manage_emojis = False,
     use_application_commands = True,
     request_to_speak = False,
-        )
+    manage_threads = True,
+    use_public_threads = True,
+    use_private_threads = True,
+)
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
 
 PERMISSION_TEXT_AND_STAGE_DENY = PERMISSION_TEXT_DENY.update_by_keys(
     request_to_speak = False,
-        )
+)
 
 PERMISSION_VOICE_ALL = Permission().update_by_keys(
     create_instant_invite = False,
@@ -297,14 +313,17 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     manage_emojis = False,
     use_application_commands = False,
     request_to_speak = True,
-        )
+    manage_threads = False,
+    use_public_threads = False,
+    use_private_threads = False,
+)
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)
 
 PERMISSION_VOICE_DENY_CONNECTION = PERMISSION_VOICE_DENY.update_by_keys(
     manage_roles = False,
     manage_channel = False,
-        )
+)
 
 PERMISSION_TEXT_AND_VOICE_DENY = Permission(PERMISSION_TEXT_DENY|PERMISSION_VOICE_DENY)
 
@@ -342,4 +361,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     manage_emojis = False,
     use_application_commands = False,
     request_to_speak = True,
-        )
+    manage_threads = False,
+    use_public_threads = False,
+    use_private_threads = False,
+)

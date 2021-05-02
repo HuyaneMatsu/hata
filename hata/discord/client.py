@@ -21,7 +21,7 @@ from ..backend.url import URL
 from ..backend.export import export
 
 from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, get_image_extension, Relationship
-from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, GUILD_PROFILES_TYPE, \
+from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, \
     ClientUserBase, ClientUserPBase
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
@@ -92,13 +92,16 @@ class Client(ClientUserPBase):
         The client's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The client's avatar's type.
-    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
         Whether the client is a bot or a user account.
     partial : `bool`
         Partial clients have only their id set. If any other data is set, it might not be in sync with Discord.
+    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
     activities : `None` or `list` of ``ActivityBase`` instances
         A list of the client's activities. Defaults to `None`.
     status : `Status`
@@ -432,7 +435,7 @@ class Client(ClientUserPBase):
         self.intents = intents
         self.running = False
         self.relationships = {}
-        self.guild_profiles = GUILD_PROFILES_TYPE()
+        self.guild_profiles = {}
         self._status = _status
         self.status = Status.offline
         self.statuses = {}
@@ -455,6 +458,7 @@ class Client(ClientUserPBase):
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http = DiscordHTTPClient(self)
         self.events = EventDescriptor(self)
+        self.thread_profiles = {}
         
         if (processable is not None):
             for item in processable:
@@ -625,25 +629,23 @@ class Client(ClientUserPBase):
         alter_ego = User._from_client(self)
         USERS[client_id] = alter_ego
         
-        if CACHE_USER:
-            USERS[client_id] = alter_ego
-            guild_profiles = self.guild_profiles
-            for guild in guild_profiles:
-                guild.users[client_id] = alter_ego
-            
-            for client in CLIENTS.values():
-                if (client is not self) and client.running:
-                    for relationship in client.relationships:
-                        if relationship.user is alter_ego:
-                            relationship.user = alter_ego
+        USERS[client_id] = alter_ego
+        guild_profiles = self.guild_profiles
+        for guild in guild_profiles:
+            guild.users[client_id] = alter_ego
         
-        else:
-            guild_profiles = self.guild_profiles
-            for guild in guild_profiles:
-                try:
-                    del guild[client_id]
-                except KeyError:
-                    pass
+        for client in CLIENTS.values():
+            if (client is not self) and client.running:
+                for relationship in client.relationships:
+                    if relationship.user is alter_ego:
+                        relationship.user = alter_ego
+        
+        thread_profiles = self.thread_profiles
+        if (thread_profiles is not None):
+            for channel in thread_profiles.keys():
+                thread_users = channel.thread_users
+                if (thread_users is not None):
+                    thread_users[client_id] = alter_ego
         
         self.relationships.clear()
         for channel in self.group_channels.values():
@@ -658,6 +660,7 @@ class Client(ClientUserPBase):
         self.events.clear()
         
         self.guild_profiles.clear()
+        self.thread_profiles = None
         self.status = Status.offline
         self.statuses.clear()
         self._activity = ActivityUnknown
@@ -1197,20 +1200,6 @@ class Client(ClientUserPBase):
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
         data = await self.http.oauth2_token(data, headers)
         return OA2Access(data, '')
-    
-    
-    async def user_info(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.user_info_get`` instead. Will be removed in 2021 february.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.user_info` is deprecated, and will be removed in 2021 february. '
-            f'Please use `{self.__class__.__name__}.user_info_get` instead.',
-            FutureWarning)
-        
-        return await self.user_info_get(*args, **kwargs)
     
     
     async def user_info_get(self, access):
@@ -2452,9 +2441,10 @@ class Client(ClientUserPBase):
         
         return channels
     
-    async def channel_move(self, channel, visual_position, *, category=..., lock_permissions=False, reason=None):
+    async def channel_move(self, channel, visual_position, *, parent=..., category=..., lock_permissions=False,
+            reason=None):
         """
-        Moves a guild channel to the given visual position under it's category, or guild. If the algorithm can not
+        Moves a guild channel to the given visual position under it's parent, or guild. If the algorithm can not
         place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
         move, then the request is skipped.
         
@@ -2466,10 +2456,12 @@ class Client(ClientUserPBase):
             The channel to be moved.
         visual_position : `int`
             The visual position where the channel should go.
-        category : `None` or ``ChannelGroup`` or ``Guild``, Optional (Keyword only)
+        parent : `None` or ``ChannelGroup``, Optional (Keyword only)
             If not set, then the channel will keep it's current parent. If the argument is set ``Guild`` instance or to
             `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory.md``,
             then the channel will be moved under it.
+        category : `None` or ``ChannelGroup`` or ``Guild``, Optional (Keyword only)
+            Deprecated, please use `parent` parameter instead.
         lock_permissions : `bool`, Optional (Keyword only)
             If you want to sync the permissions with the new category set it to `True`. Defaults to `False`.
         reason : `None` or `str`, Optional (Keyword only)
@@ -2479,11 +2471,10 @@ class Client(ClientUserPBase):
         ------
         ValueError
             - If the `channel` would be between guilds.
-            - If category channel would be moved under an other category.
+            - If parent channel would be moved under an other category.
         TypeError
             - If `ChannelGuildBase` was not passed as ``ChannelGuildBase`` instance.
-            - If `category` was not passed as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
-            
+            - If `parent` was not given as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2493,6 +2484,14 @@ class Client(ClientUserPBase):
         -----
         This method also fixes the messy channel positions of Discord to an intuitive one.
         """
+        if (category is not ...):
+            warnings.warn(
+                f'`{self.__class__.__name__}.channel_move`\'s `category` parameter is deprecated, and will be removed '
+                f'in 2021 july. Please use `parent` instead.',
+                FutureWarning)
+            
+            parent = category
+        
         # Check channel type
         if not isinstance(channel, ChannelGuildBase):
             raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` instance, got '
@@ -2504,26 +2503,22 @@ class Client(ClientUserPBase):
             # Cannot move partial channels, leave
             return
         
-        # Check category
-        if category is ...:
-            category = channel.category
-        elif category is None:
-            category = guild
-        elif isinstance(category, Guild):
-            if guild is not category:
-                raise ValueError(f'Can not move channel between guilds! Channel\'s guild: {guild!r}; Category: '
-                    f'{category!r}')
-        elif isinstance(category, ChannelCategory):
-            if category.guild is not guild:
+        # Check parent
+        if parent is ...:
+            parent = channel.parent
+        elif parent is None:
+            parent = None
+        elif isinstance(parent, ChannelCategory):
+            if parent.guild is not guild:
                 raise ValueError(f'Can not move channel between guilds! Channel\'s guild: {guild!r}; Category\'s '
-                    f'guild: {category.guild!r}')
+                    f'guild: {parent.guild!r}')
         else:
             raise TypeError(f'Invalid type {channel.__class__.__name__}')
         
         # Cannot put category under category
-        if isinstance(channel, ChannelCategory) and isinstance(category, ChannelCategory):
+        if isinstance(channel, ChannelCategory) and isinstance(parent, ChannelCategory):
             raise ValueError(f'Can not move category channel under category channel. Channel: {channel!r}; Category: '
-                    f'{category!r}')
+                f'{parent!r}')
         
         if not isinstance(visual_position, int):
             raise TypeError(f'`visual_position` can be given as `int` instance, got '
@@ -2538,7 +2533,7 @@ class Client(ClientUserPBase):
             visual_position = 0
         
         # If the channel is where it should be, we can leave.
-        if channel.category is category and category.channel_list.index(channel) == visual_position:
+        if channel.parent is parent and parent.channel_list.index(channel) == visual_position:
             return
         
         # Create a display state, where each channel is listed.
@@ -2570,13 +2565,13 @@ class Client(ClientUserPBase):
         # move our channel yet!
         
         # We get from where we will move from.
-        old_category = channel.category
-        if isinstance(old_category, Guild):
+        old_parent = channel.parent
+        if isinstance(old_parent, Guild):
             move_from = display_new
         else:
-            old_category_id = old_category.id
+            old_parent_id = old_parent.id
             for channel_key in display_new:
-                if channel_key[2] == old_category_id:
+                if channel_key[2] == old_parent_id:
                     move_from = channel_key[3]
                     break
             
@@ -2601,12 +2596,12 @@ class Client(ClientUserPBase):
             return
         
         # We get to where we will move to.
-        if isinstance(category, Guild):
+        if parent is None:
             move_to = display_new
         else:
-            new_category_id = category.id
+            new_parent_id = parent.id
             for channel_key in display_new:
-                if channel_key[2] == new_category_id:
+                if channel_key[2] == new_parent_id:
                     move_to = channel_key[3]
                     break
             
@@ -2644,10 +2639,11 @@ class Client(ClientUserPBase):
                 continue
         
         bonus_data = {'lock_permissions': lock_permissions}
-        if category is guild:
-            bonus_data['parent_id'] = None
+        if parent is None:
+            parent_id = None
         else:
-            bonus_data['parent_id'] = category.id
+            parent_id = parent.id
+        bonus_data['parent_id'] = parent_id
         
         data = []
         channels = guild.channels
@@ -2945,8 +2941,10 @@ class Client(ClientUserPBase):
             The channel's bitrate.
         user_limit : `int`, Optional (Keyword only)
             The channel's user limit.
+        parent : `None`, ``ChannelCategory`` or `int`, Optional (Keyword only)
+            The channel's parent. If the channel is under a guild, leave it empty.
         category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional (Keyword only)
-            The channel's category. If the category is under a guild, leave it empty.
+            Deprecated, please use `parent` parameter instead.
         region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
             The channel's voice region.
         video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional (Keyword only)
@@ -2962,7 +2960,7 @@ class Client(ClientUserPBase):
         TypeError
             - If `guild` was not given as ``Guild`` or `int` instance.
             - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
-            - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
+            - If `parent` was not given as `None`, ``ChannelCategory`` or `int` instance.
             - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
         AssertionError
             - If `type_` was given as `int`, and is less than `0`.
@@ -2984,7 +2982,7 @@ class Client(ClientUserPBase):
             - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
             - If `user_limit` was not given as `int` instance.
             - If `user_limit` was given, but is out of the expected [0:99] range.
-            - If `category` was given, but the respective channel type cannot be put under other categories.
+            - If `parent` was given, but the respective channel type cannot be put under other categories.
             - If `region` was given, but the respective channel type is not ``ChannelVoice``.
         ConnectionError
             No internet connection.
@@ -6908,11 +6906,11 @@ class Client(ClientUserPBase):
             try:
                 profile = self.guild_profiles[guild]
             except KeyError:
-                self.guild_profiles[guild] = GuildProfile(user_data, guild)
+                self.guild_profiles[guild] = GuildProfile(user_data)
                 if guild not in guild.clients:
                     guild.clients.append(self)
             else:
-                profile._update_no_return(user_data, guild)
+                profile._update_no_return(user_data)
         
         return guild
 
@@ -6926,11 +6924,11 @@ class Client(ClientUserPBase):
 ##            try:
 ##                profile=client.guild_profiles[guild]
 ##            except KeyError:
-##                client.guild_profiles[guild]=GuildProfile(user_data, guild)
+##                client.guild_profiles[guild]=GuildProfile(user_data)
 ##                if client not in guild.clients:
 ##                    guild.clients.append(client)
 ##            else:
-##                profile._update_no_return(user_data, guild)
+##                profile._update_no_return(user_data)
 ##
 ##        if not CACHE_USER:
 ##            return
@@ -16213,10 +16211,10 @@ class Client(ClientUserPBase):
         try:
             profile = self.guild_profiles[guild]
         except KeyError:
-            self.guild_profiles[guild] = GuildProfile(data, guild)
+            self.guild_profiles[guild] = GuildProfile(data)
             guild.users[self.id] = self
             return {}
-        return profile._update(data, guild)
+        return profile._update(data)
     
     def _update_profile_only_no_return(self, data, guild):
         """
@@ -16232,10 +16230,10 @@ class Client(ClientUserPBase):
         try:
             profile = self.guild_profiles[guild]
         except KeyError:
-            self.guild_profiles[guild] = GuildProfile(data, guild)
+            self.guild_profiles[guild] = GuildProfile(data)
             guild.users[self.id] = self
         else:
-            profile._update_no_return(data, guild)
+            profile._update_no_return(data)
     
     @property
     def friends(self):

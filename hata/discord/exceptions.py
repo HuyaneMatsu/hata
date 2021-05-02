@@ -546,6 +546,12 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | invalid_sticker_sent                              | 50081     | -     |
     +---------------------------------------------------+-----------+-------+
+    | invalid_action_thread                             | 50083     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | invalid_thread_notification_setting               | 50084     | -     |
+    +---------------------------------------------------+-----------+-------+
+    | invalid_before_value                              | 50085     | -     |
+    +---------------------------------------------------+-----------+-------+
     | invalid_API_version                               | 50041     | -     |
     +---------------------------------------------------+-----------+-------+
     | invalid_application_name                          | 50050     | -     |
@@ -730,6 +736,9 @@ class ERROR_CODES:
     invalid_gift_redemption_subscription_managed = 100021
     invalid_gift_redemption_subscription_incompatible = 100023
     invalid_gift_redemption_invoice_open = 100024
+    invalid_action_thread = 50083
+    invalid_thread_notification_setting = 50084
+    invalid_before_value = 50085
     
     MFA_enabled = 60001
     MFA_disabled = 60002

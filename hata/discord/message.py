@@ -30,6 +30,8 @@ ChannelText = include('ChannelText')
 ChannelPrivate = include('ChannelPrivate')
 ChannelGroup = include('ChannelGroup')
 Component = include('Component')
+ChannelGuildUndefined = include('ChannelGuildUndefined')
+CHANNEL_TYPES = include('CHANNEL_TYPES')
 
 class MessageFlag(FlagBase):
     """
@@ -54,6 +56,8 @@ class MessageFlag(FlagBase):
     +---------------------------+-------------------+
     | invoking_user_only        | 6                 |
     +---------------------------+-------------------+
+    | loading                   | 7                 |
+    +---------------------------+-------------------+
     """
     __keys__ = {
         'crossposted': 0,
@@ -63,6 +67,7 @@ class MessageFlag(FlagBase):
         'urgent': 4,
         'has_thread': 5,
         'invoking_user_only': 6,
+        'loading': 7,
     }
 
 class MessageActivity:
@@ -868,6 +873,8 @@ class Message(DiscordEntity, immortal=True):
         The stickers sent with the message.
         
         Bots currently can only receive messages with stickers, not send.
+    thread : `None` or ``ChannelThread``
+        The thread which was started from this message. Defaults to `None`.
     tts : `bool`
         Whether the message is "text to speech".
     type : ``MessageType``
@@ -877,8 +884,8 @@ class Message(DiscordEntity, immortal=True):
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author', 'channel',
         'components', 'content', 'cross_mentions', 'deleted', 'edited_at', 'embeds', 'everyone_mention', 'flags',
-        'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'tts',
-        'type', 'user_mentions',)
+        'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'thread',
+        'tts', 'type', 'user_mentions',)
     
     def __new__(cls, data, channel):
         """
@@ -1114,6 +1121,13 @@ class Message(DiscordEntity, immortal=True):
         
         self.application_id = application_id
         
+        try:
+            thread_data = data['thread']
+        except KeyError:
+            thread = None
+        else:
+            thread = CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+        self.thread = thread
         
         MESSAGES[self.id] = self
     
@@ -1755,6 +1769,7 @@ class Message(DiscordEntity, immortal=True):
         self.user_mentions = user_mentions
         self.interaction = None
         self.components = None
+        self.thread = None
         
         return self
     
@@ -1818,7 +1833,7 @@ class Message(DiscordEntity, immortal=True):
         
         repr_parts.append(' id=')
         repr_parts.append(repr(self.id))
-        repr_parts.append(', ln=')
+        repr_parts.append(', length=')
         repr_parts.append(repr(len(self)))
         repr_parts.append(', author=')
         repr_parts.append(repr(self.author.full_name))
@@ -1828,7 +1843,7 @@ class Message(DiscordEntity, immortal=True):
     
     __str__ = __repr__
     
-    def __format__(self,code):
+    def __format__(self, code):
         """
         Formats the message in a format string.
         

@@ -1,5 +1,19 @@
 ## 1.1.74 *\[2021-05-??\]*
 
+#### Summary
+
+Threads go brrr.
+
+#### New Features
+
+- Add `ChannelGuildMainBase` superclass for main
+- Add `manage_threads`, `use_public_threads` and `user_private_thread` permissions.
+- Add `Guild.threads`.
+- Add `UserBase.thread_profiles`.
+- Add `ThreadProfile`.
+- Add `ThreadProfileFlag`.
+- Add `Message.thread.`
+
 #### Improvements
 
 - Rework `Client.webhook_get_token` to accept `webhook_id-webhook_token` pair.
@@ -8,14 +22,49 @@
 - Rework `Client.webhook_message_create` to accept `webhook_id-webhook_token` pair.
 - Rework `Client.webhook_message_edit` to accept `webhook_id-webhook_token` pair.
 - Rework `Client.webhook_message_get` to accept `webhook_id-webhook_token` pair.
+- Add `AllowedMentionPRoxy.update`.
+- Add `ApplicationCommandOptionType.mentionable`.
+- `ChannelPrivate.guild` and `ChannelGroup.guild` is now a property of `Channelbase`.
+- Reduce `channel.py` size by spamming `copy_docs` calls.
+- Update `ChannelThread`.
+- Add `Guild_create_empty` to reduce duped code.
+- Add `ERROR_CODES.invalid_action_thread`
+- Add `ERROR_CODES.invalid_thread_notification_setting`
+- Add `ERROR_CODES.invalid_before_value`
+- Update `ChannelText.__repr__` to clarify whether the channel is announcements.
+- Add `MessageType.thread_started`.
+- Add `MessageFlag.MessageFlag`.
+- Add `archived` parameter to `cr_pg_channel_object`.
+- Add `archived_at` parameter to `cr_pg_channel_object`.
+- Add `auto_archive_after` parameter to `cr_pg_channel_object`.
+- Add `open_` parameter to `cr_pg_channel_object`.
+
+#### ext.slash
+- Add `mentionable` parameter support for slash commands.
 
 #### Bug Fixes
+
+- `Client.webhook_message_get` could raise `NameError` if called with partial webhook.
+- When user caching is disabled `Guild.users` should be weak and not `User.guild_profiles`.
+- `GuildProfile._update_no_return` used guild based cache, meaning it could not miss partial roles.
 
 ##### ext.asyncio
 `Task.current_task`'s `loop` parameter should not be keyword only.
 - Add `Queue.get`.
 - Add `LifoQueue.get`.
-- `Client.webhook_message_get` could raise `NameError` if called with partial webhook.
+
+
+#### Renames, Deprecation & Removals
+
+- Rename `ChannelGuildMainBase.category` to `.parent`.
+- Deprecate `ChannelGuildMainBase.category`.
+- Rename `cr_pg_channel_object`'s parameter to `parent`.
+- Deprecate `cr_pg_channel_object`'s `parent` parameter.
+- Rename `Client.channel_move`'s `category to `parent`.
+- Deprecate `Client.channel_move`'s `parent` parameter.
+- Rename `Client.channel_create`'s `category to `parent`.
+- Deprecate `Client.channel_create`'s `parent` parameter.
+- Deprecate `ChannelGuildBase.parent` will be not set as `Guild` instance anymore.
 
 ## 1.1.73 *\[2021-05-01\]*
 

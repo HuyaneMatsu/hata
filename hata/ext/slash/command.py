@@ -29,7 +29,7 @@ from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BE
 
 async def converter_int(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to `int`.
+    Converter for ``ApplicationCommandInteractionOption`` value to `int`.
     
     This function is a coroutine.
     
@@ -57,7 +57,7 @@ async def converter_int(client, interaction, value):
 
 async def converter_str(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to `str`.
+    Converter for ``ApplicationCommandInteractionOption`` value to `str`.
     
     This function is a coroutine.
     
@@ -84,7 +84,7 @@ BOOL_TABLE = {
 
 async def converter_bool(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to `bool`.
+    Converter for ``ApplicationCommandInteractionOption`` value to `bool`.
     
     This function is a coroutine.
     
@@ -107,7 +107,7 @@ async def converter_bool(client, interaction, value):
 
 async def converter_snowflake(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to a snowflake.
+    Converter for ``ApplicationCommandInteractionOption`` value to a snowflake.
     
     This function is a coroutine.
     
@@ -138,7 +138,7 @@ async def converter_snowflake(client, interaction, value):
 
 async def converter_user(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
     
     This function is a coroutine.
     
@@ -182,7 +182,7 @@ async def converter_user(client, interaction, value):
 
 async def converter_role(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
     
     This function is a coroutine.
     
@@ -219,7 +219,7 @@ async def converter_role(client, interaction, value):
 
 async def converter_channel(client, interaction, value):
     """
-    Converter ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
     
     This function is a coroutine.
     
@@ -253,6 +253,67 @@ async def converter_channel(client, interaction, value):
     
     return channel
 
+async def converter_mentionable(client, interaction, value):
+    """
+    Converter for ``ApplicationCommandInteractionOption`` value to mentionable ``DiscordEntity`` instance.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction : ``ApplicationCommandInteraction``
+        The received application command interaction.
+    value : `str`
+        ``ApplicationCommandInteractionOption.value``.
+    
+    Returns
+    -------
+    value : `None` or ``DiscordEntity`` instance
+        If conversion fails, then returns `None`.
+    """
+    entity_id = await converter_snowflake(client, interaction, value)
+    
+    # Use goto
+    while True:
+        if entity_id is None:
+            entity = None
+            break
+        
+        resolved_users = interaction.resolved_users
+        if (resolved_users is not None):
+            try:
+                entity = resolved_users[entity_id]
+            except KeyError:
+                pass
+            else:
+                break
+        
+        resolved_roles = interaction.resolved_roles
+        if (resolved_roles is not None):
+            try:
+                entity = resolved_roles[entity_id]
+            except KeyError:
+                pass
+            else:
+                break
+        
+        resolved_channels = interaction.resolved_channels
+        if (resolved_channels is not None):
+            try:
+                entity = resolved_channels[entity_id]
+            except KeyError:
+                pass
+            else:
+                break
+        
+        entity = None
+        break
+    
+    return entity
+
+
 
 ANNOTATION_TYPE_STR = 0
 ANNOTATION_TYPE_INT = 1
@@ -264,6 +325,7 @@ ANNOTATION_TYPE_ROLE_ID = 6
 ANNOTATION_TYPE_CHANNEL = 7
 ANNOTATION_TYPE_CHANNEL_ID = 8
 ANNOTATION_TYPE_NUMBER = 9
+ANNOTATION_TYPE_MENTIONABLE = 10
 
 STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'str': ANNOTATION_TYPE_STR,
@@ -276,6 +338,7 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'channel': ANNOTATION_TYPE_CHANNEL,
     'channel_id': ANNOTATION_TYPE_CHANNEL_ID,
     'number': ANNOTATION_TYPE_NUMBER,
+    'mentionable': ANNOTATION_TYPE_MENTIONABLE,
 }
 
 # Used at repr
@@ -290,6 +353,7 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
     ANNOTATION_TYPE_CHANNEL: 'channel',
     ANNOTATION_TYPE_CHANNEL_ID: 'channel_id',
     ANNOTATION_TYPE_NUMBER: 'number',
+    ANNOTATION_TYPE_MENTIONABLE: 'mentionable',
 }
 
 TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
@@ -313,6 +377,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_CHANNEL: converter_channel,
     ANNOTATION_TYPE_CHANNEL_ID : converter_snowflake,
     ANNOTATION_TYPE_NUMBER: converter_int,
+    ANNOTATION_TYPE_MENTIONABLE: converter_mentionable,
 }
 
 # `int` Discord fields are broken and they are refusing to fix it, use string instead.
@@ -328,6 +393,7 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_CHANNEL: ApplicationCommandOptionType.channel,
     ANNOTATION_TYPE_CHANNEL_ID: ApplicationCommandOptionType.channel,
     ANNOTATION_TYPE_NUMBER: ApplicationCommandOptionType.integer,
+    ANNOTATION_TYPE_MENTIONABLE: ApplicationCommandOptionType.mentionable
 }
 
 

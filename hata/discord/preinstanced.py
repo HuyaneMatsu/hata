@@ -1003,6 +1003,27 @@ Theme.dark = Theme('dark')
 Theme.light = Theme('light')
 
 
+def MESSAGE_DEFAULT_CONVERTER(self):
+    """
+    Default message content converter.
+    
+    Parameters
+    ----------
+    self : ``Message``
+        The message, what's content will be converted.
+    
+    Returns
+    -------
+    content : `str`
+        The converted content if applicable. Might be empty string.
+    """
+    content = self.content
+    if content:
+        content = sanitize_mentions(content, self.guild)
+    
+    return content
+
+
 class MessageType(PreinstancedBase):
     """
     Represents a ``Message``'s type.
@@ -1033,7 +1054,7 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+---------------------------------------------------+-------+
     | Class attribute name & name               | convert                                           | value |
     +===========================================+===================================================+=======+
-    | default                                   | DEFAULT_CONVERT                                   | 0     |
+    | default                                   | MESSAGE_DEFAULT_CONVERTER                         | 0     |
     +-------------------------------------------+---------------------------------------------------+-------+
     | add_user                                  | convert_add_user                                  | 1     |
     +-------------------------------------------+---------------------------------------------------+-------+
@@ -1071,35 +1092,17 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+---------------------------------------------------+-------+
     | thread_created                            | convert_thread_created                            | 18    |
     +-------------------------------------------+---------------------------------------------------+-------+
-    | inline_reply                              | DEFAULT_CONVERT                                   | 19    |
+    | inline_reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
     +-------------------------------------------+---------------------------------------------------+-------+
-    | application_command                       | DEFAULT_CONVERT                                   | 20    |
+    | application_command                       | MESSAGE_DEFAULT_CONVERTER                         | 20    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | thread_started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
     +-------------------------------------------+---------------------------------------------------+-------+
     | invite_reminder                           | convert_invite_reminder                           | 22    |
     +-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
-    
-    def DEFAULT_CONVERT(self):
-        """
-        Default message content converter.
-        
-        Parameters
-        ----------
-        self : ``Message``
-            The message, what's content will be converted.
-        
-        Returns
-        -------
-        content : `str`
-            The converted content if applicable. Might be empty string.
-        """
-        content = self.content
-        if content:
-            content = sanitize_mentions(content, self.guild)
-        
-        return content
     
     __slots__ = ('convert',)
     
@@ -1169,6 +1172,7 @@ class MessageType(PreinstancedBase):
     discovery_grace_period_final_warning = NotImplemented
     inline_reply = NotImplemented
     application_command = NotImplemented
+    thread_started = NotImplemented
     invite_reminder = NotImplemented
 
 def convert_add_user(self):
@@ -1323,7 +1327,7 @@ def convert_thread_created(self):
 def convert_invite_reminder(self):
     return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
 
-MessageType.default = MessageType(0, 'default', MessageType.DEFAULT_CONVERT)
+MessageType.default = MessageType(0, 'default', MESSAGE_DEFAULT_CONVERTER)
 MessageType.add_user = MessageType(1, 'add_user', convert_add_user)
 MessageType.remove_user = MessageType(2, 'remove_user', convert_remove_user)
 MessageType.call = MessageType(3, 'call', convert_call)
@@ -1344,9 +1348,10 @@ MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_
 MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
     convert_discovery_grace_period_final_warning)
 MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
-MessageType.inline_reply = MessageType(19, 'inline_reply', MessageType.DEFAULT_CONVERT)
-MessageType.application_command = MessageType(20, 'application_command', MessageType.DEFAULT_CONVERT)
-MessageType.application_command = MessageType(22, 'invite_reminder', convert_invite_reminder)
+MessageType.inline_reply = MessageType(19, 'inline_reply', MESSAGE_DEFAULT_CONVERTER)
+MessageType.application_command = MessageType(20, 'application_command', MESSAGE_DEFAULT_CONVERTER)
+MessageType.thread_started = MessageType(21, 'thread_started', MESSAGE_DEFAULT_CONVERTER)
+MessageType.invite_reminder = MessageType(22, 'invite_reminder', convert_invite_reminder)
 
 
 del convert_add_user
@@ -1765,7 +1770,7 @@ class AuditLogEvent(PreinstancedBase):
     
     invite_create = NotImplemented
     invite_update = NotImplemented
-    INVITE_delete = NotImplemented
+    invite_delete = NotImplemented
     
     webhook_create = NotImplemented
     webhook_update = NotImplemented
@@ -1809,7 +1814,7 @@ AuditLogEvent.role_delete = AuditLogEvent(32, 'role_delete')
 
 AuditLogEvent.invite_create = AuditLogEvent(40, 'invite_create')
 AuditLogEvent.invite_update = AuditLogEvent(41, 'invite_update')
-AuditLogEvent.INVITE_delete = AuditLogEvent(42, 'INVITE_delete')
+AuditLogEvent.invite_delete = AuditLogEvent(42, 'INVITE_delete')
 
 AuditLogEvent.webhook_create = AuditLogEvent(50, 'webhook_create')
 AuditLogEvent.webhook_update = AuditLogEvent(51, 'webhook_update')
@@ -2222,6 +2227,8 @@ class ApplicationCommandOptionType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | role                  | role              | 8     |
     +-----------------------+-------------------+-------+
+    | mentionable           | mentionable       | 9     |
+    +-----------------------+-------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -2238,6 +2245,7 @@ class ApplicationCommandOptionType(PreinstancedBase):
     user = NotImplemented
     channel = NotImplemented
     role = NotImplemented
+    mentionable = NotImplemented
 
 ApplicationCommandOptionType.none = ApplicationCommandOptionType(0, 'none',)
 ApplicationCommandOptionType.sub_command = ApplicationCommandOptionType(1, 'sub_command',)
@@ -2248,6 +2256,7 @@ ApplicationCommandOptionType.boolean = ApplicationCommandOptionType(5, 'boolean'
 ApplicationCommandOptionType.user = ApplicationCommandOptionType(6, 'user',)
 ApplicationCommandOptionType.channel = ApplicationCommandOptionType(7, 'channel',)
 ApplicationCommandOptionType.role = ApplicationCommandOptionType(8, 'role',)
+ApplicationCommandOptionType.mentionable = ApplicationCommandOptionType(9, 'mentionable',)
 
 
 class InteractionType(PreinstancedBase):

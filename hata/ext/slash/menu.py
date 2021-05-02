@@ -20,8 +20,11 @@ from ...discord.parsers import InteractionEvent
 from ...discord.message import Message
 from ...discord.channel import ChannelTextBase
 from ...discord.embed import EmbedBase
+from ...discord.allowed_mentions import AllowedMentionProxy
+from ...discord.client import Client
 
 from .components import Button, Row
+from .waiters import get_client_from_message
 
 
 class ComponentDescriptor:
@@ -851,49 +854,57 @@ class Menu(metaclass=MenuType):
     __slots__ = ('_allowed_mentions', '_component_proxy_cache', '_timeouter', '_tracked_changes', 'channel', 'client',
         'message', )
     
-    async def __new__(cls, event_or_channel_or_message, *args, **kwargs):
+    async def __new__(cls, interaction_event, *args, **kwargs):
         """
         Creates a new menu instance.
         
         Parameters
         ----------
-        event_or_channel_or_message : ``InteractionEvent``, ``Message``, ``ChannelTextBase``
+        interaction_event : ``InteractionEvent``, ``Message``, `tuple` (``Client``, ``ChannelTextBase``)
             The event to respond to, or the channel to send the message at, or the message to edit.
         
         Raises
         ------
         TypeError
-            If `event_or_channel_or_message` was not given neither as ``InteractionEvent``, ``Message`` nor as
+            If `interaction_event` was not given neither as ``InteractionEvent``, ``Message`` nor as
             ``ChannelTextBase`` instance.
         """
-        if isinstance(event_or_channel_or_message, InteractionEvent):
-            target_channel = event_or_channel_or_message.channel
-            target_message = event_or_channel_or_message.message # Should be `None`
+        # use goto
+        while True:
+            if isinstance(interaction_event, InteractionEvent):
+                target_channel = interaction_event.channel
+                target_message = interaction_event.message # Should be `None`
+                target_client = interaction_event.client
+                is_interaction = True
+                break
+                
+            if isinstance(interaction_event, Message):
+                target_channel = interaction_event.channel
+                target_message = interaction_event
+                target_client = get_client_from_message(interaction_event)
+                is_interaction = False
+                break
             
-            is_interaction = True
+            if isinstance(interaction_event, tuple) and (len(interaction_event) == 2):
+                target_client, target_channel = interaction_event
+                if isinstance(target_client, Client) and isinstance(target_channel, ChannelTextBase):
+                    target_message = None
+                    is_interaction = False
+                    break
+            
+            raise TypeError(f'`interaction_event` can be given as `{InteractionEvent.__name__}`, '
+                f'`{Message.__name__}` or as `{ChannelTextBase.__name__}` instance, got '
+                f'{interaction_event.__class__.__name__}.')
         
-        else:
-            if isinstance(event_or_channel_or_message, Message):
-                target_channel = event_or_channel_or_message.channel
-                target_message = event_or_channel_or_message
-            
-            elif isinstance(event_or_channel_or_message, ChannelTextBase):
-                target_channel = event_or_channel_or_message
-                target_message = None
-            
-            else:
-                raise TypeError(f'`event_or_channel_or_message` can be given as `{InteractionEvent.__name__}`, '
-                    f'`{Message.__name__}` or as `{ChannelTextBase.__name__}` instance, got '
-                    f'{event_or_channel_or_message.__class__.__name__}.')
-            
-            is_interaction = False
         
         self = object.__new__(cls)
         self.channel = target_channel
         self.message = target_message
+        self.client = target_client
         self._timeouter = None
         self._tracked_changes = []
-        self._allowed_mentions = ...
+        self._allowed_mentions = None
+        self._component_proxy_cache = {}
         # TODO
     
     
@@ -969,4 +980,25 @@ class Menu(metaclass=MenuType):
         """
         A get-set-del property to modify the menu's message's allowed mentions.
         """
+        allowed_mentions = self._allowed_mentions
+        if allowed_mentions is None:
+            allowed_mentions_output = AllowedMentionProxy()
+        else:
+            allowed_mentions_output = allowed_mentions.copy()
         
+        return allowed_mentions_output
+    
+    @allowed_mentions.setter
+    def allowed_mentions(self, allowed_mentions_input):
+        if isinstance(allowed_mentions_input, AllowedMentionProxy):
+            allowed_mentions = allowed_mentions_input.copy()
+        else:
+            allowed_mentions = AllowedMentionProxy(allowed_mentions_input)
+        
+        self._allowed_mentions = allowed_mentions
+    
+    @allowed_mentions.deleter
+    def allowed_mentions(self):
+        self._allowed_mentions = None
+
+

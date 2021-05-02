@@ -541,6 +541,82 @@ class AllowedMentionProxy:
         return hash_value
     
     
+    def update(self, other):
+        """
+        Updates the allowed mentions with the given value.
+        
+        Parameters
+        ----------
+        other : `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy` or (`list`, `tuple`, `set`) of \
+                (`str`, ``UserBase``, ``Role``)
+            Which user or role can the message ping (or everyone).
+        
+        Raises
+        ------
+        TypeError
+            If `other` contains an element of invalid type.
+        ValueError
+            If `other` contains en element of correct type, but an invalid value.
+        """
+        if isinstance(other, type(self)):
+            pass
+        elif isinstance(other, (list, tuple, set)):
+            other = type(self)(*other)
+        else:
+            other = type(self)(other)
+        
+        
+        allow_replied_user = self._allow_replied_user
+        if allow_replied_user:
+            self._allow_replied_user = allow_replied_user
+        
+        allow_everyone = self._allow_everyone
+        if allow_everyone:
+            self._allow_everyone = allow_everyone
+        
+        allow_roles = other._allow_roles
+        if allow_roles:
+            self._allow_roles = allow_roles
+            self._allowed_roles = None
+        else:
+            if not self._allow_roles:
+                self_allowed_roles = self._allowed_roles
+                if self_allowed_roles is None:
+                    final_allowed_roles = None
+                else:
+                    final_allowed_roles = self_allowed_roles.copy()
+                
+                other_allowed_roles = other._allowed_roles
+                if (other_allowed_roles is not None):
+                    if final_allowed_roles is None:
+                        final_allowed_roles = other_allowed_roles.copy()
+                    else:
+                        final_allowed_roles.extend(other_allowed_roles)
+                
+                self._allowed_roles = final_allowed_roles
+        
+        
+        allow_users = other._allow_users
+        if allow_users:
+            self._allow_users = allow_users
+            self._allowed_users = None
+        else:
+            if not self._allow_users:
+                self_allowed_users = self._allowed_users
+                if self_allowed_users is None:
+                    final_allowed_users = None
+                else:
+                    final_allowed_users = self_allowed_users.copy()
+                
+                other_allowed_users = other._allowed_users
+                if (other_allowed_users is not None):
+                    if final_allowed_users is None:
+                        final_allowed_users = other_allowed_users.copy()
+                    else:
+                        final_allowed_users.extend(other_allowed_users)
+                
+                self._allowed_users = final_allowed_users
+    
     @property
     def allow_roles(self):
         """

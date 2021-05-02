@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-__all__ = ('ActivityChange', 'ActivityUpdate', 'ClientUserBase', 'ClientUserPBase', 'GuildProfile', 'User', 'UserBase',
-    'UserFlag', 'VoiceState', 'ZEROUSER')
+__all__ = ('ActivityChange', 'ActivityUpdate', 'ClientUserBase', 'ClientUserPBase', 'GuildProfile', 'ThreadProfile',
+    'ThreadProfileFlag', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER')
 
 from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE
 
-from ..backend.utils import DOCS_ENABLED, WeakKeyDictionary, copy_docs
+from ..backend.utils import DOCS_ENABLED, copy_docs
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
-from .client_core import USERS
+from .client_core import USERS, CHANNELS
 from .utils import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
 from .activity import ActivityUnknown, create_activity
@@ -22,10 +22,6 @@ from . import urls as module_urls
 
 create_partial_role = include('create_partial_role')
 
-if CACHE_USER:
-    GUILD_PROFILES_TYPE = dict
-else:
-    GUILD_PROFILES_TYPE = WeakKeyDictionary
 
 class UserFlag(FlagBase):
     """
@@ -94,6 +90,14 @@ class UserFlag(FlagBase):
         'early_verified_developer': 17,
     }
 
+
+class ThreadProfileFlag(FlagBase):
+    """
+    Represents a ``ThreadProfile``'s user specific bitwise flag based settings.
+    """
+    __keys__ = {}
+
+
 @export
 def create_partial_user(user_id):
     """
@@ -154,7 +158,7 @@ class GuildProfile:
         
         return created_at
     
-    def __init__(self, data, guild):
+    def __init__(self, data):
         """
         Creates a ``GuildProfile`` instance from the received guild profile data and from it's respective guild.
         
@@ -162,8 +166,6 @@ class GuildProfile:
         ----------
         data : `dict` of (`str`, `Any`) items
             Received guild profile data.
-        guild : ``Guild``
-            The guild profile's respective guild.
         """
         try:
             joined_at_data = data['joined_at']
@@ -174,7 +176,7 @@ class GuildProfile:
         
         self.joined_at = joined_at
         
-        self._update_no_return(data, guild)
+        self._update_no_return(data)
     
     def __repr__(self):
         """Returns the representation of the guild profile."""
@@ -199,7 +201,7 @@ class GuildProfile:
             
             self.joined_at = joined_at
     
-    def _update_no_return(self, data, guild):
+    def _update_no_return(self, data):
         """
         Updates the guild profile with overwriting it's old attributes.
         
@@ -207,19 +209,16 @@ class GuildProfile:
         ----------
         data : `dict` of (`str`, `Any`) items
             Received guild profile data.
-        guild : ``Guild``
-            The guild profile's respective guild.
         """
         self.nick = data.get('nick', None)
         
         role_ids = data['roles']
         if role_ids:
-            guild_roles = guild.roles
             roles = []
             for role_id in role_ids:
                 role_id = int(role_id)
                 try:
-                    role = guild_roles[role_id]
+                    role = create_partial_role(role_id)
                 except KeyError:
                     continue
                 
@@ -239,7 +238,7 @@ class GuildProfile:
         
         self.pending = data.get('pending', None)
     
-    def _update(self, data, guild):
+    def _update(self, data):
         """
         Updates the guild profile and returns it's changed attributes in a `dict` within `attribute-name` - `old-value`
         relation.
@@ -248,8 +247,6 @@ class GuildProfile:
         ----------
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
-        guild : ``Guild``
-            The owner guild of the role.
         
         Returns
         -------
@@ -258,6 +255,7 @@ class GuildProfile:
         
         Returned Data Structure
         -----------------------
+        
         +-------------------+-------------------------------+
         | Keys              | Values                        |
         +===================+===============================+
@@ -363,6 +361,143 @@ class GuildProfile:
     def colour(self):
         """Alias of ``.color``."""
         return self.color
+
+
+def _resolve_thread_user_data(data):
+    """
+    Resolves the given thread user data.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `Any`) items
+        Received thread user data.
+    """
+    thread_chanel_id = int(data['id'])
+    try:
+        thread = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    user_id = int(data['user_id'])
+    user = create_partial_user(user_id)
+    
+    _resolve_thread_user_data_preprocessed(thread, user, data)
+
+
+def _resolve_thread_user_data_preprocessed(thread, user, data):
+    """
+    Resolves the given thread user data.
+    
+    Parameters
+    ----------
+    thread : ``ChannelThread``
+        Respective thread channel.
+    user : ``ClientUserBase``
+        The user to resolve.
+    data : `dict` of (`str`, `Any`) items
+        Thread user data.
+    """
+    thread_users = thread.thread_users
+    if thread_users is None:
+        thread_users = thread.thread_users = {}
+    thread_users[user.id] = user
+    
+    thread_profiles = user.thread_profiles
+    if thread_profiles is None:
+        thread_profiles = user.thread_profiles = {}
+    
+    try:
+        thread_profile = thread_profiles[thread]
+    except KeyError:
+        thread_profiles[thread] = ThreadProfile(data)
+    else:
+        thread_profile._update_no_return(data)
+
+
+class ThreadProfile:
+    """
+    Represents an user's profile inside of a thread channel.
+    
+    Attributes
+    ----------
+    joined_at : `datetime`
+        The date when the user joined the thread.
+    flags : ``ThreadProfileFlag``
+        user specific settings of the profile.
+    """
+    __slots__ = ('joined_at', 'flags',)
+    
+    @property
+    def created_at(self):
+        """
+        Returns ``.joined_at`` if set.
+        
+        Returns
+        -------
+        created_at : `datetime`
+        """
+        return self.joined_at
+    
+    def __init__(self, data):
+        """
+        Creates a new ``ThreadProfile`` instance from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received thread profile data.
+        """
+        self.joined_at = parse_time(data['join_timestamp'])
+        
+        self._update_no_return(data)
+    
+    def __repr__(self):
+        """Returns the thread profile's representation."""
+        return f'<{self.__class__.__name__}>'
+    
+    def _update_no_return(self, data):
+        """
+        Updates the thread profile with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received thread profile data.
+        """
+        self.flags = ThreadProfileFlag(data['flags'])
+    
+    def _update(self, data):
+        """
+        Updates the thread profile and returns it's changed attributes in a `dict` within `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | flags             | ``ThreadProfileFlag``         |
+        +-------------------+-------------------------------+
+        """
+        old_attributes = {}
+        
+        flags = data.get('flags', 0)
+        if self.flags != flags:
+            old_attributes['flags'] = self.flags
+            self.flags = ThreadProfileFlag(flags)
+        
+        return old_attributes
 
 
 class UserBase(DiscordEntity, immortal=True):
@@ -601,9 +736,21 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+        guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         """
-        return GUILD_PROFILES_TYPE()
+        return {}
+    
+    @property
+    def thread_profiles(self):
+        """
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
+        
+        Returns
+        -------
+        thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        """
+        return None
     
     @property
     def is_bot(self):
@@ -852,7 +999,7 @@ class ClientUserBase(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : `bool`
         The user's avatar's type.
-    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -861,8 +1008,11 @@ class ClientUserBase(UserBase):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.
+    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
     """
-    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', )
+    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', 'thread_profiles')
     
     def _update_no_return(self, data):
         """
@@ -879,7 +1029,7 @@ class ClientUserBase(UserBase):
         self._set_avatar(data)
         
         self.flags = UserFlag(data.get('public_flags', 0))
-    
+        self.thread_profiles = None
     
     def _update(self, data):
         """
@@ -898,6 +1048,7 @@ class ClientUserBase(UserBase):
         
         Returned Data Structure
         -----------------------
+        
         +---------------+---------------+
         | Keys          | Values        |
         +===============+===============+
@@ -976,12 +1127,12 @@ class ClientUserBase(UserBase):
         try:
             profile = user.guild_profiles[guild]
         except KeyError:
-            user.guild_profiles[guild] = GuildProfile(data, guild)
+            user.guild_profiles[guild] = GuildProfile(data)
             guild.users[user_id] = user
             return user, {}
 
         profile._set_joined(data)
-        return user, profile._update(data, guild)
+        return user, profile._update(data)
     
     
     @classmethod
@@ -1015,9 +1166,9 @@ class ClientUserBase(UserBase):
             try:
                 profile = user.guild_profiles[guild]
             except KeyError:
-                user.guild_profiles[guild] = GuildProfile(data, guild)
+                user.guild_profiles[guild] = GuildProfile(data)
             else:
-                profile._update_no_return(data, guild)
+                profile._update_no_return(data)
         
         return user
     
@@ -1051,10 +1202,10 @@ class ClientUserBase(UserBase):
             profile = user.guild_profiles[guild]
         except KeyError:
             guild.users[user_id] = user
-            user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+            user.guild_profiles[guild] = GuildProfile(guild_profile_data)
         else:
             profile._set_joined(guild_profile_data)
-            profile._update_no_return(guild_profile_data, guild)
+            profile._update_no_return(guild_profile_data)
 
     
     @classmethod
@@ -1076,10 +1227,15 @@ class ClientUserBase(UserBase):
         self.discriminator = client.discriminator
         self.name = client.name
         
-        self.guild_profiles = client.guild_profiles.copy()
+        guild_profiles = client.guild_profiles
+        if (guild_profiles is not None):
+            guild_profiles = guild_profiles.copy()
+        
+        self.guild_profiles = guild_profiles
         self.is_bot = client.is_bot
         self.flags = client.flags
         self.partial = client.partial
+        self.thread_profiles = client.thread_profiles.copy()
         
         return self
     
@@ -1115,9 +1271,9 @@ class ClientUserBase(UserBase):
         self.is_bot = False
         self.flags = UserFlag()
         
-        self.guild_profiles = GUILD_PROFILES_TYPE()
+        self.guild_profiles = {}
         self.partial = True
-    
+        self.thread_profiles = None
     
     # if CACHE_PRESENCE is False, this should be never called from this class
     def _update_presence(self, data):
@@ -1351,7 +1507,7 @@ class ClientUserPBase(ClientUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : `bool`
         The user's avatar's type.
-    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -1360,6 +1516,9 @@ class ClientUserPBase(ClientUserBase):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.
+    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
     activities : `None` or `list` of ``ActivityBase`` instances
         A list of the client's activities. Defaults to `None`
     status : `Status`
@@ -1566,7 +1725,7 @@ class User(USER_BASE_CLASS):
         The user's avatar's hash in `uint128`.
     avatar_type : `bool`
         The user's avatar's type.
-    guild_profiles : `dict` or ``WeakKeyDictionary`` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -1575,6 +1734,9 @@ class User(USER_BASE_CLASS):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.
+    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
     activities : `None` or `list` of ``ActivityBase`` instances
         A list of the client's activities. Defaults to `None`
         
@@ -1611,7 +1773,7 @@ class User(USER_BASE_CLASS):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.guild_profiles = {}
                 user.status = Status.offline
                 user.statuses = {}
                 user.activities = None
@@ -1631,7 +1793,7 @@ class User(USER_BASE_CLASS):
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
             
@@ -1654,7 +1816,7 @@ class User(USER_BASE_CLASS):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.guild_profiles = {}
                 update = True
                 
                 USERS[user_id] = user
@@ -1669,7 +1831,7 @@ class User(USER_BASE_CLASS):
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
                     
@@ -1691,7 +1853,7 @@ class User(USER_BASE_CLASS):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.guild_profiles = {}
                 
                 USERS[user_id] = user
             
@@ -1700,7 +1862,7 @@ class User(USER_BASE_CLASS):
             user._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data)
             
             return user
     
@@ -1844,7 +2006,7 @@ class User(USER_BASE_CLASS):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.guild_profiles = {}
                 user.status = Status.offline
                 user.statuses = {}
                 user.activities = None
@@ -1860,10 +2022,10 @@ class User(USER_BASE_CLASS):
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
-                    profile._update_no_return(guild_profile_data, guild)
+                    profile._update_no_return(guild_profile_data)
             
             return user
         
@@ -1884,7 +2046,7 @@ class User(USER_BASE_CLASS):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.guild_profiles = {}
                 
                 USERS[user_id] = user
             
@@ -1897,10 +2059,10 @@ class User(USER_BASE_CLASS):
                     profile = user.guild_profiles[guild]
                 except KeyError:
                     guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
-                    profile._update_no_return(guild_profile_data, guild)
+                    profile._update_no_return(guild_profile_data)
             
             return user
         
@@ -1922,7 +2084,7 @@ class User(USER_BASE_CLASS):
             except KeyError:
                 user = object.__new__(cls)
                 user.id = user_id
-                user.guild_profiles = GUILD_PROFILES_TYPE()
+                user.guild_profiles = {}
                 
                 USERS[user_id] = user
             
@@ -1931,7 +2093,7 @@ class User(USER_BASE_CLASS):
             user._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data, guild)
+                user.guild_profiles[guild] = GuildProfile(guild_profile_data)
             
             return user
     

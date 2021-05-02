@@ -5,8 +5,8 @@ __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'Guil
 
 import re, reprlib
 
-from ..env import CACHE_PRESENCE
-from ..backend.utils import cached_property, BaseMethodDescriptor
+from ..env import CACHE_PRESENCE, CACHE_USER
+from ..backend.utils import cached_property, BaseMethodDescriptor, WeakValueDictionary
 from ..backend.futures import Task
 from ..backend.export import export, include
 
@@ -41,6 +41,12 @@ VOICE_STATE_LEAVE = 2
 VOICE_STATE_UPDATE = 3
 
 COMMUNITY_FEATURES = {GuildFeature.community, GuildFeature.discoverable, GuildFeature.public}
+
+if CACHE_USER:
+    GUILD_USERS_TYPE = dict
+else:
+    GUILD_USERS_TYPE = WeakValueDictionary
+
 
 class SystemChannelFlag(ReverseFlagBase):
     """
@@ -431,102 +437,39 @@ def create_partial_guild(data):
     except KeyError:
         pass
     
-    guild = object.__new__(Guild)
+    guild = Guild._create_empty(guild_id)
     GUILDS[guild_id] = guild
-    guild.id = guild_id
     
     # do not use pop, at later versions the received data might be read-only.
     try:
         available = not data['unavailable']
     except KeyError:
         available = True
-        restricted_data_limit = 2
-    else:
-        restricted_data_limit = 3
     
     guild.available = available
     
-    # set default values
-    guild._boosters = None
-    guild._cache_perm = None
-    guild.afk_channel = None
-    guild.afk_timeout = 0
-    guild.channels = {}
-    guild.roles = {}
-    #available set up
-    guild.banner_type = ICON_TYPE_NONE
-    guild.banner_hash = 0
-    guild.booster_count = -1
-    guild.clients = []
-    guild.content_filter = ContentFilterLevel.disabled
-    # description will be set down
-    guild.emojis = {}
-    guild.features = []
-    # icon_type will be set down
-    # icon_hash will be set down
-    # id is set up
-    guild.is_large = False
-    guild.max_presences = 25000
-    guild.max_users = 250000
-    guild.max_video_channel_users = 25
-    guild.message_notification = MessageNotificationLevel.only_mentions
-    guild.mfa = MFA.none
-    # name will be set down
-    guild.owner_id = 0
-    guild.preferred_locale = DEFAULT_LOCALE
-    guild.premium_tier = 0
-    guild.public_updates_channel = None
-    guild.region = VoiceRegion.eu_central
-    guild.rules_channel = None
-    # invite_splash_type will be set down
-    # invite_splash_hash will be set down
-    guild.system_channel = None
-    guild.system_channel_flags = SystemChannelFlag.NONE
-    guild.user_count = 1
-    guild.users = {}
-    guild.vanity_code = None
-    guild.verification_level = VerificationLevel.none
-    guild.voice_states = {}
-    guild.webhooks = {}
-    guild.webhooks_up_to_date = False
-    guild.widget_channel = None
-    guild.widget_enabled = False
-    guild.nsfw = False
-    guild.approximate_online_count = 0
-    guild.approximate_user_count = 0
-    guild.user_count = 1
+    guild.name = data.get('name','')
+    guild._set_icon(data)
+    guild._set_invite_splash(data)
+    guild._set_discovery_splash(data)
+    guild.description=data.get('description', None)
     
-    if len(data) < restricted_data_limit:
-        guild.name = ''
-        guild.icon_type = ICON_TYPE_NONE
-        guild.icon_hash = 0
-        guild.invite_splash_type = ICON_TYPE_NONE
-        guild.invite_splash_hash = 0
-        guild.discovery_splash_type = ICON_TYPE_NONE
-        guild.discovery_splash_hash = 0
-        guild.description = None
+    try:
+        verification_level = data['verification_level']
+    except KeyError:
+        pass
     else:
-        guild.name = data.get('name','')
-        guild._set_icon(data)
-        guild._set_invite_splash(data)
-        guild._set_discovery_splash(data)
-        guild.description=data.get('description',None)
-        
-        try:
-            verification_level = data['verification_level']
-        except KeyError:
-            pass
-        else:
-            guild.verification_level = VerificationLevel.get(verification_level)
-        
-        try:
-            features = data['features']
-        except KeyError:
-            guild.features.clear()
-        else:
-            features = [GuildFeature.get(feature) for feature in features]
-            features.sort()
-            guild.features = features
+        guild.verification_level = VerificationLevel.get(verification_level)
+    
+    try:
+        features = data['features']
+    except KeyError:
+        pass
+    else:
+        features = [GuildFeature.get(feature) for feature in features]
+        features.sort()
+    
+    guild.features = features
     
     return guild
 
@@ -619,9 +562,11 @@ class Guild(DiscordEntity, immortal=True):
         The channel where the system messages are sent.
     system_channel_flags : ``SystemChannelFlag``
         Describe which type of messages are sent automatically to the system channel.
+    threads : `dict` of (`int`, ``ChannelThread``)
+        Thread channels of the guild.
     user_count : `int`
         The amount of users at the guild.
-    users : `dict` of (`int`, (``User`` or ``Client``)) items
+    users : `dict` r ``WeakValueDictionary`` of (`int`, (``User`` or ``Client``)) items
         The users at the guild stored within `user_id` - `user` relation.
     vanity_code : `None` or `str`
         The guild's vanity invite's code if it has.
@@ -654,9 +599,9 @@ class Guild(DiscordEntity, immortal=True):
         'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
         'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
         'message_notification', 'mfa', 'name', 'nsfw', 'owner_id', 'preferred_locale', 'premium_tier',
-        'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel', 'system_channel_flags',
-        'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'webhooks', 'webhooks_up_to_date',
-        'widget_channel', 'widget_enabled')
+        'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel',
+        'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states',
+        'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner', module_urls.guild_banner_url, module_urls.guild_banner_url_as)
     icon = IconSlot('icon', 'icon', module_urls.guild_icon_url, module_urls.guild_icon_url_as)
@@ -691,13 +636,14 @@ class Guild(DiscordEntity, immortal=True):
             self.id = guild_id
             
             self.clients = []
-            self.users = {}
+            self.users = GUILD_USERS_TYPE()
             self.emojis = {}
             self.voice_states = {}
             self.roles = {}
             self.channels = {}
             self.features = []
             self.webhooks = {}
+            self.threads = {}
             self.webhooks_up_to_date = False
             self._cache_perm = None
             self._boosters = None
@@ -795,6 +741,14 @@ class Guild(DiscordEntity, immortal=True):
                     channel = self.channels[int(channel_id)]
                     
                     self.voice_states[user.id] = VoiceState(voice_state_data, channel)
+        
+            try:
+                thread_datas = data['threads']
+            except KeyError:
+                pass
+            else:
+                for thread_data in thread_datas:
+                    CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, self)
         
         if (not CACHE_PRESENCE):
             #we get information about the client here
@@ -947,57 +901,7 @@ class Guild(DiscordEntity, immortal=True):
         try:
             self = GUILDS[guild_id]
         except KeyError:
-            self = object.__new__(cls)
-            self._boosters = None
-            self._cache_perm = None
-            self.afk_channel = None
-            self.afk_timeout = 0
-            self.channels = {}
-            self.roles = {}
-            self.available = False
-            self.banner_hash = 0
-            self.banner_type = ICON_TYPE_NONE
-            self.booster_count = -1
-            self.clients = []
-            self.content_filter = ContentFilterLevel.disabled
-            self.description = None
-            self.discovery_splash_hash = 0
-            self.discovery_splash_type = ICON_TYPE_NONE
-            self.emojis = {}
-            self.features = []
-            self.icon_hash = 0
-            self.icon_type = ICON_TYPE_NONE
-            self.id = guild_id
-            self.is_large = False
-            self.max_presences = 25000
-            self.max_users = 250000
-            self.max_video_channel_users = 25
-            self.message_notification = MessageNotificationLevel.only_mentions
-            self.mfa = MFA.none
-            self.name = ''
-            self.owner_id = 0
-            self.preferred_locale = DEFAULT_LOCALE
-            self.premium_tier = 0
-            self.public_updates_channel = None
-            self.region = VoiceRegion.eu_central
-            self.rules_channel = None
-            self.invite_splash_hash = 0
-            self.invite_splash_type = ICON_TYPE_NONE
-            self.system_channel = None
-            self.system_channel_flags = SystemChannelFlag.NONE
-            self.approximate_user_count = 1
-            self.users = {}
-            self.vanity_code = None
-            self.verification_level = VerificationLevel.none
-            self.voice_states = {}
-            self.webhooks = {}
-            self.webhooks_up_to_date = False
-            self.widget_channel = None
-            self.widget_enabled = False
-            self.nsfw = False
-            self.user_count = 0
-            self.approximate_online_count = 0
-            self.approximate_user_count = 0
+            self = cls._create_empty(guild_id)
             GUILDS[guild_id] = self
         else:
             if self.clients:
@@ -1007,6 +911,74 @@ class Guild(DiscordEntity, immortal=True):
             for item in processable:
                 setattr(self, *item)
         
+        return self
+    
+    @classmethod
+    def _create_empty(cls, guild_id):
+        """
+        Creates a guild with default parameters set.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The guild's identifier.
+        
+        Returns
+        -------
+        self : ``Guild``
+        """
+        self = object.__new__(cls)
+        self._boosters = None
+        self._cache_perm = None
+        self.afk_channel = None
+        self.afk_timeout = 0
+        self.channels = {}
+        self.roles = {}
+        self.available = False
+        self.banner_hash = 0
+        self.banner_type = ICON_TYPE_NONE
+        self.booster_count = -1
+        self.clients = []
+        self.content_filter = ContentFilterLevel.disabled
+        self.description = None
+        self.discovery_splash_hash = 0
+        self.discovery_splash_type = ICON_TYPE_NONE
+        self.emojis = {}
+        self.features = []
+        self.icon_hash = 0
+        self.icon_type = ICON_TYPE_NONE
+        self.id = guild_id
+        self.is_large = False
+        self.max_presences = 25000
+        self.max_users = 250000
+        self.max_video_channel_users = 25
+        self.message_notification = MessageNotificationLevel.only_mentions
+        self.mfa = MFA.none
+        self.name = ''
+        self.owner_id = 0
+        self.preferred_locale = DEFAULT_LOCALE
+        self.premium_tier = 0
+        self.public_updates_channel = None
+        self.region = VoiceRegion.eu_central
+        self.rules_channel = None
+        self.invite_splash_hash = 0
+        self.invite_splash_type = ICON_TYPE_NONE
+        self.system_channel = None
+        self.system_channel_flags = SystemChannelFlag.NONE
+        self.approximate_user_count = 1
+        self.users = GUILD_USERS_TYPE()
+        self.vanity_code = None
+        self.verification_level = VerificationLevel.none
+        self.voice_states = {}
+        self.webhooks = {}
+        self.webhooks_up_to_date = False
+        self.widget_channel = None
+        self.widget_enabled = False
+        self.nsfw = False
+        self.user_count = 0
+        self.approximate_online_count = 0
+        self.approximate_user_count = 0
+        self.threads = {}
         return self
     
     def __str__(self):
@@ -1294,7 +1266,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelText``
         """
-        return [channel for channel in self.channels.values() if channel.type==0]
+        return [channel for channel in self.channels.values() if channel.type == 0]
 
     @property
     def voice_channels(self):
@@ -1305,7 +1277,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelVoice``
         """
-        return [channel for channel in self.channels.values() if channel.type==2]
+        return [channel for channel in self.channels.values() if channel.type == 2]
 
     @property
     def category_channels(self):
@@ -1316,7 +1288,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelCategory``
         """
-        return [channel for channel in self.channels.values() if channel.type==4]
+        return [channel for channel in self.channels.values() if channel.type == 4]
 
     @property
     def announcement_channels(self):
@@ -1327,7 +1299,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelText``
         """
-        return [channel for channel in self.channels.values() if channel.type==5]
+        return [channel for channel in self.channels.values() if channel.type == 5]
 
     @property
     def store_channels(self):
@@ -1338,7 +1310,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelStore``
         """
-        return [channel for channel in self.channels.values() if channel.type==6]
+        return [channel for channel in self.channels.values() if channel.type == 6]
     
     @property
     def thread_channels(self):
@@ -1349,7 +1321,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelThread``
         """
-        return [channel for channel in self.channels.values() if channel.type==9]
+        return list(self.threads.values())
     
     @property
     def stage_channels(self):
@@ -1360,7 +1332,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels . `list` of ``ChannelVoiceBase``
         """
-        return [channel for channel in self.channels.values() if channel.type==13]
+        return [channel for channel in self.channels.values() if channel.type == 13]
     
     @property
     def messageable_channels(self):
@@ -1380,7 +1352,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels . `list` of ``ChannelVoiceBase``
+        channels : `list` of ``ChannelVoiceBase``
         """
         return [channel for channel in self.channels.values() if channel.type in (2, 13)]
     
@@ -2622,7 +2594,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        owner : ``User`` or ``Client``
+        owner : ``UserClientBase``
             If user the guild has no owner, returns `ZEROUSER`.
         """
         owner_id = self.owner_id

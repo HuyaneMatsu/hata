@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
-    relativedelta=None
+    relativedelta = None
 
 from ...backend.utils import multidict
 
@@ -17,6 +17,7 @@ from ...discord.user import ZEROUSER
 from ...discord.message import MessageType, Message
 from ...discord.role import Role
 from ...discord.integration import IntegrationAccount
+from ...discord.channel import ChannelGuildMainBase
 
 #testerfile for events
 #later embeds will be added in plan
@@ -632,20 +633,23 @@ def write_guild_channel_extras(channel, result, write_parents, write_overwrites,
     if write_parents:
         result.append(f'- guild : {guild.name!r} ({guild.id})', 1)
     
-    result.append(f'- position : {channel.position}', 1)
     
-    category = channel.category
-    if category is not guild:
-        result.append(f'- category : {category.name!r} ({category.id})', 1)
     
-    overwrites = channel.overwrites
-    if overwrites:
-        if write_overwrites:
-            result.append(f'Permission overwrites: ({len(overwrites)})', 1)
-            for index,overwrite in enumerate(overwrites, 1):
-                result.append(str_PermissionOverwrite(overwrite, index=index, **kwargs), 2)
-        else:
-            result.append(f'- overwrites count: {len(overwrites)}', 1)
+    parent = channel.parent
+    if (parent is not None):
+        result.append(f'- parent : {parent.name!r} ({parent.id})', 1)
+    
+    if isinstance(channel, ChannelGuildMainBase):
+        result.append(f'- position : {channel.position}', 1)
+        
+        overwrites = channel.overwrites
+        if overwrites:
+            if write_overwrites:
+                result.append(f'Permission overwrites: ({len(overwrites)})', 1)
+                for index,overwrite in enumerate(overwrites, 1):
+                    result.append(str_PermissionOverwrite(overwrite, index=index, **kwargs), 2)
+            else:
+                result.append(f'- overwrites count: {len(overwrites)}', 1)
 
 def str_channel_text(channel, index=None, write_parents=True, overwrites=False, **kwargs):
     result = PrettyBlock()
@@ -801,8 +805,6 @@ def str_channel_thread(channel, index=None, write_parents=True, overwrites=False
     if not channel.clients:
         result.append('- DELETED', 1)
         return result
-    
-    result.append(f'- position : {channel.position}', 1)
     
     write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
     

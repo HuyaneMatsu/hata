@@ -1,37 +1,39 @@
 ﻿# -*- coding: utf-8 -*-
-__all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelPrivate', 'ChannelStage',
-    'ChannelStore', 'ChannelText', 'ChannelTextBase', 'ChannelThread', 'ChannelVoice', 'MessageIterator',
-    'cr_pg_channel_object', 'ChannelGuildUndefined',)
+__all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelGuildMainBase',
+    'ChannelGuildUndefined', 'ChannelPrivate', 'ChannelStage', 'ChannelStore', 'ChannelText', 'ChannelTextBase',
+    'ChannelThread', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object')
 
-import re
+import re, warnings
 from collections import deque
 from weakref import WeakSet
 
-from ..backend.utils import DOCS_ENABLED, copy_docs
+from ..backend.utils import copy_docs
 from ..backend.event_loop import LOOP_TIME
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from .client_core import CHANNELS, USERS
+from .client_core import CHANNELS
 from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
     PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
     PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_TEXT_AND_STAGE_DENY
 from .message import Message, MESSAGES
-from .user import User, ZEROUSER
+from .user import User, ZEROUSER, create_partial_user, _resolve_thread_user_data_preprocessed
 from .role import PermissionOverwrite
 from .client_core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
     preconvert_preinstanced_type
-from .utils import DATETIME_FORMAT_CODE
+from .utils import DATETIME_FORMAT_CODE, parse_time
 from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
 from .preinstanced import VoiceRegion, VideoQualityMode
+from .limits import CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES
 
 from . import urls as module_urls
 
 Client = include('Client')
 Guild = include('Guild')
+
 
 TURN_MESSAGE_LIMITING_ON = WeakSet()
 
@@ -236,10 +238,6 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         Tries to find the a user with the given name at the channel. Returns the first matched one.
         
-        The search order is the following:
-        - `full_name`
-        - `name`
-        
         Parameters
         ----------
         name : `str`
@@ -278,7 +276,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     def get_user_like(self, name, default=None):
         """
-        Searches a user, who's name starts with the given string and returns the first find.
+        Searches a user, who's name or nick starts with the given string and returns the first find.
         
         Parameters
         ----------
@@ -321,7 +319,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     def get_users_like(self, name):
         """
-        Searches the users, who's name starts with the given string.
+        Searches the users, who's name or nick starts with the given string.
         
         Parameters
         ----------
@@ -497,6 +495,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         Parameters
         ----------
         user : ``UserBase`` instance
+            The user, who's permissions will be returned.
         
         Returns
         -------
@@ -554,6 +553,55 @@ class ChannelBase(DiscordEntity, immortal=True):
         Always return empty permissions. Subclasses should implement this method.
         """
         return PERMISSION_NONE
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the channel's guild. At the case of private channels this is always `None`.
+        
+        Returns
+        -------
+        guild : `None`
+        """
+        return None
+    
+    
+    def _update_no_return(self, data):
+        """
+        Updates the channel with overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord.
+        """
+        pass
+
+    def _update(self, data):
+        """
+        Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        """
+        return {}
+    
+    def _delete(self):
+        """
+        Removes the channel's references.
+        
+        Used when the channel is deleted.
+        """
+        pass
 
 
 # sounds funny, but this is a class
@@ -779,10 +827,17 @@ class ChannelTextBase:
         self._message_keep_limit = limit
         self.messages = None
     
-    def _get_message_keep_limit(self):
+    @property
+    def message_keep_limit(self):
+        """
+        A property for getting or setting how much message the channel can store before removing the last.
+        
+        Returns and accepts an `int`.
+        """
         return self._message_keep_limit
     
-    def _set_message_keep_limit(self, limit):
+    @message_keep_limit.setter
+    def message_keep_limit(self, limit):
         if limit < 0:
             limit = 0
         
@@ -800,17 +855,6 @@ class ChannelTextBase:
                 
         self.messages = new_messages
         self._message_keep_limit = limit
-    
-    message_keep_limit = property(_get_message_keep_limit, _set_message_keep_limit)
-    del _get_message_keep_limit, _set_message_keep_limit
-    # If opt level is under2, set docstring
-    if DOCS_ENABLED:
-        message_keep_limit.__doc__ = (
-        """
-        A property for getting or setting how much message the channel can store before removing the last.
-        
-        Returns and accepts an `int`.
-        """)
     
     def _create_new_message(self, data):
         """
@@ -1272,14 +1316,230 @@ class ChannelGuildBase(ChannelBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
-        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
+    
+    Class Attributes
+    ----------------
+    INTERCHANGE : `tuple` of `int` = `()`
+        Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
+        them.
+    ORDER_GROUP : `int` = `0`
+        An order group what defined which guild channel type comes after the other one.
+    """
+    __slots__ = ('parent', 'guild', 'name', )
+    
+    ORDER_GROUP = 0
+    
+    @copy_docs(ChannelBase.__str__)
+    def __str__(self):
+        return self.name
+    
+    @property
+    @copy_docs(ChannelBase.users)
+    def users(self):
+        return list(self.iter_users())
+    
+    
+    @copy_docs(ChannelBase.iter_users)
+    def iter_users(self):
+        guild = self.guild
+        if (guild is not None):
+            for user in guild.users.values():
+                if self.permissions_for(user).can_view_channel:
+                    yield user
+    
+    
+    @property
+    @copy_docs(ChannelBase.clients)
+    def clients(self):
+        guild = self.guild
+        if guild is None:
+            return []
+        
+        return guild.clients
+    
+    @copy_docs(ChannelBase.get_user)
+    def get_user(self, name, default=None):
+        if self.guild is None:
+            return default
+        
+        if (not 1 < len(name) < 38):
+            return default
+        
+        users = self.users
+        
+        if len(name) > 6 and name[-5] == '#':
+            try:
+                discriminator = int(name[-4:])
+            except ValueError:
+                pass
+            else:
+                name_ = name[:-5]
+                for user in users:
+                    if user.discriminator == discriminator and user.name == name_:
+                        return user
+        
+        if len(name) > 32:
+            return default
+
+        for user in users:
+            if user.name == name:
+                return user
+        
+        guild = self.guild
+        for user in users:
+            nick = user.guild_profiles[guild]
+            if nick is None:
+                continue
+            
+            if nick == name:
+                return user
+        
+        return default
+    
+    @copy_docs(ChannelBase.get_user_like)
+    def get_user_like(self, name, default=None):
+        guild = self.guild
+        if guild is None:
+            return default
+        
+        if not 1 < len(name) < 38:
+            return default
+        
+        if len(name) > 6 and name[-5] == '#':
+            try:
+                discriminator = int(name[-4:])
+            except ValueError:
+                pass
+            else:
+                name_ = name[:-5]
+                for user in guild.users.values():
+                    if not self.permissions_for(user).can_view_channel:
+                        continue
+                    
+                    if user.discriminator == discriminator and user.name == name_:
+                        return user
+        
+        if len(name) > 32:
+            return default
+        
+        pattern = re.compile(re.escape(name), re.I)
+        
+        for user in guild.users.values():
+            if not self.permissions_for(user).can_view_channel:
+                continue
+            
+            if pattern.match(user.name) is not None:
+                return user
+            
+            nick = user.guild_profiles[guild].nick
+            if nick is None:
+                continue
+            
+            if pattern.match(nick) is None:
+                continue
+            
+            return user
+        
+        return default
+    
+    @copy_docs(ChannelBase.get_users_like)
+    def get_users_like(self, name):
+        result = []
+        guild = self.guild
+        if guild is None:
+            return result
+        
+        if (not 1 < len(name) < 38):
+            return result
+        
+        users = self.users
+        
+        if len(name) > 6 and name[-5] == '#':
+            try:
+                discriminator = int(name[-4:])
+            except ValueError:
+                pass
+            else:
+                name_ = name[:-5]
+                for user in users:
+                    if not self.permissions_for(user).can_view_channel:
+                        continue
+                    
+                    if user.discriminator == discriminator and user.name == name_:
+                        result.append(user)
+                        break
+        
+        if len(name) > 32:
+            return result
+        
+        pattern = re.compile(re.escape(name), re.I)
+        
+        for user in guild.users.values():
+            if not self.permissions_for(user).can_view_channel:
+                continue
+            
+            if pattern.match(user.name) is not None:
+                result.append(user)
+                continue
+            
+            nick = user.guild_profiles[guild].nick
+            if nick is None:
+                continue
+            
+            if pattern.match(nick) is None:
+                continue
+            
+            result.append(user)
+        
+        return result
+    
+    def _init_parent(self, data, guild):
+        """
+        Initializes the `.parent` attribute of the channel. If a channel is under the ``Guild``, and not in a parent
+        (parent channels are all like these), then their `.parent` is the ``Guild`` itself.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord.
+        guild : ``Guild``
+            The guild of the channel.
+        """
+        self.guild = guild
+        guild.channels[self.id] = self
+        
+        parent_id = data.get('parent_id', None)
+        if (parent_id is None):
+            parent = None
+        else:
+            parent = guild.channels[int(parent_id)]
+        
+        self.parent = parent
+
+
+@export
+class ChannelGuildMainBase(ChannelGuildBase):
+    """
+    Base class for main guild channels not including thread channels.
+    
+    Attributes
+    ----------
+    id : `int`
+        Unique identifier of the channel.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
+    guild : `None` or ``Guild``
+        The channel's guild. If the channel is deleted, set to `None`.
+    name : `str`
+        The channel's name.
+    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     overwrites : `list` of ``PermissionOverwrite`` objects
         The channel's permission overwrites.
     position : `int`
@@ -1293,9 +1553,7 @@ class ChannelGuildBase(ChannelBase):
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
     """
-    __slots__ = ('_cache_perm', 'category', 'guild', 'name', 'overwrites', 'position', )
-    
-    ORDER_GROUP = 0
+    __slots__ = ('_cache_perm', 'overwrites', 'position', )
     
     def __gt__(self, other):
         """
@@ -1392,12 +1650,11 @@ class ChannelGuildBase(ChannelBase):
             return self.id < other.id
         
         return NotImplemented
-
-    def _init_category_and_position(self, data, guild):
+    
+    def _init_parent_and_position(self, data, guild):
         """
-        Initializes the `.category` and the `.position` of the channel. If a channel is under the ``Guild.md``,
-        and not in a category (category channels are all like these), then their `.category` is the ``Guild`` itself.
-        This method is used when we initialize a guild channel.
+        Initializes the `.parent` and the `.position` of the channel. If a channel is under the ``Guild``,
+        and not in a parent (parent channels are all like these), then their `.parent` is the ``Guild`` itself.
         
         Parameters
         ----------
@@ -1406,23 +1663,14 @@ class ChannelGuildBase(ChannelBase):
         guild : ``Guild``
             The guild of the channel.
         """
-        self.guild = guild
-        guild.channels[self.id] = self
-        
+        self._init_parent(data, guild)
         self.position = data.get('position', 0)
-        
-        category_id = data.get('parent_id', None)
-        if category_id is None:
-            category = guild
-        else:
-            category = guild.channels[int(category_id)]
-        
-        self.category = category
     
-    def _set_category_and_position(self, data):
+    
+    def _set_parent_and_position(self, data):
         """
-        Similar to the ``._init_category_and_position`` method, but this method applies the changes too, so moves the channel
-        between categories and moves the channel inside of the category too, to keep the order.
+        Similar to the ``._init_parent_and_position`` method, but this method applies the changes too, so moves the channel
+        between categories and moves the channel inside of the parent too, to keep the order.
         
         Called from `._update_no_return` when updating a guild channel.
         
@@ -1435,26 +1683,27 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return
         
-        new_category_id = data.get('parent_id', None)
-        if new_category_id is None:
-            new_category = guild
+        new_parent_id = data.get('parent_id', None)
+        if new_parent_id is None:
+            new_parent = None
         else:
-            new_category = guild.channels[int(new_category_id)]
+            new_parent = guild.channels[int(new_parent_id)]
         
-        position = data.get('position',0)
+        position = data.get('position', 0)
         
-        category = self.category
-        if category is new_category:
+        parent = self.parent
+        if parent is new_parent:
             if self.position != position:
                 self.position = position
         
         else:
             self.position = position
-            self.category = new_category
+            self.parent = new_parent
     
-    def _update_category_and_position(self, data, old_attributes):
+    
+    def _update_parent_and_position(self, data, old_attributes):
         """
-        Acts same as ``._set_category_and_position``, but it sets the modified attributes' previous value to
+        Acts same as ``._set_parent_and_position``, but it sets the modified attributes' previous value to
         `old_attributes`.
         
         Called from `._update` when updating a guild channel.
@@ -1470,25 +1719,25 @@ class ChannelGuildBase(ChannelBase):
         if guild is None:
             return
         
-        new_category_id = data.get('parent_id', None)
-        if new_category_id is None:
-            new_category = guild
+        new_parent_id = data.get('parent_id', None)
+        if new_parent_id is None:
+            new_parent = None
         else:
-            new_category = guild.channels[int(new_category_id)]
+            new_parent = guild.channels[int(new_parent_id)]
         
         position = data.get('position', 0)
         
-        category = self.category
-        if category is new_category:
+        parent = self.parent
+        if parent is new_parent:
             if self.position != position:
                 old_attributes['position'] = self.position
                 self.position = position
         else:
-            old_attributes['category'] = category
+            old_attributes['parent'] = parent
             old_attributes['position'] = self.position
             
             self.position = position
-            self.category = category
+            self.parent = parent
     
     
     def _permissions_for(self, user):
@@ -1563,23 +1812,8 @@ class ChannelGuildBase(ChannelBase):
         
         return Permission(base)
     
-    
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
         guild = self.guild
         if guild is None:
             return PERMISSION_NONE
@@ -1593,24 +1827,8 @@ class ChannelGuildBase(ChannelBase):
         
         return result
     
+    @copy_docs(ChannelBase.cached_permissions_for)
     def cached_permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel. If the user's permissions are not cached, calculates
-        and stores them first.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        Notes
-        -----
-        Mainly designed for getting clients' permissions and stores only their as well. Do not caches other user's
-        permissions.
-        """
         if not isinstance(user, Client):
             return self.permissions_for(user)
         
@@ -1683,28 +1901,15 @@ class ChannelGuildBase(ChannelBase):
         
         return Permission(base)
     
+    
+    @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
-        """
-        Returns the channel permissions of an imaginary user who would have the listed roles.
-        
-        Parameters
-        ----------
-        *roles : ``Role``
-            The roles to calculate final permissions from.
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        Notes
-        -----
-        Partial roles and roles from other guilds as well are ignored.
-        """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
             result = PERMISSION_NONE
         
         return result
+    
     
     def _parse_overwrites(self, data):
         """
@@ -1739,220 +1944,20 @@ class ChannelGuildBase(ChannelBase):
         
         return overwrites
     
-    
-    def __str__(self):
-        """Returns the channel's name."""
-        return self.name
-    
-    
     @property
-    @copy_docs(ChannelBase.users)
-    def users(self):
-        return list(self.iter_users())
-    
-    
-    @copy_docs(ChannelBase.iter_users)
-    def iter_users(self):
-        guild = self.guild
-        if (guild is not None):
-            for user in guild.users.values():
-                if self.permissions_for(user).can_view_channel:
-                    yield user
-    
-    
-    @property
-    @copy_docs(ChannelBase.clients)
-    def clients(self):
-        guild = self.guild
-        if guild is None:
-            return []
-        
-        return guild.clients
-    
-    
-    def get_user(self, name, default=None):
+    def category(self):
         """
-        Tries to find the a user with the given name at the channel. Users, who cannot see the channel are ignored.
-        Returns the first matched one.
-        
-        The search order is the following:
-        - `full_name`
-        - `name`
-        - `nick`
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `Any`, Optional
-            The value what is returned when no user was found. Defaults to `None`.
-        
-        Returns
-        -------
-        user : ``ClientUserBase`` or `default`
+        Deprecated, please use ``.parent`` instead. Will be removed in 2021 july.
         """
-        if self.guild is None:
-            return default
+        warnings.warn(
+            f'`{self.__class__.__name__}.category` is deprecated, and will be removed in 2021 july. '
+            f'Please use `{self.__class__.__name__}.parent` instead.',
+            FutureWarning)
         
-        if (not 1 < len(name) < 38):
-            return default
-        
-        users = self.users
-        
-        if len(name) > 6 and name[-5] == '#':
-            try:
-                discriminator = int(name[-4:])
-            except ValueError:
-                pass
-            else:
-                name_ = name[:-5]
-                for user in users:
-                    if user.discriminator == discriminator and user.name == name_:
-                        return user
-        
-        if len(name) > 32:
-            return default
-
-        for user in users:
-            if user.name == name:
-                return user
-        
-        guild = self.guild
-        for user in users:
-            nick = user.guild_profiles[guild]
-            if nick is None:
-                continue
-            
-            if nick == name:
-                return user
-        
-        return default
-    
-    def get_user_like(self, name, default=None):
-        """
-        Searches a user, who's name starts with the given string and returns the first find. Users, who cannot see the
-        channel are ignored.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        default : `Any`, Optional
-            The value what is returned when no user was found. Defaults to `None`.
-        
-        Returns
-        -------
-        user : ``ClientUserBase`` or `default`
-        """
-        guild = self.guild
-        if guild is None:
-            return default
-        
-        if not 1 < len(name) < 38:
-            return default
-        
-        if len(name) > 6 and name[-5] == '#':
-            try:
-                discriminator = int(name[-4:])
-            except ValueError:
-                pass
-            else:
-                name_ = name[:-5]
-                for user in guild.users.values():
-                    if not self.permissions_for(user).can_view_channel:
-                        continue
-                    
-                    if user.discriminator == discriminator and user.name == name_:
-                        return user
-        
-        if len(name) > 32:
-            return default
-        
-        pattern = re.compile(re.escape(name), re.I)
-        
-        for user in guild.users.values():
-            if not self.permissions_for(user).can_view_channel:
-                continue
-            
-            if pattern.match(user.name) is not None:
-                return user
-            
-            nick = user.guild_profiles[guild].nick
-            if nick is None:
-                continue
-            
-            if pattern.match(nick) is None:
-                continue
-            
-            return user
-        
-        return default
-    
-    def get_users_like(self, name):
-        """
-        Searches the users, who's name start with the given string. Users, who cannot see the channel are ignored.
-        
-        Parameters
-        ----------
-        name : `str`
-            The name to search for.
-        
-        Returns
-        -------
-        users : `list` of (``User`` or ``Client``) objects
-        """
-        result = []
-        guild = self.guild
-        if guild is None:
-            return result
-        
-        if (not 1 < len(name) < 38):
-            return result
-        
-        users = self.users
-        
-        if len(name) > 6 and name[-5] == '#':
-            try:
-                discriminator = int(name[-4:])
-            except ValueError:
-                pass
-            else:
-                name_ = name[:-5]
-                for user in users:
-                    if not self.permissions_for(user).can_view_channel:
-                        continue
-                    
-                    if user.discriminator == discriminator and user.name == name_:
-                        result.append(user)
-                        break
-        
-        if len(name) > 32:
-            return result
-        
-        pattern = re.compile(re.escape(name), re.I)
-        
-        for user in guild.users.values():
-            if not self.permissions_for(user).can_view_channel:
-                continue
-            
-            if pattern.match(user.name) is not None:
-                result.append(user)
-                continue
-            
-            nick = user.guild_profiles[guild].nick
-            if nick is None:
-                continue
-            
-            if pattern.match(nick) is None:
-                continue
-            
-            result.append(user)
-
-        return result
-
+        return self.parent
 
 @export
-class ChannelText(ChannelGuildBase, ChannelTextBase):
+class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     """
     Represents a ``Guild`` text channel or an announcements channel. So the type of the channel is interchangeable
     between them. The channel's Discord side channel type is 0 (text) or 5 (announcements).
@@ -1963,8 +1968,8 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
@@ -1986,7 +1991,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         Whether the channel is marked as non safe for work.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages` or `manage_channel` permissions are unaffected
+        `manage_messages` or `manage_channel` permissions are unaffected.
     topic : `None` or `str`
         The channel's topic.
     type : `int`
@@ -2042,7 +2047,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self.name = data['name']
         self.type = data['type']
         
-        self._init_category_and_position(data, guild)
+        self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         self.topic = data.get('topic', None)
@@ -2050,6 +2055,28 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self.slowmode = int(data.get('rate_limit_per_user', 0))
         
         return self
+    
+    @copy_docs(ChannelBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        try:
+            type_name = CHANNEL_TEXT_NAMES[self.type]
+        except KeyError:
+            type_name = repr(self.type)
+        
+        if (type_name is not None):
+            repr_parts.append(' (')
+            repr_parts.append(repr_parts)
+            repr_parts.append(')')
+            
+        repr_parts.append(' id=')
+        repr_parts.append(repr(self.id))
+        repr_parts.append(', name=')
+        repr_parts.append(repr(self.__str__()))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
@@ -2074,7 +2101,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         self._messageable_init()
         
         self._cache_perm = None
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
         
@@ -2097,27 +2124,14 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         return self
     
     @property
+    @copy_docs(ChannelBase.display_name)
     def display_name(self):
-        """
-        A text channel's display name is it's name with lowercase characters.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
         return self.name.lower()
     
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         self._cache_perm = None
-        self._set_category_and_position(data)
+        self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -2146,13 +2160,13 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         +---------------+-----------------------------------+
         | Keys          | Values                            |
         +===============+===================================+
-        | category      | ``ChannelCategory`` or ``Guild``  |
+        | parent        | ``ChannelCategory``               |
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
         | nsfw          | `bool`                            |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``              |
+        | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -2196,23 +2210,23 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_category_and_position(data, old_attributes)
+        self._update_parent_and_position(data, old_attributes)
         
         return old_attributes
     
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
         
         self.guild = None
-        del guild.channels[self.id]
-
+        
+        try:
+            del guild.channels[self.id]
+        except KeyError:
+            pass
+        
         if self is guild.system_channel:
             guild.system_channel = None
         if self is guild.widget_channel:
@@ -2222,27 +2236,14 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         if self is guild.public_updates_channel:
             guild.public_updates_channel = None
         
-        self.category = None
+        self.parent = None
         
         self.overwrites.clear()
         self._cache_perm = None
-        
+    
+    
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
         guild = self.guild
         if guild is None:
             return PERMISSION_NONE
@@ -2266,23 +2267,8 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
         
         return Permission(result)
     
+    @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
-        """
-        Returns the channel permissions of an imaginary user who would have the listed roles.
-        
-        Parameters
-        ----------
-        *roles : ``Role``
-            The roles to calculate final permissions from.
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        Notes
-        -----
-        Partial roles and roles from other guilds as well are ignored.
-        """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
             return PERMISSION_NONE
@@ -2401,7 +2387,7 @@ class ChannelText(ChannelGuildBase, ChannelTextBase):
             channel.id = channel_id
 
             channel._cache_perm = None
-            channel.category = None
+            channel.parent = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
@@ -2579,8 +2565,8 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         
         client.private_channels[user.id] = self
     
+    @copy_docs(ChannelBase.__str__)
     def __str__(self):
-        """Returns the channel's name."""
         users = self.users
         if users:
             name = f'Direct Message {users[0].full_name} with {users[1].full_name}'
@@ -2607,74 +2593,15 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         
         del client.private_channels[user.id]
     
-    def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        This method is just for compatibility with the other channel types.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
-        return
-    
-    def _update(self, data):
-        """
-        Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
-        `old-value` relation.
-        
-        This method is just for compatibility with the other channel types, what means it always returns an empty
-        `dict`.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-            
-        Returns
-        -------
-        old_attributes : `dict` of (`str`, `Any`) items
-            Always empty.
-        """
-        return {}
     
     name = property(__str__)
-    # Add docstring for name, if opt level is under 2
-    if DOCS_ENABLED:
-        name.__doc__ = (
-        """
-        Returns the channel's name.
-        
-        Returns
-        -------
-        name : `str`
-        """)
+    copy_docs(ChannelBase.name)(name)
     
     display_name = property(__str__)
-    if DOCS_ENABLED:
-        display_name.__doc__ = (
-        """
-        Returns the channel's display name.
-        
-        Returns
-        -------
-        display_name : `str`
-        """)
+    copy_docs(ChannelBase.display_name)(display_name)
     
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        """
         if user in self.users:
             if user.is_bot:
                 return PERMISSION_PRIVATE_BOT
@@ -2683,20 +2610,9 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             
         return PERMISSION_NONE
     
+    
     cached_permissions_for = permissions_for
     
-    @property
-    def guild(self):
-        """
-        Returns the private channel's guild, which is `None` every time.
-        
-        This property is just for compatibility with the other channel types.
-        
-        Returns
-        -------
-        guild : `None`
-        """
-        return None
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):
@@ -2745,7 +2661,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
 
 
 @export
-class ChannelVoiceBase(ChannelGuildBase):
+class ChannelVoiceBase(ChannelGuildMainBase):
     """
     Base class for guild voice channels.
     
@@ -2755,8 +2671,8 @@ class ChannelVoiceBase(ChannelGuildBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
@@ -2805,14 +2721,8 @@ class ChannelVoiceBase(ChannelGuildBase):
         return users
 
     @property
+    @copy_docs(ChannelBase.display_name)
     def display_name(self):
-        """
-        A voice channel's display name is same as it's `.name`.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
         return self.name
 
 
@@ -2827,8 +2737,8 @@ class ChannelVoice(ChannelVoiceBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
@@ -2892,7 +2802,7 @@ class ChannelVoice(ChannelVoiceBase):
         self._cache_perm = None
         self.name = data['name']
         
-        self._init_category_and_position(data, guild)
+        self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         # Voice base
@@ -2932,7 +2842,7 @@ class ChannelVoice(ChannelVoiceBase):
         
         self._cache_perm = None
         
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
         self.name = data.get('name', '')
@@ -2947,12 +2857,8 @@ class ChannelVoice(ChannelVoiceBase):
         
         return self
     
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
@@ -2960,7 +2866,7 @@ class ChannelVoice(ChannelVoiceBase):
         self.guild = None
         del guild.channels[self.id]
         
-        self.category = None
+        self.parent = None
         
         # safe delete
         if self is guild.afk_channel:
@@ -2969,17 +2875,10 @@ class ChannelVoice(ChannelVoiceBase):
         self.overwrites.clear()
         self._cache_perm = None
     
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         self._cache_perm = None
-        self._set_category_and_position(data)
+        self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -3016,7 +2915,7 @@ class ChannelVoice(ChannelVoiceBase):
         +=======================+===================================+
         | bitrate               | `int`                             |
         +-----------------------+-----------------------------------+
-        | category              | ``ChannelCategory`` or ``Guild``  |
+        | parent                | ``ChannelCategory``               |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
         +-----------------------+-----------------------------------+
@@ -3062,7 +2961,7 @@ class ChannelVoice(ChannelVoiceBase):
             old_attributes['region'] = self.region
             self.region = region
         
-        self._update_category_and_position(data, old_attributes)
+        self._update_parent_and_position(data, old_attributes)
         
         video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
         if self.video_quality_mode is not video_quality_mode:
@@ -3071,22 +2970,8 @@ class ChannelVoice(ChannelVoiceBase):
         
         return old_attributes
     
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
         guild = self.guild
         if guild is None:
             return PERMISSION_NONE
@@ -3106,23 +2991,8 @@ class ChannelVoice(ChannelVoiceBase):
         
         return Permission(result)
     
+    @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
-        """
-        Returns the channel permissions of an imaginary user who would have the listed roles.
-        
-        Parameters
-        ----------
-        *roles : ``Role``
-            The roles to calculate final permissions from.
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        Notes
-        -----
-        Partial roles and roles from other guilds as well are ignored.
-        """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
             return PERMISSION_NONE
@@ -3227,7 +3097,7 @@ class ChannelVoice(ChannelVoiceBase):
             channel.id = channel_id
             
             channel._cache_perm = None
-            channel.category = None
+            channel.parent = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
@@ -3352,12 +3222,13 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         Returns
         -------
-        owner : ``User`` or ``Client``
+        owner : ``ClientUserBase``
             Defaults to `ZEROUSER`.
         """
-        try:
-            owner = USERS[self.owner_id]
-        except KeyError:
+        owner_id = self.owner_id
+        if owner_id:
+            owner = create_partial_user(owner_id)
+        else:
             owner = ZEROUSER
         return owner
     
@@ -3395,7 +3266,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         self.owner = ZEROUSER
         
         return self
-        
+    
     def _delete(self, client):
         """
         Removes the channel's references.
@@ -3408,24 +3279,13 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             The client, who's private channel was deleted.
         """
         del client.group_channels[self.id]
-
+    
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         name = data.get('name', None)
         self.name = '' if name is None else name
         
         self._set_icon(data)
-        
-        users = [User(user) for user in data['recipients']]
-        users.sort()
-        self.users = users
         
         self.owner_id = int(data['owner_id'])
     
@@ -3455,26 +3315,17 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         +---------------+---------------------------------------+
         | owner_id      | `int`                                 |
         +---------------+---------------------------------------+
-        | users         | `list` of (``User`` or ``Client``)    |
-        +---------------+---------------------------------------+
         """
         old_attributes = {}
         
         name = data.get('name', None)
         if name is None:
-            name=''
+            name = ''
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
         
         self._update_icon(data, old_attributes)
-        
-        users = [User(user) for user in data['recipients']]
-        users.sort()
-        
-        if self.users != users:
-            old_attributes['users'] = self.users
-            self.users = users
         
         owner_id = int(data['owner_id'])
         if self.owner_id != owner_id:
@@ -3483,8 +3334,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         return old_attributes
     
+    @copy_docs(ChannelBase.__str__)
     def __str__(self):
-        """Returns the channel's name."""
         name = self.name
         if name:
             return name
@@ -3496,28 +3347,10 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         return 'Unnamed'
     
     display_name = property(__str__)
-    if DOCS_ENABLED:
-        display_name.__doc__ = (
-        """
-        Returns the channel's display name.
-        
-        Returns
-        -------
-        display_name : `str`
-        """)
+    copy_docs(ChannelBase.display_name)(display_name)
     
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        """
         if self.owner_id == user.id:
             return PERMISSION_GROUP_OWNER
         elif user in self.users:
@@ -3527,18 +3360,6 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     
     cached_permissions_for = permissions_for
     
-    @property
-    def guild(self):
-        """
-        Returns the group channel's guild what is `None` every time.
-        
-        This property is just for compatibility with the other channel types.
-        
-        Returns
-        -------
-        guild : `None`
-        """
-        return None
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):
@@ -3633,7 +3454,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
 
 
 @export
-class ChannelCategory(ChannelGuildBase):
+class ChannelCategory(ChannelGuildMainBase):
     """
     Represents a ``Guild`` channel category.
     
@@ -3643,8 +3464,8 @@ class ChannelCategory(ChannelGuildBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None` or ``Guild``
-        The channel's category. Category channels can not be in an other category, so it is always set to their
+    parent : `None` or ``Guild``
+        The channel's parent. Category channels can not be in an other parent, so it is always set to their
         `.guild`. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
@@ -3665,7 +3486,7 @@ class ChannelCategory(ChannelGuildBase):
     type : `int` = `4`
         The channel's Discord side type.
     """
-    __slots__=() #channel category related
+    __slots__=() # channel category related
     
     ORDER_GROUP = 4
     INTERCHANGE = (4,)
@@ -3701,7 +3522,7 @@ class ChannelCategory(ChannelGuildBase):
         self._cache_perm = None
         self.name = data['name']
         
-        self._init_category_and_position(data, guild)
+        self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         return self
@@ -3728,7 +3549,7 @@ class ChannelCategory(ChannelGuildBase):
         self = object.__new__(cls)
         
         self._cache_perm = None
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
         self.name = data.get('name', '')
@@ -3738,27 +3559,14 @@ class ChannelCategory(ChannelGuildBase):
         return self
     
     @property
+    @copy_docs(ChannelBase.display_name)
     def display_name(self):
-        """
-        A category channel's display name is it's name with uppercase characters.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
         return self.name.upper()
-        
+    
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         self._cache_perm = None
-        self._set_category_and_position(data)
+        self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -3803,16 +3611,12 @@ class ChannelCategory(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_category_and_position(data, old_attributes)
+        self._update_parent_and_position(data, old_attributes)
         
         return old_attributes
     
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
@@ -3820,7 +3624,7 @@ class ChannelCategory(ChannelGuildBase):
         self.guild = None
         del guild.channels[self.id]
         
-        self.category = None
+        self.parent = None
         
         self.overwrites.clear()
         self._cache_perm = None
@@ -3882,7 +3686,7 @@ class ChannelCategory(ChannelGuildBase):
             channel.id = channel_id
 
             channel._cache_perm = None
-            channel.category = None
+            channel.parent = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
@@ -3907,17 +3711,17 @@ class ChannelCategory(ChannelGuildBase):
         
         Returns
         -------
-        channels : `list` of ``ChannelGuildBase`` instances
+        channels : `list` of ``ChannelGuildMainBase`` instances
         """
         guild = self.guild
         if guild is None:
             return []
         
-        return sorted(channel for channel in guild.channels.values() if channel.category is self)
+        return sorted(channel for channel in guild.channels.values() if channel.parent is self)
 
 
 @export
-class ChannelStore(ChannelGuildBase):
+class ChannelStore(ChannelGuildMainBase):
     """
     Represents a ``Guild`` store channel.
     
@@ -3927,8 +3731,8 @@ class ChannelStore(ChannelGuildBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
@@ -3987,7 +3791,7 @@ class ChannelStore(ChannelGuildBase):
         self.name = data['name']
         self.nsfw = data.get('nsfw', False)
         
-        self._init_category_and_position(data, guild)
+        self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         return self
@@ -4014,7 +3818,7 @@ class ChannelStore(ChannelGuildBase):
         self = object.__new__(cls)
         
         self._cache_perm = None
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
         self.name = data.get('name', '')
@@ -4025,27 +3829,14 @@ class ChannelStore(ChannelGuildBase):
         return self
         
     @property
+    @copy_docs(ChannelBase.display_name)
     def display_name(self):
-        """
-        A store channel's display name is it's name with lowercase characters.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
         return self.name.lower()
     
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         self._cache_perm = None
-        self._set_category_and_position(data)
+        self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -4071,13 +3862,13 @@ class ChannelStore(ChannelGuildBase):
         +---------------+-----------------------------------+
         | Keys          | Values                            |
         +===============+===================================+
-        | category      | ``ChannelCategory`` or ``Guild``  |
+        | parent        | ``ChannelCategory``               |
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
         | nsfw          | `bool`                            |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``              |
+        | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -4100,16 +3891,12 @@ class ChannelStore(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_category_and_position(data, old_attributes)
+        self._update_parent_and_position(data, old_attributes)
         
         return old_attributes
     
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
@@ -4117,27 +3904,13 @@ class ChannelStore(ChannelGuildBase):
         self.guild = None
         del guild.channels[self.id]
         
-        self.category = None
+        self.parent = None
         
         self.overwrites.clear()
         self._cache_perm = None
     
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
         guild = self.guild
         if guild is None:
             return PERMISSION_NONE
@@ -4154,23 +3927,8 @@ class ChannelStore(ChannelGuildBase):
         
         return Permission(result)
     
+    @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
-        """
-        Returns the channel permissions of an imaginary user who would have the listed roles.
-        
-        Parameters
-        ----------
-        *roles : ``Role``
-            The roles to calculate final permissions from.
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        Notes
-        -----
-        Partial roles and roles from other guilds as well are ignored.
-        """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
             return PERMISSION_NONE
@@ -4245,7 +4003,7 @@ class ChannelStore(ChannelGuildBase):
             channel.id = channel_id
             
             channel._cache_perm = None
-            channel.category = None
+            channel.parent = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
@@ -4266,48 +4024,76 @@ class ChannelStore(ChannelGuildBase):
         return channel
 
 
+
 @export
-class ChannelThread(ChannelGuildBase):
+class ChannelThread(ChannelGuildBase, ChannelTextBase):
     """
-    Represents a ``Guild`` thread channel.
+    Represents a ``Guild`` thread channel
     
     Attributes
     ----------
     id : `int`
-        Unique identifier of the channel.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
-        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+        The unique identifier of the channel.
+    parent : `None` or ``ChannelText``
+        The text channel from where the thread is created from.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermissionOverwrite`` objects
-        The channel's permission overwrites.
-    position : `int`
-        The channel's position.
+    _message_keep_limit : `int`
+        The channel's own limit of how much messages it should keep before removing their reference.
+    _turn_message_keep_limit_on_at : `float`
+        The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
+    message_history_reached_end : `bool`
+        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
+        no requests will be requested to get older messages.
+    messages : `deque` of ``Message`` objects
+        The channel's message history.
+    archived : `bool`
+        Whether the thread s archived.
+    archived_at : `None` or `datetime`
+        When the thread's archive status was last changed.
+    archiver_id : `int`
+        The (un)archiver's identifier number.
+    auto_archive_after : `int`
+        Duration in minutes to automatically archive the thread after recent activity. Can be one of: `60`, `1440`,
+        `4320`, `10080`.
+    open : `bool`
+        Whether the thread channel is open.
+    slowmode : `int`
+        The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
+        `manage_messages` or `manage_channel` permissions are unaffected.
+    thread_users : `None` or `dict` of (`int`, ``ClientUserBase``) items
+        The users inside of the thread if any.
+    type : `int` = `12`
+        The channel's Discord side type.
+    owner_id : `int`
+        The channel's creator's identifier. Defaults to `0`.
     
     Class Attributes
     ----------------
-    INTERCHANGE : `tuple` of `int` = `(9,)`
+    INTERCHANGE : `tuple` of `int` = `(10, 11, 12,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
-    ORDER_GROUP : `int` = `0`
+    ORDER_GROUP : `int` = `9`
         An order group what defined which guild channel type comes after the other one.
-    type : `int` = `9`
-        The channel's Discord side type.
+    MESSAGE_KEEP_LIMIT : `int` = `10`
+        The default amount of messages to store at `.messages`.
+    DEFAULT_TYPE : `int` = `12`
+        The preferred channel type, if there is no channel type included.
+    REPRESENTED_TYPES : `tuple` = (`10`, `11`, `12`,)
+        The type values which ``ChannelThread`` might represent.
     """
-    __slots__ = () #guild channel thread related
+    __slots__ = ('archived', 'archived_at', 'archiver_id', 'auto_archive_after', 'open', 'owner_id', 'slowmode',
+        'type')
     
-    ORDER_GROUP = 0
-    INTERCHANGE = (9,)
-    type = 9
+    ORDER_GROUP = 9
+    INTERCHANGE = ()
+    DEFAULT_TYPE = 12
+    REPRESENTED_TYPES = (10, 11, 12,)
     
     def __new__(cls, data, client=None, guild=None):
         """
-        Creates a thread channel from the channel data received from Discord. If the channel already exists and if it
-        is partial, then updates it.
+        Creates a guild thread channel from the channel data received from Discord. If the channel already exists and
+        if it is partial, then updates it.
         
         Parameters
         ----------
@@ -4327,16 +4113,117 @@ class ChannelThread(ChannelGuildBase):
             self = object.__new__(cls)
             self.id = channel_id
             CHANNELS[channel_id] = self
+            self._messageable_init()
+            self.thread_users = None
+            update = True
         else:
             if self.clients:
-                return self
+                update = False
+            else:
+                update = True
         
-        self._cache_perm = None
-        self.name = data['name']
-        self._init_category_and_position(data, guild)
-        self.overwrites = self._parse_overwrites(data)
+        if update:
+            self.type = data['type']
+            self._init_parent(data, guild)
+            self._update_no_return(data)
+        
+        if (client is not None):
+            try:
+                thread_user_data = data['member']
+            except KeyError:
+                pass
+            else:
+                _resolve_thread_user_data_preprocessed(client, self, thread_user_data)
         
         return self
+    
+    @copy_docs(ChannelBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        try:
+            type_name = CHANNEL_THREAD_NAMES[self.type]
+        except KeyError:
+            type_name = repr(self.type)
+        
+        if (type_name is not None):
+            repr_parts.append(' (')
+            repr_parts.append(repr_parts)
+            repr_parts.append(')')
+            
+        repr_parts.append(' id=')
+        repr_parts.append(repr(self.id))
+        repr_parts.append(', name=')
+        repr_parts.append(repr(self.__str__()))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    @property
+    def owner(self):
+        """
+        Returns the thread threads's creator.
+        
+        Returns
+        -------
+        owner : ``UserClientBase``
+            If user the guild has no owner, returns `ZEROUSER`.
+        """
+        owner_id = self.owner_id
+        if owner_id:
+            owner = create_partial_user(owner_id)
+        else:
+            owner = ZEROUSER
+        
+        return owner
+    
+    @property
+    def archiver(self):
+        """
+        Returns who (un)archived the thread last.
+        
+        Returns
+        -------
+        owner : `None` or ``UserClientBase``
+            Defaults to `None`.
+        """
+        archiver_id = self.archiver_id
+        if archiver_id:
+            archiver = create_partial_user(archiver_id)
+        else:
+            archiver = None
+        
+        return archiver
+    
+    def is_announcements(self):
+        """
+        Returns whether the thread channel is bound to an announcements channel.
+        
+        Returns
+        -------
+        is_announcements : `bool`
+        """
+        return self.type == 10
+    
+    def is_public(self):
+        """
+        Returns whether the thread channel is public.
+        
+        Returns
+        -------
+        is_public : `bool`
+        """
+        return self.type == 11
+    
+    def is_private(self):
+        """
+        Returns whether the thread channel is private.
+        
+        Returns
+        -------
+        is_private : `bool`
+        """
+        return self.type == 12
     
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
@@ -4346,7 +4233,7 @@ class ChannelThread(ChannelGuildBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `None` or `dict` of (`str`, `Any`) items
             Partial channel data.
         channel_id : `int`
             The channel's id.
@@ -4355,46 +4242,71 @@ class ChannelThread(ChannelGuildBase):
         
         Returns
         -------
-        channel : ``ChannelStore``
+        channel : ``ChannelText``
         """
         self = object.__new__(cls)
+        self._messageable_init()
         
-        self._cache_perm = None
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
-        self.name = data.get('name', '')
-        self.overwrites = []
-        self.position = 0
+        
+        self.slowmode = 0
+        self.owner_id = 0
+        self.archived = False
+        self.archived_at = None
+        self.archiver_id = 0
+        self.auto_archive_after = 60
+        self.open = False
+        self.thread_users = None
+        
+        if data is None:
+            name = ''
+            type_ = cls.DEFAULT_TYPE
+        else:
+            name = data.get('name', '')
+            type_ = data['type']
+        
+        self.name = name
+        self.type = type_
         
         return self
     
+    
     @property
+    @copy_docs(ChannelBase.display_name)
     def display_name(self):
-        """
-        A thread channel's display name is it's name with lowercase characters.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
         return self.name.lower()
     
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
-        self._cache_perm = None
-        self._set_category_and_position(data)
-        self.overwrites=self._parse_overwrites(data)
-        
         self.name = data['name']
+        self.slowmode = int(data.get('rate_limit_per_user', 0))
         
+        # Move to sub data
+        data = data['thread_metadata']
+        
+        self.archived = data.get('archived', False)
+        
+        archiver_id = data.get('archiver_id', None)
+        if archiver_id is None:
+            archiver_id = 0
+        else:
+            archiver_id = int(archiver_id)
+        
+        self.archiver_id = archiver_id
+        
+        self.auto_archive_after = data['auto_archive_after']
+        
+        archived_at_data = data.get('archive_timestamp', None)
+        if archived_at_data is None:
+            archived_at = None
+        else:
+            archived_at = parse_time(archived_at_data)
+        self.archived_at = archived_at
+        
+        self.open = not data.get('locked', True)
+    
     def _update(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
@@ -4404,7 +4316,7 @@ class ChannelThread(ChannelGuildBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
-            
+        
         Returns
         -------
         old_attributes : `dict` of (`str`, `Any`) items
@@ -4412,19 +4324,25 @@ class ChannelThread(ChannelGuildBase):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | category      | ``ChannelCategory`` or ``Guild``  |
-        +---------------+-----------------------------------+
-        | name          | `str`                             |
-        +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite`` |
-        +---------------+-----------------------------------+
-        | position      | `int`                             |
-        +---------------+-----------------------------------+
+        
+        +-----------------------+-----------------------------------+
+        | Keys                  | Values                            |
+        +=======================+===================================+
+        | archived              | `bool`                            |
+        +-----------------------+-----------------------------------+
+        | archived_at           | `None` or `datetime`              |
+        +-----------------------+-----------------------------------+
+        | archiver_id           | `int`                             |
+        +-----------------------+-----------------------------------+
+        | auto_archive_after    | `int`                             |
+        +-----------------------+-----------------------------------+
+        | name                  | `str`                             |
+        +-----------------------+-----------------------------------+
+        | open                  | `bool`                            |
+        +-----------------------+-----------------------------------+
+        | slowmode              | `int`                             |
+        +-----------------------+-----------------------------------+
         """
-        self._cache_perm = None
         old_attributes = {}
         
         name = data['name']
@@ -4432,21 +4350,57 @@ class ChannelThread(ChannelGuildBase):
             old_attributes['name'] = self.name
             self.name = name
         
-        overwrites = self._parse_overwrites(data)
-        if self.overwrites != overwrites:
-            old_attributes['overwrites'] = self.overwrites
-            self.overwrites = overwrites
+        slowmode = int(data.get('rate_limit_per_user', 0))
+        if self.slowmode != slowmode:
+            old_attributes['slowmode'] = self.slowmode
+            self.slowmode = slowmode
         
-        self._update_category_and_position(data, old_attributes)
+        
+        # Move to sub data
+        data = data['thread_metadata']
+        
+        
+        archived = data.get('archived', False)
+        if (self.archived != archived):
+            old_attributes['archived'] = self.archived
+            self.archived = archived
+        
+        
+        archiver_id = data.get('archiver_id', None)
+        if archiver_id is None:
+            archiver_id = 0
+        else:
+            archiver_id = int(archiver_id)
+        if (self.archiver_id != archiver_id):
+            old_attributes['archiver_id'] = self.archiver_id
+            self.archiver_id = archiver_id
+        
+        
+        auto_archive_after = data['auto_archive_after']
+        if (self.auto_archive_after != auto_archive_after):
+            old_attributes['auto_archive_after'] = self.auto_archive_after
+            self.auto_archive_after = auto_archive_after
+        
+        
+        archived_at_data = data.get('archive_timestamp', None)
+        if archived_at_data is None:
+            archived_at = None
+        else:
+            archived_at = parse_time(archived_at_data)
+        if (self.archived_at != archived_at):
+            old_attributes['archived_at'] = self.archived_at
+            self.archived_at = archived_at
+        
+        open_ = not data.get('locked', True)
+        if (self.open != open_):
+            old_attributes['open'] = self.open
+            self.open = open_
         
         return old_attributes
     
+    
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
@@ -4454,42 +4408,43 @@ class ChannelThread(ChannelGuildBase):
         self.guild = None
         del guild.channels[self.id]
         
-        self.category = None
-        
-        self.overwrites.clear()
-        self._cache_perm = None
-
+        thread_users = self.thread_users
+        if (thread_users is not None):
+            self.thread_users = None
+            for user in thread_users.values():
+                thread_profiles = user.thread_profiles
+                if (thread_profiles is not None):
+                    try:
+                        del thread_profiles[self]
+                    except KeyError:
+                        pass
+                    else:
+                        if (not thread_profiles):
+                            user.thread_profiles = None
+    
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
-        guild = self.guild
-        if guild is None:
+        parent = self.parent
+        if parent is None:
             return PERMISSION_NONE
         
-        if user.id == guild.owner_id:
-            return PERMISSION_TEXT_AND_VOICE_DENY
-        
-        result = self._permissions_for(user)
-        if not result.can_view_channel:
+        return parent.permissions_for(user)
+
+    @copy_docs(ChannelBase.cached_permissions_for)
+    def cached_permissions_for(self, user):
+        parent = self.parent
+        if parent is None:
             return PERMISSION_NONE
         
-        # thread channels do not have text and voice related permissions?
-        # result&=PERMISSION_TEXT_AND_VOICE_DENY
+        return parent.cached_permissions_for(user)
+    
+    @copy_docs(ChannelBase.permissions_for_roles)
+    def permissions_for_roles(self, *roles):
+        parent = self.parent
+        if parent is None:
+            return PERMISSION_NONE
         
-        return Permission(result)
+        return parent.permissions_for_roles(*roles)
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):
@@ -4509,6 +4464,10 @@ class ChannelThread(ChannelGuildBase):
         ----------------
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
+        slowmode : `int`, Optional (Keyword only)
+            The channel's ``.slowmode``.
+        type : `int`, Optional (Keyword only)
+            The channel's ``.type``.
         
         Returns
         -------
@@ -4527,12 +4486,31 @@ class ChannelThread(ChannelGuildBase):
             processable = []
             
             try:
-                name = kwargs.pop('name')
+                value = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                name = preconvert_str(name, 'name', 2, 100)
+                name = preconvert_str(value, 'name', 2, 100)
                 processable.append(('name', name))
+            
+            try:
+                slowmode = kwargs.pop('slowmode')
+            except KeyError:
+                pass
+            else:
+                slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
+                processable.append(('slowmode', slowmode))
+            
+            try:
+                type_ = kwargs.pop('type')
+            except KeyError:
+                pass
+            else:
+                type_ = preconvert_int(type_, 'type', 0, 256)
+                if (type_ not in cls.REPRESENTED_TYPES):
+                    raise ValueError(f'`type` should be one of: {cls.REPRESENTED_TYPES!r}')
+                
+                processable.append(('type', type_))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -4541,37 +4519,45 @@ class ChannelThread(ChannelGuildBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
+            self = object.__new__(cls)
+
+            self.id = channel_id
             
-            channel.id = channel_id
+            self.parent = None
+            self.guild = None
+            self.name = ''
+            self.type = cls.DEFAULT_TYPE
+            self.slowmode = 0
+            self.owner_id = 0
+            self.archived = False
+            self.archived_at = None
+            self.archiver_id = 0
+            self.auto_archive_after = 60
+            self.open = False
+            self.thread_users = None
             
-            channel._cache_perm = None
-            channel.category = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
+            self._messageable_init()
             
-            CHANNELS[channel_id] = channel
+            CHANNELS[channel_id] = self
             
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
 
 
 @export
-class ChannelGuildUndefined(ChannelGuildBase):
+class ChannelGuildUndefined(ChannelGuildMainBase):
     """
     Represents an undefined  ``Guild`` channel. This class is a place-holder for future classes. Expectedly for channel
-    type 7 and 8.
+    type `7` and `8`.
     
     Attributes
     ----------
@@ -4579,8 +4565,8 @@ class ChannelGuildUndefined(ChannelGuildBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
@@ -4604,7 +4590,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
     DEFAULT_TYPE : `int` = `7`
         The default type, what ``ChannelGuildUndefined`` represents.
     REPRESENTED_TYPES : `tuple` = (`7`, `8`,)
-        The types value what ``ChannelGuildUndefined`` might represent.
+        The type values which ``ChannelGuildUndefined`` might represent.
     
     Notes
     -----
@@ -4616,7 +4602,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
     
     IGNORED_NAMES = ('type', 'name', 'position', 'parent_id', 'permission_overwrites', )
     DEFAULT_TYPE = 7
-    REPRESENTED_TYPES = (7, 8,)
+    REPRESENTED_TYPES = (7, 8, 9,)
     
     def __new__(cls, data, client=None, guild=None):
         """
@@ -4649,7 +4635,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
         self.name = data['name']
         self.type = data['type']
         
-        self._init_category_and_position(data, guild)
+        self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         for key in data.keys():
@@ -4682,7 +4668,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
         self = object.__new__(cls)
         
         self._cache_perm = None
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
         self.name = data.get('name', '')
@@ -4699,27 +4685,14 @@ class ChannelGuildUndefined(ChannelGuildBase):
         return self
     
     @property
+    @copy_docs(ChannelBase.display_name)
     def display_name(self):
-        """
-        Returns the channel's display name.
-        
-        Returns
-        -------
-        display_name : `str`
-        """
         return self.name
     
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         self._cache_perm = None
-        self._set_category_and_position(data)
+        self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -4750,11 +4723,11 @@ class ChannelGuildUndefined(ChannelGuildBase):
         +---------------+-----------------------------------+
         | Keys          | Values                            |
         +===============+===================================+
-        | category      | ``ChannelCategory`` or ``Guild``  |
+        | parent        | ``ChannelCategory``               |
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite``              |
+        | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
         +---------------+-----------------------------------+
@@ -4772,7 +4745,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
             old_attributes['overwrites'] = self.overwrites
             self.overwrites = overwrites
         
-        self._update_category_and_position(data, old_attributes)
+        self._update_parent_and_position(data, old_attributes)
 
         for key in data.keys():
             if key in self.IGNORED_NAMES:
@@ -4790,12 +4763,8 @@ class ChannelGuildUndefined(ChannelGuildBase):
         
         return old_attributes
     
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
@@ -4803,27 +4772,13 @@ class ChannelGuildUndefined(ChannelGuildBase):
         self.guild = None
         del guild.channels[self.id]
         
-        self.category = None
+        self.parent = None
         
         self.overwrites.clear()
         self._cache_perm = None
-
+    
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self,user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
         guild = self.guild
         if guild is None:
             return PERMISSION_NONE
@@ -4904,7 +4859,7 @@ class ChannelGuildUndefined(ChannelGuildBase):
             channel.id = channel_id
             
             channel._cache_perm = None
-            channel.category = None
+            channel.parent = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
@@ -4935,8 +4890,8 @@ class ChannelStage(ChannelVoiceBase):
         Unique identifier of the channel.
     _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    category : `None`, ``ChannelCategory`` or ``Guild``
-        The channel's category. If the channel is deleted, set to `None`.
+    parent : `None`, ``ChannelCategory``
+        The channel's parent. If the channel is deleted, set to `None`.
     guild : `None` or ``Guild``
         The channel's guild. If the channel is deleted, set to `None`.
     name : `str`
@@ -5000,7 +4955,7 @@ class ChannelStage(ChannelVoiceBase):
         self._cache_perm = None
         self.name = data['name']
         
-        self._init_category_and_position(data, guild)
+        self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         # Voice base
@@ -5039,7 +4994,7 @@ class ChannelStage(ChannelVoiceBase):
         
         self._cache_perm = None
         
-        self.category = None
+        self.parent = None
         self.guild = partial_guild
         self.id = channel_id
         self.name = data.get('name', '')
@@ -5054,12 +5009,8 @@ class ChannelStage(ChannelVoiceBase):
         
         return self
     
+    @copy_docs(ChannelBase._delete)
     def _delete(self):
-        """
-        Removes the channel's references.
-        
-        Used when the channel is deleted.
-        """
         guild = self.guild
         if guild is None:
             return
@@ -5067,22 +5018,15 @@ class ChannelStage(ChannelVoiceBase):
         self.guild = None
         del guild.channels[self.id]
         
-        self.category = None
+        self.parent = None
         
         self.overwrites.clear()
         self._cache_perm = None
     
+    @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
-        """
-        Updates the channel with overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        """
         self._cache_perm = None
-        self._set_category_and_position(data)
+        self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
@@ -5119,7 +5063,7 @@ class ChannelStage(ChannelVoiceBase):
         +=======================+===================================+
         | bitrate               | `int`                             |
         +-----------------------+-----------------------------------+
-        | category              | ``ChannelCategory`` or ``Guild``  |
+        | parent                | ``ChannelCategory``  |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
         +-----------------------+-----------------------------------+
@@ -5165,7 +5109,7 @@ class ChannelStage(ChannelVoiceBase):
             old_attributes['region'] = self.region
             self.region = region
         
-        self._update_category_and_position(data, old_attributes)
+        self._update_parent_and_position(data, old_attributes)
         
         topic = data.get('topic', None)
         if self.topic != topic:
@@ -5174,22 +5118,8 @@ class ChannelStage(ChannelVoiceBase):
         
         return old_attributes
 
+    @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        """
-        Returns the permissions for the given user at the channel.
-        
-        Parameters
-        ----------
-        user : ``UserBase`` instance
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        See Also
-        --------
-        ``.cached_permissions_for`` : Cached permission calculator.
-        """
         guild = self.guild
         if guild is None:
             return PERMISSION_NONE
@@ -5209,23 +5139,8 @@ class ChannelStage(ChannelVoiceBase):
         
         return Permission(result)
     
+    @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
-        """
-        Returns the channel permissions of an imaginary user who would have the listed roles.
-        
-        Parameters
-        ----------
-        *roles : ``Role``
-            The roles to calculate final permissions from.
-        
-        Returns
-        -------
-        permission : ``Permission``
-        
-        Notes
-        -----
-        Partial roles and roles from other guilds as well are ignored.
-        """
         result = self._permissions_for_roles(roles)
         if not result.can_view_channel:
             return PERMISSION_NONE
@@ -5334,7 +5249,7 @@ class ChannelStage(ChannelVoiceBase):
             channel.id = channel_id
             
             channel._cache_perm = None
-            channel.category = None
+            channel.parent = None
             channel.guild = None
             channel.overwrites = []
             channel.position = 0
@@ -5375,7 +5290,7 @@ class ChannelStage(ChannelVoiceBase):
                 users.append(state.user)
         
         return users
-
+    
     @property
     def speakers(self):
         """
@@ -5428,12 +5343,30 @@ CHANNEL_TYPES = {
      4: ChannelCategory,
      5: ChannelText,
      6: ChannelStore,
-     9: ChannelThread,
+    10: ChannelThread,
+    11: ChannelThread,
+    12: ChannelThread,
     13: ChannelStage,
 }
 
+export(CHANNEL_TYPES, 'CHANNEL_TYPES')
+
+CHANNEL_TEXT_NAMES = {
+     0: None,
+     5: 'announcements',
+}
+
+
+CHANNEL_THREAD_NAMES = {
+     9: None,
+    10: 'announcements',
+    11: 'public',
+    12: 'private',
+}
+
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
-        user_limit=None, region=None, video_quality_mode=None, category=None, guild=None):
+        user_limit=None, region=None, video_quality_mode=None, archived=None, archived_at=None,
+        auto_archive_after=None, open_=None, parent=None, category=None, guild=None):
     """
     Creates a json serializable object representing a ``GuildChannelBase`` instance.
     
@@ -5460,8 +5393,19 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         The channel's voice region.
     video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional (Keyword only)
         The channel's video quality mode.
-    category : `None`, ``ChannelCategory``, ``Guild`` or `int`, Optional (Keyword only)
-        The channel's category. If the category is under a guild, leave it empty.
+    archived : `None` or `bool`, Optional (Keyword only)
+        Whether the thread channel is archived.
+    archived_at : `None` or `datetime`, Optional (Keyword only)
+        When the thread's archive status was last changed.
+    auto_archive_after : `None` or `int`, Optional (Keyword only)
+        Duration in minutes to automatically archive the thread after recent activity. Can be one of: `60`, `1440`,
+        `4320`, `10080`.
+    open_ : `bool`, Optional (Keyword only)
+        Whether the thread channel is open.
+    parent : `None`, ``ChannelCategory`` or `int`, Optional (Keyword only)
+        The channel's parent. If the parent is under a guild, leave it empty.
+    category : `None`, ``ChannelCategory`` or `int`, Optional (Keyword only)
+        Deprecated, please use `parent` parameter instead.
     guild : `None` or ``Guild``, Optional (Keyword only)
         Reference guild used for validation purposes. Defaults to `None`.
     
@@ -5473,7 +5417,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     ------
     TypeError
         - If `type_` was not passed as `int` or as ``ChannelGuildBase`` instance.
-        - If `category` was not given as `None`, ``ChannelCategory``, ``Guild`` or `int` instance.
+        - If `parent` was not given as `None`, ``ChannelCategory`` or `int` instance.
         - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
         - If `video_quality_mode` was not given neither as `None`, `VideoQualityMode`` nor as `int` instance.
     AssertionError
@@ -5488,7 +5432,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `topic` was given, but the respective channel type is not ``ChannelText`` nor ``ChannelStage``.
         - If `nsfw` was given meanwhile the respective channel type is not ``ChannelText`` or ``ChannelStore``.
         - If `nsfw` was not given as `bool`.
-        - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
+        - If `slowmode` was given, but the respective channel type is not ``ChannelText`` or ``ChannelThread``.
         - If `slowmode` was not given as `int` instance.
         - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
         - If `bitrate` was given, but the respective channel type is not ``ChannelVoiceBase``.
@@ -5497,14 +5441,31 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `user_limit` was given, but the respective channel type is not ``ChannelVoiceBase``.
         - If `user_limit` was not given as `int` instance.
         - If `user_limit`' was given, but is out of the expected [0:99] range.
-        - If `category` was given, but the respective channel type cannot be put under other categories.
+        - If `parent` was given, but the respective channel type cannot be put under other categories.
         - If `region` was given, but the respective channel type is not ``ChannelVoiceBase``.
         - If `video_quality_mode` was given, but the respective channel is not ``ChannelVoice`` instance.
+        - If `archived` was given meanwhile the respective channel type is not ``ChannelThread``.
+        - If `archived` was given, but not as `None` or `bool` instance.
+        - If `archived_at` was given meanwhile the respective channel type is not ``ChannelThread``.
+        - If `archived_at` was given, but not as `None` or `datetime` instance.
+        - If `auto_archive_after` was given, but the respective channel's type is not ``ChannelThread``.
+        - If `auto_archive_after` was given, but not as `None` or `int` instance.
+        - If `auto_archive_after` was ot given neither as `60`, `1440`, `4320`, `10080`.
+        - If `open_` was given meanwhile the respective channel type is not ``ChannelThread``.
+        - If `open_` was given, but not as `None` or `bool` instance.
     """
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
             raise AssertionError('`guild` is given, but not as `None` nor `Guild` instance, got '
                 f'{guild.__class__.__name__}.')
+    
+    if (category is not None):
+        warnings.warn(
+            f'`cr_pg_channel_object`\'s `category` parameter is deprecated, and will be removed in 2021 july. '
+            f'Please use `parent` instead.',
+            FutureWarning)
+        
+        parent = category
     
     if isinstance(type_, int):
         if __debug__:
@@ -5537,26 +5498,26 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         if name_ln < 2 or name_ln > 100:
             raise AssertionError(f'`name` length can be in range [2:100], got {name_ln}; {name!r}.')
     
-    
-    if overwrites is None:
-        overwrites = []
-    else:
-        if __debug__:
-            if not isinstance(overwrites, list):
-                raise AssertionError(f'`overwrites` can be given as `None` or `list` of `cr_p_overwrite_object` '
-                     f'returns, got {overwrites.__class__.__name__}')
-            
-            for index, element in enumerate(overwrites):
-                if not isinstance(element, dict):
-                    raise AssertionError(f'`overwrites`\'s element {index} should be `dict` instance, but got '
-                        f'{element.__class__.__name__}')
-    
-    
     channel_data = {
         'name': name,
         'type': channel_type_value,
-        'permission_overwrites': overwrites,
     }
+    
+    if not issubclass(channel_type, ChannelThread):
+        if overwrites is None:
+            overwrites = []
+        else:
+            if __debug__:
+                if not isinstance(overwrites, list):
+                    raise AssertionError(f'`overwrites` can be given as `None` or `list` of `cr_p_overwrite_object` '
+                         f'returns, got {overwrites.__class__.__name__}')
+                
+                for index, element in enumerate(overwrites):
+                    if not isinstance(element, dict):
+                        raise AssertionError(f'`overwrites`\'s element {index} should be `dict` instance, but got '
+                            f'{element.__class__.__name__}')
+    
+        channel_data['permission_overwrites'] = overwrites
     
     
     if (topic is not None):
@@ -5595,9 +5556,9 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     
     if (slowmode is not None):
         if __debug__:
-            if not issubclass(channel_type, ChannelText):
-                raise AssertionError(f'`slowmode` is a valid parameter only for `{ChannelText.__name__}` instances, '
-                    f'but got {channel_type.__name__}.')
+            if not issubclass(channel_type, (ChannelText, ChannelThread)):
+                raise AssertionError(f'`slowmode` is a valid parameter only for `{ChannelText.__name__}` and for '
+                    f'`{ChannelThread.__name__}` instances, but got {channel_type.__name__}.')
             
             if not isinstance(slowmode, int):
                 raise AssertionError('`slowmode` can be given as `int` instance, got '
@@ -5609,7 +5570,6 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         channel_data['rate_limit_per_user'] = slowmode
     
     
-
     if (bitrate is not None):
         if __debug__:
             if not issubclass(channel_type, ChannelVoiceBase):
@@ -5678,25 +5638,78 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         
         channel_data['video_quality_mode'] = video_quality_mode_value
     
+    if (archived is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelThread):
+                raise AssertionError(f'`archived` is a valid parameter only for `{ChannelThread.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+            
+            if not isinsatnce(archived, bool):
+                raise AssertionError(f'`archived` can be given as `None` or as `bool` instance, got '
+                    f'{archived.__class__.__name__}.')
+        
+        channel_data['archived'] = archived
     
-    if category is None:
-        category_id = 0
-    elif isinstance(category, ChannelCategory):
-        category_id = category.id
-    elif isinstance(category, Guild):
-        category_id = 0
+    
+    if (archived_at is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelThread):
+                raise AssertionError(f'`archived_at` is a valid parameter only for `{ChannelThread.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+            
+            if not isinstance(archived_at, datetime):
+                raise AssertionError(f'`archived_at` can be given as `None` or as `datetime` instance, got '
+                    f'{archived_at.__class__.__name__}.')
+        
+        channel_data['archive_timestamp'] =  archived_at.isoformat()
+    
+    
+    if (auto_archive_after is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelThread):
+                raise AssertionError(f'`auto_archive_after` is a valid parameter only for `{ChannelThread.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+            
+            if not isinstance(auto_archive_after, int):
+                raise AssertionError(f'`auto_archive_after` can be given as `None` or as `datetime` instance, got '
+                    f'{auto_archive_after.__class__.__name__}.')
+            
+            if auto_archive_after not in CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES:
+                raise AssertionError(f'`auto_archive_after` can be any of: '
+                    f'{CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES}, got {auto_archive_after}.')
+        
+        channel_data['auto_archive_after'] = auto_archive_after
+    
+    
+    if (open_ is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelThread):
+                raise AssertionError(f'`open_` is a valid parameter only for `{ChannelThread.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+            
+            if not isinsatnce(open_, bool):
+                raise AssertionError(f'`open_` can be given as `None` or as `bool` instance, got '
+                    f'{open_.__class__.__name__}.')
+        
+        channel_data['locked'] = not open_
+    
+    
+    if parent is None:
+        parent_id = 0
+    elif isinstance(parent, ChannelCategory):
+        parent_id = parent.id
     else:
-        category_id = maybe_snowflake(category)
-        if category_id is None:
-            raise TypeError(f'`category` can be given as `{ChannelCategory.__name__}`, `{Guild.__name__}` or `int` '
-                f'instance, got {category.__class__.__name__}.')
+        parent_id = maybe_snowflake(parent)
+        if parent_id is None:
+            raise TypeError(f'`parent` can be given as `{ChannelCategory.__name__}`, `{Guild.__name__}` or `int` '
+                f'instance, got {parent.__class__.__name__}.')
     
-    if category_id:
+    if parent_id:
         if __debug__:
             if issubclass(channel_type, ChannelCategory):
-                raise AssertionError(f'`category` was given, but the respective channel type is '
+                raise AssertionError(f'`parent` was given, but the respective channel type is '
                     f'{channel_type.__name__}, which cannot be put under other categories.')
         
-        channel_data['parent_id'] = category_id
+        channel_data['parent_id'] = parent_id
     
     return channel_data

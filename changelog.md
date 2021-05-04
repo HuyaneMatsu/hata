@@ -54,7 +54,6 @@ Redo error code names and thread support.
 - Add extra `tts` type assertion to `Client.webhook_message_create`.
 - Add extra `wait` type assertion to `Client.webhook_message_create`.
 
-
 #### ext.slash
 - Add `mentionable` parameter support for slash commands.
 

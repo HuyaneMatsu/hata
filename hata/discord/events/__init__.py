@@ -8,7 +8,7 @@ from .intent import *
 from .parsers import *
 
 __all__ = (
-    *core,
+    *core.__all__,
     *event_handler_manager.__all__,
     *event_types.__all__,
     *filters.__all__,

@@ -320,7 +320,7 @@ class ParserSettingOption:
         The parser's name(s) also known as the dispatch event's.
     """
     __slots__ = ('intent_shift', 'name')
-    def __init__(cls, name):
+    def __new__(cls, name):
         """
         Creates new ``ParserSettingOption`` instances from the given name.
         
@@ -430,8 +430,8 @@ class ParserSetting:
         if client not in REGISTERED_CLIENTS:
             return
         
-        for description in self.options:
-            intent_shift = description.intent_shift
+        for option in self.options:
+            intent_shift = option.intent_shift
             if (intent_shift == INTENT_SHIFT_DEFAULT_EVENT):
                 break
             
@@ -491,7 +491,8 @@ class ParserSetting:
             else:
                 parser = self.parser_cal_mc
         
-        PARSERS[self.name] = parser
+        for option in self.options:
+            PARSERS[option.name] = parser
 
 
 def register_client(client):

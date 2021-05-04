@@ -158,20 +158,21 @@ INTENT_SHIFT_MISSING_EVENT = 254
 DISPATCH_EVENT_TO_INTENTS = {}
 
 def populate_dispatch_event_intents():
-    from itertools import chain, repeat
+    from itertools import chain
     
     for intent_shift, event_names in chain(
-            INTENT_SHIFT_EVENTS.items(),
-            zip(repeat(INTENT_SHIFT_DEFAULT_EVENT), GLOBAL_INTENT_SHIFT_EVENTS),
+            INTENT_SHIFT_EVENTS.items(), ((INTENT_SHIFT_DEFAULT_EVENT, GLOBAL_INTENT_SHIFT_EVENTS),)
                 ):
         
         for event_name in event_names:
             try:
                 intent_shifts = DISPATCH_EVENT_TO_INTENTS[event_name]
             except KeyError:
-                DISPATCH_EVENT_TO_INTENTS[event_name] = (intent_shift, )
+                intent_shifts = (intent_shift, )
             else:
-                DISPATCH_EVENT_TO_INTENTS[event_name] = (*intent_shifts, intent_shift, )
+                intent_shifts = (*intent_shifts, intent_shift, )
+            
+            DISPATCH_EVENT_TO_INTENTS[event_name] = intent_shifts
 
 populate_dispatch_event_intents()
 del populate_dispatch_event_intents

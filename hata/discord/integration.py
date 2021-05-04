@@ -4,7 +4,7 @@ __all__ = ('Integration', 'IntegrationAccount', 'IntegrationApplication', 'Integ
 from ..backend.export import export
 
 from .bases import DiscordEntity, IconSlot
-from .client_core import INTEGRATIONS
+from .core import INTEGRATIONS
 from .user import User, ZEROUSER
 from .utils import parse_time, DISCORD_EPOCH_START
 from .role import create_partial_role

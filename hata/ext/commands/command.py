@@ -8,8 +8,8 @@ from ...backend.analyzer import CallableAnalyzer
 from ...backend.futures import is_coroutine_generator
 
 from ...discord.utils import USER_MENTION_RP
-from ...discord.parsers import EventWaitforBase, compare_converted, check_name, check_argcount_and_convert, Router, \
-    route_name, route_value
+from ...discord.events.handling_helpers import EventWaitforBase, compare_converted, check_name, \
+    check_parameter_count_and_convert, Router, route_name, route_value
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
 
@@ -189,8 +189,8 @@ async def process_command_coro(client, channel, coro):
                 if isinstance(err, DiscordException):
                     if err.code in (
                             ERROR_CODES.unknown_channel, # message's channel deleted
-                            ERROR_CODES.invalid_access, # client removed
-                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
                             ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                                 ):
                         return
@@ -225,8 +225,8 @@ async def process_command_coro(client, channel, coro):
             if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.invalid_access, # client removed
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
                         ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                             ):
                     return
@@ -270,7 +270,7 @@ class Command:
     _checks : `None` or `list` of ``_check_base`` instances
         The internal slot used by the ``.checks`` property. Defaults to `None`.
     parser : `None` or ``CommandContentParser``
-        Collection of content part parsers to parse argument for the command. Defaults to `None`.
+        Collection of content part events to parse argument for the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
         
@@ -662,7 +662,7 @@ class Command:
             - If `func` expects less or more non reserved positional arguments as `expected` is.
         """
         if (parser_failure_handler is not None):
-            parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5,
+            parser_failure_handler = check_parameter_count_and_convert(parser_failure_handler, 5,
                 name='parser_failure_handler', can_be_async_generator=True, error_message= \
                 '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         
@@ -1237,7 +1237,7 @@ class Command:
         if parser_failure_handler is None:
             return
         
-        parser_failure_handler = check_argcount_and_convert(parser_failure_handler, 5, name='parser_failure_handler',
+        parser_failure_handler = check_parameter_count_and_convert(parser_failure_handler, 5, name='parser_failure_handler',
             can_be_async_generator=True, error_message= \
             '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
         self._parser_failure_handler = parser_failure_handler
@@ -2177,7 +2177,7 @@ class CommandProcesser(EventWaitforBase):
     Class Attributes
     ----------------
     __event_name__ : `str` = 'message_create'
-        Tells for the ``EventDescriptor`` that ``CommandProcesser`` is a `message_create` event handler.
+        Tells for the ``EventHandlerManager`` that ``CommandProcesser`` is a `message_create` event handler.
     SUPPORTED_TYPES : `tuple` (``Command``, )
         Tells to ``eventlist`` what exact types the ``CommandProcesser`` accepts.
     """
@@ -2816,7 +2816,7 @@ class CommandProcesser(EventWaitforBase):
         if (name is not None) and isinstance(name, str):
             # called every time, but only if every other fails
             if name == 'default_event':
-                func = check_argcount_and_convert(func, 2, name='default_event', can_be_async_generator=True,
+                func = check_parameter_count_and_convert(func, 2, name='default_event', can_be_async_generator=True,
                     error_message='`default_event` expects 2 arguments (client, message).')
                 
                 checks_processed = validate_checks(checks)
@@ -2825,7 +2825,7 @@ class CommandProcesser(EventWaitforBase):
                 return func
             
             if name == 'command_error':
-                func = check_argcount_and_convert(func, 5, name='command_error', can_be_async_generator=True,
+                func = check_parameter_count_and_convert(func, 5, name='command_error', can_be_async_generator=True,
                     error_message= \
                         '`command_error` expected 5 arguments (client, message, command, content, exception).')
                 
@@ -2836,7 +2836,7 @@ class CommandProcesser(EventWaitforBase):
             
             # called when user used bad command after the preset prefix, called if a command fails
             if name == 'invalid_command':
-                func = check_argcount_and_convert(func, 4, name='invalid_command', can_be_async_generator=True,
+                func = check_parameter_count_and_convert(func, 4, name='invalid_command', can_be_async_generator=True,
                     error_message='`invalid_command` expected 4 arguments (client, message, command, content).')
                 
                 checks_processed = validate_checks(checks)
@@ -3454,7 +3454,7 @@ class CommandProcesser(EventWaitforBase):
         return self._default_event
     
     def _set_default_event(self, default_event):
-        default_event = check_argcount_and_convert(default_event, 2, name=default_event, can_be_async_generator=True,
+        default_event = check_parameter_count_and_convert(default_event, 2, name=default_event, can_be_async_generator=True,
             error_message='`default_event` expects 2 arguments (client, message).')
         self._default_event = default_event
     
@@ -3505,7 +3505,7 @@ class CommandProcesser(EventWaitforBase):
         return self._command_error
     
     def _set_command_error(self, command_error):
-        command_error = check_argcount_and_convert(command_error, 5, name='command_error',
+        command_error = check_parameter_count_and_convert(command_error, 5, name='command_error',
             can_be_async_generator=True, error_message= \
             '`command_error` expected 5 arguments (client, message, command, content, err).')
         
@@ -3565,7 +3565,7 @@ class CommandProcesser(EventWaitforBase):
         return self._invalid_command
     
     def _set_invalid_command(self, invalid_command):
-        invalid_command = check_argcount_and_convert(invalid_command, 4, name='invalid_command',
+        invalid_command = check_parameter_count_and_convert(invalid_command, 4, name='invalid_command',
             can_be_async_generator=True, error_message= \
             '`invalid_command` expected 4 arguments (client, message, command, content).')
         

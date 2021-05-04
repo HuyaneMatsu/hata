@@ -2,7 +2,7 @@
 
 #### Summary
 
-Threads go brrr.
+Redo error code names and thread support.
 
 #### New Features
 
@@ -13,6 +13,10 @@ Threads go brrr.
 - Add `ThreadProfile`.
 - Add `ThreadProfileFlag`.
 - Add `Message.thread.`
+
+#### Optimizations
+
+- Use shifted mask instead of shifting and masking for sync-multi-client dispatch event parsers.
 
 #### Improvements
 
@@ -28,9 +32,9 @@ Threads go brrr.
 - Reduce `channel.py` size by spamming `copy_docs` calls.
 - Update `ChannelThread`.
 - Add `Guild_create_empty` to reduce duped code.
-- Add `ERROR_CODES.invalid_action_thread`
+- Add `ERROR_CODES.invalid_action_for_archived_thread`
 - Add `ERROR_CODES.invalid_thread_notification_setting`
-- Add `ERROR_CODES.invalid_before_value`
+- Add `ERROR_CODES.before_value_earlier_than_creation_time`
 - Update `ChannelText.__repr__` to clarify whether the channel is announcements.
 - Add `MessageType.thread_started`.
 - Add `MessageFlag.MessageFlag`.
@@ -38,6 +42,18 @@ Threads go brrr.
 - Add `archived_at` parameter to `cr_pg_channel_object`.
 - Add `auto_archive_after` parameter to `cr_pg_channel_object`.
 - Add `open_` parameter to `cr_pg_channel_object`.
+- Add `ERROR_CODES.unknown_session`.
+- Add `ERROR_CDEOS.unknown_store_directory_layout`.
+- Add `ERROR_CODES.application_name_used`.
+- Add `ERROR_CODES.invalid_role`.
+- Add `ERROR_CODES.payment_source_required_to_redeem_gift`.
+- Add `ERROR_CODES.guild_has_template`.
+- Add `ERROR_CODES.max_bans`.
+- Separate `parsers.py` into more parts to improve readability.
+- Add `thread` parameter to `Client.webhook_message_create`.
+- Add extra `tts` type assertion to `Client.webhook_message_create`.
+- Add extra `wait` type assertion to `Client.webhook_message_create`.
+
 
 #### ext.slash
 - Add `mentionable` parameter support for slash commands.
@@ -53,18 +69,51 @@ Threads go brrr.
 - Add `Queue.get`.
 - Add `LifoQueue.get`.
 
-
 #### Renames, Deprecation & Removals
 
 - Rename `ChannelGuildMainBase.category` to `.parent`.
 - Deprecate `ChannelGuildMainBase.category`.
 - Rename `cr_pg_channel_object`'s parameter to `parent`.
 - Deprecate `cr_pg_channel_object`'s `parent` parameter.
-- Rename `Client.channel_move`'s `category to `parent`.
+- Rename `Client.channel_move`'s `category` to `parent`.
 - Deprecate `Client.channel_move`'s `parent` parameter.
-- Rename `Client.channel_create`'s `category to `parent`.
+- Rename `Client.channel_create`'s `category` to `parent`.
 - Deprecate `Client.channel_create`'s `parent` parameter.
 - Deprecate `ChannelGuildBase.parent` will be not set as `Guild` instance anymore.
+- Rename `ERROR_CODES.slowmode_rate_limited` to `.rate_limit_slowmode`.
+- Rename `ERROR_CODES.rate_limit_DM_open` to `.rate_limit_private_channel_opening`.
+- Rename `ERROR_CODES.invalid_action_DM` to `.invalid_action_for_private_channel`.
+- Rename `ERROR_CODES.user_not_connected` to `.user_not_connected_to_voice`.
+- Rename `ERROR_CODES.invalid_oauth2_missing_scope` to `.invalid_oauth2_missing_scope`.
+- Rename `ERROR_CODES.invalid_gift_self_redemption` to `.cannot_self_redeem_this_gift`.
+- Rename `ERROR_CODES.channel_following_edit_rate_limited` to `.rate_limit_announcement_message_edit`.
+- Rename `ERROR_CODES.channel_send_rate_limit` to `.rate_limit_channel_write`.
+- Rename `ERROR_CODES.max_emoji` to `.max_emojis`.
+- Rename `ERROR_CODES.max_animated_emoji` to `.max_animated_emojis`.
+- Rename `ERROR_CODES.message_already_crossposted` to `.message_crossposted`.
+- Rename `ERROR_CODES.invalid_access` to `.missing_access`.
+- Rename `ERROR_CODES.invalid_widget_disabled` to `.widget_disabled`.
+- Rename `ERROR_CODES.invalid_message_author` to `.cannot_edit_message_of_other_user`.
+- Rename `ERROR_CODES.invalid_message_empty` to `.cannot_create_empty_message`.
+- Rename `ERROR_CODES.invalid_message_send_non_text` to `.cannot_send_message_to_non_text_channel`.
+- Rename `ERROR_CODES.invalid_message_verification_level` to `.channel_verification_level_too_high`.
+- Rename `ERROR_CODES.invalid_oauth_app_bot` to `oauth2_application_has_no_bot`.
+- Rename `ERROR_CODES.invalid_oauth_app_limit` to `oauth2_application_limit_reached`.
+- rename `ERROR_CODES.invalid_oauth_state` to `.invalid_oauth2_state`.
+- Rename `ERROR_CODES.invalid_permissions` to `missing_permissions`.
+- Rename `ERROR_CODES.invalid_note` to `note_too_long`.
+- Rename `ERROR_CODES.invalid_bulk_delete_count` to `.bulk_delete_amount_out_of_range`.
+- Rename `ERROR_CODES.invalid_pin_message_channel` to `.cannot_pin_message_in_different_channel`.
+- Rename `ERROR_CODES.invalid_or_taken_invite_code` to `.invite_code_invalid_or_taken`.
+- Rename `ERROR_CODES.invalid_message_system` to `.invalid_action_for_system_message`.
+- Rename `ERROR_CODES.invalid_channel_type` to `.invalid_action_for_this_channel_type`.
+- Rename `ERROR_CODES.invalid_bulk_delete_message_age` to `.bulk_delete_message_too_old`.
+- Rename `ERROR_CODES.cannot_add_user_to_guild_where_bot_is_not` to `.cannot_add_user_to_guild_where_the_bot_is_not_in`.
+- Rename `ERROR_CODES.relationship_invalid_self` to `.relationship_invalid_target_self`.
+- Rename `ERROR_CODES.relationship_invalid_user_bot` to `.relationship_invalid_target_bot`.
+- Rename `client_code.py` to `core.py` and move many related types and functions, like `start_clients`, `stop_clients` and `Kokoro`,
+- Rename `EventDescriptor` to `EventHandlerManager`.
+- Rename `check_argcount_and_convert` to `check_parameter_count_and_convert`.
 
 ## 1.1.73 *\[2021-05-01\]*
 

@@ -102,13 +102,13 @@ from ...backend.utils import NEEDS_DUMMY_INIT
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
 from ...discord.guild import Guild
 from ...discord.permission import Permission
 from ...discord.role import Role
 from ...discord.channel import ChannelBase, ChannelText, ChannelCategory, ChannelGuildBase
-from ...discord.parsers import check_argcount_and_convert
+from ...discord.events.handling_helpers import check_parameter_count_and_convert
 from ...discord.client import Client
 
 def validate_checks(checks_):
@@ -206,7 +206,7 @@ def _convert_handler(handler):
         If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
     """
     if (handler is not None):
-        handler = check_argcount_and_convert(handler, 4, name='handler', error_message= \
+        handler = check_parameter_count_and_convert(handler, 4, name='handler', error_message= \
             '`handler` expects to pass 4 arguments (client, message, command, check).')
     return handler
 

@@ -9,7 +9,7 @@ from pathlib import Path
 from ..backend.utils import alchemy_incendiary
 from ..backend.futures import Task, Event, sleep, CancelledError
 
-from .client_core import KOKORO
+from .core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE, SAMPLES_PER_FRAME
 
 PLAYER_DELAY = FRAME_LENGTH/1000.0

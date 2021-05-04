@@ -20,13 +20,13 @@ from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_R
 from ...discord.client import Client
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.emoji import parse_emoji, Emoji, EMOJIS
-from ...discord.client_core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS
+from ...discord.core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS
 from ...discord.message import Message
 from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
     ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread
 from ...discord.user import User, UserBase
 from ...discord.role import Role
-from ...discord.parsers import check_argcount_and_convert
+from ...discord.events.handling_helpers import check_parameter_count_and_convert
 from ...discord.preconverters import preconvert_flag, preconvert_bool
 from ...discord.guild import Guild
 from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
@@ -407,7 +407,7 @@ class ConverterFlag(FlagBase):
     Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
     will ignore everything else, than `user_all`.
     
-    Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
+    Some events, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
     """
     __keys__ = {
         'url': 0,
@@ -691,7 +691,7 @@ class RestParserContext(ParserContextBase):
 
 class ParserContext(ParserContextBase):
     """
-    Parser context used inside of chained content parsers.
+    Parser context used inside of chained content events.
     
     Attributes
     ----------
@@ -1945,8 +1945,8 @@ async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
                 isinstance(err, DiscordException) and err.code in (
                     ERROR_CODES.unknown_channel, # message deleted
                     ERROR_CODES.unknown_message, # channel deleted
-                    ERROR_CODES.invalid_access, # client removed
-                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
                         )):
                     raise
             
@@ -2000,8 +2000,8 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
                         
                         # If client is removed or has it's permissions changed, lets move on the next if applicable
                         if err_code in (
-                            ERROR_CODES.invalid_access, # client removed
-                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                 ):
                             continue
                     
@@ -2023,8 +2023,8 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
                     isinstance(err, DiscordException) and err.code in (
                         ERROR_CODES.unknown_channel, # message deleted
                         ERROR_CODES.unknown_message, # channel deleted
-                        ERROR_CODES.invalid_access, # client removed
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
                             )):
                         raise
             else:
@@ -2413,7 +2413,7 @@ class FlaggedAnnotation:
     """
     Flagged annotation to store an annotation type with it's flags.
     
-    This type of annotation can be used to define a multi-type parsers, not, like ``Converter``, which should not be
+    This type of annotation can be used to define a multi-type events, not, like ``Converter``, which should not be
     used for that.
     
     Attributes
@@ -2782,7 +2782,7 @@ class CommandContentParser:
     Parameters
     ----------
     _parsers : `None` or `list` of ``ParserContextBase`` instances
-        The parsers of the command content parser. Set as `None` if it would be an empty `list`.
+        The events of the command content parser. Set as `None` if it would be an empty `list`.
     _separator : ``ContentArgumentSeparator``
         The argument separator of the parser.
     """
@@ -3056,7 +3056,7 @@ class CommandContentParser:
         
         parsers = self._parsers
         if (parsers is not None):
-            result.append(' parsers=')
+            result.append(' events=')
             result.append(repr(parsers))
             
             separator = self._separator
@@ -3075,7 +3075,7 @@ class ContentParser(CommandContentParser):
     Parameters
     ----------
     _parsers : `None` or `list` of ``ParserContextBase`` instances
-        The parsers of the command content parser. Set as`None` if it would be an empty `list`.
+        The events of the command content parser. Set as`None` if it would be an empty `list`.
     _separator : ``ContentArgumentSeparator``
         The argument separator of the parser.
     _func : `async-callable`
@@ -3140,7 +3140,7 @@ class ContentParser(CommandContentParser):
         is_method = preconvert_bool(is_method, 'is_method')
         
         if (handler is not None):
-            handler = check_argcount_and_convert(handler, 6, name='handler', error_message= \
+            handler = check_parameter_count_and_convert(handler, 6, name='handler', error_message= \
                 '`ContentParser` expects to pass `6` arguments to it\'s `handler`: client, message, content_parser, '
                 'content, args, obj (can be `None`).')
         
@@ -3361,7 +3361,7 @@ class ContentParser(CommandContentParser):
         
         parsers = self._parsers
         if (parsers is not None):
-            result.append(', parsers=')
+            result.append(', events=')
             result.append(repr(parsers))
             
             separator = self._separator

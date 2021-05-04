@@ -6,7 +6,7 @@ from ..backend.utils import DOCS_ENABLED
 from ..backend.export import export
 
 from .bases import DiscordEntity
-from .client_core import EMOJIS
+from .core import EMOJIS
 from .utils import id_to_time, EMOJI_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .user import User, ZEROUSER
 from .preconverters import preconvert_str, preconvert_bool, preconvert_snowflake

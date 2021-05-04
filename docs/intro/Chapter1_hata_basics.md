@@ -72,7 +72,7 @@ If your bot fails to login because of bad intents read point 2 again.
 ## Event examples
 
 There are multiple events you can register,
-you can take a look [here](https://huyanematsu.pythonanywhere.com/docs/hata/discord/parsers/EventDescriptor) to see all events.
+you can take a look [here](https://huyanematsu.pythonanywhere.com/docs/hata/discord/parsers/EventHandlerManager) to see all events.
 
 You can register a event,  if you wish, in multiple ways so here are some examples:
 

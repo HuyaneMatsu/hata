@@ -3,8 +3,8 @@ __all__ = ('ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'MessageCreateWaitfor'
     'wait_for_message', 'wait_for_reaction')
 
 from ...backend import Task, Future
-from ...discord.parsers import EventWaitforBase
-from ...discord.client_core import KOKORO
+from ...discord.events.handling_helpers import EventWaitforBase
+from ...discord.core import KOKORO
 
 from .utils import Timeouter
 

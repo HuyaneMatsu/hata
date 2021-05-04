@@ -8,7 +8,7 @@ other library extension is imported, it can register a hook to run only if both 
 Hook registrations can be done with the ``add_library_extension_hook`` function.
 """
 import warnings
-from ..discord.client_core import KOKORO
+from ..discord.core import KOKORO
 
 HOOKS = []
 
@@ -47,7 +47,7 @@ def register_library_extension(extension_name):
             KOKORO.render_exc_maybe_async(err, [
                 'register_library_extension(', repr(extension_name), ') ignores occurred exception meanwhile calling ',
                 repr(hook), ' satisfied library extension hook.\n.'
-                    ])
+            ])
 
 
 def add_library_extension_hook(hook, requirements):

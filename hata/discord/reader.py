@@ -6,7 +6,7 @@ from ..backend.futures import Task, CancelledError, sleep
 
 from .opus import OpusDecoder, opus
 from .player import AudioSource
-from .client_core import KOKORO
+from .core import KOKORO
 
 if opus is None:
     DECODER = None

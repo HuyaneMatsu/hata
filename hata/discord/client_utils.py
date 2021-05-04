@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-__all__ = ('BanEntry', 'ClientWrapper', 'Typer', )
+__all__ = ('BanEntry', 'ClientWrapper', 'Typer', 'start_clients', 'stop_clients', )
 
 from math import inf
 from collections import namedtuple
+from threading import current_thread
 
 from ..backend.utils import basemethod
 from ..backend.event_loop import LOOP_TIME
@@ -11,7 +12,7 @@ from ..backend.export import include
 
 from .permission import Permission
 from .role import PERMISSION_KEY
-from .client_core import KOKORO, CLIENTS
+from .core import KOKORO, CLIENTS
 from .rate_limit import RateLimitProxy
 
 
@@ -20,6 +21,33 @@ ComponentBase = include('ComponentBase')
 
 USER_CHUNK_TIMEOUT = 2.5
 
+def start_clients():
+    """
+    Starts up all the not running clients.
+    
+    Can be called from any thread.
+    """
+    for client in CLIENTS.values():
+        if client.running:
+            continue
+        
+        Task(client.connect(), KOKORO)
+    
+    if (current_thread() is not KOKORO):
+        KOKORO.wake_up()
+
+def stop_clients():
+    """
+    Stops all the running clients.
+    
+    Can be called from any thread.
+    """
+    for client in CLIENTS.values():
+        if client.running:
+            Task(client.disconnect(), KOKORO)
+    
+    if (current_thread() is not KOKORO):
+        KOKORO.wake_up()
 
 
 class SingleUserChunker:
@@ -900,7 +928,7 @@ class ClientWrapper:
             
             Parameters
             ----------
-            parent : ``EventDescriptor``
+            parent : ``EventHandlerManager``
                 The owner event descriptor.
             args: `tuple` of `Any`
                 Additional keyword arguments (in order) passed when the wrapper was created.
@@ -953,7 +981,7 @@ class ClientWrapper:
         Raises
         ------
         AttributeError
-            ``EventDescriptor`` has no attribute named as the given `attribute_name`.
+            ``EventHandlerManager`` has no attribute named as the given `attribute_name`.
         """
         for client in self.clients:
             client.events.__setattr__(attribute_name, attribute_value)
@@ -970,7 +998,7 @@ class ClientWrapper:
         Raises
         ------
         AttributeError
-            ``EventDescriptor`` has no attribute named as the given `attribute_name`.
+            ``EventHandlerManager`` has no attribute named as the given `attribute_name`.
         """
         for client in self.clients:
             client.events.__delattr__(attribute_name)

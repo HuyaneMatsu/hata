@@ -9,7 +9,7 @@ from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_R
     INVITE_CODE_RP, CHANNEL_MESSAGE_RP
 from ...discord.bases import FlagBase
 from ...discord.guild import Guild
-from ...discord.client_core import USERS, CLIENTS, ROLES, CHANNELS, EMOJIS, GUILDS, MESSAGES
+from ...discord.core import USERS, CLIENTS, ROLES, CHANNELS, EMOJIS, GUILDS, MESSAGES
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.user import User, UserBase
 from ...discord.channel import ChannelGuildBase, ChannelBase, ChannelTextBase, ChannelText, ChannelPrivate, \
@@ -545,7 +545,7 @@ class ConverterFlag(FlagBase):
     Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
     will ignore everything else, than `user_all`.
     
-    Some parsers, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
+    Some events, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
     """
     __keys__ = {
         'url': 0,
@@ -1384,8 +1384,8 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
                 isinstance(err, DiscordException) and err.code in (
                     ERROR_CODES.unknown_channel, # message deleted
                     ERROR_CODES.unknown_message, # channel deleted
-                    ERROR_CODES.invalid_access, # client removed
-                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
                         )):
                     raise
             
@@ -1439,8 +1439,8 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
                         
                         # If client is removed or has it's permissions changed, lets move on the next if applicable
                         if err_code in (
-                            ERROR_CODES.invalid_access, # client removed
-                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                 ):
                             continue
                     
@@ -1462,8 +1462,8 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
                     isinstance(err, DiscordException) and err.code in (
                         ERROR_CODES.unknown_channel, # message deleted
                         ERROR_CODES.unknown_message, # channel deleted
-                        ERROR_CODES.invalid_access, # client removed
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
                             )):
                         raise
             else:
@@ -1646,7 +1646,7 @@ class ContentParserParameterDetail:
     converter_setting : ``ConverterSetting``
         The converter setting used by the parameter.
     flags : ``ConverterFlag``
-        Converter flags to customize the parsers.
+        Converter flags to customize the events.
     type : `None` or `type` instance
         The type or subtype of the annotation to parse.
     """
@@ -1930,10 +1930,10 @@ class ContentParserParameter:
         Raises
         ------
         RuntimeError
-            Converter setting cannot be set if the parser is multi type parsers.
+            Converter setting cannot be set if the parser is multi type events.
         """
         if self.detail is None:
-            raise RuntimeError('Converter setting cannot be set if the parser is multi type parsers.')
+            raise RuntimeError('Converter setting cannot be set if the parser is multi type events.')
         
         self.detail = ContentParserParameterDetail(converter_setting, converter_setting.default_type)
 

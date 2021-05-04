@@ -10,7 +10,7 @@ from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
-from .client_core import MESSAGES, CHANNELS, GUILDS, ROLES, INTERACTION_EVENT_RESPONSE_WAITERS, \
+from .core import MESSAGES, CHANNELS, GUILDS, ROLES, INTERACTION_EVENT_RESPONSE_WAITERS, \
     INTERACTION_EVENT_MESSAGE_WAITERS
 from .user import ZEROUSER, User, ClientUserBase
 from .emoji import reaction_mapping

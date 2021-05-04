@@ -5,9 +5,9 @@ from collections import deque
 from ...backend.futures import Future
 from ...backend.event_loop import LOOP_TIME
 
-from ...discord.client_core import APPLICATION_ID_TO_CLIENT, KOKORO
+from ...discord.core import APPLICATION_ID_TO_CLIENT, KOKORO
 from ...discord.message import Message
-from ...discord.parsers import InteractionEvent
+from ...discord.events.event_types import InteractionEvent
 from ...discord.client import Client
 
 

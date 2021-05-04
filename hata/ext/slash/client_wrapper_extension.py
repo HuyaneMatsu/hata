@@ -4,7 +4,7 @@ __all__ = ()
 from ...backend.utils import KeepType
 
 from ...discord.client_utils import ClientWrapper
-from ...discord.parsers import _EventHandlerManagerRouter
+from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
 from .command import SlashCommand
 from .slasher import Slasher

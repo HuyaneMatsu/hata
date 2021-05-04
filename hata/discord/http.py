@@ -17,7 +17,7 @@ from ..env import API_VERSION
 from .exceptions import DiscordException
 from .utils.DISCORD_HEADERS import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION
 from .rate_limit import RATE_LIMIT_GROUPS, RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
-from .client_core import KOKORO
+from .core import KOKORO
 
 from .urls import API_ENDPOINT, CDN_ENDPOINT, DIS_ENDPOINT
 
@@ -804,9 +804,10 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_edit, webhook_id),
             METHOD_PATCH, f'{API_ENDPOINT}/webhooks/{webhook_id}', data)
     
-    async def webhook_message_create(self, webhook_id, webhook_token, data, wait):
+    async def webhook_message_create(self, webhook_id, webhook_token, data, query_parameters):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_create, webhook_id),
-            METHOD_POST, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}?wait={wait:d}', data, headers=imultidict())
+            METHOD_POST, f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}', data, headers=imultidict(),
+            params=query_parameters)
     
     async def webhook_message_edit(self, webhook_id, webhook_token, message_id, data):
         return await self.discord_request(RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook_id),

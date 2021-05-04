@@ -4,7 +4,7 @@ __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 from ..env import API_VERSION
 
 from .utils import Unknown, now_as_id, id_to_time
-from .client_core import CHANNELS, USERS, ROLES, MESSAGES
+from .core import CHANNELS, USERS, ROLES, MESSAGES
 from .permission import Permission
 from .color import Color
 from .user import User, ClientUserBase

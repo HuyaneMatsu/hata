@@ -9,7 +9,7 @@ from ...backend.utils import alchemy_incendiary, HybridValueDictionary
 from ...backend.futures import is_coroutine_function as is_coro, Task
 from ...backend.export import export
 
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 
 from .extension import EXTENSIONS, Extension, EXTENSION_STATE_LOADED
 from .utils import PROTECTED_NAMES, _iter_extension_names, _validate_entry_or_exit

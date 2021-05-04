@@ -7,7 +7,7 @@ from ..backend.utils import DOCS_ENABLED
 from ..backend.export import export, include
 
 from .bases import DiscordEntity
-from .client_core import ROLES
+from .core import ROLES
 from .utils import random_id, DATETIME_FORMAT_CODE
 from .color import Color
 from .permission import Permission, PERMISSION_NONE

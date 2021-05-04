@@ -16,7 +16,7 @@ from ...discord.interaction import Component, ComponentBase, COMPONENT_TYPE_ATTR
 from ...discord.interaction import ComponentBase, Component, _debug_component_components, _debug_component_custom_id, \
     _debug_component_emoji, _debug_component_label, _debug_component_enabled, _debug_component_url, \
     COMPONENT_TYPE_TO_STYLE
-from ...discord.parsers import InteractionEvent
+from ...discord.events.event_types import InteractionEvent
 from ...discord.message import Message
 from ...discord.channel import ChannelTextBase
 from ...discord.embed import EmbedBase

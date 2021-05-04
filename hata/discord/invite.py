@@ -8,7 +8,7 @@ from ..backend.export import include
 from .bases import DiscordEntity, instance_or_id_to_instance
 from .preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
 from .utils import parse_time, DISCORD_EPOCH_START
-from .client_core import GUILDS, CHANNELS, INVITES
+from .core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER
 from .guild import create_partial_guild, Guild
 from .channel import create_partial_channel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore

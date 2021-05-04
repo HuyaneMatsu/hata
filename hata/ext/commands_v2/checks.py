@@ -163,7 +163,7 @@ from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.utils import copy_docs
 
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
 from ...discord.guild import Guild
 from ...discord.permission import Permission

@@ -5,8 +5,9 @@ import reprlib
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.utils import WeakReferer
 
-from ...discord.client_core import ROLES, CHANNELS
-from ...discord.parsers import route_value, InteractionEvent, check_name, Router, route_name, _EventHandlerManager
+from ...discord.core import ROLES, CHANNELS
+from ...discord.events.event_types import InteractionEvent
+from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake, preconvert_bool

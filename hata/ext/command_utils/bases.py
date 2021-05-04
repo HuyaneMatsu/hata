@@ -2,7 +2,7 @@ __all__ = ('GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY', 'GU
     'GUI_STATE_SWITCHING_PAGE', 'PaginationBase')
 
 from ...backend.futures import Task, CancelledError
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 from ...discord.exceptions import DiscordException, ERROR_CODES
 
 GUI_STATE_READY = 0
@@ -159,7 +159,7 @@ class PaginationBase:
                     if err.code in (
                             ERROR_CODES.unknown_channel, # channel deleted
                             ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.missing_access, # client removed
                                 ):
                         return
                 
@@ -181,8 +181,8 @@ class PaginationBase:
                         if err.code in (
                                 ERROR_CODES.unknown_message, # message deleted
                                 ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.invalid_access, # client removed
-                                ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                                ERROR_CODES.missing_access, # client removed
+                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                     ):
                             return
                     

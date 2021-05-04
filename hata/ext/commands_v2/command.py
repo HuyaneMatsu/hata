@@ -3,7 +3,8 @@ import re, reprlib
 
 from ...backend.utils import WeakReferer
 
-from ...discord.parsers import route_value, InteractionEvent, check_name, Router, route_name, _EventHandlerManager
+from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager
+from ...discord.events.event_types import InteractionEvent
 from ...discord.preconverters import preconvert_bool
 
 from .command_helpers import raw_name_to_display

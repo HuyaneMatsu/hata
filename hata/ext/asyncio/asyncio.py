@@ -39,7 +39,7 @@ for thread in list_threads():
         break
 else:
     if (not BACKEND_ONLY):
-        from ...discord.client_core import KOKORO
+        from ...discord.core import KOKORO
         EVENT_LOOP_RELATION[main_thread()] = KOKORO
         del KOKORO
 

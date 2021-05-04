@@ -7,8 +7,9 @@ from ...backend.futures import Task, WaitTillAll
 from ...backend.event_loop import EventThread
 from ...backend.utils import WeakReferer, WeakKeyDictionary
 
-from ...discord.client_core import KOKORO
-from ...discord.parsers import InteractionEvent, Router, asynclist, EventHandlerBase
+from ...discord.core import KOKORO
+from ...discord.events.handling_helpers import Router, asynclist, EventHandlerBase
+from ...discord.events.event_types import InteractionEvent
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client import Client
 from ...discord.preinstanced import InteractionType
@@ -708,7 +709,7 @@ class Slasher(EventHandlerBase):
     Class Attributes
     ----------------
     __event_name__ : `str` = 'interaction_create'
-        Tells for the ``EventDescriptor`` that ``Slasher`` is a `interaction_create` event handler.
+        Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
     SUPPORTED_TYPES : `tuple` (``SlashCommand``, )
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     

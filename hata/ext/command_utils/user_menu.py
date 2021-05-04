@@ -4,7 +4,7 @@ from ...backend.futures import CancelledError
 from ...backend.utils import copy_docs
 from ...backend.analyzer import CallableAnalyzer
 from ...discord.emoji import BUILTIN_EMOJIS, Emoji
-from ...discord.parsers import InteractionEvent
+from ...discord.events.event_types import InteractionEvent
 from ...discord.message import Message
 from ...discord import ChannelTextBase
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -514,8 +514,8 @@ class UserMenuRunner(PaginationBase):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.invalid_access, # client removed
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
                         ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                             ):
                     return self
@@ -545,8 +545,8 @@ class UserMenuRunner(PaginationBase):
                             ERROR_CODES.unknown_message, # message deleted
                             ERROR_CODES.unknown_channel, # message's channel deleted
                             ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
-                            ERROR_CODES.invalid_access, # client removed
-                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                 ):
                         return self
                 
@@ -623,7 +623,7 @@ class UserMenuRunner(PaginationBase):
                 if err.code in (
                         ERROR_CODES.unknown_message, # message already deleted
                         ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.invalid_access, # client removed
+                        ERROR_CODES.missing_access, # client removed
                             ):
                     return
             
@@ -826,7 +826,7 @@ class UserPagination:
                     if err.code in (
                             ERROR_CODES.unknown_channel, # channel deleted
                             ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.missing_access, # client removed
                                 ):
                         return
                 
@@ -848,8 +848,8 @@ class UserPagination:
                         if err.code in (
                                 ERROR_CODES.unknown_message, # message deleted
                                 ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.invalid_access, # client removed
-                                ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                                ERROR_CODES.missing_access, # client removed
+                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                     ):
                             return
             

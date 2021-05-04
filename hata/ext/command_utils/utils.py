@@ -2,7 +2,7 @@
 __all__ = ('Timeouter', 'multievent', )
 
 from ...backend.event_loop import LOOP_TIME
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 
 class multievent:
     """

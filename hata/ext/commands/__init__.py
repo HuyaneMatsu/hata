@@ -21,7 +21,8 @@ del module_command_utils
 # Add the setup extension function
 
 from ...discord.client import Client
-from ...discord.parsers import DEFAULT_EVENT_HANDLER, asynclist
+from ...discord.events.core import DEFAULT_EVENT_HANDLER
+from ...discord.events.handling_helpers import asynclist
 from ...ext.command_utils import setup_ext_command_utils, MessageCreateWaitfor
 
 def setup_ext_commands(client, prefix=None, lite=False, **kwargs):

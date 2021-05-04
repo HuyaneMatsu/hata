@@ -10,7 +10,7 @@ from ..backend.utils import DOCS_ENABLED, copy_docs
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
-from .client_core import USERS, CHANNELS
+from .core import USERS, CHANNELS
 from .utils import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
 from .activity import ActivityUnknown, create_activity

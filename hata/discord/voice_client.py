@@ -10,7 +10,7 @@ from ..backend.exceptions import ConnectionClosed, WebSocketProtocolError, Inval
 from ..backend.protocol import DatagramMergerReadProtocol
 from ..backend.export import export
 
-from .client_core import KOKORO
+from .core import KOKORO
 from .opus import OpusEncoder
 from .player import AudioPlayer, AudioSource
 from .reader import AudioReader, AudioStream

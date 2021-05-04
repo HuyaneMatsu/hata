@@ -2,7 +2,7 @@
 __all__ = ('SlashResponse', 'abort', )
 from ...backend.futures import is_coroutine_generator
 
-from ...discord.parsers import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
+from ...discord.events.event_types import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
     INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
@@ -163,8 +163,8 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
             if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
-                        ERROR_CODES.invalid_access, # Client removed.
-                        ERROR_CODES.invalid_permissions, # Permissions changed meanwhile; Can we get this?
+                        ERROR_CODES.missing_access, # Client removed.
+                        ERROR_CODES.missing_permissions, # Permissions changed meanwhile; Can we get this?
                         ERROR_CODES.cannot_message_user, # User has dm-s disallowed; Can we get this?
                         ERROR_CODES.unknown_interaction, # We times out, do not drop error.
                             ):
@@ -233,8 +233,8 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
             if isinstance(err, DiscordException):
                 if err.code in (
                         ERROR_CODES.unknown_channel, # message's channel deleted; Can we get this?
-                        ERROR_CODES.invalid_access, # client removed.
-                        ERROR_CODES.invalid_permissions, # permissions changed meanwhile; Can we get this?
+                        ERROR_CODES.missing_access, # client removed.
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile; Can we get this?
                         ERROR_CODES.cannot_message_user, # user has dm-s disallowed; Can we get this?
                         ERROR_CODES.unknown_interaction, # we timed out, do not drop error.
                             ):

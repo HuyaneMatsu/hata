@@ -1,8 +1,9 @@
 __all__ = ()
 
 from ...backend.utils import multidict
-from ...discord.parsers import asynclist, ChunkWaiter, EVENTS, DEFAULT_EVENT_HANDLER
-from ...discord.client_core import CLIENTS
+from ...discord.events.handling_helpers import asynclist, ChunkWaiter
+from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES, DEFAULT_EVENT_HANDLER
+from ...discord.core import CLIENTS
 from ...discord.client_utils import WaitForHandler
 
 SNAPSHOT_TAKERS = {}
@@ -35,7 +36,7 @@ def should_ignore_event_handler(event_handler):
     
     return False
 
-EVENT_NAMES = tuple(EVENTS.defaults)
+EVENT_NAMES = tuple(EVENT_HANDLER_NAME_TO_PARSER_NAMES.keys())
 
 
 def take_event_handler_snapshot(client):

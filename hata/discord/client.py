@@ -26,7 +26,7 @@ from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_
 from .emoji import Emoji
 from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
-    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage
+    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread
 from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
@@ -35,15 +35,18 @@ from .urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
 from .role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from .webhook import Webhook, create_partial_webhook
 from .gateway import DiscordGateway, DiscordGatewaySharder
-from .parsers import EventDescriptor, _with_error, IntentFlag, PARSER_DEFAULTS, InteractionEvent, \
-    INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
-    INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+from .events.handling_helpers import _with_error
+from .events.event_handler_manager import EventHandlerManager
+from .events.intent import IntentFlag
+from .events.event_types import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, \
+    INTERACTION_EVENT_RESPONSE_STATE_NONE, INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+from .events.core import register_client, unregister_client
 from .audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
 from .invite import Invite
 from .message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag
 from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
-from .client_core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
+from .core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
     MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT
 from .voice_client import VoiceClient
 from .activity import ActivityUnknown, ActivityBase, ActivityCustom
@@ -124,7 +127,7 @@ class Client(ClientUserPBase):
         Whether the email of the client is verified.
     application : ``Application``
         The bot account's application. The application data of the client is requested meanwhile it logs in.
-    events : ``EventDescriptor``
+    events : ``EventHandlerManager``
         Contains the event handlers of the client. New event handlers can be added through it as well.
     gateway : ``DiscordGateway`` or ``DiscordGatewaySharder``
         The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
@@ -457,7 +460,7 @@ class Client(ClientUserPBase):
         self.application = application
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http = DiscordHTTPClient(self)
-        self.events = EventDescriptor(self)
+        self.events = EventHandlerManager(self)
         self.thread_profiles = {}
         
         if (processable is not None):
@@ -4969,7 +4972,7 @@ class Client(ClientUserPBase):
         
         Notes
         -----
-        Do not updates he given message object, so dispatch event parsers can still calculate differences when received.
+        Do not updates he given message object, so dispatch event events can still calculate differences when received.
         """
         
         # Message check order
@@ -5598,8 +5601,8 @@ class Client(ClientUserPBase):
                 if isinstance(err, DiscordException) and err.code in (
                     ERROR_CODES.unknown_message, # message deleted
                     ERROR_CODES.unknown_channel, # message's channel deleted
-                    ERROR_CODES.invalid_access, # client removed
-                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
                     ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                         ):
                     pass
@@ -10235,9 +10238,9 @@ class Client(ClientUserPBase):
             +===============+=======================+===============================================================+
             | 10003         | unknown_channel       | The channel not exists.                                       |
             +---------------+-----------------------+---------------------------------------------------------------+
-            | 50001         | invalid_access        | The bot is not in the channel's guild.                        |
+            | 50001         | missing_access        | The bot is not in the channel's guild.                        |
             +---------------+-----------------------+---------------------------------------------------------------+
-            | 50013         | invalid_permissions   | You need `manage_webhooks` permission.                        |
+            | 50013         | missing_permissions   | You need `manage_webhooks` permission.                        |
             +---------------+-----------------------+---------------------------------------------------------------+
             | 60003         | MFA_required          | You need to have multi-factor authorization to do this        |
             |               |                       | operation (guild setting dependent). For bot accounts it      |
@@ -10613,7 +10616,7 @@ class Client(ClientUserPBase):
         return webhook
     
     async def webhook_message_create(self, webhook, content=None, *, embed=None, file=None, allowed_mentions=...,
-            tts=False, name=None, avatar_url=None, wait=False):
+            tts=False, name=None, avatar_url=None, thread=None, wait=False):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
         returns `None`.
@@ -10645,6 +10648,8 @@ class Client(ClientUserPBase):
             The message's author's new name. Default to the webhook's name by Discord.
         avatar_url : `str`, Optional (Keyword only)
             The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
+        thread : `None`, `ChannelThread` or `int`, Optional (Keyword only)
+            The thread of the webhook's channel where the message should be sent.
         wait : `bool`, Optional (Keyword only)
             Whether we should wait for the message to send and receive it's data as well.
         
@@ -10661,6 +10666,7 @@ class Client(ClientUserPBase):
             - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
+            - If `thread` was not given either as `None`, ``ChannelThread`` nor as `int` instance.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -10672,6 +10678,8 @@ class Client(ClientUserPBase):
             - If `name` was not passed neither as `None` or `str` instance.
             - If `name` was passed as `str` instance, but it's length is out of range [1:32].
             - If `avatar_url` was not given as `str` instance.
+            - If `tts` was not given as `bool` instance.
+            - If `wait` was not given as `bool` instance.
         
         See Also
         --------
@@ -10768,6 +10776,25 @@ class Client(ClientUserPBase):
                 if not content:
                     content = None
         
+        
+        if thread is None:
+            thread_id = 0
+        elif isinstance(thread, ChannelThread):
+            thread_id = thread.id
+        else:
+            thread_id = maybe_snowflake(thread)
+            if thread_id is None:
+                raise TypeError(f'`thread` can be given as `None`, `{ChannelThread.__name__}`, or as `int` instance, '
+                    f'got {channel.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(tts, bool):
+                raise AssertionError(f'`tts` can be given as `bool` instance, got {tts.__class__.__name__}.')
+            
+            if not isinstance(wait, bool):
+                raise AssertionError(f'`wait` can be given as `bool` instance, got {wait.__class__.__name__}.')
+        
+        
         message_data = {}
         contains_content = False
         
@@ -10818,7 +10845,20 @@ class Client(ClientUserPBase):
         if not contains_content:
             return None
         
-        message_data = await self.http.webhook_message_create(webhook_id, webhook_token, to_send, wait)
+        query_parameters = None
+        if wait:
+            if query_parameters is None:
+                query_parameters = {}
+            
+            query_parameters['wait'] = wait
+        
+        if thread_id:
+            if query_parameters is None:
+                query_parameters = {}
+            
+            query_parameters['thread_id'] = thread_id
+        
+        message_data = await self.http.webhook_message_create(webhook_id, webhook_token, to_send, query_parameters)
         
         if not wait:
             return
@@ -11970,8 +12010,8 @@ class Client(ClientUserPBase):
         except DiscordException as err:
             if err.code in (
                     ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
-                    ERROR_CODES.invalid_permissions, # permissions changed meanwhile
-                    ERROR_CODES.invalid_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ERROR_CODES.missing_access, # client removed
                         ):
                 return None
             raise
@@ -15219,7 +15259,7 @@ class Client(ClientUserPBase):
             raise RuntimeError(f'{self!r} is already running!')
         
         self.running = True
-        PARSER_DEFAULTS.register(self)
+        register_client(self)
         Task(self._connect(), KOKORO)
         return True
     
@@ -15314,7 +15354,7 @@ class Client(ClientUserPBase):
             try:
                 await self.gateway.close()
             finally:
-                PARSER_DEFAULTS.unregister(self)
+                unregister_client(self)
                 self.running = False
                 
                 if not self.guild_profiles:

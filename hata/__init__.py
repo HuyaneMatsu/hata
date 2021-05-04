@@ -13,7 +13,7 @@ stuff:
 - Feature rich API for common use cases.
 - Fast rate limit handling.
 - No more member objects associated with guilds, if there is a user in more guilds, then there is only ONE user.
-- Optimized dispatch event parsers depending on intents, client count and on handled events as well.
+- Optimized dispatch event events depending on intents, client count and on handled events as well.
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
 - Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.

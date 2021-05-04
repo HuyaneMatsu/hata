@@ -11,7 +11,7 @@ from ..backend.futures import Task
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
-from .client_core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
+from .core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
 from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, parse_time
 from .user import User, create_partial_user, VoiceState, ZEROUSER
 from .role import Role
@@ -1053,10 +1053,13 @@ class Guild(DiscordEntity, immortal=True):
             return
         
         for category in self.channel_list:
-            if type(category) is ChannelCategory:
+            if isinstance(category, ChannelCategory):
                 for channel in category.channel_list:
                     channel._delete()
             category._delete()
+        
+        for thread in self.thread_list:
+            thread._delete()
         
         for emoji in list(self.emojis.values()):
             emoji._delete()
@@ -1065,8 +1068,11 @@ class Guild(DiscordEntity, immortal=True):
         
         users = self.users
         for user in users.values():
-            if type(user) is User:
-                del user.guild_profiles[self]
+            if isinstance(user, User):
+                try:
+                    del user.guild_profiles[self]
+                except KeyError:
+                    pass
         
         users.clear()
         

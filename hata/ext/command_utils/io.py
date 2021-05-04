@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from ...backend.futures import Task, sleep, shield, future_or_timeout, Future, CancelledError
 from ...backend.event_loop import LOOP_TIME
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 from ...discord.utils import sanitize_content
 
 MESSAGE_EDIT_TIMEDELTA = timedelta(seconds=10)

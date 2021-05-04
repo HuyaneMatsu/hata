@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ...discord.parsers import asynclist, DEFAULT_EVENT_HANDLER, EventWaitforBase
+from ...discord.events.handling_helpers import asynclist, EventWaitforBase
+from ...discord.events.core import DEFAULT_EVENT_HANDLER
 from ...discord.client import Client
 
 from .bases import *

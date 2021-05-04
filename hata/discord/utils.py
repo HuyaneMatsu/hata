@@ -20,7 +20,7 @@ from ..backend.export import export, include
 from ..backend.utils import istr, modulize
 
 from .bases import DiscordEntity
-from .client_core import USERS, CHANNELS, ROLES
+from .core import USERS, CHANNELS, ROLES
 
 MESSAGE_JUMP_URL_RP = include('MESSAGE_JUMP_URL_RP')
 create_partial_user = include('create_partial_user')

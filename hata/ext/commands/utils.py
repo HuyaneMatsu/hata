@@ -2,7 +2,7 @@
 __all__ = ('Cooldown', )
 
 from ...backend.event_loop import LOOP_TIME
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 from ...discord.message import Message
 
 from .command import CommandWrapper
@@ -133,7 +133,7 @@ class Cooldown:
                             if err.code in (
                                     ERROR_CODES.unknown_message, # message deleted
                                     ERROR_CODES.unknown_channel, # channel deleted
-                                    ERROR_CODES.invalid_access, # client removed
+                                    ERROR_CODES.missing_access, # client removed
                                         ):
                                 return
                         
@@ -154,8 +154,8 @@ class Cooldown:
                     if err.code in (
                             ERROR_CODES.unknown_message, # message deleted
                             ERROR_CODES.unknown_channel, # message's channel deleted
-                            ERROR_CODES.invalid_access, # client removed
-                            ERROR_CODES.invalid_permissions, # permissions changed meanwhile
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
                             ERROR_CODES.cannot_message_user, # user has dm-s disallowed
                                 ):
                         return
@@ -184,7 +184,7 @@ class Cooldown:
                     if err.code in (
                             ERROR_CODES.unknown_channel, # message's channel deleted
                             ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.invalid_access, # client removed
+                            ERROR_CODES.missing_access, # client removed
                                 ):
                         return
                 

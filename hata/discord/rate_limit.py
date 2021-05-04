@@ -12,7 +12,7 @@ from ..backend.headers import DATE
 from ..backend.event_loop import LOOP_TIME
 from ..backend.export import include
 
-from .client_core import KOKORO
+from .core import KOKORO
 from .utils.DISCORD_HEADERS import RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER, RATE_LIMIT_REMAINING, RATE_LIMIT_LIMIT
 
 ChannelBase = include('ChannelBase')

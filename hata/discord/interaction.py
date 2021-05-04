@@ -12,7 +12,7 @@ from ..backend.export import export
 from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType, \
     ComponentType, ButtonStyle
-from .client_core import APPLICATION_COMMANDS, ROLES
+from .core import APPLICATION_COMMANDS, ROLES
 from .preconverters import preconvert_preinstanced_type
 from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE, url_cutter
 from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX, \

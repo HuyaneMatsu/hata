@@ -183,7 +183,7 @@ def _iter_name_maybe_directory(name):
                     continue
                 
                 if is_file(file_path):
-                    if file_name.endswith('.py'):
+                    if file_name.endswith('intent.py'):
                         yield f'{name}.{file_name[:-3]}'
                     continue
             return

@@ -4,7 +4,7 @@ __all__ = ('Application', 'ApplicationExecutable', 'ApplicationSubEntity', 'EULA
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, FlagBase
 from .user import ZEROUSER, User, ClientUserBase
-from .client_core import TEAMS, EULAS, APPLICATIONS, USERS
+from .core import TEAMS, EULAS, APPLICATIONS, USERS
 from .preinstanced import TeamMembershipState
 from .preconverters import preconvert_snowflake, preconvert_bool, preconvert_str, preconvert_flag
 

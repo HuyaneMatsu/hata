@@ -6,7 +6,7 @@ from threading import current_thread
 
 from ...backend.event_loop import EventThread
 from ...backend.utils import alchemy_incendiary, HybridValueDictionary
-from ...backend.futures import is_coroutine_function as is_coro, Task
+from ...backend.futures import is_coroutine_function, Task
 from ...backend.export import export
 
 from ...discord.core import KOKORO
@@ -964,7 +964,7 @@ class ExtensionLoader:
             
             try:
                 
-                if is_coro(entry_point):
+                if is_coroutine_function(entry_point):
                     await entry_point(lib)
                 else:
                     entry_point(lib)
@@ -1027,7 +1027,7 @@ class ExtensionLoader:
                 
                 try:
                     
-                    if is_coro(exit_point):
+                    if is_coroutine_function(exit_point):
                         await exit_point(lib)
                     else:
                         exit_point(lib)

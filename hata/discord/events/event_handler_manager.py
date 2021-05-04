@@ -1,4 +1,5 @@
 __all__ = ()
+import warnings
 
 from ...backend.utils import WeakReferer
 
@@ -514,7 +515,7 @@ class EventHandlerManager:
         | statuses      | `dict` of (`str`, `str`) items    |
         +---------------+-----------------------------------+
         
-    user_profile_edit(client : Client, user: {``ClientUserBase``}, guild: ``Guild``, old_attributes: `dict`):
+    guild_user_edit(client : Client, user: {``ClientUserBase``}, guild: ``Guild``, old_attributes: `dict`):
         Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
         overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -618,6 +619,13 @@ class EventHandlerManager:
             return self._wrapper(self, (name, overwrite))
         
         name = check_name(func, name)
+        
+        if name == 'user_profile_edit':
+            warnings.warn(
+                f'`user_profile_edit` is deprecated and will be removed in 2021 juli, please use `guild_user_edit`',
+                FutureWarning)
+            name = 'guild_user_edit'
+        
         parameter_count = get_event_parser_parameter_count(name)
         func = check_parameter_count_and_convert(func, parameter_count, name=name)
         
@@ -736,6 +744,12 @@ class EventHandlerManager:
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
+        if name == 'user_profile_edit':
+            warnings.warn(
+                f'`user_profile_edit` is deprecated and will be removed in 2021 juli, please use `guild_user_edit`',
+                FutureWarning)
+            name = 'guild_user_edit'
+        
         parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
         if (parser_names is None) or (not parser_names):
             object.__setattr__(self, name, value)
@@ -770,6 +784,12 @@ class EventHandlerManager:
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
+        if name == 'user_profile_edit':
+            warnings.warn(
+                f'`user_profile_edit` is deprecated and will be removed in 2021 juli, please use `guild_user_edit`',
+                FutureWarning)
+            name = 'guild_user_edit'
+        
         actual = getattr(self, name)
         if actual is DEFAULT_EVENT_HANDLER:
             return
@@ -801,6 +821,12 @@ class EventHandlerManager:
         event_handler : `str`, `None`
             The matched event handler if any.
         """
+        if name == 'user_profile_edit':
+            warnings.warn(
+                f'`user_profile_edit` is deprecated and will be removed in 2021 juli, please use `guild_user_edit`',
+                FutureWarning)
+            name = 'guild_user_edit'
+        
         if name == 'client':
             return None
         
@@ -837,6 +863,12 @@ class EventHandlerManager:
         count : `int`, Optional
             The maximal amount of the same events to remove. Negative numbers count as unlimited. Defaults to `-1`.
         """
+        if name == 'user_profile_edit':
+            warnings.warn(
+                f'`user_profile_edit` is deprecated and will be removed in 2021 juli, please use `guild_user_edit`',
+                FutureWarning)
+            name = 'guild_user_edit'
+        
         if (count == 0) or (name == 'client'):
             return
         

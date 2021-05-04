@@ -17,7 +17,7 @@ from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL, PERMISSION_
     PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
     PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_TEXT_AND_STAGE_DENY
 from .message import Message, MESSAGES
-from .user import User, ZEROUSER, create_partial_user, _resolve_thread_user_data_preprocessed
+from .user import User, ZEROUSER, create_partial_user, _thread_user_create
 from .role import PermissionOverwrite
 from .core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
@@ -4133,7 +4133,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             except KeyError:
                 pass
             else:
-                _resolve_thread_user_data_preprocessed(client, self, thread_user_data)
+                _thread_user_create(self, client, thread_user_data)
         
         return self
     

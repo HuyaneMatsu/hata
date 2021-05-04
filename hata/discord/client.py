@@ -11405,10 +11405,10 @@ class Client(ClientUserPBase):
         image = image_to_base64(image)
         
         data = {
-            'name'     : name,
-            'image'    : image,
-            'roles' : role_ids
-                }
+            'name': name,
+            'image': image,
+            'roles': role_ids
+        }
         
         data = await self.http.emoji_create(guild_id, data, reason)
         
@@ -11705,11 +11705,11 @@ class Client(ClientUserPBase):
                     f'{temporary.__class__.__name__}.')
         
         data = {
-            'max_age'   : max_age,
-            'max_uses'  : max_uses,
-            'temporary' : temporary,
-            'unique'    : unique,
-                }
+            'max_age': max_age,
+            'max_uses': max_uses,
+            'temporary': temporary,
+            'unique': unique,
+        }
         
         data = await self.http.invite_create(channel_id, data)
         return Invite(data, False)
@@ -11809,13 +11809,13 @@ class Client(ClientUserPBase):
                     f'{temporary.__class__.__name__}.')
         
         data = {
-            'max_age'        : max_age,
-            'max_uses'       : max_uses,
-            'temporary'      : temporary,
-            'unique'         : unique,
-            'target_user_id' : user_id,
-            'target_type'    : InviteTargetType.stream.value,
-                }
+            'max_age': max_age,
+            'max_uses': max_uses,
+            'temporary': temporary,
+            'unique': unique,
+            'target_user_id': user_id,
+            'target_type': InviteTargetType.stream.value,
+        }
         
         data = await self.http.invite_create(voice_state.channel.id, data)
         return Invite(data, False)
@@ -11902,13 +11902,13 @@ class Client(ClientUserPBase):
                     f'{temporary.__class__.__name__}.')
         
         data = {
-            'max_age'               : max_age,
-            'max_uses'              : max_uses,
-            'temporary'             : temporary,
-            'unique'                : unique,
-            'target_application_id' : application_id,
-            'target_type'           : InviteTargetType.embedded_application.value,
-                }
+            'max_age': max_age,
+            'max_uses': max_uses,
+            'temporary': temporary,
+            'unique': unique,
+            'target_application_id': application_id,
+            'target_type': InviteTargetType.embedded_application.value,
+        }
         
         data = await self.http.invite_create(channel_id, data)
         return Invite(data, False)

@@ -114,6 +114,9 @@ Redo error code names and thread support.
 - Rename `client_code.py` to `core.py` and move many related types and functions, like `start_clients`, `stop_clients` and `Kokoro`,
 - Rename `EventDescriptor` to `EventHandlerManager`.
 - Rename `check_argcount_and_convert` to `check_parameter_count_and_convert`.
+- Rename `Client.events.user_profile_edit` to `.guild_user_edit`.
+- Deprecate `Client.events.user_profile_edit`.
+
 
 ## 1.1.73 *\[2021-05-01\]*
 

@@ -1,5 +1,7 @@
 __all__ = ('IntentFlag',)
 
+from itertools import chain, repeat
+
 from ..bases import FlagBase
 from ...env import CACHE_PRESENCE
 
@@ -152,23 +154,27 @@ GLOBAL_INTENT_SHIFT_EVENTS = (
 INTENT_SHIFT_DEFAULT_EVENT = 255
 INTENT_SHIFT_MISSING_EVENT = 254
 
-# Allocate local variables
-intent_shift = 0
-event_names = ()
-event_name = ''
 
-DISPATCH_EVENT_TO_INTENT = {}
-for intent_shift, event_names in INTENT_SHIFT_EVENTS.items():
-    for event_name in event_names:
-        DISPATCH_EVENT_TO_INTENT[event_name] = intent_shift
+DISPATCH_EVENT_TO_INTENTS = {}
 
-for event_name in GLOBAL_INTENT_SHIFT_EVENTS:
-    DISPATCH_EVENT_TO_INTENT[event_name] = INTENT_SHIFT_DEFAULT_EVENT
+def populate_dispatch_event_intents():
+    from itertools import chain, repeat
+    
+    for intent_shift, event_names in chain(
+            INTENT_SHIFT_EVENTS.items(),
+            zip(repeat(INTENT_SHIFT_DEFAULT_EVENT), GLOBAL_INTENT_SHIFT_EVENTS),
+                ):
+        
+        for event_name in event_names:
+            try:
+                intent_shifts = DISPATCH_EVENT_TO_INTENTS[event_name]
+            except KeyError:
+                DISPATCH_EVENT_TO_INTENTS[event_name] = (intent_shift, )
+            else:
+                DISPATCH_EVENT_TO_INTENTS[event_name] = (*intent_shifts, intent_shift, )
 
-# Unallocate local variables.
-del intent_shift
-del event_names
-del event_name
+populate_dispatch_event_intents()
+del populate_dispatch_event_intents
 
 
 class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):

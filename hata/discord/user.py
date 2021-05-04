@@ -10,7 +10,7 @@ from ..backend.utils import DOCS_ENABLED, copy_docs
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
-from .core import USERS, CHANNELS
+from .core import USERS
 from .utils import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
 from .activity import ActivityUnknown, create_activity
@@ -21,7 +21,7 @@ from .preinstanced import Status, DefaultAvatar
 from . import urls as module_urls
 
 create_partial_role = include('create_partial_role')
-
+Client = include('Client')
 
 class UserFlag(FlagBase):
     """
@@ -110,7 +110,7 @@ def create_partial_user(user_id):
     
     Returns
     -------
-    user : ``Client`` or ``User``
+    user : ``ClientUserBase``
     """
     try:
         return USERS[user_id]
@@ -363,43 +363,27 @@ class GuildProfile:
         return self.color
 
 
-def _resolve_thread_user_data(data):
+def _thread_user_create(thread_channel, user, thread_user_data):
     """
     Resolves the given thread user data.
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
-        Received thread user data.
-    """
-    thread_chanel_id = int(data['id'])
-    try:
-        thread = CHANNELS[thread_chanel_id]
-    except KeyError:
-        return
-    
-    user_id = int(data['user_id'])
-    user = create_partial_user(user_id)
-    
-    _resolve_thread_user_data_preprocessed(thread, user, data)
-
-
-def _resolve_thread_user_data_preprocessed(thread, user, data):
-    """
-    Resolves the given thread user data.
-    
-    Parameters
-    ----------
-    thread : ``ChannelThread``
-        Respective thread channel.
+    thread_channel : ``ChannelThread``
+        The respective thread.
     user : ``ClientUserBase``
-        The user to resolve.
-    data : `dict` of (`str`, `Any`) items
-        Thread user data.
+        The respective user to add or update in the thread.
+    thread_user_data : `dict` of (`str`, `Any`) items
+        Received thread user data.
+    
+    Returns
+    -------
+    created : `bool`
+        Whether a new thread profile was created.
     """
-    thread_users = thread.thread_users
+    thread_users = thread_channel.thread_users
     if thread_users is None:
-        thread_users = thread.thread_users = {}
+        thread_users = thread_channel.thread_users = {}
     thread_users[user.id] = user
     
     thread_profiles = user.thread_profiles
@@ -407,11 +391,130 @@ def _resolve_thread_user_data_preprocessed(thread, user, data):
         thread_profiles = user.thread_profiles = {}
     
     try:
-        thread_profile = thread_profiles[thread]
+        thread_profile = thread_profiles[thread_channel]
     except KeyError:
-        thread_profiles[thread] = ThreadProfile(data)
+        thread_profiles[thread_channel] = ThreadProfile(thread_user_data)
+        created = True
     else:
-        thread_profile._update_no_return(data)
+        thread_profile._update_no_return(thread_user_data)
+        created = False
+    
+    return created
+
+def _thread_user_update(thread_channel, user, thread_user_data):
+    """
+    Resolves the given thread user update.
+    
+    Parameters
+    ----------
+    thread_channel : ``ChannelThread``
+        The respective thread.
+    user : ``ClientUserBase``
+        The respective user to add or update in the thread.
+    thread_user_data : `dict` of (`str`, `Any`) items
+        Received thread user data.
+    
+    Returns
+    -------
+    old_attributes : `None` or `dict` of (`str`, `Any`) items
+    """
+    thread_users = thread_channel.thread_users
+    if thread_users is None:
+        thread_users = thread_channel.thread_users = {}
+    thread_users[user.id] = user
+    
+    thread_profiles = user.thread_profiles
+    if thread_profiles is None:
+        thread_profiles = user.thread_profiles = {}
+    
+    try:
+        thread_profile = thread_profiles[thread_channel]
+    except KeyError:
+        thread_profiles[thread_channel] = ThreadProfile(thread_user_data)
+        return None
+    
+    old_attributes = thread_profile._update_no_return(thread_user_data)
+    if not old_attributes:
+        old_attributes = None
+    
+    return old_attributes
+
+
+def _thread_user_delete(thread_channel, user_id):
+    """
+    Removes the user for the given id from the thread's users.
+    
+    Parameters
+    ----------
+    thread_channel : ``ChannelThread``
+        The respective thread.
+    user_id : `int`
+        The respective user's identifier.
+    """
+    thread_users = thread_channel.thread_users
+    if (thread_users is not None):
+        try:
+            user = thread_users.pop(user_id)
+        except KeyError:
+            pass
+        else:
+            if not thread_users:
+                thread_channel.thread_users = None
+            
+            thread_profiles = user.thread_profiles
+            if (thread_profiles is not None):
+                try:
+                    del thread_profiles[thread_channel]
+                except KeyError:
+                    pass
+                else:
+                    if not thread_profiles:
+                        user.thread_profiles = None
+
+
+def _thread_user_pop(thread_channel, user_id, me):
+    """
+    Removes and returns the user for the given id from the thread's users.
+    
+    Parameters
+    ----------
+    thread_channel : ``ChannelThread``
+        The respective thread.
+    user_id : `int`
+        The respective user's identifier.
+    me : ``Client``
+        The client who pops the user.
+    
+    Returns
+    -------
+    popped : `None` or `tuple` (``ClientUserBase``, ``ThreadProfile``) item
+        The removed user and it's profile if any.
+    """
+    thread_users = thread_channel.thread_users
+    if (thread_users is not None):
+        try:
+            user = thread_users.pop(user_id)
+        except KeyError:
+            pass
+        else:
+            if not thread_users:
+                thread_channel.thread_users = None
+            
+            thread_profiles = user.thread_profiles
+            if (thread_profiles is not None):
+                if isinstance(user, Client) and (user is not me):
+                    thread_profile = thread_profiles.get(thread_channel, None)
+                else:
+                    try:
+                        thread_profile = thread_profiles.pop(thread_channel)
+                    except KeyError:
+                        thread_profile = None
+                    else:
+                        if not thread_profiles:
+                            user.thread_profiles = None
+                        
+                if (thread_profile is not None):
+                    return user, thread_profile
 
 
 class ThreadProfile:

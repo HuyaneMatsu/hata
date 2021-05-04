@@ -137,6 +137,24 @@ def filter_clients_or_me(clients, flag_mask, me):
     yield user
 
 
+def filter_just_me(me):
+    """
+    Yields the source client.
+    
+    This filter is used when the client itself is the only one who should handle the respective event.
+    
+    Parameters
+    ----------
+    me : ``Client``
+        The client to yield back.
+    
+    Yields
+    -------
+    client : ``Client``
+    """
+    yield me
+
+
 def first_client(clients, flag_mask):
     """
     Returns the first client what allows the specified intent flag. If no client allows it, then returns `None`.

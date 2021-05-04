@@ -1,6 +1,7 @@
 __all__ = ()
 
 import warnings
+from itertools import chain
 
 try:
     from _weakref import WeakSet
@@ -15,7 +16,7 @@ from ...backend.futures import Future, Task
 
 from ..core import KOKORO
 
-from .intent import DISPATCH_EVENT_TO_INTENT, INTENT_SHIFT_MISSING_EVENT, INTENT_SHIFT_DEFAULT_EVENT
+from .intent import DISPATCH_EVENT_TO_INTENTS, INTENT_SHIFT_MISSING_EVENT, INTENT_SHIFT_DEFAULT_EVENT
 
 PARSERS = {}
 
@@ -119,7 +120,7 @@ add_event_handler('reaction_delete'                        , 2 , 'MESSAGE_REACTI
 add_event_handler('reaction_delete_emoji'                  , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'           , )
 add_event_handler('user_edit'                              , 3 , 'PRESENCE_UPDATE'                         , )
 add_event_handler('user_presence_update'                   , 3 , 'PRESENCE_UPDATE'                         , )
-add_event_handler('user_profile_edit'                      , 4 , 'GUILD_MEMBER_UPDATE'                     , )
+add_event_handler('guild_user_edit'                        , 4 , 'GUILD_MEMBER_UPDATE'                     , )
 add_event_handler('channel_delete'                         , 3 , ('CHANNEL_DELETE', 'THREAD_DELETE')       , )
 add_event_handler('channel_edit'                           , 3 , ('CHANNEL_UPDATE', 'THREAD_UPDATE')       , )
 add_event_handler('channel_create'                         , 2 , ('CHANNEL_CREATE', 'THREAD_CREATE')       , )
@@ -164,6 +165,9 @@ add_event_handler('application_command_permission_update'  , 2 , 'APPLICATION_CO
 add_event_handler('stage_create'                           , 2 , 'STAGE_INSTANCE_CREATE'                   , )
 add_event_handler('stage_edit'                             , 2 , 'STAGE_INSTANCE_UPDATE'                   , )
 add_event_handler('stage_delete'                           , 2 , 'STAGE_INSTANCE_DELETE'                   , )
+add_event_handler('thread_user_add'                        , 4 , ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'), )
+add_event_handler('thread_user_delete'                     , 3 , ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'), )
+
 
 
 READY_STATE_TIMEOUT = 2.0
@@ -316,19 +320,31 @@ class ParserSettingOption:
         The parser's name(s) also known as the dispatch event's.
     """
     __slots__ = ('intent_shift', 'name')
-    def __init__(self, name):
+    def __init__(cls, name):
+        """
+        Creates new ``ParserSettingOption`` instances from the given name.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        self : ``ParserSettingOption``
+        """
         try:
-            intent_shift = DISPATCH_EVENT_TO_INTENT[name]
+            intent_shifts = DISPATCH_EVENT_TO_INTENTS[name]
         except KeyError:
             warnings.warn(
                 f'Dispatch event parser {name!r} is not registered to any intent. '
                 'Will always use optimized parser to dispatch it.',
                 RuntimeWarning)
             
-            intent_shift = INTENT_SHIFT_MISSING_EVENT
+            intent_shifts = (INTENT_SHIFT_MISSING_EVENT, )
         
-        self.name = name
-        self.intent_shift = intent_shift
+        for intent_shift in intent_shifts:
+            self = object.__new__(cls)
+            self.name = name
+            self.intent_shift = intent_shift
+            yield self
     
     def __repr__(self):
         """Returns the parser description's representation."""
@@ -387,7 +403,7 @@ class ParserSetting:
         parser_opt_mc : `function`
             Multi client optimized events.
         """
-        options = tuple(ParserSettingOption(name) for name in names)
+        options = tuple(chain.from_iterable(ParserSettingOption(name) for name in names))
         
         self = object.__new__(cls)
         self.options = options

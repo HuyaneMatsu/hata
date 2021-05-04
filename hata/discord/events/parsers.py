@@ -8,8 +8,9 @@ from ...backend.futures import Task
 from ...backend.export import include
 
 from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT
-from ..user import User, create_partial_user, USERS
-from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined
+from ..user import User, create_partial_user, USERS, _thread_user_create, _thread_user_update, _thread_user_pop, \
+    _thread_user_delete
+from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
@@ -22,7 +23,7 @@ from ..integration import Integration
 from ..stage import Stage
 
 from .core import ReadyState, maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
-from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me
+from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
 from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS, \
     INTENT_MASK_GUILD_VOICE_STATES, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_MESSAGES, \
     INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS
@@ -1350,7 +1351,7 @@ if CACHE_USER:
         if isinstance(user, Client):
             guild._invalidate_perm_cache()
         
-        Task(client.events.user_profile_edit(client, user, guild, old_attributes), KOKORO)
+        Task(client.events.guild_user_edit(client, user, guild, old_attributes), KOKORO)
     
     def GUILD_MEMBER_UPDATE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1376,7 +1377,7 @@ if CACHE_USER:
         
         clients.send(user)
         for client_ in clients:
-            event_handler = client_.events.user_profile_edit
+            event_handler = client_.events.guild_user_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, user, guild, old_attributes), KOKORO)
     
@@ -1429,7 +1430,7 @@ else:
         
         guild._invalidate_perm_cache()
         
-        Task(client.events.user_profile_edit(client, client, guild, old_attributes), KOKORO)
+        Task(client.events.guild_user_edit(client, client, guild, old_attributes), KOKORO)
     
     GUILD_MEMBER_UPDATE__CAL_MC = GUILD_MEMBER_UPDATE__CAL_SC
     
@@ -3519,3 +3520,251 @@ add_parser(
     STAGE_INSTANCE_DELETE__OPT)
 del STAGE_INSTANCE_DELETE__CAL, \
     STAGE_INSTANCE_DELETE__OPT
+
+
+def THREAD_LIST_SYNC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, 'THREAD_LIST_SYNC')
+        return
+    
+    thread_channel_datas = data['threads']
+    for thread_channel_data in thread_channel_datas:
+        ChannelThread(thread_channel_data, client, guild)
+    
+    thread_user_datas = data['members']
+    for thread_user_data in thread_user_datas:
+        thread_chanel_id = int(data['id'])
+        try:
+            thread_channel = CHANNELS[thread_chanel_id]
+        except KeyError:
+            return
+        
+        user_id = int(data['user_id'])
+        user = create_partial_user(user_id)
+        
+        _thread_user_create(thread_channel, user, thread_user_data)
+
+
+add_parser(
+    'THREAD_LIST_SYNC',
+    THREAD_LIST_SYNC,
+    THREAD_LIST_SYNC,
+    THREAD_LIST_SYNC,
+    THREAD_LIST_SYNC)
+del THREAD_LIST_SYNC, \
+    THREAD_LIST_SYNC
+
+
+def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    old_attributes = _thread_user_update(thread_channel, client, data)
+    if (old_attributes is None):
+        return
+    
+    Task(client.user_thread_profile_edit(client, thread_channel, client, old_attributes), KOKORO)
+
+
+def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    clients = filter_clients(thread_channel.clients, INTENT_MASK_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    old_attributes = _thread_user_update(thread_channel, client, data)
+    if (old_attributes is None):
+        clients.close()
+        return
+    
+    for client_ in clients:
+        event_handler = client_.user_thread_profile_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, thread_channel, client, old_attributes), KOKORO)
+
+
+def THREAD_MEMBER_UPDATE__OPT(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    _thread_user_create(thread_channel, client, data)
+
+
+add_parser(
+    'THREAD_MEMBER_UPDATE',
+    THREAD_MEMBER_UPDATE__CAL_SC,
+    THREAD_MEMBER_UPDATE__CAL_MC,
+    THREAD_MEMBER_UPDATE__OPT,
+    THREAD_MEMBER_UPDATE__OPT)
+del THREAD_MEMBER_UPDATE__CAL_SC, \
+    THREAD_MEMBER_UPDATE__CAL_MC, \
+    THREAD_MEMBER_UPDATE__OPT
+
+
+def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    removed_user_ids = data.get('removed_member_ids', None)
+    if (removed_user_ids is not None) and removed_user_ids:
+        for user_id in removed_user_ids:
+            user_id = int(user_id)
+            
+            thread_user_deletion = _thread_user_pop(thread_channel, user_id, client)
+            if (thread_user_deletion is not None):
+                event_handler = client.events.thread_user_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, thread_channel, *thread_user_deletion), KOKORO)
+    
+    thread_user_datas = data.get('added_members', None)
+    if (thread_user_datas is not None) and thread_user_datas:
+        for thread_user_data in thread_user_datas:
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user(user_id)
+            
+            created = _thread_user_create(thread_channel, user, thread_user_datas)
+            if created:
+                event_handler = client.events.thread_user_add
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, thread_channel, user), KOKORO)
+
+
+def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    if client.intents&INTENT_MASK_GUILD_USERS:
+        clients = filter_clients(thread_channel.clients, INTENT_MASK_GUILD_USERS)
+    
+        if clients.send(None) is not client:
+            return
+        
+        just_me = False
+    else:
+        clients = filter_just_me(client)
+        just_me = True
+    
+    
+    thread_user_deletions = None
+    removed_user_ids = data.get('removed_member_ids', None)
+    if (removed_user_ids is not None) and removed_user_ids:
+        for user_id in removed_user_ids:
+            user_id = int(user_id)
+            
+            thread_user_deletion = _thread_user_pop(thread_channel, user_id, client)
+            if (thread_user_deletion is not None):
+                if thread_user_deletions is None:
+                    thread_user_deletions = []
+                
+                thread_user_deletions.append(thread_user_deletion)
+    
+    
+    thread_user_additions = None
+    
+    thread_user_datas = data.get('added_members', None)
+    if (thread_user_datas is not None) and thread_user_datas:
+        for thread_user_data in thread_user_datas:
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user(user_id)
+            
+            created = _thread_user_create(thread_channel, user, thread_user_datas)
+            if created or just_me:
+                if thread_user_additions is None:
+                    thread_user_additions = []
+                
+                thread_user_additions.append(user)
+    
+    
+    for client in clients:
+        if (thread_user_deletions is not None):
+            event_handler = client.events.thread_user_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                for thread_user_deletion in thread_user_deletions:
+                    Task(event_handler(client, thread_channel, *thread_user_deletion), KOKORO)
+        
+        if (thread_user_additions is not None):
+            event_handler = client.events.thread_user_add
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                for user in thread_user_additions:
+                    Task(event_handler(client, thread_channel, user), KOKORO)
+
+
+def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    removed_user_ids = data.get('removed_member_ids', None)
+    if (removed_user_ids is not None) and removed_user_ids:
+        for user_id in removed_user_ids:
+            user_id = int(user_id)
+            
+            _thread_user_delete(thread_channel, user_id)
+    
+    thread_user_datas = data.get('added_members', None)
+    if (thread_user_datas is not None) and thread_user_datas:
+        for thread_user_data in thread_user_datas:
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user(user_id)
+            
+            _thread_user_create(thread_channel, user, thread_user_datas)
+
+
+def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
+    thread_chanel_id = int(data['id'])
+    try:
+        thread_channel = CHANNELS[thread_chanel_id]
+    except KeyError:
+        return
+    
+    if first_client_or_me(thread_channel.clients, INTENT_MASK_GUILD_USERS, client) is not client:
+        return
+    
+    removed_user_ids = data.get('removed_member_ids', None)
+    if (removed_user_ids is not None) and removed_user_ids:
+        for user_id in removed_user_ids:
+            user_id = int(user_id)
+            
+            _thread_user_delete(thread_channel, user_id)
+    
+    thread_user_datas = data.get('added_members', None)
+    if (thread_user_datas is not None) and thread_user_datas:
+        for thread_user_data in thread_user_datas:
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user(user_id)
+            
+            _thread_user_create(thread_channel, user, thread_user_datas)
+
+add_parser(
+    'THREAD_MEMBERS_UPDATE',
+    THREAD_MEMBERS_UPDATE__CAL_SC,
+    THREAD_MEMBERS_UPDATE__CAL_MC,
+    THREAD_MEMBERS_UPDATE__OPT_SC,
+    THREAD_MEMBERS_UPDATE__OPT_MC)
+del THREAD_MEMBERS_UPDATE__CAL_SC, \
+    THREAD_MEMBERS_UPDATE__CAL_MC, \
+    THREAD_MEMBERS_UPDATE__OPT_SC, \
+    THREAD_MEMBERS_UPDATE__OPT_MC

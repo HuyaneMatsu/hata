@@ -357,10 +357,6 @@ class GuildProfile:
         
         return Color()
     
-    @property
-    def colour(self):
-        """Alias of ``.color``."""
-        return self.color
 
 
 def _thread_user_create(thread_channel, user, thread_user_data):
@@ -929,11 +925,6 @@ class UserBase(DiscordEntity, immortal=True):
         color : ``Color``
         """
         return Color()
-    
-    
-    def colour_at(self, guild):
-        """Alias of ``.color_at``."""
-        return self.color_at
     
     
     def name_at(self, guild):

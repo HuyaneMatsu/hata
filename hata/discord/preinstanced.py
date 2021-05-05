@@ -1942,10 +1942,6 @@ class DefaultAvatar(PreinstancedBase):
     
     url = property(module_urls.default_avatar_url)
     
-    @property
-    def colour(self):
-        """Alias of ``.color_at``."""
-        return self.color
     
     # predefined
     blue = NotImplemented

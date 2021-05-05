@@ -858,16 +858,6 @@ class EmbedBase:
     video : {None, EmbedVideo}
     
     
-    @property
-    def colour(self):
-        """Alias of ``.color``."""
-        return self.color
-    
-    @colour.getter
-    def colour(self, color):
-        self.color = color
-    
-    
     def __len__(self):
         """Returns the embed's contents' length."""
         result = 0
@@ -2100,8 +2090,6 @@ class Embed(EmbedBase):
         self._data['author'] = author_data
         return self
     
-    set_author = add_author
-    
     # fields
 
     def add_field(self, name, value, inline=False):
@@ -2122,9 +2110,9 @@ class Embed(EmbedBase):
         self : ``Embed``
         """
         field_data = {
-            'name' : name,
-            'value' : value,
-                }
+            'name': name,
+            'value': value,
+        }
         
         if inline:
             field_data['inline'] = inline
@@ -2155,9 +2143,9 @@ class Embed(EmbedBase):
             Whether this field should display inline.
         """
         field_data = {
-            'name' : name,
-            'value' : value,
-                }
+            'name': name,
+            'value': value,
+        }
         
         if inline:
             field_data['inline'] = inline
@@ -2296,16 +2284,14 @@ class Embed(EmbedBase):
         self : ``Embed``
         """
         footer_data = {
-            'text' : text,
-                }
+            'text': text,
+        }
         
         if (icon_url is not None):
             footer_data['icon_url'] = icon_url
         
         self._data['footer'] = footer_data
         return self
-    
-    set_footer = add_footer
     
     # image
     
@@ -2323,13 +2309,11 @@ class Embed(EmbedBase):
         self : ``Embed``
         """
         image_data = {
-            'url' : url,
-                }
+            'url': url,
+        }
         
         self._data['image'] = image_data
         return self
-    
-    set_image = add_image
     
     # thumbnail
     
@@ -2347,13 +2331,11 @@ class Embed(EmbedBase):
         self : ``Embed``
         """
         thumbnail_data = {
-            'url' : url,
-                }
+            'url': url,
+        }
         
         self._data['thumbnail'] = thumbnail_data
         return self
-    
-    set_thumbnail = add_thumbnail
 
 
 class _EmbedFieldsProxy:

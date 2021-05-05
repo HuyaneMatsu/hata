@@ -580,10 +580,6 @@ class ActivityBase:
         """
         return Color()
     
-    @property
-    def colour(self):
-        """Alias of ``.color``."""
-        return self.color
     
     @property
     def discord_side_id(self):

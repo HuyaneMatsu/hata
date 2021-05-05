@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-__all__ = ('COLORS', 'COLOURS', 'Color', 'Colour', 'parse_color', 'parse_colour')
+__all__ = ('COLORS', 'Color', 'parse_color',)
 
 import re
 from math import floor
@@ -616,6 +616,3 @@ def parse_color(text):
 del re
 del modulize
 
-Colour = Color
-parse_colour = parse_color
-COLOURS = COLORS

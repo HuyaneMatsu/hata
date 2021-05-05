@@ -4278,6 +4278,25 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     def display_name(self):
         return self.name.lower()
     
+    
+    @property
+    @copy_docs(ChannelBase.users)
+    def users(self):
+        thread_users = self.thread_users
+        if thread_users is None:
+            users = []
+        else:
+            users = list(thread_users.values())
+        
+        return users
+    
+    @copy_docs(ChannelBase.iter_users)
+    def iter_users(self):
+        thread_users = self.thread_users
+        if (thread_users is not None):
+            yield from thread_users.values()
+    
+    
     @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
         self.name = data['name']

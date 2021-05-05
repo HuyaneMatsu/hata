@@ -53,7 +53,9 @@ def _iter_name(name):
     ------
     name : `str`
     """
-    if isinstance(name, tuple):
+    if name is None:
+        pass
+    elif isinstance(name, tuple):
         for name in name:
             yield from _iter_name(name)
     else:
@@ -105,68 +107,68 @@ def get_event_parser_parameter_count(name):
     
     return parameter_count
 
-add_event_handler('error'                                  , 3 , ()                                        , )
-add_event_handler('launch'                                 , 1 , ()                                        , )
+add_event_handler('error', 3, None,)
+add_event_handler('launch', 1, None,)
 
-add_event_handler('ready'                                  , 1 , 'READY'                                   , )
-add_event_handler('client_edit'                            , 2 , 'USER_UPDATE'                             , )
-add_event_handler('message_create'                         , 2 , 'MESSAGE_CREATE'                          , )
-add_event_handler('message_delete'                         , 2 , ('MESSAGE_DELETE', 'MESSAGE_DELETE_BULK') , )
-add_event_handler('message_edit'                           , 3 , 'MESSAGE_UPDATE'                          , )
-add_event_handler('embed_update'                           , 3 , 'MESSAGE_UPDATE'                          , )
-add_event_handler('reaction_add'                           , 2 , 'MESSAGE_REACTION_ADD'                    , )
-add_event_handler('reaction_clear'                         , 3 , 'MESSAGE_REACTION_REMOVE_ALL'             , )
-add_event_handler('reaction_delete'                        , 2 , 'MESSAGE_REACTION_REMOVE'                 , )
-add_event_handler('reaction_delete_emoji'                  , 4 , 'MESSAGE_REACTION_REMOVE_EMOJI'           , )
-add_event_handler('user_edit'                              , 3 , 'PRESENCE_UPDATE'                         , )
-add_event_handler('user_presence_update'                   , 3 , 'PRESENCE_UPDATE'                         , )
-add_event_handler('guild_user_edit'                        , 4 , 'GUILD_MEMBER_UPDATE'                     , )
-add_event_handler('channel_delete'                         , 3 , ('CHANNEL_DELETE', 'THREAD_DELETE')       , )
-add_event_handler('channel_edit'                           , 3 , ('CHANNEL_UPDATE', 'THREAD_UPDATE')       , )
-add_event_handler('channel_create'                         , 2 , ('CHANNEL_CREATE', 'THREAD_CREATE')       , )
-add_event_handler('channel_pin_update'                     , 2 , 'CHANNEL_PINS_UPDATE'                     , )
-add_event_handler('channel_group_user_add'                 , 3 , 'CHANNEL_RECIPIENT_ADD'                   , )
-add_event_handler('channel_group_user_delete'              , 3 , 'CHANNEL_RECIPIENT_REMOVE'                , )
-add_event_handler('emoji_create'                           , 2 , 'GUILD_EMOJIS_UPDATE'                     , )
-add_event_handler('emoji_delete'                           , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
-add_event_handler('emoji_edit'                             , 3 , 'GUILD_EMOJIS_UPDATE'                     , )
-add_event_handler('guild_user_add'                         , 3 , 'GUILD_MEMBER_ADD'                        , )
-add_event_handler('guild_user_delete'                      , 4 , 'GUILD_MEMBER_REMOVE'                     , )
-add_event_handler('guild_join_reject'                      , 3 , 'GUILD_JOIN_REQUEST_DELETE'               , )
-add_event_handler('guild_create'                           , 2 , 'GUILD_CREATE'                            , )
-add_event_handler('guild_edit'                             , 2 , 'GUILD_UPDATE'                            , )
-add_event_handler('guild_delete'                           , 3 , 'GUILD_DELETE'                            , )
-add_event_handler('guild_ban_add'                          , 3 , 'GUILD_BAN_ADD'                           , )
-add_event_handler('guild_ban_delete'                       , 3 , 'GUILD_BAN_REMOVE'                        , )
-add_event_handler('guild_user_chunk'                       , 2 , 'GUILD_MEMBERS_CHUNK'                     , )
-add_event_handler('integration_create'                     , 3 , 'INTEGRATION_CREATE'                      , )
-add_event_handler('integration_delete'                     , 4 , 'INTEGRATION_DELETE'                      , )
-add_event_handler('integration_edit'                       , 3 , 'INTEGRATION_UPDATE'                      , )
-add_event_handler('integration_update'                     , 2 , 'GUILD_INTEGRATIONS_UPDATE'               , )
-add_event_handler('role_create'                            , 2 , 'GUILD_ROLE_CREATE'                       , )
-add_event_handler('role_delete'                            , 3 , 'GUILD_ROLE_DELETE'                       , )
-add_event_handler('role_edit'                              , 3 , 'GUILD_ROLE_UPDATE'                       , )
-add_event_handler('webhook_update'                         , 2 , 'WEBHOOKS_UPDATE'                         , )
-add_event_handler('user_voice_join'                        , 2 , 'VOICE_STATE_UPDATE'                      , )
-add_event_handler('user_voice_leave'                       , 2 , 'VOICE_STATE_UPDATE'                      , )
-add_event_handler('user_voice_update'                      , 3 , 'VOICE_STATE_UPDATE'                      , )
-add_event_handler('typing'                                 , 4 , 'TYPING_START'                            , )
-add_event_handler('invite_create'                          , 2 , 'INVITE_CREATE'                           , )
-add_event_handler('invite_delete'                          , 2 , 'INVITE_DELETE'                           , )
-add_event_handler('relationship_add'                       , 2 , 'RELATIONSHIP_ADD'                        , )
-add_event_handler('relationship_change'                    , 3 , 'RELATIONSHIP_ADD'                        , )
-add_event_handler('relationship_delete'                    , 2 , 'RELATIONSHIP_REMOVE'                     , )
-add_event_handler('gift_update'                            , 3 , 'GIFT_CODE_UPDATE'                        , )
-add_event_handler('interaction_create'                     , 2 , 'INTERACTION_CREATE'                      , )
-add_event_handler('application_command_create'             , 3 , 'APPLICATION_COMMAND_CREATE'              , )
-add_event_handler('application_command_update'             , 4 , 'APPLICATION_COMMAND_UPDATE'              , )
-add_event_handler('application_command_delete'             , 3 , 'APPLICATION_COMMAND_DELETE'              , )
-add_event_handler('application_command_permission_update'  , 2 , 'APPLICATION_COMMAND_PERMISSIONS_UPDATE'  , )
-add_event_handler('stage_create'                           , 2 , 'STAGE_INSTANCE_CREATE'                   , )
-add_event_handler('stage_edit'                             , 2 , 'STAGE_INSTANCE_UPDATE'                   , )
-add_event_handler('stage_delete'                           , 2 , 'STAGE_INSTANCE_DELETE'                   , )
-add_event_handler('thread_user_add'                        , 4 , ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'), )
-add_event_handler('thread_user_delete'                     , 3 , ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'), )
+add_event_handler('ready', 1, 'READY',)
+add_event_handler('client_edit', 2, 'USER_UPDATE',)
+add_event_handler('message_create', 2, 'MESSAGE_CREATE',)
+add_event_handler('message_delete', 2, ('MESSAGE_DELETE', 'MESSAGE_DELETE_BULK') ,)
+add_event_handler('message_edit', 3, 'MESSAGE_UPDATE',)
+add_event_handler('embed_update', 3, 'MESSAGE_UPDATE',)
+add_event_handler('reaction_add', 2, 'MESSAGE_REACTION_ADD',)
+add_event_handler('reaction_clear', 3, 'MESSAGE_REACTION_REMOVE_ALL',)
+add_event_handler('reaction_delete', 2, 'MESSAGE_REACTION_REMOVE',)
+add_event_handler('reaction_delete_emoji', 4, 'MESSAGE_REACTION_REMOVE_EMOJI',)
+add_event_handler('user_edit', 3, 'PRESENCE_UPDATE',)
+add_event_handler('user_presence_update', 3, 'PRESENCE_UPDATE',)
+add_event_handler('guild_user_edit', 4, 'GUILD_MEMBER_UPDATE',)
+add_event_handler('channel_delete', 3, ('CHANNEL_DELETE', 'THREAD_DELETE'),)
+add_event_handler('channel_edit', 3, ('CHANNEL_UPDATE', 'THREAD_UPDATE'),)
+add_event_handler('channel_create', 2, ('CHANNEL_CREATE', 'THREAD_CREATE'),)
+add_event_handler('channel_pin_update', 2, 'CHANNEL_PINS_UPDATE',)
+add_event_handler('channel_group_user_add', 3, 'CHANNEL_RECIPIENT_ADD',)
+add_event_handler('channel_group_user_delete', 3, 'CHANNEL_RECIPIENT_REMOVE',)
+add_event_handler('emoji_create', 2, 'GUILD_EMOJIS_UPDATE',)
+add_event_handler('emoji_delete', 3, 'GUILD_EMOJIS_UPDATE',)
+add_event_handler('emoji_edit', 3, 'GUILD_EMOJIS_UPDATE',)
+add_event_handler('guild_user_add', 3, 'GUILD_MEMBER_ADD',)
+add_event_handler('guild_user_delete', 4, 'GUILD_MEMBER_REMOVE',)
+add_event_handler('guild_join_reject', 3, 'GUILD_JOIN_REQUEST_DELETE',)
+add_event_handler('guild_create', 2, 'GUILD_CREATE',)
+add_event_handler('guild_edit', 2, 'GUILD_UPDATE',)
+add_event_handler('guild_delete', 3, 'GUILD_DELETE',)
+add_event_handler('guild_ban_add', 3, 'GUILD_BAN_ADD',)
+add_event_handler('guild_ban_delete', 3, 'GUILD_BAN_REMOVE',)
+add_event_handler('guild_user_chunk', 2, 'GUILD_MEMBERS_CHUNK',)
+add_event_handler('integration_create', 3, 'INTEGRATION_CREATE',)
+add_event_handler('integration_delete', 4, 'INTEGRATION_DELETE',)
+add_event_handler('integration_edit', 3, 'INTEGRATION_UPDATE',)
+add_event_handler('integration_update', 2, 'GUILD_INTEGRATIONS_UPDATE',)
+add_event_handler('role_create', 2, 'GUILD_ROLE_CREATE',)
+add_event_handler('role_delete', 3, 'GUILD_ROLE_DELETE',)
+add_event_handler('role_edit', 3, 'GUILD_ROLE_UPDATE',)
+add_event_handler('webhook_update', 2, 'WEBHOOKS_UPDATE',)
+add_event_handler('user_voice_join', 2, 'VOICE_STATE_UPDATE',)
+add_event_handler('user_voice_leave', 2, 'VOICE_STATE_UPDATE',)
+add_event_handler('user_voice_update', 3, 'VOICE_STATE_UPDATE',)
+add_event_handler('typing', 4, 'TYPING_START',)
+add_event_handler('invite_create', 2, 'INVITE_CREATE',)
+add_event_handler('invite_delete', 2, 'INVITE_DELETE',)
+add_event_handler('relationship_add', 2, 'RELATIONSHIP_ADD',)
+add_event_handler('relationship_change', 3, 'RELATIONSHIP_ADD',)
+add_event_handler('relationship_delete', 2, 'RELATIONSHIP_REMOVE',)
+add_event_handler('gift_update', 3, 'GIFT_CODE_UPDATE',)
+add_event_handler('interaction_create', 2, 'INTERACTION_CREATE',)
+add_event_handler('application_command_create', 3, 'APPLICATION_COMMAND_CREATE',)
+add_event_handler('application_command_update', 4, 'APPLICATION_COMMAND_UPDATE',)
+add_event_handler('application_command_delete', 3, 'APPLICATION_COMMAND_DELETE',)
+add_event_handler('application_command_permission_update', 2, 'APPLICATION_COMMAND_PERMISSIONS_UPDATE',)
+add_event_handler('stage_create', 2, 'STAGE_INSTANCE_CREATE',)
+add_event_handler('stage_edit', 2, 'STAGE_INSTANCE_UPDATE',)
+add_event_handler('stage_delete', 2, 'STAGE_INSTANCE_DELETE',)
+add_event_handler('thread_user_add', 4, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
+add_event_handler('thread_user_delete', 3, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
 
 
 
@@ -191,7 +193,7 @@ class ReadyState:
     wake_upper : ``Future``
         A Future what wakes up the `__await__` generator of the ready state.
     """
-    __slots__ = ('guild_left_counter', 'ready_left_counter', 'guilds', 'last_guild', 'last_ready', 'wake_upper', )
+    __slots__ = ('guild_left_counter', 'ready_left_counter', 'guilds', 'last_guild', 'last_ready', 'wake_upper',)
     def __init__(self, client, guild_datas):
         """
         Creates a ready state.
@@ -338,7 +340,7 @@ class ParserSettingOption:
                 'Will always use optimized parser to dispatch it.',
                 RuntimeWarning)
             
-            intent_shifts = (INTENT_SHIFT_MISSING_EVENT, )
+            intent_shifts = (INTENT_SHIFT_MISSING_EVENT,)
         
         for intent_shift in intent_shifts:
             self = object.__new__(cls)
@@ -380,7 +382,7 @@ class ParserSetting:
     client_count : `int`
         How much running clients expect the respective parser to call their events. Used in `sc` - `mc` optimizations.
     """
-    __slots__ = ('options', 'parser_cal_sc',  'parser_opt_sc', 'parser_cal_mc', 'parser_opt_mc', 'mention_count', 'client_count', )
+    __slots__ = ('options', 'parser_cal_sc',  'parser_opt_sc', 'parser_cal_mc', 'parser_opt_mc', 'mention_count', 'client_count',)
     def __new__(cls, names, parser_cal_sc, parser_cal_mc, parser_opt_sc, parser_opt_mc):
         """
         Creates a new parser defaults object with the given name and with the given events.

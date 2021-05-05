@@ -1,4 +1,4 @@
-## 1.1.74 *\[2021-05-??\]*
+## 1.1.74 *\[2021-05-05\]*
 
 #### Summary
 
@@ -13,6 +13,8 @@ Redo error code names, dispatch event parsing and add thread support.
 - Add `ThreadProfile`.
 - Add `ThreadProfileFlag`.
 - Add `Message.thread.`
+- Add `Client.events.thread_user_add`
+- Add `Client.events.thread_user_delete`
 
 #### Optimizations
 

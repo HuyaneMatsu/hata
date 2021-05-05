@@ -112,10 +112,10 @@ class EventHandlerManager:
         | video_quality_mode    | ``VideoQualityMode``                  |
         +-----------------------+---------------------------------------+
     
-    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: {``ClientUserBase``}):
+    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: ``ClientUserBase``):
         Called when a user is added to a group channel.
     
-    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: {``ClientUserBase``}):
+    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: ``ClientUserBase``):
         Called when a user is removed from a group channel.
     
     channel_pin_update(client: ``Client``, channel: ``ChannelTextBase``):
@@ -211,10 +211,10 @@ class EventHandlerManager:
     gift_update(client: ``Client``, gift: ``Gift``):
         Called when a gift code is sent to a channel.
     
-    guild_ban_add(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
+    guild_ban_add(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):
         Called when a user is banned from a guild.
     
-    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
+    guild_ban_delete(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):
         Called when a user is unbanned at a guild.
     
     guild_create(client: ``Client``, guild: ``Guild``):
@@ -294,12 +294,12 @@ class EventHandlerManager:
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
     
-    guild_join_reject(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
+    guild_join_reject(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):
         Called when a user leaves from a guild before completing it's verification screen.
         
         > ``.guild_user_delete`` is called as well.
     
-    guild_user_add(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}):
+    guild_user_add(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):
         Called when a user joins a guild.
     
     guild_user_chunk(client: ``Client``, event: GuildUserChunkEvent):
@@ -307,10 +307,28 @@ class EventHandlerManager:
         
         The event has a default handler called ``ChunkWaiter``.
     
-    guild_user_delete(client: ``Client``, guild: ``Guild``, user: {``ClientUserBase``}, \
+    guild_user_delete(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``, \
             profile: ``GuildProfile``):
         Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
         respective guild profile for the guild.
+    
+    guild_user_edit(client : Client, user: ``ClientUserBase``, guild: ``Guild``, old_attributes: `dict`):
+        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
+        overwritten attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | boosts_since      | `None` or `datetime`          |
+        +-------------------+-------------------------------+
+        | nick              | `None` or `str`               |
+        +-------------------+-------------------------------+
+        | pending           | `bool`                        |
+        +-------------------+-------------------------------+
+        | roles             | `None` or `list` of ``Role``  |
+        +-------------------+-------------------------------+
     
     integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
         Called when an integration is created inside of a guild. Includes cases when bots are added to the guild as
@@ -475,12 +493,19 @@ class EventHandlerManager:
     stage_edit(client: ``Client``, stage:: ``Stage``):
         Called when a stage is edited.
     
-    typing(client: ``Client``, channel: ``ChannelTextBase``, user: {``ClientUserBase``}, timestamp: `datetime`):
+    thread_user_add(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``):
+        Called when a user is added or joined a thread channel.
+    
+    thread_user_delete(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``, \
+            thread_profile: ``ThreadProfile``):
+        Called when a user is removed or left a thread channel.
+    
+    typing(client: ``Client``, channel: ``ChannelTextBase``, user: ``ClientUserBase``, timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
-    user_edit(client: ``Client``, user: {``ClientUserBase``}, old_attributes: `dict`):
+    user_edit(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
         argument contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
         
@@ -498,7 +523,7 @@ class EventHandlerManager:
         | name          | `str`         |
         +---------------+---------------+
     
-    user_presence_update(client: ``Client``, user: {``ClientUserBase``}, old_attributes: `dict`):
+    user_presence_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
         Called when a user's presence is updated.
         
         The passed `old_attributes` argument contain the user's changed presence related attributes in
@@ -514,24 +539,6 @@ class EventHandlerManager:
         +---------------+-----------------------------------+
         | statuses      | `dict` of (`str`, `str`) items    |
         +---------------+-----------------------------------+
-        
-    guild_user_edit(client : Client, user: {``ClientUserBase``}, guild: ``Guild``, old_attributes: `dict`):
-        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
-        overwritten attributes in `attribute-name` - `old-value` relation.
-        
-        Every item in `old_attributes` is optional and it's items can be any of the following:
-        
-        +-------------------+-------------------------------+
-        | Keys              | Values                        |
-        +===================+===============================+
-        | boosts_since      | `None` or `datetime`          |
-        +-------------------+-------------------------------+
-        | nick              | `None` or `str`               |
-        +-------------------+-------------------------------+
-        | pending           | `bool`                        |
-        +-------------------+-------------------------------+
-        | roles             | `None` or `list` of ``Role``  |
-        +-------------------+-------------------------------+
     
     user_voice_join(client: ``Client``, voice_state: ``VoiceState``)
         Called when a user joins a voice channel.

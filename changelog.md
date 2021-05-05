@@ -53,7 +53,8 @@ Redo error code names, dispatch event parsing and add thread support.
 - Add `thread` parameter to `Client.webhook_message_create`.
 - Add extra `tts` type assertion to `Client.webhook_message_create`.
 - Add extra `wait` type assertion to `Client.webhook_message_create`.
-- Remove non-chad aliases.
+- Remove non-chad aliases. (ᓚᘏᗢ | NeKo Mancer#1477)
+- Improve `Guild.get_emoji_like` matching. (Zeref Draganeel#3581)
 
 #### ext.slash
 - Add `mentionable` parameter support for slash commands.

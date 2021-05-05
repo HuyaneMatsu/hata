@@ -3,7 +3,8 @@ __all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'Guil
     'GuildWidgetUser', 'VerificationScreenStep', 'SystemChannelFlag', 'VerificationScreen', 'WelcomeChannel',
     'WelcomeScreen')
 
-import re, reprlib
+import reprlib
+from re import compile as re_compile, I as re_ignore_case, escape as re_escape
 
 from ..env import CACHE_PRESENCE, CACHE_USER
 from ..backend.utils import cached_property, BaseMethodDescriptor, WeakValueDictionary
@@ -1618,7 +1619,7 @@ class Guild(DiscordEntity, immortal=True):
         if len(name) > 32:
             return default
         
-        pattern = re.compile(re.escape(name), re.I)
+        pattern = re_compile(re_escape(name), re_ignore_case)
         for user in self.users.values():
             if (pattern.match(user.name) is not None):
                 return user
@@ -1668,7 +1669,7 @@ class Guild(DiscordEntity, immortal=True):
         if len(name) > 32:
             return result
         
-        pattern = re.compile(re.escape(name), re.I)
+        pattern = re_compile(re_escape(name), re_ignore_case)
         for user in self.users.values():
             if pattern.match(user.name) is None:
                 nick = user.guild_profiles[self].nick
@@ -1699,7 +1700,7 @@ class Guild(DiscordEntity, immortal=True):
         if (not 1 < len(name) < 33):
             return to_sort
         
-        pattern = re.compile(re.escape(name), re.I)
+        pattern = re_compile(re_escape(name), re_ignore_case)
         for user in self.users.values():
             profile = user.guild_profiles[self]
             if pattern.match(user.name) is None:
@@ -1738,14 +1739,12 @@ class Guild(DiscordEntity, immortal=True):
         -------
         emoji : ``Emoji`` or `default`
         """
-        emoji = EMOJI_NAME_RP.fullmatch(name)
-        if emoji is None:
-            return default
-        
-        name = emoji.groups()[0]
-        for emoji in self.emojis.values():
-            if emoji.name == name:
-                return emoji
+        parsed = EMOJI_NAME_RP.fullmatch(name)
+        if (parsed is not None):
+            name = parsed.group(1)
+            for emoji in self.emojis.values():
+                if emoji.name == name:
+                    return emoji
         
         return default
     
@@ -1764,32 +1763,28 @@ class Guild(DiscordEntity, immortal=True):
         -------
         emoji : ``Emoji`` or `default`
         """
-        target_name_length = len(name)
-        if (target_name_length < 2) or (target_name_length > 32):
-            return default
-        
-        pattern = re.compile(re.escape(name), re.I)
+        emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
         accurate_emoji = default
-        accurate_name_length = 33
+        accurate_match_start = 100
+        accurate_match_length = 100
         
         for emoji in self.emojis.values():
             emoji_name = emoji.name
-            name_length = len(emoji_name)
-            if name_length > accurate_name_length:
+            parsed = emoji_name_pattern.search(emoji_name)
+            if parsed is None:
                 continue
             
-            if pattern.match(emoji_name) is None:
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            if (match_length > accurate_match_length) or \
+                    ((match_length == accurate_match_length) and (match_start > accurate_match_start)):
                 continue
             
-            if name_length < accurate_name_length:
-                accurate_emoji = emoji
-                accurate_name_length = name_length
-            
-            if (name_length == target_name_length) and (name == emoji_name):
-                return emoji
-            
-            continue
+            accurate_emoji = emoji
+            accurate_match_start = match_start
+            accurate_match_length = match_length
         
         return accurate_emoji
     
@@ -1845,7 +1840,7 @@ class Guild(DiscordEntity, immortal=True):
         if (target_name_length < 2) or (target_name_length > 100):
             return default
         
-        pattern = re.compile(re.escape(name), re.I)
+        pattern = re_compile(re_escape(name), re_ignore_case)
         
         accurate_channel = default
         accurate_name_length = 101
@@ -1914,7 +1909,7 @@ class Guild(DiscordEntity, immortal=True):
         if (target_name_length < 2) or (target_name_length > 32):
             return default
         
-        pattern = re.compile(re.escape(name), re.I)
+        pattern = re_compile(re_escape(name), re_ignore_case)
         
         accurate_role = default
         accurate_name_length = 33

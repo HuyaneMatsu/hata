@@ -1357,9 +1357,9 @@ class TeamMembershipState(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = (0, 'none')
-    invited = (1, 'invited')
-    accepted = (2, 'accepted')
+    none = P(0, 'none')
+    invited = P(1, 'invited')
+    accepted = P(2, 'accepted')
 
 
 class GuildFeature(PreinstancedBase):

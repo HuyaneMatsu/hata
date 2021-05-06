@@ -1941,7 +1941,7 @@ class Embed(EmbedBase):
     
     @property
     def timestamp(self):
-        """:hug
+        """
         A get-set-del property for accessing the embed's timestamp.
         
         Accepts and returns `None` or a `datetime` object.

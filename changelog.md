@@ -22,6 +22,8 @@ Rework components and preinstanced types.
 
 - Fix a `NmaeError` in `MessageType._from_value`.
 - Fix an `AttributeError` in `ApplicationCommandPermissionOverwrite.__hash__`.
+- `create_partial_emoji_data` could miss `animated` field.
+- `create_partial_emoji` could miss `emoji_animated` field.
 
 #### Renames, Deprecation & Removals
 

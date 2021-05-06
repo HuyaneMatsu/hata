@@ -1,3 +1,33 @@
+## 1.1.74 *\[2021-05-??\]*
+
+#### Summary
+
+Rework components and preinstanced types.
+
+#### New Features
+
+- Add `ComponentSelect`.
+- Add `ComponentSelectOption`.
+
+#### Improvements
+
+- Add `ComponentType.select`.
+- Add `ComponentButton`.
+- Add `ComponentRow`.
+- Add `CreateComponent`.
+- Add `PreinstancedMeta`. (sleep-cult#3040)
+- Add `Preinstance`. (sleep-cult#3040)
+
+#### Bug fixed
+
+- Fix a `NmaeError` in `MessageType._from_value`.
+- Fix an `AttributeError` in `ApplicationCommandPermissionOverwrite.__hash__`.
+
+#### Renames, Deprecation & Removals
+
+- Remove `Component`.
+- Rename `ComponentType.action_row` to `.row`.
+
 ## 1.1.74 *\[2021-05-05\]*
 
 #### Summary
@@ -6,15 +36,15 @@ Redo error code names, dispatch event parsing and add thread support.
 
 #### New Features
 
-- Add `ChannelGuildMainBase` superclass for main
+- Add `ChannelGuildMainBase` superclass for main.
 - Add `manage_threads`, `use_public_threads` and `user_private_thread` permissions.
 - Add `Guild.threads`.
 - Add `UserBase.thread_profiles`.
 - Add `ThreadProfile`.
 - Add `ThreadProfileFlag`.
-- Add `Message.thread.`
-- Add `Client.events.thread_user_add`
-- Add `Client.events.thread_user_delete`
+- Add `Message.thread`.
+- Add `Client.events.thread_user_add`.
+- Add `Client.events.thread_user_delete`.
 
 #### Optimizations
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__slots__ = ('CommandContext', )
+__all__ = ('CommandContext', )
 
 class CommandContext(object):
     """

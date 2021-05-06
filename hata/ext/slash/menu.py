@@ -10,12 +10,12 @@ from ...backend.analyzer import CallableAnalyzer
 from ...discord.preinstanced import ButtonStyle, ComponentType
 from ...discord.preconverters import preconvert_preinstanced_type
 from ...discord.emoji import create_partial_emoji_data, create_partial_emoji, Emoji
-from ...discord.interaction import Component, ComponentBase, COMPONENT_TYPE_ATTRIBUTE_COMPONENTS, \
-    COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID, COMPONENT_TYPE_ATTRIBUTE_ENABLED, COMPONENT_TYPE_ATTRIBUTE_EMOJI, \
-    COMPONENT_TYPE_ATTRIBUTE_LABEL, COMPONENT_TYPE_ATTRIBUTE_STYLE, COMPONENT_TYPE_ATTRIBUTE_URL
-from ...discord.interaction import ComponentBase, Component, _debug_component_components, _debug_component_custom_id, \
+from ...discord.interaction import ComponentBase, _debug_component_components, _debug_component_custom_id, \
     _debug_component_emoji, _debug_component_label, _debug_component_enabled, _debug_component_url, \
-    COMPONENT_TYPE_TO_STYLE
+    _debug_component_description, ComponentRow, ComponentButton, ComponentSelect, ComponentSelectOption, \
+    _debug_component_default, _debug_component_options, _debug_component_placeholder, _debug_component_min_values, \
+    _debug_component_max_values
+
 from ...discord.events.event_types import InteractionEvent
 from ...discord.message import Message
 from ...discord.channel import ChannelTextBase
@@ -23,8 +23,73 @@ from ...discord.embed import EmbedBase
 from ...discord.allowed_mentions import AllowedMentionProxy
 from ...discord.client import Client
 
-from .components import Button, Row
 from .waiters import get_client_from_message
+
+
+class ComponentAttributeDescriptor:
+    """
+    Descriptor for component attribute access.
+    
+    Attributes
+    ----------
+    _debugger : `callable`
+        Debugger to check whether the given value is correct.
+    _is_collection : `None` or ``ComponentBase``
+        Sub-component type if applicable.
+    _supported_types : `tuple` of `type`
+        The supported types of the respective component.
+    _name : `str`
+        The attribute's name.
+    """
+    __slots__ = ('_debugger', '_is_collection', '_supported_types', '_name')
+    def __new__(cls, name, supported_types, debugger, is_collection):
+        """
+        Creates a new ``ComponentAttributeDescriptor`` instance with the given parameters.
+        """
+        self = object.__new__(cls)
+        self._debugger = debugger
+        self._supported_types = supported_types
+        self._name = name
+        self._is_collection = is_collection
+        return self
+    
+    def __get__(self, instance, type_):
+        """Returns the component's attribute's value."""
+        if instance is None:
+            return self
+        
+        is_collection = self._is_collection
+        if is_collection:
+            component = instance._get_component()
+        else:
+            component = instance._get_component_overwrite()
+        
+        if __debug__:
+            if (not isinstance(component, self._supported_types)):
+                raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
+        
+        attribute_value = gettattr(component, self._name)
+        if is_collection and (attribute_value is not None):
+            instance_type = type(instance)
+            
+            attribute_value = tuple(components_descriptor.__get__(instance, instance_type) \
+                for components_descriptor in components_descriptors)
+        
+        return attribute_value
+    
+    
+    def __set__(self, instance, value):
+        """Sets the value to the component."""
+        if __debug__:
+            self._debugger(value)
+        
+        component = instance._get_component_overwrite()
+        
+        if __debug__:
+            if (not isinstance(component, self._supported_types)):
+                raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
+        
+        setattr(component, self._name, value)
 
 
 class ComponentDescriptor:
@@ -32,7 +97,7 @@ class ComponentDescriptor:
     
     Attributes
     ----------
-    _component : ``Component``
+    _component : ``ComponentBase``
         The wrapped component instance.
     _source_component : ``ComponentBase``
         The source component from which the descriptor is created from.
@@ -60,7 +125,7 @@ class ComponentDescriptor:
         sub_components : `list` of ``ComponentDescriptor``
             A list of sub components added
         """
-        component = Component.from_data(source.to_data())
+        component = source.copy()
         
         identifier = cls._identifier_counter+1
         cls._identifier_counter = identifier
@@ -68,7 +133,7 @@ class ComponentDescriptor:
         self = object.__new__(cls)
         self._component = component
         self._source_component = source
-        self._identifier = name
+        self._identifier = identifier
         self._sub_components = sub_components
         return self
     
@@ -125,7 +190,7 @@ class ComponentProxy(ComponentBase):
         
         Returns
         -------
-        component : ``Component``
+        component : ``ComponentBase``
         """
         component = self._component_overwrite
         if (component is None):
@@ -134,165 +199,109 @@ class ComponentProxy(ComponentBase):
         return component
     
     
+    def _get_component_overwrite(self):
+        """
+        Gets the proxy's component overwrite.
+        
+        Returns
+        -------
+        component : ``ComponentBase``
+        """
+        component = self._component_overwrite
+        if (component is None):
+            self._component_overwrite = component = self._descriptor._component.copy()
+            
+        return component
+    
+    
     @property
     def type(self):
         """Returns the component's type."""
         return self._descriptor._component.type
     
+    components = ComponentAttributeDescriptor(
+        'components',
+        (ComponentRow,),
+        _debug_component_components,
+        True,
+    )
     
-    @property
-    @copy_docs(Button.style)
-    def style(self):
-        return self._get_component().style
+    custom_id = ComponentAttributeDescriptor(
+        'custom_id',
+        (ComponentButton, ComponentSelect,),
+        _debug_component_custom_id,
+        False,
+    )
     
-    @style.setter
-    def style(self, style):
-        component_style_type = COMPONENT_TYPE_TO_STYLE.get(self.type, None)
-        if component_style_type is None:
-            style = None
-        else:
-            style = preconvert_preinstanced_type(style, 'style', component_style_type)
-        
-        component = self._component_overwrite
-        if (component is None):
-            component = self._descriptor._component
-            
-            if (style is not component.style):
-                component = component.copy()
-                component.style = style
-                self._component_overwrite = component
-        else:
-            if (style is not component.style):
-                component.style = style
+    emoji = ComponentAttributeDescriptor(
+        'emoji',
+        (ComponentButton, ComponentSelectOption),
+        _debug_component_emoji,
+        False,
+    )
     
+    label = ComponentAttributeDescriptor(
+        'label',
+        (ComponentButton, ComponentSelectOption),
+        _debug_component_label,
+        False,
+    )
+
+    enabled = ComponentAttributeDescriptor(
+        'enabled',
+        (ComponentButton,),
+        _debug_component_enabled,
+        False,
+    )
+
+    url = ComponentAttributeDescriptor(
+        'url',
+        (ComponentButton,),
+        _debug_component_url,
+        False,
+    )
     
-    @property
-    @copy_docs(Button.custom_id)
-    def custom_id(self):
-        return self._get_component().custom_id
+    description = ComponentAttributeDescriptor(
+        'description',
+        (ComponentSelectOption,),
+        _debug_component_description,
+        False,
+    )
     
-    @custom_id.setter
-    def custom_id(self, custom_id):
-        if __debug__:
-            _debug_component_custom_id(custom_id)
-        
-        component = self._component_overwrite
-        if (component is None):
-            component = self._descriptor._component
-            
-            if (custom_id != component.custom_id):
-                component = component.copy()
-                component.custom_id = custom_id
-                self._component_overwrite = component
-        else:
-            if (custom_id != component.custom_id):
-                component.custom_id = custom_id
+    default = ComponentAttributeDescriptor(
+        'default',
+        (ComponentSelectOption,),
+        _debug_component_default,
+        False,
+    )
     
+    options = ComponentAttributeDescriptor(
+        'options',
+        (ComponentSelect,),
+        _debug_component_options,
+        True,
+    )
     
-    @property
-    @copy_docs(Button.emoji)
-    def emoji(self):
-        return self._get_component().emoji
+    placeholder = ComponentAttributeDescriptor(
+        'placeholder',
+        (ComponentSelect,),
+        _debug_component_placeholder,
+        False,
+    )
     
-    @emoji.setter
-    def emoji(self, emoji):
-        if __debug__:
-            _debug_component_emoji(emoji)
-        
-        component = self._component_overwrite
-        if (component is None):
-            component = self._descriptor._component
-            
-            if (emoji is not component.emoji):
-                component = component.copy()
-                component.emoji = emoji
-                self._component_overwrite = component
-        else:
-            if (emoji is not component.emoji):
-                component.emoji = emoji
+    min_values = ComponentAttributeDescriptor(
+        'min_values',
+        (ComponentSelect,),
+        _debug_component_min_values,
+        False,
+    )
     
-    
-    @property
-    @copy_docs(Button.url)
-    def url(self):
-        return self._get_component().url
-    
-    @url.setter
-    def url(self, url):
-        if __debug__:
-            _debug_component_url(url)
-        
-        component = self._component_overwrite
-        if (component is None):
-            component = self._descriptor._component
-            
-            if (url != component.url):
-                component = component.copy()
-                component.url = url
-                self._component_overwrite = component
-        else:
-            if (url != component.url):
-                component.url = url
-    
-    
-    @property
-    @copy_docs(Button.label)
-    def label(self):
-        return self._get_component().label
-    
-    @label.setter
-    def label(self, label):
-        if __debug__:
-            _debug_component_label(label)
-        
-        component = self._component_overwrite
-        if (component is None):
-            component = self._descriptor._component
-            
-            if (label != component.label):
-                component = component.copy()
-                component.label = label
-                self._component_overwrite = component
-        else:
-            if (label != component.label):
-                component.label = label
-    
-    
-    @property
-    @copy_docs(Button.enabled)
-    def enabled(self):
-        return self._get_component().enabled
-    
-    @enabled.setter
-    def enabled(self, enabled):
-        if __debug__:
-            _debug_component_enabled(enabled)
-        
-        component = self._component_overwrite
-        if (component is None):
-            component = self._descriptor._component
-            
-            if (enabled != component.enabled):
-                component = component.copy()
-                component.enabled = enabled
-                self._component_overwrite = component
-        else:
-            if (enabled != component.enabled):
-                component.enabled = enabled
-    
-    
-    @property
-    @copy_docs(Row.url)
-    def components(self):
-        components_descriptors = self._descriptor.sub_components
-        if components_descriptors is None:
-            return None
-        
-        instance = self.insatnce
-        instance_type = type(instance)
-        
-        return tuple(components_descriptor.__get__(instance, instance_type) \
-            for components_descriptor in components_descriptors)
+    max_values = ComponentAttributeDescriptor(
+        'max_values',
+        (ComponentSelect,),
+        _debug_component_max_values,
+        False,
+    )
 
 
 def validate_check(check):
@@ -664,11 +673,52 @@ class MenuStructure:
 def _iter_attributes(class_parents, class_attributes):
     """
     Iterates over the given class's attributes and the given attributes.
+    
+    Parameters
+    ----------
+    class_parents : `tuple` of `type`
+        Parent classes.
+    class_attributes : `dict` of (`str`, `Any`) items
+        Class attributes of the source type.
+    
+    Yields
+    ------
+    attribute_name : `str`
+        An attribute's name.
+    attribute_value : `Any`
+        An attribute's value.
     """
     for class_parent in reversed(class_parents):
         yield from class_parent.__dict__.items()
     
     yield from class_attributes.items()
+
+
+def _iter_sub_components(component):
+    """
+    Iterates the give component's sub-components.
+    
+    Parameters
+    ----------
+    component : ``ComponentBase``
+        The component to iterate over.
+    
+    Yields
+    ------
+    sub_componen : ``ComponentBase``
+        The  sub components.
+    """
+    if isinstance(component, ComponentRow):
+        sub_components = component.components
+        if (sub_components is not None):
+            yield from sub_components
+        return
+    
+    if isinstance(component, ComponentSelect):
+        sub_components = component.options
+        if (sub_components is not None):
+            yield from sub_components
+        return
 
 
 class MenuType(type):
@@ -750,7 +800,7 @@ class MenuType(type):
         component_standalone = []
         
         for attribute_name, attribute_value in tracked_components.items():
-            if attribute_value.type in COMPONENT_TYPE_ATTRIBUTE_COMPONENTS:
+            if attribute_value.type in (ComponentRow, ComponentSelect):
                 container = component_groups
             else:
                 container = component_standalone
@@ -775,17 +825,15 @@ class MenuType(type):
                     break
             else:
                 sub_component_descriptors = []
-                sub_components = component_value.components
-                if (sub_components is not None):
-                    for sub_component in sub_components:
-                        for component_descriptor in all_component_descriptor:
-                            if component_descriptor._source_component is sub_component:
-                                break
-                        else:
-                            component_descriptor = ComponentDescriptor(sub_component, None)
-                            all_component_descriptor.append(component_descriptor)
-                        
-                        sub_component_descriptors.append(component_descriptor)
+                for sub_component in _iter_sub_components(component_value):
+                    for component_descriptor in all_component_descriptor:
+                        if component_descriptor._source_component is sub_component:
+                            break
+                    else:
+                        component_descriptor = ComponentDescriptor(sub_component, None)
+                        all_component_descriptor.append(component_descriptor)
+                    
+                    sub_component_descriptors.append(component_descriptor)
                 
                 component_descriptor = ComponentDescriptor(component_value, sub_component_descriptors)
                 all_component_descriptor.append(component_descriptor)
@@ -805,7 +853,7 @@ class MenuChange:
     Attributes
     ----------
     name : `str`
-        The name of teh attribute.
+        The name of the attribute.
     value : `Any`
         The new value of the field.
     """
@@ -817,7 +865,7 @@ class MenuChange:
         Parameters
         ----------
         name : `str`
-            The name of teh attribute.
+            The name of the attribute.
         value : `Any`
             The new value of the field.
         """

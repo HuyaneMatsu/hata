@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption',
     'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'InteractionResponseTypes',
-    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', 'Component', 'ComponentBase',
-    'ComponentInteraction')
+    'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', 'ComponentBase', 'ComponentButton',
+    'ComponentInteraction', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption', 'create_component')
 
 import reprlib
 
@@ -11,7 +11,7 @@ from ..backend.export import export
 
 from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType, \
-    ComponentType, ButtonStyle
+    ComponentType, ButtonStyle, PreinstancedBase
 from .core import APPLICATION_COMMANDS, ROLES
 from .preconverters import preconvert_preinstanced_type
 from .utils import is_valid_application_command_name, DATETIME_FORMAT_CODE, url_cutter
@@ -30,16 +30,9 @@ from .emoji import create_partial_emoji, Emoji, create_partial_emoji_data
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
 
-COMPONENT_TYPE_ACTION_ROW = ComponentType.action_row
+COMPONENT_TYPE_ROW = ComponentType.row
 COMPONENT_TYPE_BUTTON = ComponentType.button
-
-COMPONENT_TYPE_ATTRIBUTE_COMPONENTS = frozenset((COMPONENT_TYPE_ACTION_ROW,))
-COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID = frozenset((COMPONENT_TYPE_BUTTON,))
-COMPONENT_TYPE_ATTRIBUTE_ENABLED = frozenset((COMPONENT_TYPE_BUTTON,))
-COMPONENT_TYPE_ATTRIBUTE_EMOJI = frozenset((COMPONENT_TYPE_BUTTON,))
-COMPONENT_TYPE_ATTRIBUTE_LABEL = frozenset((COMPONENT_TYPE_BUTTON,))
-COMPONENT_TYPE_ATTRIBUTE_STYLE = frozenset((COMPONENT_TYPE_BUTTON,))
-COMPONENT_TYPE_ATTRIBUTE_URL = frozenset((COMPONENT_TYPE_BUTTON,))
+COMPONENT_TYPE_SELECT = ComponentType.select
 
 
 class ApplicationCommand(DiscordEntity, immortal=True):
@@ -1677,13 +1670,7 @@ class ApplicationCommandPermissionOverwrite:
     
     def __hash__(self):
         """Returns the application command permission overwrite's hash value."""
-        hash_ = self.application_command_id ^ self.guild_id
-        overwrites = self.overwrites
-        if (overwrites is not None):
-            for overwrite in overwrites:
-                hash_ ^= hash(overwrite)
-        
-        return hash_
+        return self.type.value^(self.allow<<8)^self.target_id
     
     def copy(self):
         """
@@ -1943,7 +1930,7 @@ class ApplicationCommandInteraction(DiscordEntity):
             '<', self.__class__.__name__,
             ' id=', repr(self.id),
             ', name=', repr(self.name),
-                ]
+        ]
         
         options = self.options
         if (options is not None):
@@ -2071,14 +2058,11 @@ class ComponentBase:
     
     Class attributes
     ----------------
-    custom_id : `None` or `str`, Optional (Keyword only)
-        Custom identifier to detect which button was clicked by the user.
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.
     """
     __slots__ = ()
     
-    custom_id = None
     type = ComponentType.none
     
     @classmethod
@@ -2157,12 +2141,12 @@ def _debug_component_components(components):
     AssertionError
         - If `components`'s length is out of the expected range [0:5].
         - If `components` is neither `None`, `tuple` or `list`.
-        - If `components` contains a non ``Component`` instance.
+        - If `components` contains a non ``ComponentBase`` instance.
     """
     if (components is None):
         pass
     elif isinstance(components, (tuple, list)):
-        if (components is not None) and (len(components) > COMPONENT_SUB_COMPONENT_LIMIT):
+        if (len(components) > COMPONENT_SUB_COMPONENT_LIMIT):
             raise AssertionError(f'A `component.components` can have maximum 5 sub-components, got '
                 f'{len(components)}; {components!r}.')
         
@@ -2171,15 +2155,15 @@ def _debug_component_components(components):
                 raise AssertionError(f'`component` can be given as `{ComponentBase.__name__}` instance, got '
                     f'{component.__class__.__name__}.')
             
-            if component.type is COMPONENT_TYPE_ACTION_ROW:
-                raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ACTION_ROW}` type as sub components, got '
+            if component.type is COMPONENT_TYPE_ROW:
+                raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ROW}` type as sub components, got '
                     f'{component!r}.')
     else:
         raise AssertionError(f'`components` can be given as `None`, `tuple` or `list`, got '
             f'{components.__class__.__name__}.')
 
 
-def _debug_component_custom_id(custom_id):
+def _debug_component_custom_id(custom_id, nullable=True):
     """
     Checks whether given `component.custom_id` value is correct.
     
@@ -2187,6 +2171,8 @@ def _debug_component_custom_id(custom_id):
     ----------
     custom_id : `None` or `str`
         Custom identifier to detect which button was clicked by the user.
+    nullable : `bool`, Optional
+        Whether the `custom_id` value can be `None`. Defaults to `True`.
     
     Raises
     ------
@@ -2195,13 +2181,17 @@ def _debug_component_custom_id(custom_id):
         - If `custom_id`'s length is over `100`.
     """
     if (custom_id is None):
-        pass
+        if nullable:
+            pass
+        else:
+            raise AssertionError(f'`custom_id` is not nullable.')
+    
     elif isinstance(custom_id, str):
         if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
             raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
                 f'{len(custom_id)!r}; {custom_id!r}.')
     else:
-        raise AssertionError(f'`custom_id` can be given either as `None` or as `str` instance, got '
+        raise AssertionError(f'`custom_id` can be given either as {"`None` or as " if nullable else ""}`str` instance, got '
             f'{custom_id.__class__.__name__}.')
 
 
@@ -2217,7 +2207,7 @@ def _debug_component_emoji(emoji):
     Raises
     ------
     AssertionError
-        -If `emoji` was not given as ``Emoji`` instance.
+        If `emoji` was not given as ``Emoji`` instance.
     """
     if emoji is None:
         pass
@@ -2265,7 +2255,8 @@ def _debug_component_enabled(enabled):
     
     Raises
     ------
-    - If `enabled` was not given as `bool` instance.
+    AssertionError
+        If `enabled` was not given as `bool` instance.
     """
     if not isinstance(enabled, bool):
         raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
@@ -2283,7 +2274,7 @@ def _debug_component_url(url):
     Raises
     ------
     AssertionError
-        - If `url` was not given neither as `None` or `str` instance.
+        If `url` was not given neither as `None` or `str` instance.
     """
     if url is None:
         pass
@@ -2294,15 +2285,279 @@ def _debug_component_url(url):
             f'{url.__class__.__name__}.')
 
 
-@export
-class Component(ComponentBase):
+def _debug_component_value(value):
     """
-    Message component! Aka buttons!
+    Checks whether the given `component_option.value` value is correct.
+    
+    Parameters
+    ----------
+    value : `str`
+        A component option's value.
+    
+    Raises
+    ------
+    AssertionError
+        If `value` was not given as `str` instance.
+    """
+    if not isinstance(value, str):
+        raise AssertionError(f'`value` can be given either as  `str` instance, got '
+            f'{value.__class__.__name__}.')
+
+
+def _debug_component_description(description):
+    """
+    Checks whether the given `component_option.description` value is correct.
+    
+    Parameters
+    ----------
+    description : `None` or `str`
+        A component option's description.
+    
+    Raises
+    ------
+    AssertionError
+        If `description` was not given neither as `None` or `str` instance.
+    """
+    if description is None:
+        pass
+    elif isinstance(description, str):
+        pass
+    else:
+        raise AssertionError(f'`description` can be given either as `None` or as `str` instance, got '
+            f'{description.__class__.__name__}.')
+
+
+def _debug_component_default(default):
+    """
+    Checks whether the given `component_option.default` value is correct.
+    
+    Parameters
+    ----------
+    default : `bool`
+        Whether this component option is the default one.
+    
+    Raises
+    ------
+    AssertionError
+        If `default` was not given as `bool` instance.
+    """
+    if not isinstance(default, bool):
+        raise AssertionError(f'`default` can be given as `bool` instance, got {default.__class__.__name__}.')
+
+
+def _debug_component_options(options):
+    """
+    Checks whether given `component.options` value is correct.
+    
+    Parameters
+    ----------
+    options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``
+        Sub-options.
+    
+    Raises
+    ------
+    AssertionError
+        - If `options` is neither `None`, `tuple` or `list`.
+        - If `options` contains a non ``ComponentSelectOption`` instance.
+    """
+    if (options is None):
+        pass
+    elif isinstance(options, (tuple, list)):
+        for option in options:
+            if not isinstance(option, ComponentSelectOption):
+                raise AssertionError(f'`option` can be given as `{ComponentSelectOption.__name__}` instance, got '
+                    f'{option.__class__.__name__}.')
+    else:
+        raise AssertionError(f'`options` can be given as `None`, `tuple` or `list`, got '
+            f'{options.__class__.__name__}.')
+
+
+def _debug_component_placeholder(placeholder):
+    """
+    Checks whether the given `component_option.placeholder` value is correct.
+    
+    Parameters
+    ----------
+    placeholder : `Any`
+        The placeholder of a component select.
+    
+    Raises
+    ------
+    AssertionError
+        Not yet.
+    """
+
+
+def _debug_component_min_values(min_values):
+    """
+    Checks whether the given `component_option.min_values` value is correct.
+    
+    Parameters
+    ----------
+    min_values : `Any`
+        The min values of a component select.
+    
+    Raises
+    ------
+    AssertionError
+        Not yet.
+    """
+
+
+def _debug_component_max_values(max_values):
+    """
+    Checks whether the given `component_option.max_values` value is correct.
+    
+    Parameters
+    ----------
+    max_values : `Any`
+        The max values of a component select.
+    
+    Raises
+    ------
+    AssertionError
+        Not yet.
+    """
+
+
+
+class ComponentRow(ComponentBase):
+    """
+    Action row component.
     
     Attributes
     ----------
-    components : `None` or `list` of ``Component``
-        Sub-components.
+    components : `None` or `list` of ``ComponentBase`` instances
+        Stored components.
+    
+    Class Attributes
+    ----------------
+    type : ``ComponentType`` = `ComponentType.row`
+        The component's type.
+    """
+    type = ComponentType.row
+    
+    __slots__ = ('components',)
+    
+    def __new__(cls, *components):
+        """
+        Creates a new action component from the given components.
+        
+        Parameters
+        ----------
+        *components : ``ComponentBase`` instances
+            Sub components.
+        
+        Raises
+        ------
+        AssertionError
+            - If `components` is neither `None`, `tuple` or `list`.
+            - If `components` contains a non ``Component`` instance.
+        """
+        if __debug__:
+            _debug_component_components(components)
+        
+        if not components:
+            components = None
+        
+        self = object.__new__(cls)
+        self.components = components
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentBase.from_data)
+    def from_data(cls, data):
+        self = object.__new__(cls)
+        
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = [create_component(component_data) for component_data in component_datas]
+        self.components = components
+        
+        return self
+    
+    
+    @copy_docs(ComponentBase.to_data)
+    def to_data(self):
+        data = {
+            'type' : self.type.value
+        }
+        
+        components = self.components
+        if (components is None):
+            component_datas = []
+        else:
+            component_datas = [component.to_data() for component in components]
+        data['components'] = component_datas
+        
+        return data
+    
+    
+    @copy_docs(ComponentBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__, ' type=']
+        
+        type_ = self.type
+        repr_parts.append(type_.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(type_.value))
+        repr_parts.append(')')
+        
+        repr_parts.append(', components=')
+        components = self.components
+        if (components is None):
+            repr_parts.append('[]')
+        else:
+            repr_parts.append(repr(components))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+    
+    @copy_docs(ComponentBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        
+        components = self.components
+        if (components is not None):
+            components = [component.copy() for component in self.components]
+        
+        new.components = components
+        
+        return new
+    
+    @copy_docs(ComponentBase.__eq__)
+    def __eq__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        
+        if self.components != other.components:
+            return False
+        
+        return True
+    
+    @copy_docs(ComponentBase.__hash__)
+    def __hash__(self):
+        hash_value = self.type.value
+        
+        components = self.components
+        if (components is not None):
+            hash_value ^= len(components)<<12
+            for component in components:
+                hash_value ^= hash(component)
+        
+        return hash_value
+
+
+class ComponentButton(ComponentBase):
+    """
+    Button component.
+    
+    Attributes
+    ----------
     custom_id : `None` or `str`
         Custom identifier to detect which button was clicked by the user.
         
@@ -2313,70 +2568,69 @@ class Component(ComponentBase):
         Emoji of the button if applicable.
     label : `None` or `str`
         Label of the component.
-    type : ``ComponentType``
-        The component's type.
     style : `None` or ``ButtonStyle``
         The components's style. Applicable for buttons.
     url : `None` or `str`
         Url to redirect to when clicking on the button.
         
         > Mutually exclusive with the `custom_id` field.
-    """
-    __slots__ = ('components', 'custom_id', 'enabled', 'emoji', 'label', 'style', 'type', 'url',)
     
-    def __new__(cls, type_, *, components=None, custom_id=None, emoji=None, label=None, style=None, url=None,
-            enabled=True):
+    Class Attributes
+    ----------------
+    type : ``ComponentType`` = `ComponentType.button`
+        The component's type.
+    default_style : ``ButtonStyle`` = `ButtonStyle.secondary`
+        The default button style to use if style is not given.
+    """
+    type = ComponentType.button
+    default_style = ButtonStyle.primary
+    
+    __slots__ = ('custom_id', 'enabled', 'emoji', 'label', 'style', 'url',)
+    
+    def __new__(cls, label=None, emoji=None, *, custom_id=None, url=None, style=None, enabled=True):
         """
         Creates a new component instance with the given parameters.
         
         Parameters
         ----------
-        type : ``ComponentType``, `int`
-            The component's type.
-        components : `None` or (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
-            Sub-components.
+        label : `None` or `str`, Optional
+            Label of the component.
+        emoji : `None` or ``Emoji``, Optional
+            Emoji of the button if applicable.
         custom_id : `None` or `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `url` field.
-    
-        emoji : `None` or ``Emoji``, Optional (Keyword only)
-            Emoji of the button if applicable.
-        style : ``ButtonStyle``, `int`, Optional (Keyword only)
-            The components's style. Applicable for buttons.
+
         url : `None` or `str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` field.
-        label : `None` or `str`, Optional (Keyword only)
-            Label of the component.
+        
+        style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
+            The components's style. Applicable for buttons.
+        
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
         
         Raises
         ------
         TypeError
-            - If `type` was not given neither as ``ComponentType`` not `int` instance.
-            - If `style`'s type is unexpected.
+            If `style`'s type is unexpected.
         AssertionError
-            - If `components` is neither `None`, `tuple` or `list`.
-            - If `components` contains a non ``Component`` instance.
             - If `custom_id` was not given neither as `None` or `str` instance.
             - `url` is mutually exclusive with `custom_id`.
+            - Either `url` or `custom_id` is required`.
             - If `emoji` was not given as ``Emoji`` instance.
             - If `url` was not given neither as `None` or `str` instance.
             - If `style` was not given as any of the `type`'s expected styles.
-            - If `type` is button type then `style` is required.
-            - If `components`'s length is out of the expected range [0:5].
-            - If an action row type component would be added as a sub-component.
             - If `label` was not given neither as `None` nor as `int` instance.
             - If `enabled` was not given as `bool` instance.
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
         """
         if __debug__:
-            _debug_component_components(components)
-            _debug_component_custom_id(custom_id)
+            _debug_component_custom_id(custom_id, True)
             _debug_component_emoji(emoji)
             _debug_component_label(label)
             _debug_component_enabled(enabled)
@@ -2385,36 +2639,29 @@ class Component(ComponentBase):
             if (custom_id is not None) and (url is not None):
                 raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
                     f'custom_id={custom_id!r}, url={url!r}.')
+            
+            if (custom_id is None) and (url is None):
+                raise AssertionError(f'Either `custom_id` or `url` field is required.')
         
-        type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
-        
-        component_style_type = COMPONENT_TYPE_TO_STYLE.get(type_, None)
-        if component_style_type is None:
-            style = None
+        if custom_id is None:
+            style = ButtonStyle.link
         else:
-            style = preconvert_preinstanced_type(style, 'style', component_style_type)
-        
-        components_processed = None
-        if (components is not None):
-            for component in components:
-                if components_processed is None:
-                    components_processed = []
-                
-                components_processed.append(component)
+            if style is None:
+                style = self.default_style
+            else:
+                style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
         
         if (label is not None) and (not label):
             label = None
         
         self = object.__new__(cls)
         
-        self.type = type_
         self.style = style
-        self.components = components_processed
         self.custom_id = custom_id
         self.emoji = emoji
         self.url = url
         self.label = label
-        self.enabled = enbaled
+        self.enabled = enabled
         
         return self
     
@@ -2424,21 +2671,12 @@ class Component(ComponentBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         
-        self.type = ComponentType.get(data['type'])
-        
         emoji_data = data.get('emoji', None)
         if emoji_data is None:
             emoji = None
         else:
             emoji = create_partial_emoji(emoji_data)
         self.emoji = emoji
-        
-        component_datas = data.get('components', None)
-        if (component_datas is None) or (not component_datas):
-            components = None
-        else:
-            components = [Component.from_data(component_data) for component_data in component_datas]
-        self.components = components
         
         style = data.get('style', None)
         if (style is not None):
@@ -2458,44 +2696,32 @@ class Component(ComponentBase):
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
-        type_ = self.type
         data = {
-            'type' : type_.value
+            'type' : self.type.value
         }
         
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_EMOJI:
-            emoji = self.emoji
-            if (emoji is not None):
-                data['emoji'] = create_partial_emoji_data(emoji)
+        emoji = self.emoji
+        if (emoji is not None):
+            data['emoji'] = create_partial_emoji_data(emoji)
         
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_COMPONENTS:
-            components = self.components
-            if (components is not None):
-                data['components'] = [component.to_data() for component in components]
+        style = self.style
+        if (style is not None):
+            data['style'] = style.value
         
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_STYLE:
-            style = self.style
-            if (style is not None):
-                data['style'] = style.value
+        url = self.url
+        if (url is not None):
+            data['url'] = url
         
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_URL:
-            url = self.url
-            if (url is not None):
-                data['url'] = url
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            data['custom_id'] = custom_id
         
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_CUSTOM_ID:
-            custom_id = self.custom_id
-            if (custom_id is not None):
-                data['custom_id'] = custom_id
+        label = self.label
+        if (label is not None):
+            data['label'] = label
         
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_LABEL:
-            label = self.label
-            if (label is not None):
-                data['label'] = label
-        
-        if type_ in COMPONENT_TYPE_ATTRIBUTE_ENABLED:
-            if (not self.enabled):
-                data['disabled'] = True
+        if (not self.enabled):
+            data['disabled'] = True
         
         return data
     
@@ -2517,11 +2743,6 @@ class Component(ComponentBase):
             repr_parts.append(' (')
             repr_parts.append(repr(style.value))
             repr_parts.append(')')
-        
-        components = self.components
-        if (components is not None):
-            repr_parts.append(', components=')
-            repr_parts.append(repr(components))
         
         emoji = self.emoji
         if (emoji is not None):
@@ -2552,15 +2773,14 @@ class Component(ComponentBase):
         
         return ''.join(repr_parts)
     
+    
     @copy_docs(ComponentBase.copy)
     def copy(self):
         new = object.__new__(type(self))
         
-        new.components = [component.copy() for component in self.components]
         new.custom_id = self.custom_id
         new.emoji = self.emoji
         new.style = self.style
-        new.type = self.type
         new.url = self.url
         new.label = self.label
         new.enabled = self.enabled
@@ -2573,16 +2793,10 @@ class Component(ComponentBase):
         if type(other) is not type(self):
             return NotImplemented
         
-        if self.type is not other.type:
-            return False
-        
         if self.emoji is not other.emoji:
             return False
         
         if self.style is not other.style:
-            return False
-        
-        if self.components != other.components:
             return False
         
         if self.custom_id != other.custom_id:
@@ -2612,12 +2826,6 @@ class Component(ComponentBase):
         if (style is not None):
             hash_value ^= style.value
         
-        components = self.components
-        if (components is not None):
-            hash_value ^= len(components)<<12
-            for component in components:
-                hash_value ^= hash(component)
-        
         custom_id = self.custom_id
         if (custom_id is not None):
             hash_value ^= hash(custom_id)
@@ -2634,6 +2842,563 @@ class Component(ComponentBase):
             hash_value ^= 1<<8
         
         return hash_value
+
+
+class ComponentSelectOption(ComponentBase):
+    """
+    An option of a select component.
+    
+    Attributes
+    ----------
+    default : `bool`
+        Whether this option is the default one.
+    description : `None` or `str`
+        Description of the option.
+    emoji : `None` or ``Emoji``
+        Emoji on the option if applicable.
+    label : `None` or `str`
+        Label of the option.
+    value : `str`
+        Identifier value of the option.
+    
+    Class attributes
+    ----------------
+    type : ``ComponentType`` = `ComponentType.none`
+        The component's type.
+    """
+    __slots__ = ('default', 'description', 'emoji', 'label', 'value')
+    
+    def __new__(cls, value, label=None, emoji=None, *, description=None, default=False):
+        """
+        Creates a new component option with the given parameters.
+        
+        Parameters
+        ----------
+        value : `str`
+            The option's value.
+        label : `None` or `str`, Optional
+            Label of the component option.
+        emoji : `None` or ``Emoji``, Optional
+            Emoji of the option if applicable.
+        description : `None` or `str`, Optional (Keyword only)
+            Description of the component option.
+        default : `bool`
+            Whether this the the default option. Defaults to `False`.
+        """
+        if __debug__:
+            _debug_component_value(value)
+            _debug_component_label(label)
+            _debug_component_emoji(emoji)
+            _debug_component_description(description)
+            _debug_component_default(default)
+        
+        if (label is not None) and (not label):
+            label = None
+        
+        if (description is not None) and (not description):
+            description = None
+        
+        self = object.__new__(cls)
+        self.default = default
+        self.description = description
+        self.emoji = emoji
+        self.label = label
+        self.value = value
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentBase.from_data)
+    def from_data(cls, data):
+        self = object.__new__(cls)
+        
+        self.default = data.get('default', False)
+        
+        self.description = data.get('description', None)
+        
+        emoji_data = data.get('emoji', None)
+        if emoji_data is None:
+            emoji = None
+        else:
+            emoji = create_partial_emoji(emoji_data)
+        self.emoji = emoji
+        
+        self.label = data.get('label', None)
+        
+        self.value = data['value']
+        
+        return self
+    
+    
+    @copy_docs(ComponentBase.to_data)
+    def to_data(self):
+        data = {
+            'value' : self.value,
+        }
+        
+        emoji = self.emoji
+        if (emoji is not None):
+            data['emoji'] = create_partial_emoji_data(emoji)
+        
+        if self.default:
+            data['default'] = True
+        
+        description = self.description
+        if (description is not None):
+            data['description'] = description
+        
+        label = self.label
+        if (label is not None):
+            data['label'] = label
+        
+        return data
+
+
+    @copy_docs(ComponentBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__, ' value=', repr(self.value)]
+        
+        emoji = self.emoji
+        if (emoji is not None):
+            repr_parts.append(', emoji=')
+            repr_parts.append(repr(emoji))
+        
+        label = self.label
+        if (label is not None):
+            repr_parts.append(', label=')
+            repr_parts.append(reprlib.repr(label))
+        
+        description = self.description
+        if (description is not None):
+            repr_parts.append(', description=')
+            repr_parts.append(reprlib.repr(description))
+        
+        if self.default:
+            repr_parts.append(', default=')
+            repr_parts.append('True')
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(ComponentBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        new.default = self.default
+        new.description = self.description
+        new.emoji = self.emoji
+        new.label = self.label
+        new.value = self.value
+        return new
+    
+    
+    @copy_docs(ComponentBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        emoji = self.emoji
+        if (emoji is not None):
+            hash_value ^= emoji.id
+        
+        value = self.value
+        if (value is not None):
+            hash_value ^= hash(value)
+        
+        description = self.description
+        if (description is not None):
+            hash_value ^= hash(description)
+        
+        label = self.label
+        if (label is not None):
+            hash_value ^= hash(label)
+        
+        if self.default:
+            hash_value ^= 1<<8
+        
+        return hash_value
+
+
+class ComponentSelect(ComponentBase):
+    """
+    Select component.
+    
+    Attributes
+    ----------
+    custom_id : `str`
+        Custom identifier to detect which component was used by the user.
+    options : `None` or `list` of ``ComponentSelectOption``
+        Options of the select.
+    placeholder : ???
+        ???
+    min_values : ???
+        ???
+    max_values : ???
+        ???
+    
+    Class Attributes
+    ----------------
+    type : ``ComponentType`` = `ComponentType.select`
+        The component's type.
+    """
+    type = ComponentType.select
+    
+    def __new__(cls, custom_id, options=None, *, placeholder=None, min_values=None, max_values=None):
+        """
+        Creates a new ``ComponentSelect`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        custom_id : `str`
+            Custom identifier to detect which component was used by the user.
+        options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``, Optional
+            Options of the select.
+        placeholder : ???, Optional (Keyword only)
+            ???
+        min_values : ???, Optional (Keyword only)
+            ???
+        max_values : ???, Optional (Keyword only)
+            ???
+        """
+        if __debug__:
+            _debug_component_custom_id(custom_id, False)
+            _debug_component_options(options)
+            _debug_component_placeholder(placeholder)
+            _debug_component_min_values(min_values)
+            _debug_component_max_values(max_values)
+        
+        if (options is not None):
+            if options:
+                options = list(options)
+            else:
+                options = None
+        
+        self = object.__new__(cls)
+        self.custom_id = custom_id
+        self.options = options
+        self.placeholder = placeholder
+        self.min_values = min_values
+        self.max_values = max_values
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentBase.from_data)
+    def from_data(cls, data):
+        self = object.__new__(cls)
+        
+        option_datas = data.get('options', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = [ComponentSelectOption.from_data(option_data) for option_data in option_datas]
+        self.options = options
+        
+        self.custom_id = data['custom_id']
+        self.placeholder = data.get('placeholder', None)
+        self.min_values = data.get('min_values', None)
+        self.max_values = data.get('max_values', None)
+        
+        return self
+    
+    
+    @copy_docs(ComponentBase.to_data)
+    def to_data(self):
+        data = {
+            'type' : self.type.value
+        }
+        
+        options = self.options
+        if (options is not None):
+            data['options'] = [option.to_data() for option in options]
+        
+        data['custom_id'] = self.custom_id
+        
+        placeholder = self.placeholder
+        if (placeholder is not None):
+            data['placeholder'] = placeholder
+        
+        min_values = self.min_values
+        if (min_values is not None):
+            data['min_values'] = min_values
+        
+        max_values = self.max_values
+        if (max_values is not None):
+            data['max_values'] = max_values
+        
+        return data
+    
+    
+    @copy_docs(ComponentBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__, ' type=']
+        
+        type_ = self.type
+        repr_parts.append(type_.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(type_.value))
+        repr_parts.append(')')
+        
+        repr_parts.append(', custom_id=')
+        repr_parts.append(reprlib.repr(self.custom_id))
+        
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=')
+            repr_parts.append(repr(options))
+        
+        placeholder = self.placeholder
+        if (placeholder is not None):
+            repr_parts.append(', placeholder=')
+            repr_parts.append(repr(placeholder))
+        
+        min_values = self.min_values
+        if (min_values is not None):
+            repr_parts.append(', min_values=')
+            repr_parts.append(repr(min_values))
+        
+        max_values = self.max_values
+        if (max_values is not None):
+            repr_parts.append(', max_values=')
+            repr_parts.append(repr(max_values))
+        
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(ComponentBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        
+        new.custom_id = self.custom_id
+        
+        options = self.options
+        if (options is not None):
+            options = [option.copy() for option in options]
+        
+        new.options = options
+        
+        new.placeholder = self.placeholder
+        new.min_values = self.min_values
+        new.max_values = self.max_values
+        
+        return new
+    
+    
+    @copy_docs(ComponentBase.__eq__)
+    def __eq__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        
+        if self.custom_id != other.custom_id:
+            return False
+        
+        if self.options != other.options:
+            return False
+        
+        if self.placeholder != other.placeholder:
+            return False
+        
+        if self.min_values != other.min_values:
+            return False
+        
+        if self.max_values != other.max_values:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(ComponentBase.__hash__)
+    def __hash__(self):
+        hash_value = self.type.value ^hash(self.custom_id)
+        
+        options = self.options
+        if (options is not None):
+            hash_value ^= len(options)<<12
+            for option in options:
+                hash_value ^= hash(option)
+        
+        placeholder = self.placeholder
+        if (placeholder is not None):
+            hash_value ^= hash(placeholder)
+        
+        min_values = self.min_values
+        if (min_values is not None):
+            hash_value ^= hash(min_values)
+        
+        max_values = self.max_values
+        if (max_values is not None):
+            hash_value ^= hash(max_values)
+        
+        return hash_value
+
+
+COMPONENT_DYNAMIC_SERIALIZERS = {
+    'emoji' : create_partial_emoji_data,
+    'style' : lambda style: style.value if isinstance(style, PreinstancedBase) else style,
+}
+
+
+COMPONENT_DYNAMIC_DESERIALIZERS = {
+    'emoji' : create_partial_emoji,
+}
+
+
+COMPONENT_ATTRIBUTE_NAMES = frozenset((
+    'components',
+    'custom_id',
+    'disabled',
+    'emoji',
+    'label',
+    'style',
+    'url',
+    'options',
+    'placeholder',
+    'min_values',
+    'max_values',
+))
+
+
+class ComponentDynamic(ComponentBase):
+    """
+    Dynamic component type for not implemented component models.
+    
+    Attributes
+    ----------
+    _data : `dict` of (`str`, `Any`)
+        The dynamically stored attributes of the component.
+    type : ``ComponentType``
+        The component's type.
+    """
+    __slots__ = ('_data', 'type')
+    def __new__(cls, type_, **kwargs):
+        """
+        Creates a new component instance.
+        
+        Parameters
+        ----------
+        type_ : ``ComponentType``, `int`
+            The component's type.
+        **kwargs : Keyword parameters
+            Additional attributes of the component.
+        """
+        type_ = preconvert_preinstanced_type(type_, 'type_', ComponentType)
+        
+        self = object.__new__(cls)
+        self.type = type_
+        self._data = kwargs
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentBase.from_data)
+    def from_data(cls, data):
+        self = object.__new__(cls)
+        self.type = ComponentType.get(data['type'])
+        
+        validated_data = {}
+        for key, value in data.items():
+            if key == 'type':
+                continue
+            
+            try:
+                deserializer = COMPONENT_DYNAMIC_DESERIALIZERS[key]
+            except KeyError:
+                pass
+            else:
+                value = deserializer(value)
+            
+            validated_data[key] = value
+        
+        self._data = validated_data
+        
+        return self
+    
+    
+    @copy_docs(ComponentBase.to_data)
+    def to_data(self):
+        data = {
+            'type' : self.type.value
+        }
+        
+        for key, value in self._data:
+            try:
+                serializer = COMPONENT_DYNAMIC_DESERIALIZERS[key]
+            except KeyError:
+                pass
+            else:
+                value = serializer(value)
+            
+            data[key] = value
+        
+        return data
+    
+    
+    @copy_docs(ComponentBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__, ' type=']
+        
+        type_ = self.type
+        repr_parts.append(type_.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(type_.value))
+        repr_parts.append(')')
+        
+        for key, value in self._data:
+            if value is None:
+                continue
+            
+            if isinstance(value, str):
+                value = reprlib.repr(value)
+            else:
+                value = repr(value)
+            
+            repr_parts.append(', ')
+            repr_parts.append(key)
+            repr_parts.append('=')
+            repr_parts.append(value)
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(ComponentBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        
+        new.type = self.type
+        new._data = self._data.copy()
+        
+        return new
+    
+    
+    @copy_docs(ComponentBase.__eq__)
+    def __eq__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        
+        if self.type is not other.type:
+            return False
+        
+        if self._data != other._data:
+            return False
+        
+        return True
+    
+    @copy_docs(ComponentBase.__hash__)
+    def __hash__(self):
+        return object.__hash__(self)
+    
+    def __getattr__(self, attribute_name):
+        """Returns the component's fields if applicable"""
+        try:
+            attribute_value = self._data[attribute_name]
+        except KeyError:
+            if attribute_name in COMPONENT_ATTRIBUTE_NAMES:
+                attribute_value = None
+            else:
+                raise AttributeError(attribute_name)
+        
+        return attribute_value
 
 
 class ComponentInteraction:
@@ -2737,6 +3502,30 @@ INTERACTION_TYPE_TABLE = {
 }
 
 COMPONENT_TYPE_TO_STYLE = {
-    ComponentType.action_row: None,
+    ComponentType.row: None,
     ComponentType.button: ButtonStyle,
+    ComponentType.select: None,
 }
+
+COMPONENT_TYPE_VALUE_TO_TYPE = {
+    ComponentType.row.value: ComponentRow,
+    ComponentType.button.value: ComponentButton,
+    ComponentType.select.value: ComponentSelect,
+}
+
+@export
+def create_component(component_data):
+    """
+    Creates a component from the given component data.
+    
+    Parameters
+    ----------
+    component_data : `dict` of (`str`, `Any`)
+        Component data.
+    
+    Returns
+    -------
+    component : ``ComponentBase``
+        the created component instance.
+    """
+    return COMPONENT_TYPE_VALUE_TO_TYPE.get(component_data['style'], ComponentDynamic).from_data(component_data)

@@ -494,7 +494,7 @@ class AllowedMentionProxy:
         return new
     
     def __eq__(self, other):
-        """Returns whether teh two allowed mention proxies are equal."""
+        """Returns whether the two allowed mention proxies are equal."""
         if type(self) is not type(other):
             return NotImplemented
         

@@ -9,7 +9,7 @@ __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwrit
 from ..backend.utils import any_to_any
 from ..backend.export import export, include
 
-from .bases import PreinstancedBase
+from .bases import PreinstancedBase, Preinstance as P
 from .color import Color
 from .utils import sanitize_mentions
 
@@ -59,17 +59,11 @@ class VerificationLevel(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = NotImplemented
-    low = NotImplemented
-    medium = NotImplemented
-    high = NotImplemented
-    extreme = NotImplemented
-
-VerificationLevel.none = VerificationLevel(0, 'none')
-VerificationLevel.low = VerificationLevel(1, 'low')
-VerificationLevel.medium = VerificationLevel(2, 'medium')
-VerificationLevel.high = VerificationLevel(3, 'high')
-VerificationLevel.extreme = VerificationLevel(4, 'extreme')
+    none = P(0, 'none')
+    low = P(1, 'low')
+    medium = P(2, 'medium')
+    high = P(3, 'high')
+    extreme = P(4, 'extreme')
 
 
 class VoiceRegion(PreinstancedBase):
@@ -246,57 +240,31 @@ class VoiceRegion(PreinstancedBase):
     # predefined
     
     # normal
-    brazil = NotImplemented
-    dubai = NotImplemented
-    eu_central = NotImplemented
-    eu_west = NotImplemented
-    europe = NotImplemented
-    hongkong = NotImplemented
-    india = NotImplemented
-    japan = NotImplemented
-    russia = NotImplemented
-    singapore = NotImplemented
-    africa_south = NotImplemented
-    sydney = NotImplemented
-    us_central = NotImplemented
-    us_east = NotImplemented
-    us_south = NotImplemented
-    us_west = NotImplemented
+    brazil = P('Brazil', 'brazil', False, False)
+    dubai = P('Dubai', 'dubai', False, False)
+    eu_central = P('Central Europe', 'eu-central', False, False)
+    eu_west = P('Western Europe', 'eu-west', False, False)
+    europe = P('Europe', 'europe', False, False)
+    hongkong = P('Hong Kong', 'hongkong', False, False)
+    india = P('India', 'india', False, False)
+    japan = P('Japan', 'japan', False, False)
+    russia = P('Russia', 'russia', False, False)
+    singapore = P('Singapore', 'singapore', False, False)
+    africa_south = P('South Africa', 'southafrica', False, False)
+    sydney = P('Sydney', 'sydney', False, False)
+    us_central = P('US Central', 'us-central', False, False)
+    us_east = P('US East', 'us-east', False, False)
+    us_south = P('US South', 'us-south', False, False)
+    us_west = P('US West', 'us-west', False, False)
     # deprecated
-    amsterdam = NotImplemented
-    frankfurt = NotImplemented
-    london = NotImplemented
+    amsterdam = P('Amsterdam', 'amsterdam', True, False)
+    frankfurt = P('Frankfurt', 'frankfurt', True, False)
+    london = P('London', 'london', True, False)
     # vip
-    vip_us_east = NotImplemented
-    vip_us_west = NotImplemented
+    vip_us_east = P('VIP US West', 'vip-us-west', False, True)
+    vip_us_west = P('VIP US East', 'vip-us-east', False, True)
     # vip + deprecated
-    vip_amsterdam = NotImplemented
-
-VoiceRegion.brazil = VoiceRegion('Brazil', 'brazil', False, False)
-VoiceRegion.dubai = VoiceRegion('Dubai', 'dubai', False, False)
-VoiceRegion.eu_central = VoiceRegion('Central Europe', 'eu-central', False, False)
-VoiceRegion.eu_west = VoiceRegion('Western Europe', 'eu-west', False, False)
-VoiceRegion.europe = VoiceRegion('Europe', 'europe', False, False)
-VoiceRegion.hongkong = VoiceRegion('Hong Kong', 'hongkong', False, False)
-VoiceRegion.india = VoiceRegion('India', 'india', False, False)
-VoiceRegion.japan = VoiceRegion('Japan', 'japan', False, False)
-VoiceRegion.russia = VoiceRegion('Russia', 'russia', False, False)
-VoiceRegion.singapore = VoiceRegion('Singapore', 'singapore', False, False)
-VoiceRegion.africa_south = VoiceRegion('South Africa', 'southafrica', False, False)
-VoiceRegion.sydney = VoiceRegion('Sydney', 'sydney', False, False)
-VoiceRegion.us_central = VoiceRegion('US Central', 'us-central', False, False)
-VoiceRegion.us_east = VoiceRegion('US East', 'us-east', False, False)
-VoiceRegion.us_south = VoiceRegion('US South', 'us-south', False, False)
-VoiceRegion.us_west = VoiceRegion('US West', 'us-west', False, False)
-# deprecated
-VoiceRegion.amsterdam = VoiceRegion('Amsterdam', 'amsterdam', True, False)
-VoiceRegion.frankfurt = VoiceRegion('Frankfurt', 'frankfurt', True, False)
-VoiceRegion.london = VoiceRegion('London', 'london', True, False)
-# vip
-VoiceRegion.vip_us_east = VoiceRegion('VIP US West', 'vip-us-west', False, True)
-VoiceRegion.vip_us_west = VoiceRegion('VIP US East', 'vip-us-east', False, True)
-# vip + deprecated
-VoiceRegion.vip_amsterdam = VoiceRegion('VIP Amsterdam', 'vip-amsterdam',True, True)
+    vip_amsterdam = P('VIP Amsterdam', 'vip-amsterdam',True, True)
 
 
 class ContentFilterLevel(PreinstancedBase):
@@ -339,13 +307,9 @@ class ContentFilterLevel(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    disabled = NotImplemented
-    no_role = NotImplemented
-    everyone = NotImplemented
-
-ContentFilterLevel.disabled = ContentFilterLevel(0, 'disabled')
-ContentFilterLevel.no_role = ContentFilterLevel(1, 'no_role')
-ContentFilterLevel.everyone = ContentFilterLevel(2, 'everyone')
+    disabled = P(0, 'disabled')
+    no_role = P(1, 'no_role')
+    everyone = P(2, 'everyone')
 
 
 class HypesquadHouse(PreinstancedBase):
@@ -389,15 +353,10 @@ class HypesquadHouse(PreinstancedBase):
     __slots__ = ()
 
     # predefined
-    none = NotImplemented
-    bravery = NotImplemented
-    brilliance = NotImplemented
-    balance = NotImplemented
-
-HypesquadHouse.none = HypesquadHouse(0, 'none')
-HypesquadHouse.bravery = HypesquadHouse(1, 'bravery')
-HypesquadHouse.brilliance = HypesquadHouse(2, 'brilliance')
-HypesquadHouse.balance = HypesquadHouse(3, 'balance')
+    none = P(0, 'none')
+    bravery = P(1, 'bravery')
+    brilliance = P(2, 'brilliance')
+    balance = P(3, 'balance')
 
 
 class Status(PreinstancedBase):
@@ -446,7 +405,7 @@ class Status(PreinstancedBase):
     
     __slots__ = ('position', )
     
-    def __init__(self, value, position):
+    def __init__(self, value, name, position):
         """
         Creates a new status and stores it at the class's `.INSTANCES` class attribute.
         
@@ -458,12 +417,12 @@ class Status(PreinstancedBase):
             Internal position of the status for sorting purposes.
         """
         self.value = value
-        self.name = value
+        self.name = name
         self.position = position
         self.INSTANCES[value] = self
     
     @classmethod
-    def _from_value(cls, value):
+    def _from_value(cls, value,):
         """
         Creates a new status object from the given value.
         
@@ -498,9 +457,9 @@ class Status(PreinstancedBase):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return NotImplemented
+                return P
         else:
-            return NotImplemented
+            return P
         
         if self.position > other.position:
             return True
@@ -517,9 +476,9 @@ class Status(PreinstancedBase):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return NotImplemented
+                return P
         else:
-            return NotImplemented
+            return P
         
         self_position = self.position
         other_position = other.position
@@ -544,9 +503,9 @@ class Status(PreinstancedBase):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return NotImplemented
+                return P
         else:
-            return NotImplemented
+            return P
     
         if self.position != other.position:
             return False
@@ -566,9 +525,9 @@ class Status(PreinstancedBase):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return NotImplemented
+                return P
         else:
-            return NotImplemented
+            return P
         
         if self.position != other.position:
             return True
@@ -588,9 +547,9 @@ class Status(PreinstancedBase):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return NotImplemented
+                return P
         else:
-            return NotImplemented
+            return P
         
         self_position = self.position
         other_position = other.position
@@ -615,9 +574,9 @@ class Status(PreinstancedBase):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return NotImplemented
+                return P
         else:
-            return NotImplemented
+            return P
         
         if self.position < other.position:
             return True
@@ -625,17 +584,12 @@ class Status(PreinstancedBase):
         return False
     
     # predefined
-    online = NotImplemented
-    idle = NotImplemented
-    dnd = NotImplemented
-    offline = NotImplemented
-    invisible = NotImplemented
+    online = P('online', 'online', 0)
+    idle = P('idle', 'idle', 1)
+    dnd = P('dnd', 'dnd', 2)
+    offline = P('offline', 'offline', 3)
+    invisible = P('invisible', 'invisible', 3)
 
-Status.online = Status('online', 0)
-Status.idle = Status('idle', 1)
-Status.dnd = Status('dnd', 2)
-Status.offline = Status('offline', 3)
-Status.invisible = Status('invisible', 3)
 
 class MessageNotificationLevel(PreinstancedBase):
     """
@@ -678,15 +632,10 @@ class MessageNotificationLevel(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    all_messages = NotImplemented
-    only_mentions = NotImplemented
-    no_messages = NotImplemented
-    null = NotImplemented
-
-MessageNotificationLevel.all_messages = MessageNotificationLevel(0, 'all_messages')
-MessageNotificationLevel.only_mentions = MessageNotificationLevel(1, 'only_mentions')
-MessageNotificationLevel.no_messages = MessageNotificationLevel(2, 'no_messages')
-MessageNotificationLevel.null = MessageNotificationLevel(3, 'null')
+    all_messages = P(0, 'all_messages')
+    only_mentions = P(1, 'only_mentions')
+    no_messages = P(2, 'no_messages')
+    null = P(3, 'null')
 
 
 class MFA(PreinstancedBase):
@@ -726,11 +675,8 @@ class MFA(PreinstancedBase):
     __slots__ = ()
     
     # Predefined
-    none = NotImplemented
-    elevated = NotImplemented
-
-MFA.none = MFA(0, 'none')
-MFA.elevated = MFA(1, 'elevated')
+    none = P(0, 'none')
+    elevated = P(1, 'elevated')
 
 
 class PremiumType(PreinstancedBase):
@@ -772,13 +718,9 @@ class PremiumType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = NotImplemented
-    nitro_classic = NotImplemented
-    nitro = NotImplemented
-
-PremiumType.none = PremiumType(0, 'none')
-PremiumType.nitro_classic = PremiumType(1, 'nitro_classic')
-PremiumType.nitro = PremiumType(2, 'nitro')
+    none = P(0, 'none')
+    nitro_classic = P(1, 'nitro_classic')
+    nitro = P(2, 'nitro')
 
 
 @export
@@ -827,19 +769,13 @@ class RelationshipType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    stranger = NotImplemented
-    friend = NotImplemented
-    blocked = NotImplemented
-    pending_incoming = NotImplemented
-    pending_outgoing = NotImplemented
-    implicit = NotImplemented
+    stranger = P(0, 'stranger')
+    friend = P(1, 'friend')
+    blocked = P(2, 'blocked')
+    pending_incoming = P(3, 'pending_incoming')
+    pending_outgoing = P(4, 'pending_outgoing')
+    implicit = P(5, 'implicit')
 
-RelationshipType.stranger = RelationshipType(0, 'stranger')
-RelationshipType.friend = RelationshipType(1, 'friend')
-RelationshipType.blocked = RelationshipType(2, 'blocked')
-RelationshipType.pending_incoming = RelationshipType(3, 'pending_incoming')
-RelationshipType.pending_outgoing = RelationshipType(4, 'pending_outgoing')
-RelationshipType.implicit = RelationshipType(5, 'implicit')
 
 class FriendRequestFlag(PreinstancedBase):
     """
@@ -937,17 +873,12 @@ class FriendRequestFlag(PreinstancedBase):
         return result
     
     # predefined
-    none = NotImplemented
-    mutual_guilds = NotImplemented
-    mutual_friends = NotImplemented
-    mutual_guilds_and_friends = NotImplemented
-    all = NotImplemented
+    none = P(0, 'none')
+    mutual_guilds = P(1, 'mutual_guilds')
+    mutual_friends = P(2, 'mutual_friends')
+    mutual_guilds_and_friends = P(3, 'mutual_guilds_and_friends')
+    all = P(4, 'all')
 
-FriendRequestFlag.none = FriendRequestFlag(0, 'none')
-FriendRequestFlag.mutual_guilds = FriendRequestFlag(1, 'mutual_guilds')
-FriendRequestFlag.mutual_friends = FriendRequestFlag(2, 'mutual_friends')
-FriendRequestFlag.mutual_guilds_and_friends = FriendRequestFlag(3, 'mutual_guilds_and_friends')
-FriendRequestFlag.all = FriendRequestFlag(4, 'all')
 
 class Theme(PreinstancedBase):
     """
@@ -983,24 +914,9 @@ class Theme(PreinstancedBase):
     
     __slots__ = ()
     
-    def __init__(self, value):
-        """
-        Creates a new ``Theme`` object with the given value.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identifier value of the theme.
-        """
-        self.value = value
-        self.name = value
-    
     # predefined
-    dark = NotImplemented
-    light = NotImplemented
-
-Theme.dark = Theme('dark')
-Theme.light = Theme('light')
+    dark = P('dark', 'dark')
+    light = P('light', 'light')
 
 
 def MESSAGE_DEFAULT_CONVERTER(self):
@@ -1023,157 +939,6 @@ def MESSAGE_DEFAULT_CONVERTER(self):
     
     return content
 
-
-class MessageType(PreinstancedBase):
-    """
-    Represents a ``Message``'s type.
-    
-    Attributes
-    ----------
-    convert : `function`
-        The converter function of the message type, what tries to convert the message's content to it's Discord side
-        representation.
-    name : `str`
-        The default name of the message type.
-    value : `int`
-        The Discord side identifier value of the message type.
-    VALUE_TYPE : `type` = `int`
-        The message types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the message types.
-    DEFAULT_CONVERT : `function`
-        The default ``.convert`` attribute of the message types.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``MessageType``) items
-        Stores the predefined ``MessageType`` instances. These can be accessed with their `value` as key.
-    
-    Every predefined message type can be accessed as class attribute as well:
-    
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | Class attribute name & name               | convert                                           | value |
-    +===========================================+===================================================+=======+
-    | default                                   | MESSAGE_DEFAULT_CONVERTER                         | 0     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | add_user                                  | convert_add_user                                  | 1     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | remove_user                               | convert_remove_user                               | 2     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | call                                      | convert_call                                      | 3     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | channel_name_change                       | convert_channel_name_change                       | 4     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | channel_icon_change                       | convert_channel_icon_change                       | 5     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_pin                                   | convert_new_pin                                   | 6     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | welcome                                   | convert_welcome                                   | 7     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub                             | convert_new_guild_sub                             | 8     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t1                          | convert_new_guild_sub_t1                          | 9     |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t2                          | convert_new_guild_sub_t2                          | 10    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t3                          | convert_new_guild_sub_t3                          | 11    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | new_follower_channel                      | convert_new_follower_channel                      | 12    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | stream                                    | convert_stream                                    | 13    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_disqualified                    | convert_discovery_disqualified                    | 14    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_requalified                     | convert_discovery_requalified                     | 15    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_initial_warning    | convert_discovery_grace_period_initial_warning    | 16    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_final_warning      | convert_discovery_grace_period_final_warning      | 17    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | thread_created                            | convert_thread_created                            | 18    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | inline_reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | application_command                       | MESSAGE_DEFAULT_CONVERTER                         | 20    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | thread_started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    | invite_reminder                           | convert_invite_reminder                           | 22    |
-    +-------------------------------------------+---------------------------------------------------+-------+
-    """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    __slots__ = ('convert',)
-    
-    @classmethod
-    def _from_value(cls, value):
-        """
-        Creates a new message type with the given value.
-        
-        Parameters
-        ----------
-        value : `int`
-            The message type's identifier value.
-        
-        Returns
-        -------
-        self : ``MessageType``
-            The created instance.
-        """
-        self = object.__new__(cls)
-        self.name = cls.DEFAULT_NAME
-        self.value = value
-        self.convert = cls.DEFAULT_CONVERT
-        
-        return self
-    
-    def __init__(self, value, name, convert):
-        """
-        Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
-        
-        Parameters
-        ----------
-        value : `int`
-            The Discord side identifier value of the message type.
-        name : `str`
-            The default name of the message type.
-        convert : `function`
-            The converter function of the message type.
-        """
-        self.value = value
-        self.name = name
-        self.convert = convert
-        
-        self.INSTANCES[value] = self
-    
-    def __repr__(self):
-        """Returns the representation of the message type."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, covert={self.convert!r})'
-    
-    # predefined
-    default = NotImplemented
-    add_user = NotImplemented
-    remove_user = NotImplemented
-    call = NotImplemented
-    channel_name_change = NotImplemented
-    channel_icon_change = NotImplemented
-    new_pin = NotImplemented
-    welcome = NotImplemented
-    new_guild_sub = NotImplemented
-    new_guild_sub_t1 = NotImplemented
-    new_guild_sub_t2 = NotImplemented
-    new_guild_sub_t3 = NotImplemented
-    new_follower_channel = NotImplemented
-    stream = NotImplemented
-    discovery_disqualified = NotImplemented
-    discovery_requalified = NotImplemented
-    discovery_grace_period_initial_warning = NotImplemented
-    discovery_grace_period_final_warning = NotImplemented
-    inline_reply = NotImplemented
-    application_command = NotImplemented
-    thread_started = NotImplemented
-    invite_reminder = NotImplemented
 
 def convert_add_user(self):
     return f'{self.author.name} added {self.user_mentions[0].name} to the group.'
@@ -1327,32 +1092,159 @@ def convert_thread_created(self):
 def convert_invite_reminder(self):
     return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
 
-MessageType.default = MessageType(0, 'default', MESSAGE_DEFAULT_CONVERTER)
-MessageType.add_user = MessageType(1, 'add_user', convert_add_user)
-MessageType.remove_user = MessageType(2, 'remove_user', convert_remove_user)
-MessageType.call = MessageType(3, 'call', convert_call)
-MessageType.channel_name_change = MessageType(4, 'channel_name_change', convert_channel_name_change)
-MessageType.channel_icon_change = MessageType(5, 'channel_icon_change', convert_channel_icon_change)
-MessageType.new_pin = MessageType(6, 'new_pin', convert_new_pin)
-MessageType.welcome = MessageType(7, 'welcome', convert_welcome)
-MessageType.new_guild_sub = MessageType(8, 'new_guild_sub', convert_new_guild_sub)
-MessageType.new_guild_sub_t1 = MessageType(9, 'new_guild_sub_t1', convert_new_guild_sub_t1)
-MessageType.new_guild_sub_t2 = MessageType(1, 'new_guild_sub_t2', convert_new_guild_sub_t2)
-MessageType.new_guild_sub_t3 = MessageType(11, 'new_guild_sub_t3', convert_new_guild_sub_t3)
-MessageType.new_follower_channel = MessageType(12, 'new_follower_channel', convert_new_follower_channel)
-MessageType.stream = MessageType(13, 'stream', convert_stream)
-MessageType.discovery_disqualified = MessageType(14, 'discovery_disqualified', convert_discovery_disqualified)
-MessageType.discovery_requalified = MessageType(15, 'discovery_requalified', convert_discovery_requalified)
-MessageType.discovery_grace_period_initial_warning = MessageType(16, 'discovery_grace_period_initial_warning',
-    convert_discovery_grace_period_initial_warning)
-MessageType.discovery_grace_period_final_warning = MessageType(17, 'discovery_grace_period_final_warning',
-    convert_discovery_grace_period_final_warning)
-MessageType.thread_created = MessageType(18, 'thread_created', convert_thread_created)
-MessageType.inline_reply = MessageType(19, 'inline_reply', MESSAGE_DEFAULT_CONVERTER)
-MessageType.application_command = MessageType(20, 'application_command', MESSAGE_DEFAULT_CONVERTER)
-MessageType.thread_started = MessageType(21, 'thread_started', MESSAGE_DEFAULT_CONVERTER)
-MessageType.invite_reminder = MessageType(22, 'invite_reminder', convert_invite_reminder)
-
+class MessageType(PreinstancedBase):
+    """
+    Represents a ``Message``'s type.
+    
+    Attributes
+    ----------
+    convert : `function`
+        The converter function of the message type, what tries to convert the message's content to it's Discord side
+        representation.
+    name : `str`
+        The default name of the message type.
+    value : `int`
+        The Discord side identifier value of the message type.
+    VALUE_TYPE : `type` = `int`
+        The message types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the message types.
+    DEFAULT_CONVERT : `function`
+        The default ``.convert`` attribute of the message types.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``MessageType``) items
+        Stores the predefined ``MessageType`` instances. These can be accessed with their `value` as key.
+    
+    Every predefined message type can be accessed as class attribute as well:
+    
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | Class attribute name & name               | convert                                           | value |
+    +===========================================+===================================================+=======+
+    | default                                   | MESSAGE_DEFAULT_CONVERTER                         | 0     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | add_user                                  | convert_add_user                                  | 1     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | remove_user                               | convert_remove_user                               | 2     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | call                                      | convert_call                                      | 3     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | channel_name_change                       | convert_channel_name_change                       | 4     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | channel_icon_change                       | convert_channel_icon_change                       | 5     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_pin                                   | convert_new_pin                                   | 6     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | welcome                                   | convert_welcome                                   | 7     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub                             | convert_new_guild_sub                             | 8     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub_t1                          | convert_new_guild_sub_t1                          | 9     |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub_t2                          | convert_new_guild_sub_t2                          | 10    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_guild_sub_t3                          | convert_new_guild_sub_t3                          | 11    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | new_follower_channel                      | convert_new_follower_channel                      | 12    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | stream                                    | convert_stream                                    | 13    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_disqualified                    | convert_discovery_disqualified                    | 14    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_requalified                     | convert_discovery_requalified                     | 15    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_grace_period_initial_warning    | convert_discovery_grace_period_initial_warning    | 16    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | discovery_grace_period_final_warning      | convert_discovery_grace_period_final_warning      | 17    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | thread_created                            | convert_thread_created                            | 18    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | inline_reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | application_command                       | MESSAGE_DEFAULT_CONVERTER                         | 20    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | thread_started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | invite_reminder                           | convert_invite_reminder                           | 22    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
+    __slots__ = ('convert',)
+    
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new message type with the given value.
+        
+        Parameters
+        ----------
+        value : `int`
+            The message type's identifier value.
+        
+        Returns
+        -------
+        self : ``MessageType``
+            The created instance.
+        """
+        self = object.__new__(cls)
+        self.name = cls.DEFAULT_NAME
+        self.value = value
+        self.convert = MESSAGE_DEFAULT_CONVERTER
+        
+        return self
+    
+    def __init__(self, value, name, convert):
+        """
+        Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identifier value of the message type.
+        name : `str`
+            The default name of the message type.
+        convert : `function`
+            The converter function of the message type.
+        """
+        self.value = value
+        self.name = name
+        self.convert = convert
+        
+        self.INSTANCES[value] = self
+    
+    def __repr__(self):
+        """Returns the representation of the message type."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, covert={self.convert!r})'
+    
+    # predefined
+    default = P(0, 'default', MESSAGE_DEFAULT_CONVERTER)
+    add_user = P(1, 'add_user', convert_add_user)
+    remove_user = P(2, 'remove_user', convert_remove_user)
+    call = P(3, 'call', convert_call)
+    channel_name_change = P(4, 'channel_name_change', convert_channel_name_change)
+    channel_icon_change = P(5, 'channel_icon_change', convert_channel_icon_change)
+    new_pin = P(6, 'new_pin', convert_new_pin)
+    welcome = P(7, 'welcome', convert_welcome)
+    new_guild_sub = P(8, 'new_guild_sub', convert_new_guild_sub)
+    new_guild_sub_t1 = P(9, 'new_guild_sub_t1', convert_new_guild_sub_t1)
+    new_guild_sub_t2 = P(10, 'new_guild_sub_t2', convert_new_guild_sub_t2)
+    new_guild_sub_t3 = P(11, 'new_guild_sub_t3', convert_new_guild_sub_t3)
+    new_follower_channel = P(12, 'new_follower_channel', convert_new_follower_channel)
+    stream = P(13, 'stream', convert_stream)
+    discovery_disqualified = P(14, 'discovery_disqualified', convert_discovery_disqualified)
+    discovery_requalified = P(15, 'discovery_requalified', convert_discovery_requalified)
+    discovery_grace_period_initial_warning = P(16, 'discovery_grace_period_initial_warning',
+        convert_discovery_grace_period_initial_warning)
+    discovery_grace_period_final_warning = P(17, 'discovery_grace_period_final_warning',
+        convert_discovery_grace_period_final_warning)
+    thread_created = P(18, 'thread_created', convert_thread_created)
+    inline_reply = P(19, 'inline_reply', MESSAGE_DEFAULT_CONVERTER)
+    application_command = P(20, 'application_command', MESSAGE_DEFAULT_CONVERTER)
+    thread_started = P(21, 'thread_started', MESSAGE_DEFAULT_CONVERTER)
+    invite_reminder = P(22, 'invite_reminder', convert_invite_reminder)
 
 del convert_add_user
 del convert_remove_user
@@ -1419,19 +1311,12 @@ class MessageActivityType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = NotImplemented
-    join = NotImplemented
-    spectate = NotImplemented
-    listen = NotImplemented
-    watch = NotImplemented
-    join_request = NotImplemented
-
-MessageActivityType.none = MessageActivityType(0, 'none')
-MessageActivityType.join = MessageActivityType(1, 'join')
-MessageActivityType.spectate = MessageActivityType(2, 'spectate')
-MessageActivityType.listen = MessageActivityType(3, 'listen')
-MessageActivityType.watch = MessageActivityType(4, 'watch')
-MessageActivityType.join_request = MessageActivityType(5, 'join_request')
+    none = P(0, 'none')
+    join = P(1, 'join')
+    spectate = P(2, 'spectate')
+    listen = P(3, 'listen')
+    watch = P(4, 'watch')
+    join_request = P(5, 'join_request')
 
 
 class TeamMembershipState(PreinstancedBase):
@@ -1472,14 +1357,9 @@ class TeamMembershipState(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = None
-    invited = None
-    accepted = None
-
-TeamMembershipState.none = TeamMembershipState(0, 'none')
-TeamMembershipState.invited = TeamMembershipState(1, 'invited')
-TeamMembershipState.accepted = TeamMembershipState(2, 'accepted')
-
+    none = (0, 'none')
+    invited = (1, 'invited')
+    accepted = (2, 'accepted')
 
 
 class GuildFeature(PreinstancedBase):
@@ -1578,69 +1458,30 @@ class GuildFeature(PreinstancedBase):
         self.INSTANCES[value] = self
         return self
     
-    def __init__(self, value):
-        """
-        Creates a new guild feature and stores it at ``.INSTANCES``.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identifier value of the guild feature.
-        """
-        self.value = value
-        self.name = value
-        self.INSTANCES[value] = self
-    
-    def __repr__(self):
-        """Returns the representation of the guild feature."""
-        return f'{self.__class__.__name__}(value={self.value!r})'
-    
     # predefined
-    animated_icon = NotImplemented
-    banner = NotImplemented
-    commerce = NotImplemented
-    community = NotImplemented
-    discoverable = NotImplemented
-    discoverable_disabled = NotImplemented
-    discoverable_enabled_before = NotImplemented
-    featurable = NotImplemented
-    member_list_disabled = NotImplemented
-    more_emoji = NotImplemented
-    news = NotImplemented
-    partnered = NotImplemented
-    public = NotImplemented
-    public_disabled = NotImplemented
-    relay_enabled = NotImplemented
-    invite_splash = NotImplemented
-    vanity = NotImplemented
-    verified = NotImplemented
-    vip = NotImplemented
-    welcome_screen = NotImplemented
-    verification_screen = NotImplemented
-    preview_enabled = NotImplemented
+    animated_icon = P('ANIMATED_ICON', 'animated_icon')
+    banner = P('BANNER', 'banner')
+    commerce = P('COMMERCE', 'commerce')
+    community = P('COMMUNITY', 'community')
+    discoverable = P('DISCOVERABLE', 'discoverable')
+    discoverable_disabled = P('DISCOVERABLE_DISABLED', 'discoverable_disabled')
+    discoverable_enabled_before = P('ENABLED_DISCOVERABLE_BEFORE', 'discoverable_enabled_before')
+    featurable = P('FEATURABLE', 'featurable')
+    member_list_disabled = P('MEMBER_LIST_DISABLED', 'member_list_disabled')
+    more_emoji = P('MORE_EMOJI', 'more_emoji')
+    news = P('NEWS', 'news')
+    partnered = P('PARTNERED', 'partnered')
+    public = P('PUBLIC', 'public')
+    public_disabled = P('PUBLIC_DISABLED', 'public_disabled')
+    relay_enabled = P('RELAY_ENABLED', 'relay_enabled')
+    invite_splash = P('INVITE_SPLASH', 'invite_splash')
+    vanity = P('VANITY_URL', 'vanity')
+    verified = P('VERIFIED', 'verified')
+    vip = P('VIP_REGIONS', 'vip')
+    welcome_screen = P('WELCOME_SCREEN_ENABLED', 'welcome_screen')
+    verification_screen = P('MEMBER_VERIFICATION_GATE_ENABLED', 'verification_screen')
+    preview_enabled = P('PREVIEW_ENABLED', 'preview_enabled')
 
-GuildFeature.animated_icon = GuildFeature('ANIMATED_ICON')
-GuildFeature.banner = GuildFeature('BANNER')
-GuildFeature.commerce = GuildFeature('COMMERCE')
-GuildFeature.community = GuildFeature('COMMUNITY')
-GuildFeature.discoverable = GuildFeature('DISCOVERABLE')
-GuildFeature.discoverable_disabled = GuildFeature('DISCOVERABLE_DISABLED')
-GuildFeature.discoverable_enabled_before = GuildFeature('ENABLED_DISCOVERABLE_BEFORE')
-GuildFeature.featurable = GuildFeature('FEATURABLE')
-GuildFeature.member_list_disabled = GuildFeature('MEMBER_LIST_DISABLED')
-GuildFeature.more_emoji = GuildFeature('MORE_EMOJI')
-GuildFeature.news = GuildFeature('NEWS')
-GuildFeature.partnered = GuildFeature('PARTNERED')
-GuildFeature.public = GuildFeature('PUBLIC')
-GuildFeature.public_disabled = GuildFeature('PUBLIC_DISABLED')
-GuildFeature.relay_enabled = GuildFeature('RELAY_ENABLED')
-GuildFeature.invite_splash = GuildFeature('INVITE_SPLASH')
-GuildFeature.vanity = GuildFeature('VANITY_URL')
-GuildFeature.verified = GuildFeature('VERIFIED')
-GuildFeature.vip = GuildFeature('VIP_REGIONS')
-GuildFeature.welcome_screen = GuildFeature('WELCOME_SCREEN_ENABLED')
-GuildFeature.verification_screen = GuildFeature('MEMBER_VERIFICATION_GATE_ENABLED')
-GuildFeature.preview_enabled = GuildFeature('PREVIEW_ENABLED')
 
 class AuditLogEvent(PreinstancedBase):
     """
@@ -1745,93 +1586,49 @@ class AuditLogEvent(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    guild_update = NotImplemented
+    guild_update = P(1, 'guild_update')
     
-    channel_create = NotImplemented
-    channel_update = NotImplemented
-    channel_delete = NotImplemented
-    channel_overwrite_create = NotImplemented
-    channel_overwrite_update = NotImplemented
-    channel_overwrite_delete = NotImplemented
+    channel_create = P(10, 'channel_create')
+    channel_update = P(11, 'channel_update')
+    channel_delete = P(12, 'channel_delete')
+    channel_overwrite_create = P(13, 'channel_overwrite_create')
+    channel_overwrite_update = P(14, 'channel_overwrite_update')
+    channel_overwrite_delete = P(15, 'channel_overwrite_delete')
     
-    member_kick = NotImplemented
-    member_prune = NotImplemented
-    member_ban_add = NotImplemented
-    member_ban_remove = NotImplemented
-    member_update = NotImplemented
-    member_role_update = NotImplemented
-    member_move = NotImplemented
-    member_disconnect = NotImplemented
-    bot_add = NotImplemented
+    member_kick = P(20, 'member_kick')
+    member_prune = P(21, 'member_prune')
+    member_ban_add = P(22, 'member_ban_add')
+    member_ban_remove = P(23, 'member_ban_remove')
+    member_update = P(24, 'member_update')
+    member_role_update = P(25, 'member_role_update')
+    member_move = P(26, 'member_move')
+    member_disconnect = P(27, 'member_disconnect')
+    bot_add = P(28, 'member_role_update')
     
-    role_create = NotImplemented
-    role_update = NotImplemented
-    role_delete = NotImplemented
+    role_create = P(30, 'role_create')
+    role_update = P(31, 'role_update')
+    role_delete = P(32, 'role_delete')
     
-    invite_create = NotImplemented
-    invite_update = NotImplemented
-    invite_delete = NotImplemented
+    invite_create = P(40, 'invite_create')
+    invite_update = P(41, 'invite_update')
+    invite_delete = P(42, 'INVITE_delete')
     
-    webhook_create = NotImplemented
-    webhook_update = NotImplemented
-    webhook_delete = NotImplemented
+    webhook_create = P(50, 'webhook_create')
+    webhook_update = P(51, 'webhook_update')
+    webhook_delete = P(52, 'webhook_delete')
     
-    emoji_create = NotImplemented
-    emoji_update = NotImplemented
-    emoji_delete = NotImplemented
+    emoji_create = P(60, 'emoji_create')
+    emoji_update = P(61, 'emoji_update')
+    emoji_delete = P(62, 'emoji_delete')
     
-    message_delete = NotImplemented
-    message_bulk_delete = NotImplemented
-    message_pin = NotImplemented
-    message_unpin = NotImplemented
+    message_delete = P(72, 'message_delete')
+    message_bulk_delete = P(73, 'message_bulk_delete')
+    message_pin = P(74, 'message_pin')
+    message_unpin = P(75, 'message_unpin')
     
-    integration_create = NotImplemented
-    integration_update = NotImplemented
-    integration_delete = NotImplemented
-
-AuditLogEvent.guild_update = AuditLogEvent( 1, 'guild_update')
-
-AuditLogEvent.channel_create = AuditLogEvent(10, 'channel_create')
-AuditLogEvent.channel_update = AuditLogEvent(11, 'channel_update')
-AuditLogEvent.channel_delete = AuditLogEvent(12, 'channel_delete')
-AuditLogEvent.channel_overwrite_create = AuditLogEvent(13, 'channel_overwrite_create')
-AuditLogEvent.channel_overwrite_update = AuditLogEvent(14, 'channel_overwrite_update')
-AuditLogEvent.channel_overwrite_delete = AuditLogEvent(15, 'channel_overwrite_delete')
-
-AuditLogEvent.member_kick = AuditLogEvent(20, 'member_kick')
-AuditLogEvent.member_prune = AuditLogEvent(21, 'member_prune')
-AuditLogEvent.member_ban_add = AuditLogEvent(22, 'member_ban_add')
-AuditLogEvent.member_ban_remove = AuditLogEvent(23, 'member_ban_remove')
-AuditLogEvent.member_update = AuditLogEvent(24, 'member_update')
-AuditLogEvent.member_role_update = AuditLogEvent(25, 'member_role_update')
-AuditLogEvent.member_move = AuditLogEvent(26, 'member_move')
-AuditLogEvent.member_disconnect = AuditLogEvent(27, 'member_disconnect')
-AuditLogEvent.bot_add = AuditLogEvent(28, 'member_role_update')
-
-AuditLogEvent.role_create = AuditLogEvent(30, 'role_create')
-AuditLogEvent.role_update = AuditLogEvent(31, 'role_update')
-AuditLogEvent.role_delete = AuditLogEvent(32, 'role_delete')
-
-AuditLogEvent.invite_create = AuditLogEvent(40, 'invite_create')
-AuditLogEvent.invite_update = AuditLogEvent(41, 'invite_update')
-AuditLogEvent.invite_delete = AuditLogEvent(42, 'INVITE_delete')
-
-AuditLogEvent.webhook_create = AuditLogEvent(50, 'webhook_create')
-AuditLogEvent.webhook_update = AuditLogEvent(51, 'webhook_update')
-AuditLogEvent.webhook_delete = AuditLogEvent(52, 'webhook_delete')
-
-AuditLogEvent.emoji_create = AuditLogEvent(60, 'emoji_create')
-AuditLogEvent.emoji_update = AuditLogEvent(61, 'emoji_update')
-AuditLogEvent.emoji_delete = AuditLogEvent(62, 'emoji_delete')
-
-AuditLogEvent.message_delete = AuditLogEvent(72, 'message_delete')
-AuditLogEvent.message_bulk_delete = AuditLogEvent(73, 'message_bulk_delete')
-AuditLogEvent.message_pin = AuditLogEvent(74, 'message_pin')
-AuditLogEvent.message_unpin = AuditLogEvent(75, 'message_unpin')
-
-AuditLogEvent.integration_create = AuditLogEvent(80, 'integration_create')
-AuditLogEvent.integration_update = AuditLogEvent(81, 'integration_update')
-AuditLogEvent.integration_delete = AuditLogEvent(82, 'integration_delete')
+    integration_create = P(80, 'integration_create')
+    integration_update = P(81, 'integration_update')
+    integration_delete = P(82, 'integration_delete')
 
 
 class DefaultAvatar(PreinstancedBase):
@@ -1944,17 +1741,11 @@ class DefaultAvatar(PreinstancedBase):
     
     
     # predefined
-    blue = NotImplemented
-    gray = NotImplemented
-    green = NotImplemented
-    orange = NotImplemented
-    red = NotImplemented
-
-DefaultAvatar.blue = DefaultAvatar(0, 'blue', Color(0x7289da))
-DefaultAvatar.gray = DefaultAvatar(1, 'gray', Color(0x747f8d))
-DefaultAvatar.green = DefaultAvatar(2, 'green', Color(0x43b581))
-DefaultAvatar.orange = DefaultAvatar(3, 'orange', Color(0xfaa61a))
-DefaultAvatar.red = DefaultAvatar(4, 'red', Color(0xf04747))
+    blue = P(0, 'blue', Color(0x7289da))
+    gray = P(1, 'gray', Color(0x747f8d))
+    green = P(2, 'green', Color(0x43b581))
+    orange = P(3, 'orange', Color(0xfaa61a))
+    red = P(4, 'red', Color(0xf04747))
 
 
 class WebhookType(PreinstancedBase):
@@ -1988,10 +1779,6 @@ class WebhookType(PreinstancedBase):
     +-----------------------+-----------+-------+
     | server                | SERVER    | 2     |
     +-----------------------+-----------+-------+
-    | system_dm             | SYSTEM_DM | 3     |
-    +-----------------------+-----------+-------+
-    | official              | OFFICIAL  | 4     |
-    +-----------------------+-----------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -1999,17 +1786,9 @@ class WebhookType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = NotImplemented
-    bot = NotImplemented
-    server = NotImplemented
-    system_dm = NotImplemented
-    official = NotImplemented
-
-WebhookType.none = WebhookType(0, 'NONE')
-WebhookType.bot = WebhookType(1, 'BOT')
-WebhookType.server = WebhookType(2, 'SERVER')
-WebhookType.system_dm = WebhookType(3, 'SYSTEM_DM')
-WebhookType.official = WebhookType(4, 'OFFICIAL')
+    none = P(0, 'none')
+    bot = P(1, 'bot')
+    server = P(2, 'server')
 
 
 class InviteTargetType(PreinstancedBase):
@@ -2050,13 +1829,9 @@ class InviteTargetType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = NotImplemented
-    stream = NotImplemented
-    embedded_application = NotImplemented
-
-InviteTargetType.none = InviteTargetType(0, 'none', )
-InviteTargetType.stream = InviteTargetType(1, 'stream', )
-InviteTargetType.embedded_application = InviteTargetType(2, 'embedded_application', )
+    none = P(0, 'none', )
+    stream = P(1, 'stream', )
+    embedded_application = P(2, 'embedded_application', )
 
 
 class StickerType(PreinstancedBase):
@@ -2100,15 +1875,10 @@ class StickerType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = NotImplemented
-    png = NotImplemented
-    apng = NotImplemented
-    lottie = NotImplemented
-
-StickerType.none = StickerType(0, 'none')
-StickerType.png = StickerType(1, 'png')
-StickerType.apng = StickerType(2, 'apng')
-StickerType.lottie = StickerType(3, 'lottie')
+    none = P(0, 'none')
+    png = P(1, 'png')
+    apng = P(2, 'apng')
+    lottie = P(3, 'lottie')
 
 
 class RoleManagerType(PreinstancedBase):
@@ -2164,19 +1934,12 @@ class RoleManagerType(PreinstancedBase):
         
         return boolean
     
-    none = NotImplemented
-    unset = NotImplemented
-    unknown = NotImplemented
-    bot = NotImplemented
-    booster = NotImplemented
-    integration = NotImplemented
-
-RoleManagerType.none = RoleManagerType(0, 'none',)
-RoleManagerType.unset = RoleManagerType(1, 'unset',)
-RoleManagerType.unknown = RoleManagerType(2, 'unknown',)
-RoleManagerType.bot = RoleManagerType(3, 'bot',)
-RoleManagerType.booster = RoleManagerType(4, 'booster',)
-RoleManagerType.integration = RoleManagerType(5, 'integration',)
+    none = P(0, 'none',)
+    unset = P(1, 'unset',)
+    unknown = P(2, 'unknown',)
+    bot = P(3, 'bot',)
+    booster = P(4, 'booster',)
+    integration = P(5, 'integration',)
 
 
 class ApplicationCommandOptionType(PreinstancedBase):
@@ -2232,27 +1995,16 @@ class ApplicationCommandOptionType(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    sub_command = NotImplemented
-    sub_command_group = NotImplemented
-    string = NotImplemented
-    integer = NotImplemented
-    boolean = NotImplemented
-    user = NotImplemented
-    channel = NotImplemented
-    role = NotImplemented
-    mentionable = NotImplemented
-
-ApplicationCommandOptionType.none = ApplicationCommandOptionType(0, 'none',)
-ApplicationCommandOptionType.sub_command = ApplicationCommandOptionType(1, 'sub_command',)
-ApplicationCommandOptionType.sub_command_group = ApplicationCommandOptionType(2, 'sub_command_group',)
-ApplicationCommandOptionType.string = ApplicationCommandOptionType(3, 'string',)
-ApplicationCommandOptionType.integer = ApplicationCommandOptionType(4, 'integer',)
-ApplicationCommandOptionType.boolean = ApplicationCommandOptionType(5, 'boolean',)
-ApplicationCommandOptionType.user = ApplicationCommandOptionType(6, 'user',)
-ApplicationCommandOptionType.channel = ApplicationCommandOptionType(7, 'channel',)
-ApplicationCommandOptionType.role = ApplicationCommandOptionType(8, 'role',)
-ApplicationCommandOptionType.mentionable = ApplicationCommandOptionType(9, 'mentionable',)
+    none = P(0, 'none',)
+    sub_command = P(1, 'sub_command',)
+    sub_command_group = P(2, 'sub_command_group',)
+    string = P(3, 'string',)
+    integer = P(4, 'integer',)
+    boolean = P(5, 'boolean',)
+    user = P(6, 'user',)
+    channel = P(7, 'channel',)
+    role = P(8, 'role',)
+    mentionable = P(9, 'mentionable',)
 
 
 class InteractionType(PreinstancedBase):
@@ -2296,15 +2048,10 @@ class InteractionType(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    ping = NotImplemented
-    application_command = NotImplemented
-    message_component = NotImplemented
-
-InteractionType.none = InteractionType(0, 'none')
-InteractionType.ping = InteractionType(1, 'ping')
-InteractionType.application_command = InteractionType(2, 'application_command')
-InteractionType.message_component = InteractionType(3, 'message_component')
+    none = P(0, 'none')
+    ping = P(1, 'ping')
+    application_command = P(2, 'application_command')
+    message_component = P(3, 'message_component')
 
 
 class VerificationScreenStepType(PreinstancedBase):
@@ -2361,26 +2108,12 @@ class VerificationScreenStepType(PreinstancedBase):
         self.INSTANCES[value] = self
         return self
     
-    def __init__(self, value):
-        """
-        Creates a new verification screen type and stores it at ``.INSTANCES``.
-        
-        Parameters
-        ----------
-        value : `str`
-            The identifier value of the verification screen types.
-        """
-        self.value = value
-        self.name = value
-        self.INSTANCES[value] = self
-    
     def __repr__(self):
         """Returns the representation of the verification screen type."""
         return f'{self.__class__.__name__}(value={self.value!r})'
     
-    rules = NotImplemented
+    rules = P('TERMS', 'rules')
 
-VerificationScreenStepType.rules = VerificationScreenStepType('TERMS')
 
 
 class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
@@ -2422,13 +2155,9 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    role = NotImplemented
-    user = NotImplemented
-
-ApplicationCommandPermissionOverwriteType.none = ApplicationCommandPermissionOverwriteType(0, 'none',)
-ApplicationCommandPermissionOverwriteType.role = ApplicationCommandPermissionOverwriteType(1, 'role',)
-ApplicationCommandPermissionOverwriteType.user = ApplicationCommandPermissionOverwriteType(2, 'user',)
+    none = P(0, 'none',)
+    role = P(1, 'role',)
+    user = P(2, 'user',)
 
 
 class VideoQualityMode(PreinstancedBase):
@@ -2469,13 +2198,9 @@ class VideoQualityMode(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    auto = NotImplemented
-    full = NotImplemented
-    
-VideoQualityMode.none = VideoQualityMode(0, 'none')
-VideoQualityMode.auto = VideoQualityMode(1, 'auto')
-VideoQualityMode.full = VideoQualityMode(2, 'full')
+    none = P(0, 'none')
+    auto = P(1, 'auto')
+    full = P(2, 'full')
 
 
 class StagePrivacyLevel(PreinstancedBase):
@@ -2516,13 +2241,9 @@ class StagePrivacyLevel(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    public = NotImplemented
-    guild_only = NotImplemented
-    
-StagePrivacyLevel.none = StagePrivacyLevel(0, 'none')
-StagePrivacyLevel.public = StagePrivacyLevel(1, 'public')
-StagePrivacyLevel.guild_only = StagePrivacyLevel(2, 'guild_only')
+    none = P(0, 'none')
+    public = P(1, 'public')
+    guild_only = P(2, 'guild_only')
 
 
 class ComponentType(PreinstancedBase):
@@ -2552,9 +2273,11 @@ class ComponentType(PreinstancedBase):
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | action_row            | action_row    | 1     |
+    | row                   | row           | 1     |
     +-----------------------+---------------+-------+
     | button                | button        | 2     |
+    +-----------------------+---------------+-------+
+    | select                | select        | 3     |
     +-----------------------+---------------+-------+
     """
     INSTANCES = {}
@@ -2563,14 +2286,11 @@ class ComponentType(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    action_row = NotImplemented
-    button = NotImplemented
+    none = P(0, 'none')
+    row = P(1, 'row')
+    button = P(2, 'button')
+    select = P(3, 'select')
     
-ComponentType.none = ComponentType(0, 'none')
-ComponentType.action_row = ComponentType(1, 'action_row')
-ComponentType.button = ComponentType(2, 'button')
-
 
 class ButtonStyle(PreinstancedBase):
     """
@@ -2616,16 +2336,9 @@ class ButtonStyle(PreinstancedBase):
     
     __slots__ = ()
     
-    none = NotImplemented
-    primary = NotImplemented
-    secondary = NotImplemented
-    success = NotImplemented
-    destructive = NotImplemented
-    link = NotImplemented
-    
-ButtonStyle.none = ButtonStyle(0, 'none')
-ButtonStyle.primary = ButtonStyle(1, 'primary')
-ButtonStyle.secondary = ButtonStyle(2, 'secondary')
-ButtonStyle.success = ButtonStyle(3, 'success')
-ButtonStyle.destructive = ButtonStyle(4, 'destructive')
-ButtonStyle.link = ButtonStyle(5, 'link')
+    none = P(0, 'none')
+    primary = P(1, 'primary')
+    secondary = P(2, 'secondary')
+    success = P(3, 'success')
+    destructive = P(4, 'destructive')
+    link = P(5, 'link')

@@ -38,8 +38,10 @@ def create_partial_emoji(data):
     except KeyError:
         name = data['emoji_name']
         emoji_id = data.get('emoji_id', None)
+        emoji_animated = data.get('emoji_animated', False)
     else:
         emoji_id = data.get('id', None)
+        emoji_animated = data.get('animated', False)
     
     if emoji_id is None:
         try:
@@ -55,7 +57,7 @@ def create_partial_emoji(data):
     except KeyError:
         emoji = object.__new__(Emoji)
         emoji.id = emoji_id
-        emoji.animated = data.get('animated', False)
+        emoji.animated = emoji_animated
         EMOJIS[emoji_id] = emoji
         emoji.unicode = None
         emoji.guild = None
@@ -88,10 +90,14 @@ def create_partial_emoji_data(emoji):
     if unicode is None:
         emoji_data['id'] = emoji.id
         emoji_data['name'] = emoji.name
+        
+        if emoji.animated:
+            emoji_data['animated'] = True
     else:
         emoji_data['name'] = unicode
     
     return emoji_data
+
 
 class Emoji(DiscordEntity, immortal=True):
     """

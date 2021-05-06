@@ -749,8 +749,91 @@ class ReverseFlagBase(FlagBase, base_class=True):
         return int.__new__(type(self), new)
 
 
+class Preinstance:
+    """
+    name : `str`
+        The instance's name.
+    value : `str` or `int`
+        The instance's value.
+    args : `tuple` of `Any`
+        Additional parameters to preinstance with.
+    """
+    __slots__ = ('name', 'value', 'args')
+    
+    def __new__(cls, value, name, *args):
+        """
+        Creates a new ``Preinstance`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        value : `str` or `int`
+            The instance's value.
+        name : `str`
+            The instance's name.
+        *args : Parameters
+            Additional parameters to preinstance with.
+        """
+        self = object.__new__(cls)
+        self.name = name
+        self.value = value
+        self.args = args
+        return self
+    
+    def __repr__(self):
+        """Returns the preinstanced's representation."""
+        repr_parts = [
+            self.__class__.__name__, '(',
+            repr(self.value), ', ', repr(self.name),
+        ]
+        
+        args = self.args
+        for arg in args:
+            repr_parts.append(', ')
+            repr_parts.append(repr(arg))
+        
+        repr_parts.append(')')
+        
+        return ''.join(repr_parts)
 
-class PreinstancedBase:
+
+class PreinstancedMeta(type):
+    """
+    Metaclass for ``PreinstancedBase`` instances.
+    """
+    def __new__(cls, class_name, class_parents, class_attributes):
+        """
+        Creates a preinstanced type.
+        
+        Parameters
+        ----------
+        class_name : `str`
+            The created class's name.
+        class_parents : `tuple` of `type` instances
+            The superclasses of the creates type.
+        class_attributes : `dict` of (`str`, `Any`) items
+            The class attributes of the created type.
+        
+        Returns
+        -------
+        type : ``PreinstancedMeta`` instance
+        """
+        post_instance = []
+        new_class_attributes = {}
+        for attribute_name, attribute_value in class_attributes.items():
+            if isinstance(attribute_value, Preinstance):
+                post_instance.append((attribute_name, attribute_value))
+            else:
+                new_class_attributes[attribute_name] = attribute_value
+        
+        type_ = type.__new__(cls, class_name, class_parents, new_class_attributes)
+        
+        for attribute_name, attribute_value in post_instance:
+            setattr(type_, attribute_name, type_(attribute_value.value, attribute_value.name, *attribute_value.args)),
+        
+        return type_
+
+
+class PreinstancedBase(metaclass=PreinstancedMeta):
     """
     Base class for preinstanced types.
     
@@ -994,14 +1077,14 @@ class IconType(PreinstancedBase):
         
         return boolean
     
-    none = NotImplemented
-    static = NotImplemented
-    animated = NotImplemented
+    none = Preinstance('none', 0)
+    static = Preinstance('static', 1)
+    animated = Preinstance('animated', 2)
 
-IconType.none = ICON_TYPE_NONE = IconType(0, 'none')
-IconType.static = ICON_TYPE_STATIC = IconType(1, 'static')
-IconType.animated = ICON_TYPE_ANIMATED = IconType(2, 'animated')
 
+ICON_TYPE_NONE = IconType.none
+ICON_TYPE_STATIC = IconType.static
+ICON_TYPE_ANIMATED = IconType.animated
 
 class Icon:
     """

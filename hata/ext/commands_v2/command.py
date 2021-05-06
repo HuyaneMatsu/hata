@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+__all__ = ('Command', )
 import re, reprlib
 
 from ...backend.utils import WeakReferer
@@ -240,4 +241,118 @@ class Command:
         aliases = self.aliases
         if (aliases is not None):
             yield from aliases
-
+    
+    
+    def get_category(self):
+        """
+        Returns the command's category if has any.
+        
+        Returns
+        -------
+        category : `None` or ``Category``
+        """
+        category_reference = self._category_reference
+        if category_reference is None:
+            category = None
+        else:
+            category = category_reference()
+        
+        return category
+    
+    
+    def set_category(self, category):
+        """
+        Sets the command's category.
+        
+        Raises
+        ------
+        RuntimeError
+            - The command is bound to a category of an other command processor.
+            - The command would only partially overwrite
+        """
+        command_processor = category.get_command_processor()
+        if (command_processor is None):
+            self._category_hint = category.name
+            self._category_reference = category._self_reference
+            self._command_processor_reference = None
+        else:
+            default_category = command_processor.get_default_category()
+            if category is default_category:
+                category_hint = None
+            else:
+                category_hint = category.name
+            
+            self._category_hint = category_hint
+            
+            self._category_reference = category._self_reference
+            self._command_processor_reference = command_processor._self_reference
+        
+            names = set(self._iter_names())
+            command_name_to_command = command_processor.command_name_to_command
+            
+            would_overwrite_commands = set()
+            for name in names:
+                added_command = command_name_to_command.get(name, None)
+                if added_command is None:
+                    continue
+                
+                would_overwrite_commands.add(added_command)
+            
+            for would_overwrite_command in would_overwrite_commands:
+                if not names.issubset(would_overwrite_command._iter_names()):
+                    raise RuntimeError(f'{Command.__name__}: {self!r} would partially overwrite an other command: '
+                        f'{would_overwrite_command!r}.')
+            
+            for name in names:
+                command_name_to_command[name] = self
+        
+        category.command_name_to_command[self.name] = self
+    
+    
+    def remove_category(self):
+        """
+        Removes the command's category.
+        """
+        category = self.get_category()
+        if (category is None):
+            self._category_reference = None
+            self._command_processor_reference = None
+        else:
+            command_processor = category.get_command_processor()
+            if (command_processor is not None):
+                command_name_to_command = command_processor.command_name_to_command
+                for name in self._iter_names():
+                    try:
+                        actual_command = command_name_to_command[name]
+                    except KeyError:
+                        pass
+                    else:
+                        if actual_command is self:
+                            del command_name_to_command[name]
+            
+            command_name_to_command = category.command_name_to_command
+            name = self.name
+            try:
+                actual_command = command_name_to_command[name]
+            except KeyError:
+                pass
+            else:
+                if actual_command is self:
+                    del command_name_to_command[name]
+            
+    
+    def get_command_processor(self):
+        """
+        Returns the command's command processor if has any.
+        
+        Returns
+        -------
+        command_processor : `None` or ``CommandProcessor``
+        """
+        command_processor_reference = self._command_processor_reference
+        if command_processor_reference is None:
+            command_processor = None
+        else:
+            command_processor = command_processor_reference()
+        
+        return command_processor

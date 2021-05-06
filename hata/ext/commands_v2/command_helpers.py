@@ -1,3 +1,5 @@
+__all__ = ()
+
 from re import compile as re_compile, escape as re_escape, M as re_multi_line, S as re_dotall, I as re_ignore_case, \
     match as re_match
 from functools import partial as partial_func
@@ -6,6 +8,8 @@ from ...backend.utils import FunctionType
 from ...backend.analyzer import CallableAnalyzer
 
 from .exceptions import CommandProcessingError
+from .checks import CheckBase
+from .utils import CommandCheckWrapper
 
 SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\S*')
 COMMAND_NAME_RP = re_compile('\S*([^\S]*)\S*', re_multi_line|re_dotall)
@@ -247,7 +251,7 @@ def test_error_handler(error_handler):
                     f'up to `{max_!r}`, got `{error_handler!r}`.')
 
 
-def test_name_rule(rule, rule_name, nullable):
+def test_name_rule(rule, rule_name):
     """
     Tests the given name rule and raises if it do not passes any requirements.
     
@@ -261,7 +265,7 @@ def test_name_rule(rule, rule_name, nullable):
         +-------+-------------------+
         | Name  | Type              |
         +=======+===================+
-        | name  | `None` or `str`   |
+        | name  | `str`             |
         +-------+-------------------+
         
         Should return the following ones:
@@ -274,8 +278,6 @@ def test_name_rule(rule, rule_name, nullable):
     
     rule_name : `str`
         The name of the given rule.
-    nullable : `bool`
-        Whether `rule` should handle `None` input as well.
     
     Raises
     ------
@@ -318,18 +320,6 @@ def test_name_rule(rule, rule_name, nullable):
     
     try:
         result = rule('test-this-name')
-    except BaseException as err:
-        raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
-    
-    if (type(result) is not str):
-        raise TypeError(f'{rule_name}: {rule!r} did not return `str` instance, meanwhile testing it, got '
-            f'{result.__class__.__name__}')
-    
-    if not nullable:
-        return
-        
-    try:
-        result = rule(None)
     except BaseException as err:
         raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
     
@@ -701,3 +691,106 @@ def raw_name_to_display(raw_name):
     return '-'.join([w for w in raw_name.strip('_ ').lower().replace(' ', '-').replace('_', '-').split('-') if w])
 
 
+def _unwrap_check(check):
+    """
+    Unwraps the given check if applicable.
+    
+    Parameters
+    ----------
+    check : ``CheckBase`` or ``CommandCheckWrapper``
+        The check to unwrap.
+    
+    Returns
+    -------
+    check : ``CheckBase``
+        The unwrapped check.
+    
+    Raises
+    ------
+    TypeError
+        If `check` is neither ``CheckBase`` nor ``CommandCheckWrapper`` instance.
+    """
+    if isinstance(check, CheckBase):
+        return check
+    
+    if isinstance(check, CommandCheckWrapper):
+        return check._check
+    
+    raise TypeError(f'`check` can be either {CheckBase.__name__} or {CommandCheckWrapper.__name__} instance, got '
+        f'{check.__class__.__name__}.')
+
+
+def validate_checks(checks):
+    """
+    Validates the given checks.
+    
+    Parameters
+    ----------
+    checks : `None`, ``CheckBase``, ``CommandCheckWrapper`` or (`list`, `tuple` or `set`) of \
+            (``CheckBase`` or ``CommandCheckWrapper``)
+        The check(s) to validate.
+    
+    Returns
+    -------
+    checks_validated : `None` or `tuple` of ``CheckBase``
+        The validated checks.
+    
+    Raises
+    ------
+    TypeError
+        - If `checks`'s type is incorrect.
+        - If a `check`'s type is incorrect.
+    """
+    checks_validated = None
+    
+    if checks is None:
+        pass
+    elif isinstance(checks, (list, tuple, set)):
+        for check in checks:
+            check = _unwrap_check(check)
+            
+            if checks_validated is None:
+                checks_validated = []
+            
+            checks_validated.append(check)
+    else:
+        check = _unwrap_check(checks)
+        
+        if checks_validated is None:
+            checks_validated = []
+        
+        checks_validated.append(check)
+    
+    return tuple(checks_validated)
+
+
+def normalize_description(description):
+    """
+    Normalizes a docstrings.
+    
+    Parameters
+    ----------
+    description : `str` or `Any`
+        The docstring to clear.
+    
+    Returns
+    -------
+    cleared : `str` or `Any`
+        The cleared docstring. If `docstring` was given as `None` or is detected as empty, will return `None`.
+    """
+    if (description is None) or (not isinstance(description, str)):
+        return description
+    
+    lines = description.splitlines()
+    for index in reversed(range(len(lines))):
+        line = lines[index]
+        line = line.strip()
+        if line:
+            lines[index] = line
+        else:
+            del lines[index]
+    
+    if not lines:
+        return None
+    
+    return ' '.join(lines)

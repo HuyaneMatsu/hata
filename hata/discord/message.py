@@ -29,7 +29,7 @@ ChannelGuildBase = include('ChannelGuildBase')
 ChannelText = include('ChannelText')
 ChannelPrivate = include('ChannelPrivate')
 ChannelGroup = include('ChannelGroup')
-Component = include('Component')
+create_component = include('create_component')
 ChannelGuildUndefined = include('ChannelGuildUndefined')
 CHANNEL_TYPES = include('CHANNEL_TYPES')
 
@@ -832,7 +832,7 @@ class Message(DiscordEntity, immortal=True):
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
     channel : ``ChannelTextBase`` instance
         The channel where the message is sent.
-    components : `None` or `list` of ``Component``
+    components : `None` or `list` of ``ComponentBase``
         Message components.
     content : `str`
         The message's content.
@@ -1063,7 +1063,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component.from_data(component_data) for component_data in component_datas]
+            components = [create_component(component_data) for component_data in component_datas]
         self.components = components
         
         sticker_datas = data.get('stickers', None)
@@ -1155,7 +1155,7 @@ class Message(DiscordEntity, immortal=True):
         if (self.components is None):
             component_datas = data.get('components', None)
             if (component_datas is not None) and component_datas:
-                self.components = [Component.from_data(component_data) for component_data in component_datas]
+                self.components = [create_component(component_data) for component_data in component_datas]
         
         if (self.embeds is None):
             embed_datas = data['embeds']
@@ -1931,7 +1931,7 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | attachments       | `None` or (`list` of ``Attachment``)                                  |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None` or (`list` of ``Component``)                            |
+        | components        | `None` or (`list` of ``ComponentBase``)                               |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `str                                                                  |
         +-------------------+-----------------------------------------------------------------------+
@@ -2100,7 +2100,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component.from_data(component_data) for component_data in component_datas]
+            components = [create_component(component_data) for component_data in component_datas]
         
         if self.components != components:
             old_attributes['components'] = self.components
@@ -2227,7 +2227,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [Component.from_data(component_data) for component_data in component_datas]
+            components = [create_component(component_data) for component_data in component_datas]
         self.components = components
     
     def _update_embed(self, data):

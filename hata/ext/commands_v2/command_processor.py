@@ -8,14 +8,14 @@ from ...discord.utils import USER_MENTION_RP
 from .command_helpers import default_precheck, test_precheck, test_error_handler, test_name_rule, \
     validate_category_or_command_name, get_prefix_parser, COMMAND_NAME_RP, raw_name_to_display
 from .context import CommandContext
-from .category import CommandCategory
+from .category import Category
+from .command import Command
 
 DEFAULT_CATEGORY_NAME = 'UNCATEGORIZED'
 
 class CommandProcessor(EventWaitforBase):
     """
     Command processor.
-    
     
     Attributes
     ----------
@@ -57,7 +57,7 @@ class CommandProcessor(EventWaitforBase):
         | name  | `str`             |
         +-------+-------------------+
     
-    _default_category : ``CommandCategory``
+    _default_category : ``Category``
         The command processor's default category.
     
     _error_handlers : `None` or `list` of `async-function`
@@ -153,7 +153,7 @@ class CommandProcessor(EventWaitforBase):
     _self_reference : `None` or ``WeakReferer`` to ``CommandProcessor``
         Reference to the command processor itself.
     
-    category_name_to_category : `dict` of (`str`, ``CommandCategory``) items
+    category_name_to_category : `dict` of (`str`, ``Category``) items
         Category name to category relation.
     
     command_name_to_command : `dict` of (`str`, ``Command``) items
@@ -217,8 +217,8 @@ class CommandProcessor(EventWaitforBase):
             - If `category_name_rule` is not `None` nor `function`.
             - If `category_name_rule` is `async-function`.
             - If `category_name_rule` accepts bad amount of parameters.
-            - If `category_name_rule` raises exception when `str` or `None` is passed to it.
-            - If `category_name_rule` not returns `str`, when passing `str` or `None` to it.
+            - If `category_name_rule` raises exception when `str` is passed to it.
+            - If `category_name_rule` not returns `str`, when passing `str` to it.
             - If `command_name_rule` is not `None` nor `function`.
             - If `command_name_rule` is `async-function`.
             - If `command_name_rule` accepts bad amount of parameters.
@@ -232,17 +232,17 @@ class CommandProcessor(EventWaitforBase):
             - If `default_category_name`'s length is out of range [1:128].
         """
         if (category_name_rule is not None):
-            test_name_rule(category_name_rule, 'category_name_rule', True)
+            test_name_rule(category_name_rule, 'category_name_rule')
         
         if (command_name_rule is not None):
-            test_name_rule(command_name_rule, 'command_name_rule', False)
+            test_name_rule(command_name_rule, 'command_name_rule')
         
         if default_category_name is None:
             default_category_name = DEFAULT_CATEGORY_NAME
         else:
             default_category_name = validate_category_or_command_name(default_category_name)
         
-        default_category = CommandCategory(default_category_name)
+        default_category = Category(default_category_name)
         
         if precheck is None:
             precheck = default_precheck
@@ -270,7 +270,7 @@ class CommandProcessor(EventWaitforBase):
         self._command_name_rule = command_name_rule
         self._category_name_rule = category_name_rule
         self.command_name_to_command = {}
-        self.category_name_to_category = {default_category.name: default_category}
+        self.category_name_to_category = {}
         
         self._self_reference = WeakReferer(self)
         
@@ -469,7 +469,7 @@ class CommandProcessor(EventWaitforBase):
         
         Returns
         -------
-        category : `None`, ``CommandCategory``
+        category : `None`, ``Category``
         
         Raises
         ------
@@ -494,7 +494,7 @@ class CommandProcessor(EventWaitforBase):
         
         Returns
         -------
-        category : ``CommandCategory``
+        category : ``Category``
         """
         return self._default_category
     
@@ -514,7 +514,7 @@ class CommandProcessor(EventWaitforBase):
         
         Returns
         -------
-        category : ``CommandCategory``
+        category : ``Category``
         
         Raises
         ------
@@ -528,7 +528,7 @@ class CommandProcessor(EventWaitforBase):
         if category_name in self.category_name_to_category:
             raise ValueError(f'There is already a category added with that name: `{category_name!r}`')
         
-        category = CommandCategory(category_name, checks=checks, description=description)
+        category = Category(category_name, checks=checks, description=description)
         self.category_name_to_category[category.name] = category
         category.set_command_processor(self)
         
@@ -541,24 +541,24 @@ class CommandProcessor(EventWaitforBase):
         
         Parameters
         ----------
-        category : ``CommandCategory``, `str`
+        category : ``Category``, `str`
             The category or the category's name to remove.
         
         Raises
         ------
         TypeError
-            If `category` was not given neither as ``CommandCategory`` nor as `str` instance.
+            If `category` was not given neither as ``Category`` nor as `str` instance.
         ValueError
             - Default category cannot be deleted.
             - If te given category is not the same as the owned one with it's name.
         """
-        if isinstance(category, CommandCategory):
+        if isinstance(category, Category):
             category_name = category.name
         elif isinstance(category, str):
             category_name = validate_category_or_command_name(category)
             category = None
         else:
-            raise TypeError(f'`category` can be given either as `{CommandCategory.__name__}` or as `str` instance, '
+            raise TypeError(f'`category` can be given either as `{Category.__name__}` or as `str` instance, '
                 f'got {category.__class__.__name__}.')
         
         try:
@@ -584,6 +584,61 @@ class CommandProcessor(EventWaitforBase):
                 else:
                     if owned_command is command:
                         del command_name_to_command[command_name]
+    
+    
+    def _add_command(self, command):
+        """
+        Adds the given command to the command processor.
+        
+        Parameters
+        ---------
+        command : ``Command``
+            The command to add.
+        
+        Raises
+        ------
+        RuntimeError
+            - The command is bound to an other command processor.
+            - The command would only partially overwrite
+        """
+        command_processor = command.get_command_processor()
+        if (command_processor is not None) and (command_processor is not self):
+            raise RuntimeError(f'{Command.__name__}: {command!r} is bound to an other command processor.')
+        
+        category = command.get_category()
+        if category is None:
+            # Bind the command to category.
+            category_hint = command._category_hint
+            if category_hint is None:
+                category = self._default_category
+            else:
+                category = self.get_category(category_hint)
+                if (category is None):
+                    category = self.create_category(category_hint)
+            
+            command.set_category(category)
+    
+    
+    def _remove_command(self, command):
+        """
+        Removes the given command to the command processor.
+        
+        Parameters
+        ---------
+        command : ``Command``
+            The command to remove.
+        
+        Raises
+        ------
+        RuntimeError
+            The command is bound to an other command processor.
+        """
+        command_processor = command.get_command_processor()
+        if (command_processor is not None) and (command_processor is not self):
+            raise RuntimeError(f'{Command.__name__}: {command!r} is bound to an other command processor.')
+        
+        command.remove_category()
+    
 
 
 

@@ -3,6 +3,8 @@ __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
 from ..env import API_VERSION
 
+from ..backend.export import include
+
 from .utils import Unknown, now_as_id, id_to_time
 from .core import CHANNELS, USERS, ROLES, MESSAGES
 from .permission import Permission
@@ -15,7 +17,8 @@ from .guild import SystemChannelFlag, Guild
 from .bases import Icon
 from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, MessageNotificationLevel, VoiceRegion, \
     MFA, VideoQualityMode
-from .client_utils import maybe_snowflake
+
+maybe_snowflake = include('maybe_snowflake')
 
 
 class AuditLog:

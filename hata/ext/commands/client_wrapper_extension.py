@@ -3,7 +3,7 @@ __all__ = ()
 
 from ...backend.utils import KeepType
 
-from ...discord.client_utils import ClientWrapper
+from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
 from .command import CommandProcesser, Command

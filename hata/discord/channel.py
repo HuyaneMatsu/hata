@@ -5,7 +5,10 @@ __all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase',
 
 import re, warnings
 from collections import deque
-from weakref import WeakSet
+try:
+    from _weakref import WeakSet
+except ImportError:
+    from weakref import WeakSet
 
 from ..backend.utils import copy_docs
 from ..backend.event_loop import LOOP_TIME
@@ -24,7 +27,6 @@ from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
     preconvert_preinstanced_type
 from .utils import DATETIME_FORMAT_CODE, parse_time
-from .client_utils import maybe_snowflake
 from .exceptions import DiscordException, ERROR_CODES
 from .preinstanced import VoiceRegion, VideoQualityMode
 from .limits import CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES
@@ -33,7 +35,7 @@ from . import urls as module_urls
 
 Client = include('Client')
 Guild = include('Guild')
-
+maybe_snowflake = include('maybe_snowflake')
 
 TURN_MESSAGE_LIMITING_ON = WeakSet()
 

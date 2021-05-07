@@ -7,7 +7,7 @@ __all__ = ('ApplicationCommand', 'ApplicationCommandInteraction', 'ApplicationCo
 import reprlib
 
 from ..backend.utils import modulize, copy_docs
-from ..backend.export import export
+from ..backend.export import export, include
 
 from .bases import DiscordEntity
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ApplicationCommandPermissionOverwriteType, \
@@ -24,8 +24,9 @@ from .limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAM
 from .channel import create_partial_channel
 from .user import User, UserBase, ClientUserBase
 from .role import Role
-from .client_utils import maybe_snowflake
 from .emoji import create_partial_emoji, Emoji, create_partial_emoji_data
+
+maybe_snowflake = include('maybe_snowflake')
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role

@@ -24,3 +24,13 @@ __all__ = (
     *exceptions.__all__,
     *utils.__all__,
 )
+
+
+def snapshot_hook():
+    from . import snapshot
+
+
+from .. import register_library_extension, add_library_extension_hook
+register_library_extension('HuyaneMatsu.commands_v2')
+add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
+del register_library_extension, add_library_extension_hook, snapshot_hook

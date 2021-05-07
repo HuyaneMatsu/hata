@@ -159,6 +159,9 @@ class CommandProcessor(EventWaitforBase):
     command_name_to_command : `dict` of (`str`, ``Command``) items
         Command name to command relation.
     
+    registered_commands : `set` of ``Command``
+        The registered commands to the command processor.
+    
     Notes
     -----
     ``CommandProcessor`` supports weakreferencing.
@@ -167,7 +170,7 @@ class CommandProcessor(EventWaitforBase):
     __slots__ = ('__weakref__', '_category_name_rule', '_command_name_rule', '_default_category',
         '_error_handlers', '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case',
         '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category',
-        'command_name_to_command')
+        'command_name_to_command', 'registered_commands')
     
     def __new__(cls, prefix, *, precheck=None, mention_prefix_enabled=True, category_name_rule=None,
             command_name_rule=None, default_category_name=None, prefix_ignore_case=True):
@@ -271,6 +274,7 @@ class CommandProcessor(EventWaitforBase):
         self._category_name_rule = category_name_rule
         self.command_name_to_command = {}
         self.category_name_to_category = {}
+        self.registered_commands = set()
         
         self._self_reference = WeakReferer(self)
         
@@ -621,10 +625,10 @@ class CommandProcessor(EventWaitforBase):
     
     def _remove_command(self, command):
         """
-        Removes the given command to the command processor.
+        Removes the given command from the command processor.
         
         Parameters
-        ---------
+        ----------
         command : ``Command``
             The command to remove.
         
@@ -637,9 +641,29 @@ class CommandProcessor(EventWaitforBase):
         if (command_processor is not None) and (command_processor is not self):
             raise RuntimeError(f'{Command.__name__}: {command!r} is bound to an other command processor.')
         
-        command.remove_category()
+        command.unlink_category()
     
-
+    
+    def _add_category(self, category):
+        """
+        Adds the given category to the command processor.
+        
+        Parameters
+        ----------
+        category : ``Category``
+            The category to add.
+        
+        Raises
+        ------
+        RuntimeError
+            The category is bound to an other category processor.
+        """
+        command_processor = category.get_command_processor()
+        if (command_processor is not None) and (command_processor is not self):
+            raise RuntimeError(f'{Category.__name__}: {command_processor!r} is bound to an other command processor.')
+        
+        actual_category = self.get_category(category.name)
+        # TODO
 
 
 

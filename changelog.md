@@ -3,11 +3,13 @@
 #### Summary
 
 Rework components and preinstanced types.
+Refactor `client.py`.
 
 #### New Features
 
 - Add `ComponentSelect`.
 - Add `ComponentSelectOption`.
+- Add ˙file` parameter to `Client.message_edit`.
 
 #### Improvements
 

@@ -4,7 +4,7 @@ from ...backend.utils import multidict
 from ...discord.events.handling_helpers import asynclist, ChunkWaiter
 from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES, DEFAULT_EVENT_HANDLER
 from ...discord.core import CLIENTS
-from ...discord.client_utils import WaitForHandler
+from ...discord.client.functionality_helpers import WaitForHandler
 
 SNAPSHOT_TAKERS = {}
 

@@ -260,9 +260,40 @@ class Command:
         return category
     
     
+    def unlink_category(self):
+        """
+        Unlinks the command from it's category and of it's command processor as well.
+        """
+        command_processor = self.get_command_processor()
+        self._command_processor_reference = None
+        if (command_processor is not None):
+            command_name_to_command = command_processor.command_name_to_command
+            for name in self._iter_names():
+                try:
+                    command = command_name_to_command[name]
+                except KeyError:
+                    pass
+                else:
+                    if command is self:
+                        del command_name_to_command[name]
+            
+            command_processor.registered_commands.discard(self)
+        
+        
+        category = self.get_category()
+        self._category_reference = None
+        if (category is not None):
+            category.registered_commands.discard(self)
+    
+    
     def set_category(self, category):
         """
         Sets the command's category.
+        
+        Parameters
+        ----------
+        category : ``Category``
+            The new category of the command.
         
         Raises
         ------
@@ -270,76 +301,51 @@ class Command:
             - The command is bound to a category of an other command processor.
             - The command would only partially overwrite
         """
+        self._unlink()
+        
+        category.regsiterd_commands.add(self)
+        self._category_hint = category.name
+        self._category_reference = category._self_reference
+        
         command_processor = category.get_command_processor()
-        if (command_processor is None):
-            self._category_hint = category.name
-            self._category_reference = category._self_reference
-            self._command_processor_reference = None
-        else:
-            default_category = command_processor.get_default_category()
-            if category is default_category:
-                category_hint = None
-            else:
-                category_hint = category.name
-            
-            self._category_hint = category_hint
-            
-            self._category_reference = category._self_reference
-            self._command_processor_reference = command_processor._self_reference
-        
-            names = set(self._iter_names())
-            command_name_to_command = command_processor.command_name_to_command
-            
-            would_overwrite_commands = set()
-            for name in names:
-                added_command = command_name_to_command.get(name, None)
-                if added_command is None:
-                    continue
-                
-                would_overwrite_commands.add(added_command)
-            
-            for would_overwrite_command in would_overwrite_commands:
-                if not names.issubset(would_overwrite_command._iter_names()):
-                    raise RuntimeError(f'{Command.__name__}: {self!r} would partially overwrite an other command: '
-                        f'{would_overwrite_command!r}.')
-            
-            for name in names:
-                command_name_to_command[name] = self
-        
-        category.command_name_to_command[self.name] = self
+        if (command_processor is not None):
+            self.set_command_processor(command_processor)
     
     
-    def remove_category(self):
+    def set_command_processor(self, command_processor):
         """
-        Removes the command's category.
+        Sets the command's command processor.
+        
+        Parameters
+        ----------
+        command_processor : ``CommandProcessor``
+            The command processor to set.
+        
+        Raises
+        ------
+        RuntimeError
+            - The command is bound to a category of an other command processor.
+            - The command would only partially overwrite
         """
-        category = self.get_category()
-        if (category is None):
-            self._category_reference = None
-            self._command_processor_reference = None
-        else:
-            command_processor = category.get_command_processor()
-            if (command_processor is not None):
-                command_name_to_command = command_processor.command_name_to_command
-                for name in self._iter_names():
-                    try:
-                        actual_command = command_name_to_command[name]
-                    except KeyError:
-                        pass
-                    else:
-                        if actual_command is self:
-                            del command_name_to_command[name]
+        names = set(self._iter_names())
+        command_name_to_command = command_processor.command_name_to_command
+        
+        would_overwrite_commands = set()
+        for name in names:
+            added_command = command_name_to_command.get(name, None)
+            if added_command is None:
+                continue
             
-            command_name_to_command = category.command_name_to_command
-            name = self.name
-            try:
-                actual_command = command_name_to_command[name]
-            except KeyError:
-                pass
-            else:
-                if actual_command is self:
-                    del command_name_to_command[name]
-            
+            would_overwrite_commands.add(added_command)
+        
+        for would_overwrite_command in would_overwrite_commands:
+            if not names.issubset(would_overwrite_command._iter_names()):
+                raise RuntimeError(f'{Command.__name__}: {self!r} would partially overwrite an other command: '
+                    f'{would_overwrite_command!r}.')
+        
+        for name in names:
+            command_name_to_command[name] = self
+    
     
     def get_command_processor(self):
         """

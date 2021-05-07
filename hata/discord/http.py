@@ -731,7 +731,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',
-            reason,
+            reason=reason,
         )
     
     async def guild_ban_add(self, guild_id, user_id, data, reason):

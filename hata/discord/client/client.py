@@ -1,75 +1,78 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 __all__ = ('Client', )
 
 import re, sys, warnings
 from time import time as time_now
 from collections import deque
-from os.path import split as split_path
 from threading import current_thread
 from math import inf
 from datetime import datetime
 
-from ..env import CACHE_USER, CACHE_PRESENCE, API_VERSION
-from ..backend.utils import imultidict, methodize, change_on_switch, to_json
-from ..backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
+from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
+from ...backend.utils import imultidict, methodize, change_on_switch
+from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
     future_or_timeout
-from ..backend.event_loop import EventThread, LOOP_TIME
-from ..backend.formdata import Formdata
-from ..backend.headers import AUTHORIZATION
-from ..backend.helpers import BasicAuth
-from ..backend.url import URL
-from ..backend.export import export
+from ...backend.event_loop import EventThread, LOOP_TIME
+from ...backend.headers import AUTHORIZATION
+from ...backend.helpers import BasicAuth
+from ...backend.url import URL
+from ...backend.export import export
 
-from .utils import log_time_converter, DISCORD_EPOCH, image_to_base64, random_id, get_image_extension, Relationship
-from .user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, \
+from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_extension, Relationship
+from ..user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, \
     ClientUserBase, ClientUserPBase
-from .emoji import Emoji
-from .channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
+from ..emoji import Emoji
+from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread
-from .guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
+from ..guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
-from .http import DiscordHTTPClient
-from .urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
-from .role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
-from .webhook import Webhook, create_partial_webhook
-from .gateway import DiscordGateway, DiscordGatewaySharder
-from .events.handling_helpers import _with_error
-from .events.event_handler_manager import EventHandlerManager
-from .events.intent import IntentFlag
-from .events.event_types import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, \
+from ..http import DiscordHTTPClient
+from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
+from ..role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
+from ..webhook import Webhook, create_partial_webhook
+from ..gateway import DiscordGateway, DiscordGatewaySharder
+from ..events.handling_helpers import _with_error
+from ..events.event_handler_manager import EventHandlerManager
+from ..events.intent import IntentFlag
+from ..events.event_types import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, \
     INTERACTION_EVENT_RESPONSE_STATE_NONE, INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
-from .events.core import register_client, unregister_client
-from .audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
-from .invite import Invite
-from .message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag
-from .oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
-from .exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
-from .core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
+from ..events.core import register_client, unregister_client
+from ..audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
+from ..invite import Invite
+from ..message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag
+from ..oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
+from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
+from ..core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
     MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT
-from .voice_client import VoiceClient
-from .activity import ActivityUnknown, ActivityBase, ActivityCustom
-from .integration import Integration
-from .application import Application, Team, EULA
-from .rate_limit import RateLimitProxy, RATE_LIMIT_GROUPS
-from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
+from ..voice_client import VoiceClient
+from ..activity import ActivityUnknown, ActivityBase, ActivityCustom
+from ..integration import Integration
+from ..application import Application, Team, EULA
+from ..rate_limit import RateLimitProxy, RATE_LIMIT_GROUPS
+from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type
-from .permission import Permission
-from .bases import ICON_TYPE_NONE
-from .preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, StagePrivacyLevel, \
+from ..permission import Permission
+from ..bases import ICON_TYPE_NONE
+from ..preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, StagePrivacyLevel, \
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
-from .client_utils import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, UserGuildPermission, \
-    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, Typer, maybe_snowflake, \
-    BanEntry, maybe_snowflake_pair, _check_is_client_duped, get_components_data, maybe_snowflake_token_pair
-from .embed import EmbedBase, EmbedImage
-from .interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
+from ..embed import EmbedImage
+from ..interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite
-from .color import Color
-from .limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
+from ..color import Color
+from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
-from .stage import Stage
-from .allowed_mentions import parse_allowed_mentions
+from ..stage import Stage
+from ..allowed_mentions import parse_allowed_mentions
+
+from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
+    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
+    _message_delete_multiple_private_task_message_id_iterator, _request_members_loop
+from .request_helpers import maybe_snowflake, maybe_snowflake_pair, get_components_data, maybe_snowflake_token_pair, \
+    validate_message_to_delete, create_file_form, validate_content_and_embed, add_file_to_message_data
+from .utils import UserGuildPermission, Typer, BanEntry
+
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -2724,7 +2727,7 @@ class Client(ClientUserPBase):
             - If `user_limit` was not given as `int` instance.
             - If `user_limit` was given, but is out of the expected [0:99] range.
             - If `region` was given, but the respective channel type is not ``ChannelVoiceBase``.
-            - if `video_quality_mode` was given,but the respective channel type is not ``ChannelVoice``
+            - If `video_quality_mode` was given,but the respective channel type is not ``ChannelVoice``
         ConnectionError
             No internet connection.
         DiscordException
@@ -3395,7 +3398,7 @@ class Client(ClientUserPBase):
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
         components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
@@ -3420,7 +3423,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
@@ -3441,6 +3444,8 @@ class Client(ClientUserPBase):
             - If `nonce` was not given neither as `None` nor as `str` instance.
             - If `reply_fail_fallback` was not given as `bool` instance.
             - If `components` contains a non ``ComponentBase`` element.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -3486,80 +3491,7 @@ class Client(ClientUserPBase):
                 channel_id, message_id = snowflake_pair
                 channel = CHANNELS.get(channel_id, None)
         
-        # Embed check order:
-        # 1.: None
-        # 2.: Embed
-        # 3.: list of Embed -> embed[0] or None
-        # 4.: raise
-        
-        if embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            pass
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[0]
-            else:
-                embed = None
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: None
-        # 2.: str
-        # 3.: Embed - > embed = content
-        # 4.: list of Embed -> Embed = content[0]
-        # 5.: object -> str(content)
-        
-        if content is None:
-            pass
-        elif isinstance(content, str):
-            if not content:
-                content = None
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not None):
-                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = content
-            content = None
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not None):
-                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[0]
-                content = None
-            else:
-                content = str(content)
-                if not content:
-                    content = None
+        content, embed = validate_content_and_embed(content, embed, False, False)
         
         # Sticker check order:
         # 1.: None -> None
@@ -3649,183 +3581,13 @@ class Client(ClientUserPBase):
             
             message_data['message_reference'] = message_reference_data
         
-        if file is None:
-            to_send = message_data
-        else:
-            to_send = self._create_file_form(message_data, file)
-            if to_send is None:
-                to_send = message_data
-            else:
-                contains_content = True
+        message_data = add_file_to_message_data(message_data, file, contains_content)
+        if message_data is None:
+            return
         
-        if not contains_content:
-            return None
-        
-        data = await self.http.message_create(channel_id, to_send)
+        message_data = await self.http.message_create(channel_id, message_data)
         if (channel is not None):
-            return channel._create_new_message(data)
-    
-    @staticmethod
-    def _create_file_form(data, file):
-        """
-        Creates a `multipart/form-data` form from the message's data and from the file data. If there is no files to
-        send, will return `None` to tell the caller, that nothing is added to the overall data.
-        
-        Parameters
-        ----------
-        data : `dict` of `Any`
-            The data created by the ``.message_create`` method.
-        file : `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, tuple (`file-name`, `io`), `io`
-            The files to send.
-        
-        Returns
-        -------
-        form : `None` or `Formdata`
-            Returns a `Formdata` of the files and from the message's data. If there are no files to send, returns `None`
-            instead.
-        
-        Raises
-        ------
-        ValueError
-            When more than `10` file is registered to send.
-        
-        Notes
-        -----
-        Accepted `io` types with check order are:
-        - ``BodyPartReader`` instance
-        - `bytes`, `bytearray`, `memoryview` instance
-        - `str` instance
-        - `BytesIO` instance
-        - `StringIO` instance
-        - `TextIOBase` instance
-        - `BufferedReader`, `BufferedRandom` instance
-        - `IOBase` instance
-        - ``AsyncIO`` instance
-        - `async-iterable`
-        
-        Raises `TypeError` at the case of invalid `io` type.
-        
-        There are two predefined data types specialized to send files:
-        - ``ReuBytesIO``
-        - ``ReuAsyncIO``
-        
-        If a buffer is sent, then when the request is done, it is closed. So if the request fails, we would not be
-        able to resend the file, except if we have a data type, what instead of closing on `.close()` just seeks to
-        `0` (or later if needed) on close, instead of really closing instantly. These data types implement a
-        `.real_close()` method, but they do `real_close` on `__exit__` as well.
-        """
-        form = Formdata()
-        form.add_field('payload_json', to_json(data))
-        files = []
-        
-        # checking structure
-        
-        # case 1 dict like
-        if hasattr(type(file), 'items'):
-            files.extend(file.items())
-        
-        # case 2 tuple => file, filename pair
-        elif isinstance(file, tuple):
-            files.append(file)
-        
-        # case 3 list like
-        elif isinstance(file, (list, deque)):
-            for element in file:
-                if type(element) is tuple:
-                    name, io = element
-                else:
-                    io = element
-                    name = ''
-                
-                if not name:
-                    #guessing name
-                    name = getattr(io, 'name', '')
-                    if name:
-                        _, name = split_path(name)
-                    else:
-                        name = str(random_id())
-                
-                files.append((name, io),)
-        
-        #case 4 file itself
-        else:
-            name = getattr(file, 'name', '')
-            #guessing name
-            if name:
-                _, name = split_path(name)
-            else:
-                name = str(random_id())
-            
-            files.append((name, file),)
-        
-        # checking the amount of files
-        # case 1 one file
-        if len(files) == 1:
-            name, io = files[0]
-            form.add_field('file', io, filename=name, content_type='application/octet-stream')
-        # case 2, no files -> return None, we should use the already existing data
-        elif len(files) == 0:
-            return None
-        # case 3 maximum 10 files
-        elif len(files) < 11:
-            for index, (name, io) in enumerate(files):
-                form.add_field(f'file{index}s', io, filename=name, content_type='application/octet-stream')
-        
-        # case 4 more than 10 files
-        else:
-            raise ValueError('You can send maximum 10 files at once.')
-        
-        return form
-    
-    @staticmethod
-    def _validate_message_to_delete(message):
-        """
-        Validates a message to delete.
-        
-        This function is a staticmethod.
-        
-        Parameters
-        ----------
-        message : ``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`)
-            The message to validate for deletion.
-        
-        Returns
-        -------
-        channel_id : `int`
-            The channel's identifier where the message is.
-        message_id : `int`
-            The message's identifier.
-        message : `None` or ``Message``
-            The referenced message if found.
-        
-        Raises
-        ------
-        TypeError
-            If message was not given neither as ``Message``, ``MessageReference``, ``MessageRepr``, neither as
-            `tuple` (`int`, `int`).
-        """
-        if isinstance(message, Message):
-            channel_id = message.channel.id
-            message_id = message.id
-        else:
-            if isinstance(message, MessageRepr):
-                channel_id = message.channel.id
-                message_id = message.id
-            elif isinstance(message, MessageReference):
-                channel_id = message.channel_id
-                message_id = message.message_id
-            else:
-                snowflake_pair = maybe_snowflake_pair(message)
-                if snowflake_pair is None:
-                    raise TypeError(f'`message` should have be given as `{Message.__name__}` or as '
-                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, or as `tuple` of (`int`, `int`), '
-                        f'got {message.__class__.__name__}.')
-                
-                channel_id, message_id = snowflake_pair
-            
-            message = MESSAGES.get(message, None)
-        
-        return channel_id, message_id, message
+            return channel._create_new_message(message_data)
     
     
     async def message_delete(self, message, *, reason=None):
@@ -3857,7 +3619,7 @@ class Client(ClientUserPBase):
         which are older than 2 weeks.
         """
         
-        channel_id, message_id, message = self._validate_message_to_delete(message)
+        channel_id, message_id, message = validate_message_to_delete(message)
         
         if (message is None):
             author = None
@@ -3921,7 +3683,7 @@ class Client(ClientUserPBase):
         by_channel = {}
         
         for message in messages:
-            channel_id, message_id, message = self._validate_message_to_delete(message)
+            channel_id, message_id, message = validate_message_to_delete(message)
             if (message is not None) and message.deleted:
                 continue
             
@@ -4001,29 +3763,6 @@ class Client(ClientUserPBase):
         if (last_exception is not None):
             raise last_exception
     
-    @staticmethod
-    def _message_delete_multiple_private_task_message_id_iterator(groups):
-        """
-        `message_id` iterator used by ``._message_delete_multiple_private_task``.
-        
-        This function is a staticmethod.
-        
-        Parameters
-        ----------
-        groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
-            `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
-        
-        Yields
-        ------
-        message_id : `int`
-        """
-        message_group_new, message_group_old, message_group_old_own = groups
-        for item in message_group_new:
-            yield item[1]
-        
-        yield from message_group_old
-        yield from message_group_old_own
-    
     async def _message_delete_multiple_private_task(self, channel_id, groups, reason):
         """
         Internal task used by ``.message_delete_multiple``.
@@ -4046,7 +3785,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        for message in self._message_delete_multiple_private_task_message_id_iterator(groups):
+        for message in _message_delete_multiple_private_task_message_id_iterator(groups):
             await self.http.message_delete(channel_id, message.id, reason)
     
     async def _message_delete_multiple_task(self, channel_id, groups, reason):
@@ -4302,7 +4041,7 @@ class Client(ClientUserPBase):
                 request_data = {
                     'limit': 100,
                     'before': last_message_id,
-                        }
+                }
                 
                 get_mass_task = Task(self.http.message_get_chunk(channel_id, request_data), KOKORO)
                 tasks.append(get_mass_task)
@@ -4908,7 +4647,7 @@ class Client(ClientUserPBase):
                 # Else case should happen.
                 continue
     
-    async def message_edit(self, message, content=..., *, embed=..., allowed_mentions=..., components=...,
+    async def message_edit(self, message, content=..., *, embed=..., file=None, allowed_mentions=..., components=...,
             suppress=...):
         """
         Edits the given `message`.
@@ -4925,15 +4664,18 @@ class Client(ClientUserPBase):
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
             instance, then it will be cased to string first.
             
-            By passing it as empty string, you can remove the message's content.
-            
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            raised.
             
             If embeds are given as a list, then the first embed is picked up.
+        
+        file : `Any`, Optional (Keyword only)
+            A file or files to send. Check ``create_file_form`` for details.
+        
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
@@ -4948,14 +4690,15 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
             - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
                 instances.
         ValueError
-            If `allowed_mentions` contains an element of invalid type.
+            - If `allowed_mentions` contains an element of invalid type.
+            - If more than `10` files would be sent.
         ConnectionError
             No internet connection.
         DiscordException
@@ -4964,6 +4707,8 @@ class Client(ClientUserPBase):
             - If the message was not sent by the client.
             - If `components` contains a non ``ComponentBase`` element.
             - If `suppress` was not given as `bool` instance.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -5009,86 +4754,7 @@ class Client(ClientUserPBase):
             
             channel_id, message_id = snowflake_pair
         
-        # Embed check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: Embed
-        # 4.: list of Embed -> embed[0] or None
-        # 5.: raise
-        
-        if embed is ...:
-            pass
-        elif embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            pass
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[0]
-            else:
-                embed = None
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: str
-        # 4.: Embed -> embed = content
-        # 5.: list of Embed -> embed = content[0]
-        # 6.: object -> str(content)
-        
-        if content is ...:
-            pass
-        elif content is None:
-            content = ''
-        elif isinstance(content, str):
-            pass
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not ...):
-                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = content
-            content = ...
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not ...):
-                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[0]
-                content = ...
-            else:
-                content = str(content)
-        
-        if (components is not ...):
-            components = get_components_data(components)
+        content, embed = validate_content_and_embed(content, embed, False, True)
         
         if __debug__:
             if (suppress is not ...) and (not isinstance(suppress, bool)):
@@ -5120,7 +4786,10 @@ class Client(ClientUserPBase):
                 flags &= 0b11111011
             message_data['flags'] = flags
         
+        message_data = add_file_to_message_data(message_data, file, True)
+        
         await self.http.message_edit(channel_id, message_id, message_data)
+    
     
     async def message_suppress_embeds(self, message, suppress=True):
         """
@@ -7084,7 +6753,7 @@ class Client(ClientUserPBase):
             - If `name` was not given as `str` instance.
             - If the `name`'s length is out of range [2:100].
             - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
-            - if `afk-timeout` was not given as `int` instance.
+            - If `afk-timeout` was not given as `int` instance.
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
         """
         if __debug__:
@@ -10636,9 +10305,10 @@ class Client(ClientUserPBase):
         embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            raised.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
@@ -10663,7 +10333,7 @@ class Client(ClientUserPBase):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `thread` was not given either as `None`, ``ChannelThread`` nor as `int` instance.
@@ -10680,6 +10350,8 @@ class Client(ClientUserPBase):
             - If `avatar_url` was not given as `str` instance.
             - If `tts` was not given as `bool` instance.
             - If `wait` was not given as `bool` instance.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -10700,83 +10372,6 @@ class Client(ClientUserPBase):
             webhook_id, webhook_token = snowflake_token_pair
             webhook = USERS.get(webhook_id, None)
         
-        # Embed check order:
-        # 1.: None
-        # 2.: Embed -> [embed]
-        # 3.: list of Embed -> embed[:10] or None
-        # 4.: raise
-        
-        if embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            embed = [embed]
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[:10]
-            else:
-                embed = None
-            
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: None
-        # 2.: str
-        # 3.: Embed -> embed = [content]
-        # 4.: list of Embed -> embed = content[:10]
-        # 5.: object -> str(content)
-        
-        if content is None:
-            pass
-        elif isinstance(content, str):
-            if not content:
-                content = None
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not None):
-                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = [content]
-            content = None
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not None):
-                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[:10]
-                content = None
-            else:
-                content = str(content)
-                if not content:
-                    content = None
-        
-        
         if thread is None:
             thread_id = 0
         elif isinstance(thread, ChannelThread):
@@ -10785,7 +10380,9 @@ class Client(ClientUserPBase):
             thread_id = maybe_snowflake(thread)
             if thread_id is None:
                 raise TypeError(f'`thread` can be given as `None`, `{ChannelThread.__name__}`, or as `int` instance, '
-                    f'got {channel.__class__.__name__}.')
+                    f'got {thread.__class__.__name__}.')
+        
+        content, embed = validate_content_and_embed(content, embed, True, False)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -10793,7 +10390,6 @@ class Client(ClientUserPBase):
             
             if not isinstance(wait, bool):
                 raise AssertionError(f'`wait` can be given as `bool` instance, got {wait.__class__.__name__}.')
-        
         
         message_data = {}
         contains_content = False
@@ -10833,17 +10429,9 @@ class Client(ClientUserPBase):
             if name:
                 message_data['username'] = name
         
-        if file is None:
-            to_send = message_data
-        else:
-            to_send = self._create_file_form(message_data, file)
-            if to_send is None:
-                to_send = message_data
-            else:
-                contains_content = True
-        
-        if not contains_content:
-            return None
+        message_data = add_file_to_message_data(message_data, file, contains_content)
+        if message_data is None:
+            return
         
         query_parameters = None
         if wait:
@@ -10892,15 +10480,14 @@ class Client(ClientUserPBase):
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
             instance, then it will be cased to string first.
             
-            By passing it as empty string, you can remove the message's content.
-            
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            > If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            raised.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
@@ -10911,19 +10498,22 @@ class Client(ClientUserPBase):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
                 giving any content to it as well.
             - `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+            - If more than `10` file would be sent.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `message` was detectably not sent by the `webhook`.
+            - If `message` was detectably not sent by the `webhook`.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -10976,118 +10566,28 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
                     f'`int` instance, got {message.__class__.__name__}`.')
         
-        # Embed check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: Embed : -> [embed]
-        # 4.: list of Embed -> embed[:10] or None
-        # 5.: raise
-        
-        if embed is ...:
-            pass
-        elif embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            embed = [embed]
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[:10]
-            else:
-                embed = None
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: str
-        # 4.: Embed -> embed = [content]
-        # 5.: list of Embed -> embed = content[:10]
-        # 6.: object -> str(content)
-        
-        if content is ...:
-            pass
-        elif content is None:
-            content = ''
-        elif isinstance(content, str):
-            pass
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not ...):
-                    raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = [content]
-            content = ...
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not ...):
-                        raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[:10]
-                content = ...
-            else:
-                content = str(content)
+        content, embed = validate_content_and_embed(content, embed, True, True)
         
         # Build payload
         message_data = {}
         
-        contains_content = False
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
             message_data['content'] = content
-            contains_content = True
         
         if (embed is not ...):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embed
-            contains_content = True
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-            contains_content = True
         
-        if file is None:
-            to_send = message_data
-        else:
-            to_send = self._create_file_form(message_data, file)
-            if to_send is None:
-                to_send = message_data
-            else:
-                contains_content = True
-        
-        if not contains_content:
-            return
+        message_data = add_file_to_message_data(message_data, file, True)
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.webhook_message_edit(webhook_id, webhook_token, message_id, to_send)
+        await self.http.webhook_message_edit(webhook_id, webhook_token, message_id, message_data)
     
     
     async def webhook_message_delete(self, webhook, message):
@@ -13712,7 +13212,8 @@ class Client(ClientUserPBase):
         embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The embedded content of the interaction response.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            raised.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
@@ -13731,7 +13232,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
                 instances.
@@ -13746,6 +13247,8 @@ class Client(ClientUserPBase):
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `components` contains a non ``ComponentBase`` element.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         Notes
         -----
@@ -13784,81 +13287,7 @@ class Client(ClientUserPBase):
             return await self.interaction_followup_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions, tts=tts)
         
-        # Embed check order:
-        # 1.: None
-        # 2.: Embed -> [embed]
-        # 3.: list of Embed -> embed[:10] or None
-        # 4.: raise
-        
-        if embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            embed = [embed]
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[:10]
-            else:
-                embed = None
-            
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: None
-        # 2.: str
-        # 3.: Embed -> embed = [content]
-        # 4.: list of Embed -> embed = content[:10]
-        # 5.: object -> str(content)
-        
-        if content is None:
-            pass
-        elif isinstance(content, str):
-            if not content:
-                content = None
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not None):
-                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = [content]
-            content = None
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not None):
-                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[:10]
-                content = None
-            else:
-                content = str(content)
-                if not content:
-                    content = None
+        content, embed = validate_content_and_embed(content, embed, True, False)
         
         components = get_components_data(components)
         
@@ -13987,27 +13416,23 @@ class Client(ClientUserPBase):
         content : `str`, ``EmbedBase`` or `Any`, Optional
             The new content of the message.
             
-            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
-            instance, then it will be cased to string first.
-            
-            By passing it as empty string, you can remove the message's content.
-            
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            raised.
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-            
+        
         Raises
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -14018,6 +13443,8 @@ class Client(ClientUserPBase):
         AssertionError
             - If `interaction` was not given as ``InteractionEvent`` instance.
             - If the client's application is not yet synced.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         Notes
         -----
@@ -14061,118 +13488,29 @@ class Client(ClientUserPBase):
             return await self.interaction_followup_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions, tts=False)
         
-        # Embed check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: Embed : -> [embed]
-        # 4.: list of Embed -> embed[:10] or None
-        # 5.: raise
-        
-        if embed is ...:
-            pass
-        elif embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            embed = [embed]
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[:10]
-            else:
-                embed = None
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: str
-        # 4.: Embed -> embed = [content]
-        # 5.: list of Embed -> embed = content[:10]
-        # 6.: object -> str(content)
-        
-        if content is ...:
-            pass
-        elif content is None:
-            content = ''
-        elif isinstance(content, str):
-            pass
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not ...):
-                    raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = [content]
-            content = ...
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not ...):
-                        raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[:10]
-                content = ...
-            else:
-                content = str(content)
+        content, embed = validate_content_and_embed(content, embed, True, True)
         
         # Build payload
         message_data = {}
         
-        contains_content = False
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
             message_data['content'] = content
-            contains_content = True
         
         if (embed is not ...):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embed
-            contains_content = True
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-            contains_content = True
         
-        if file is None:
-            to_send = message_data
-        else:
-            to_send = self._create_file_form(message_data, file)
-            if to_send is None:
-                to_send = message_data
-            else:
-                contains_content = True
-        
-        if not contains_content:
-            return
+        message_data = add_file_to_message_data(message_data, file, True)
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token, to_send)
+        await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
+            message_data)
         
         # Mark the interaction as responded if deferred.
         
@@ -14281,7 +13619,7 @@ class Client(ClientUserPBase):
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         file : `Any`, Optional
-            A file to send. Check ``._create_file_form`` for details.
+            A file to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
@@ -14305,7 +13643,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
@@ -14323,6 +13661,8 @@ class Client(ClientUserPBase):
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `components` contains a non ``ComponentBase`` element.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         """
         if __debug__:
             if not isinstance(interaction, InteractionEvent):
@@ -14362,81 +13702,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        # Embed check order:
-        # 1.: None
-        # 2.: Embed -> [embed]
-        # 3.: list of Embed -> embed[:10] or None
-        # 4.: raise
-        
-        if embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            embed = [embed]
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[:10]
-            else:
-                embed = None
-            
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: None
-        # 2.: str
-        # 3.: Embed -> embed = [content]
-        # 4.: list of Embed -> embed = content[:10]
-        # 5.: object -> str(content)
-        
-        if content is None:
-            pass
-        elif isinstance(content, str):
-            if not content:
-                content = None
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not None):
-                    raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = [content]
-            content = None
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not None):
-                        raise TypeError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[:10]
-                content = None
-            else:
-                content = str(content)
-                if not content:
-                    content = None
+        content, embed = validate_content_and_embed(content, embed, True, False)
         
         components = get_components_data(components)
         
@@ -14473,25 +13739,17 @@ class Client(ClientUserPBase):
         if show_for_invoking_user_only:
             message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
         
-        if file is None:
-            to_send = message_data
-        else:
-            to_send = self._create_file_form(message_data, file)
-            if to_send is None:
-                to_send = message_data
-            else:
-                contains_content = True
+        message_data = add_file_to_message_data(message_data, file, contains_content)
+        if message_data is None:
+            return
         
-        if not contains_content:
-            return None
-        
-        data = await self.http.interaction_followup_message_create(application_id, interaction.id, interaction.token,
-            to_send)
+        message_data = await self.http.interaction_followup_message_create(application_id, interaction.id, interaction.token,
+            message_data)
         
         # Set the message to responded to avoid editing the before message.
         interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
         
-        return interaction.channel._create_new_message(data)
+        return interaction.channel._create_new_message(message_data)
     
     
     async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=None,
@@ -14521,7 +13779,7 @@ class Client(ClientUserPBase):
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
@@ -14531,7 +13789,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
         ValueError
@@ -14543,6 +13801,8 @@ class Client(ClientUserPBase):
         AssertionError
             - If `interaction` was not given as ``InteractionEvent`` instance.
             - If the client's application is not yet synced.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
         
         Notes
         -----
@@ -14581,119 +13841,29 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
                     f'`int` instance, got {message.__class__.__name__}`.')
         
-        # Embed check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: Embed : -> [embed]
-        # 4.: list of Embed -> embed[:10] or None
-        # 5.: raise
-        
-        if embed is ...:
-            pass
-        elif embed is None:
-            pass
-        elif isinstance(embed, EmbedBase):
-            embed = [embed]
-        elif isinstance(embed, (list, tuple)):
-            if embed:
-                if __debug__:
-                    for index, embed_element in enumerate(embed):
-                        if isinstance(embed_element, EmbedBase):
-                            continue
-                        
-                        raise TypeError(f'`embed` was given as a `list`, but it\'s element under index `{index}` '
-                            f'is not `{EmbedBase.__name__}` instance, got {embed_element.__class__.__name__}.')
-                
-                embed = embed[:10]
-            else:
-                embed = None
-        else:
-            raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a list of '
-                f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
-        
-        # Content check order:
-        # 1.: Ellipsis
-        # 2.: None
-        # 3.: str
-        # 4.: Embed -> embed = [content]
-        # 5.: list of Embed -> embed = content[:10]
-        # 6.: object -> str(content)
-        
-        if content is ...:
-            pass
-        elif content is None:
-            content = ''
-        elif isinstance(content, str):
-            pass
-        elif isinstance(content, EmbedBase):
-            if __debug__:
-                if (embed is not ...):
-                    raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-            
-            embed = [content]
-            content = ...
-        else:
-            # Check for list of embeds as well.
-            if isinstance(content, (list, tuple)):
-                if content:
-                    for element in content:
-                        if isinstance(element, EmbedBase):
-                            continue
-                        
-                        is_list_of_embeds = False
-                        break
-                    else:
-                        is_list_of_embeds = True
-                else:
-                    is_list_of_embeds = False
-            else:
-                is_list_of_embeds = False
-            
-            if is_list_of_embeds:
-                if __debug__:
-                    if (embed is not ...):
-                        raise ValueError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
-                
-                embed = content[:10]
-                content = ...
-            else:
-                content = str(content)
+        content, embed = validate_content_and_embed(content, embed, True, True)
         
         # Build payload
         message_data = {}
         
-        contains_content = False
         # Discord docs say, content can be nullable, but nullable content is just ignored.
         if (content is not ...):
             message_data['content'] = content
-            contains_content = True
         
         if (embed is not ...):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
             message_data['embeds'] = embed
-            contains_content = True
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
-            contains_content = True
         
-        if file is None:
-            to_send = message_data
-        else:
-            to_send = self._create_file_form(message_data, file)
-            if to_send is None:
-                to_send = message_data
-            else:
-                contains_content = True
-        
-        if not contains_content:
-            return
+        message_data = add_file_to_message_data(message_data, file, True)
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
         await self.http.interaction_followup_message_edit(application_id, interaction.id, interaction.token, message_id,
-            to_send)
+            message_data)
     
     
     async def interaction_followup_message_delete(self, interaction, message):
@@ -14876,9 +14046,9 @@ class Client(ClientUserPBase):
             user = await self.user_get(user_id)
         
         data = {
-            'username'      : user.name,
-            'discriminator' : str(user.discriminator)
-                }
+            'username': user.name,
+            'discriminator': str(user.discriminator)
+        }
         
         await self.http.relationship_friend_request(data)
     
@@ -15224,7 +14394,7 @@ class Client(ClientUserPBase):
                 after = (
                     'Connection failed, could not connect to Discord.\n Please check your internet connection / has '
                     'Python rights to use it?\n'
-                        )
+                )
             else:
                 after = None
             
@@ -15232,7 +14402,7 @@ class Client(ClientUserPBase):
                 'Exception occurred at calling ',
                 self.__class__.__name__,
                 '.connect\n',
-                    ]
+            ]
             
             await KOKORO.render_exc_async(err, before, after)
             return False
@@ -15282,12 +14452,13 @@ class Client(ClientUserPBase):
                             'Ignoring unexpected outer Task or coroutine cancellation at ',
                             repr(self),
                             '._connect:\n',
-                                ],)
+                        ],)
                     except (GeneratorExit, CancelledError) as err:
                         sys.stderr.write(
                             f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
                             f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
-                            f'reconnect.\n')
+                            f'reconnect.\n'
+                        )
                     continue
                 
                 except DiscordGatewayException as err:
@@ -15296,7 +14467,7 @@ class Client(ClientUserPBase):
                             f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
                             f'{err!r}\n'
                             f'The client will reshard itself and reconnect.\n'
-                                )
+                        )
                         
                         await self.client_gateway_reshard(force=True)
                         continue
@@ -15319,7 +14490,7 @@ class Client(ClientUserPBase):
                                 break
                         except (GeneratorExit, CancelledError) as err:
                             try:
-                                await KOKORO.render_exc_async(err,[
+                                await KOKORO.render_exc_async(err, [
                                     'Ignoring unexpected outer Task or coroutine cancellation at ',
                                     repr(self),
                                     '._connect:\n',
@@ -15328,7 +14499,8 @@ class Client(ClientUserPBase):
                                 sys.stderr.write(
                                     f'Ignoring unexpected outer Task or coroutine cancellation at {self!r}._connect as '
                                     f'{err!r} meanwhile rendering an exception for the same reason.\n The client will '
-                                    f'reconnect.\n')
+                                    f'reconnect.\n'
+                                )
                             continue
                     continue
         except BaseException as err:
@@ -15339,9 +14511,9 @@ class Client(ClientUserPBase):
                 sys.stderr.write(
                     f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
                     f'{err!r}\n'
-                        )
+                )
             else:
-                await KOKORO.render_exc_async(err,[
+                await KOKORO.render_exc_async(err, [
                     'Unexpected exception occurred at ',
                     repr(self),
                     '._connect\n',
@@ -15506,7 +14678,7 @@ class Client(ClientUserPBase):
             'suppress': False,
             'request_to_speak_timestamp': timestamp,
             'channel_id': channel_id
-                }
+        }
         
         await self.http.voice_state_client_edit(guild.id, data)
     
@@ -15556,7 +14728,7 @@ class Client(ClientUserPBase):
         data = {
             'suppress': True,
             'channel_id': channel_id
-                }
+        }
         
         await self.http.voice_state_client_edit(guild.id, data)
     
@@ -15668,7 +14840,7 @@ class Client(ClientUserPBase):
             tasks = []
             gateways = self.gateway.gateways
             for index in range(shard_count):
-                task = Task(self._request_members_loop(gateways[index], guilds_by_shards[index]), KOKORO)
+                task = Task(_request_members_loop(gateways[index], guilds_by_shards[index]), KOKORO)
                 tasks.append(task)
             
             done, pending = await WaitTillExc(tasks, KOKORO)
@@ -15679,7 +14851,7 @@ class Client(ClientUserPBase):
                 task.result()
             
         else:
-            await self._request_members_loop(self.gateway, guilds)
+            await _request_members_loop(self.gateway, guilds)
 
         
         try:
@@ -15690,41 +14862,6 @@ class Client(ClientUserPBase):
             except KeyError:
                 pass
     
-    @staticmethod
-    async def _request_members_loop(gateway, guilds):
-        """
-        Called by ``._request_members2`` parallelly with other ``._request_members_loop``-s for each shard.
-        
-        The function requests all the members of given guilds without putting too much pressure on the respective
-        gateway's rate limits.
-        
-        This function is a coroutine.
-        
-        Parameters
-        ----------
-        gateway : ``DiscordGateway``
-            The gateway to use for requests.
-        guilds : `list` of ``Guild``
-            The guilds, what's members should be requested.
-        """
-        sub_data = {
-            'guild_id'  : 0,
-            'query'     : '',
-            'limit'     : 0,
-            'presences' : CACHE_PRESENCE,
-            'nonce'     : '0000000000000000',
-                }
-        
-        data = {
-            'op' : DiscordGateway.REQUEST_MEMBERS,
-            'd'  : sub_data
-                }
-        
-        for guild in guilds:
-            sub_data['guild_id'] = guild.id
-            await gateway.send_as_json(data)
-            await sleep(0.6, KOKORO)
-    
     async def _request_members(self, guild_id):
         """
         Requests the members of the given guild. Called when the client joins a guild and user caching is enabled
@@ -15734,7 +14871,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild_id : ``int``
             The guild, what's members will be requested.
         """
         event_handler = self.events.guild_user_chunk
@@ -15745,15 +14882,15 @@ class Client(ClientUserPBase):
         event_handler.waiters[nonce] = waiter = MassUserChunker(1)
         
         data = {
-            'op' : DiscordGateway.REQUEST_MEMBERS,
-            'd' : {
-                'guild_id'  : guild_id,
-                'query'     : '',
-                'limit'     : 0,
-                'presences' : CACHE_PRESENCE,
-                'nonce'     : nonce
-                    },
-                }
+            'op': DiscordGateway.REQUEST_MEMBERS,
+            'd': {
+                'guild_id': guild_id,
+                'query': '',
+                'limit': 0,
+                'presences': CACHE_PRESENCE,
+                'nonce': nonce
+            },
+        }
         
         gateway = self._gateway_for(guild_id)
         await gateway.send_as_json(data)
@@ -15828,15 +14965,15 @@ class Client(ClientUserPBase):
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
         data = {
-            'op' : DiscordGateway.REQUEST_MEMBERS,
-            'd' : {
-                'guild_id'  : guild_id,
-                'query'     : name,
-                'limit'     : limit,
-                'presences' : CACHE_PRESENCE,
-                'nonce'     : nonce,
-                    },
-                }
+            'op': DiscordGateway.REQUEST_MEMBERS,
+            'd': {
+                'guild_id': guild_id,
+                'query': name,
+                'limit': limit,
+                'presences': CACHE_PRESENCE,
+                'nonce': nonce,
+            },
+        }
         
         gateway = self._gateway_for(guild_id)
         await gateway.send_as_json(data)
@@ -16286,7 +15423,7 @@ class Client(ClientUserPBase):
         """
         type_ = RelationshipType.friend
         return [rs for rs in self.relationships.values() if rs.type is type_]
-
+    
     @property
     def blocked(self):
         """
@@ -16378,4 +15515,3 @@ class Client(ClientUserPBase):
             Not applicable for ``Client`` instances.
         """
         raise RuntimeError('Cannot create empty client.')
-

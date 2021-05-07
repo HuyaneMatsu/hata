@@ -18,8 +18,8 @@ class Category:
         Error handlers bind to the category.
     _self_reference : `None` or ``WeakReferer`` to ``Category``
         Reference to the command processor itself.
-    command_name_to_command : `dict` of (`str`, ``Command``) items
-        Command name to command relation.
+    registered_commands : `set` of ``Command``
+        The registered commands to the category.
     display_name : `str`
         The category's display name.
     description : `Any`
@@ -31,7 +31,7 @@ class Category:
     ``Category`` supports weakreferencing.
     """
     __slots__ = ('__weakref__', '_checks', '_command_processor_reference', '_error_handlers', '_self_reference',
-        'command_name_to_command', 'description', 'display_name', 'name')
+        'registered_commands', 'description', 'display_name', 'name')
     
     def __new__(cls, name, *, checks=None, description=None):
         """
@@ -72,7 +72,7 @@ class Category:
         self._command_processor_reference = None
         self._error_handlers = None
         self._self_reference = None
-        self.command_name_to_command = {}
+        self.registered_commands = {}
         self.display_name = name
         self.description = description
         self.name = name
@@ -106,6 +106,7 @@ class Category:
         Parameters
         ----------
         command_processor : ``CommandProcessor``
+            The parent command processor.
         """
         self._command_processor_reference = command_processor._self_reference
         command_processor[self.name] = self
@@ -114,5 +115,6 @@ class Category:
         if (command_name_rule is not None):
             self.display_name = command_name_rule(self.name)
         
-        for command in self.command_name_to_command.values():
+        for command in self.registered_commands:
             command.set_command_processor(command_processor)
+

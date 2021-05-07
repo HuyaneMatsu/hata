@@ -2376,6 +2376,19 @@ class Message(DiscordEntity, immortal=True):
 
         for index in range(ln1, ln2):
             embeds.append(EmbedCore.from_data(embed_datas[index]))
+            
+    @property
+    def embed(self):
+        """
+        Returns the first embed in the message.
+
+        Returns
+        -------
+        embed : `None` or ``EmbedCore``
+        """
+        embeds = self.embeds
+        if (embeds is not None):
+            return embeds[0]
     
     @property
     def guild(self):

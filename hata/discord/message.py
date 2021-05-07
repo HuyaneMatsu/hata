@@ -2384,7 +2384,7 @@ class Message(DiscordEntity, immortal=True):
 
         Returns
         -------
-        embed : `None` or ``Embed``
+        embed : `None` or ``EmbedCore``
         """
         embeds = self.embeds
         if (embeds is not None):

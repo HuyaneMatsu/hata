@@ -292,8 +292,10 @@ class ComponentInteraction:
         The component's type.
     custom_id : `str` or `None`
         The component's custom identifier.
+    options : `None` or `tuple` of `str`
+        Option values selected of the respective interaction.
     """
-    __slots__ = ('component_type', 'custom_id',)
+    __slots__ = ('component_type', 'custom_id', 'components', 'options')
     
     def __new__(cls, data, guild, cached_users):
         """
@@ -320,6 +322,14 @@ class ComponentInteraction:
         self.custom_id = data.get('custom_id', None)
         self.component_type = ComponentType.get(data['component_type'])
         
+        option_datas = data.get('options', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = tuple(option_datas)
+        
+        self.options = options
+        
         return self, cached_users
     
     
@@ -340,6 +350,24 @@ class ComponentInteraction:
         if (custom_id is not None):
             repr_parts.append(', custom_id=')
             repr_parts.append(reprlib.repr(custom_id))
+        
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=[')
+            index = 0
+            limit = len(options)
+            while True:
+                option = options[index]
+                repr_parts.append(repr(option))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
         
         repr_parts.append('>')
         
@@ -373,7 +401,15 @@ class ComponentInteraction:
     
     def __hash__(self):
         """Returns the component interaction's hash value."""
-        return self.component_type.value^hash(self.custom_id)
+        hash_value = self.component_type.value^hash(self.custom_id)
+        
+        options = self.options
+        if (options is not None):
+            hash_value ^ len(options)<<24
+            for option in options:
+                hash_value ^ hash(option)
+        
+        return hash_value
 
 
 INTERACTION_TYPE_TABLE = {

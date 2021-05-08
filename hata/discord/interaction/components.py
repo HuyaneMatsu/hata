@@ -9,7 +9,9 @@ from ...backend.export import export
 from ..bases import PreinstancedBase
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import url_cutter
-from ..limits import COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX
+from ..limits import COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX, \
+    COMPONENT_OPTION_LENGTH_MAX, COMPONENT_OPTION_LENGTH_MIN, COMPONENT_OPTION_MIN_VALUES_MIN, \
+    COMPONENT_OPTION_MIN_VALUES_MAX, COMPONENT_OPTION_MAX_VALUES_MIN, COMPONENT_OPTION_MAX_VALUES_MAX
 from ..emoji import create_partial_emoji, Emoji, create_partial_emoji_data
 
 from .preinstanced import ComponentType, ButtonStyle
@@ -73,6 +75,7 @@ def _debug_component_custom_id(custom_id, nullable=True):
     AssertionError
         - If `custom_id` was not given neither as `None` or `str` instance.
         - If `custom_id`'s length is over `100`.
+        - If `custom_id` is empty string or `None` meanwhile not nullable.
     """
     if (custom_id is None):
         if nullable:
@@ -81,7 +84,11 @@ def _debug_component_custom_id(custom_id, nullable=True):
             raise AssertionError(f'`custom_id` is not nullable.')
     
     elif isinstance(custom_id, str):
-        if len(custom_id) > COMPONENT_CUSTOM_ID_LENGTH_MAX:
+        custom_id_length = len(custom_id)
+        if custom_id_length == 0:
+            raise AssertionError(f'`custom_id` is not nullable.')
+        
+        if custom_id_length > COMPONENT_CUSTOM_ID_LENGTH_MAX:
             raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
                 f'{len(custom_id)!r}; {custom_id!r}.')
     else:
@@ -253,17 +260,24 @@ def _debug_component_options(options):
     AssertionError
         - If `options` is neither `None`, `tuple` or `list`.
         - If `options` contains a non ``ComponentSelectOption`` instance.
+        - If `options`'s length is out of teh expected [1:25] range.
     """
-    if (options is None):
-        pass
-    elif isinstance(options, (tuple, list)):
+    if options is None:
+        option_length = 0
+    if isinstance(options, (tuple, list)):
         for option in options:
             if not isinstance(option, ComponentSelectOption):
                 raise AssertionError(f'`option` can be given as `{ComponentSelectOption.__name__}` instance, got '
                     f'{option.__class__.__name__}.')
+        
+        option_length = len(options)
     else:
         raise AssertionError(f'`options` can be given as `None`, `tuple` or `list`, got '
             f'{options.__class__.__name__}.')
+    
+    if (option_length < COMPONENT_OPTION_LENGTH_MIN) or (option_length > COMPONENT_OPTION_LENGTH_MAX):
+        raise AssertionError(f'`options` can be in range '
+            f'[{COMPONENT_OPTION_LENGTH_MIN}:{COMPONENT_OPTION_LENGTH_MAX}], got {option_length}.')
 
 
 def _debug_component_placeholder(placeholder):
@@ -272,14 +286,21 @@ def _debug_component_placeholder(placeholder):
     
     Parameters
     ----------
-    placeholder : `Any`
-        The placeholder of a component select.
+    placeholder : `None` or `str`
+        The placeholder text of a component select.
     
     Raises
     ------
     AssertionError
-        Not yet.
+        - If `placeholder` is neither `None` nor `str` instance.
     """
+    if placeholder is None:
+        pass
+    elif isinstance(placeholder, str):
+        pass
+    else:
+        raise AssertionError(f'`placeholder` can be given as `None or `str` instance, got '
+            f'{placeholder.__class__.__name__}.')
 
 
 def _debug_component_min_values(min_values):
@@ -288,15 +309,21 @@ def _debug_component_min_values(min_values):
     
     Parameters
     ----------
-    min_values : `Any`
+    min_values : `int`
         The min values of a component select.
     
     Raises
     ------
     AssertionError
-        Not yet.
+        - If `min_values` was not given as `int` instance.
+        - If `min_values`'s is out of range [1:15].
     """
-
+    if not isinstance(min_values, int):
+        raise AssertionError(f'`min_values` can be given as `int` instance, got {min_values.__class__.__name__}.')
+    
+    if (min_values < COMPONENT_OPTION_MIN_VALUES_MIN) or (min_values > COMPONENT_OPTION_MIN_VALUES_MIN):
+        raise AssertionError(f'`min_values` can be in range '
+            f'[{COMPONENT_OPTION_MIN_VALUES_MIN}:{COMPONENT_OPTION_MIN_VALUES_MIN}], got {min_values!r}.')
 
 def _debug_component_max_values(max_values):
     """
@@ -304,14 +331,21 @@ def _debug_component_max_values(max_values):
     
     Parameters
     ----------
-    max_values : `Any`
+    max_values : `int`
         The max values of a component select.
     
     Raises
     ------
     AssertionError
-        Not yet.
+        - If `max_values` was not given as `int` instance.
+        - If `max_values`'s is out of range [1:25].
     """
+    if not isinstance(max_values, int):
+        raise AssertionError(f'`max_values` can be given as `int` instance, got {max_values.__class__.__name__}.')
+
+    if (max_values < COMPONENT_OPTION_MAX_VALUES_MIN) or (max_values > COMPONENT_OPTION_MAX_VALUES_MAX):
+        raise AssertionError(f'`max_values` can be in range '
+            f'[{COMPONENT_OPTION_MAX_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MAX}], got {max_values!r}.')
 
 
 @export
@@ -323,10 +357,13 @@ class ComponentBase:
     ----------------
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.
+    custom_id : `NoneType` = `None`
+        Placeholder for sub-classes without `custom_id` attribute.
     """
     __slots__ = ()
     
     type = ComponentType.none
+    custom_id = None
     
     @classmethod
     def from_data(cls, data):
@@ -390,7 +427,6 @@ class ComponentBase:
         return self.type.value
 
 
-
 class ComponentRow(ComponentBase):
     """
     Action row component.
@@ -404,6 +440,8 @@ class ComponentRow(ComponentBase):
     ----------------
     type : ``ComponentType`` = `ComponentType.row`
         The component's type.
+    custom_id : `NoneType` = `None`
+        `custom_id` is not applicable for component rows.
     """
     type = ComponentType.row
     
@@ -599,6 +637,12 @@ class ComponentButton(ComponentBase):
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
         """
+        if (custom_id is not None) and (not custom_id):
+            custom_id = None
+        
+        if (url is not None) and (not url):
+            url = None
+        
         if __debug__:
             _debug_component_custom_id(custom_id, True)
             _debug_component_emoji(emoji)
@@ -617,7 +661,7 @@ class ComponentButton(ComponentBase):
             style = ButtonStyle.link
         else:
             if style is None:
-                style = self.default_style
+                style = cls.default_style
             else:
                 style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
         
@@ -835,6 +879,8 @@ class ComponentSelectOption(ComponentBase):
     ----------------
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.
+    custom_id : `NoneType` = `None`
+        `custom_id` is not applicable for select options.
     """
     __slots__ = ('default', 'description', 'emoji', 'label', 'value')
     
@@ -855,18 +901,19 @@ class ComponentSelectOption(ComponentBase):
         default : `bool`
             Whether this the the default option. Defaults to `False`.
         """
-        if __debug__:
-            _debug_component_value(value)
-            _debug_component_label(label)
-            _debug_component_emoji(emoji)
-            _debug_component_description(description)
-            _debug_component_default(default)
         
         if (label is not None) and (not label):
             label = None
         
         if (description is not None) and (not description):
             description = None
+        
+        if __debug__:
+            _debug_component_value(value)
+            _debug_component_label(label)
+            _debug_component_emoji(emoji)
+            _debug_component_description(description)
+            _debug_component_default(default)
         
         self = object.__new__(cls)
         self.default = default
@@ -997,14 +1044,14 @@ class ComponentSelect(ComponentBase):
     ----------
     custom_id : `str`
         Custom identifier to detect which component was used by the user.
-    options : `None` or `list` of ``ComponentSelectOption``
+    options : `list` of ``ComponentSelectOption``
         Options of the select.
-    placeholder : ???
-        ???
-    min_values : ???
-        ???
-    max_values : ???
-        ???
+    placeholder : `str`
+        Placeholder text of the select.
+    min_values : `int`
+        The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
+    max_values : `int
+        The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
     
     Class Attributes
     ----------------
@@ -1013,7 +1060,7 @@ class ComponentSelect(ComponentBase):
     """
     type = ComponentType.select
     
-    def __new__(cls, custom_id, options=None, *, placeholder=None, min_values=None, max_values=None):
+    def __new__(cls, custom_id, options, *, placeholder=None, min_values=1, max_values=1):
         """
         Creates a new ``ComponentSelect`` instance with the given parameters.
         
@@ -1021,15 +1068,30 @@ class ComponentSelect(ComponentBase):
         ----------
         custom_id : `str`
             Custom identifier to detect which component was used by the user.
-        options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``, Optional
+        options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``
             Options of the select.
-        placeholder : ???, Optional (Keyword only)
-            ???
-        min_values : ???, Optional (Keyword only)
-            ???
-        max_values : ???, Optional (Keyword only)
-            ???
+        placeholder : `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
+        max_values : `int`, Optional (Keyword only)
+            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
+        
+        Raises
+        ------
+        AssertionError
+            - If `custom_id` is not given as `str` instance.
+            - If `custom_id`'s length is out of range [0:100].
+            - If `options` length is out from the expected range [1:25].
+            - If `options` is neither `None` or (`list`, `tuple`) of ``ComponentSelectOption`` elements.
+            - If `min_values` is not `int` instance.
+            - If `min_values` is out of range [1:15].
+            - If `max_values` is not `int` instance.
+            - If `max_values` is out of range [1:25].
         """
+        if (placeholder is not None) and (not placeholder):
+            placeholder = None
+        
         if __debug__:
             _debug_component_custom_id(custom_id, False)
             _debug_component_options(options)
@@ -1037,11 +1099,7 @@ class ComponentSelect(ComponentBase):
             _debug_component_min_values(min_values)
             _debug_component_max_values(max_values)
         
-        if (options is not None):
-            if options:
-                options = list(options)
-            else:
-                options = None
+        options = list(options)
         
         self = object.__new__(cls)
         self.custom_id = custom_id
@@ -1057,17 +1115,13 @@ class ComponentSelect(ComponentBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         
-        option_datas = data.get('options', None)
-        if (option_datas is None) or (not option_datas):
-            options = None
-        else:
-            options = [ComponentSelectOption.from_data(option_data) for option_data in option_datas]
-        self.options = options
+        option_datas = data['options']
+        self.options = [ComponentSelectOption.from_data(option_data) for option_data in option_datas]
         
         self.custom_id = data['custom_id']
         self.placeholder = data.get('placeholder', None)
-        self.min_values = data.get('min_values', None)
-        self.max_values = data.get('max_values', None)
+        self.min_values = data.get('min_values', 1)
+        self.max_values = data.get('max_values', 1)
         
         return self
     
@@ -1075,25 +1129,21 @@ class ComponentSelect(ComponentBase):
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
         data = {
-            'type' : self.type.value
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'options': [option.to_data() for option in options],
         }
-        
-        options = self.options
-        if (options is not None):
-            data['options'] = [option.to_data() for option in options]
-        
-        data['custom_id'] = self.custom_id
         
         placeholder = self.placeholder
         if (placeholder is not None):
             data['placeholder'] = placeholder
         
         min_values = self.min_values
-        if (min_values is not None):
+        if min_values != 1:
             data['min_values'] = min_values
         
         max_values = self.max_values
-        if (max_values is not None):
+        if max_values != 1:
             data['max_values'] = max_values
         
         return data
@@ -1123,12 +1173,12 @@ class ComponentSelect(ComponentBase):
             repr_parts.append(repr(placeholder))
         
         min_values = self.min_values
-        if (min_values is not None):
+        if min_values != 1:
             repr_parts.append(', min_values=')
             repr_parts.append(repr(min_values))
         
         max_values = self.max_values
-        if (max_values is not None):
+        if max_values != 1:
             repr_parts.append(', max_values=')
             repr_parts.append(repr(max_values))
         
@@ -1191,16 +1241,12 @@ class ComponentSelect(ComponentBase):
         if (placeholder is not None):
             hash_value ^= hash(placeholder)
         
-        min_values = self.min_values
-        if (min_values is not None):
-            hash_value ^= hash(min_values)
-        
-        max_values = self.max_values
-        if (max_values is not None):
-            hash_value ^= hash(max_values)
+        hash_value ^= self.min_values
+        hash_value ^= self.max_values
         
         return hash_value
 
+    
 
 COMPONENT_DYNAMIC_SERIALIZERS = {
     'emoji' : create_partial_emoji_data,

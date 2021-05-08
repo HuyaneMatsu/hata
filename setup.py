@@ -27,6 +27,7 @@ setup(
         'hata.discord.client',
         'hata.discord.emoji',
         'hata.discord.events',
+        'hata.discord.interaction',
         'hata.ext',
         'hata.ext.asyncio',
         'hata.ext.command_utils',

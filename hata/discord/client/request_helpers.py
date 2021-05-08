@@ -261,6 +261,8 @@ def add_file_to_message_data(message_data, file, contains_content):
         form = create_file_form(message_data, file)
         if (form is None) and (not contains_content):
             message_data = None
+        else:
+            message_data = form
     
     return message_data
 

@@ -252,6 +252,7 @@ async def converter_channel(client, interaction, value):
     
     return channel
 
+
 async def converter_mentionable(client, interaction, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to mentionable ``DiscordEntity`` instance.
@@ -293,15 +294,6 @@ async def converter_mentionable(client, interaction, value):
         if (resolved_roles is not None):
             try:
                 entity = resolved_roles[entity_id]
-            except KeyError:
-                pass
-            else:
-                break
-        
-        resolved_channels = interaction.resolved_channels
-        if (resolved_channels is not None):
-            try:
-                entity = resolved_channels[entity_id]
             except KeyError:
                 pass
             else:

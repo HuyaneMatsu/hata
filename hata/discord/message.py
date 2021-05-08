@@ -12,9 +12,9 @@ from .bases import DiscordEntity, FlagBase, IconSlot
 from .utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from .core import MESSAGES, CHANNELS, GUILDS, ROLES, INTERACTION_EVENT_RESPONSE_WAITERS, \
     INTERACTION_EVENT_MESSAGE_WAITERS
-from .user import ZEROUSER, User, ClientUserBase
+from .user import ZEROUSER, User, ClientUserBase, UserBase
 from .emoji import reaction_mapping
-from .embed import EmbedCore, EXTRA_EMBED_TYPES
+from .embed import EmbedCore, EXTRA_EMBED_TYPES, EmbedBase
 from .webhook import WebhookRepr, create_partial_webhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
@@ -810,6 +810,23 @@ class MessageRepr(DiscordEntity):
         return NotImplemented
 
 
+def id_sort_key(entity):
+    """
+    Sort key for ``DiscordEntity`` instances.
+    
+    Parameters
+    ----------
+    entity : ``DiscordEntity``
+        The discord entity to get identifier of.
+    
+    Returns
+    -------
+    entity_id : `int`
+        The entity's identifier.
+    """
+    return entity.id
+
+
 @export
 class Message(DiscordEntity, immortal=True):
     """
@@ -827,7 +844,7 @@ class Message(DiscordEntity, immortal=True):
         Sent with rich presence related embeds.
     application_id : `int`
         The application's identifier who sent the message. Defaults to `0`.
-    attachments : `None` or `list` of ``Attachment``
+    attachments : `None` or `tuple` of ``Attachment``
         Attachments sent with the message.
     author : ``UserBase`` instance
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
@@ -837,7 +854,7 @@ class Message(DiscordEntity, immortal=True):
         Message components.
     content : `str`
         The message's content.
-    cross_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
+    cross_mentions : `None` or `tuple` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
         Cross guild channel mentions of a crosspost message if applicable. If a channel is not loaded by the wrapper,
         then it will be represented with a ``UnknownCrossMention`` instead.
     referenced_message : `None`, ``Message`` or ``MessageReference``
@@ -850,7 +867,7 @@ class Message(DiscordEntity, immortal=True):
         The time when the message was edited, or `None` if it was not.
         
         Pinning or (un)suppressing a message will not change it's edited value.
-    embeds : `None` or `list` of ``EmbedCore``
+    embeds : `None` or `tuple` of ``EmbedCore``
         List of embeds included with the message if any.
         
         If a message contains links, then those embeds' might not be included with the source payload and those
@@ -868,9 +885,9 @@ class Message(DiscordEntity, immortal=True):
         Whether the message is pinned.
     reactions : ``reaction_mapping``
         A dictionary like object, which contains the reactions on the message.
-    role_mentions : `None` or `list` of ``Role``
+    role_mentions : `None` or `tuple` of ``Role``
         The mentioned roles by the message if any.
-    stickers : `None` or `list` of ``Sticker``
+    stickers : `None` or `tuple` of ``Sticker``
         The stickers sent with the message.
         
         Bots currently can only receive messages with stickers, not send.
@@ -880,7 +897,7 @@ class Message(DiscordEntity, immortal=True):
         Whether the message is "text to speech".
     type : ``MessageType``
         The type of the message.
-    user_mentions : `None` or `list` of ``ClientUserBase``
+    user_mentions : `None` or `tuple` of ``UserBase``
         The mentioned users by the message if any.
     """
     __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author', 'channel',
@@ -965,12 +982,11 @@ class Message(DiscordEntity, immortal=True):
                 if (cross_mention_datas is None) or (not cross_mention_datas):
                     cross_mentions = None
                 else:
-                    cross_mentions = [
-                        UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas
-                            ]
-                    cross_mentions.sort()
-                    
-                cross_mentions = cross_mentions
+                    cross_mentions = tuple(sorted(
+                        (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                        key=id_sort_key,
+                    ))
+                
                 webhook_type = WebhookType.server
             else:
                 cross_mentions = None
@@ -1035,14 +1051,14 @@ class Message(DiscordEntity, immortal=True):
         
         attachment_datas = data['attachments']
         if attachment_datas:
-            attachments = [Attachment(attachment) for attachment in attachment_datas]
+            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
         else:
             attachments = None
         self.attachments = attachments
         
         embed_datas = data['embeds']
         if embed_datas:
-            embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
+            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
         else:
             embeds = None
         self.embeds = embeds
@@ -1064,20 +1080,22 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [create_component(component_data) for component_data in component_datas]
+            components = tuple(create_component(component_data) for component_data in component_datas)
         self.components = components
         
         sticker_datas = data.get('stickers', None)
         if sticker_datas is  None:
             stickers = None
         else:
-            stickers = [Sticker(sticker_data) for sticker_data in sticker_datas]
+            stickers = tuple(Sticker(sticker_data) for sticker_data in sticker_datas)
         self.stickers = stickers
         
         user_mention_datas = data['mentions']
         if user_mention_datas:
-            user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
-            user_mentions.sort()
+            user_mentions = tuple(sorted(
+                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                key=id_sort_key,
+            ))
         else:
             user_mentions = None
         self.user_mentions = user_mentions
@@ -1089,26 +1107,27 @@ class Message(DiscordEntity, immortal=True):
         
         self._channel_mentions = channel_mentions
         
-        role_mentions = None
-        try:
-            role_mention_ids = data['mention_roles']
-        except KeyError:
-            pass
+        if guild is None:
+            role_mentions = None
         else:
-            for role_id in role_mention_ids:
-                role_id = int(role_id)
-                try:
-                    role = ROLES[role_id]
-                except KeyError:
-                    continue
+            role_mention_ids = data.get('mention_roles', None)
+            if (role_mention_ids is None) or (not role_mention_ids):
+                role_mentions = None
+            else:
+                roles = guild.roles
+                role_mentions = []
                 
-                if role_mentions is None:
-                    role_mentions = []
+                for role_id in role_mention_ids:
+                    role_id = int(role_id)
+                    try:
+                        role = roles[role_id]
+                    except KeyError:
+                        continue
+                    
+                    role_mentions.append(role)
                 
-                role_mentions.append(role)
-            
-            if (role_mentions is not None):
-                role_mentions.sort()
+                role_mentions.sort(key=id_sort_key)
+                role_mentions = tuple(role_mentions)
         
         self.role_mentions = role_mentions
         
@@ -1156,12 +1175,12 @@ class Message(DiscordEntity, immortal=True):
         if (self.components is None):
             component_datas = data.get('components', None)
             if (component_datas is not None) and component_datas:
-                self.components = [create_component(component_data) for component_data in component_datas]
+                self.components = tuple(create_component(component_data) for component_data in component_datas)
         
         if (self.embeds is None):
             embed_datas = data['embeds']
             if embed_datas:
-                self.embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
+                self.embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
     
     
     @BaseMethodDescriptor
@@ -1193,7 +1212,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.application_id`` attribute of the message.
             
             If called as a classmethod defaults to `0`.
-        attachments : `None` or (`list` of ``Attachment``), Optional (Keyword only)
+        attachments : `None` or ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
             
             If called as a classmethod defaults to `None`.
@@ -1209,7 +1228,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.content`` attribute of the message. Can be between length `0` and `2000`.
             
             If called as a classmethod defaults to `''` (empty string).
-        cross_mentions : `None` or (`list` of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances))
+        cross_mentions : `None` or (`tuple`, `list` of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances))
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
@@ -1224,7 +1243,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.edited_at`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
-        embeds : `None` or (`list` of ( ``EmbedCore`` or any embed compatible)), Optional (Keyword only)
+        embeds : `None` or (`list` or `tuple`) of ``EmbedBase``, Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
             passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
             to ``EmbedCore`` as well.
@@ -1262,12 +1281,12 @@ class Message(DiscordEntity, immortal=True):
             ``reaction_mapping``.
             
             If called as a classmethod defaults to empty ``reaction_mapping``.
-        role_mentions : `None` or (`list` of ``Role``), Optional (Keyword only)
+        role_mentions : `None` or (`list` or `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
             
             If called as a classmethod defaults to `None`.
-        stickers : `None` or `list` of ``Sticker``, Optional (Keyword only)
+        stickers : `None` or (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
@@ -1283,7 +1302,7 @@ class Message(DiscordEntity, immortal=True):
             If called as a classmethod defaults to ``MessageType.default`
         type_ : ``MessageType`` or `int`, Optional (Keyword only)
             Alias of ``type`.
-        user_mentions : `None` or (`list` of ``ClientUserBase``, Optional (Keyword only)
+        user_mentions : `None` or `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
             
             If called as a classmethod defaults to `None`.
@@ -1365,23 +1384,26 @@ class Message(DiscordEntity, immortal=True):
                 attachments = base.attachments
                 if (attachments is not None):
                     # Copy it, because it might change
-                    attachments = attachments.copy()
+                    attachments = attachments
         else:
             if (attachments is not None):
-                if (type(attachments) is not list):
-                    raise TypeError(f'`attachments` should be `None` or `list` of type `{Attachment.__name__}`, got '
-                        f'`{attachments!r}`')
+                if not isinstance(attachments, (list, tuple)):
+                    raise TypeError(f'`attachments` should be `None` or `tuple`, `list` of `{Attachment.__name__}` '
+                        f'instances, got `{attachments!r}`')
                 
-                attachments_ln = len(attachments)
+                attachments = tuple(attachments)
+                
+                attachments_length = len(attachments)
+                
                 if validate:
-                    if attachments_ln > 10:
-                        raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachments_ln!r}`')
+                    if attachments_length > 10:
+                        raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachments_length!r}`')
                 
-                if attachments_ln:
+                if attachments_length:
                     for attachment in attachments:
-                        if (type(attachment) is not Attachment):
-                            raise TypeError(f'`attachments` `list` contains at least 1 non `{Attachment.__name__}` '
-                                f'object, `{attachment!r}`')
+                        if not isinstance(attachment, Attachment):
+                            raise TypeError(f'`attachments` `list` contains a non `{Attachment.__name__}` '
+                                f'instance, `{attachment!r}`')
                 else:
                     # We should not have empty attachment list, lets fix it
                     attachments = None
@@ -1436,24 +1458,20 @@ class Message(DiscordEntity, immortal=True):
                 cross_mentions = base.cross_mentions
                 if (cross_mentions is not None):
                     # Copy it, it might change
-                    cross_mentions = cross_mentions.copy()
+                    cross_mentions = tuple(cross_mentions)
         else:
             if (cross_mentions is not None):
-                if (type(cross_mentions) is not list):
-                    raise TypeError(
-                        f'`cross_mentions` should be `None` or `list` of `{ChannelGuildBase.__name__}` subclass '
-                        f'instances, or `{UnknownCrossMention.__name__}` instances, got `{cross_mentions!r}`')
+                if not isinstance(cross_mentions, (tuple, list)):
+                    raise TypeError(f'`cross_mentions` should be `None` or `tuple`, `list` of '
+                        f'`{ChannelGuildBase.__name__}` or `{UnknownCrossMention.__name__}` instances, got '
+                        f'`{cross_mentions.__class__.__name__}`.')
                 
                 for channel_ in cross_mentions:
-                    if isinstance(channel_,ChannelGuildBase):
-                        continue
-                        
-                    if type(channel_) is UnknownCrossMention:
-                        continue
-                        
-                    raise TypeError(
-                        f'`cross_mentions` `list` contains at least 1 non `{ChannelGuildBase.__name__}` subclass '
-                        f'instance or `{UnknownCrossMention.__name__}` instance; `{channel_!r}`')
+                    if not isinstance(channel_, (ChannelGuildBase, UnknownCrossMention)):
+                        raise TypeError(f'`cross_mentions` contains a non `{ChannelGuildBase.__name__}` or '
+                            f'`{UnknownCrossMention.__name__}` instance: `{channel_.__class__.__name__}`.')
+                
+                cross_mentions = tuple(sorted(cross_mentions, key=id_sort_key))
         
         if validate:
             if (referenced_message is None) and (cross_mentions is not None):
@@ -1497,7 +1515,7 @@ class Message(DiscordEntity, immortal=True):
                 edited_at = base.edited_at
         else:
             if (edited_at is not None) and (type(edited_at) is not datetime):
-                raise TypeError(f'`edited_at` can be `None` or type `datetime`, got `{edited_at!r}`')
+                raise TypeError(f'`edited_at` can be `None` or `datetime`, got `{edited_at.__class__.__name__}`.')
         
         if validate:
             if (edited_at is not None) and (time_to_id(edited_at)<message_id):
@@ -1512,32 +1530,34 @@ class Message(DiscordEntity, immortal=True):
                 embeds = base.embeds
         else:
             if (embeds is not None):
-                if (type(embeds) is not list):
+                if not isinstance(embeds, (list, tuple)):
                     raise TypeError(f'`embeds` can be `None` or `list` of type `{EmbedCore.__name__}`, got '
-                        f'`{embeds!r}`')
+                        f'`{embeds.__class__.__name__}`.')
                 
-                # Do not check embed length, Discord might be able to send more?
+                embeds = list(embeds)
                 
-                embed_ln = len(embeds)
+                embeds_length = len(embeds)
                 if validate:
                     if len(embeds) > 10:
-                        raise ValueError(f'`embeds` can have maximal length of `10`, got `{embed_ln!r}`')
+                        raise ValueError(f'`embeds` can have maximal length of `10`, got `{embeds_length!r}`.')
                 
-                if embed_ln:
-                    for index in range(embed_ln):
+                if embeds_length:
+                    for index in range(embeds_length):
                         embed = embeds[index]
                         
-                        if type(embed) is EmbedCore:
+                        if isinstance(embed, EmbedCore):
                             continue
                             
-                        if hasattr(type(embed), 'to_data'):
+                        if isinstance(embed, EmbedBase):
                             # Embed compatible, lets convert it
                             embed = EmbedCore.from_data(embed.to_data())
                             embeds[index] = embed
                             continue
                         
-                        raise TypeError(f'`embeds` `list` contains at least 1 non `{EmbedCore.__name__}` object; '
-                            f'`{embeds!r}`')
+                        raise TypeError(f'`embeds` `list` contains a non `{EmbedBase.__name__}` instance: '
+                            f'`{embeds.__class__.__name__}`.')
+                    
+                    embeds = tuple(embeds)
                 else:
                     # embeds cannot be an empty list, lets fix it
                     embeds = None
@@ -1567,7 +1587,7 @@ class Message(DiscordEntity, immortal=True):
                 flags = preconvert_flag(flags, 'flags', MessageFlag)
         
         if validate:
-            if type(channel) is ChannelText:
+            if isinstance(channel, ChannelText):
                 if flags.source_message_deleted and (not flags.is_crosspost):
                     raise ValueError(
                         '`flags.source_message_deleted` is set, but `flags.is_crosspost` is not -> Only crossposted '
@@ -1596,11 +1616,20 @@ class Message(DiscordEntity, immortal=True):
                 nonce = base.nonce
         else:
             if (nonce is not None):
-                if (type(nonce) is not str):
+                if type(nonce) is str:
+                    pass
+                elif isinstance(nonce, str):
+                    nonce = str(nonce)
+                else:
                     raise TypeError(f'`nonce` should be `None` or type `str` instance, got `{nonce!r}`.')
-                if len(nonce) > 32:
-                    raise TypeError(f'`nonce`\'s length can be be maximum 32, got: `{nonce!r}`.')
-            
+                
+                nonce_length = len(nonce)
+                if nonce_length > 32:
+                    raise TypeError(f'`nonce`\'s length can be be in range [1:32], got: `{nonce_length!r}`; '
+                        f'`{nonce!r}`.')
+                elif nonce_length == 0:
+                    nonce = None
+        
         try:
             pinned = kwargs.pop('pinned')
         except KeyError:
@@ -1638,20 +1667,20 @@ class Message(DiscordEntity, immortal=True):
                 role_mentions = base.role_mentions
                 if (role_mentions is not None):
                     # Copy it, because it might change
-                    role_mentions = role_mentions.copy()
+                    role_mentions = tuple(role_mentions)
         else:
             if (role_mentions is not None):
-                if (type(role_mentions) is not list):
-                    raise TypeError(f'`role_mentions` should be `None` or `list` of type `{Role.__name__}`, got '
-                        f'`{role_mentions!r}`')
+                if not isinstance(role_mentions, (tuple, list)):
+                    raise TypeError(f'`role_mentions` should be `None` or `list`, `tuple` of `{Role.__name__}` '
+                        f'instances, got `{role_mentions.__class__.__name__}`.')
                 
                 if role_mentions:
                     for role in role_mentions:
-                        if type(role) is Role:
-                            continue
-                        
-                        raise TypeError(f'`role_mentions` contains at least 1 non `{Role.__name__}` object, '
-                            f'`{role_mentions!r}`')
+                        if not isinstance(role, Role):
+                            raise TypeError(f'`role_mentions` contains a non `{Role.__name__}` instance, '
+                                f'`{role.__class__.__name__}`.')
+                    
+                    role_mentions = tuple(sorted(role_mentions, key=id_sort_key))
                 else:
                     # There cannot be an empty mention list, so lets fix it.
                     role_mentions = None
@@ -1668,16 +1697,20 @@ class Message(DiscordEntity, immortal=True):
                 stickers = None
             else:
                 stickers = base.stickers
+                if (stickers is not None):
+                    stickers = tuple(stickers)
         else:
-            if (type(stickers) is not list):
-                raise TypeError(f'`stickers` should be `None` or `list` of type `{Sticker.__name__}`, got '
-                    f'`{stickers!r}`')
+            if not isinstance(stickers, (list, tuple)):
+                raise TypeError(f'`stickers` should be `None` or ` tuple`, `list` of `{Sticker.__name__}` instances, '
+                    f'got `{stickers!r}`')
             
-            sticker_ln = len(attachments)
-            if sticker_ln:
+            stickers = tuple(stickers)
+            
+            stickers_length = len(stickers)
+            if stickers_length:
                 for sticker in stickers:
-                    if (type(sticker) is not Sticker):
-                        raise TypeError(f'`stickers` `list` contains at least 1 non `{Sticker.__name__}` object, '
+                    if not isinstance(sticker, Sticker):
+                        raise TypeError(f'`stickers` contains a non `{Sticker.__name__}` instance, '
                             f'`{sticker!r}`')
             else:
                 # We should not have empty attachment list, lets fix it
@@ -1721,20 +1754,21 @@ class Message(DiscordEntity, immortal=True):
                 user_mentions = base.user_mentions
                 if (user_mentions is not None):
                     # Copy it, because it might change
-                    user_mentions = user_mentions.copy()
+                    user_mentions = tuple(user_mentions)
         else:
             if (user_mentions is not None):
-                if (type(user_mentions) is not list):
-                    raise TypeError(f'`user_mentions` should be type `list` of `{ClientUserBase.__name__}`, got '
-                        f'`{user_mentions!r}`')
+                if not isinstance(user_mentions, (tuple, list)):
+                    raise TypeError(f'`user_mentions` should be `None` or `tuple`, `list` of `{UserBase.__name__}` '
+                        f'instances, got `{user_mentions.__class__.__name__}`.')
                 
                 if user_mentions:
                     for user in user_mentions:
-                        if isinstance(user, ClientUserBase):
-                            continue
-                        
-                        raise TypeError(f'`user_mentions` contains at least 1 non `{ClientUserBase.__name__}` '
-                            f'instance; `{user!r}`')
+                        if not isinstance(user, UserBase):
+                            raise TypeError(f'`user_mentions` contains at least 1 non `{UserBase.__name__}` '
+                                f'instance; `{user.__class__.__name__}`.')
+                    
+                    user_mentions = tuple(sorted(user_mentions, key=id_sort_key))
+                    
                 else:
                     user_mentions = None
         
@@ -1780,6 +1814,11 @@ class Message(DiscordEntity, immortal=True):
         ``.channel_mentions`` as `None`, else as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``) instances.
         
         Invalid channel mentions are ignored.
+        
+        Returns
+        -------
+        channel_mentions : `None` or `tuple` of (``GuildChannelBase``, ``UnknownCrossMention``) instances.
+            The parsed channel mentions.
         """
         content = self.content
         channel_mentions = []
@@ -1797,14 +1836,18 @@ class Message(DiscordEntity, immortal=True):
                     channel = cross_mentions[channel_id]
                 except KeyError:
                     continue
+            
             if channel not in channel_mentions:
                 channel_mentions.append(channel)
-        channel_mentions.sort()
-
+        
         if channel_mentions:
-            self._channel_mentions = channel_mentions
-            return channel_mentions
-        self._channel_mentions = None
+            channel_mentions.sort(key=id_sort_key)
+            channel_mentions = tuple(channel_mentions)
+        else:
+            channel_mentions = None
+        
+        self._channel_mentions = channel_mentions
+        return channel_mentions
     
     url = property(module_urls.message_jump_url)
     
@@ -1820,6 +1863,7 @@ class Message(DiscordEntity, immortal=True):
         channel_mentions = self._channel_mentions
         if channel_mentions is ...:
             channel_mentions = self._parse_channel_mentions()
+        
         return channel_mentions
     
     def __repr__(self):
@@ -1930,17 +1974,17 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | application       | `None` or ``MessageApplication``                                      |
         +-------------------+-----------------------------------------------------------------------+
-        | attachments       | `None` or (`list` of ``Attachment``)                                  |
+        | attachments       | `None` or (`tuple` of ``Attachment``)                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None` or (`list` of ``ComponentBase``)                               |
+        | components        | `None` or (`tuple` of ``ComponentBase``)                              |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `str                                                                  |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMention``))    |
+        | cross_mentions    | `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMention``))   |
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | embeds            | `None`  or `(list` of ``EmbedCore``)                                  |
+        | embeds            | `None`  or `(tuple` of ``EmbedCore``)                                 |
         +-------------------+-----------------------------------------------------------------------+
         | flags             | `UserFlag`                                                            |
         +-------------------+-----------------------------------------------------------------------+
@@ -1948,9 +1992,9 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | pinned            | `bool`                                                                |
         +-------------------+-----------------------------------------------------------------------+
-        | user_mentions     | `None` or (`list` of ``ClientUserBase``)                              |
+        | user_mentions     | `None` or (`tuple` of ``ClientUserBase``)                             |
         +-------------------+-----------------------------------------------------------------------+
-        | role_mentions     | `None` or (`list` of ``Role``)                                        |
+        | role_mentions     | `None` or (`tuple` of ``Role``)                                       |
         +-------------------+-----------------------------------------------------------------------+
         """
         old_attributes = {}
@@ -1969,7 +2013,7 @@ class Message(DiscordEntity, immortal=True):
             if MessageFlag(flag_difference).embeds_suppressed:
                 embed_datas = data['embeds']
                 if embed_datas:
-                    embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
+                    embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
                 else:
                     embeds = None
                 
@@ -2022,7 +2066,7 @@ class Message(DiscordEntity, immortal=True):
         
         attachment_datas = data['attachments']
         if attachment_datas:
-            attachments = [Attachment(attachment) for attachment in attachment_datas]
+            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
         else:
             attachments = None
         
@@ -2032,7 +2076,7 @@ class Message(DiscordEntity, immortal=True):
         
         embed_datas = data['embeds']
         if embed_datas:
-            embeds = [EmbedCore.from_data(embed) for embed in embed_datas]
+            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
         else:
             embeds = None
         
@@ -2050,8 +2094,10 @@ class Message(DiscordEntity, immortal=True):
         guild = self.channel.guild
         
         if user_mention_datas:
-            user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
-            user_mentions.sort()
+            user_mentions = tuple(sorted(
+                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                key=id_sort_key,
+                ))
         else:
             user_mentions = None
         
@@ -2065,32 +2111,36 @@ class Message(DiscordEntity, immortal=True):
         self._channel_mentions = ...
         
         cross_mention_datas = data.get('mention_channels', None)
-        if cross_mention_datas is None:
+        if (cross_mention_datas is None) or (not cross_mention_datas):
             cross_mentions = None
         else:
-            cross_mentions = [UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
-            cross_mentions.sort()
+            cross_mentions = tuple(sorted(
+                (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                key=id_sort_key,
+            ))
         
         if self.cross_mentions != cross_mentions:
             old_attributes['cross_mentions'] = self.cross_mentions
             self.cross_mentions = cross_mentions
         
-        try:
-            role_mention_ids = data['mention_roles']
-        except KeyError:
+        role_mention_ids = data.get('mention_roles', None)
+        if (role_mention_ids is None) or (not role_mention_ids):
             role_mentions = None
         else:
-            if role_mention_ids:
-                roles = guild.roles
-                role_mentions = []
-                for role_id in role_mention_ids:
-                    try:
-                        role_mentions.append(roles[int(role_id)])
-                    except KeyError:
-                        continue
-                role_mentions.sort()
-            else:
-                role_mentions = None
+            roles = guild.roles
+            role_mentions = []
+            
+            for role_id in role_mention_ids:
+                role_id = int(role_id)
+                try:
+                    role = roles[role_id]
+                except KeyError:
+                    continue
+                
+                role_mentions.append(role)
+            
+            role_mentions.sort(key=id_sort_key)
+            role_mentions = tuple(role_mentions)
         
         if self.role_mentions != role_mentions:
             old_attributes['role_mentions'] = self.role_mentions
@@ -2101,7 +2151,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [create_component(component_data) for component_data in component_datas]
+            components = tuple(create_component(component_data) for component_data in component_datas)
         
         if self.components != components:
             old_attributes['components'] = self.components
@@ -2128,7 +2178,7 @@ class Message(DiscordEntity, immortal=True):
             if MessageFlag(flag_difference).embeds_suppressed:
                 embed_datas = data['embeds']
                 if embed_datas:
-                    embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                    embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
                 else:
                     embeds = None
                 self.embeds = embeds
@@ -2166,14 +2216,14 @@ class Message(DiscordEntity, immortal=True):
         
         attachment_datas = data['attachments']
         if attachment_datas:
-            attachments = [Attachment(attachment) for attachment in attachment_datas]
+            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
         else:
             attachments = None
         self.attachments = attachments
 
         embed_datas = data['embeds']
         if embed_datas:
-            embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
         else:
             embeds = None
         self.embeds = embeds
@@ -2185,8 +2235,10 @@ class Message(DiscordEntity, immortal=True):
         guild = self.channel.guild
         
         if user_mention_datas:
-            user_mentions = [User(user_mention_data, guild) for user_mention_data in user_mention_datas]
-            user_mentions.sort()
+            user_mentions = tuple(sorted(
+                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                key=id_sort_key,
+                ))
         else:
             user_mentions = None
         
@@ -2198,29 +2250,34 @@ class Message(DiscordEntity, immortal=True):
         self._channel_mentions = ...
         
         cross_mention_datas = data.get('mention_channels', None)
-        if cross_mention_datas is None:
+        if (cross_mention_datas is None) or (not cross_mention_datas):
             cross_mentions = None
         else:
-            cross_mentions = [UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas]
-            cross_mentions.sort()
+            cross_mentions = tuple(sorted(
+                (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                key=id_sort_key,
+            ))
+        
         self.cross_mentions = cross_mentions
         
-        try:
-            role_mention_ids = data['mention_roles']
-        except KeyError:
+        role_mention_ids = data.get('mention_roles', None)
+        if (role_mention_ids is None) or (not role_mention_ids):
             role_mentions = None
         else:
-            if role_mention_ids:
-                roles = guild.roles
-                role_mentions = []
-                for role_id in role_mention_ids:
-                    try:
-                        role_mentions.append(roles[int(role_id)])
-                    except KeyError:
-                        continue
-                role_mentions.sort()
-            else:
-                role_mentions = None
+            roles = guild.roles
+            role_mentions = []
+            
+            for role_id in role_mention_ids:
+                role_id = int(role_id)
+                try:
+                    role = roles[role_id]
+                except KeyError:
+                    continue
+                
+                role_mentions.append(role)
+            
+            role_mentions.sort(key=id_sort_key)
+            role_mentions = tuple(role_mentions)
         
         self.role_mentions = role_mentions
         
@@ -2228,7 +2285,7 @@ class Message(DiscordEntity, immortal=True):
         if (component_datas is None) or (not component_datas):
             components = None
         else:
-            components = [create_component(component_data) for component_data in component_datas]
+            components = tuple(create_component(component_data) for component_data in component_datas)
         self.components = components
     
     def _update_embed(self, data):
@@ -2266,26 +2323,26 @@ class Message(DiscordEntity, immortal=True):
         
         embeds = self.embeds
         if embeds is None:
-            ln1 = 0
+            embeds_length_actual = 0
         else:
-            ln1 = len(embeds)
+            embeds_length_actual = len(embeds)
         
         embed_datas = data.get('embeds', None)
         if embed_datas is None:
-            ln2 = 0
+            embeds_length_new = 0
         else:
-            ln2 = len(embed_datas)
+            embeds_length_new = len(embed_datas)
         
-        if ln1 == 0:
-            if ln2 == 0:
+        if embeds_length_actual == 0:
+            if embeds_length_new == 0:
                 # No change
                 return EMBED_UPDATE_NONE
             
             # New embeds are added
-            self.embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
             return EMBED_UPDATE_EMBED_ADD
         
-        if ln2 < ln1:
+        if embeds_length_new < embeds_length_actual:
             # Embeds are removed, should not happen, except if the message was suppressed.
             if self.flags.embeds_suppressed:
                 self.embeds = None
@@ -2293,28 +2350,32 @@ class Message(DiscordEntity, immortal=True):
                 return EMBED_UPDATE_NONE
             
             # We have less embeds as we had, should not happen. Return 3.
-            if ln2 == 0:
+            if embeds_length_new == 0:
                 embeds = None
             else:
-                embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
             self.embeds = embeds
             return EMBED_UPDATE_EMBED_REMOVE
         
-        if ln1 == 0:
-            embeds = []
-            self.embeds = embeds
-        else:
+        if embeds_length_actual != 0:
             change_state = EMBED_UPDATE_NONE
-            for index in range(ln1):
+            for index in range(embeds_length_actual):
                 embed_data = embed_datas[index]
                 if embeds[index]._update_sizes(embed_data):
                     change_state = EMBED_UPDATE_SIZE_UPDATE
             
-            if ln1 == ln2:
+            if embeds_length_actual == embeds_length_new:
                 return change_state
         
-        for index in range(ln1, ln2):
-            embeds.append(EmbedCore.from_data(embed_datas[index]))
+        if embeds is None:
+            embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+        else:
+            embeds = (
+                *embeds,
+                *(EmbedCore.from_data(embed_datas[index]) for index in range(embeds_length_actual, embeds_length_new)),
+            )
+        
+        self.embeds = embeds
         
         return EMBED_UPDATE_EMBED_ADD
 
@@ -2330,26 +2391,26 @@ class Message(DiscordEntity, immortal=True):
         """
         embeds = self.embeds
         if embeds is None:
-            ln1 = 0
+            embeds_length_actual = 0
         else:
-            ln1 = len(embeds)
+            embeds_length_actual = len(embeds)
         
         embed_datas = data.get('embeds', None)
         if embed_datas is None:
-            ln2 = 0
+            embeds_length_new = 0
         else:
-            ln2 = len(embed_datas)
+            embeds_length_new = len(embed_datas)
         
-        if ln1 == 0:
-            if ln2 == 0:
+        if embeds_length_actual == 0:
+            if embeds_length_new == 0:
                 # No change
                 return
             
             # New embeds are added
-            self.embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+            self.embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
             return
         
-        if ln2 < ln1:
+        if embeds_length_new < embeds_length_actual:
             # Embeds are removed, should not happen, except if the message was suppressed.
             if self.flags.embeds_suppressed:
                 self.embeds = None
@@ -2357,27 +2418,31 @@ class Message(DiscordEntity, immortal=True):
                 return
             
             # We have less embeds as we had, should not happen.
-            if ln2 == 0:
+            if embeds_length_new == 0:
                 embeds = None
             else:
-                embeds = [EmbedCore.from_data(embed_data) for embed_data in embed_datas]
+                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
             self.embeds = embeds
             return
         
-        if ln1 == 0:
-            embeds = []
-            self.embeds = embeds
-        else:
-            for index in range(ln1):
+        if embeds_length_actual != 0:
+            for index in range(embeds_length_actual):
                 embed_data = embed_datas[index]
                 embeds[index]._update_sizes_no_return(embed_data)
 
-            if ln1 == ln2:
+            if embeds_length_actual == embeds_length_new:
                 return
-
-        for index in range(ln1, ln2):
-            embeds.append(EmbedCore.from_data(embed_datas[index]))
-            
+        
+        if embeds is None:
+            embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+        else:
+            embeds = (
+                *embeds,
+                *(EmbedCore.from_data(embed_datas[index]) for index in range(embeds_length_actual, embeds_length_new)),
+            )
+        
+        self.embeds = embeds
+    
     @property
     def embed(self):
         """

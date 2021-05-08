@@ -4,12 +4,23 @@
 
 Rework components and preinstanced types.
 Refactor `client.py`, `interaction.py`, `emoji.py` and some move some types around.
+Reduce `Message` entity size.
 
 #### New Features
 
 - Add `ComponentSelect`.
 - Add `ComponentSelectOption`.
 - Add ˙file` parameter to `Client.message_edit`.
+
+#### Optimizations
+
+- `Message.attachments` now ues `tuple` instead of `list`.
+- `Message.stickers` now ues `tuple` instead of `list`.
+- `Message.embeds` now ues `tuple` instead of `list`.
+- `Message.components` now ues `tuple` instead of `list`.
+- `Message.cross_mentions` now uses `tuple` instead of `list`.
+- `Message.user_mentions` now uses `tuple` instead of `list`.
+- `Message.role_mentions` now uses `tuple` instead of `list`.
 
 #### Improvements
 
@@ -19,6 +30,10 @@ Refactor `client.py`, `interaction.py`, `emoji.py` and some move some types arou
 - Add `CreateComponent`.
 - Add `PreinstancedMeta`. (sleep-cult#3040)
 - Add `Preinstance`. (sleep-cult#3040)
+
+##### ext.slash
+- Updates `abort`'s auto `show_for_invoking_user_only`, since now `show_for_invoking_user_only=True` supports embeds.
+    (Zeref Draganeel#3581)
 
 #### Bug fixed
 
@@ -148,7 +163,8 @@ Redo error code names, dispatch event parsing and add thread support.
 - Rename `ERROR_CODES.cannot_add_user_to_guild_where_bot_is_not` to `.cannot_add_user_to_guild_where_the_bot_is_not_in`.
 - Rename `ERROR_CODES.relationship_invalid_self` to `.relationship_invalid_target_self`.
 - Rename `ERROR_CODES.relationship_invalid_user_bot` to `.relationship_invalid_target_bot`.
-- Rename `client_code.py` to `core.py` and move many related types and functions, like `start_clients`, `stop_clients` and `Kokoro`,
+- Rename `client_code.py` to `core.py` and move many related types and functions, like `start_clients`, `stop_clients`
+    and `Kokoro`,
 - Rename `EventDescriptor` to `EventHandlerManager`.
 - Rename `check_argcount_and_convert` to `check_parameter_count_and_convert`.
 - Rename `Client.events.user_profile_edit` to `.guild_user_edit`.

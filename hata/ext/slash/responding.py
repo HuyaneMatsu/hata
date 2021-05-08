@@ -550,23 +550,10 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         The exception which aborts the interaction, then yields the response.
     """
     if show_for_invoking_user_only is ...:
-        if (embed is not ...):
-            show_for_invoking_user_only = False
-        elif (file is not ...):
-            show_for_invoking_user_only = False
-        elif (allowed_mentions is not ...):
-            show_for_invoking_user_only = False
-        elif (tts is not ...):
-            show_for_invoking_user_only = False
-        elif (components is not ...):
-            show_for_invoking_user_only = False
-        elif (content is ...):
-            show_for_invoking_user_only = True
-        elif is_only_embed(content):
+        if (file is not ...) or (allowed_mentions is not ...) or (tts is not ...) or (components is not ...):
             show_for_invoking_user_only = False
         else:
             show_for_invoking_user_only = True
-    
     
     response = SlashResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, components=components,
         tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, force_new_message=-1)

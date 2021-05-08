@@ -382,17 +382,17 @@ class EventHandlerManager:
         +-------------------+-----------------------------------------------------------------------+
         | application       | `None` or ``MessageApplication``                                      |
         +-------------------+-----------------------------------------------------------------------+
-        | attachments       | `None` or (`list` of ``Attachment``)                                  |
+        | attachments       | `None` or (`tuple` of ``Attachment``)                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None` or (`list` of ``ComponentBase``)                               |
+        | components        | `None` or (`tuple` of ``ComponentBase``)                              |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `str`                                                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMention``))    |
+        | cross_mentions    | `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMention``))   |
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | embeds            | `None`  or `(list` of ``EmbedCore``)                                  |
+        | embeds            | `None`  or `(tuple` of ``EmbedCore``)                                 |
         +-------------------+-----------------------------------------------------------------------+
         | flags             | `UserFlag`                                                            |
         +-------------------+-----------------------------------------------------------------------+
@@ -400,9 +400,9 @@ class EventHandlerManager:
         +-------------------+-----------------------------------------------------------------------+
         | pinned            | `bool`                                                                |
         +-------------------+-----------------------------------------------------------------------+
-        | user_mentions     | `None` or (`list` of (``User`` or ``Client``))                        |
+        | user_mentions     | `None` or (`tuple` of ``UserBase``)                                   |
         +-------------------+-----------------------------------------------------------------------+
-        | role_mentions     | `None` or (`list` of ``Role``)                                        |
+        | role_mentions     | `None` or (`tuple` of ``Role``)                                       |
         +-------------------+-----------------------------------------------------------------------+
         
         A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` argument is

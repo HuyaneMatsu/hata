@@ -19,8 +19,8 @@ from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_R
     parse_tdelta, CHANNEL_MESSAGE_RP
 from ...discord.client import Client
 from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.emoji import parse_emoji, Emoji, EMOJIS
-from ...discord.core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS
+from ...discord.emoji import parse_emoji, Emoji
+from ...discord.core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS, EMOJIS
 from ...discord.message import Message
 from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
     ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread

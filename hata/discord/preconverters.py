@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+__all__ = ()
+
 from .color import Color
 
 def preconvert_snowflake(snowflake, name):

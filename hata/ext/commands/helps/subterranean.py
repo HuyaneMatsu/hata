@@ -13,7 +13,7 @@ from ....discord.user import UserBase, User
 from ....discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
     ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread
 from ....discord.role import Role
-from ....discord.emoji import Emoji
+from ....discord.emoji.emoji import Emoji
 from ....discord.guild import Guild
 from ....discord.message import Message
 from ....discord.invite import Invite

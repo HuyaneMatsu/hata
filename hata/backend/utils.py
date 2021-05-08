@@ -62,6 +62,46 @@ class RemovedDescriptor:
 DOCS_ENABLED = (RemovedDescriptor.__doc__ is not None)
 
 
+def set_docs(target, docs):
+    """
+    Sets docstring to the target object.
+    
+    Parameter
+    ---------
+    target : `Any`
+        The object to set the docstring to.
+    docs : `str`
+        Docstring to set.
+    
+    Returns
+    -------
+    target : `Any`
+        The target object.
+    """
+    if DOCS_ENABLED:
+        target.__doc__ = docs
+    
+    return target
+
+
+def call(function):
+    """
+    Calls the function returning itself.
+    
+    Parameters
+    ----------
+    function : `Any`
+        The function to call
+    
+    Returns
+    -------
+    function : `Any`
+        The function itself.
+    """
+    function()
+    return function
+
+
 class doc_property:
     """
     Property to return the class's docs if called from class, else the given object.

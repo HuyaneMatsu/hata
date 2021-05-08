@@ -3,7 +3,7 @@
 #### Summary
 
 Rework components and preinstanced types.
-Refactor `client.py`.
+Refactor `client.py`, `interaction.py`, `emoji.py` and some move some types around.
 
 #### New Features
 

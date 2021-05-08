@@ -4,7 +4,7 @@ from ...backend.futures import CancelledError
 from ...backend.utils import copy_docs
 from ...backend.analyzer import CallableAnalyzer
 from ...discord.emoji import BUILTIN_EMOJIS, Emoji
-from ...discord.events.event_types import InteractionEvent
+from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
 from ...discord import ChannelTextBase
 from ...discord.exceptions import DiscordException, ERROR_CODES

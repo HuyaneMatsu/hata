@@ -251,6 +251,50 @@ def test_error_handler(error_handler):
                     f'up to `{max_!r}`, got `{error_handler!r}`.')
 
 
+def validate_error_handlers(error_handlers):
+    """
+    Validates the given error handlers.
+    
+    Parameters
+    ----------
+    error_handlers : `None`, `async-callable` or (`list`, `tuple` or `set`) of `async-callable`
+        The error_handler(s) to validate.
+    
+    Returns
+    -------
+    error_handlers_validated : `None` or `list` of `async-callable`
+        The validated error handlers.
+    
+    Raises
+    ------
+    TypeError
+        - If `error_handler`'s type is incorrect.
+        - If `error_handler` accepts bad amount of parameters.
+        - If `error_handler` is not async.
+    """
+    error_handlers_validated = None
+    
+    if error_handlers is None:
+        pass
+    elif isinstance(error_handlers, (list, tuple, set)):
+        for error_handler in error_handlers:
+            test_error_handler(error_handler)
+            
+            if error_handlers_validated is None:
+                error_handlers_validated = []
+            
+            error_handlers_validated.append(error_handler)
+    else:
+        test_error_handler(error_handlers)
+        
+        if error_handlers_validated is None:
+            error_handlers_validated = []
+        
+        error_handlers_validated.append(error_handlers)
+    
+    return error_handlers_validated
+
+
 def test_name_rule(rule, rule_name):
     """
     Tests the given name rule and raises if it do not passes any requirements.

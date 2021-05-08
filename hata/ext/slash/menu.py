@@ -4,19 +4,14 @@ __all__ = ()
 
 from collections import OrderedDict
 
-from ...backend.utils import copy_docs
 from ...backend.analyzer import CallableAnalyzer
 
-from ...discord.preinstanced import ButtonStyle, ComponentType
-from ...discord.preconverters import preconvert_preinstanced_type
-from ...discord.emoji import create_partial_emoji_data, create_partial_emoji, Emoji
-from ...discord.interaction import ComponentBase, _debug_component_components, _debug_component_custom_id, \
+from ...discord.interaction.components import _debug_component_components, _debug_component_custom_id, \
     _debug_component_emoji, _debug_component_label, _debug_component_enabled, _debug_component_url, \
-    _debug_component_description, ComponentRow, ComponentButton, ComponentSelect, ComponentSelectOption, \
-    _debug_component_default, _debug_component_options, _debug_component_placeholder, _debug_component_min_values, \
-    _debug_component_max_values
-
-from ...discord.events.event_types import InteractionEvent
+    _debug_component_description, _debug_component_default, _debug_component_options, _debug_component_placeholder, \
+    _debug_component_min_values, _debug_component_max_values
+from ...discord.interaction import ComponentBase, ComponentRow, ComponentButton, ComponentSelect, InteractionEvent, \
+    ComponentSelectOption
 from ...discord.message import Message
 from ...discord.channel import ChannelTextBase
 from ...discord.embed import EmbedBase
@@ -705,7 +700,7 @@ def _iter_sub_components(component):
     
     Yields
     ------
-    sub_componen : ``ComponentBase``
+    sub_component : ``ComponentBase``
         The  sub components.
     """
     if isinstance(component, ComponentRow):

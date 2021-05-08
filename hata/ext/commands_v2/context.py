@@ -84,6 +84,7 @@ class CommandContext(object):
         """
         return self.message.channel
     
+    
     @property
     def guild(self):
         """
@@ -106,6 +107,7 @@ class CommandContext(object):
         author : ``ClientUserBase``, ``Webhook``, ``WebhookRepr``
         """
         return self.message.author
+    
     
     @property
     def voice_client(self):
@@ -297,4 +299,3 @@ class CommandContext(object):
         ```
         """
         return self.client.keep_typing(self.channel, *args, **kwargs)
-

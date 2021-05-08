@@ -19,7 +19,7 @@ class CommandProcessor(EventWaitforBase):
     
     Attributes
     ----------
-    _category_name_rule : `None` or `function`
+    _category_name_rule : `None` or `FunctionType`
         Function to generate category display names.
         
         A category name rule should accept the following parameters:
@@ -27,7 +27,7 @@ class CommandProcessor(EventWaitforBase):
         +-------+-------------------+
         | Name  | Type              |
         +=======+===================+
-        | name  | `None` or `str`   |
+        | name  | `str`             |
         +-------+-------------------+
         
         Should return the following ones:
@@ -38,7 +38,7 @@ class CommandProcessor(EventWaitforBase):
         | name  | `str`             |
         +-------+-------------------+
     
-    _command_name_rule : `None` or `function`
+    _command_name_rule : `None` or `FunctionType`
         Function to generate command display names.
         
         A command name rule should accept the following parameters:
@@ -84,7 +84,7 @@ class CommandProcessor(EventWaitforBase):
     _mention_prefix_enabled : `bool`
         Whether mentioning the client at the start of a message counts as prefix.
     
-    _precheck : `function`
+    _precheck : `FunctionType`
         A function used to detect whether a message should be handled.
         
         The following parameters are passed to it:
@@ -662,8 +662,166 @@ class CommandProcessor(EventWaitforBase):
         if (command_processor is not None) and (command_processor is not self):
             raise RuntimeError(f'{Category.__name__}: {command_processor!r} is bound to an other command processor.')
         
-        actual_category = self.get_category(category.name)
-        # TODO
-
-
-
+        category.set_command_processor(category)
+    
+    
+    def _remove_category(self, category):
+        """
+        Removes the given category to the command processor.
+        
+        Parameters
+        ----------
+        category : ``Category``
+            The category to remove.
+        
+        Raises
+        ------
+        RuntimeError
+            The category is bound to an other category processor.
+        """
+        command_processor = category.get_command_processor()
+        if (command_processor is not None) and (command_processor is not self):
+            raise RuntimeError(f'{Category.__name__}: {command_processor!r} is bound to an other command processor.')
+        
+        category.unlink()
+    
+    
+    @property
+    def category_name_rule(self):
+        """
+        Get-set-del property to modify the command processor's.
+        
+        A category name rule is `None` or a `FunctionType` accepting the following parameters:
+        
+        +-------+-------------------+
+        | Name  | Type              |
+        +=======+===================+
+        | name  | `str`             |
+        +-------+-------------------+
+        
+        Should return the following ones:
+        
+        +-------+-------------------+
+        | Name  | Type              |
+        +=======+===================+
+        | name  | `str`             |
+        +-------+-------------------+
+        """
+        return self._category_name_rule
+    
+    @category_name_rule.setter
+    def category_name_rule(self, category_name_rule):
+        if self._category_name_rule is category_name_rule:
+            return
+        
+        if (category_name_rule is None):
+            for category in self.category_name_to_category.values():
+                category.display_name = category.name
+        
+        else:
+            test_name_rule(category_name_rule, 'category_name_rule')
+            
+            for category in self.category_name_to_category.values():
+                category.display_name = category_name_rule(category.name)
+        
+        self._category_name_rule = category_name_rule
+    
+    @category_name_rule.deleter
+    def category_name_rule(self):
+        if self._category_name_rule is None:
+            return
+        
+        for category in self.category_name_to_category.values():
+            category.display_name = category.name
+        
+        self._category_name_rule = None
+    
+    
+    @property
+    def command_name_rule(self):
+        """
+        Get-set-del property to modify the command processor's.
+        
+        A command name rule is `None` or a `FunctionType` accepting the following parameters:
+        
+        +-------+-------------------+
+        | Name  | Type              |
+        +=======+===================+
+        | name  | `str`             |
+        +-------+-------------------+
+        
+        Should return the following ones:
+        
+        +-------+-------------------+
+        | Name  | Type              |
+        +=======+===================+
+        | name  | `str`             |
+        +-------+-------------------+
+        """
+        return self._command_name_rule
+    
+    @command_name_rule.setter
+    def command_name_rule(self, command_name_rule):
+        if self._command_name_rule is command_name_rule:
+            return
+        
+        if command_name_rule is None:
+            for command in self.registered_commands:
+                command.display_name = command.name
+        else:
+            test_name_rule(command_name_rule, 'command_name_rule')
+            
+            for command in self.registered_commands:
+                command.display_name = command_name_rule(command.name)
+        
+        self._command_name_rule = command_name_rule
+    
+    @command_name_rule.deleter
+    def command_name_rule(self):
+        if self._command_name_rule is None:
+            return
+        
+        for command in self.registered_commands:
+            command.display_name = command.name
+    
+    
+    @property
+    def precheck(self):
+        """
+        A get-set-del property to modify the command processor's precheck.
+        
+        Can be either `None` or `non-async` function accepting following parameters are passed to it:
+        
+        +-----------+---------------+
+        | Name      | Type          |
+        +===========+===============+
+        | client    | ``Client``    |
+        +-----------+---------------+
+        | message   | ``Message``   |
+        +-----------+---------------+
+        
+        Should return the following parameters:
+        
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | should_process    | `bool`    |
+        +-------------------+-----------+
+        """
+        return self._precheck
+    
+    @precheck.setter
+    def precheck(self, precheck):
+        if self._precheck is precheck:
+            return
+        
+        if precheck is None:
+            precheck = default_precheck
+        else:
+            test_precheck(precheck)
+        
+        self.precheck = precheck
+    
+    @precheck.deleter
+    def precheck(self):
+        self.precheck = default_precheck

@@ -22,6 +22,7 @@ from .utils import *
 from .events import *
 from .permission import *
 from .player import *
+from .preconverters import *
 from .preinstanced import *
 from .rate_limit import *
 from .urls import *
@@ -56,6 +57,7 @@ __all__ = (
     *events.__all__,
     *permission.__all__,
     *player.__all__,
+    *preconverters.__all__,
     *preinstanced.__all__,
     *rate_limit.__all__,
     *urls.__all__,

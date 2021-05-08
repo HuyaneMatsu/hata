@@ -612,7 +612,3 @@ def parse_color(text):
         return Color(parsed.group(1))
     
     return None
-
-del re
-del modulize
-

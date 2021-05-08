@@ -3,8 +3,6 @@ __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
 from ..env import API_VERSION
 
-from ..backend.export import include
-
 from .utils import Unknown, now_as_id, id_to_time
 from .core import CHANNELS, USERS, ROLES, MESSAGES
 from .permission import Permission
@@ -14,12 +12,9 @@ from .webhook import Webhook
 from .role import PermissionOverwrite
 from .integration import Integration
 from .guild import SystemChannelFlag, Guild
-from .bases import Icon
+from .bases import Icon, maybe_snowflake
 from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, MessageNotificationLevel, VoiceRegion, \
     MFA, VideoQualityMode
-
-maybe_snowflake = include('maybe_snowflake')
-
 
 class AuditLog:
     """
@@ -370,7 +365,7 @@ def convert_detail_channel(key, value, all_):
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        channel = Unknown('Channel',channel_id)
+        channel = Unknown('Channel', channel_id)
     return 'channel', channel
 
 def convert_detail_message(key, value, all_):
@@ -378,7 +373,7 @@ def convert_detail_message(key, value, all_):
     try:
         message = MESSAGES[message_id]
     except KeyError:
-        message = Unknown('Message',message_id)
+        message = Unknown('Message', message_id)
     
     return 'message', message
 

@@ -4,7 +4,7 @@ __all__ = ('ChooseMenu', )
 from ...backend.futures import CancelledError
 from ...backend.utils import copy_docs
 from ...discord.emoji import BUILTIN_EMOJIS
-from ...discord.events.event_types import InteractionEvent
+from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
 from ...discord.channel import ChannelTextBase
 from ...discord.exceptions import DiscordException, ERROR_CODES

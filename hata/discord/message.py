@@ -19,7 +19,7 @@ from .webhook import WebhookRepr, create_partial_webhook, WebhookType, Webhook
 from .role import Role
 from .preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
     preconvert_preinstanced_type
-from .preinstanced import MessageType, MessageActivityType, StickerType, InteractionType
+from .preinstanced import MessageType, MessageActivityType, StickerType
 
 from . import urls as module_urls
 
@@ -32,6 +32,7 @@ ChannelGroup = include('ChannelGroup')
 create_component = include('create_component')
 ChannelGuildUndefined = include('ChannelGuildUndefined')
 CHANNEL_TYPES = include('CHANNEL_TYPES')
+InteractionType = include('InteractionType')
 
 class MessageFlag(FlagBase):
     """

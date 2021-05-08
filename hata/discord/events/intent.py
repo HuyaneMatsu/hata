@@ -1,9 +1,8 @@
 __all__ = ('IntentFlag',)
 
-from itertools import chain, repeat
+from ...env import CACHE_PRESENCE
 
 from ..bases import FlagBase
-from ...env import CACHE_PRESENCE
 
 INTENT_SHIFT_GUILDS = 0
 INTENT_SHIFT_GUILD_USERS = 1

@@ -6,7 +6,6 @@ from ...backend.analyzer import CallableAnalyzer
 from ...backend.utils import WeakReferer
 
 from ...discord.core import ROLES, CHANNELS
-from ...discord.events.event_types import InteractionEvent
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.guild import Guild
@@ -15,9 +14,8 @@ from ...discord.client import Client
 from ...discord.user import UserBase, User
 from ...discord.role import Role
 from ...discord.channel import ChannelBase
-from ...discord.preinstanced import ApplicationCommandOptionType
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommand, \
-    ApplicationCommandPermissionOverwrite
+    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, InteractionEvent
 from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICES_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
     APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX, \

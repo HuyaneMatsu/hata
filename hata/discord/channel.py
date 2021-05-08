@@ -14,7 +14,7 @@ from ..backend.utils import copy_docs
 from ..backend.event_loop import LOOP_TIME
 from ..backend.export import export, include
 
-from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
+from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, maybe_snowflake
 from .core import CHANNELS
 from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
     PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
@@ -35,7 +35,6 @@ from . import urls as module_urls
 
 Client = include('Client')
 Guild = include('Guild')
-maybe_snowflake = include('maybe_snowflake')
 
 TURN_MESSAGE_LIMITING_ON = WeakSet()
 

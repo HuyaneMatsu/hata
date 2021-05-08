@@ -201,6 +201,7 @@ class MassUserChunker:
         """
         return self.waiter.__await__()
 
+
 class DiscoveryCategoryRequestCacher:
     """
     Cacher for storing ``Client``'s requests.

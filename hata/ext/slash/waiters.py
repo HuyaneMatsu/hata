@@ -7,8 +7,8 @@ from ...backend.event_loop import LOOP_TIME
 
 from ...discord.core import APPLICATION_ID_TO_CLIENT, KOKORO
 from ...discord.message import Message
-from ...discord.events.event_types import InteractionEvent
 from ...discord.client import Client
+from ...discord.interaction import InteractionEvent
 
 
 class Timeouter:

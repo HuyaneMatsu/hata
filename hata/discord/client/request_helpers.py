@@ -3,7 +3,7 @@ from os.path import split as split_path
 from collections import deque
 
 from ...backend.utils import to_json
-from ...backend.export import include, export
+from ...backend.export import include
 from ...backend.formdata import Formdata
 
 from ..core import MESSAGES
@@ -12,126 +12,6 @@ from ..embed import EmbedBase
 from ..utils import random_id
 
 ComponentBase = include('ComponentBase')
-
-@export
-def maybe_snowflake(value):
-    """
-    Converts the given `value` to `snowflake` if applicable. If not returns `None`.
-    
-    Parameters
-    ----------
-    value : `str`, `int` or `Any`
-        A value what might be snowflake.
-    
-    Returns
-    -------
-    value : `int` or `None`
-    
-    Raises
-    ------
-    AssertionError
-        - If `value` was passed as `str` and cannot be converted to `int`.
-        - If the `value` is negative or it's bit length is over 64.
-    """
-    if isinstance(value, int):
-        pass
-    elif isinstance(value, str):
-        if value.isdigit():
-            if __debug__:
-                if not 6 < len(value) < 21:
-                    raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint '
-                        f'range, got {value!r}.')
-            
-            value = int(value)
-        else:
-            return None
-    else:
-        return None
-    
-    if __debug__:
-        if value < 0 or value > ((1<<64)-1):
-            raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint range, got '
-                f'{value!r}.')
-    
-    return value
-
-
-
-def maybe_snowflake_pair(value):
-    """
-    Checks whether the given value is a `tuple` of 2 snowflakes. If it, returns it, if not returns `None`.
-    
-    Parameters
-    ----------
-    value : `tuple` of (`str`, `int`) or `Any`
-        A value what might be snowflake.
-    
-    Returns
-    -------
-    value : `tuple` (`int`, `int`) or `None`
-    
-    Raises
-    ------
-    AssertionError
-        - If `value` contains a `str` element, what cannot be converted to `int`.
-        - If `value` contains a value, what is negative or it's bit length is over 64.
-    """
-    if isinstance(value, tuple):
-        if len(value) == 2:
-            value_1, value_2 = value
-            value_1 = maybe_snowflake(value_1)
-            if value_1 is None:
-                value = None
-            else:
-                value_2 = maybe_snowflake(value_2)
-                if value_2 is None:
-                    value = None
-                else:
-                    value = (value_1, value_2)
-        else:
-            value = None
-    else:
-        value = None
-    
-    return value
-
-
-def maybe_snowflake_token_pair(value):
-    """
-    Checks whether the given value is a `tuple` of `2` elements: an identifier and a token. If not, returns `None`.
-    
-    Parameters
-    ----------
-    value : `tuple` of (`str`, `int`) or `Any`
-        A value what might be snowflake.
-    
-    Returns
-    -------
-    value : `tuple` (`str`, `int`) or `None`
-    
-    Raises
-    ------
-    AssertionError
-        - If `value` contains a `str` element, what cannot be converted to `int`.
-        - If `value` contains a value, what is negative or it's bit length is over 64.
-    """
-    if isinstance(value, tuple):
-        if len(value) == 2:
-            value_1, value_2 = value
-            value_1 = maybe_snowflake(value_1)
-            if value_1 is None:
-                value = None
-            else:
-                if isinstance(value_2, str):
-                    value = (value_1, value_2)
-                else:
-                    value = None
-        else:
-            value = None
-    else:
-        value = None
-    
-    return value
 
 
 def get_components_data(components):

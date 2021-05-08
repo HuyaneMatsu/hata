@@ -18,7 +18,7 @@ DIS_ENDPOINT = 'https://discord.com' if (CUSTOM_DIS_ENDPOINT is None) else CUSTO
 del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
 
 VALID_ICON_FORMATS = ('jpg', 'jpeg','png','webp')
-VALID_ICON_SIZES = {1<<x for x in range(4,13)}
+VALID_ICON_SIZES = frozenset(1<<x for x in range(4, 13))
 VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS, 'gif',)
 
 STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')

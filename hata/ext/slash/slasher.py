@@ -9,11 +9,9 @@ from ...backend.utils import WeakReferer, WeakKeyDictionary
 
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import Router, asynclist, EventHandlerBase
-from ...discord.events.event_types import InteractionEvent
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client import Client
-from ...discord.preinstanced import InteractionType
-from ...discord.interaction import ApplicationCommand
+from ...discord.interaction import ApplicationCommand, InteractionEvent, InteractionType
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS

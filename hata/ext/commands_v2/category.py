@@ -2,7 +2,8 @@ __all__ = ('Category',)
 
 from ...backend.utils import WeakReferer
 
-from .command_helpers import validate_checks, normalize_description, raw_name_to_display
+from .command_helpers import validate_checks, normalize_description, raw_name_to_display, test_error_handler
+
 
 class Category:
     """
@@ -109,7 +110,14 @@ class Category:
             The parent command processor.
         """
         self._command_processor_reference = command_processor._self_reference
-        command_processor[self.name] = self
+        
+        category_name_to_category = command_processor.category_name_to_category
+        name = self.name
+        other_category = category_name_to_category.get(name, None)
+        if (other_category is None) or (self is not other_category):
+            other_category.unlink()
+        
+        category_name_to_category[name] = self
         
         command_name_rule = command_processor._command_name_rule
         if (command_name_rule is not None):
@@ -117,4 +125,73 @@ class Category:
         
         for command in self.registered_commands:
             command.set_command_processor(command_processor)
+    
+    
+    def unlink(self):
+        """
+        Unlinks the category from it's command processor if applicable.
+        
+        """
+        command_processor = self.get_command_processor()
+        self._command_processor_reference = None
+        
+        if (command_processor is not None):
+            registered_commands = list(self.registered_commands)
+            for command in registered_commands:
+                command.unlink()
+        
+        category_name_to_category = command_processor.category_name_to_category
+        name = self.name
+        
+        other_category = category_name_to_category.get(name, None)
+        if (other_category is not None) and (other_category is self):
+            del category_name_to_category[name]
+    
+    
+    def error(self, error_handler):
+        """
+        Adds na error handler to the category.
+        
+        Parameters
+        ----------
+        error_handler : `async-callable`
+            The error handler to add.
+            
+            The following parameters are passed to each error handler:
+            
+            +-------------------+-----------------------+
+            | Name              | Type                  |
+            +===================+=======================+
+            | command_context   | ``CommandContext``    |
+            +-------------------+-----------------------+
+            | exception         | `BaseException`       |
+            +-------------------+-----------------------+
+            
+            Should return the following parameters:
+            
+            +-------------------+-----------+
+            | Name              | Type      |
+            +===================+===========+
+            | handled           | `bool`    |
+            +-------------------+-----------+
+        
+        Returns
+        -------
+        error_handler : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `error_handler` accepts bad amount of arguments.
+            - If `error_handler` is not async.
+        """
+        test_error_handler(error_handler)
+        
+        error_handlers = self._error_handlers
+        if error_handlers is None:
+            error_handlers = self._error_handlers = []
+            
+            error_handlers.append(error_handler)
+        
+        return error_handler
 

@@ -14,20 +14,20 @@ from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGu
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
-from ..emoji import create_partial_emoji
 from ..role import Role
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
-from ..interaction import ApplicationCommand, ApplicationCommandPermission
+from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
 from ..integration import Integration
 from ..stage import Stage
+from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji
 
 from .core import ReadyState, maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
 from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
 from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS, \
     INTENT_MASK_GUILD_VOICE_STATES, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_MESSAGES, \
     INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS
-from .event_types import ReactionDeleteEvent, GuildUserChunkEvent, ReactionAddEvent, InteractionEvent
+from .event_types import GuildUserChunkEvent
 from .guild_sync import guild_sync, check_channel
 
 Client = include('Client')

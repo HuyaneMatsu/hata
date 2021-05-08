@@ -22,7 +22,7 @@ Role = include('Role')
 Webhook = include('Webhook')
 WebhookRepr = include('WebhookRepr')
 Guild = include('Guild')
-InteractionEvent = include('InteractionEvent')
+
 
 #parsing time
 #email.utils.parse_date_to_datetime

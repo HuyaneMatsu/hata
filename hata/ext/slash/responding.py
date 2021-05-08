@@ -2,7 +2,7 @@
 __all__ = ('SlashResponse', 'abort', )
 from ...backend.futures import is_coroutine_generator
 
-from ...discord.events.event_types import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
+from ...discord.interaction import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
     INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase

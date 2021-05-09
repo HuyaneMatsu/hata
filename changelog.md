@@ -43,6 +43,7 @@ Reduce `Message` entity size.
 - Fix an `AttributeError` in `ApplicationCommandPermissionOverwrite.__hash__`.
 - `create_partial_emoji_data` could miss `animated` field.
 - `create_partial_emoji` could miss `emoji_animated` field.
+- `KeepType` always yeeted docstrings. (ᓚᘏᗢ | NeKo Mancer#1477)
 
 #### Renames, Deprecation & Removals
 

@@ -339,7 +339,7 @@ class KeepType:
         Attribute names to ignore when extending.
     """
     __slots__ = ('old_class',)
-    _ignored_attr_names = {'__name__', '__qualname__', '__weakref__', '__dict__', '__slots__', '__module__'}
+    _ignored_attr_names = frozenset(('__name__', '__qualname__', '__weakref__', '__dict__', '__slots__', '__module__'))
     
     def __new__(cls, old_class, *, new_class=None):
         """
@@ -383,17 +383,21 @@ class KeepType:
         """
         old_class = self.old_class
         ignored_attr_names = self._ignored_attr_names
-        for name in dir(new_class):
-            if name in ignored_attr_names:
+        for attribute_name in dir(new_class):
+            if attribute_name in ignored_attr_names:
                 continue
             
-            attr = getattr(new_class, name)
-            if hasattr(object, name) and (attr is getattr(object, name)):
+            attribute_value = getattr(new_class, attribute_name)
+            if (attribute_name == '__doc__') and (attribute_value is None):
                 continue
             
-            setattr(old_class, name, attr)
+            if hasattr(object, attribute_name) and (attribute_value is getattr(object, attribute_name)):
+                continue
+            
+            setattr(old_class, attribute_name, attribute_value)
         
         return old_class
+
 
 class _multidict_items:
     """

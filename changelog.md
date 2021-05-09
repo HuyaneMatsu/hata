@@ -32,8 +32,10 @@ Reduce `Message` entity size.
 - Add `Preinstance`. (sleep-cult#3040)
 
 ##### ext.slash
-- Updates `abort`'s auto `show_for_invoking_user_only`, since now `show_for_invoking_user_only=True` supports embeds.
+- Update `abort`'s auto `show_for_invoking_user_only`, since now `show_for_invoking_user_only=True` supports embeds.
     (Zeref Draganeel#3581)
+- Add `mentionable_id` parameter support for slash commands.
+- Add `configure_parameter` to overwrite slash command annotations.
 
 #### Bug fixed
 

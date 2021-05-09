@@ -260,7 +260,7 @@ def _debug_component_options(options):
     AssertionError
         - If `options` is neither `None`, `tuple` or `list`.
         - If `options` contains a non ``ComponentSelectOption`` instance.
-        - If `options`'s length is out of teh expected [1:25] range.
+        - If `options`'s length is out of the expected [1:25] range.
     """
     if options is None:
         option_length = 0

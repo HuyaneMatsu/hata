@@ -34,24 +34,28 @@ Discord sets the following limitations:
 
 The parameter types can be the following:
 
-| Name          | Requires bot  | Discord field | String representation | Type representation   | Output type               |
-|---------------|---------------|---------------|-----------------------|-----------------------|---------------------------|
-| string        | No            | string        | `'str'`               | `str`                 | `str`                     |
-| integer       | No            | string        | `'int'`               | `int`                 | `int`                     |
-| boolean       | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
-| user          | No            | user          | `'user'`              | `User`, `UserBase`    | `User`, `Client`          |
-| user_id       | No            | user          | `'user_id'`           | N/A                   | `int`                     |
-| role          | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
-| role_id       | No            | role          | `'role_id'`           | N/A                   | `int`                     |
-| channel       | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase` instance    |
-| channel_id    | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
-| number        | No            | integer       | `'number'`            | N/A                   | `int`                     |
+| Name              | Requires bot  | Discord field | String representation | Type representation   | Output type               |
+|-------------------|---------------|---------------|-----------------------|-----------------------|---------------------------|
+| string            | No            | string        | `'str'`               | `str`                 | `str`                     |
+| integer           | No            | string        | `'int'`               | `int`                 | `int`                     |
+| boolean           | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
+| user              | No            | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
+| user_id           | No            | user          | `'user_id'`           | N/A                   | `int`                     |
+| role              | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
+| role_id           | No            | role          | `'role_id'`           | N/A                   | `int`                     |
+| channel           | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
+| channel_id        | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
+| number            | No            | integer       | `'number'`            | N/A                   | `int`                     |
+| mentionable       | Depends       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
+| mentionable_id    | No            | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
 
 ##### Parameter notes
 
 `user`, `channel` and `role` data may not be included within the interaction. However users can be requested from
 Discord, but channels and roles can not be. It means `role` and `channel` conversions can fail and the command wont be
 called. To avoid this case, you may use `role_id` or `channel_id` parameter types instead.
+
+`mentionable` field stands for `user` + `role`.
 
 In hata there is 2 numeric input option available, one is `int` and the other one is `number`. Both has it's pros and
 cons. `int` field is converted to `string` by the extension, then when receiving an interaction is converted back to
@@ -163,13 +167,18 @@ async def cookie(client, event,
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !')
 ```
 
+#### configure_parameter
+
+If you do not like the annotation design, you can use the `configure_parameter` decorator. Since the main design is
+more intuitive, the rest of the examples will follow that one.
+
 ```py
 from hata import parse_emoji
+from hata.ext.slash import configure_parameter
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def show_emoji(client, event,
-        emoji : ('str', 'Yes?'),
-            ):
+@configure_parameter('emoji', str, 'Yes?')
+async def show_emoji(client, event, emoji):
     """Shows the given custom emoji."""
     emoji = parse_emoji(emoji)
     if emoji is None:

@@ -1,4 +1,11 @@
-## 1.1.74 *\[2021-05-09\]*
+## 1.1.76 *\[2021-05-??\]*
+
+#### Bug fixed
+
+##### ext.extension_loader
+- Folder loading failed (typo).
+
+## 1.1.75 *\[2021-05-09\]*
 
 #### Summary
 

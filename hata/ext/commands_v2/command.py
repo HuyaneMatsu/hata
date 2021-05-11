@@ -8,10 +8,11 @@ from ...discord.events.handling_helpers import route_value, check_name, Router, 
 from ...discord.interaction import InteractionEvent
 from ...discord.preconverters import preconvert_bool
 
-from .utils import CommandWrapper
+from .utils import CommandWrapper, CommandCheckWrapper
 from .category import Category
 from .command_helpers import test_error_handler, raw_name_to_display, normalize_description, validate_checks, \
     validate_error_handlers
+from .content_parser import CommandContentParser
 
 def _check_maybe_route(variable_name, variable_value, route_to, validator):
     """
@@ -321,6 +322,78 @@ def _generate_category_hint_from(category):
     return category_hint
 
 
+def _fetch_check_from_wrappers(wrappers):
+    """
+    Gets the check wrappers from the given ones.
+    
+    Parameters
+    ----------
+    wrappers : `None` or `list` of ``CommandWrapper``
+        Command wrappers.
+    
+    Returns
+    -------
+    checks : `None` or `list` of ``CheckBase``
+        The fetched down checks.
+    """
+    checks = None
+    if (wrappers is not None):
+        for wrapper in wrappers:
+            if isinstance(wrapper, CommandCheckWrapper):
+                if checks is None:
+                    checks = []
+                
+                checks.append(wrapper._check)
+    
+    return checks
+
+
+def _iter_checks(checks_1, checks_2):
+    """
+    Iterates the given checks.
+    
+    This function is a generator.
+    
+    Parameters
+    ----------
+    checks_1 : `None` or `list` of ``CheckBase``
+        Checks to merge.
+    checks_2: `None` or`list` of ``CheckBase``
+        Checks to merge.
+    
+    Yields
+    ------
+    check : ``CheckBase``
+    """
+    if (checks_1 is not None):
+        yield from checks_1
+    
+    if (checks_2 is not None):
+        yield from checks_2
+
+
+def _merge_checks(checks_1, checks_2):
+    """
+    Merges the two checks.
+    
+    Parameters
+    ----------
+    checks_1 : `None` or `list` of ``CheckBase``
+        Checks to merge.
+    checks_2: `None` or`list` of ``CheckBase``
+        Checks to merge.
+    
+    Returns
+    -------
+    checks : `None` or `tuple` of ``CheckBase``
+        The fetched down checks.
+    """
+    if (checks_1 is None) and (checks_2 is None):
+        return None
+    
+    return tuple(_iter_checks(checks_1, checks_2))
+
+
 class Command:
     """
     Represents a command.
@@ -333,7 +406,7 @@ class Command:
         Weak reference to the command's category.
     _checks : `None` or `tuple` of ``CheckBase``
         The checks of the commands.
-    _command : `None` or ``CommandFunction``
+    _command_function : `None` or ``CommandFunction``
         The actual command of the command to maybe call.
     _command_processor_reference : `None` or ``WeakReferer`` to ``CommandProcessor``.
         Weak reference to the command's command processor.
@@ -354,9 +427,9 @@ class Command:
     name : `str`
         The command's name. Always lower case.
     """
-    __slots__ = ('_category_hint', '_category_reference', '_checks', '_command', '_command_processor_reference',
-        '_error_handlers', '_sub_commands', 'aliases', 'description', 'display_name', 'hidden',
-        'hidden_if_checks_fail', 'name')
+    __slots__ = ('_category_hint', '_category_reference', '_checks', '_command_function',
+        '_command_processor_reference', '_error_handlers', '_sub_commands', 'aliases', 'description', 'display_name',
+        'hidden', 'hidden_if_checks_fail', 'name')
     
     
     def _iter_checks(self):
@@ -834,6 +907,8 @@ class Command:
             function = command
             wrappers = None
         
+        fetched_checks = _fetch_check_from_wrappers(wrappers)
+        
         route_to = 0
         name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
         description, route_to = _check_maybe_route('description', description, route_to, None)
@@ -859,7 +934,7 @@ class Command:
             hidden_if_checks_fail = route_value(hidden_if_checks_fail, route_to)
             
             category_hint = [_generate_category_hint_from(category) for category in category]
-
+            
             description = [
                 _generate_description_from(command, description)
                     if ((description is None) or (description is not default_description)) else default_description
@@ -869,12 +944,382 @@ class Command:
             description = _generate_description_from(command, description)
             category_hint = _generate_category_hint_from(category)
         
+        if command is None:
+            command_function = None
+        else:
+            content_parser, command = CommandContentParser(command, separator, assigner)
+            
+            command_function = CommandFunction(command, content_parser)
+        
+        if route_to:
+            router = []
+            
+            for name, aliases, description, category_hint, checks_, error_handlers, hidden, hidden_if_checks_fail \
+                    in zip(name, aliases, description, category_hint, checks_, error_handlers, hidden,
+                        hidden_if_checks_fail):
+                self = object.__new__(cls)
+                self._category_hint = category_hint
+                self._category_reference = None
+                self._checks = _merge_checks(checks_, fetched_checks)
+                self._command_function = command_function
+                self._command_processor_reference = None
+                self._error_handlers = error_handlers
+                self._sub_commands = None
+                self.aliases = aliases
+                self.description = description
+                self.display_name = name
+                self.hidden = hidden
+                self.hidden_if_checks_fail = hidden_if_checks_fail
+                self.name = name
+                
+                router.append(self)
+            
+            return Router(router)
+        else:
+            self = object.__new__(cls)
+            self._category_hint = category_hint
+            self._category_reference = None
+            self._checks = _merge_checks(checks_, fetched_checks)
+            self._command_function = command_function
+            self._command_processor_reference = None
+            self._error_handlers = error_handlers
+            self._sub_commands = None
+            self.aliases = aliases
+            self.description = description
+            self.display_name = name
+            self.hidden = hidden
+            self.hidden_if_checks_fail = hidden_if_checks_fail
+            self.name = name
+            
+            return self
+    
+    def __repr__(self):
+        """Returns the command's representation."""
+        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            repr_parts.append(' aliases=')
+            repr_parts.append(repr(aliases))
+        
+        category_hint = self.category_hint
+        if (category_hint is not None):
+            repr_parts.append(' category=')
+            repr_parts.append(repr(category_hint))
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            repr_parts.append(' command_function=')
+            repr_parts.append(repr(command_function))
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            repr_parts.append(' sub_commands=')
+            repr_parts.append(repr(sub_commands))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    def copy(self):
+        """
+        Copies the command.
+        
+        Returns
+        -------
+        new : ``Command``
+        """
+        new = object.__new__(type(self))
+        new._category_hint = self._category_hint
+        new._category_reference = None
+        
+        checks = self._checks
+        if (checks is not None):
+            checks = tuple(checks)
+        new._checks = checks
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            command_function = command_function.copy()
+        new._command_function = command_function
+        
+        new._command_processor_reference = None
+        
+        error_handlers = self._error_handlers
+        if (error_handlers is not None):
+            error_handlers = error_handlers.copy()
+        new._error_handlers = error_handlers
+        
+        sub_commands  = self._sub_commands
+        if (sub_commands is not None):
+            sub_commands = {key:value.copy() for key, value in sub_commands.items()}
+        new._sub_commands = sub_commands
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            aliases = aliases.copy()
+        new.aliases = aliases
+        
+        new.description = self.description
+        new.display_name = self.display_name
+        new.hidden = self.hidden
+        new.hidden_if_checks_fail = self.hidden_if_checks_fail
+        new.name = self.name
+        
+        return new
+    
+    
+    def __hash__(self):
+        """Returns the hash value of the command."""
+        hash_value = 0
+        
+        category_hint = self._category_hint
+        if (category_hint is not None):
+            hash_value ^= hash(category_hint)
+        
+        checks = self._checks
+        if (checks is not None):
+            hash_value ^= len(checks)<<6
+            for check in checks:
+                hash_value ^= hash(check)
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            hash_value ^= hash(command_function)
+        
+        error_handlers = self._error_handlers
+        if (error_handlers is not None):
+            hash_value ^= len(error_handlers)<<12
+            for error_handler in error_handlers:
+                hash_value ^= hash(error_handler)
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            hash_value ^= len(sub_commands)<<18
+            for sub_command in sub_commands.values():
+                hash_value ^= hash(sub_command)
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            hash_value ^= len(aliases)<<24
+            for alias in aliases:
+                hash_value ^= hash(alias)
+        
+        description = self.description
+        if (description is not None):
+            try:
+                description_hash = hash(description)
+            except KeyError:
+                description_hash = object.__hash__(description)
+            
+            hash_value ^= description_hash
+        
+        hash_value ^= self.hidden<<30
+        hash_value ^= self.hidden_if_checks_fail<<31
+        hash_value ^= hash(self.name)
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two commands are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._category_hint != other._category_hint:
+            return False
+        
+        if self._checks != other._checks:
+            return False
+        
+        if self._command_function != other._command_function:
+            return False
+        
+        if self._error_handlers != other._error_handlers:
+            return False
+        
+        if self._sub_commands != other._sub_commands:
+            return False
+        
+        if self.aliases != other.aliases:
+            return False
+        
+        if self.description != other.description:
+            return False
+        
+        if self.hidden != other.hidden:
+            return False
+        
+        if self.hidden_if_checks_fail != other.hidden_if_checks_fail:
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        return True
 
 
+class CommandFunction:
+    """
+    Command function.
+    
+    Attributes
+    ----------
+    _function : `Any`
+        The command's function to call.
+    _content_parser : ``CommandContentParser``
+        Content parser for the command.
+    """
+    __slots__ = ('_function', '_content_parser')
+    def __new__(cls, function, content_parser):
+        """
+        Creates a new ``CommandFunction`` with the given parameters.
+        
+        Parameters
+        ----------
+        function : `Any`
+            Content parser for the command.
+        content_parser : ``CommandContentParser``
+            The command's function to call.
+        """
+        self = object.__new__(cls)
+        self._function = function
+        self._content_parser = content_parser
+        return self
+    
+    def __repr__(self):
+        """Returns the command function's representation."""
+        return f'<{self.__class__.__name__} content_parser={self._content_parser!r} function={self._function!r}>'
+    
+    def copy(self):
+        """
+        Copying a command function returns itself.
+        
+        Returns
+        -------
+        new : ``CommandFunction``
+        """
+        return self
+    
+    def __hash__(self):
+        """Returns the hash value of the command function."""
+        return hash(self._content_parser)^hash(self._function)
+    
+    def __eq__(self, other):
+        """Returns whether the wo command functions are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self is other:
+            return True
+        
+        if self._function != other._function:
+            return False
+        
+        if self._content_parser != other._content_parser:
+            return False
+        
+        return True
 
 
+class CommandCategory:
+    """
+    Folder for sub-commands of a ``Command``.
+    
+    Attributes
+    ----------
+    _command_function : `None` or ``CommandFunction``
+        The actual command of the command to maybe call.
+    _sub_commands : `None` or `dict` of (`str`, ``CommandCategory``) items
+        Sub command categories of the command.
+    description : `Any`
+        The command's description if any.
+    display_name : `str`
+        The command's display name.
+    name : `str`
+        The command's name. Always lower case.
+    """
+    __slots__ = ('_command_function', '_sub_commands', 'description', 'display_name', 'name',)
+    
+    @classmethod
+    def _from_command(cls, source_command):
+        """
+        Creates command category from the given command.
+        
+        Parameters
+        ----------
+        source_command : ``Command``
+            The command to turn into command category.
+        
+        Returns
+        -------
+        self : ``CommandCategory``
+        """
+        self = object.__new__(cls)
+        self.name = source_command.name
+        self.display_name = source_command.display_name
+        self.description = source_command.description
+        self._command_function = source_command._command_function
+        self._sub_commands = source_command._sub_commands
+        return self
+    
+    def __repr__(self):
+        """Returns the command category's representation."""
+        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            repr_parts.append(' command_function=')
+            repr_parts.append(repr(command_function))
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            repr_parts.append(' sub_commands=')
+            repr_parts.append(repr(sub_commands))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
 
-
-
-
-
+    def __hash__(self):
+        """Returns the command category's hash value."""
+        hash_value = 0
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            hash_value ^= hash(command_function)
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            hash_value ^= len(sub_commands)<<18
+            for sub_command in sub_commands.values():
+                hash_value ^= hash(sub_command)
+        
+        description = self.description
+        if (description is not None):
+            try:
+                description_hash = hash(description)
+            except KeyError:
+                description_hash = object.__hash__(description)
+            
+            hash_value ^= description_hash
+        
+        hash_value ^= hash(self.name)
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two command categories are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._command_function != other._command_function:
+            return False
+        
+        if self._sub_commands != other._sub_commands:
+            return False
+        
+        if self.description != other.description:
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        return True

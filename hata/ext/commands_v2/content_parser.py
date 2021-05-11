@@ -2437,6 +2437,7 @@ class GenericParameterParsingState(ParameterParsingStateBase):
             if content_parser_parameter.is_positional or content_parser_parameter.is_keyword:
                 self.satisfied = True
     
+    
     @copy_docs(ParameterParsingStateBase.get_parser_value)
     def get_parser_value(self, args, kwargs):
         content_parser_parameter = self.content_parser_parameter
@@ -2536,11 +2537,13 @@ class RestParameterParsingState(ParameterParsingStateBase):
         self.content_parser_parameter = content_parser_parameter
         self.value = None
         return self
-
+    
+    
     @copy_docs(ParameterParsingStateBase.add_parsed_value)
     def add_parsed_value(self, parsed_value, keyword):
         if parsed_value:
             self.value = parsed_value
+    
     
     @copy_docs(ParameterParsingStateBase.get_parser_value)
     def get_parser_value(self, args, kwargs):
@@ -2703,7 +2706,11 @@ def convert_parser_parameter_postprocessor_try_find_string(command_context_parse
     """
     parameters = command_context_parser._parameters
     for parameter in parameters:
-        if (parameter.converter_setting is CONVERTER_NONE) and (not parameter.is_rest):
+        detail = parameter.detail
+        if (detail is None):
+            continue
+        
+        if (detail.converter_setting is CONVERTER_NONE) and (not parameter.is_rest):
             parameter.set_converter_setting(CONVERTER_STR)
 
 

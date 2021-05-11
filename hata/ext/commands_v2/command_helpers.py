@@ -118,7 +118,7 @@ def get_sub_command_trace(command, content, index):
         
         while trace:
             end, sub_command = trace[-1]
-            command_function = sub_command._command
+            command_function = sub_command._command_function
             if (command_function is not None):
                 return tuple(trace_element[1] for trace_element in trace), command_function, end
             

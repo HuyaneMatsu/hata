@@ -2,6 +2,8 @@
 
 #### Bug fixed
 
+- Fix a typo on `ComponentSelect.to_data`. (Zeref Draganeel#3581)
+
 ##### ext.extension_loader
 - Folder loading failed (typo).
 

@@ -1131,7 +1131,7 @@ class ComponentSelect(ComponentBase):
         data = {
             'type': self.type.value,
             'custom_id': self.custom_id,
-            'options': [option.to_data() for option in options],
+            'options': [option.to_data() for option in self.options],
         }
         
         placeholder = self.placeholder

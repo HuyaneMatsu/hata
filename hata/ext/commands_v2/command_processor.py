@@ -308,7 +308,7 @@ class CommandProcessor(EventWaitforBase):
         if not self._precheck(client, message):
             return
         
-        prefix, end = self._prefix_parser(message)
+        prefix, end = await self._prefix_parser(message)
         if (prefix is None):
             if not self._mention_prefix_enabled:
                 return

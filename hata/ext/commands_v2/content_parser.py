@@ -466,6 +466,8 @@ def parse_channel_mention(part, message):
         if channel.id == channel_id:
             return channel
 
+REST_PARSER_RP = re.compile('\s*(.*?)\s*', re.M|re.S)
+
 
 def parse_rest_content(content, index):
     """
@@ -483,6 +485,7 @@ def parse_rest_content(content, index):
     rest : `str`
         The content's end.
     """
+    return REST_PARSER_RP.fullmatch(content, index).group(1)
 
 
 class ConverterFlag(FlagBase):
@@ -880,7 +883,7 @@ CONVERTER_SELF_CLIENT = ConverterSetting(
 
 
 async def self_message_converter(command_context, content_parser_parameter_detail):
-    return command_context.client
+    return command_context.message
 
 CONVERTER_SELF_MESSAGE = ConverterSetting(
     converter = self_message_converter,
@@ -1840,6 +1843,7 @@ class ContentParserParameter:
             for detail in details:
                 if not detail.converter_setting.requires_part:
                     raise RuntimeError('Multi-type annotation without requiring parsing is forbidden.')
+            detail = None
         
         display_name = raw_name_to_display(display_name)
         
@@ -1881,6 +1885,19 @@ class ContentParserParameter:
         if self.has_default:
             repr_parts.append(', default=')
             repr_parts.append(repr(self.default))
+        
+        detail = self.detail
+        if (detail is None):
+            repr_parts.append(', details=')
+            repr_parts.append(repr(self.details))
+        else:
+            if (detail.converter_setting is CONVERTER_NONE):
+                if self.is_rest:
+                    repr_parts.append(', is_rest=True')
+            else:
+                repr_parts.append(', details=[')
+                repr_parts.append(repr(detail))
+                repr_parts.append(']')
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -2195,7 +2212,7 @@ class CommandContentParser:
         parameter_parsing_states = create_parameter_parsing_states(self)
         
         for parameter_parsing_state in iter_no_part_parameter_states(parameter_parsing_states):
-            parsed_value = parameter_parsing_state.parse(command_context, None)
+            parsed_value = await parameter_parsing_state.content_parser_parameter.parse(command_context, None)
             parameter_parsing_state.add_parsed_value(parsed_value, None)
         
         content = command_context.content
@@ -2212,13 +2229,13 @@ class CommandContentParser:
                 
                 break
             
-            keyword, part, index = content_parameter_parser.parse(index)
+            keyword, part, index = await content_parameter_parser.parse(index)
             if keyword is None:
                 parameter_parsing_state = get_next_non_filled_parameter_state(parameter_parsing_states)
                 if parameter_parsing_state is None:
                     continue
                 
-                parsed_value = parameter_parsing_state.parse(command_context, part)
+                parsed_value = await parameter_parsing_state.content_parser_parameter.parse(command_context, part)
                 parameter_parsing_state.add_parsed_value(parsed_value, None)
             else:
                 keyword = raw_name_to_display(keyword)
@@ -2226,7 +2243,7 @@ class CommandContentParser:
                 if parameter_parsing_state is None:
                     continue
                 
-                parsed_value = parameter_parsing_state.parse(command_context, part)
+                parsed_value = await parameter_parsing_state.content_parser_parameter.parse(command_context, part)
                 parameter_parsing_state.add_parsed_value(parsed_value, keyword)
         
         return parameter_parsing_states
@@ -2478,7 +2495,7 @@ class GenericParameterParsingState(ParameterParsingStateBase):
     def add_parsed_value(self, parsed_value, keyword):
         parsed_values = self.parsed_values
         if parsed_values is None:
-            parsed_values = []
+            self.parsed_values = parsed_values = []
         
         parsed_values.append(parsed_value)
         
@@ -2548,7 +2565,7 @@ class KwargsParameterParsingState(ParameterParsingStateBase):
     def add_parsed_value(self, parsed_value, keyword):
         parsed_items = self.parsed_items
         if parsed_items is None:
-            parsed_items = []
+            self.parsed_items = parsed_items = []
         
         parsed_items.append((keyword, parsed_value))
     

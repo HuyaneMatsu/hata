@@ -331,11 +331,11 @@ class CommandContext(object):
             if (command_function is None):
                 return
             
-            failed_check = run_checks(self.command._iter_checks, self)
+            failed_check = await run_checks(self.command._iter_checks(), self)
             if (failed_check is not None):
                 raise CommandCheckError(failed_check)
             
-            parameter_parsing_states = await command_function._content_parser.parse_content(self, self.content, index)
+            parameter_parsing_states = await command_function._content_parser.parse_content(self, index)
             command_positional_parameters = self.command_positional_parameters
             command_keyword_parameters = self.command_keyword_parameters
             for parameter_parsing_state in parameter_parsing_states:
@@ -344,5 +344,6 @@ class CommandContext(object):
             await command_function._function(*command_positional_parameters, **command_keyword_parameters)
             
         except BaseException as err:
+            print(repr(err))
             await handle_exception(self, err)
 

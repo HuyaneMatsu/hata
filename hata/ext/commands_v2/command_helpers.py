@@ -12,8 +12,8 @@ from .exceptions import CommandProcessingError
 CheckBase = include('CheckBase')
 CommandCheckWrapper = include('CommandCheckWrapper')
 
-SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\S*')
-COMMAND_NAME_RP = re_compile('\S*([^\S]*)\S*', re_multi_line|re_dotall)
+SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\s*')
+COMMAND_NAME_RP = re_compile('\s*([^\s]*)\s*', re_multi_line|re_dotall)
 
 async def run_checks(checks, command_context):
     """
@@ -128,7 +128,7 @@ def get_command_category_trace(command, content, index):
             del trace[-1]
             continue
     
-    return None, command.command_function, index
+    return None, command._command_function, index
 
 
 def default_precheck(client, message):
@@ -574,7 +574,7 @@ async def prefix_wrapper_regex(re_pattern, message):
         The start of the content after the prefix. Returned as `-1` if parsing failed.
     """
     content = message.content
-    parsed = re_pattern(content)
+    parsed = re_pattern.match(content)
     if parsed is None:
         prefix = None
         end = -1

@@ -458,6 +458,8 @@ class ERROR_CODES:
     +---------------------------------------------------+-----------+-------+
     | max_bans                                          | 30035     | -     |
     +---------------------------------------------------+-----------+-------+
+    | max_ban_fetches                                   | 30037     | -     |
+    +---------------------------------------------------+-----------+-------+
     | unauthorized                                      | 40001     | -     |
     +---------------------------------------------------+-----------+-------+
     | email_verification_required                       | 40002     | -     |
@@ -695,6 +697,7 @@ class ERROR_CODES:
     max_guild_discovery_category = 30030 # 5
     guild_has_template = 30031
     max_bans = 30035
+    max_ban_fetches = 30037
     
     unauthorized = 40001
     email_verification_required = 40002

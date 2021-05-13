@@ -4,9 +4,11 @@ from ...backend.utils import WeakReferer
 from ...discord.events.handling_helpers import EventWaitforBase
 from ...discord.preconverters import preconvert_bool
 from ...discord.utils import USER_MENTION_RP
+from ...discord.events.handling_helpers import Router, compare_converted
 
 from .command_helpers import default_precheck, test_precheck, test_error_handler, test_name_rule, \
-    validate_category_or_command_name, get_prefix_parser, COMMAND_NAME_RP, raw_name_to_display
+    validate_category_or_command_name, get_prefix_parser, COMMAND_NAME_RP
+from .utils import raw_name_to_display
 from .context import CommandContext
 from .category import Category
 from .command import Command
@@ -171,6 +173,9 @@ class CommandProcessor(EventWaitforBase):
         '_error_handlers', '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case',
         '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category',
         'command_name_to_command', 'registered_commands')
+    
+    __event_name__ = 'message_create'
+    SUPPORTED_TYPES = (Command, )
     
     def __new__(cls, prefix, *, precheck=None, mention_prefix_enabled=True, category_name_rule=None,
             command_name_rule=None, default_category_name=None, prefix_ignore_case=True):
@@ -825,3 +830,111 @@ class CommandProcessor(EventWaitforBase):
     @precheck.deleter
     def precheck(self):
         self.precheck = default_precheck
+    
+    def __setevent__(self, command, name, description=None, aliases=None, category=None, checks=None, error_handlers=None,
+            separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+        """
+        Adds a command to the command processor.
+        
+        Parameters
+        ----------
+        command : ``Command``, ``Router``, `None`, `async-callable`
+            Async callable to add as a command.
+        name : `None` or `str`
+            The command's name.
+        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+            The name to be used instead of the passed `command`'s.
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+            Description added to the command. If no description is provided, then it will check the commands's
+            `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
+            ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
+            description.
+        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+            The aliases of the command.
+        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+            The category of the command. Can be given as the category itself, or as a category's name. If given as
+            `None`, then the command will go under the command processer's default category.
+        checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                ``CommandCheckWrapper``, ``CheckBase``), Optional
+            Checks to decide in which circumstances the command should be called.
+        error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
+                `list` of `async-callable`), Optional
+            Error handlers for the command.
+        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the command's parser.
+        assigner : `None`, `str`, Optional
+            Parameter assigner sign of the command's parser.
+        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands.
+        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands if any check fails.
+        
+        Returns
+        -------
+        command : ``Command``
+            The added command instance.
+        """
+        if isinstance(command, Command):
+            pass
+        elif isinstance(command, Router):
+            command = command[0]
+        else:
+            command = Command(command, name, description, aliases, category, checks, error_handlers, separator,
+                assigner, hidden, hidden_if_checks_fail)
+        
+        self._add_command(command)
+        return command
+    
+    
+    def __delevent__(self, command, name, **kwargs):
+        """
+        Removes the specified command from the command processor.
+        
+        Parameters
+        ----------
+        command : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
+            The command to remove.
+        name : `None` or `str`
+            The command's name to remove.
+        **kwargs : Keyword Arguments
+            Other keyword only arguments are ignored.
+        
+        Raises
+        ------
+        TypeError
+            If `name` was not given as `None` or as `str` instance.
+        """
+        if (name is not None):
+            name_type = type(name)
+            if name_type is str:
+                pass
+            elif issubclass(name_type, str):
+                name = str(name)
+            else:
+                raise TypeError(f'`name` can be `None` or `str` instance, got {name_type.__name__}.')
+        
+        if isinstance(command, Command):
+            self._remove_command(command)
+            return
+        
+        if isinstance(command, Router):
+            for command in command:
+                self._remove_command(command)
+            return
+        
+        name = raw_name_to_display(name)
+        
+        try:
+            command = self.command_name_to_command[name]
+        except KeyError:
+            return
+        
+        command_function = command._command_function
+        if (command_function is None):
+            return
+        
+        if not compare_converted(command_function._function, command):
+            return
+        
+        self._remove_command(command)

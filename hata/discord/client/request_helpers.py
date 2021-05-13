@@ -10,6 +10,7 @@ from ..core import MESSAGES
 from ..message import Message, MessageReference, MessageRepr
 from ..embed import EmbedBase
 from ..utils import random_id
+from ..bases import maybe_snowflake_pair
 
 ComponentBase = include('ComponentBase')
 

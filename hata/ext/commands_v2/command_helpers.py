@@ -6,10 +6,11 @@ from functools import partial as partial_func
 
 from ...backend.utils import FunctionType
 from ...backend.analyzer import CallableAnalyzer
+from ...backend.export import include
 
 from .exceptions import CommandProcessingError
-from .checks import CheckBase
-from .utils import CommandCheckWrapper
+CheckBase = include('CheckBase')
+CommandCheckWrapper = include('CommandCheckWrapper')
 
 SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\S*')
 COMMAND_NAME_RP = re_compile('\S*([^\S]*)\S*', re_multi_line|re_dotall)
@@ -31,6 +32,10 @@ async def run_checks(checks, command_context):
     -------
     failed : `None` or ``CheckBase``
         The failed check if any.
+    
+    Notes
+    -----
+    Not like ``handle_exception``, this can be called for checks of different commands.
     """
     for check in checks:
         if not await check(command_context):
@@ -39,7 +44,7 @@ async def run_checks(checks, command_context):
     return None
 
 
-async def handle_exception(error_handlers, command_context, exception):
+async def handle_exception(command_context, exception):
     """
     Handles an exception raised meanwhile processing a command.
     
@@ -47,14 +52,12 @@ async def handle_exception(error_handlers, command_context, exception):
     
     Parameters
     ----------
-    error_handlers : `generator`
-        A generator yielding error checks.
     command_context : ``CommandContext``
         The respective command context.
     exception : ``BaseException``
         The occurred exception.
     """
-    for error_handler in error_handlers:
+    for error_handler in command_context.command._iter_error_handlers():
         result = await error_handler(command_context, exception)
         if isinstance(result, int) and result:
             break
@@ -65,7 +68,7 @@ async def handle_exception(error_handlers, command_context, exception):
             await client.events.error(client, '_handle_exception', exception)
 
 
-def get_sub_command_trace(command, content, index):
+def get_command_category_trace(command, content, index):
     """
     Gets the sub command trace and command function for the given command.
     
@@ -80,15 +83,15 @@ def get_sub_command_trace(command, content, index):
     
     Returns
     -------
-    sub_command_trace : `None` or `tuple` of ``CommandCategory``
+    command_category_trace : `None` or `tuple` of ``CommandCategory``
         Trace to the actual command.
     command_function : ``CommandFunction`` or `None`
         The command function, which should be called.
     index : `int`
         The index till the command's parameters may start from.
     """
-    sub_commands = command._sub_commands
-    if (sub_commands is not None):
+    command_category_name_to_command_category = command.command_category_name_to_command_category
+    if (command_category_name_to_command_category is not None):
         trace = []
         end = index
         while True:
@@ -104,21 +107,21 @@ def get_sub_command_trace(command, content, index):
             name = raw_name_to_display(part)
             
             try:
-                sub_command = sub_commands[name]
+                command_category = command_category_name_to_command_category[name]
             except KeyError:
                 break
             
-            trace.append((end, sub_command))
+            trace.append((end, command_category))
             
-            sub_commands = sub_command._sub_commands
+            sub_commands = command_category._sub_commands
             if sub_commands is None:
                 break
             
             continue
         
         while trace:
-            end, sub_command = trace[-1]
-            command_function = sub_command._command_function
+            end, command_category = trace[-1]
+            command_function = command_category._command_function
             if (command_function is not None):
                 return tuple(trace_element[1] for trace_element in trace), command_function, end
             
@@ -718,23 +721,6 @@ def get_prefix_parser(prefix, prefix_ignore_case):
     return prefix_parser, prefix_getter
 
 
-def raw_name_to_display(raw_name):
-    """
-    Converts the given raw command or it's parameter's name to it's display name.
-    
-    Parameters
-    ----------
-    raw_name : `str`
-        The name to convert.
-    
-    Returns
-    -------
-    display_name : `str`
-        The converted name.
-    """
-    return '-'.join([w for w in raw_name.strip('_ ').lower().replace(' ', '-').replace('_', '-').split('-') if w])
-
-
 def _unwrap_check(check):
     """
     Unwraps the given check if applicable.
@@ -760,7 +746,7 @@ def _unwrap_check(check):
     if isinstance(check, CommandCheckWrapper):
         return check._check
     
-    raise TypeError(f'`check` can be either {CheckBase.__name__} or {CommandCheckWrapper.__name__} instance, got '
+    raise TypeError(f'`check` can be either `{CheckBase.__name__}` or `{CommandCheckWrapper.__name__}` instance, got '
         f'{check.__class__.__name__}.')
 
 
@@ -797,44 +783,11 @@ def validate_checks(checks):
                 checks_validated = []
             
             checks_validated.append(check)
+        
+        checks = tuple(checks_validated)
     else:
         check = _unwrap_check(checks)
         
-        if checks_validated is None:
-            checks_validated = []
-        
-        checks_validated.append(check)
+        checks = (check, )
     
-    return tuple(checks_validated)
-
-
-def normalize_description(description):
-    """
-    Normalizes a docstrings.
-    
-    Parameters
-    ----------
-    description : `str` or `Any`
-        The docstring to clear.
-    
-    Returns
-    -------
-    cleared : `str` or `Any`
-        The cleared docstring. If `docstring` was given as `None` or is detected as empty, will return `None`.
-    """
-    if (description is None) or (not isinstance(description, str)):
-        return description
-    
-    lines = description.splitlines()
-    for index in reversed(range(len(lines))):
-        line = lines[index]
-        line = line.strip()
-        if line:
-            lines[index] = line
-        else:
-            del lines[index]
-    
-    if not lines:
-        return None
-    
-    return ' '.join(lines)
+    return checks

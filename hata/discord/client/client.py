@@ -67,7 +67,7 @@ from ..bases import maybe_snowflake, maybe_snowflake_pair,maybe_snowflake_token_
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
-    _message_delete_multiple_private_task_message_id_iterator, _request_members_loop
+    _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data
 from .utils import UserGuildPermission, Typer, BanEntry
@@ -3484,8 +3484,8 @@ class Client(ClientUserPBase):
                 snowflake_pair = maybe_snowflake_pair(channel)
                 if snowflake_pair is None:
                     raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
-                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}` or as `tuple` (`int`, `int`), got '
-                        f'{channel.__class__.__name__}.')
+                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int` or `tuple` (`int`, `int`), '
+                        f'got {channel.__class__.__name__}.')
                 
                 channel_id, message_id = snowflake_pair
                 channel = CHANNELS.get(channel_id, None)
@@ -3727,9 +3727,9 @@ class Client(ClientUserPBase):
                     is_private = True
             
             if is_private:
-                function = type(self)._message_delete_multiple_private_task
+                function = _message_delete_multiple_private_task
             else:
-                function = type(self)._message_delete_multiple_task
+                function = _message_delete_multiple_task
             
             task = Task(function(self, channel_id, groups, reason), KOKORO)
             tasks.append(task)
@@ -3762,167 +3762,6 @@ class Client(ClientUserPBase):
         if (last_exception is not None):
             raise last_exception
     
-    async def _message_delete_multiple_private_task(self, channel_id, groups, reason):
-        """
-        Internal task used by ``.message_delete_multiple``.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        channel_id : `int`
-            The channel's identifier, where the messages are.
-        groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
-            `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
-        reason : `None` or `str`
-            Additional reason which would show up in the guild's audit logs.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        for message in _message_delete_multiple_private_task_message_id_iterator(groups):
-            await self.http.message_delete(channel_id, message.id, reason)
-    
-    async def _message_delete_multiple_task(self, channel_id, groups, reason):
-        """
-        Internal task used by ``.message_delete_multiple``.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        channel_id : `int`
-            The channel's identifier, where the messages are.
-        groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
-            `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
-        reason : `None` or `str`
-            Additional reason which shows up in the respective guild's audit logs.
-        
-        Raises
-        ------
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        message_group_new, message_group_old, message_group_old_own = groups
-        
-        tasks = []
-        
-        delete_mass_task = None
-        delete_new_task = None
-        delete_old_task = None
-        
-        while True:
-            if delete_mass_task is None:
-                message_limit = len(message_group_new)
-                
-                # 0 is all good, but if it is more, lets check them
-                if message_limit:
-                    message_ids = []
-                    message_count = 0
-                    limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks - 10s
-                    
-                    while message_group_new:
-                        own, message_id = message_group_new.popleft()
-                        if message_id > limit:
-                            message_ids.append(message_id)
-                            message_count += 1
-                            if message_count == 100:
-                                break
-                            continue
-                        
-                        if (message_id+20971520000) < limit:
-                            continue
-                        
-                        # If the message is really older than the limit, with ignoring the 10 second, then we move it.
-                        if own:
-                            group = message_group_old_own
-                        else:
-                            group = message_group_old
-                        
-                        group.appendleft(message_id)
-                        continue
-                    
-                    if message_count:
-                        if message_count == 1:
-                            if (delete_new_task is None):
-                                message_id = message_ids[0]
-                                delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason), KOKORO)
-                                tasks.append(delete_new_task)
-                        else:
-                            delete_mass_task = Task(
-                                self.http.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
-                                    KOKORO)
-                            
-                            tasks.append(delete_mass_task)
-            
-            if delete_old_task is None:
-                if message_group_old:
-                    message_id = message_group_old.popleft()
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
-                    tasks.append(delete_old_task)
-            
-            if delete_new_task is None:
-                if message_group_new:
-                    group = message_group_new
-                elif message_group_old_own:
-                    group = message_group_old_own
-                else:
-                    group = None
-                
-                if (group is not None):
-                    message_id = message_group_old_own.popleft()
-                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason), KOKORO)
-                    tasks.append(delete_new_task)
-            
-            if not tasks:
-                # It can happen, that there are no more tasks left,  at that case we check if there is more message
-                # left. Only at `message_group_new` can be anymore message, because there is a time interval of 10
-                # seconds, what we do not move between categories.
-                if not message_group_new:
-                    break
-                
-                # We really have at least 1 message at that interval.
-                own, message_id = message_group_new.popleft()
-                # We will delete that message with old endpoint if not own, to make
-                # Sure it will not block the other endpoint for 2 minutes with any chance.
-                if own:
-                    delete_new_task = Task(self.http.message_delete(channel_id, message_id, reason), KOKORO)
-                else:
-                    delete_old_task = Task(self.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
-                
-                tasks.append(delete_old_task)
-            
-            done, pending = await WaitTillFirst(tasks, KOKORO)
-            
-            for task in done:
-                tasks.remove(task)
-                try:
-                    result = task.result()
-                except (DiscordException, ConnectionError):
-                    for task in tasks:
-                        task.cancel()
-                    raise
-                
-                if task is delete_mass_task:
-                    delete_mass_task = None
-                    continue
-                
-                if task is delete_new_task:
-                    delete_new_task = None
-                    continue
-                
-                if task is delete_old_task:
-                    delete_old_task = None
-                    continue
-                 
-                # Should not happen
-                continue
         
     async def message_delete_sequence(self, channel, *, after=None, before=None, limit=None, filter=None, reason=None):
         """
@@ -4415,7 +4254,7 @@ class Client(ClientUserPBase):
                 request_data = {
                     'limit': 100,
                     'before': last_message_id,
-                        }
+                }
                 
                 get_mass_task = Task(sharder.client.http.message_get_chunk(channel_id, request_data), KOKORO)
                 tasks.append(get_mass_task)
@@ -8783,9 +8622,9 @@ class Client(ClientUserPBase):
                     f'got {user.__class__.__name__}.')
        
         data = {
-            'suppress' : True,
+            'suppress': True,
             'channel_id': channel_id,
-                }
+        }
         
         await self.http.voice_state_user_edit(guild_id, user_id, data)
     
@@ -8998,6 +8837,116 @@ class Client(ClientUserPBase):
         
         await self.http.stage_delete(channel_id)
         # We receive no data.
+    
+    # Thread
+    
+    async def thread_create(self, message, name):
+        """
+        Creates a new thread derived from the given message.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        message : ``ChannelText``, ``Message``, ``MessageRepr``, ``MessageReference``, `int`, `tuple` (`int`, `int`)
+            The channel or message to create thread from.
+            
+            > If given as a channel instance, will create a private thread, else a public one.
+        name : `str`
+            The created thread's name.
+        
+        Returns
+        -------
+        thread_channel : ``ChannelThread``
+        
+        Raises
+        ------
+        TypeError
+            If `message`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `name` is not `str` instance.
+            - If `name`'s length is out of range [2:100].
+            - If `public` was not given nas `bool` instance.
+        """
+        # Message check order
+        # 1.: Message
+        # 2.: MessageRepr
+        # 3.: MessageReference
+        # 4.: None -> raise
+        # 5.: `tuple` (`int`, `int`)
+        # 6.: raise
+        #
+        # Message cannot be detected by id, only cached ones, so ignore that case.
+        
+        if isinstance(message, ChannelTextBase):
+            message_id = None
+            channel_id = message.id
+            guild = message.guild
+        elif isinstance(message, Message):
+            message_id = message.id
+            channel = message.channel
+            channel_id = channel.id
+            guild = channel.guild
+        else:
+            channel_id = maybe_snowflake(message)
+            if (channel_id is not None):
+                message_id = None
+                guild = None
+            elif isinstance(message, MessageRepr):
+                message_id = message.id
+                channel = message.channel
+                channel_id = channel.id
+                guild = channel.id
+            elif isinstance(message, MessageReference):
+                channel_id = message.channel_id
+                message_id = message.message_id
+                guild = message.guild
+            else:
+                snowflake_pair = maybe_snowflake_pair(message)
+                if snowflake_pair is None:
+                    raise TypeError(f'`message` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
+                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int` or `tuple` (`int`, `int`), '
+                        f'got {message.__class__.__name__}.')
+                
+                channel_id, message_id = snowflake_pair
+                guild = None
+        
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+            name_length = len(name)
+            
+            if name_length < 2 or name_length > 100:
+                raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
+        
+        if __debug__:
+            if not isinstance(public, bool):
+                raise TypeError(f'`public can be given as `bool` instance, got {public.__class__.__name__}.')
+        
+        data = {
+            'name': name,
+        }
+        
+        if public:
+            coroutine = self.http.thread_create_pulic(channel_id, message_id, data)
+        else:
+            coroutine = self.http.thread_create_private(channel_id, data)
+        
+        channel_data = await coroutine
+        if guild is None:
+            guild_id = channel_data.get('guild_id', None)
+            if (guild_id is None):
+                guild = None
+            else:
+                guild_id = int(guild_id)
+                guild = GUILDS.get(guild_id, None)
+        
+        return ChannelThread(channel_data, self, guild)
     
     
     async def user_get(self, user, *, force_update=False):

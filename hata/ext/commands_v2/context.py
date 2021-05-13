@@ -1,7 +1,10 @@
-# -*- coding: utf-8 -*-
-
 __all__ = ('CommandContext', )
 
+from ...backend.export import export
+from .command_helpers import get_command_category_trace, handle_exception, run_checks
+from .exceptions import CommandCheckError
+
+@export
 class CommandContext(object):
     """
     Represents a command context within the command is invoked.
@@ -12,6 +15,14 @@ class CommandContext(object):
         The client who received the message.
     command : ``Command``
         The command to invoke.
+    command_category_trace : `None` or `tuple` of ``CommandCategory``
+        Trace of command categories till to the command to invoke if applicable.
+    command_function : `None` or ``CommandFunction``
+        The command's function to run.
+    command_keyword_parameters : `dict` of (`str`, `Any`) items
+        Keyword parameters to pass to the command function.
+    command_positional_parameters : `list` of `Any`
+        Positional parameters to pass to the command function.
     content : `str`
         The message's content after prefix.
     message : ``Message``
@@ -21,7 +32,8 @@ class CommandContext(object):
     prefix : `None` or `str`
         The prefix used when calling the command.
     """
-    __slots__ = ('client', 'command', 'content', 'message', 'parameters', 'prefix')
+    __slots__ = ('client', 'command', 'command_category_trace', 'command_function', 'command_keyword_parameters',
+        'command_positional_parameters', 'content', 'message', 'parameters', 'prefix')
     
     def __new__(cls, client, message, prefix, content, command):
         """
@@ -45,6 +57,10 @@ class CommandContext(object):
         self.prefix = prefix
         self.content = content
         self.command = command
+        self.command_category_trace = None
+        self.command_function = None
+        self.command_keyword_parameters = {}
+        self.command_positional_parameters = []
         return self
     
     def __repr__(self):
@@ -299,3 +315,34 @@ class CommandContext(object):
         ```
         """
         return self.client.keep_typing(self.channel, *args, **kwargs)
+    
+    
+    async def invoke(self):
+        """
+        Invokes the command.
+        
+        This method is a coroutine.
+        """
+        try:
+            command_category_trace, command_function, index = get_command_category_trace(self.command, self.content, 0)
+            self.command_category_trace = command_category_trace
+            self.command_function = command_function
+            
+            if (command_function is None):
+                return
+            
+            failed_check = run_checks(self.command._iter_checks, self)
+            if (failed_check is not None):
+                raise CommandCheckError(failed_check)
+            
+            parameter_parsing_states = await command_function._content_parser.parse_content(self, self.content, index)
+            command_positional_parameters = self.command_positional_parameters
+            command_keyword_parameters = self.command_keyword_parameters
+            for parameter_parsing_state in parameter_parsing_states:
+                parameter_parsing_state.get_parser_value(command_positional_parameters, command_keyword_parameters)
+            
+            await command_function._function(*command_positional_parameters, **command_keyword_parameters)
+            
+        except BaseException as err:
+            await handle_exception(self, err)
+

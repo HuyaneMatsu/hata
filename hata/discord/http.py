@@ -1498,11 +1498,19 @@ class DiscordHTTPClient(HTTPClient):
     # thread
     
     # DiscordException Bad Request (400), code=50001: Missing Access
-    async def thread_create(self, channel_id, data):
+    async def thread_create_private(self, channel_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create_private, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/threads',
+            data,
+        )
+    
+    async def thread_create_public(self, channel_id, message_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create_public, channel_id),
+            METHOD_POST,
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/threads',
             data,
         )
     

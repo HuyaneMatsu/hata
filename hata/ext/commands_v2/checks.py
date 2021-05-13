@@ -162,6 +162,7 @@ from functools import partial as partial_func
 from ...backend.futures import Task
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.utils import copy_docs
+from ...backend.export import export
 
 from ...discord.core import KOKORO
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
@@ -173,7 +174,7 @@ from ...discord.channel import ChannelBase, ChannelText, ChannelCategory, Channe
 from ...discord.client import Client
 from ...discord.user import ClientUserBase
 
-from .utils import CommandCheckWrapper
+from .wrappers import CommandCheckWrapper
 
 
 def _convert_permission(permission):
@@ -247,6 +248,7 @@ class CheckMeta(type):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
+@export
 class CheckBase(metaclass=CheckMeta):
     """
     Base class for checks.
@@ -1801,7 +1803,7 @@ class CheckBotAccount(CheckSingleBase):
         return False
 
 
-class CheckIsUserAccountOrIsClient(CheckSingleBase, CheckIsClient, CheckUserAccount):
+class CheckIsUserAccountOrIsClient(CheckIsClient, CheckUserAccount, CheckSingleBase):
     """
     Checks whether the message was sent by a user account or by a client.
     """

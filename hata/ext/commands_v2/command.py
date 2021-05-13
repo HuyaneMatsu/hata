@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('Command', )
 import re, reprlib
 
@@ -8,10 +7,10 @@ from ...discord.events.handling_helpers import route_value, check_name, Router, 
 from ...discord.interaction import InteractionEvent
 from ...discord.preconverters import preconvert_bool
 
-from .utils import CommandWrapper, CommandCheckWrapper
+from .wrappers import CommandWrapper, CommandCheckWrapper
 from .category import Category
-from .command_helpers import test_error_handler, raw_name_to_display, normalize_description, validate_checks, \
-    validate_error_handlers
+from .utils import  raw_name_to_display, normalize_description
+from .command_helpers import test_error_handler, validate_checks, validate_error_handlers
 from .content_parser import CommandContentParser
 
 def _check_maybe_route(variable_name, variable_value, route_to, validator):
@@ -348,7 +347,7 @@ def _fetch_check_from_wrappers(wrappers):
     return checks
 
 
-def _iter_checks(checks_1, checks_2):
+def _iter_merge_checks(checks_1, checks_2):
     """
     Iterates the given checks.
     
@@ -391,7 +390,7 @@ def _merge_checks(checks_1, checks_2):
     if (checks_1 is None) and (checks_2 is None):
         return None
     
-    return tuple(_iter_checks(checks_1, checks_2))
+    return tuple(_iter_merge_checks(checks_1, checks_2))
 
 
 class Command:
@@ -412,9 +411,9 @@ class Command:
         Weak reference to the command's command processor.
     _error_handlers : `None` or `list` of `function`
         Error handlers bind to the command.
-    _sub_commands : `None` or `dict` of (`str`, ``CommandCategory``) items
+    _command_categories : `None` or `set` of ``CommandCategory``
         Sub command categories of the command.
-    aliases : `None` or `list` of `str`
+    aliases : `None` or `tuple` of `str`
         Name aliases of the command if any. They are always lower case.
     description : `Any`
         The command's description if any.
@@ -426,10 +425,12 @@ class Command:
         Whether the command should be hidden from help commands if the user's checks fail.
     name : `str`
         The command's name. Always lower case.
+    command_category_name_to_command_category : `None` or `dict` of (`str`, ``CommandCategory``) items
     """
     __slots__ = ('_category_hint', '_category_reference', '_checks', '_command_function',
-        '_command_processor_reference', '_error_handlers', '_sub_commands', 'aliases', 'description', 'display_name',
-        'hidden', 'hidden_if_checks_fail', 'name')
+        '_command_processor_reference', '_error_handlers', '_command_categories', 'aliases',
+        'command_category_name_to_command_category', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail',
+        'name')
     
     
     def _iter_checks(self):
@@ -453,6 +454,21 @@ class Command:
                 checks = category._checks
                 if (checks is not None):
                     yield from checks
+    
+    
+    def _iter_own_checks(self):
+        """
+        Iterates over the checks only of the command, excluding it's category's.
+        
+        This method is a generator, which should be used inside of a for loop.
+        
+        Yields
+        ------
+        check : ``CheckBase``
+        """
+        checks = self._checks
+        if (checks is not None):
+            yield from checks
     
     
     def _iter_error_handlers(self):
@@ -901,7 +917,10 @@ class Command:
         hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`)
             Whether the command should be hidden from the help commands if any check fails.
         """
-        if isinstance(command, CommandWrapper):
+        if command is None:
+            function = None
+            wrappers = None
+        elif isinstance(command, CommandWrapper):
             function, wrappers = command.fetch_function_and_wrappers_back()
         else:
             function = command
@@ -936,20 +955,20 @@ class Command:
             category_hint = [_generate_category_hint_from(category) for category in category]
             
             description = [
-                _generate_description_from(command, description)
+                _generate_description_from(function, description)
                     if ((description is None) or (description is not default_description)) else default_description
                 for description in description]
         else:
-            name = check_name(command, name)
-            description = _generate_description_from(command, description)
+            name = check_name(function, name)
+            description = _generate_description_from(function, description)
             category_hint = _generate_category_hint_from(category)
         
-        if command is None:
+        if function is None:
             command_function = None
         else:
-            content_parser, command = CommandContentParser(command, separator, assigner)
+            content_parser, function = CommandContentParser(function, separator, assigner)
             
-            command_function = CommandFunction(command, content_parser)
+            command_function = CommandFunction(function, content_parser)
         
         if route_to:
             router = []
@@ -957,6 +976,10 @@ class Command:
             for name, aliases, description, category_hint, checks_, error_handlers, hidden, hidden_if_checks_fail \
                     in zip(name, aliases, description, category_hint, checks_, error_handlers, hidden,
                         hidden_if_checks_fail):
+                
+                if (aliases is not None):
+                    aliases = tuple(aliases)
+                
                 self = object.__new__(cls)
                 self._category_hint = category_hint
                 self._category_reference = None
@@ -964,18 +987,22 @@ class Command:
                 self._command_function = command_function
                 self._command_processor_reference = None
                 self._error_handlers = error_handlers
-                self._sub_commands = None
+                self._command_categories = None
                 self.aliases = aliases
                 self.description = description
                 self.display_name = name
                 self.hidden = hidden
                 self.hidden_if_checks_fail = hidden_if_checks_fail
                 self.name = name
+                self.command_category_name_to_command_category = None
                 
                 router.append(self)
             
             return Router(router)
         else:
+            if (aliases is not None):
+                aliases = tuple(aliases)
+            
             self = object.__new__(cls)
             self._category_hint = category_hint
             self._category_reference = None
@@ -983,13 +1010,14 @@ class Command:
             self._command_function = command_function
             self._command_processor_reference = None
             self._error_handlers = error_handlers
-            self._sub_commands = None
+            self._command_categories = None
             self.aliases = aliases
             self.description = description
             self.display_name = name
             self.hidden = hidden
             self.hidden_if_checks_fail = hidden_if_checks_fail
             self.name = name
+            self.command_category_name_to_command_category = None
             
             return self
     
@@ -1012,10 +1040,10 @@ class Command:
             repr_parts.append(' command_function=')
             repr_parts.append(repr(command_function))
         
-        sub_commands = self._sub_commands
-        if (sub_commands is not None):
-            repr_parts.append(' sub_commands=')
-            repr_parts.append(repr(sub_commands))
+        command_categories = self._command_categories
+        if (command_categories is not None):
+            repr_parts.append(' command_categories=')
+            repr_parts.append(repr(command_categories))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -1049,14 +1077,24 @@ class Command:
             error_handlers = error_handlers.copy()
         new._error_handlers = error_handlers
         
-        sub_commands  = self._sub_commands
-        if (sub_commands is not None):
-            sub_commands = {key:value.copy() for key, value in sub_commands.items()}
-        new._sub_commands = sub_commands
+        command_categories  = self._command_categories
+        if (command_categories is not None):
+            command_categories = {command_category.copy() for command_category in command_categories}
+        new._command_categories = command_categories
+        
+        if (command_categories is None):
+            command_category_name_to_command_category = None
+        else:
+            command_category_name_to_command_category = {}
+            for command_category in command_categories:
+                for name in command_category._iter_names():
+                    command_category_name_to_command_category[name] = command_category
+        
+        new.command_category_name_to_command_category = command_category_name_to_command_category
         
         aliases = self.aliases
         if (aliases is not None):
-            aliases = aliases.copy()
+            aliases = tuple(aliases)
         new.aliases = aliases
         
         new.description = self.description
@@ -1092,11 +1130,11 @@ class Command:
             for error_handler in error_handlers:
                 hash_value ^= hash(error_handler)
         
-        sub_commands = self._sub_commands
-        if (sub_commands is not None):
-            hash_value ^= len(sub_commands)<<18
-            for sub_command in sub_commands.values():
-                hash_value ^= hash(sub_command)
+        command_categories = self._command_categories
+        if (command_categories is not None):
+            hash_value ^= len(command_categories)<<18
+            for command_category in command_categories:
+                hash_value ^= hash(command_category)
         
         aliases = self.aliases
         if (aliases is not None):
@@ -1136,7 +1174,7 @@ class Command:
         if self._error_handlers != other._error_handlers:
             return False
         
-        if self._sub_commands != other._sub_commands:
+        if self._command_categories != other._command_categories:
             return False
         
         if self.aliases != other.aliases:
@@ -1155,6 +1193,84 @@ class Command:
             return False
         
         return True
+    
+    
+    def _add_command_category(self, command_category):
+        """
+        Adds a command category to the command.
+        
+        Parameters
+        ----------
+        command_category : ``CommandCategory``
+        """
+        command_categories = self._command_categories
+        command_category_name_to_command_category = self.command_category_name_to_command_category
+        if command_categories is None:
+            command_categories = self._command_categories = set()
+            command_category_name_to_command_category = self.command_category_name_to_command_category = {}
+        else:
+            for name in command_category._iter_names():
+                if name in command_category_name_to_command_category:
+                    raise RuntimeError(f'Duped `{CommandCategory.__name__}` name: {name!r}.')
+        
+        command_categories.add(command_category)
+        for name in command_category._iter_names():
+            command_category_name_to_command_category[name] = command_category
+    
+    
+    def __setevent__(self, command, name, description=None, aliases=None, category=None, checks=None,
+            error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+        """
+        Adds a sub-command to the command.
+        
+        Parameters
+        ----------
+        command : ``Command``, ``Router``, `None`, `async-callable`
+            Async callable to add as a command.
+        name : `None` or `str`
+            The command's name.
+        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+            The name to be used instead of the passed `command`'s.
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+            Description added to the command. If no description is provided, then it will check the commands's
+            `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
+            ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
+            description.
+        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+            The aliases of the command.
+        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+            The category of the command. Can be given as the category itself, or as a category's name. If given as
+            `None`, then the command will go under the command processer's default category.
+        checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                ``CommandCheckWrapper``, ``CheckBase``), Optional
+            Checks to decide in which circumstances the command should be called.
+        error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
+                `list` of `async-callable`), Optional
+            Error handlers for the command.
+        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the command's parser.
+        assigner : `None`, `str`, Optional
+            Parameter assigner sign of the command's parser.
+        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands.
+        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands if any check fails.
+        
+        Returns
+        -------
+        command_category : ``CommandCategory``
+            The added command category instance.
+        """
+        if not isinstance(command, (Command, Router)):
+            raise TypeError(f'`{Command.__name__}` and `{Router.__name__}` instances cannot be added as sub-commands, '
+                f'got {command!r}.')
+        
+        command = Command(command, name, description, aliases, category, checks, error_handlers, separator, assigner,
+            hidden, hidden_if_checks_fail)
+        
+        command_category = CommandCategory._from_command(command)
+        self._add_command_category(command_category)
 
 
 class CommandFunction:
@@ -1228,8 +1344,12 @@ class CommandCategory:
     ----------
     _command_function : `None` or ``CommandFunction``
         The actual command of the command to maybe call.
-    _sub_commands : `None` or `dict` of (`str`, ``CommandCategory``) items
+    _command_categories : `None` or `set` of ``CommandCategory``
         Sub command categories of the command.
+    aliases : `None` or `tuple` of `str`
+        Name aliases of the command category.
+    command_category_name_to_command_category : `None` of `dict` of (`str`, `Any`) items
+        Command categories by name.
     description : `Any`
         The command's description if any.
     display_name : `str`
@@ -1237,7 +1357,8 @@ class CommandCategory:
     name : `str`
         The command's name. Always lower case.
     """
-    __slots__ = ('_command_function', '_sub_commands', 'description', 'display_name', 'name',)
+    __slots__ = ('_command_function', '_command_categories', 'aliases', 'command_category_name_to_command_category',
+        'description', 'display_name', 'name',)
     
     @classmethod
     def _from_command(cls, source_command):
@@ -1254,11 +1375,13 @@ class CommandCategory:
         self : ``CommandCategory``
         """
         self = object.__new__(cls)
+        self.aliases = source_command.aliases
         self.name = source_command.name
         self.display_name = source_command.display_name
         self.description = source_command.description
         self._command_function = source_command._command_function
-        self._sub_commands = source_command._sub_commands
+        self._command_categories = source_command._command_categories
+        self.command_category_name_to_command_category = None
         return self
     
     def __repr__(self):
@@ -1270,10 +1393,10 @@ class CommandCategory:
             repr_parts.append(' command_function=')
             repr_parts.append(repr(command_function))
         
-        sub_commands = self._sub_commands
-        if (sub_commands is not None):
-            repr_parts.append(' sub_commands=')
-            repr_parts.append(repr(sub_commands))
+        command_categories = self._command_categories
+        if (command_categories is not None):
+            repr_parts.append(' command_categories=')
+            repr_parts.append(repr(command_categories))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -1286,11 +1409,17 @@ class CommandCategory:
         if (command_function is not None):
             hash_value ^= hash(command_function)
         
-        sub_commands = self._sub_commands
-        if (sub_commands is not None):
-            hash_value ^= len(sub_commands)<<18
-            for sub_command in sub_commands.values():
-                hash_value ^= hash(sub_command)
+        command_categories = self._command_categories
+        if (command_categories is not None):
+            hash_value ^= len(command_categories)<<18
+            for command_category in command_categories:
+                hash_value ^= hash(command_category)
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            hash_value ^= len(aliases)<<24
+            for alias in aliases:
+                hash_value ^= hash(alias)
         
         description = self.description
         if (description is not None):
@@ -1313,7 +1442,7 @@ class CommandCategory:
         if self._command_function != other._command_function:
             return False
         
-        if self._sub_commands != other._sub_commands:
+        if self._command_categories != other._command_categories:
             return False
         
         if self.description != other.description:
@@ -1323,3 +1452,98 @@ class CommandCategory:
             return False
         
         return True
+    
+    
+    def _iter_names(self):
+        """
+        Iterates over the command category's names.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        name : `str`
+        """
+        yield self.name
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            yield from aliases
+    
+    
+    def _add_command_category(self, command_category):
+        """
+        Adds a command category to the command.
+        
+        Parameters
+        ----------
+        command_category : ``CommandCategory``
+        """
+        command_categories = self._command_categories
+        command_category_name_to_command_category = self.command_category_name_to_command_category
+        if command_categories is None:
+            command_categories = self._command_categories = set()
+            command_category_name_to_command_category = self.command_category_name_to_command_category = {}
+        else:
+            for name in command_category._iter_names():
+                if name in command_category_name_to_command_category:
+                    raise RuntimeError(f'Duped `{CommandCategory.__name__}` name: {name!r}.')
+        
+        command_categories.add(command_category)
+        for name in command_category._iter_names():
+            command_category_name_to_command_category[name] = command_category
+    
+    
+    def __setevent__(self, command, name, description=None, aliases=None, category=None, checks=None,
+            error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+        """
+        Adds a sub-command to the command.
+        
+        Parameters
+        ----------
+        command : ``Command``, ``Router``, `None`, `async-callable`
+            Async callable to add as a command.
+        name : `None` or `str`
+            The command's name.
+        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+            The name to be used instead of the passed `command`'s.
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+            Description added to the command. If no description is provided, then it will check the commands's
+            `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
+            ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
+            description.
+        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+            The aliases of the command.
+        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+            The category of the command. Can be given as the category itself, or as a category's name. If given as
+            `None`, then the command will go under the command processer's default category.
+        checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                ``CommandCheckWrapper``, ``CheckBase``), Optional
+            Checks to decide in which circumstances the command should be called.
+        error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
+                `list` of `async-callable`), Optional
+            Error handlers for the command.
+        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the command's parser.
+        assigner : `None`, `str`, Optional
+            Parameter assigner sign of the command's parser.
+        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands.
+        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands if any check fails.
+        
+        Returns
+        -------
+        command_category : ``CommandCategory``
+            The added command category instance.
+        """
+        if not isinstance(command, (Command, Router)):
+            raise TypeError(f'`{Command.__name__}` and `{Router.__name__}` instances cannot be added as sub-commands, '
+                f'got {command!r}.')
+        
+        command = Command(command, name, description, aliases, category, checks, error_handlers, separator, assigner,
+            hidden, hidden_if_checks_fail)
+        
+        command_category = CommandCategory._from_command(command)
+        self._add_command_category(command_category)

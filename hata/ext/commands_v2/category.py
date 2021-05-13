@@ -2,8 +2,8 @@ __all__ = ('Category',)
 
 from ...backend.utils import WeakReferer
 
-from .command_helpers import validate_checks, normalize_description, raw_name_to_display, test_error_handler
-
+from .command_helpers import validate_checks, test_error_handler
+from .utils import normalize_description, raw_name_to_display
 
 class Category:
     """
@@ -27,6 +27,7 @@ class Category:
         The category's description.
     name : `str`
         The category's name. Always lower case.
+    
     Notes
     -----
     ``Category`` supports weakreferencing.
@@ -73,7 +74,7 @@ class Category:
         self._command_processor_reference = None
         self._error_handlers = None
         self._self_reference = None
-        self.registered_commands = {}
+        self.registered_commands = set()
         self.display_name = name
         self.description = description
         self.name = name
@@ -114,7 +115,7 @@ class Category:
         category_name_to_category = command_processor.category_name_to_category
         name = self.name
         other_category = category_name_to_category.get(name, None)
-        if (other_category is None) or (self is not other_category):
+        if (other_category is not None) and (self is not other_category):
             other_category.unlink()
         
         category_name_to_category[name] = self

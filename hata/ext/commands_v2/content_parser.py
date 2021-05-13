@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-__all__ = ()
+__all__ = ('ConverterFlag', )
 
 import re
 from datetime import timedelta
@@ -24,15 +23,15 @@ from ...discord.color import Color, parse_color
 from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
 from ...discord.message import Message
 
-from .context import CommandContext
 from .exceptions import CommandParameterParsingError
+from .context import CommandContext
+from .utils import raw_name_to_display
 
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
     relativedelta = None
 
-from .command_helpers import raw_name_to_display
 
 NUMERIC_CONVERSION_LIMIT = 100
 
@@ -325,6 +324,7 @@ class ContentParameterParser:
             context_class = ContentParameterParserContextEncapsulator
         
         self = object.__new__(cls)
+        self.assigner = assigner
         self.separator = separator
         self._rp = rp
         self._context_class = context_class
@@ -354,7 +354,7 @@ class ContentParameterParser:
         """
         context = self._context_class(self._rp.match(content, index))
         return context.keyword, context.value, context.end
-        
+    
     def __repr__(self):
         """Returns the content argument separator's representation."""
         return f'{self.__class__.__name__}({self.separator!r}, {self.assigner!r})'
@@ -556,7 +556,7 @@ class ConverterFlag(FlagBase):
         'id': 3,
         'everywhere': 4,
         'profile': 5,
-            }
+    }
     
     user_default = NotImplemented
     user_all = NotImplemented
@@ -686,7 +686,7 @@ class ConverterSetting:
                 f'{converter!r}.')
         
         non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count != 3-requires_part:
+        if non_reserved_positional_argument_count != (3 if requires_part else 2):
             raise TypeError(f'`converter` should accept `3` (or 2 if `requires_part` is `False`) non reserved '
                 f'positional arguments , meanwhile it expects {non_reserved_positional_argument_count}.')
         
@@ -771,6 +771,8 @@ class ConverterSetting:
                 CONVERTER_SETTING_TYPE_TO_SETTING[alternative_type] = self
                 CONVERTER_SETTING_NAME_TO_SETTING[alternative_type.__name__] = self
                 CONVERTER_NAME_TO_TYPE[alternative_type.__name__] = alternative_type
+        
+        return self
     
     def __repr__(self):
         """Returns the converter setting's representation."""
@@ -1757,43 +1759,28 @@ class ContentParserParameter:
         
         details = []
         
-        if parameter.has_annotation:
+        while True:
+            if not parameter.has_annotation:
+                description = None
+                break
+            
             annotation = parameter.annotation
             if annotation is None:
-                pass
+                description = None
+                break
             
-            elif isinstance(annotation, type):
-                description = None
-                detail = get_detail_for_type(annotation)
+            detail = get_detail_for_value(annotation)
+            if (detail is not None):
                 details.append(detail)
-            elif type(annotation) is str:
                 description = None
-                detail = get_detail_for_str(annotation)
-                details.append(detail)
-            elif isinstance(annotation, str):
-                annotation = str(annotation)
-                description = None
-                detail = get_detail_for_str(annotation)
-                details.append(detail)
+                break
             
-            elif isinstance(annotation, set):
-                # Ayaya
+            if isinstance(annotation, set):
+                details.extend(get_details_from_set(annotation))
                 description = None
-                for sub_annotation in annotation:
-                    if sub_annotation is None:
-                        pass
-                    elif type(sub_annotation) is str:
-                        detail = get_detail_for_str(sub_annotation)
-                        details.append(detail)
-                    elif isinstance(sub_annotation, str):
-                        sub_annotation = str(sub_annotation)
-                        detail = get_detail_for_str(sub_annotation)
-                        details.append(detail)
-                    else:
-                        raise TypeError(f'`annotation` set can contain only `str` and `type` elements, got '
-                            f'{sub_annotation.__class__.__name__}.')
+                break
             
-            elif isinstance(annotation, tuple):
+            if isinstance(annotation, tuple):
                 if type(annotation) is not tuple:
                     annotation = tuple(annotation)
                 
@@ -1803,38 +1790,17 @@ class ContentParserParameter:
                         f'{annotation_length!r}: {annotation!r}')
                 
                 annotation_tuple_type = annotation[0]
-                if annotation_tuple_type is None:
-                    pass
-                
-                elif isinstance(annotation_tuple_type, type):
-                    detail = get_detail_for_type(annotation_tuple_type)
-                    details.append(detail)
-                elif type(annotation_tuple_type) is str:
-                    detail = get_detail_for_str(annotation_tuple_type)
-                    details.append(detail)
-                elif isinstance(annotation_tuple_type, str):
-                    annotation_tuple_type = str(annotation_tuple_type)
-                    detail = get_detail_for_str(annotation_tuple_type)
-                    details.append(detail)
-                
-                for sub_annotation in annotation_tuple_type:
-                    if sub_annotation is None:
-                        pass
-                    elif type(sub_annotation) is str:
-                        detail = get_detail_for_str(sub_annotation)
-                        details.append(detail)
-                    elif isinstance(sub_annotation, str):
-                        sub_annotation = str(sub_annotation)
-                        detail = get_detail_for_str(sub_annotation)
+                if (annotation_tuple_type is not None):
+                    detail = get_detail_for_value(annotation_tuple_type)
+                    if (detail is not None):
                         details.append(detail)
                     else:
-                        raise TypeError(f'`annotation` set can contain only `str` and `type` elements, got '
-                            f'{sub_annotation.__class__.__name__}.')
-                
-                else:
-                    raise TypeError(f'`annotation` was given as `tuple`, but it\'s 0th element was not given as any '
-                        f'of the expected values: `None`, `type`, `str`, `set`, instance, got '
-                        f'{annotation_tuple_type.__class__.__name__}; {annotation_tuple_type!r}.')
+                        if isinstance(annotation_tuple_type, set):
+                            details.extend(get_details_from_set(annotation_tuple_type))
+                        else:
+                            raise TypeError(f'`annotation` was given as `tuple`, but it\'s 0th element was not given '
+                                f'as any of the expected values: `None`, `type`, `str`, `set`, instance, got '
+                                f'{annotation_tuple_type.__class__.__name__}; {annotation_tuple_type!r}.')
                 
                 
                 annotation_tuple_description = annotation[1]
@@ -1857,12 +1823,10 @@ class ContentParserParameter:
                         raise TypeError(f'`annotation` name can be `str` instance, got '
                             f'{annotation_tuple_name.__class__.__name__}.')
                 
-            else:
-                raise TypeError(f'`annotation` can be either given as `None`, `type`, `str`, `tuple, or `set`, got '
-                    f'{annotation.__class__.__name__}; {annotation!r}.')
+                break
             
-        else:
-            description = None
+            raise TypeError(f'`annotation` can be either given as `None`, `type`, `str`, `tuple, or `set`, got '
+                f'{annotation.__class__.__name__}; {annotation!r}.')
         
         
         details_length = len(details)
@@ -1974,6 +1938,23 @@ class ContentParserParameter:
                 parsed = await converter(command_context, detail)
         
         return parsed
+    
+    
+    def _iter_details(self):
+        """
+        Iterates over the details of the converter.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        detail : ``ContentParserParameterDetail``
+        """
+        detail = self.detail
+        if (detail is None):
+            yield from self.details
+        else:
+            yield self.detail
 
 
 COMMAND_CONTENT_PARSER_POST_PROCESSORS = []
@@ -1995,7 +1976,7 @@ def get_detail_for_str(annotation):
     Raises
     ------
     ValueError
-        The is no converter setting for the annotation.
+        There is no converter setting for the annotation.
     """
     try:
         converter_setting = CONVERTER_SETTING_NAME_TO_SETTING[annotation]
@@ -2023,7 +2004,7 @@ def get_detail_for_type(annotation):
     Raises
     ------
     ValueError
-        The is no converter setting for the annotation.
+        There is no converter setting for the annotation.
     """
     try:
         converter_setting = CONVERTER_SETTING_TYPE_TO_SETTING[annotation]
@@ -2031,6 +2012,75 @@ def get_detail_for_type(annotation):
         raise ValueError(f'There is no converter registered for {annotation!r}.') from None
     
     return ContentParserParameterDetail(converter_setting, annotation)
+
+
+
+def get_detail_for_value(annotation):
+    """
+    Creates a ``ContentParserParameterDetail`` for the given value.
+    
+    Parameters
+    ----------
+    annotation : `str`, `type`
+        The respective annotation.
+    
+    Returns
+    -------
+    detail : ``ContentParserParameterDetail``
+    
+    Raises
+    ------
+    ValueError
+        The is no converter setting for the annotation.
+    """
+    if isinstance(annotation, type):
+        detail = get_detail_for_type(annotation)
+    
+    elif type(annotation) is str:
+        detail = get_detail_for_str(annotation)
+    
+    elif isinstance(annotation, str):
+        annotation = str(annotation)
+        detail = get_detail_for_str(annotation)
+    
+    else:
+        detail = None
+    
+    return detail
+
+def get_details_from_set(annotation):
+    """
+    Generates ``ContentParserParameterDetail`` from the given annotation value.
+    
+    This function is a generator.
+    
+    Parameters
+    ----------
+    annotation : `set` of (`str`, `type`)
+        The respective annotation.
+    
+    Yields
+    -------
+    detail : ``ContentParserParameterDetail``
+    
+    Raises
+    ------
+    ValueError
+        The is no converter setting for the annotation.
+    TypeError
+        If a sub-annotation's type is incorrect.
+    """
+    for sub_annotation in annotation:
+        if sub_annotation is None:
+            continue
+        
+        detail = get_detail_for_value(sub_annotation)
+        if (detail is None):
+            raise TypeError(f'`annotation` set can contain only `str` and `type` elements, got '
+                f'{sub_annotation.__class__.__name__}.')
+        
+        yield detail
+        continue
 
 
 class CommandContentParser:
@@ -2105,9 +2155,9 @@ class CommandContentParser:
         parameters = []
         
         index = 0
-        for argument in real_analyzer.arguments:
-            if not argument.reserved:
-                content_parser_parameter = ContentParserParameter(argument, index)
+        for parameter in real_analyzer.arguments:
+            if not parameter.reserved:
+                content_parser_parameter = ContentParserParameter(parameter, index)
                 parameters.append(content_parser_parameter)
                 index += 1
         
@@ -2124,7 +2174,7 @@ class CommandContentParser:
         return self, func
     
     
-    async def parse_content(self, command_context, content):
+    async def parse_content(self, command_context, index):
         """
         Parses the message's content to fulfill a command's parameters.
         
@@ -2134,8 +2184,8 @@ class CommandContentParser:
         ----------
         command_context : ``CommandContext``
             A command context of the command.
-        content : `str`
-            The respective message's content without it's prefix.
+        index : `int`
+            The index of the content's character since the command's parameters should be parsed from.
         
         Returns
         -------
@@ -2148,7 +2198,7 @@ class CommandContentParser:
             parsed_value = parameter_parsing_state.parse(command_context, None)
             parameter_parsing_state.add_parsed_value(parsed_value, None)
         
-        index = 0
+        content = command_context.content
         length = len(content)
         while True:
             if index >= length:
@@ -2647,7 +2697,7 @@ def content_parser_parameter_postprocessor_try_find_message_and_client(command_c
     if parameter_2.name not in ('message', 'msg', 'm'):
         return
     
-    detail = parameter_1.annotation
+    detail = parameter_1.detail
     if detail is None:
         return
     
@@ -2655,7 +2705,7 @@ def content_parser_parameter_postprocessor_try_find_message_and_client(command_c
     if (converter_setting is not CONVERTER_NONE) and (converter_setting is not CONVERTER_CLIENT):
         return
     
-    detail = parameter_2.annotation
+    detail = parameter_2.detail
     if detail is None:
         return
     
@@ -2720,10 +2770,3 @@ CONTENT_PARSER_PARAMETER_POSTPROCESSORS = [
     content_parser_parameter_postprocessor_try_find_rest_parser,
     convert_parser_parameter_postprocessor_try_find_string,
 ]
-
-
-
-
-
-
-

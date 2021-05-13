@@ -6,11 +6,13 @@ from ...env import CACHE_PRESENCE
 
 from ...backend.utils import basemethod
 from ...backend.event_loop import LOOP_TIME
-from ...backend.futures import Future, sleep
+from ...backend.futures import Future, sleep, Task, WaitTillFirst
 
 from ..core import KOKORO, CLIENTS
 from ..rate_limit import RateLimitProxy
 from ..gateway import DiscordGateway
+from ..utils import time_now, DISCORD_EPOCH
+from ..exceptions import DiscordException
 
 USER_CHUNK_TIMEOUT = 2.5
 
@@ -696,7 +698,7 @@ def _check_is_client_duped(client, client_id):
 
 def _message_delete_multiple_private_task_message_id_iterator(groups):
     """
-    `message_id` iterator used by ``Client._message_delete_multiple_private_task``.
+    `message_id` iterator used by ``_message_delete_multiple_private_task``.
     
     This function is a generator.
     
@@ -716,6 +718,171 @@ def _message_delete_multiple_private_task_message_id_iterator(groups):
     yield from message_group_old
     yield from message_group_old_own
 
+
+async def _message_delete_multiple_private_task(client, channel_id, groups, reason):
+    """
+    Internal task used by ``Client.message_delete_multiple``.
+    
+    This method is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client instance.
+    channel_id : `int`
+        The channel's identifier, where the messages are.
+    groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
+        `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
+    reason : `None` or `str`
+        Additional reason which would show up in the guild's audit logs.
+    
+    Raises
+    ------
+    ConnectionError
+        No internet connection.
+    DiscordException
+        If any exception was received from the Discord API.
+    """
+    for message in _message_delete_multiple_private_task_message_id_iterator(groups):
+        await client.http.message_delete(channel_id, message.id, reason)
+
+
+async def _message_delete_multiple_task(client, channel_id, groups, reason):
+    """
+    Internal task used by ``Client.message_delete_multiple``.
+    
+    This method is a coroutine.
+    
+    Parameters
+    ----------
+    channel_id : `int`
+        The channel's identifier, where the messages are.
+    groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
+        `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
+    reason : `None` or `str`
+        Additional reason which shows up in the respective guild's audit logs.
+    
+    Raises
+    ------
+    ConnectionError
+        No internet connection.
+    DiscordException
+        If any exception was received from the Discord API.
+    """
+    message_group_new, message_group_old, message_group_old_own = groups
+    
+    tasks = []
+    
+    delete_mass_task = None
+    delete_new_task = None
+    delete_old_task = None
+    
+    while True:
+        if delete_mass_task is None:
+            message_limit = len(message_group_new)
+            
+            # 0 is all good, but if it is more, lets check them
+            if message_limit:
+                message_ids = []
+                message_count = 0
+                limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks - 10s
+                
+                while message_group_new:
+                    own, message_id = message_group_new.popleft()
+                    if message_id > limit:
+                        message_ids.append(message_id)
+                        message_count += 1
+                        if message_count == 100:
+                            break
+                        continue
+                    
+                    if (message_id+20971520000) < limit:
+                        continue
+                    
+                    # If the message is really older than the limit, with ignoring the 10 second, then we move it.
+                    if own:
+                        group = message_group_old_own
+                    else:
+                        group = message_group_old
+                    
+                    group.appendleft(message_id)
+                    continue
+                
+                if message_count:
+                    if message_count == 1:
+                        if (delete_new_task is None):
+                            message_id = message_ids[0]
+                            delete_new_task = Task(client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                            tasks.append(delete_new_task)
+                    else:
+                        delete_mass_task = Task(
+                            client.http.message_delete_multiple(channel_id, {'messages': message_ids}, reason),
+                                KOKORO)
+                        
+                        tasks.append(delete_mass_task)
+        
+        if delete_old_task is None:
+            if message_group_old:
+                message_id = message_group_old.popleft()
+                delete_old_task = Task(client.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+                tasks.append(delete_old_task)
+        
+        if delete_new_task is None:
+            if message_group_new:
+                group = message_group_new
+            elif message_group_old_own:
+                group = message_group_old_own
+            else:
+                group = None
+            
+            if (group is not None):
+                message_id = message_group_old_own.popleft()
+                delete_new_task = Task(client.http.message_delete(channel_id, message_id, reason), KOKORO)
+                tasks.append(delete_new_task)
+        
+        if not tasks:
+            # It can happen, that there are no more tasks left,  at that case we check if there is more message
+            # left. Only at `message_group_new` can be anymore message, because there is a time interval of 10
+            # seconds, what we do not move between categories.
+            if not message_group_new:
+                break
+            
+            # We really have at least 1 message at that interval.
+            own, message_id = message_group_new.popleft()
+            # We will delete that message with old endpoint if not own, to make
+            # Sure it will not block the other endpoint for 2 minutes with any chance.
+            if own:
+                delete_new_task = Task(client.http.message_delete(channel_id, message_id, reason), KOKORO)
+            else:
+                delete_old_task = Task(client.http.message_delete_b2wo(channel_id, message_id, reason), KOKORO)
+            
+            tasks.append(delete_old_task)
+        
+        done, pending = await WaitTillFirst(tasks, KOKORO)
+        
+        for task in done:
+            tasks.remove(task)
+            try:
+                result = task.result()
+            except (DiscordException, ConnectionError):
+                for task in tasks:
+                    task.cancel()
+                raise
+            
+            if task is delete_mass_task:
+                delete_mass_task = None
+                continue
+            
+            if task is delete_new_task:
+                delete_new_task = None
+                continue
+            
+            if task is delete_old_task:
+                delete_old_task = None
+                continue
+             
+            # Should not happen
+            continue
 
 
 async def _request_members_loop(gateway, guilds):

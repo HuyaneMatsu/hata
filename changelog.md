@@ -1,11 +1,24 @@
 ## 1.1.76 *\[2021-05-??\]*
 
+#### Improvements
+
+- Add `ERROR_CODES.max_ban_fetches`.
+- Add `DiscordHTTPClient.thread_create_public`.
+- Add `RATE_LIMIT_GROUPS.thread_create_public`.
+- Add `Client.thread_create`.
+
 #### Bug fixed
 
 - Fix a typo on `ComponentSelect.to_data`. (Zeref Draganeel#3581)
+- Threads were badly bound and unbound from a guild.
 
 ##### ext.extension_loader
 - Folder loading failed (typo).
+
+#### Renames, Deprecation & Removals
+
+Rename `DiscordHTTPClient.create_private` to  `.thread_create_private`.
+Rename `RATE_LIMIT_GROUPS.create_private` to  `.thread_create_private`.
 
 ## 1.1.75 *\[2021-05-09\]*
 

@@ -1499,29 +1499,6 @@ class ChannelGuildBase(ChannelBase):
             result.append(user)
         
         return result
-    
-    def _init_parent(self, data, guild):
-        """
-        Initializes the `.parent` attribute of the channel. If a channel is under the ``Guild``, and not in a parent
-        (parent channels are all like these), then their `.parent` is the ``Guild`` itself.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Channel data received from Discord.
-        guild : ``Guild``
-            The guild of the channel.
-        """
-        self.guild = guild
-        guild.channels[self.id] = self
-        
-        parent_id = data.get('parent_id', None)
-        if (parent_id is None):
-            parent = None
-        else:
-            parent = guild.channels[int(parent_id)]
-        
-        self.parent = parent
 
 
 @export
@@ -1664,7 +1641,17 @@ class ChannelGuildMainBase(ChannelGuildBase):
         guild : ``Guild``
             The guild of the channel.
         """
-        self._init_parent(data, guild)
+        self.guild = guild
+        guild.channels[self.id] = self
+        
+        parent_id = data.get('parent_id', None)
+        if (parent_id is None):
+            parent = None
+        else:
+            parent = guild.channels[int(parent_id)]
+        
+        self.parent = parent
+        
         self.position = data.get('position', 0)
     
     
@@ -4105,8 +4092,6 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -4225,6 +4210,36 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         is_private : `bool`
         """
         return self.type == 12
+    
+    def _init_parent(self, data, guild):
+        """
+        Initializes the `.parent` attribute of the channel. If a channel is under the ``Guild``, and not in a parent
+        (parent channels are all like these), then their `.parent` is the ``Guild`` itself.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Channel data received from Discord.
+        guild : ``Guild``
+            The guild of the channel.
+        """
+        self.guild = guild
+        
+        if (guild is not None):
+            guild.threads[self.id] = self
+        
+        parent_id = data.get('parent_id', None)
+        if (parent_id is None):
+            parent = None
+        else:
+            parent_id = int(parent_id)
+            
+            if guild is None:
+                parent = CHANNELS.get(parent_id, None)
+            else:
+                parent = guild.channels.get(parent_id, None)
+        
+        self.parent = parent
     
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
@@ -4421,12 +4436,16 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     
     @copy_docs(ChannelBase._delete)
     def _delete(self):
-        guild = self.guild
-        if guild is None:
+        parent = self.parent
+        if parent is None:
             return
         
-        self.guild = None
-        del guild.channels[self.id]
+        self.parent = None
+        
+        guild = self.guild
+        if (guild is not None):
+            self.guild = None
+            del guild.threads[self.id]
         
         thread_users = self.thread_users
         if (thread_users is not None):
@@ -5513,10 +5532,10 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         if not isinstance(name, str):
             raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
         
-        name_ln = len(name)
+        name_length = len(name)
         
-        if name_ln < 2 or name_ln > 100:
-            raise AssertionError(f'`name` length can be in range [2:100], got {name_ln}; {name!r}.')
+        if name_length < 2 or name_length > 100:
+            raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
     
     channel_data = {
         'name': name,

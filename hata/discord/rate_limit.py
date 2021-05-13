@@ -2117,6 +2117,15 @@ class RATE_LIMIT_GROUPS:
         - Limit : `3`
         - Resets after : `1`
     
+    - thread_create_public
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/threads`
+        - Method : `POST`
+        - Required auth : `UN`
+        - Limiter : `channel_id`
+        - Limit : `OPT`
+        - Resets after : `OPT`
+        - Notes : Untested.
+    
     - permission_overwrite_delete
         - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
         - Method : `DELETE`
@@ -2238,7 +2247,7 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `UN`
         - Notes : Untested.
     
-    - thread_create
+    - thread_create_private
         - Endpoint : `/channels/{channel_id}/threads`
         - Method : `POST`
         - Required auth : `UN`
@@ -3292,6 +3301,7 @@ class RATE_LIMIT_GROUPS:
     reaction_add = GROUP_REACTION_MODIFY
     reaction_delete = GROUP_REACTION_MODIFY
     message_suppress_embeds = RateLimitGroup()
+    thread_create_public = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     permission_overwrite_delete = GROUP_PERMISSION_OVERWRITE_MODIFY
     permission_overwrite_create = GROUP_PERMISSION_OVERWRITE_MODIFY
     channel_pin_get_all = RateLimitGroup()
@@ -3306,7 +3316,7 @@ class RATE_LIMIT_GROUPS:
     thread_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_settings_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-    thread_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_create_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing = RateLimitGroup(LIMITER_CHANNEL)
     thread_get_all_self_archived = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)

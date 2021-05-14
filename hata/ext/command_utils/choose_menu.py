@@ -274,9 +274,9 @@ class ChooseMenu(PaginationBase):
             raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
                 f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
         
-        result_ln = len(choices)
-        if result_ln < 2:
-            if result_ln == 1:
+        result_length = len(choices)
+        if result_length < 2:
+            if result_length == 1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
                     coro = selector(client, channel, message, *choice)

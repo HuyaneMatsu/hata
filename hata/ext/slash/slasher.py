@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('Slasher', )
 
 from threading import current_thread
@@ -725,7 +724,7 @@ class Slasher(EventHandlerBase):
     
     def __new__(cls, client, delete_commands_on_unload=False):
         """
-        Creates a new slash command processer.
+        Creates a new interaction event handler.
         
         Parameters
         ----------

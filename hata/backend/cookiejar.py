@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 import re
 from datetime import datetime, timezone
 from collections import defaultdict
@@ -15,7 +16,7 @@ class CookieJar:
     
     Attributes
     ----------
-    cookies : `defaultdict` of (`str`, `http.cookies.SimpleCookie`) items
+    cookies : `collections.defaultdict` of (`str`, `http.cookies.SimpleCookie`) items
         Dictionary containing the stored cookies.
     expirations : `dict` of (`tuple` (`str`, `str`), `float`) item
         Cookie expirations. The keys are a domain, name pairs, meanwhile the values are their expirations.
@@ -333,11 +334,11 @@ class CookieJar:
         if cookie_path.endswith('/'):
             return True
         
-        cookie_path_ln = len(cookie_path)
-        if cookie_path_ln >= len(request_path):
+        cookie_path_length = len(cookie_path)
+        if cookie_path_length >= len(request_path):
             return False
         
-        if request_path[cookie_path_ln] == '/':
+        if request_path[cookie_path_length] == '/':
             return True
         
         return False

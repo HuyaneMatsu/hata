@@ -1162,16 +1162,16 @@ class ChannelTextBase:
         """
         found = []
         missed = []
-        delete_ln = len(delete_ids)
-        if not delete_ln:
+        delete_length = len(delete_ids)
+        if not delete_length:
             return found, missed
         
         messages = self.messages
         delete_ids.sort(reverse=True)
         if messages is None:
-            messages_ln = 0
+            messages_length = 0
         else:
-            messages_ln = len(messages)
+            messages_length = len(messages)
         
         if messages is None:
             messages_index = 0
@@ -1180,10 +1180,10 @@ class ChannelTextBase:
         delete_index = 0
         
         while True:
-            if delete_index == delete_ln:
+            if delete_index == delete_length:
                 break
             
-            if messages_index == messages_ln:
+            if messages_index == messages_length:
                 while True:
                     delete_id = delete_ids[delete_index]
                     try:
@@ -1195,7 +1195,7 @@ class ChannelTextBase:
                         found.append(message)
                         
                     delete_index += 1
-                    if delete_index == delete_ln:
+                    if delete_index == delete_length:
                         break
                     
                     continue
@@ -1215,7 +1215,7 @@ class ChannelTextBase:
                 message.deleted = True
                 found.append(message)
                 
-                messages_ln -= 1
+                messages_length -= 1
                 delete_index += 1
                 continue
             

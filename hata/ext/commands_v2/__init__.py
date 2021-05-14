@@ -27,6 +27,8 @@ __all__ = (
     *wrappers.__all__,
 )
 
+from .. import register_library_extension, add_library_extension_hook, register_setup_function
+
 from ...discord.client import Client
 
 configure_converter = CommandConverterConfigurerWrapper
@@ -51,7 +53,7 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
     client : ``Client`
         The client on what the extension will be setuped.
     prefix : `str`, (`tuple`, `list`, `deque`) of `str`, or `callable` -> `str`, Optional
-        The prefix of the client's command processer.
+        The prefix of the client's command processor.
         
         Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` parameter,
         the respective ``Message`` instance and returns `str`.
@@ -61,7 +63,7 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
     Returns
     -------
     command_processor : ``CommandProcessor``
-        The created command processer. Returns `None` if `lite` is given as `True`.
+        The created command processor. Returns `None` if `lite` is given as `True`.
     
     Raises
     ------
@@ -94,7 +96,22 @@ def snapshot_hook():
     from . import snapshot
 
 
-from .. import register_library_extension, add_library_extension_hook
+
 register_library_extension('HuyaneMatsu.commands_v2')
 add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
-del register_library_extension, add_library_extension_hook, snapshot_hook
+
+register_setup_function(
+    'HuyaneMatsu.commands_v2',
+    setup_ext_commands_v2,
+    (
+        'prefix',
+    ),(
+        'precheck',
+        'mention_prefix_enabled',
+        'category_name_rule',
+        'command_name_rule',
+        'default_category_name',
+        'prefix_ignore_case',
+    ),
+)
+

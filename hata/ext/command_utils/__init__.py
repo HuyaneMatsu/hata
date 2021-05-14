@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from ...discord.events.handling_helpers import asynclist, EventWaitforBase
 from ...discord.events.core import DEFAULT_EVENT_HANDLER
 from ...discord.client import Client
@@ -23,6 +22,8 @@ __all__ = (
     *waiters.__all__,
     *user_menu.__all__,
 )
+
+from .. import register_library_extension, register_setup_function
 
 def setup_ext_command_utils(client):
     """
@@ -101,6 +102,11 @@ def setup_ext_command_utils(client):
         break
 
 
-from .. import register_library_extension
 register_library_extension('HuyaneMatsu.command_utils')
-del register_library_extension
+
+register_setup_function(
+    'HuyaneMatsu.command_utils',
+    setup_ext_command_utils,
+    None,
+    None,
+)

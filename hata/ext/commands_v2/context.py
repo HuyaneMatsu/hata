@@ -344,6 +344,5 @@ class CommandContext(object):
             await command_function._function(*command_positional_parameters, **command_keyword_parameters)
             
         except BaseException as err:
-            print(repr(err))
             await handle_exception(self, err)
 

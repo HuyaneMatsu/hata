@@ -306,8 +306,8 @@ class HTTPClient:
                         
                         method = METHOD_GET
                         data = None
-                        content_ln = headers.get(CONTENT_LENGTH, None)
-                        if (content_ln is not None) and content_ln:
+                        content_length = headers.get(CONTENT_LENGTH, None)
+                        if (content_length is not None) and content_length:
                             del headers[CONTENT_LENGTH]
                     
                     redirect_url = response.headers.get(LOCATION, None)

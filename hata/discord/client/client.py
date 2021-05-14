@@ -8,6 +8,7 @@ from math import inf
 from datetime import datetime
 
 from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
+from ...ext import get_and_validate_setup_functions, run_setup_functions
 from ...backend.utils import imultidict, methodize, change_on_switch
 from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
     future_or_timeout
@@ -222,7 +223,7 @@ class Client(ClientUserPBase):
     _next_auto_id = 1
     
     def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ActivityUnknown, status=None,
-            is_bot=True, shard_count=0, intents=-1, additional_owners=None, **kwargs):
+            is_bot=True, shard_count=0, intents=-1, additional_owners=None, extensions=None, **kwargs):
         """
         Creates a new ``Client`` instance with the given parameters.
         
@@ -251,7 +252,11 @@ class Client(ClientUserPBase):
         intents : ``IntentFlag``, Optional (Keyword only)
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
-        **kwargs : keyword arguments
+        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``)
+            Additional users to return `True` if ``is_owner` is called.
+        extensions : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+            The extension's name to setup on the client.
+        **kwargs : keyword parameters
             Additional predefined attributes for the client.
         
         Other Parameters
@@ -268,6 +273,11 @@ class Client(ClientUserPBase):
             The client's avatar hash. Mutually exclusive with `avatar`.
         flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
             The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
+        **kwargs : keyword parameters
+            Additional parameters to pass to extension setuppers.
+            
+            > If any required parameter by an extension is missing `RuntimeError` is raised, meanwhile if any extra
+            > is given, `RuntimeWarning` is dropped.
         
         Returns
         -------
@@ -276,9 +286,9 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected argument is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         RuntimeError
             Creating the same client multiple times is not allowed.
         """
@@ -346,26 +356,23 @@ class Client(ClientUserPBase):
         if additional_owners is None:
             additional_owner_ids = None
         else:
-            iter_ = getattr(additional_owners, '__iter__', None)
+            iter_ = getattr(type(additional_owners), '__iter__', None)
             if iter_ is None:
                 raise TypeError('`additional_owners` should have been passed as `iterable`, got '
                     f'{additional_owners.__class__.__name__}.')
             
             additional_owner_ids = set()
             
-            index = 1
             for additional_owner in iter_(additional_owners):
-                index += 1
-                if not isinstance(additional_owner, (int, UserBase)):
-                    raise TypeError(f'User {index} at `additional_owners`  was not passed neither as `int` or as '
-                        f'`{UserBase.__name__}` instance, got {additional_owner.__class__.__name__}')
-                
                 if type(additional_owner) is int:
                     pass
                 elif isinstance(additional_owner, int):
                     additional_owner = int(additional_owner)
-                else:
+                elif isinstance(additional_owner, ClientUserBase):
                     additional_owner = additional_owner.id
+                else:
+                    raise TypeError(f'`additional_owners` contains a non `int` or {ClientUserBase.__name__} instance, '
+                        f'got {additional_owner.__class__.__name__}.')
                 
                 additional_owner_ids.add(additional_owner)
             
@@ -404,9 +411,6 @@ class Client(ClientUserPBase):
             else:
                 flags = preconvert_flag(flags, 'flags', UserFlag)
                 processable.append(('flags', flags))
-            
-            if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
         
         else:
             processable = None
@@ -415,6 +419,9 @@ class Client(ClientUserPBase):
             _status = Status.online
         else:
             _status = status
+        
+        setup_functions = get_and_validate_setup_functions(extensions, kwargs)
+        
         
         if client_id < AUTO_CLIENT_ID_LIMIT:
             client_id = cls._next_auto_id
@@ -472,6 +479,10 @@ class Client(ClientUserPBase):
         if client_id > AUTO_CLIENT_ID_LIMIT:
             _check_is_client_duped(self, client_id)
             self._maybe_replace_alter_ego()
+        
+        
+        run_setup_functions(self, setup_functions, kwargs)
+
         
         CLIENTS[client_id] = self
         
@@ -927,12 +938,12 @@ class Client(ClientUserPBase):
                     raise AssertionError(f'`nick` can be given as `None` or `str` instance, got '
                         f'{nick.__class__.__name__}.')
                 
-                nick_ln = len(nick)
-                if nick_ln > 32:
-                    raise AssertionError(f'`nick` length can be in range [1:32], got {nick_ln}; {nick!r}.')
+                nick_length = len(nick)
+                if nick_length > 32:
+                    raise AssertionError(f'`nick` length can be in range [1:32], got {nick_length}; {nick!r}.')
                 
                 # Translate empty nick to `None`
-                if nick_ln == 0:
+                if nick_length == 0:
                     nick = None
         else:
             # Non debug mode: Translate empty nick to `None`
@@ -1042,13 +1053,13 @@ class Client(ClientUserPBase):
         
         data = {
             'op': DiscordGateway.PRESENCE,
-            'd' : {
-                'game'  : activity,
-                'since' : since,
+            'd': {
+                'game': activity,
+                'since': since,
                 'status': status,
-                'afk'   : afk,
-                    },
-                }
+                'afk': afk,
+            },
+        }
         
         await self.gateway.send_as_json(data)
     
@@ -1197,9 +1208,9 @@ class Client(ClientUserPBase):
                 f'{scopes.__class__.__name__}; {scopes!r}.')
         
         data = {
-            'grant_type' : 'client_credentials',
-            'scope'      : scopes,
-                }
+            'grant_type': 'client_credentials',
+            'scope': scopes,
+        }
         
         headers = imultidict()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
@@ -2368,10 +2379,10 @@ class Client(ClientUserPBase):
         user_ids.add(self.id)
         
         if __debug__:
-            user_ids_ln = len(user_ids)
-            if user_ids_ln < 2:
+            user_ids_length = len(user_ids)
+            if user_ids_length < 2:
                 raise AssertionError(f'`{ChannelGroup.__name__}` can be created at least with at least `2` users, but '
-                    f'got only {user_ids_ln}; {users!r}.')
+                    f'got only {user_ids_length}; {users!r}.')
         
         data = {'recipients': user_ids}
         data = await self.http.channel_group_create(self.id, data)
@@ -6037,10 +6048,10 @@ class Client(ClientUserPBase):
                         raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
                             f'{description.__class__.__name__}.')
                 
-                    description_ln = len(description)
-                    if description_ln > 300:
-                        raise AssertionError(f'`description` length can be in range [0:140], got {description_ln!r}; '
-                            f'{description!r}.')
+                    description_length = len(description)
+                    if description_length > 300:
+                        raise AssertionError(f'`description` length can be in range [0:140], got '
+                            f'{description_length!r}; {description!r}.')
                 
             if (description is not None) and (not description):
                 description = None
@@ -6055,10 +6066,10 @@ class Client(ClientUserPBase):
                 welcome_channel_datas.append(welcome_channels.to_data())
             elif isinstance(welcome_channels, (list, tuple)):
                 if __debug__:
-                    welcome_channels_ln = len(welcome_channels)
+                    welcome_channels_length = len(welcome_channels)
                     if welcome_channels > 5:
                         raise AssertionError(f'`welcome_channels` length can be in range [0:5], got '
-                            f'{welcome_channels_ln!r}; {welcome_channels!r}.')
+                            f'{welcome_channels_length!r}; {welcome_channels!r}.')
                 
                 for index, welcome_channel in enumerate(welcome_channels):
                     if not isinstance(welcome_channel, WelcomeChannel):
@@ -6205,9 +6216,9 @@ class Client(ClientUserPBase):
                         raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
                             f'{description.__class__.__name__}.')
                     
-                    description_ln = len(description)
-                    if description_ln > 300:
-                        raise AssertionError(f'`description` length can be in range [0:300], got {description_ln!r}; '
+                    description_length = len(description)
+                    if description_length > 300:
+                        raise AssertionError(f'`description` length can be in range [0:300], got {description_length!r}; '
                             f'{description!r}.')
             
             if (description is not None) and (not description):

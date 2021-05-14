@@ -416,23 +416,23 @@ def chunkify(lines, limit=2000):
         raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
     
     result = []
-    chunk_ln = 0
+    chunk_length = 0
     chunk = []
     for line in lines:
         while True:
             ln = len(line)+1
-            if chunk_ln+ln > limit:
-                position = limit-chunk_ln
+            if chunk_length+ln > limit:
+                position = limit-chunk_length
                 if position < 250:
                     result.append('\n'.join(chunk))
                     chunk.clear()
                     chunk.append(line)
-                    chunk_ln=ln
+                    chunk_length=ln
                     break
                 
                 position = line.rfind(' ', position-250, position-3)
                 if position == -1:
-                    position = limit-chunk_ln-3
+                    position = limit-chunk_length-3
                     post_part = line[position:]
                 else:
                     post_part = line[position+1:]
@@ -444,15 +444,15 @@ def chunkify(lines, limit=2000):
                 chunk.clear()
                 if len(post_part) > limit:
                     line = post_part
-                    chunk_ln = 0
+                    chunk_length = 0
                     continue
                 
                 chunk.append(post_part)
-                chunk_ln = len(post_part)+1
+                chunk_length = len(post_part)+1
                 break
             
             chunk.append(line)
-            chunk_ln += ln
+            chunk_length += ln
             break
     
     result.append('\n'.join(chunk))
@@ -488,25 +488,25 @@ def cchunkify(lines, lang='', limit=2000):
     limit = limit-len(starter)-5
     
     result = []
-    chunk_ln = 0
+    chunk_length = 0
     chunk = [starter]
     for line in lines:
         while True:
             ln = len(line)+1
-            if chunk_ln+ln > limit:
-                position = limit-chunk_ln
+            if chunk_length+ln > limit:
+                position = limit-chunk_length
                 if position < 250:
                     chunk.append('```')
                     result.append('\n'.join(chunk))
                     chunk.clear()
                     chunk.append(starter)
                     chunk.append(line)
-                    chunk_ln = ln
+                    chunk_length = ln
                     break
                 
                 position = line.rfind(' ', position-250, position-3)
                 if position == -1:
-                    position = limit-chunk_ln-3
+                    position = limit-chunk_length-3
                     post_part = line[position:]
                 else:
                     post_part = line[position+1:]
@@ -521,15 +521,15 @@ def cchunkify(lines, lang='', limit=2000):
                 
                 if len(post_part) > limit:
                     line = post_part
-                    chunk_ln = 0
+                    chunk_length = 0
                     continue
                 
                 chunk.append(post_part)
-                chunk_ln = len(post_part)+1
+                chunk_length = len(post_part)+1
                 break
             
             chunk.append(line)
-            chunk_ln += ln
+            chunk_length += ln
             break
     
     if len(chunk)>1:

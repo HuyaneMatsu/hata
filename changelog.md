@@ -1,5 +1,10 @@
 ## 1.1.76 *\[2021-05-??\]*
 
+#### New Features
+
+- Add `extensions` parameter to `Client`'s constructor, allowing to run extension setup functions when constructing the
+client. This also means additional keyword parameters are supported to be forwarded to these setup functions.
+
 #### Improvements
 
 - Add `ERROR_CODES.max_ban_fetches`.

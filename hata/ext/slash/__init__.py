@@ -10,10 +10,6 @@ from .utils import *
 from .waiters import *
 from .wrappers import *
 
-from .event_handlers import _do_initial_sync, _application_command_create_watcher, \
-    _application_command_delete_watcher, _application_command_permission_update_watcher
-from .client_wrapper_extension import *
-
 __all__ = (
     'configure_parameter',
     'set_permission',
@@ -28,8 +24,15 @@ __all__ = (
     *wrappers.__all__,
 )
 
+from .. import register_library_extension, add_library_extension_hook, register_setup_function
+
+from .event_handlers import _do_initial_sync, _application_command_create_watcher, \
+    _application_command_delete_watcher, _application_command_permission_update_watcher
+from .client_wrapper_extension import *
+
 set_permission = SlashCommandPermissionOverwriteWrapper
 configure_parameter = SlashCommandParameterConfigurerWrapper
+
 
 def setup_ext_slash(client, **kwargs):
     """
@@ -86,7 +89,14 @@ def snapshot_hook():
     from . import snapshot
     
 
-from .. import register_library_extension, add_library_extension_hook
 register_library_extension('HuyaneMatsu.slash')
 add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
-del register_library_extension, add_library_extension_hook, snapshot_hook
+
+register_setup_function(
+    'HuyaneMatsu.slash',
+    setup_ext_slash,
+    None,
+    (
+        'delete_commands_on_unload',
+    ),
+)

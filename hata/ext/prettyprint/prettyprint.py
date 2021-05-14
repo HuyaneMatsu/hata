@@ -153,11 +153,11 @@ def str_message(message, index=None, **kwargs):
         result.append(f'--------------------\n{message.clean_content}\n--------------------', -1)
     elif message.content:
         content = message.clean_content
-        content_ln = len(content)
-        result.append(f'- content: (len={content_ln})', 1)
-        if content_ln > 500:
+        content_length = len(content)
+        result.append(f'- content: (len={content_length})', 1)
+        if content_length > 500:
             content = content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
         else:
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -417,8 +417,8 @@ def str_embed_core(embed, index=None, **kwargs):
     title = embed.title
     if title is not None:
         content = title
-        content_ln = len(content)
-        result.append(f'- title    : {content_ln}', 1)
+        content_length = len(content)
+        result.append(f'- title    : {content_length}', 1)
         content = content.replace('`', '\\`')
         result.append(f'--------------------\n{content}\n--------------------', -1)
         
@@ -429,11 +429,11 @@ def str_embed_core(embed, index=None, **kwargs):
     description = embed.description
     if description:
         content = description
-        content_ln = len(content)
-        result.append(f'- description: (len={content_ln})', 1)
-        if content_ln > 500:
+        content_length = len(content)
+        result.append(f'- description: (len={content_length})', 1)
+        if content_length > 500:
             content = content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
         else:
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -455,11 +455,11 @@ def str_embed_core(embed, index=None, **kwargs):
         result.append(f'- footer    :', 1)
         
         content = footer.text
-        content_ln = len(content)
-        result.append(f'- text : {content_ln}', 2)
-        if content_ln > 500:
+        content_length = len(content)
+        result.append(f'- text : {content_length}', 2)
+        if content_length > 500:
             content=content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
         else:
             content=content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -566,18 +566,18 @@ def str_embed_core(embed, index=None, **kwargs):
             result.append(f'- field {index} :', 1)
 
             content = field.name
-            content_ln = len(content)
-            result.append(f'- name : {content_ln}', 2)
+            content_length = len(content)
+            result.append(f'- name : {content_length}', 2)
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
 
 
             content = field.value
-            content_ln = len(content)
-            result.append(f'- value : {content_ln}', 2)
-            if content_ln > 500:
+            content_length = len(content)
+            result.append(f'- value : {content_length}', 2)
+            if content_length > 500:
                 content = content[:500].replace('`', '\\`')
-                result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+                result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
             else:
                 content = content.replace('`', '\\`')
                 result.append(f'--------------------\n{content}\n--------------------', -1)

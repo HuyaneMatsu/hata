@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from . import checks
 from .command import *
 from .content_parser import *
@@ -19,6 +18,8 @@ __all__ = (
 del module_command_utils
 
 # Add the setup extension function
+
+from .. import register_library_extension, add_library_extension_hook, register_setup_function
 
 from ...discord.client import Client
 from ...discord.events.core import DEFAULT_EVENT_HANDLER
@@ -175,7 +176,22 @@ def snapshot_hook():
     from . import snapshot
 
 
-from .. import register_library_extension, add_library_extension_hook
+
 register_library_extension('HuyaneMatsu.commands')
 add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
-del register_library_extension, add_library_extension_hook, snapshot_hook
+
+register_setup_function(
+    'HuyaneMatsu.commands',
+    setup_ext_commands,
+    None,
+    (
+        'prefix',
+        'lite',
+        'ignorecase',
+        'mention_prefix',
+        'default_category_name',
+        'category_name_rule',
+        'command_name_rule',
+        'precheck',
+    ),
+)

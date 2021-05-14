@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-"""
+﻿"""
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
 If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some real
@@ -110,10 +109,12 @@ if BACKEND_ONLY:
 else:
     from .backend import *
     from .discord import *
+    from .ext import *
     
     __all__ = (
         *backend.__all__,
         *discord.__all__,
+        *ext.__all__,
     )
 
 from .backend.export import check_satisfaction

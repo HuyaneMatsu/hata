@@ -176,7 +176,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
     @cached_property
     @copy_docs(ContentParameterParserContextBase.keyword)
     def keyword(self):
-        return self._parsed.group(2)
+        return self._parsed.group(1)
     
     @cached_property
     @copy_docs(ContentParameterParserContextBase.value)
@@ -2228,7 +2228,6 @@ class CommandContentParser:
                 if (parameter_parsing_state is not None):
                     rest = parse_rest_content(content, index)
                     parameter_parsing_state.add_parsed_value(rest, None)
-                
                 break
             
             keyword, part, index = content_parameter_parser(content, index)
@@ -2467,6 +2466,19 @@ class ParameterParsingStateBase:
         is_satisfied : `bool`
         """
         return True
+    
+    
+    def __repr__(self):
+        """Returns the parsing state's representation."""
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ' content_parser_parameter=',
+            repr(self.content_parser_parameter),
+            '>',
+        ]
+        
+        return ''.join(repr_parts)
 
 
 class GenericParameterParsingState(ParameterParsingStateBase):
@@ -2540,6 +2552,21 @@ class GenericParameterParsingState(ParameterParsingStateBase):
     @copy_docs(ParameterParsingStateBase.is_satisfied)
     def is_satisfied(self):
         return self.satisfied
+    
+    
+    @copy_docs(ParameterParsingStateBase.__repr__)
+    def __repr__(self):
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ' content_parser_parameter=',
+            repr(self.content_parser_parameter),
+            ', parsed_values=',
+            repr(self.parsed_values),
+            '>',
+        ]
+        
+        return ''.join(repr_parts)
 
 
 class KwargsParameterParsingState(ParameterParsingStateBase):
@@ -2584,6 +2611,21 @@ class KwargsParameterParsingState(ParameterParsingStateBase):
     @copy_docs(ParameterParsingStateBase.is_satisfied)
     def is_satisfied(self):
         return False
+    
+    
+    @copy_docs(ParameterParsingStateBase.__repr__)
+    def __repr__(self):
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ' content_parser_parameter=',
+            repr(self.content_parser_parameter),
+            ', parsed_items=',
+            repr(self.parsed_items),
+            '>',
+        ]
+        
+        return ''.join(repr_parts)
 
 
 class RestParameterParsingState(ParameterParsingStateBase):
@@ -2625,7 +2667,21 @@ class RestParameterParsingState(ParameterParsingStateBase):
                 parsed_value = ''
         
         args.append(parsed_value)
-
+    
+    
+    @copy_docs(ParameterParsingStateBase.__repr__)
+    def __repr__(self):
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ' content_parser_parameter=',
+            repr(self.content_parser_parameter),
+            ', value=',
+            repr(self.value),
+            '>',
+        ]
+        
+        return ''.join(repr_parts)
 
 def get_first_non_none_parsed_value(parsed_values):
     """

@@ -465,7 +465,7 @@ class CallableAnalyzer:
             
             if accepts_args:
                 args_name = real_function.__code__.co_varnames[end]
-                end +=1
+                end += 1
             else:
                 args_name= None
             
@@ -534,6 +534,31 @@ class CallableAnalyzer:
                 arguments.append(argument)
                 index = index+1
             
+            if args_name is None:
+                args_argument = None
+            else:
+                args_argument = Argument()
+                args_argument.name = args_name
+                
+                try:
+                    annotation = annotations[args_name]
+                except KeyError:
+                    args_argument.has_annotation = False
+                    args_argument.annotation = None
+                else:
+                    args_argument.has_annotation = True
+                    args_argument.annotation = annotation
+
+                args_argument.has_default = False
+                args_argument.default = None
+                args_argument.positionality = ARGUMENT_ARGS
+                
+                if method_allocation > argument_count:
+                    args_argument.reserved = True
+                else:
+                    args_argument.reserved = False
+                arguments.append(args_argument)
+            
             index = 0
             while index < keyword_only_argument_count:
                 argument = Argument()
@@ -563,31 +588,6 @@ class CallableAnalyzer:
                 arguments.append(argument)
                 index = index+1
             
-            if args_name is None:
-                args_argument = None
-            else:
-                args_argument = Argument()
-                args_argument.name = args_name
-                
-                try:
-                    annotation = annotations[args_name]
-                except KeyError:
-                    args_argument.has_annotation = False
-                    args_argument.annotation = None
-                else:
-                    args_argument.has_annotation = True
-                    args_argument.annotation = annotation
-
-                args_argument.has_default = False
-                args_argument.default = None
-                args_argument.positionality = ARGUMENT_ARGS
-                
-                if method_allocation > argument_count:
-                    args_argument.reserved = True
-                else:
-                    args_argument.reserved = False
-                
-            
             if kwargs_name is None:
                 kwargs_argument = None
             else:
@@ -606,7 +606,8 @@ class CallableAnalyzer:
                 kwargs_argument.default = None
                 kwargs_argument.positionality = ARGUMENT_KWARGS
                 kwargs_argument.reserved = False
-            
+                arguments.append(kwargs_argument)
+        
         else:
             args_argument = None
             kwargs_argument = None

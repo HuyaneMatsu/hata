@@ -1,4 +1,12 @@
+## 1.1.77 *\[2021-05-??\]*
+
+#### Bug fixed
+
+- `CallableAnalyzer` was not adding `*args` and `**kwargs` to `.arguments`.
+
 ## 1.1.76 *\[2021-05-16\]*
+
+#### Summary
 
 Add `extensions` parameter to `Client`'s constructor.
 

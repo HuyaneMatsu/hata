@@ -26,6 +26,11 @@ module.__file__ = __file__
 sys.modules[__name__] = asyncio
 
 for sub_module_name, feature_names, extra_features in (
+        ('base_events', (
+            'BaseEventLoop',
+            '_run_until_complete_cb', # Required by anyio
+            ), None,
+        ),
         ('base_futures', None, None),
         ('base_subprocess', None, None),
         ('base_tasks', None, None),
@@ -124,6 +129,7 @@ for sub_module_name, feature_names, extra_features in (
         ('subprocess', (
             'create_subprocess_exec',
             'create_subprocess_shell',
+            'Process',
             ), None,
         ),
         ('tasks', (

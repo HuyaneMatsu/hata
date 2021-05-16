@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-import os, sys, errno
+﻿import os, sys, errno
 from stat import S_ISCHR, S_ISFIFO, S_ISSOCK
 from subprocess import TimeoutExpired, PIPE, Popen
 from socket import socketpair as create_socket_pair

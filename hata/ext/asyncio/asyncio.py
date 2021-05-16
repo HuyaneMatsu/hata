@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'AbstractEventLoopPolicy', 'AbstractServer',
     'BaseEventLoop', 'BaseProactorEventLoop', 'BaseProtocol', 'BaseSelectorEventLoop', 'BaseTransport',
     'BoundedSemaphore', 'BufferedProtocol', 'CancelledError', 'Condition', 'DatagramProtocol', 'DatagramTransport',
@@ -16,19 +15,23 @@ __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'Abstra
     'run_coroutine_threadsafe', 'set_child_watcher', 'set_event_loop', 'set_event_loop_policy', 'shield', 'sleep',
     'staggered_race', 'start_server', 'to_thread', 'wait', 'wait_for', 'wrap_future', )
 
-import sys, warnings
+import os, sys, warnings
 from threading import current_thread, enumerate as list_threads, main_thread
 from subprocess import PIPE
+from functools import partial
 
 from ...env import BACKEND_ONLY
 from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
 from ...backend.event_loop import EventThread
 from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, \
     WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, \
-    Event as HataEvent, AsyncLifoQueue
+    Event as HataEvent, AsyncLifoQueue, is_coroutine
 from ...backend.executor import Executor
+from ...backend.subprocess import AsyncProcess
 
 IS_UNIX = (sys.platform != 'win32')
+
+__path__ = os.path.dirname(__file__)
 
 EVENT_LOOP_RELATION = WeakKeyDictionary()
 del WeakKeyDictionary
@@ -269,8 +272,11 @@ del asyncio_create_server
 # Reimplement async-io features
 
 # asyncio.base_events
-# include: BaseEventLoop
+# include: BaseEventLoop, _run_until_complete_cb
 BaseEventLoop = EventThread
+
+def _run_until_complete_cb(fut): # needed by anyio
+    fut._loop.stop()
 
 # async-io.base_futures
 # *none*
@@ -288,8 +294,7 @@ BaseEventLoop = EventThread
 # include: coroutine, iscoroutinefunction, iscoroutine
 from types import coroutine
 from ...backend.futures import is_coroutine_function as iscoroutinefunction
-from ...backend.futures import is_coroutine as iscoroutine
-
+iscoroutine = is_coroutine
 # asyncio.events
 # include: AbstractEventLoopPolicy, AbstractEventLoop, AbstractServer, Handle, TimerHandle, get_event_loop_policy,
 #    set_event_loop_policy, get_event_loop, set_event_loop, new_event_loop, get_child_watcher, set_child_watcher,
@@ -862,14 +867,21 @@ def run(main, *, debug=None):
             break
     else:
         loop = None
-    
+        
     if loop is None:
         loop = EventThread()
+        
+        # Required by anyio
+        main = Task(in_coro(main), loop=loop)
+        
         try:
             loop.run(main)
         finally:
             loop.stop()
     else:
+        # Required by anyio
+        main = Task(in_coro(main), loop=loop)
+        
         loop.run(main)
 
 # asyncio.selector_events
@@ -1452,7 +1464,7 @@ class StreamReader:
         return val
 
 # asyncio.subprocess
-# Include: create_subprocess_exec, create_subprocess_shell
+# Include: create_subprocess_exec, create_subprocess_shell, Process
 
 if IS_UNIX:
     async def create_subprocess_shell(cmd, stdin=None, stdout=None, stderr=None, loop=None, limit=_DEFAULT_LIMIT,
@@ -1506,6 +1518,9 @@ else:
             limit=_DEFAULT_LIMIT, **kwargs):
         raise NotImplementedError
 
+# Required by anyio
+Process = AsyncProcess
+
 # asyncio.tasks
 # Include: Task, create_task, FIRST_COMPLETED, FIRST_EXCEPTION, ALL_COMPLETED, wait, wait_for, as_completed, sleep,
 #    gather, shield, ensure_future, run_coroutine_threadsafe, current_task, all_tasks, _register_task,
@@ -1515,11 +1530,6 @@ class TaskMeta(type):
     def __new__(cls, class_name, class_parents, class_attributes, ignore=False):
         if ignore:
             return type.__new__(cls, class_name, class_parents, class_attributes)
-        
-        class_parents = list(class_parents)
-        class_parents.remove(Task)
-        class_parents.insert(0, HataTask)
-        class_parents = tuple(class_parents)
         
         class_attributes['__init__'] = cls._subclass_init
         class_attributes['__new__'] = cls._subclass_new
@@ -1532,11 +1542,15 @@ class TaskMeta(type):
     
     # Required by dpy
     def _subclass_new(cls, *args, coro=None, loop=None, **kwargs):
-        self = HataTask.__new__(cls, coro, loop=loop)
+        self = Task.__new__(cls, coro, loop=loop)
         self.__init__(*args, coro=coro, loop=loop, **kwargs)
         return self
 
-class Task(metaclass=TaskMeta, ignore=True):
+class Task(HataTask, metaclass=TaskMeta, ignore=True):
+    __slots__ = (
+        '__weakref__', # Required by anyio
+    )
+    
     def __new__(cls, coro, loop=None, name=None):
         """A coroutine wrapped in a Future."""
         if not iscoroutine(coro):
@@ -1545,7 +1559,7 @@ class Task(metaclass=TaskMeta, ignore=True):
         if loop is None:
             loop = get_event_loop()
         
-        HataTask(coro, loop)
+        return HataTask.__new__(cls, coro, loop)
     
     # Required by aiohttp 3.6
     def current_task(loop=None):
@@ -1558,11 +1572,10 @@ class Task(metaclass=TaskMeta, ignore=True):
         
         return loop.current_task
     
-    def __instancecheck__(cls, instance):
-        return isinstance(instance, HataTask)
-    
-    def __subclasscheck__(cls, klass):
-        return issubclass(klass, HataTask) or (klass is cls)
+    # Required by anyio
+    def get_coro(self):
+        return self._coro
+
 
 def create_task(coro, *, name=None):
     """

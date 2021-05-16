@@ -1,5 +1,17 @@
 ## 1.1.77 *\[2021-05-??\]*
 
+#### Summary
+
+Start supporting anyio (all bugs included). (Mina Ashido]|[💻⭐#3506)
+
+#### Improvements
+
+##### hata.ext.asyncio
+- Add `asyncio.futures.Task.get_coro`.
+- Add `asyncio.base_events._run_until_complete_cb`.
+- Add `asyncio.process.Process`.
+- Add `asyncio.futures.Task.__weakref__`.
+
 #### Bug fixed
 
 - `CallableAnalyzer` was not adding `*args` and `**kwargs` to `.arguments`.

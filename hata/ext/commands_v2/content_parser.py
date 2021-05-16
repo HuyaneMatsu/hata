@@ -200,10 +200,12 @@ class ContentParameterParser:
         Context class to interact with the parsed string.
     _rp : `_sre.SRE_Pattern`
         The regex pattern what is passed and used by the caller.
+    assigner : `str`
+        Assigner executed by the ``ContentParameterParser`` instance.
     separator : `str` or `tuple` (`str`, `str`)
-        The executed separator by the ``ContentParameterSeparator`` instance.
+        The executed separator by the ``ContentParameterParser`` instance.
     """
-    __slots__ = ('_context_class', '_rp', 'separator', 'assigner')
+    __slots__ = ('_context_class', '_rp', 'assigner', 'separator')
     def __new__(cls, separator, assigner):
         """
         Creates a new ``ContentParameterSeparator`` instance. If one already exists with the given parameters, returns
@@ -2229,7 +2231,7 @@ class CommandContentParser:
                 
                 break
             
-            keyword, part, index = await content_parameter_parser.parse(index)
+            keyword, part, index = content_parameter_parser(content, index)
             if keyword is None:
                 parameter_parsing_state = get_next_non_filled_parameter_state(parameter_parsing_states)
                 if parameter_parsing_state is None:
@@ -2268,10 +2270,10 @@ def get_next_non_filled_parameter_state(parameter_parsing_states):
             return None
         
         if content_parser_parameter.is_args:
-            return content_parser_parameter
+            return parameter_parsing_state
         
         if not parameter_parsing_state.parsed_values:
-            return content_parser_parameter
+            return parameter_parsing_state
         
         continue
     
@@ -2324,10 +2326,10 @@ def get_keyword_parameter_state(parameter_parsing_states, keyword):
     for parameter_parsing_state in parameter_parsing_states:
         content_parser_parameter = parameter_parsing_state.content_parser_parameter
         if content_parser_parameter.is_kwargs:
-            return content_parser_parameter
+            return parameter_parsing_state
         
         if content_parser_parameter.display_name == keyword:
-            return content_parser_parameter
+            return parameter_parsing_state
     
     return None
 
@@ -2689,7 +2691,7 @@ def content_parser_parameter_postprocessor_try_find_context(command_context_pars
     for parameter in parameters:
         detail = parameter.detail
         if (detail is not None):
-            if detail is CONVERTER_NONE and parameter.name in ('ctx', 'context', 'command_context'):
+            if detail.converter_setting is CONVERTER_NONE and parameter.name in ('ctx', 'context', 'command_context'):
                 parameter.set_converter_setting(CONVERTER_SELF_CONTEXT)
                 return
 

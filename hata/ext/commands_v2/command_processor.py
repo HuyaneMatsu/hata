@@ -158,10 +158,13 @@ class CommandProcessor(EventWaitforBase):
     category_name_to_category : `dict` of (`str`, ``Category``) items
         Category name to category relation.
     
+    categories : `set` of ``Category``
+        Categories registered to the command processor.
+    
     command_name_to_command : `dict` of (`str`, ``Command``) items
         Command name to command relation.
     
-    registered_commands : `set` of ``Command``
+    commands : `set` of ``Command``
         The registered commands to the command processor.
     
     Notes
@@ -171,8 +174,8 @@ class CommandProcessor(EventWaitforBase):
     
     __slots__ = ('__weakref__', '_category_name_rule', '_command_name_rule', '_default_category',
         '_error_handlers', '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case',
-        '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category',
-        'command_name_to_command', 'registered_commands')
+        '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category', 'categories',
+        'command_name_to_command', 'commands')
     
     __event_name__ = 'message_create'
     SUPPORTED_TYPES = (Command, )
@@ -279,7 +282,8 @@ class CommandProcessor(EventWaitforBase):
         self._category_name_rule = category_name_rule
         self.command_name_to_command = {}
         self.category_name_to_category = {}
-        self.registered_commands = set()
+        self.commands = set()
+        self.categories = set()
         
         self._self_reference = WeakReferer(self)
         
@@ -339,6 +343,9 @@ class CommandProcessor(EventWaitforBase):
             return
         
         content = message.content[end:]
+        
+        if prefix is None:
+            prefix = await self._prefix_getter(message)
         
         context = CommandContext(client, message, prefix, content, command)
         await context.invoke()
@@ -538,7 +545,6 @@ class CommandProcessor(EventWaitforBase):
             raise ValueError(f'There is already a category added with that name: `{category_name!r}`')
         
         category = Category(category_name, checks=checks, description=description)
-        self.category_name_to_category[category.name] = category
         category.set_command_processor(self)
         
         return category
@@ -579,20 +585,7 @@ class CommandProcessor(EventWaitforBase):
             raise ValueError(f'The given category is not the same as the owned owned one with it\'s name: got '
                 f'{category!r}; owning: {owned_category!r}.')
         
-        
-        del self.category_name_to_category[category_name]
-        
-        command_name_to_command = self.command_name_to_command
-        
-        for command in category.command_name_to_command.values():
-            for command_name in command._iter_names():
-                try:
-                    owned_command = command_name_to_command[command_name]
-                except KeyError:
-                    pass
-                else:
-                    if owned_command is command:
-                        del command_name_to_command[command_name]
+        owned_category.unlink()
     
     
     def _add_command(self, command):
@@ -771,12 +764,12 @@ class CommandProcessor(EventWaitforBase):
             return
         
         if command_name_rule is None:
-            for command in self.registered_commands:
+            for command in self.commands:
                 command.display_name = command.name
         else:
             test_name_rule(command_name_rule, 'command_name_rule')
             
-            for command in self.registered_commands:
+            for command in self.commands:
                 command.display_name = command_name_rule(command.name)
         
         self._command_name_rule = command_name_rule
@@ -786,7 +779,7 @@ class CommandProcessor(EventWaitforBase):
         if self._command_name_rule is None:
             return
         
-        for command in self.registered_commands:
+        for command in self.commands:
             command.display_name = command.name
     
     

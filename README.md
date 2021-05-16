@@ -133,7 +133,7 @@ If you have issues, suggestions, want to contribute, or just want to send cute n
 Shout-Outs for our brave testers, who are helping the most improving the library:
 
 - `Nekosia` \[Grammar\]
-- [`Charlotte`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
+- [`Mina Ashido`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
 - [`Hime Esuto`](https://github.com/HimeEsuto) \[Bug hunting\]
 - [`BrainDead`](https://github.com/albertopoljak) \[Documentation improvements\]
 - [`Zeref Draganeel`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]

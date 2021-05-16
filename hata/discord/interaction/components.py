@@ -353,7 +353,7 @@ class ComponentBase:
     """
     Base class for 3rd party components.
     
-    Class attributes
+    Class Attributes
     ----------------
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.
@@ -875,7 +875,7 @@ class ComponentSelectOption(ComponentBase):
     value : `str`
         Identifier value of the option.
     
-    Class attributes
+    Class Attributes
     ----------------
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.

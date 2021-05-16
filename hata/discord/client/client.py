@@ -29,7 +29,7 @@ from ..guild import Guild, create_partial_guild, GuildWidget, GuildFeature, Guil
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
 from ..http import DiscordHTTPClient
-from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT
+from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, is_cdn_url
 from ..role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from ..webhook import Webhook, create_partial_webhook
 from ..gateway import DiscordGateway, DiscordGatewaySharder
@@ -356,28 +356,35 @@ class Client(ClientUserPBase):
         if additional_owners is None:
             additional_owner_ids = None
         else:
-            iter_ = getattr(type(additional_owners), '__iter__', None)
-            if iter_ is None:
-                raise TypeError('`additional_owners` should have been passed as `iterable`, got '
-                    f'{additional_owners.__class__.__name__}.')
-            
             additional_owner_ids = set()
             
-            for additional_owner in iter_(additional_owners):
-                if type(additional_owner) is int:
-                    pass
-                elif isinstance(additional_owner, int):
-                    additional_owner = int(additional_owner)
-                elif isinstance(additional_owner, ClientUserBase):
-                    additional_owner = additional_owner.id
-                else:
-                    raise TypeError(f'`additional_owners` contains a non `int` or {ClientUserBase.__name__} instance, '
-                        f'got {additional_owner.__class__.__name__}.')
+            if isinstance(additional_owners, ClientUserBase):
+                additional_owner_ids.add(additional_owners.id)
+            elif type(additional_owners) is int:
+                additional_owner_ids.add(additional_owners)
+            elif isinstance(additional_owner_ids, int):
+                additional_owner_ids.add(int(additional_owners))
+            else:
+                iter_ = getattr(type(additional_owners), '__iter__', None)
+                if iter_ is None:
+                    raise TypeError('`additional_owners` should have been passed as `iterable`, got '
+                        f'{additional_owners.__class__.__name__}.')
                 
-                additional_owner_ids.add(additional_owner)
-            
-            if (not additional_owner_ids):
-                additional_owner_ids = None
+                for additional_owner in iter_(additional_owners):
+                    if type(additional_owner) is int:
+                        pass
+                    elif isinstance(additional_owner, int):
+                        additional_owner = int(additional_owner)
+                    elif isinstance(additional_owner, ClientUserBase):
+                        additional_owner = additional_owner.id
+                    else:
+                        raise TypeError(f'`additional_owners` contains a non `int` or {ClientUserBase.__name__} '
+                            f'instance, got {additional_owner.__class__.__name__}.')
+                    
+                    additional_owner_ids.add(additional_owner)
+                
+                if (not additional_owner_ids):
+                    additional_owner_ids = None
         
         # kwargs
         if kwargs:
@@ -744,7 +751,7 @@ class Client(ClientUserPBase):
                     f'instance, got {attachment.__class__.__name__}.')
         
         url = attachment.proxy_url
-        if (url is None) or (not url.startswith(CDN_ENDPOINT)):
+        if not is_cdn_url(url):
             url = attachment.url
         
         async with self.http.get(url) as response:

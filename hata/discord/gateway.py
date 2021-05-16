@@ -62,7 +62,7 @@ class Kokoro:
     ws_waiter : `None` or ``Future``
         The waiter of kokoro, what waits for it's gateway to connect it's websocket.
     
-    Class attributes
+    Class Attributes
     ----------------
     DEFAULT_LATENCY : `float` = `9999.0`
         The default latency of kokoro. Better than using `inf`.

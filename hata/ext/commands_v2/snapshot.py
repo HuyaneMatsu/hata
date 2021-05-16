@@ -24,7 +24,7 @@ def take_command_processor_snapshot(client):
         else:
             categories = None
         
-        commands = command_processor.registered_commands
+        commands = command_processor.commands
         if commands:
             commands = commands.copy()
         else:

@@ -47,6 +47,44 @@ def message_jump_url(message):
     
     return f'{DIS_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
 
+CDN_RP = re.compile(
+    'https://(?:'
+        'cdn\.discordapp\.com|'
+        'discord\.com|'
+        '(?:'
+            'images-ext-\d+|'
+            'media'
+        ')\.discordapp\.net'
+    ')/'
+)
+
+def is_cdn_url(url):
+    """
+    Returns whether the given url a Discord content delivery network url.
+    
+    Parameters
+    ----------
+    url : `None` or `str`
+        The url to check.
+    
+    Returns
+    -------
+    is_cdn_url : `bool`
+    
+    Examples
+    --------
+    Icons: `https://cdn.discordapp.com/...`
+    Assets: `https://discord.com/...`
+    Proxy service: `https://images-ext-1.discordapp.net/...`
+    Attachments: `https://media.discordapp.net/...`
+    ```
+    """
+    if url is None:
+        return False
+    
+    return (CDN_RP.match(url) is not None)
+
+
 def guild_icon_url(guild):
     """
     Returns the guild's icon's image's url. If the guild has no icon, then returns `None`.

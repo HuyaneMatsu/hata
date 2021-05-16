@@ -1,9 +1,12 @@
-## 1.1.76 *\[2021-05-??\]*
+## 1.1.76 *\[2021-05-16\]*
+
+Add `extensions` parameter to `Client`'s constructor.
 
 #### New Features
 
 - Add `extensions` parameter to `Client`'s constructor, allowing to run extension setup functions when constructing the
-client. This also means additional keyword parameters are supported to be forwarded to these setup functions.
+    client. This also means additional keyword parameters are supported to be forwarded to these setup functions.
+    (Mina Ashido]|[💻⭐#3506)
 
 #### Improvements
 
@@ -11,6 +14,8 @@ client. This also means additional keyword parameters are supported to be forwar
 - Add `DiscordHTTPClient.thread_create_public`.
 - Add `RATE_LIMIT_GROUPS.thread_create_public`.
 - Add `Client.thread_create`.
+- Add `WebhookType.applicaion`.
+- Add `Message.attachment`. (Mina Ashido]|[💻⭐#3506)
 
 #### Bug fixed
 
@@ -22,8 +27,12 @@ client. This also means additional keyword parameters are supported to be forwar
 
 #### Renames, Deprecation & Removals
 
-Rename `DiscordHTTPClient.create_private` to  `.thread_create_private`.
-Rename `RATE_LIMIT_GROUPS.create_private` to  `.thread_create_private`.
+- Rename `DiscordHTTPClient.create_private` to  `.thread_create_private`.
+- Rename `RATE_LIMIT_GROUPS.create_private` to  `.thread_create_private`.
+
+## *\[2021-05-14\]*
+
+Happy Koishi day!
 
 ## 1.1.75 *\[2021-05-09\]*
 
@@ -237,8 +246,8 @@ Channel input and output.
 - Add `sanitize_content`. (experimental)
 
 ##### ext.command_utils
-- Add `get_channel_stdin`. (experimental) (Charlotte|💻⭐#5644)
-- Add `get_channel_stdout`. (experimental) (Charlotte|💻⭐#5644)
+- Add `get_channel_stdin`. (experimental) (Mina Ashido]|[💻⭐#3506)
+- Add `get_channel_stdout`. (experimental) (Mina Ashido]|[💻⭐#3506)
 
 #### Improvements
 
@@ -269,7 +278,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 - Add `Extension.is_loaded`. (ᓚᘏᗢ | NeKo Mancer#1477)
 
 ##### ext.extension_loader
-- Add `client.extensions`. (Charlotte|💻⭐#5644) (ᓚᘏᗢ | NeKo Mancer#1477)
+- Add `client.extensions`. (Mina Ashido]|[💻⭐#3506) (ᓚᘏᗢ | NeKo Mancer#1477)
 - Add `EXTENSION_LOADER.get_extension`.
 
 #### Improvements
@@ -617,23 +626,23 @@ Fix duplicable client connections.
 - Fix reading readme issue on windows. (Zeref Draganeel#3581)
 - Fix a `TypeError` in `User._update_presence`. (from 1.1.63)
 - `EventWaitforMeta._call_channel_edit` passed bad args to guild waiters.
-- Fix a `NameError` in `EventLoop.create_datagram_endpoint`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `cr_pg_channel_object`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.request_members`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.message_create`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.interaction_followup_message_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.interaction_followup_message_create`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.interaction_response_message_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.interaction_response_message_create`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.webhook_message_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.webhook_message_create`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.message_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.permission_overwrite_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `ApplicationCommandOption.add_option`. (Charlotte|💻⭐#5644)
-- Fix a `TypeError` in `Client.interaction_response_message_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.guild_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.channel_edit`. (Charlotte|💻⭐#5644)
-- Fix a `NameError` in `Client.guild_user_add`. (Charlotte|💻⭐#5644)
+- Fix a `NameError` in `EventLoop.create_datagram_endpoint`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `cr_pg_channel_object`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.request_members`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.message_create`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.interaction_followup_message_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.interaction_followup_message_create`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.interaction_response_message_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.interaction_response_message_create`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.webhook_message_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.webhook_message_create`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.message_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.permission_overwrite_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `ApplicationCommandOption.add_option`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `TypeError` in `Client.interaction_response_message_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.guild_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.channel_edit`. (Mina Ashido]|[💻⭐#3506)
+- Fix a `NameError` in `Client.guild_user_add`. (Mina Ashido]|[💻⭐#3506)
 - `Client._delete` could construct not a fully built `User` object. Add `User._from_client` to fix this.
 
 #### Renames, Deprecation & Removals

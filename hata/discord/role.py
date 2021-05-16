@@ -208,7 +208,7 @@ class Role(DiscordEntity, immortal=True):
         **kwargs : keyword arguments
             Additional predefined attributes for the role.
         
-        Other parameters
+        Other Parameters
         ----------------
         name : `str`, Optional (Keyword only)
             The role's ``.name``.

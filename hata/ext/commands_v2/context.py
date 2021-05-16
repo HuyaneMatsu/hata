@@ -29,8 +29,8 @@ class CommandContext(object):
         The received message.
     parameters : `None` or `dict` of (`str`, `Any`)
         The parsed parameters.
-    prefix : `None` or `str`
-        The prefix used when calling the command.
+    prefix : `str`
+        The matched prefix or the client's prefix for the given respective message.
     """
     __slots__ = ('client', 'command', 'command_category_trace', 'command_function', 'command_keyword_parameters',
         'command_positional_parameters', 'content', 'message', 'parameters', 'prefix')
@@ -43,8 +43,8 @@ class CommandContext(object):
             The client who received the message.
         message : ``Message``
             The received message.
-        prefix : `str` or `None`
-            The matched prefix.
+        prefix : `str`
+            The matched prefix or the client's prefix for the given respective message.
         content : `str`
             The message's content after prefix.
         command : ``Command``
@@ -165,12 +165,16 @@ class CommandContext(object):
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
         tts : `bool`, Optional (Keyword only)
@@ -228,14 +232,16 @@ class CommandContext(object):
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``._create_file_form`` for details.
+            A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``._parse_allowed_mentions`` for details.
-        reply_fail_fallback : `bool`, Optional (Keyword only)
-            Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
         nonce : `str`, Optional (Keyword only)
@@ -270,7 +276,7 @@ class CommandContext(object):
         return await self.client.message_create(self.message.channel, *args, **kwargs)
     
     
-    async def trigger_typing(self):
+    async def typing(self):
         """
         Triggers typing indicator in the channel.
         
@@ -292,7 +298,7 @@ class CommandContext(object):
         return await self.client.typing(self.channel)
     
     
-    def typing(self, *args, **kwargs):
+    def keep_typing(self, *args, **kwargs):
         """
         Returns a context manager which will keep sending typing events at the channel. Can be used to indicate that
         the bot is working.

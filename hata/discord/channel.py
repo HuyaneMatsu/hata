@@ -808,7 +808,7 @@ class ChannelTextBase:
     messages : `deque` of ``Message`` objects
         The channel's message history.
     
-    Class attributes
+    Class Attributes
     ----------------
     MESSAGE_KEEP_LIMIT : `int` = `10`
         The default amount of messages to store at `.messages`.

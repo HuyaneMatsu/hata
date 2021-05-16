@@ -2456,6 +2456,19 @@ class Message(DiscordEntity, immortal=True):
             return embeds[0]
     
     @property
+    def attachment(self):
+        """
+        Returns the first attachment in the message.
+
+        Returns
+        -------
+        attachment : `None` or ``Attachment``
+        """
+        attachments = self.attachments
+        if (attachments is not None):
+            return attachments[0]
+    
+    @property
     def guild(self):
         """
         Returns the message's channel's guild.

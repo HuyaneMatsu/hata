@@ -1768,15 +1768,17 @@ class WebhookType(PreinstancedBase):
     
     Every predefined webhook type can be accessed as class attribute as well:
     
-    +-----------------------+-----------+-------+
-    | Class attribute name  | name      | value |
-    +=======================+===========+=======+
-    | none                  | NONE      | 0     |
-    +-----------------------+-----------+-------+
-    | bot                   | BOT       | 1     |
-    +-----------------------+-----------+-------+
-    | server                | SERVER    | 2     |
-    +-----------------------+-----------+-------+
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | bot                   | bot           | 1     |
+    +-----------------------+---------------+-------+
+    | server                | server        | 2     |
+    +-----------------------+---------------+-------+
+    | application           | application   | 3     |
+    +-----------------------+---------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -1787,6 +1789,7 @@ class WebhookType(PreinstancedBase):
     none = P(0, 'none')
     bot = P(1, 'bot')
     server = P(2, 'server')
+    application = P(3, 'application')
 
 
 class InviteTargetType(PreinstancedBase):

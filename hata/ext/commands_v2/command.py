@@ -1,10 +1,6 @@
 __all__ = ('Command', )
-import re, reprlib
-
-from ...backend.utils import WeakReferer
 
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager
-from ...discord.interaction import InteractionEvent
 from ...discord.preconverters import preconvert_bool
 
 from .wrappers import CommandWrapper, CommandCheckWrapper
@@ -552,13 +548,13 @@ class Command:
                     if command is self:
                         del command_name_to_command[name]
             
-            command_processor.registered_commands.discard(self)
+            command_processor.commands.discard(self)
         
         
         category = self.get_category()
         self._category_reference = None
         if (category is not None):
-            category.registered_commands.discard(self)
+            category.commands.discard(self)
     
     
     def set_category(self, category):
@@ -578,7 +574,7 @@ class Command:
         """
         self.unlink_category()
         
-        category.registered_commands.add(self)
+        category.commands.add(self)
         self._category_hint = category.name
         self._category_reference = category._self_reference
         
@@ -943,6 +939,7 @@ class Command:
         
         if route_to:
             name = route_name(command, name, route_to)
+            name = [raw_name_to_display(name) for name in name]
             default_description = _generate_description_from(command, None)
             description = route_value(description, route_to, default=default_description)
             aliases = route_value(aliases, route_to)
@@ -960,6 +957,8 @@ class Command:
                 for description in description]
         else:
             name = check_name(function, name)
+            name = raw_name_to_display(name)
+            
             description = _generate_description_from(function, description)
             category_hint = _generate_category_hint_from(category)
         
@@ -1030,7 +1029,7 @@ class Command:
             repr_parts.append(' aliases=')
             repr_parts.append(repr(aliases))
         
-        category_hint = self.category_hint
+        category_hint = self._category_hint
         if (category_hint is not None):
             repr_parts.append(' category=')
             repr_parts.append(repr(category_hint))
@@ -1262,7 +1261,7 @@ class Command:
         command_category : ``CommandCategory``
             The added command category instance.
         """
-        if not isinstance(command, (Command, Router)):
+        if isinstance(command, (Command, Router)):
             raise TypeError(f'`{Command.__name__}` and `{Router.__name__}` instances cannot be added as sub-commands, '
                 f'got {command!r}.')
         
@@ -1271,6 +1270,18 @@ class Command:
         
         command_category = CommandCategory._from_command(command)
         self._add_command_category(command_category)
+    
+    
+    @property
+    def commands(self):
+        """
+        Enables you to add sub-commands or sub-categories to the command.
+        
+        Returns
+        -------
+        handler : ``_EventHandlerManager``
+        """
+        return _EventHandlerManager(self)
 
 
 class CommandFunction:
@@ -1400,7 +1411,7 @@ class CommandCategory:
         
         repr_parts.append('>')
         return ''.join(repr_parts)
-
+    
     def __hash__(self):
         """Returns the command category's hash value."""
         hash_value = 0
@@ -1538,7 +1549,7 @@ class CommandCategory:
         command_category : ``CommandCategory``
             The added command category instance.
         """
-        if not isinstance(command, (Command, Router)):
+        if isinstance(command, (Command, Router)):
             raise TypeError(f'`{Command.__name__}` and `{Router.__name__}` instances cannot be added as sub-commands, '
                 f'got {command!r}.')
         
@@ -1547,3 +1558,15 @@ class CommandCategory:
         
         command_category = CommandCategory._from_command(command)
         self._add_command_category(command_category)
+    
+    
+    @property
+    def commands(self):
+        """
+        Enables you to add sub-commands or sub-categories to the command.
+        
+        Returns
+        -------
+        handler : ``_EventHandlerManager``
+        """
+        return _EventHandlerManager(self)

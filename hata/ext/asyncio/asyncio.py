@@ -157,7 +157,12 @@ def asyncio_run_in_executor(self, executor, func=..., *args):
 EventThread.run_in_executor = asyncio_run_in_executor
 del asyncio_run_in_executor
 
+#required by anyio
+def asyncio_create_task(self, coro):
+    return Task(coro, self)
 
+EventThread.create_task = asyncio_create_task
+del asyncio_create_task
 
 # We accept different names, so we need to define a dodge system, so here we go
 hata_EventThread_subprocess_shell = EventThread.subprocess_shell
@@ -1584,7 +1589,7 @@ def create_task(coro, *, name=None):
     Return a Task object.
     """
     loop = get_running_loop()
-    return HataTask(coro, loop)
+    return Task(coro, loop)
 
 FIRST_COMPLETED = 'FIRST_COMPLETED'
 FIRST_EXCEPTION = 'FIRST_EXCEPTION'
@@ -1747,7 +1752,7 @@ def as_completed(fs, *, loop=None, timeout=None):
     if timeout is not None:
         future_or_timeout(waiter, timeout)
     
-    HataTask(_as_completed_task(futures, waiter), loop)
+    Task(_as_completed_task(futures, waiter), loop)
     return futures
     
 

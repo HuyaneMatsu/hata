@@ -11,6 +11,7 @@ Start supporting anyio (all bugs included). (Mina Ashido]|[💻⭐#3506)
 - Add `asyncio.base_events._run_until_complete_cb`.
 - Add `asyncio.process.Process`.
 - Add `asyncio.futures.Task.__weakref__`.
+- Add `asyncio` functions and methods now create weakreferable tasks.
 
 #### Bug fixed
 

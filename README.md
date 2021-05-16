@@ -48,10 +48,8 @@ An improved example using the `commands` extension to handle common use cases.
 
 ```py
 from hata import Client
-from hata.ext.commands import setup_ext_commands
 
-Saki = Client('TOKEN')
-setup_ext_commands(Saki, 's!')
+Saki = Client('TOKEN', extensions='commands', prefix='s!')
 
 @Saki.events
 async def ready(client):
@@ -68,12 +66,10 @@ Or use slash commands!
 
 ```py
 from hata import Client, Guild
-from hata.ext.slash import setup_ext_slash
 
 GUILD = Guild.precreate(guild_id)
 
-Seija = Client('TOKEN')
-setup_ext_slash(Seija)
+Seija = Client('TOKEN', extensions='slash')
 
 @Seija.events
 async def ready(client):

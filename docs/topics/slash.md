@@ -78,8 +78,15 @@ Do not worry, you probably just need to authorize your bot with the `application
 
 ## Setup
 
-To setup the extension you just need to import `setup_ext_slash` from the extension and call it on your client, like:
+To setup the extension you just pass `'slash'` into the client's `extensions` parameter, or use the `setup_ext_slash`
+function.
 
+```py
+from hata import Client
+
+Nitori = Client(TOKEN, extensions='slash')
+```
+or
 ```py
 from hata import Client
 from hata.ext.slash import setup_ext_slash
@@ -88,11 +95,9 @@ Nitori = Client(TOKEN)
 setup_ext_slash(Nitori)
 ```
 
-### Slasher Parameters
-
-`setup_ext_slash` has 1 required parameter, the client on who you setup it.
-
 #### delete_commands_on_unload
+
+Optional parameter for the slasher.
 
 Tells to the slasher whether it should delete the commands from Discord when they are removed. Defaults to `False` in
 favor of working with extensions.

@@ -21,8 +21,6 @@ COMPONENT_TYPE_BUTTON = ComponentType.button
 COMPONENT_TYPE_SELECT = ComponentType.select
 
 
-
-
 def _debug_component_components(components):
     """
     Checks whether given `component.components` value is correct.

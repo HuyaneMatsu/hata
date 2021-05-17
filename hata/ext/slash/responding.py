@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('SlashResponse', 'abort', )
 from ...backend.futures import is_coroutine_generator
 
@@ -550,7 +549,7 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         The exception which aborts the interaction, then yields the response.
     """
     if show_for_invoking_user_only is ...:
-        if (file is not ...) or (allowed_mentions is not ...) or (tts is not ...) or (components is not ...):
+        if (file is not ...) or (allowed_mentions is not ...) or (tts is not ...):
             show_for_invoking_user_only = False
         else:
             show_for_invoking_user_only = True

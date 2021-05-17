@@ -1,4 +1,29 @@
-## 1.1.77 *\[2021-05-??\]*
+## 1.1.78 *\[2021-05-??\]*
+
+#### Improvements
+
+- Add `interaction` parameter to `message.custom`. (Zeref Draganeel#3581)
+- Increase `content`'s max length to 4k in `message.custom`.
+- Add `components` parameter to `message.custom`. (Zeref Draganeel#3581)
+- Add `thread` parameter to `message.custom`. (Zeref Draganeel#3581)
+
+##### hata.ext.slash
+- `abort` now supports `components` parameter in `show_for_invoking_user_only` mode. (Zeref Draganeel#3581)
+
+#### Bug fixed
+
+- `edited_timestamp` can be missing from message payload.
+- `type` can be missing from message payload.
+- `attachments` can be missing from message payload.
+- `embeds` can be missing from message payload.
+- `mentions` can be missing from message payload.
+- `content` can be missing from message payload.
+- `mention_roles` can be missing from message payload.
+- `components` can be missing from message payload.
+- `Message._update` was not updating components of non guild messages.
+- `Message._update_no_return` was not updating components of non guild messages.
+
+## 1.1.77 *\[2021-05-17\]*
 
 #### Summary
 

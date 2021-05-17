@@ -32,6 +32,8 @@ create_component = include('create_component')
 ChannelGuildUndefined = include('ChannelGuildUndefined')
 CHANNEL_TYPES = include('CHANNEL_TYPES')
 InteractionType = include('InteractionType')
+ComponentBase = include('ComponentBase')
+ChannelThread = include('ChannelThread')
 
 class MessageFlag(FlagBase):
     """
@@ -849,7 +851,7 @@ class Message(DiscordEntity, immortal=True):
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
     channel : ``ChannelTextBase`` instance
         The channel where the message is sent.
-    components : `None` or `list` of ``ComponentBase``
+    components : `None` or `tuple` of ``ComponentBase``
         Message components.
     content : `str`
         The message's content.
@@ -1036,7 +1038,7 @@ class Message(DiscordEntity, immortal=True):
             activity = MessageActivity(activity_data)
         self.activity = activity
         
-        edited_timestamp = data['edited_timestamp']
+        edited_timestamp = data.get('edited_timestamp', None)
         if (edited_timestamp is None):
             edited_at = None
         else:
@@ -1046,25 +1048,36 @@ class Message(DiscordEntity, immortal=True):
         self.pinned = data.get('pinned', False)
         self.everyone_mention = data.get('mention_everyone', False)
         self.tts = data.get('tts', False)
-        self.type = MessageType.get(data['type'])
+        self.flags = flags = MessageFlag(data.get('flags', 0))
         
-        attachment_datas = data['attachments']
-        if attachment_datas:
+        try:
+            message_type_value = data['type']
+        except KeyError:
+            if flags.invoking_user_only:
+                message_type = MessageType.application_command
+            else:
+                message_type = MessageType.default
+        else:
+            message_type = MessageType.get(message_type_value)
+        
+        self.type = message_type
+        
+        attachment_datas = data.get('attachments', None)
+        if (attachment_datas is not None) and attachment_datas:
             attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
         else:
             attachments = None
         self.attachments = attachments
         
-        embed_datas = data['embeds']
-        if embed_datas:
+        embed_datas = data.get('embeds', None)
+        if (embed_datas is not None) and embed_datas:
             embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
         else:
             embeds = None
         self.embeds = embeds
         
         self.nonce = data.get('nonce', None)
-        self.content = data['content']
-        self.flags = MessageFlag(data.get('flags', 0))
+        self.content = data.get('content', '')
         
         interaction_data = data.get('interaction', None)
         if interaction_data is None:
@@ -1083,14 +1096,14 @@ class Message(DiscordEntity, immortal=True):
         self.components = components
         
         sticker_datas = data.get('stickers', None)
-        if sticker_datas is  None:
+        if sticker_datas is None:
             stickers = None
         else:
             stickers = tuple(Sticker(sticker_data) for sticker_data in sticker_datas)
         self.stickers = stickers
         
-        user_mention_datas = data['mentions']
-        if user_mention_datas:
+        user_mention_datas = data.get('mentions', None)
+        if (user_mention_datas is not None) and user_mention_datas:
             user_mentions = tuple(sorted(
                 (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
                 key=id_sort_key,
@@ -1162,7 +1175,12 @@ class Message(DiscordEntity, immortal=True):
             Message data.
         """
         if not self.content:
-            self.content = data['content']
+            try:
+                content = data['content']
+            except KeyError:
+                pass
+            else:
+                self.content = content
         
         if (self.interaction is None):
             interaction_data = data.get('interaction', None)
@@ -1177,8 +1195,8 @@ class Message(DiscordEntity, immortal=True):
                 self.components = tuple(create_component(component_data) for component_data in component_datas)
         
         if (self.embeds is None):
-            embed_datas = data['embeds']
-            if embed_datas:
+            embed_datas = data.get('embeds', None)
+            if (embed_datas is not None) and embed_datas:
                 self.embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
     
     
@@ -1223,11 +1241,18 @@ class Message(DiscordEntity, immortal=True):
             The ``.channel`` attribute of the message.
             
             If called as a classmethod this attribute must be passed, or `TypeError` is raised.
+        
+        components : `None` or (`list` or `tuple`) of ``ComponentBase``, Optional (Keyword only)
+            The ``.components`` attribute of the message.
+            
+            If called as a classmethod, defaults to `None`.
+        
         content : `str`, Optional (Keyword only)
-            The ``.content`` attribute of the message. Can be between length `0` and `2000`.
+            The ``.content`` attribute of the message. Can be between length `0` and `4000`.
             
             If called as a classmethod defaults to `''` (empty string).
-        cross_mentions : `None` or (`tuple`, `list` of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances))
+        
+        cross_mentions : `None` or (`tuple`, `list`) of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances)
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
@@ -1238,6 +1263,7 @@ class Message(DiscordEntity, immortal=True):
             If called as a classmethod defaults to `None`.
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
+        
         edited_at : `None` or `datetime`, Optional (Keyword only)
             The ``.edited_at`` attribute of the message.
             
@@ -1258,6 +1284,12 @@ class Message(DiscordEntity, immortal=True):
             be converted to ``MessageFlag``.
             
             If called as a classmethod defaults to `MessageFlag(0)`.
+        
+        interaction : `None` or ``MessageInteraction``, Optional (Keyword only)
+           The `.interaction` attribute of the message.
+        
+            If called as a classmethod defaults to `None`.
+        
         id : `int` or `str`, Optional (Keyword only)
             The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`.
             
@@ -1289,6 +1321,12 @@ class Message(DiscordEntity, immortal=True):
             The ``.stickers`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
+        
+        thread : `None` or ``ChannelThread``
+            The ``.thread`` attribute of the message.
+            
+            If called as a classmethod defaults to `None`.
+        
         tts : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
             The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
             still cannot be other than `0` or `1`.
@@ -1434,7 +1472,7 @@ class Message(DiscordEntity, immortal=True):
             else:
                 content = base.content
         else:
-            content = preconvert_str(content, 'content', 0, 2000)
+            content = preconvert_str(content, 'content', 0, 4000)
         
         try:
             referenced_message = kwargs.pop('referenced_message')
@@ -1771,6 +1809,55 @@ class Message(DiscordEntity, immortal=True):
                 else:
                     user_mentions = None
         
+        try:
+            interaction = kwargs.pop('interaction')
+        except KeyError:
+            if base is None:
+                interaction = None
+            else:
+                interaction = base.interaction
+        else:
+            if (interaction is not None) and (not isinstance(interaction, MessageInteraction)):
+                raise TypeError(f'`interaction` can be given as `None` or as `{MessageInteraction.__name__}` '
+                    f'instance, got {interaction.__class__.__name__}.')
+        
+        try:
+            components = kwargs.pop('components')
+        except KeyError:
+            if base is None:
+                components = None
+            else:
+                components = base.components
+                if (components is not None):
+                    components = tuple(components)
+        else:
+            if (components is not None):
+                if not isinstance(components, (list, tuple)):
+                    raise TypeError(f'`components` should be `None` or `tuple`, `list` of `{ComponentBase.__name__}` '
+                        f'instances, got `{components.__class__.__name__}`.')
+                
+                if components:
+                    for component in components:
+                        if not isinstance(component, ComponentBase):
+                            raise TypeError(f'`components` contains at least 1 non `{ComponentBase.__name__}` '
+                                f'instance; `{component.__class__.__name__}`.')
+                    
+                    components = tuple(components)
+                else:
+                    components = None
+        
+        try:
+            thread = kwargs.pop('thread')
+        except KeyError:
+            if base is None:
+                thread = None
+            else:
+                thread = base.thread
+        else:
+            if (thread is not None) and (not isinstance(thread, ChannelThread)):
+                raise TypeError(f'`thread` can be given as `None` or as `{ChannelThread.__name__}` '
+                    f'instance, got {thread.__class__.__name__}.')
+        
         # Check kwargs and raise TypeError if not every in used up
         if kwargs:
             raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
@@ -1801,9 +1888,9 @@ class Message(DiscordEntity, immortal=True):
         self.tts = tts
         self.type = type_
         self.user_mentions = user_mentions
-        self.interaction = None
-        self.components = None
-        self.thread = None
+        self.interaction = interaction
+        self.components = components
+        self.thread = thread
         
         return self
     
@@ -1998,10 +2085,14 @@ class Message(DiscordEntity, immortal=True):
         """
         old_attributes = {}
         
-        pinned = data['pinned']
-        if self.pinned != pinned:
-            old_attributes['pinned'] = self.pinned
-            self.pinned = pinned
+        try:
+            pinned = data['pinned']
+        except KeyError:
+            pass
+        else:
+            if self.pinned != pinned:
+                old_attributes['pinned'] = self.pinned
+                self.pinned = pinned
         
         flags = data.get('flags', 0)
         flag_difference = self.flags^flags
@@ -2010,27 +2101,36 @@ class Message(DiscordEntity, immortal=True):
             self.flags = MessageFlag(flags)
             
             if MessageFlag(flag_difference).embeds_suppressed:
-                embed_datas = data['embeds']
-                if embed_datas:
-                    embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+                try:
+                    embed_datas = data['embeds']
+                except KeyError:
+                    pass
                 else:
-                    embeds = None
-                
-                if self.embeds  != embeds:
-                    old_attributes['embeds'] = self.embeds
-                    self.embeds = embeds
+                    if embed_datas:
+                        embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+                    else:
+                        embeds = None
+                    
+                    if self.embeds != embeds:
+                        old_attributes['embeds'] = self.embeds
+                        self.embeds = embeds
         
-        #at the case of pin update edited is None
-        edited_timestamp = data['edited_timestamp']
-        if edited_timestamp is None:
-            return old_attributes
+        # at the case of pin update edited is None
+        try:
+            edited_timestamp = data['edited_timestamp']
+        except KeyError:
+            pass
+        else:
+            if edited_timestamp is None:
+                return old_attributes
+            
+            edited_at = parse_time(edited_timestamp)
         
-        edited_at = parse_time(edited_timestamp)
-        if self.edited_at == edited_at:
-            return old_attributes
-        
-        old_attributes['edited_at'] = self.edited_at
-        self.edited_at = edited_at
+            if self.edited_at == edited_at:
+                return old_attributes
+            
+            old_attributes['edited_at'] = self.edited_at
+            self.edited_at = edited_at
         
         try:
             application_data = data['application']
@@ -2063,98 +2163,125 @@ class Message(DiscordEntity, immortal=True):
         # ignoring type
         # ignoring nonce
         
-        attachment_datas = data['attachments']
-        if attachment_datas:
-            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+        try:
+            attachment_datas = data['attachments']
+        except KeyError:
+            pass
         else:
-            attachments = None
+            if attachment_datas:
+                attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+            else:
+                attachments = None
+            
+            if self.attachments != attachments:
+                old_attributes['attachments'] = self.attachments
+                self.attachments = attachments
         
-        if self.attachments != attachments:
-            old_attributes['attachments'] = self.attachments
-            self.attachments = attachments
-        
-        embed_datas = data['embeds']
-        if embed_datas:
-            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+        try:
+            embed_datas = data['embeds']
+        except KeyError:
+            pass
         else:
-            embeds = None
+            if embed_datas:
+                embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+            else:
+                embeds = None
+            
+            if self.embeds != embeds:
+                old_attributes['embeds'] = self.embeds
+                self.embeds = embeds
         
-        if self.embeds != embeds:
-            old_attributes['embeds'] = self.embeds
-            self.embeds = embeds
+        try:
+            content = data['content']
+        except KeyError:
+            pass
+        else:
+            if self.content != content:
+                old_attributes['content'] = self.content
+                self.content = content
         
-        content = data['content']
-        if self.content != content:
-            old_attributes['content'] = self.content
-            self.content = content
-        
-        user_mention_datas = data['mentions']
-        
-        guild = self.channel.guild
-        
-        if user_mention_datas:
-            user_mentions = tuple(sorted(
-                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                key=id_sort_key,
+        try:
+            user_mention_datas = data['mentions']
+        except KeyError:
+            pass
+        else:
+            guild = self.channel.guild
+            
+            if (user_mention_datas is None) or (not user_mention_datas):
+                user_mentions = None
+            else:
+                user_mentions = tuple(sorted(
+                    (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                    key=id_sort_key,
                 ))
-        else:
-            user_mentions = None
+            
+            if self.user_mentions != user_mentions:
+                old_attributes['user_mentions'] = self.user_mentions
+                self.user_mentions = user_mentions
         
-        if self.user_mentions != user_mentions:
-            old_attributes['user_mentions'] = self.user_mentions
-            self.user_mentions = user_mentions
+        try:
+            component_datas = data['components']
+        except KeyError:
+            pass
+        else:
+            if (component_datas is None) or (not component_datas):
+                components = None
+            else:
+                components = tuple(create_component(component_data) for component_data in component_datas)
+            
+            if self.components != components:
+                old_attributes['components'] = self.components
+                self.components = components
+        
         
         if guild is None:
             return old_attributes
         
         self._channel_mentions = ...
         
-        cross_mention_datas = data.get('mention_channels', None)
-        if (cross_mention_datas is None) or (not cross_mention_datas):
-            cross_mentions = None
+        try:
+            cross_mention_datas = data['mention_channels']
+        except KeyError:
+            pass
         else:
-            cross_mentions = tuple(sorted(
-                (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                key=id_sort_key,
-            ))
-        
-        if self.cross_mentions != cross_mentions:
-            old_attributes['cross_mentions'] = self.cross_mentions
-            self.cross_mentions = cross_mentions
-        
-        role_mention_ids = data.get('mention_roles', None)
-        if (role_mention_ids is None) or (not role_mention_ids):
-            role_mentions = None
-        else:
-            roles = guild.roles
-            role_mentions = []
+            if (cross_mention_datas is None) or (not cross_mention_datas):
+                cross_mentions = None
+            else:
+                cross_mentions = tuple(sorted(
+                    (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                    key=id_sort_key,
+                ))
             
-            for role_id in role_mention_ids:
-                role_id = int(role_id)
-                try:
-                    role = roles[role_id]
-                except KeyError:
-                    continue
+            if self.cross_mentions != cross_mentions:
+                old_attributes['cross_mentions'] = self.cross_mentions
+                self.cross_mentions = cross_mentions
+        
+        try:
+            role_mention_ids = data['mention_roles']
+        except KeyError:
+            pass
+        else:
+            if (role_mention_ids is None) or (not role_mention_ids):
+                role_mentions = None
+            else:
+                roles = guild.roles
+                role_mentions = []
                 
-                role_mentions.append(role)
+                for role_id in role_mention_ids:
+                    role_id = int(role_id)
+                    try:
+                        role = roles[role_id]
+                    except KeyError:
+                        continue
+                    
+                    role_mentions.append(role)
+                
+                role_mentions.sort(key=id_sort_key)
+                role_mentions = tuple(role_mentions)
             
-            role_mentions.sort(key=id_sort_key)
-            role_mentions = tuple(role_mentions)
-        
-        if self.role_mentions != role_mentions:
-            old_attributes['role_mentions'] = self.role_mentions
-            self.role_mentions = role_mentions
-        
-        
-        component_datas = data.get('components', None)
-        if (component_datas is None) or (not component_datas):
-            components = None
-        else:
-            components = tuple(create_component(component_data) for component_data in component_datas)
-        
-        if self.components != components:
-            old_attributes['components'] = self.components
-            self.components = components
+            if self.role_mentions != role_mentions:
+                old_attributes['role_mentions'] = self.role_mentions
+                self.role_mentions = role_mentions
         
         return old_attributes
     
@@ -2167,7 +2294,12 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data received from Discord.
         """
-        self.pinned = data['pinned']
+        try:
+            pinned = data['pinned']
+        except KeyError:
+            pass
+        else:
+            self.pinned = pinned
         
         flags = data.get('flags', 0)
         flag_difference = self.flags^flags
@@ -2175,21 +2307,30 @@ class Message(DiscordEntity, immortal=True):
             self.flags = MessageFlag(flags)
             
             if MessageFlag(flag_difference).embeds_suppressed:
-                embed_datas = data['embeds']
-                if embed_datas:
-                    embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+                try:
+                    embed_datas = data['embeds']
+                except KeyError:
+                    pass
                 else:
-                    embeds = None
-                self.embeds = embeds
+                    if embed_datas:
+                        embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+                    else:
+                        embeds = None
+                    self.embeds = embeds
         
-        edited_timestamp = data['edited_timestamp']
-        if edited_timestamp is None:
-            return
-        
-        edited_at = parse_time(edited_timestamp)
-        if self.edited_at == edited_at:
-            return
-        self.edited_at = edited_at
+        try:
+            edited_timestamp = data['edited_timestamp']
+        except KeyError:
+            pass
+        else:
+            if edited_timestamp is None:
+                return
+            
+            edited_at = parse_time(edited_timestamp)
+            if self.edited_at == edited_at:
+                return
+            
+            self.edited_at = edited_at
 
         try:
             application_data = data['application']
@@ -2200,7 +2341,7 @@ class Message(DiscordEntity, immortal=True):
         self.application = application
         
         try:
-            activity_data=data['activity']
+            activity_data = data['activity']
         except KeyError:
             activity = None
         else:
@@ -2213,79 +2354,108 @@ class Message(DiscordEntity, immortal=True):
         #ignoring type
         #ignoring nonce
         
-        attachment_datas = data['attachments']
-        if attachment_datas:
-            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+        try:
+            attachment_datas = data['attachments']
+        except KeyError:
+            pass
         else:
-            attachments = None
-        self.attachments = attachments
-
-        embed_datas = data['embeds']
-        if embed_datas:
-            embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            if attachment_datas:
+                attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+            else:
+                attachments = None
+            self.attachments = attachments
+        
+        try:
+            embed_datas = data['embeds']
+        except KeyError:
+            pass
         else:
-            embeds = None
-        self.embeds = embeds
+            if embed_datas:
+                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            else:
+                embeds = None
+            self.embeds = embeds
         
-        self.content = data['content']
+        try:
+            content = data['content']
+        except KeyError:
+            pass
+        else:
+            self.content = content
         
-        user_mention_datas = data['mentions']
+        try:
+            component_datas = data['components']
+        except KeyError:
+            pass
+        else:
+            if (component_datas is None) or (not component_datas):
+                components = None
+            else:
+                components = tuple(create_component(component_data) for component_data in component_datas)
+            self.components = components
         
         guild = self.channel.guild
         
-        if user_mention_datas:
-            user_mentions = tuple(sorted(
-                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                key=id_sort_key,
-                ))
+        try:
+            user_mention_datas = data['mentions']
+        except KeyError:
+            pass
         else:
-            user_mentions = None
-        
-        self.user_mentions = user_mentions
+            if user_mention_datas:
+                user_mentions = tuple(sorted(
+                    (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                    key=id_sort_key,
+                ))
+            else:
+                user_mentions = None
+            
+            self.user_mentions = user_mentions
         
         if guild is None:
             return
         
         self._channel_mentions = ...
         
-        cross_mention_datas = data.get('mention_channels', None)
-        if (cross_mention_datas is None) or (not cross_mention_datas):
-            cross_mentions = None
+        try:
+            cross_mention_datas = data['mention_channels']
+        except KeyError:
+            pass
         else:
-            cross_mentions = tuple(sorted(
-                (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                key=id_sort_key,
-            ))
-        
-        self.cross_mentions = cross_mentions
-        
-        role_mention_ids = data.get('mention_roles', None)
-        if (role_mention_ids is None) or (not role_mention_ids):
-            role_mentions = None
-        else:
-            roles = guild.roles
-            role_mentions = []
+            if (cross_mention_datas is None) or (not cross_mention_datas):
+                cross_mentions = None
+            else:
+                cross_mentions = tuple(sorted(
+                    (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                    key=id_sort_key,
+                ))
             
-            for role_id in role_mention_ids:
-                role_id = int(role_id)
-                try:
-                    role = roles[role_id]
-                except KeyError:
-                    continue
+            self.cross_mentions = cross_mentions
+        
+        try:
+            role_mention_ids = data['mention_roles']
+        except KeyError:
+            pass
+        else:
+            if (role_mention_ids is None) or (not role_mention_ids):
+                role_mentions = None
+            else:
+                roles = guild.roles
+                role_mentions = []
                 
-                role_mentions.append(role)
+                for role_id in role_mention_ids:
+                    role_id = int(role_id)
+                    try:
+                        role = roles[role_id]
+                    except KeyError:
+                        continue
+                    
+                    role_mentions.append(role)
+                
+                role_mentions.sort(key=id_sort_key)
+                role_mentions = tuple(role_mentions)
             
-            role_mentions.sort(key=id_sort_key)
-            role_mentions = tuple(role_mentions)
-        
-        self.role_mentions = role_mentions
-        
-        component_datas = data.get('components', None)
-        if (component_datas is None) or (not component_datas):
-            components = None
-        else:
-            components = tuple(create_component(component_data) for component_data in component_datas)
-        self.components = components
+            self.role_mentions = role_mentions
+    
     
     def _update_embed(self, data):
         """

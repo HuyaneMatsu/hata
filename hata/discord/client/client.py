@@ -13193,7 +13193,7 @@ class Client(ClientUserPBase):
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
-            If given as `True` only the message's content will be processed by Discord.
+            If given as `True` only the message's content, emebds and components will be processed by Discord.
         
         Raises
         ------
@@ -13599,7 +13599,8 @@ class Client(ClientUserPBase):
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
-            If given as `True` only the message's content will be processed by Discord.
+            If given as `True` only the message's content, emebds and components will be processed by Discord.
+        
         
         Returns
         -------

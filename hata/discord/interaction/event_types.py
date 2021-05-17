@@ -1,6 +1,5 @@
 __all__ = ('ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction',
-    'INTERACTION_EVENT_RESPONSE_STATE_DEFERRED', 'INTERACTION_EVENT_RESPONSE_STATE_NONE',
-    'INTERACTION_EVENT_RESPONSE_STATE_RESPONDED', 'InteractionEvent', )
+    'InteractionEvent', 'InteractionResponseContext')
 
 import reprlib
 
@@ -18,9 +17,19 @@ from ..role import Role
 from .components import ComponentBase
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ComponentType
 
-INTERACTION_EVENT_RESPONSE_STATE_NONE = 0
-INTERACTION_EVENT_RESPONSE_STATE_DEFERRED = 1
-INTERACTION_EVENT_RESPONSE_STATE_RESPONDED = 2
+
+RESPONSE_FLAG_DEFERRING = 1<<0
+RESPONSE_FLAG_DEFERRED = 1<<1
+RESPONSE_FLAG_RESPONDING = 1<<2
+RESPONSE_FLAG_RESPONDED = 1<<3
+RESPONSE_FLAG_EPHEMERAL = 1<<4
+
+RESPONSE_FLAG_IS_NONE = 0
+RESPONSE_FLAG_IS_ACKNOWLEDGING = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_RESPONDING
+RESPONSE_FLAG_IS_ACKNOWLEDGED = RESPONSE_FLAG_DEFERRED|RESPONSE_FLAG_RESPONDED
+RESPONSE_FLAG_IS_DEFERRING_OR_DEFERRED = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_DEFERRED
+RESPONSE_FLAG_IS_RESPONDING_OR_RESPONDED = RESPONSE_FLAG_RESPONDING|RESPONSE_FLAG_RESPONDED
+RESPONSE_FLAG_IS_ACKNOWLEDGING_OR_ACKNOWLEDGED = RESPONSE_FLAG_IS_ACKNOWLEDGING|RESPONSE_FLAG_IS_ACKNOWLEDGED
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 
@@ -429,19 +438,24 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         The interaction's id.
     _cached_users : `None` or `list` of (``User`` or ``Client``)
         A list of users, which are temporary cached.
-    _response_state : `bool`
+    _response_flag : `bool`
         The response order state of ``InteractionEvent``
         
-        +--------------------------------------------+----------+---------------------------------------------------+
-        | Respective name                            | Value    | Description                                       |
-        +============================================+==========+===================================================+
-        | INTERACTION_EVENT_RESPONSE_STATE_NONE      | 0        | No response was yet sent.                         |
-        +--------------------------------------------+----------+---------------------------------------------------+
-        | INTERACTION_EVENT_RESPONSE_STATE_DEFERRED  | 1        | The event was acknowledged and response will be   |
-        |                                            |          | sent later. Shows loading screen for the user.    |
-        +--------------------------------------------+----------+---------------------------------------------------+
-        | INTERACTION_EVENT_RESPONSE_STATE_RESPONDED | 2        | Response was sent on the interaction.             |
-        +--------------------------------------------+----------+---------------------------------------------------+
+        +-----------------------------------------------+----------+--------------------------------------------------+
+        | Respective name                               | Shift    | Description                                      |
+        +===============================================+==========+==================================================+
+        | RESPONSE_FLAG_DEFERRING    | 0        | The vent is being acknowledged.                  |
+        +-----------------------------------------------+----------+--------------------------------------------------+
+        | RESPONSE_FLAG_DEFERRED     | 1        | The event was acknowledged and response will be  |
+        |                                               |          | sent later. Shows loading screen for the user.   |
+        +-----------------------------------------------+----------+--------------------------------------------------+
+        | RESPONSE_FLAG_RESPONDING   | 2        | Responding to the interaction.                   |
+        +-----------------------------------------------+----------+--------------------------------------------------+
+        | RESPONSE_FLAG_RESPONDED    | 3        | Response was sent on the interaction.            |
+        +-----------------------------------------------+----------+--------------------------------------------------+
+        | RESPONSE_FLAG_EPHEMERAL    | 4        | Whether the main response is an ephemeral,       |
+        |                                               |          | showing for the invoking user only.              |
+        +-----------------------------------------------+----------+--------------------------------------------------+
         
         Can be used by extensions and is used by the the ``Client`` instances to ensure correct flow order.
     application_id : `int`
@@ -481,7 +495,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
-    __slots__ = ('_cached_users', '_response_state', 'application_id', 'channel', 'guild', 'interaction', 'message',
+    __slots__ = ('_cached_users', '_response_flag', 'application_id', 'channel', 'guild', 'interaction', 'message',
         'token', 'type', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
@@ -561,7 +575,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         # We ignore `type` field, since we always get only `InteractionType.application_command`.
         self.user = invoker_user
         self.user_permissions = user_permissions
-        self._response_state = INTERACTION_EVENT_RESPONSE_STATE_NONE
+        self._response_flag = RESPONSE_FLAG_IS_NONE
         self._cached_users = cached_users
         self.message = message
         
@@ -602,12 +616,19 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         Raises
         ------
+        RuntimeError
+            The interaction was acknowledged with `show_for_invoking_user_only=True` (as ephemeral). Response
+            `message` cannot be detected.
         TimeoutError
             Message was not received before timeout.
         """
         message = self.message
         if (message is not None):
             return message
+        
+        if self._response_flag & RESPONSE_FLAG_EPHEMERAL:
+            raise RuntimeError(f'The interaction was acknowledged with `show_for_invoking_user_only=True` '
+                f'(as ephemeral). Response `message` cannot be detected.')
         
         try:
             waiter = INTERACTION_EVENT_MESSAGE_WAITERS[self]
@@ -665,45 +686,86 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     def __repr__(self):
         """Returns the representation of the event."""
-        result = ['<', self.__class__.__name__]
+        repr_parts = ['<', self.__class__.__name__]
         
-        response_state = self._response_state
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
-            response_state_name = None
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-            response_state_name = 'deferred'
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
-            response_state_name = 'responded'
-        else:
-            response_state_name = None
+        response_state_names = None
+        response_state = self._response_flag
+        if response_state == RESPONSE_FLAG_IS_NONE:
+            pass
+        elif response_state & RESPONSE_FLAG_DEFERRING:
+            if response_state_names is None:
+                response_state_names = []
+            response_state_names.append('deferring')
+        elif response_state & RESPONSE_FLAG_DEFERRED:
+            if response_state_names is None:
+                response_state_names = []
+            response_state_names.append('deferred')
+        elif response_state & RESPONSE_FLAG_RESPONDING:
+            if response_state_names is None:
+                response_state_names = []
+            response_state_names.append('responding')
+        elif response_state & RESPONSE_FLAG_RESPONDED:
+            if response_state_names is None:
+                response_state_names = []
+            response_state_names.append('responded')
+        elif response_state&RESPONSE_FLAG_EPHEMERAL:
+            if response_state_names is None:
+                response_state_names = []
+            response_state_names.append('ephemeral')
         
-        if (response_state_name is not None):
-            result.append(' (')
-            result.append(response_state_name)
-            result.append('),')
+        if (response_state_names is not None):
+            repr_parts.append(' (')
+            index = 0
+            limit = len(response_state_names)
+            while True:
+                response_state_name = response_state_names[index]
+                repr_parts.append(response_state_name)
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(response_state_name)
+            repr_parts.append('),')
         
-        result.append(' type=')
+        repr_parts.append(' type=')
         interaction_type = self.type
-        result.append(interaction_type.name)
-        result.append(' (')
-        result.append(repr(interaction_type.value))
-        result.append(')')
+        repr_parts.append(interaction_type.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(interaction_type.value))
+        repr_parts.append(')')
         
-        result.append(' channel=')
-        result.append(repr(self.channel))
-        result.append(', user=')
-        result.append(repr(self.user))
-        result.append(', interaction=')
-        result.append(repr(self.interaction))
-        result.append('>')
+        repr_parts.append(' channel=')
+        repr_parts.append(repr(self.channel))
+        repr_parts.append(', user=')
+        repr_parts.append(repr(self.user))
+        repr_parts.append(', interaction=')
+        repr_parts.append(repr(self.interaction))
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
-    def _maybe_set_message(self, message):
+    def is_unanswered(self):
         """
-        Called when a message is received which is maybe linked to the interaction.
+        Returns whether the event was not acknowledged and not acknowledging either.
         
+        Returns
+        -------
+        is_unanswered : `bool`
         """
+        return True if (self._response_flag == RESPONSE_FLAG_IS_NONE) else False
+    
+    def is_acknowledging(self):
+        """
+        Returns whether the event is being acknowledged.
+        
+        Returns
+        -------
+        is_acknowledging : `bool`
+        """
+        return True if (self._response_flag & RESPONSE_FLAG_IS_ACKNOWLEDGING) else False
     
     def is_acknowledged(self):
         """
@@ -713,7 +775,34 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         -------
         is_acknowledged : `bool`
         """
-        return (self._response_state != INTERACTION_EVENT_RESPONSE_STATE_NONE)
+        return True if (self._response_flag & RESPONSE_FLAG_IS_ACKNOWLEDGED) else False
+    
+    def is_deferred(self):
+        """
+        Returns whether the event is deferred.
+        
+        Returns
+        -------
+        is_deferred : `bool`
+        """
+        response_state = self._response_flag
+        if response_state & RESPONSE_FLAG_RESPONDED:
+            return False
+        
+        if response_state & RESPONSE_FLAG_DEFERRED:
+            return True
+        
+        return False
+    
+    def is_responding(self):
+        """
+        Returns whether the even it being responded.
+        
+        Returns
+        -------
+        is_responding : `bool`
+        """
+        return True if (self._response_flag & RESPONSE_FLAG_RESPONDING) else False
     
     def is_responded(self):
         """
@@ -723,7 +812,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         -------
         is_responded : `bool`
         """
-        return (self._response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED)
+        return True if (self._response_flag & RESPONSE_FLAG_RESPONDED) else False
     
     def __len__(self):
         """Helper for unpacking if needed."""
@@ -738,3 +827,82 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         yield self.channel
         yield self.user
         yield self.interaction
+    
+
+class InteractionResponseContext:
+    """
+    Interaction response context manager for managing the interaction's response flag.
+    
+    Attributes
+    ----------
+    interaction : ``InteractionEvent``
+        The respective interaction event.
+    is_deferring : `bool`
+        Whether the request just deferring the interaction.
+    is_ephemeral : `bool`
+        Whether the request is ephemeral.
+    """
+    __slots__ = ('interaction', 'is_deferring', 'is_ephemeral',)
+    
+    def __new__(cls, interaction, is_deferring, is_ephemeral):
+        """
+        Creates a new ``InteractionResponseContext`` instance with teh given parameters.
+        
+        parameters
+        ----------
+        is_deferring : `bool`
+            Whether the request just deferring the interaction.
+        is_ephemeral : `bool`
+            Whether the request is ephemeral.
+        """
+        self = object.__new__(cls)
+        self.interaction = interaction
+        self.is_deferring = is_deferring
+        self.is_ephemeral = is_ephemeral
+        return self
+    
+    def __enter__(self):
+        """Enters the context manager as deferring or responding if applicable."""
+        interaction = self.interaction
+        response_flag = interaction._response_flag
+        
+        if self.is_deferring:
+            if not (response_flag&RESPONSE_FLAG_IS_ACKNOWLEDGING_OR_ACKNOWLEDGED):
+                response_flag |= RESPONSE_FLAG_DEFERRING
+        else:
+            if (not response_flag&RESPONSE_FLAG_IS_RESPONDING_OR_RESPONDED) and \
+                    response_flag&RESPONSE_FLAG_IS_DEFERRING_OR_DEFERRED:
+                response_flag |= RESPONSE_FLAG_RESPONDING
+        
+        interaction._response_flag = response_flag
+        
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exits the context manager, marking the interaction as deferred or responded if no exception occurred."""
+        interaction = self.interaction
+        response_flag = interaction._response_flag
+        if exc_type is None:
+            if self.is_ephemeral:
+                if not response_flag&RESPONSE_FLAG_IS_ACKNOWLEDGED:
+                    response_flag ^= RESPONSE_FLAG_EPHEMERAL
+            
+            if self.is_deferring:
+                if response_flag&RESPONSE_FLAG_DEFERRING:
+                    response_flag ^= RESPONSE_FLAG_DEFERRING
+                    response_flag |= RESPONSE_FLAG_DEFERRED
+            else:
+                if response_flag&RESPONSE_FLAG_RESPONDING:
+                    response_flag ^= RESPONSE_FLAG_RESPONDING
+                    response_flag |= RESPONSE_FLAG_RESPONDED
+        
+        else:
+            if self.is_deferring:
+                if response_flag&RESPONSE_FLAG_DEFERRING:
+                    response_flag ^= RESPONSE_FLAG_DEFERRING
+            else:
+                if response_flag&RESPONSE_FLAG_RESPONDING:
+                    response_flag ^= RESPONSE_FLAG_RESPONDING
+        
+        interaction._response_flag = response_flag
+        return False

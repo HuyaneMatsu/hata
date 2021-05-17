@@ -57,14 +57,13 @@ from ..preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType,
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
-    ApplicationCommandPermissionOverwrite, InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, \
-    INTERACTION_EVENT_RESPONSE_STATE_NONE, INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+    ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext
 from ..color import Color
 from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
-from ..bases import maybe_snowflake, maybe_snowflake_pair,maybe_snowflake_token_pair
+from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
@@ -13193,7 +13192,7 @@ class Client(ClientUserPBase):
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
-            If given as `True` only the message's content, emebds and components will be processed by Discord.
+            If given as `True` only the message's content, embeds and components will be processed by Discord.
         
         Raises
         ------
@@ -13232,11 +13231,10 @@ class Client(ClientUserPBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        response_state = interaction._response_state
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+        if interaction.is_unanswered():
             # Expected state, nice
             pass
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+        elif interaction.is_deferred():
             warnings.warn(
                 f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
                 f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_response_message_edit`.',
@@ -13245,7 +13243,7 @@ class Client(ClientUserPBase):
             return await self.interaction_response_message_edit(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions)
         
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+        elif interaction.is_responded():
             warnings.warn(
                 f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
                 f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_followup_message_create`.',
@@ -13289,9 +13287,9 @@ class Client(ClientUserPBase):
             message_data['tts'] = True
         
         if message_data:
-            deferring = False
+            is_deferring = False
         else:
-            deferring = True
+            is_deferring = True
         
         if show_for_invoking_user_only:
             message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
@@ -13300,22 +13298,15 @@ class Client(ClientUserPBase):
         if contains_content:
             data['data'] = message_data
         
-        if deferring:
+        if is_deferring:
             response_type = InteractionResponseTypes.source
         else:
             response_type = InteractionResponseTypes.message_and_source
         
         data['type'] = response_type
         
-        await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
-        
-        # Mark the interaction as responded.
-        
-        if deferring:
-            response_state = INTERACTION_EVENT_RESPONSE_STATE_DEFERRED
-        else:
-            response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
-        interaction._response_state = response_state
+        with InteractionResponseContext(interaction, is_deferring, show_for_invoking_user_only):
+            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
         
         # No message data is returned by Discord, return `None`.
         return None
@@ -13355,15 +13346,13 @@ class Client(ClientUserPBase):
                     f'{interaction.__class__.__name__}.')
         
         # Do not ack twice
-        if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+        if interaction.is_responded():
             return
         
         data = {'type': InteractionResponseTypes.component}
-        await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
         
-        # Mark the interaction as responded.
-        interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
-    
+        with InteractionResponseContext(interaction, False, False):
+            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     async def interaction_response_message_edit(self, interaction, content=..., embed=..., file=None,
             allowed_mentions=...):
@@ -13431,12 +13420,7 @@ class Client(ClientUserPBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        response_state = interaction._response_state
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED or \
-                response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
-            # Expected state, nice
-            pass
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+        if interaction.is_unanswered():
             warnings.warn(
                 f'`{self.__class__.__name__}.interaction_response_message_edit` called before calling '
                 f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. Redirecting '
@@ -13445,15 +13429,6 @@ class Client(ClientUserPBase):
             
             return await self.interaction_response_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions)
-        
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
-            warnings.warn(
-                f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the same '
-                f'{interaction!r}. Redirecting to `{self.__class__.__name__}.interaction_followup_message_create`.',
-                ResourceWarning)
-            
-            return await self.interaction_followup_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions, tts=False)
         
         content, embed = validate_content_and_embed(content, embed, True, True)
         
@@ -13475,14 +13450,11 @@ class Client(ClientUserPBase):
         
         message_data = add_file_to_message_data(message_data, file, True)
         
+        with InteractionResponseContext(interaction, False, False):
+            await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
+                message_data)
+        
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
-            message_data)
-        
-        # Mark the interaction as responded if deferred.
-        
-        if interaction._response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-            interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
     
     
     async def interaction_response_message_delete(self, interaction):
@@ -13599,7 +13571,7 @@ class Client(ClientUserPBase):
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
-            If given as `True` only the message's content, emebds and components will be processed by Discord.
+            If given as `True` only the message's content, embeds and components will be processed by Discord.
         
         
         Returns
@@ -13637,12 +13609,7 @@ class Client(ClientUserPBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        
-        response_state = interaction._response_state
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
-            # Expected state, nice
-            pass
-        elif response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+        if interaction.is_unanswered():
             warnings.warn(
                 f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
                 f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. Tho it is '
@@ -13652,18 +13619,6 @@ class Client(ClientUserPBase):
             
             return await self.interaction_response_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions, components=components, tts=tts)
-        
-        # Ignore this case to allow more functionality at retrieving message object.
-        # elif response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
-        #     warnings.warn(
-        #         f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
-        #         f'`{self.__class__.__name__}.interaction_response_message_edit` (deferred response was sent) with '
-        #         f'{interaction!r}. Tho it is possible to call `.interaction_followup_message_create`` before, the '
-        #         f'request is still redirected to `.interaction_response_message_edit`.',
-        #         ResourceWarning)
-        #
-        #     return await self.interaction_response_message_edit(interaction, content, embed=embed,
-        #         allowed_mentions=allowed_mentions)
         
         application_id = self.application.id
         if __debug__:
@@ -13711,11 +13666,9 @@ class Client(ClientUserPBase):
         if message_data is None:
             return
         
-        message_data = await self.http.interaction_followup_message_create(application_id, interaction.id, interaction.token,
-            message_data)
-        
-        # Set the message to responded to avoid editing the before message.
-        interaction._response_state = INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
+        with InteractionResponseContext(interaction, False, show_for_invoking_user_only):
+            message_data = await self.http.interaction_followup_message_create(application_id, interaction.id,
+                interaction.token, message_data)
         
         return interaction.channel._create_new_message(message_data)
     
@@ -13829,9 +13782,11 @@ class Client(ClientUserPBase):
         
         message_data = add_file_to_message_data(message_data, file, True)
         
-        # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
-        await self.http.interaction_followup_message_edit(application_id, interaction.id, interaction.token, message_id,
-            message_data)
+        with InteractionResponseContext(interaction, False, False):
+            # We receive the new message data, but we do not update the message, so dispatch events can get the
+            # difference.
+            await self.http.interaction_followup_message_edit(application_id, interaction.id, interaction.token,
+                message_id, message_data)
     
     
     async def interaction_followup_message_delete(self, interaction, message):

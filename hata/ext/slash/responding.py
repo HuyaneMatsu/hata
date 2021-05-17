@@ -1,8 +1,6 @@
 __all__ = ('SlashResponse', 'abort', )
 from ...backend.futures import is_coroutine_generator
 
-from ...discord.interaction import InteractionEvent, INTERACTION_EVENT_RESPONSE_STATE_NONE, \
-    INTERACTION_EVENT_RESPONSE_STATE_DEFERRED, INTERACTION_EVENT_RESPONSE_STATE_RESPONDED
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
 from ...discord.client import Client
@@ -50,25 +48,24 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
     -------
     request_coro : `None` or `coroutine`
     """
-    response_state = interaction_event._response_state
     if (response is None):
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+        if interaction_event.is_unanswered():
             yield client.interaction_response_message_create(interaction_event,
                 show_for_invoking_user_only=show_for_invoking_user_only)
         
         return
     
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+        if interaction_event.is_unanswered():
             yield client.interaction_response_message_create(interaction_event, response,
                 show_for_invoking_user_only=show_for_invoking_user_only)
             return
         
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+        if interaction_event.is_deferred():
             yield client.interaction_response_message_edit(interaction_event, response)
             return
         
-        if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+        if interaction_event.is_responded():
             yield client.interaction_followup_message_create(interaction_event, response,
                 show_for_invoking_user_only=show_for_invoking_user_only)
             return
@@ -89,7 +86,7 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
         
         return
     
-    if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+    if interaction_event.is_unanswered():
         yield client.interaction_response_message_create(interaction_event,
             show_for_invoking_user_only=show_for_invoking_user_only)
         
@@ -380,7 +377,6 @@ class SlashResponse:
         -------
         request_coro : `None` or `coroutine`
         """
-        response_state = interaction_event._response_state
         message = self._message
         if message is not ...:
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file'))
@@ -395,7 +391,7 @@ class SlashResponse:
         force_new_message = self._force_new_message
         if force_new_message:
             if force_new_message > 0:
-                if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                if interaction_event.is_unanswered():
                     yield client.interaction_response_message_create(interaction_event)
                 
                 response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
@@ -406,7 +402,7 @@ class SlashResponse:
                 yield client.interaction_followup_message_create(interaction_event, **response_parameters)
                 return
             else:
-                if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+                if interaction_event.is_unanswered():
                     if 'file' in self._parameters:
                         show_for_invoking_user_only = \
                             self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
@@ -443,7 +439,7 @@ class SlashResponse:
                 return
         
         else:
-            if response_state == INTERACTION_EVENT_RESPONSE_STATE_NONE:
+            if interaction_event.is_unanswered():
                 if 'file' in self._parameters:
                     show_for_invoking_user_only = \
                         self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
@@ -468,7 +464,7 @@ class SlashResponse:
                     yield client.interaction_response_message_create(interaction_event, **response_parameters)
                 return
             
-            if response_state == INTERACTION_EVENT_RESPONSE_STATE_DEFERRED:
+            if interaction_event.is_deferred():
                 response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed' 'file',
                     'components',))
                 
@@ -479,7 +475,7 @@ class SlashResponse:
                     yield client.interaction_response_message_edit(interaction_event, **response_parameters)
                 return
             
-            if response_state == INTERACTION_EVENT_RESPONSE_STATE_RESPONDED:
+            if interaction_event.is_responded():
                 response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
                     'tts', 'components'))
                 response_parameters['show_for_invoking_user_only'] = \

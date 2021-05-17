@@ -6,6 +6,10 @@
 - Increase `content`'s max length to 4k in `message.custom`.
 - Add `components` parameter to `message.custom`. (Zeref Draganeel#3581)
 - Add `thread` parameter to `message.custom`. (Zeref Draganeel#3581)
+- Add `InteractionEvent.is_responding`.
+- Add `InteractionEvent.is_acknowledging`.
+- `InteractionEvent.wait_for_response_message` now raises `RuntimeError` if ephemeral message was sent.
+- Add `Interaction.is_unanswered`.
 
 ##### hata.ext.slash
 - `abort` now supports `components` parameter in `show_for_invoking_user_only` mode. (Zeref Draganeel#3581)
@@ -22,6 +26,10 @@
 - `components` can be missing from message payload.
 - `Message._update` was not updating components of non guild messages.
 - `Message._update_no_return` was not updating components of non guild messages.
+
+#### Renames, Deprecation & Removals
+
+- Rename `InteractionEvent._response_state` to `.response_flag`.
 
 ## 1.1.77 *\[2021-05-17\]*
 

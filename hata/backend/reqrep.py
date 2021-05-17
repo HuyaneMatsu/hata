@@ -56,7 +56,7 @@ class Fingerprint:
         16: md5,
         20: sha1,
         32: sha256,
-            }
+    }
     
     def __new__(cls, fingerprint):
         """
@@ -251,7 +251,7 @@ class RequestInfo:
 DEFAULT_HEADERS = (
     (ACCEPT, '*/*'),
     (ACCEPT_ENCODING, 'gzip, deflate'),
-        )
+)
 
 class ClientRequest:
     """
@@ -468,7 +468,6 @@ class ClientRequest:
         
         # Everything seems correct, create the object.
         self = object.__new__(cls)
-        
         self.original_url = url
         self.url = request_url
         self.method = method

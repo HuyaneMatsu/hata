@@ -79,10 +79,14 @@ def is_cdn_url(url):
     Attachments: `https://media.discordapp.net/...`
     ```
     """
-    if url is None:
-        return False
-    
     return (CDN_RP.match(url) is not None)
+
+
+def is_media_url(url):
+    """
+    Returns whether the given url uses the discord's media content delivery network.
+    """
+    return url.startswith('https://media.discordapp.net/')
 
 
 def guild_icon_url(guild):

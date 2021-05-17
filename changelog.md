@@ -16,6 +16,7 @@ Start supporting anyio (all bugs included). (Mina Ashido]|[💻⭐#3506)
 #### Bug fixed
 
 - `CallableAnalyzer` was not adding `*args` and `**kwargs` to `.arguments`.
+- Avoid using discord's media endpoint for attachments.
 
 ## 1.1.76 *\[2021-05-16\]*
 

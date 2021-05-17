@@ -3,7 +3,7 @@ __all__ = ('DiscordHTTPClient', )
 
 import sys
 
-from ..backend.utils import imultidict, WeakMap, WeakKeyDictionary, to_json, from_json
+from ..backend.utils import imultidict, WeakMap, WeakKeyDictionary, to_json, from_json, call
 from ..backend.futures import sleep, Future
 from ..backend.http import HTTPClient, RequestCM
 from ..backend.connector import TCPConnector
@@ -21,27 +21,29 @@ from .core import KOKORO
 
 from .urls import API_ENDPOINT, CDN_ENDPOINT, DIS_ENDPOINT
 
-implement = sys.implementation
-version_l = [
-    'Discord-client (HuyaneMatsu) Python (',
-    implement.name,
-    ' ',
-    str(implement.version[0]),
-    '.',
-    str(implement.version[1]),
-    ' '
-]
+@call
+def generate_user_agent():
+    """
+    Generates the user agent header used by the wrapper.
+    """
+    global LIB_USER_AGENT
+    implement = sys.implementation
+    version_l = [
+        'Discord-client (HuyaneMatsu) Python (',
+        implement.name,
+        ' ',
+        str(implement.version[0]),
+        '.',
+        str(implement.version[1]),
+    ]
+    
+    if implement.version[3] != 'final':
+        version_l.append(' ')
+        version_l.append(implement.version[3])
+    
+    version_l.append(')')
+    LIB_USER_AGENT = ''.join(version_l)
 
-if implement.version[3] != 'final':
-    version_l.append(implement.version[3])
-
-version_l.append(')')
-LIB_USER_AGENT = ''.join(version_l)
-
-del implement
-del version_l
-
-del sys
 
 class _ConnectorRefCounter:
     """
@@ -260,7 +262,8 @@ class DiscordHTTPClient(HTTPClient):
                 response_headers = response.headers
                 status = response.status
                 
-                if response_headers[CONTENT_TYPE] == 'application/json':
+                content_type_headers = response_headers.get(CONTENT_TYPE, None)
+                if (content_type_headers is not None) and (content_type_headers == 'application/json'):
                     response_data = from_json(response_data)
                 
                 if 199 < status < 305:

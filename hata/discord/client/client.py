@@ -29,7 +29,7 @@ from ..guild import Guild, create_partial_guild, GuildWidget, GuildFeature, Guil
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep
 from ..http import DiscordHTTPClient
-from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, is_cdn_url
+from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, is_cdn_url, is_media_url
 from ..role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
 from ..webhook import Webhook, create_partial_webhook
 from ..gateway import DiscordGateway, DiscordGatewaySharder
@@ -721,6 +721,7 @@ class Client(ClientUserPBase):
         async with self.http.get(url) as response:
             return (await response.read())
     
+    
     async def download_attachment(self, attachment):
         """
         Downloads an attachment object's file. This method always prefers the proxy url of the attachment if applicable.
@@ -751,8 +752,8 @@ class Client(ClientUserPBase):
                     f'instance, got {attachment.__class__.__name__}.')
         
         url = attachment.proxy_url
-        if not is_cdn_url(url):
-            url = attachment.url
+        if (url is None) or is_media_url(url):
+           url = attachment.url
         
         async with self.http.get(url) as response:
             return (await response.read())

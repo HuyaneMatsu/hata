@@ -441,21 +441,21 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     _response_flag : `bool`
         The response order state of ``InteractionEvent``
         
-        +-----------------------------------------------+----------+--------------------------------------------------+
-        | Respective name                               | Shift    | Description                                      |
-        +===============================================+==========+==================================================+
-        | RESPONSE_FLAG_DEFERRING    | 0        | The vent is being acknowledged.                  |
-        +-----------------------------------------------+----------+--------------------------------------------------+
-        | RESPONSE_FLAG_DEFERRED     | 1        | The event was acknowledged and response will be  |
-        |                                               |          | sent later. Shows loading screen for the user.   |
-        +-----------------------------------------------+----------+--------------------------------------------------+
-        | RESPONSE_FLAG_RESPONDING   | 2        | Responding to the interaction.                   |
-        +-----------------------------------------------+----------+--------------------------------------------------+
-        | RESPONSE_FLAG_RESPONDED    | 3        | Response was sent on the interaction.            |
-        +-----------------------------------------------+----------+--------------------------------------------------+
-        | RESPONSE_FLAG_EPHEMERAL    | 4        | Whether the main response is an ephemeral,       |
-        |                                               |          | showing for the invoking user only.              |
-        +-----------------------------------------------+----------+--------------------------------------------------+
+        +-------------------------------+-------+---------------------------------------------------+
+        | Respective name               | Shift | Description                                       |
+        +===============================+=======+===================================================+
+        | RESPONSE_FLAG_DEFERRING       | 0     | The vent is being acknowledged.                   |
+        +-------------------------------+-------+---------------------------------------------------+
+        | RESPONSE_FLAG_DEFERRED        | 1     | The event was acknowledged and response will be   |
+        |                               |       | sent later. Shows loading screen for the user.    |
+        +-------------------------------+-------+---------------------------------------------------+
+        | RESPONSE_FLAG_RESPONDING      | 2     | Responding to the interaction.                    |
+        +-------------------------------+-------+---------------------------------------------------+
+        | RESPONSE_FLAG_RESPONDED       | 3     | Response was sent on the interaction.             |
+        +-------------------------------+-------+---------------------------------------------------+
+        | RESPONSE_FLAG_EPHEMERAL       | 4     | Whether the main response is an ephemeral,        |
+        |                               |       | showing for the invoking user only.               |
+        +-------------------------------+-------+---------------------------------------------------+
         
         Can be used by extensions and is used by the the ``Client`` instances to ensure correct flow order.
     application_id : `int`

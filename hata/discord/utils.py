@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from base64 import b64encode
 from time import time as time_now
 
-
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:

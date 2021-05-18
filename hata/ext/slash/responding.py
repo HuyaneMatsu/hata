@@ -72,7 +72,7 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
         
         # No more cases
         return
-        
+    
     if is_coroutine_generator(response):
         response = await process_command_gen(client, interaction_event, show_for_invoking_user_only, response)
         async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
@@ -86,11 +86,33 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
         
         return
     
-    if interaction_event.is_unanswered():
-        yield client.interaction_response_message_create(interaction_event,
-            show_for_invoking_user_only=show_for_invoking_user_only)
+    response = str(response)
+    if len(response) > 2000:
+        response = response[:2000]
+    
+    if response:
+        if interaction_event.is_unanswered():
+            yield client.interaction_response_message_create(interaction_event, response,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+            return
         
+        if interaction_event.is_deferred():
+            yield client.interaction_response_message_edit(interaction_event, response)
+            return
+        
+        if interaction_event.is_responded():
+            yield client.interaction_followup_message_create(interaction_event, response,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+            return
+        
+        # No more cases
         return
+    else:
+        if interaction_event.is_unanswered():
+            yield client.interaction_response_message_create(interaction_event,
+                show_for_invoking_user_only=show_for_invoking_user_only)
+            
+            return
     
     # No more cases
     return

@@ -1059,7 +1059,7 @@ class Guild(DiscordEntity, immortal=True):
                     channel._delete()
             category._delete()
         
-        for thread in self.thread_list:
+        for thread in self.thread_channels:
             thread._delete()
         
         for emoji in list(self.emojis.values()):

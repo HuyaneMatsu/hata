@@ -3,6 +3,7 @@ __all__ = ()
 import reprlib
 
 from ...backend.analyzer import CallableAnalyzer
+from ...backend.utils import un_map_pack
 
 from ...discord.core import ROLES, CHANNELS
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -17,7 +18,48 @@ from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMA
 
 from .utils import raw_name_to_display, normalize_description
 
-async def converter_int(client, interaction, value):
+
+async def converter_self_client(client, interaction_event):
+    """
+    Internal converter for returning the client who received an interaction event.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    
+    Returns
+    -------
+    client : ``Client``
+    """
+    return client
+
+
+async def converter_self_interaction_event(client, interaction):
+    """
+    Internal converter for returning the  received interaction event.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    
+    Returns
+    -------
+    interaction_event : ``ApplicationCommandInteraction``
+    """
+    return interaction
+
+
+async def converter_int(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to `int`.
     
@@ -27,7 +69,7 @@ async def converter_int(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -45,7 +87,7 @@ async def converter_int(client, interaction, value):
     return value
 
 
-async def converter_str(client, interaction, value):
+async def converter_str(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to `str`.
     
@@ -55,7 +97,7 @@ async def converter_str(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -72,7 +114,7 @@ BOOL_TABLE = {
     str(False): False,
 }
 
-async def converter_bool(client, interaction, value):
+async def converter_bool(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to `bool`.
     
@@ -82,7 +124,7 @@ async def converter_bool(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -95,7 +137,7 @@ async def converter_bool(client, interaction, value):
     return BOOL_TABLE.get(value, None)
 
 
-async def converter_snowflake(client, interaction, value):
+async def converter_snowflake(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to a snowflake.
     
@@ -105,7 +147,7 @@ async def converter_snowflake(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -126,7 +168,7 @@ async def converter_snowflake(client, interaction, value):
     return snowflake
 
 
-async def converter_user(client, interaction, value):
+async def converter_user(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
     
@@ -136,7 +178,7 @@ async def converter_user(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -146,12 +188,12 @@ async def converter_user(client, interaction, value):
     user : `None`, ``User`` or ``Client``
         If conversion fails, then returns `None`.
     """
-    user_id = await converter_snowflake(client, interaction, value)
+    user_id = await converter_snowflake(client, interaction_event, value)
     
     if user_id is None:
         user = None
     else:
-        resolved_users = interaction.resolved_users
+        resolved_users = interaction_event.interaction.resolved_users
         if resolved_users is None:
             user = None
         else:
@@ -170,7 +212,7 @@ async def converter_user(client, interaction, value):
     return user
 
 
-async def converter_role(client, interaction, value):
+async def converter_role(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
     
@@ -180,7 +222,7 @@ async def converter_role(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -190,12 +232,12 @@ async def converter_role(client, interaction, value):
     value : `None` or ``Role``
         If conversion fails, then returns `None`.
     """
-    role_id = await converter_snowflake(client, interaction, value)
+    role_id = await converter_snowflake(client, interaction_event, value)
     
     if role_id is None:
         role = None
     else:
-        resolved_roles = interaction.resolved_roles
+        resolved_roles = interaction_event.interaction.resolved_roles
         if resolved_roles is None:
             role = None
         else:
@@ -207,7 +249,7 @@ async def converter_role(client, interaction, value):
     return role
 
 
-async def converter_channel(client, interaction, value):
+async def converter_channel(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
     
@@ -217,7 +259,7 @@ async def converter_channel(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -227,12 +269,12 @@ async def converter_channel(client, interaction, value):
     value : `None` or ``ChannelBase`` instance
         If conversion fails, then returns `None`.
     """
-    channel_id = await converter_snowflake(client, interaction, value)
+    channel_id = await converter_snowflake(client, interaction_event, value)
     
     if channel_id is None:
         channel = None
     else:
-        resolved_channels = interaction.resolved_channels
+        resolved_channels = interaction_event.interaction.resolved_channels
         if resolved_channels is None:
             channel = None
         else:
@@ -244,7 +286,7 @@ async def converter_channel(client, interaction, value):
     return channel
 
 
-async def converter_mentionable(client, interaction, value):
+async def converter_mentionable(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to mentionable ``DiscordEntity`` instance.
     
@@ -254,7 +296,7 @@ async def converter_mentionable(client, interaction, value):
     ----------
     client : ``Client``
         The client who received the respective ``InteractionEvent``.
-    interaction : ``ApplicationCommandInteraction``
+    interaction_event : ``InteractionEvent``
         The received application command interaction.
     value : `str`
         ``ApplicationCommandInteractionOption.value``.
@@ -264,7 +306,7 @@ async def converter_mentionable(client, interaction, value):
     value : `None` or ``DiscordEntity`` instance
         If conversion fails, then returns `None`.
     """
-    entity_id = await converter_snowflake(client, interaction, value)
+    entity_id = await converter_snowflake(client, interaction_event, value)
     
     # Use goto
     while True:
@@ -272,7 +314,7 @@ async def converter_mentionable(client, interaction, value):
             entity = None
             break
         
-        resolved_users = interaction.resolved_users
+        resolved_users = interaction_event.interaction.resolved_users
         if (resolved_users is not None):
             try:
                 entity = resolved_users[entity_id]
@@ -281,7 +323,7 @@ async def converter_mentionable(client, interaction, value):
             else:
                 break
         
-        resolved_roles = interaction.resolved_roles
+        resolved_roles = interaction_event.interaction.resolved_roles
         if (resolved_roles is not None):
             try:
                 entity = resolved_roles[entity_id]
@@ -309,6 +351,22 @@ ANNOTATION_TYPE_CHANNEL_ID = 8
 ANNOTATION_TYPE_NUMBER = 9
 ANNOTATION_TYPE_MENTIONABLE = 10
 ANNOTATION_TYPE_MENTIONABLE_ID = 11
+ANNOTATION_TYPE_SELF_CLIENT = 12
+ANNOTATION_TYPE_SELF_INTERACTION_EVENT = 13
+
+CLIENT_ANNOTATION_NAMES = frozenset((
+    'c',
+    'clnt',
+    'client',
+))
+
+INTERACTION_EVENT_ANNOTATION_NAMES = frozenset((
+    'e',
+    'event',
+    'i',
+    'interaction',
+    'interaction_event',
+))
 
 STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'str': ANNOTATION_TYPE_STR,
@@ -322,7 +380,10 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'channel_id': ANNOTATION_TYPE_CHANNEL_ID,
     'number': ANNOTATION_TYPE_NUMBER,
     'mentionable': ANNOTATION_TYPE_MENTIONABLE,
-    'mentionable_id': ANNOTATION_TYPE_MENTIONABLE_ID
+    'mentionable_id': ANNOTATION_TYPE_MENTIONABLE_ID,
+    
+    **un_map_pack((name, ANNOTATION_TYPE_SELF_CLIENT) for name in CLIENT_ANNOTATION_NAMES),
+    **un_map_pack((name, ANNOTATION_TYPE_SELF_INTERACTION_EVENT) for name in CLIENT_ANNOTATION_NAMES),
 }
 
 # Used at repr
@@ -339,6 +400,9 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
     ANNOTATION_TYPE_NUMBER: 'number',
     ANNOTATION_TYPE_MENTIONABLE: 'mentionable',
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable_id',
+    
+    ANNOTATION_TYPE_SELF_CLIENT: 'client',
+    ANNOTATION_TYPE_SELF_INTERACTION_EVENT: 'interaction_event',
 }
 
 TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
@@ -349,22 +413,33 @@ TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
     User: ANNOTATION_TYPE_USER,
     Role: ANNOTATION_TYPE_ROLE,
     ChannelBase: ANNOTATION_TYPE_CHANNEL,
+    
+    Client: ANNOTATION_TYPE_SELF_CLIENT,
+    InteractionEvent: ANNOTATION_TYPE_SELF_INTERACTION_EVENT,
 }
 
 ANNOTATION_TYPE_TO_CONVERTER = {
-    ANNOTATION_TYPE_STR: converter_str,
-    ANNOTATION_TYPE_INT: converter_int,
-    ANNOTATION_TYPE_BOOL: converter_bool,
-    ANNOTATION_TYPE_USER: converter_user,
-    ANNOTATION_TYPE_USER_ID: converter_snowflake,
-    ANNOTATION_TYPE_ROLE: converter_role,
-    ANNOTATION_TYPE_ROLE_ID: converter_snowflake,
-    ANNOTATION_TYPE_CHANNEL: converter_channel,
-    ANNOTATION_TYPE_CHANNEL_ID : converter_snowflake,
-    ANNOTATION_TYPE_NUMBER: converter_int,
-    ANNOTATION_TYPE_MENTIONABLE: converter_mentionable,
-    ANNOTATION_TYPE_MENTIONABLE_ID: converter_snowflake,
+    ANNOTATION_TYPE_STR: (converter_str, False),
+    ANNOTATION_TYPE_INT: (converter_int, False),
+    ANNOTATION_TYPE_BOOL: (converter_bool, False),
+    ANNOTATION_TYPE_USER: (converter_user, False),
+    ANNOTATION_TYPE_USER_ID: (converter_snowflake, False),
+    ANNOTATION_TYPE_ROLE: (converter_role, False),
+    ANNOTATION_TYPE_ROLE_ID: (converter_snowflake, False),
+    ANNOTATION_TYPE_CHANNEL: (converter_channel, False),
+    ANNOTATION_TYPE_CHANNEL_ID : (converter_snowflake, False),
+    ANNOTATION_TYPE_NUMBER: (converter_int, False),
+    ANNOTATION_TYPE_MENTIONABLE: (converter_mentionable, False),
+    ANNOTATION_TYPE_MENTIONABLE_ID: (converter_snowflake, False),
+    
+    ANNOTATION_TYPE_SELF_CLIENT: (converter_self_client, True),
+    ANNOTATION_TYPE_SELF_INTERACTION_EVENT: (converter_self_interaction_event, True),
 }
+
+INTERNAL_ANNOTATION_TYPES = frozenset((
+    ANNOTATION_TYPE_SELF_CLIENT,
+    ANNOTATION_TYPE_SELF_INTERACTION_EVENT,
+))
 
 # `int` Discord fields are broken and they are refusing to fix it, use string instead.
 # Reference: https://github.com/discord/discord-api-docs/issues/2448
@@ -381,6 +456,9 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_NUMBER: ApplicationCommandOptionType.integer,
     ANNOTATION_TYPE_MENTIONABLE: ApplicationCommandOptionType.mentionable,
     ANNOTATION_TYPE_MENTIONABLE_ID: ApplicationCommandOptionType.mentionable,
+    
+    ANNOTATION_TYPE_SELF_CLIENT: ApplicationCommandOptionType.none,
+    ANNOTATION_TYPE_SELF_INTERACTION_EVENT: ApplicationCommandOptionType.none,
 }
 
 
@@ -400,6 +478,7 @@ def create_annotation_choice_from_int(value):
     """
     return (str(value), value)
 
+
 def create_annotation_choice_from_str(value):
     """
     Creates an annotation choice form an int.
@@ -416,6 +495,7 @@ def create_annotation_choice_from_str(value):
     """
     # make sure
     return (value, value)
+
 
 def parse_annotation_choice_from_tuple(annotation):
     """
@@ -506,7 +586,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
     
     Parameters
     ----------
-    annotation_value : `str`, `type`, `list`, `dict`
+    annotation_value : `str`, `type`, `list`, `dict`, `iterable`.
         The annotation's value.
     parameter_name : `str`
         The parameter's name.
@@ -566,6 +646,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 choice_elements.append(choice_element)
             
             choice_elements.sort()
+        elif hasattr(type(annotation_value), '__iter__'):
+            for annotation_choice in annotation_value:
+                choice_element = parse_annotation_choice(annotation_choice)
+                choice_elements.append(choice_element)
         
         else:
             raise TypeError(f'Parameter `{parameter_name}` has annotation not set neither as `tuple`, `str`, `type`, '
@@ -656,7 +740,7 @@ def parse_annotation_name(name, parameter_name):
     ----------
     name : `str`
         The name of an annotation.
-    annotation_name : `None` or `str`
+    parameter_name : `None` or `str`
         The annotation's name.
     
     Returns
@@ -666,7 +750,7 @@ def parse_annotation_name(name, parameter_name):
     Raises
     ------
     TypeError
-        - If `name`'s is neither `None` or `str` instance.
+        If `name`'s is neither `None` or `str` instance.
     """
     if name is None:
         name = parameter_name
@@ -683,6 +767,123 @@ def parse_annotation_name(name, parameter_name):
     return name
 
 
+def parse_annotation_tuple(parameter):
+    """
+    Parses an annotated tuple.
+    
+    Parameters
+    ----------
+    parameter : ``Argument``
+        The respective parameter's representation.
+    
+    Returns
+    -------
+    choices : `None` or `dict` of (`str` or `int`, `str`) items
+        Parameter's choices.
+    description : `str`
+        Parameter's description.
+    name : `str`
+        The parameter's name.
+    type_ : `int`
+        The parameter's internal type identifier.
+    
+    Raises
+    ------
+    ValueError
+        - If `parameter` annotation tuple's length is out of range [2:3].
+        - If `parameter` annotation's refers to an internal type.
+    """
+    parameter_name = parameter.name
+    annotation = parameter.annotation
+    annotation_tuple_length = len(annotation)
+    if annotation_tuple_length not in (2, 3):
+        raise ValueError(f'Parameter `{parameter_name}` has annotation as `tuple`, but it\'s length is not in '
+            f'range [2:3], got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
+    
+    annotation_value, description = annotation[:2]
+    annotation_type, choices = parse_annotation_type_and_choice(annotation_value, parameter_name)
+    
+    if annotation_type in INTERNAL_ANNOTATION_TYPES:
+        raise ValueError(f'`Internal annotations cannot be given inside of a tuple, got annotation for: '
+            f'{ANNOTATION_TYPE_TO_STR_ANNOTATION[annotation_type]!r}.')
+    
+    description = parse_annotation_description(description, parameter_name)
+    
+    if len(annotation) == 3:
+        name = annotation[2]
+    else:
+        name = None
+    
+    name = parse_annotation_name(name, parameter_name)
+    return choices, description, name, annotation_type
+
+
+def parse_annotation(parameter):
+    """
+    Tries to parse an internal annotation referencing ``Client`` or ``InteractionEvent``.
+    
+    Parameters
+    ----------
+    parameter : ``Argument``
+        The respective parameter's representation.
+    
+    Returns
+    -------
+    choices : `None` or `dict` of (`str` or `int`, `str`) items
+        Parameter's choices.
+    description : `str` or `None`
+        Parameter's description.
+        
+        > Returned as `None` for internal parameters.
+    name : `str`
+        The parameter's name.
+    type_ : `int`
+        The parameter's internal type identifier.
+    
+    Raises
+    ------
+    ValueError
+        - If `parameter` annotation tuple's length  is out of range [2:3].
+        - If `parameter` annotation tuple refers to an internal type.
+    TypeError
+        Parameter's type refers to an unknown type or string value.
+    """
+    if parameter.has_annotation:
+        annotation = parameter.annotation
+        if isinstance(annotation, tuple):
+            return parse_annotation_tuple(parameter)
+    else:
+        annotation = parameter.name
+    
+    # use goto
+    while True:
+        if isinstance(annotation, type):
+            if issubclass(annotation, Client):
+                annotation_type = ANNOTATION_TYPE_SELF_CLIENT
+                break
+            
+            if issubclass(annotation, InteractionEvent):
+                annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
+                break
+        
+        elif isinstance(annotation, str):
+            annotation = annotation.lower()
+            
+            if annotation in CLIENT_ANNOTATION_NAMES:
+                annotation_type = ANNOTATION_TYPE_SELF_CLIENT
+                break
+            
+            if annotation in INTERACTION_EVENT_ANNOTATION_NAMES:
+                annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
+                break
+        
+        raise TypeError(f'Parameter `{parameter.name}` is not `tuple`, `{Client.__name__}`, '
+            f'`{InteractionEvent.__name__}`, not a `str` referencing to them, got '
+            f'{annotation.__class__.__name__}; {annotation!r}.')
+    
+    return None, None, parameter.name, annotation_type
+
+
 class ParameterConverter:
     """
     Converter class for choice based converters.
@@ -697,6 +898,8 @@ class ParameterConverter:
         Default value of the parameter.
     description : `None` or `str`
         The parameter's description.
+    is_internal : `bool`
+        Whether the converter is for an internal parser.
     name : `str`
         The parameter's description.
     required : `bool`
@@ -704,7 +907,7 @@ class ParameterConverter:
     type : `int`
         Internal identifier of the converter.
     """
-    __slots__ = ('choices', 'converter', 'default', 'description', 'name', 'required', 'type')
+    __slots__ = ('choices', 'converter', 'default', 'description', 'is_internal', 'name', 'required', 'type')
     
     def __new__(cls, parameter, parameter_configurer):
         """
@@ -720,7 +923,7 @@ class ParameterConverter:
         Raises
         ------
         TypeError
-            - if the `argument` has no annotation.
+            - if the `parameter` has no annotation.
             - If `annotation_value` is `list` instance, but it's elements do not match the `tuple`
                 (`str`, `str` or `int`) pattern.
             - If `annotation_value` is `dict` instance, but it's items do not match the (`str`, `str` or `int`) pattern.
@@ -737,31 +940,7 @@ class ParameterConverter:
             - If `annotation`'s 1st element's (description's) length is out of the expected range [2:100].
         """
         if parameter_configurer is None:
-            parameter_name = parameter.name
-            if not parameter.has_annotation:
-                raise TypeError(f'Argument `{parameter_name}` has no annotation.')
-            
-            annotation = parameter.annotation
-            if not isinstance(annotation, tuple):
-                raise TypeError(f'Argument `{parameter_name}` is not `tuple` instances, got '
-                    f'{annotation.__class__.__name__}.')
-            
-            annotation_tuple_length = len(annotation)
-            if annotation_tuple_length not in (2, 3):
-                raise ValueError(f'Argument `{parameter_name}` has annotation as `tuple`, but it\'s length is not in '
-                    f'range [2:3], got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
-            
-            annotation_value, description = annotation[:2]
-            annotation_type, choices = parse_annotation_type_and_choice(annotation_value, parameter_name)
-            
-            description = parse_annotation_description(description, parameter_name)
-            
-            if len(annotation) == 3:
-                name = annotation[2]
-            else:
-                name = None
-            
-            name = parse_annotation_name(name, parameter_name)
+            choices, description, name, annotation_type = parse_annotation(parameter)
         else:
             choices = parameter_configurer._choices
             description = parameter_configurer._description
@@ -777,7 +956,7 @@ class ParameterConverter:
         
         self = object.__new__(cls)
         self.choices = choices
-        self.converter = ANNOTATION_TYPE_TO_CONVERTER[annotation_type]
+        self.converter, self.is_internal = ANNOTATION_TYPE_TO_CONVERTER[annotation_type]
         self.default = default
         self.description = description
         self.name = name
@@ -785,9 +964,9 @@ class ParameterConverter:
         self.type = annotation_type
         return self
     
-    async def __call__(self, client, interaction, value):
+    async def __call__(self, client, interaction_event, value):
         """
-        Calls the argument converter to convert the given `value` to it's desired state.
+        Calls the parameter converter to convert the given `value` to it's desired state.
         
         This method is a coroutine.
         
@@ -795,7 +974,7 @@ class ParameterConverter:
         ----------
         client : ``Client``
             The client who received the respective ``InteractionEvent``.
-        interaction : ``ApplicationCommandInteraction``
+        interaction_event : ``InteractionEvent``
             The received application command interaction.
         value : `str`
             ``ApplicationCommandInteractionOption.value``.
@@ -807,14 +986,10 @@ class ParameterConverter:
         value : `None` or ``Any`` instance
             If conversion fails, always returns `None`.
         """
-        if value is None:
-            if self.required:
-                passed = False
-            else:
-                passed = True
-                value = self.default
+        if self.is_internal:
+            passed = True
+            value = await self.converter(client, interaction_event)
         else:
-            value = await self.converter(client, interaction, value)
             if value is None:
                 if self.required:
                     passed = False
@@ -822,15 +997,23 @@ class ParameterConverter:
                     passed = True
                     value = self.default
             else:
-                choices = self.choices
-                if choices is None:
-                    passed = True
+                value = await self.converter(client, interaction_event, value)
+                if value is None:
+                    if self.required:
+                        passed = False
+                    else:
+                        passed = True
+                        value = self.default
                 else:
-                    if value in choices:
+                    choices = self.choices
+                    if choices is None:
                         passed = True
                     else:
-                        passed = False
-                        value = None
+                        if value in choices:
+                            passed = True
+                        else:
+                            passed = False
+                            value = None
         
         return passed, value
     
@@ -863,12 +1046,15 @@ class ParameterConverter:
     
     def as_option(self):
         """
-        Converts the argument to an application command option.
+        Converts the parameter to an application command option if applicable
         
         Returns
         -------
-        option : ``ApplicationCommandOption``
+        option : `None` or ``ApplicationCommandOption``
         """
+        if self.is_internal:
+            return
+        
         choices = self.choices
         if choices is None:
             option_choices = None
@@ -910,19 +1096,19 @@ def generate_parameter_parsers(func, parameter_configurers):
         - If `func` accepts more than `27` arguments.
         - If `func`'s 0th argument is annotated, but not as ``Client``.
         - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
-        - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+        - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
             `tuple` (`str`, `str` or `int`) pattern.
-        - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+        - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
             (`str`, `str` or `int`) pattern.
-        - If an argument's `annotation_value` is unexpected.
-        - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+        - If a parameter's `annotation_value` is unexpected.
+        - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
     ValueError
-        - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-        - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-        - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-        - If an argument's `choice` amount is out of the expected range [1:25].
-        - If an argument's `choice` name is duped.
-        - If an argument's `choice` values are mixed types.
+        - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+        - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+        - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+        - If a parameter's `choice` amount is out of the expected range [1:25].
+        - If a parameter's `choice` name is duped.
+        - If a parameter's `choice` values are mixed types.
     """
     analyzer = CallableAnalyzer(func)
     if analyzer.is_async() or analyzer.is_async_generator():
@@ -941,9 +1127,9 @@ def generate_parameter_parsers(func, parameter_configurers):
         raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.')
     
     
-    keyword_only_argument_count = real_analyzer.get_non_default_keyword_only_argument_count()
-    if keyword_only_argument_count:
-        raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only arguments.')
+    keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_argument_count()
+    if keyword_only_parameter_count:
+        raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
     
     if real_analyzer.accepts_args():
         raise TypeError(f'`{real_analyzer.real_function!r}` accepts *args.')
@@ -954,37 +1140,9 @@ def generate_parameter_parsers(func, parameter_configurers):
     
     parameters = real_analyzer.get_non_reserved_positional_arguments()
     
-    argument_count = len(parameters)
-    if argument_count < 2:
-        raise TypeError(f'`{real_analyzer.real_function!r}` should accept at least 2 arguments: '
-            f'`client` and `interaction_event`, meanwhile it accepts only {argument_count}.')
-    
-    if argument_count > 2+APPLICATION_COMMAND_OPTIONS_MAX:
-        raise TypeError(f'`{real_analyzer.real_function!r}` should accept at maximum `27` arguments: '
-            f', meanwhile it accepts up to {argument_count}.')
-    
-    parameter_parameter = parameters[0]
-    if parameter_parameter.has_default:
-        raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
-            'reserved, meanwhile it should not have.')
-    
-    if parameter_parameter.has_annotation and (parameter_parameter.annotation is not Client):
-        raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the client\'s argument slot, '
-            f'what is not `{Client.__name__}`.')
-    
-    
-    event_parameter = parameters[1]
-    if event_parameter.has_default:
-        raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
-            f'reserved, meanwhile it should not have.')
-    
-    if event_parameter.has_annotation and (event_parameter.annotation is not InteractionEvent):
-        raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the interaction_event\'s argument '
-            f'slot what is not `{InteractionEvent.__name__}`.')
-    
     parameter_parsers = []
     
-    for parameter in parameters[2:]:
+    for parameter in parameters:
         if parameter_configurers is None:
             parameter_configurer = None
         else:
@@ -992,6 +1150,15 @@ def generate_parameter_parsers(func, parameter_configurers):
         
         parameter_parser = ParameterConverter(parameter, parameter_configurer)
         parameter_parsers.append(parameter_parser)
+    
+    outer_option_count = 0
+    for parameter_parser in parameter_parsers:
+        if not parameter_parser.is_internal:
+            outer_option_count += 1
+        
+    if outer_option_count > APPLICATION_COMMAND_OPTIONS_MAX:
+        raise TypeError(f'`{real_analyzer.real_function!r}` should accept at maximum '
+            f'`{APPLICATION_COMMAND_OPTIONS_MAX}` outer parameters,  meanwhile it accepts {outer_option_count}.')
     
     parameter_parsers = tuple(parameter_parsers)
     

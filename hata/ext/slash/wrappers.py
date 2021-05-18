@@ -211,7 +211,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
         The parameter's name.
     _parameter_name : `str`
         The parameter's internal name.
-    _type_ : `int`
+    _type : `int`
         The parameter's internal type identifier.
     """
     __slots__ = ('_choices', '_description', '_name', '_parameter_name', '_type')

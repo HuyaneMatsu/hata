@@ -53,9 +53,9 @@ class IconType(PreinstancedBase):
         
         return boolean
     
-    none = P('none', 0)
-    static = P('static', 1)
-    animated = P('animated', 2)
+    none = P(0, 'none')
+    static = P(1, 'static')
+    animated = P(2, 'animated')
 
 
 ICON_TYPE_NONE = IconType.none

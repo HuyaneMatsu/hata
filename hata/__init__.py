@@ -98,12 +98,12 @@ __version__ = '1.1.77'
 
 from .env import BACKEND_ONLY
 
+from .backend import *
+
 if BACKEND_ONLY:
-    from .backend import *
     __all__ = backend.__all__
 
 else:
-    from .backend import *
     from .discord import *
     from .ext import *
     

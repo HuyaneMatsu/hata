@@ -68,6 +68,8 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | early_verified_developer      | 17                |
     +-------------------------------+-------------------+
+    | certified_moderator           | 18                |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
         'staff': 0,
@@ -88,6 +90,7 @@ class UserFlag(FlagBase):
         'underage_deleted': 15,
         'verified_bot': 16,
         'early_verified_developer': 17,
+        'certified_moderator': 18,
     }
 
 

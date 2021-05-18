@@ -346,14 +346,17 @@ def _validate_allow_by_default(allow_by_default):
     return allow_by_default
 
 
-def _generate_description_from(command, description):
+def _generate_description_from(command, name, description):
     """
-    Generates description from the command and it's maybe given description.
+    Generates description from the command and it's optionally given description. If both `description` and
+    `command.__doc__` is missing, defaults to `name`.
     
     Parameters
     ----------
     command : `None` or `callable`
         The command's function.
+    name : `str`
+        The command's name.
     description : `Any`
         The command's description.
     
@@ -364,21 +367,22 @@ def _generate_description_from(command, description):
     
     Raises
     ------
-    TypeError
-        - If `str` description could not be detected.
-        - If both `command` and `description` are `None`.
     ValueError
         If `description` length is out of range [2:100].
     """
     if description is None:
         if command is None:
-            raise TypeError(f'`description` is a required parameter if `command` is given as `None`.')
-        
-        description = getattr(command, '__doc__', None)
+            description = name
+        else:
+            description = getattr(command, '__doc__', None)
+            if description is None:
+                description = name
+            elif not isinstance(description, str):
+                description = name
     
-    if (description is None) or (not isinstance(description, str)):
-        raise TypeError(f'`description` or `command.__doc__` is not given or is given as `None`.')
-        
+    elif not isinstance(description, str):
+        description = name
+    
     description = normalize_description(description)
     
     if description is None:
@@ -620,9 +624,9 @@ class SlashCommand:
                 Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
-            Additional parameters arguments. Defaults to `None`.
+            Additional parameters parameters. Defaults to `None`.
             
-            The expected keyword arguments are the following:
+            The expected keyword parameters are the following:
             
             - guild
             - is_global
@@ -645,21 +649,20 @@ class SlashCommand:
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `tuple`, `set`) of
                 (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` arguments.
-            - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameters.
+            - If `func` accepts more than `27` parameters.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -667,12 +670,12 @@ class SlashCommand:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -775,9 +778,9 @@ class SlashCommand:
         name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
             The name to be used instead of the passed `command`'s.
         kwargs : `None` or `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameter.
             
-            The expected keyword arguments are the following:
+            The expected keyword parameters are the following:
             
             - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
             - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -803,21 +806,20 @@ class SlashCommand:
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `tuple`, `set`) of
                 (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` arguments.
-            - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameters.
+            - If `func` accepts more than `27` parameters.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -825,12 +827,12 @@ class SlashCommand:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -899,21 +901,20 @@ class SlashCommand:
             - If `is_global` was not given as 7None` or `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` arguments.
-            - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameters.
+            - If `func` accepts more than `27` parameters.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -921,12 +922,12 @@ class SlashCommand:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -953,7 +954,7 @@ class SlashCommand:
         if route_to:
             name = route_name(command, name, route_to)
             
-            default_description = _generate_description_from(command, None)
+            default_description = _generate_description_from(command, name, None)
             show_for_invoking_user_only = route_value(show_for_invoking_user_only, route_to)
             is_global = route_value(is_global, route_to)
             guild_ids = route_value(guild_ids, route_to)
@@ -962,7 +963,7 @@ class SlashCommand:
             allow_by_default = route_value(allow_by_default, route_to)
             
             description = [
-                _generate_description_from(command, description)
+                _generate_description_from(command, name, description)
                     if ((description is None) or (description is not default_description)) else default_description
                 for description in description]
             
@@ -976,7 +977,7 @@ class SlashCommand:
                     f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:'
                     f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {sub_name_length!r}; {name!r}.')
             
-            description = _generate_description_from(command, description)
+            description = _generate_description_from(command, name, description)
         
         if command is None:
             parameter_parsers = None
@@ -1161,10 +1162,15 @@ class SlashCommand:
             options = [sub_command.as_option() for sub_command in sub_commands.values()]
         else:
             parameter_parsers = command._parameter_parsers
-            if parameter_parsers:
-                options = [argument_parser.as_option() for argument_parser in parameter_parsers]
-            else:
-                options = None
+            
+            options = None
+            for parameter_parser in parameter_parsers:
+                option = parameter_parser.as_option()
+                if (option is not None):
+                    if (options is None):
+                        options = []
+                    
+                    options.append(option)
         
         return ApplicationCommand(self.name, self.description, allow_by_default=self.allow_by_default,
             options=options, )
@@ -1288,21 +1294,20 @@ class SlashCommand:
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` argument.
-            - If `func` accepts more than `27` argument.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameter.
+            - If `func` accepts more than `27` parameter.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -1310,12 +1315,12 @@ class SlashCommand:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -1387,21 +1392,20 @@ class SlashCommand:
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` arguments.
-            - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameters.
+            - If `func` accepts more than `27` parameters.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -1409,12 +1413,12 @@ class SlashCommand:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -1656,16 +1660,16 @@ class SlashCommandFunction:
             for option in options:
                 parameter_relation[option.name] = option.value
         
-        for argument_parser in self._parameter_parsers:
-            value = parameter_relation.get(argument_parser.name, None)
+        for parameter_parser in self._parameter_parsers:
+            value = parameter_relation.get(parameter_parser.name, None)
             
-            passed, parameter = await argument_parser(client, interaction_event.interaction, value)
+            passed, parameter = await parameter_parser(client, interaction_event, value)
             if not passed:
                 return
             
             parameters.append(parameter)
         
-        coro = self._command(client, interaction_event, *parameters)
+        coro = self._command(*parameters)
         try:
             await process_command_coro(client, interaction_event, self.show_for_invoking_user_only, coro)
         except BaseException as err:
@@ -1693,10 +1697,14 @@ class SlashCommandFunction:
         option : ``ApplicationCommandOption``
         """
         parameter_parsers = self._parameter_parsers
-        if parameter_parsers:
-            options = [argument_parser.as_option() for argument_parser in parameter_parsers]
-        else:
-            options = None
+        options = None
+        for parameter_parser in parameter_parsers:
+            option = parameter_parser.as_option()
+            if (option is not None):
+                if options is None:
+                    options = []
+                
+                options.append(option)
         
         return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.sub_command,
             options=options, default=self.is_default)
@@ -1886,21 +1894,20 @@ class SlashCommandCategory:
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` argument.
-            - If `func` accepts more than `27` argument.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameter.
+            - If `func` accepts more than `27` parameter.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -1908,12 +1915,12 @@ class SlashCommandCategory:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -1982,21 +1989,20 @@ class SlashCommandCategory:
             - If `global_` was not given as `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
+            - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` arguments.
-            - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func` accepts less than `2` parameters.
+            - If `func` accepts more than `27` parameters.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -2004,12 +2010,12 @@ class SlashCommandCategory:
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].

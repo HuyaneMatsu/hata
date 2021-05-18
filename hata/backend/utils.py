@@ -1,8 +1,7 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable',
+﻿__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable',
     'WeakKeyDictionary', 'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any',
-    'cached_property', 'from_json', 'imultidict', 'is_weakreferable', 'istr', 'list_difference', 'methodize',
-    'module_property', 'modulize', 'multidict', 'name_property', 'to_json', 'weakmethod',)
+    'cached_property', 'from_json', 'has_docs', 'imultidict', 'is_weakreferable', 'istr', 'list_difference',
+    'methodize', 'module_property', 'modulize', 'multidict', 'name_property', 'to_json', 'weakmethod',)
 
 from functools import partial as partial_func
 from types import MethodType, FunctionType, MappingProxyType, GetSetDescriptorType, ModuleType
@@ -17,6 +16,56 @@ try:
 except ImportError:
     from weakref import ref as WeakrefType
 
+
+from ..env import DOCS_ENABLED
+
+def has_docs(target):
+    """
+    Modifies the target object's docstring if applicable.
+    
+    Parameter
+    ---------
+    target : `Any`
+        The object to modify the docstring of.
+    
+    Returns
+    -------
+    target : `Any`
+        The target object.
+    """
+    if not DOCS_ENABLED:
+        target.__doc__ = None
+    
+    return target
+
+
+if not DOCS_ENABLED:
+    has_docs.__doc__ = None
+
+@has_docs
+def set_docs(target, docs):
+    """
+    Sets docstring to the target object.
+    
+    Parameter
+    ---------
+    target : `Any`
+        The object to set the docstring to.
+    docs : `str`
+        Docstring to set.
+    
+    Returns
+    -------
+    target : `Any`
+        The target object.
+    """
+    if DOCS_ENABLED:
+        target.__doc__ = docs
+    
+    return target
+
+
+@has_docs
 class RemovedDescriptor:
     """
     A descriptor, what can be used to overwrite a class's attribute, what should be inherited anyways.
@@ -62,28 +111,7 @@ class RemovedDescriptor:
 DOCS_ENABLED = (RemovedDescriptor.__doc__ is not None)
 
 
-def set_docs(target, docs):
-    """
-    Sets docstring to the target object.
-    
-    Parameter
-    ---------
-    target : `Any`
-        The object to set the docstring to.
-    docs : `str`
-        Docstring to set.
-    
-    Returns
-    -------
-    target : `Any`
-        The target object.
-    """
-    if DOCS_ENABLED:
-        target.__doc__ = docs
-    
-    return target
-
-
+@has_docs
 def call(function):
     """
     Calls the function returning itself.
@@ -102,11 +130,14 @@ def call(function):
     return function
 
 
+@has_docs
 class doc_property:
     """
     Property to return the class's docs if called from class, else the given object.
     """
     __slots__ = ()
+    
+    @has_docs
     def __init__(self):
         """
         Creates a new docs property.
@@ -124,7 +155,7 @@ class doc_property:
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
-
+@has_docs
 class name_property:
     """
     Property to return the class's name if called from the respective class.
@@ -137,6 +168,8 @@ class name_property:
         Callable what's return will be returned, when called from an instance.
     """
     __slots__ = ('class_name', 'fget')
+    
+    @has_docs
     def __init__(self, name, fget):
         """
         Creates a new docs property.
@@ -156,7 +189,7 @@ class name_property:
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
-
+@has_docs
 def any_to_any(container1, container2):
     """
     Returns whether any value of `container1` is in `container2` as well.
@@ -178,6 +211,7 @@ def any_to_any(container1, container2):
     
     return False
 
+@has_docs
 def where(container, key):
     """
     Returns the first element from the given container on what `key` returns `True`.
@@ -207,6 +241,7 @@ def where(container, key):
     
     return value
 
+@has_docs
 def relative_index(list_, value):
     """
     Returns on which the given `value` would be inserted into the given list.
@@ -235,6 +270,7 @@ def relative_index(list_, value):
             continue
         return bot
 
+@has_docs
 def change_on_switch(list_, value, new_position, key=None):
     """
     Calculates the changes if the given `value` would be moved to an another position.
@@ -315,6 +351,7 @@ def change_on_switch(list_, value, new_position, key=None):
     return result
 
 
+@has_docs
 class KeepType:
     """
     A decorator, what can be used to add features to an already existing class, by defining a new one, what will extend
@@ -341,6 +378,7 @@ class KeepType:
     __slots__ = ('old_class',)
     _ignored_attr_names = frozenset(('__name__', '__qualname__', '__weakref__', '__dict__', '__slots__', '__module__'))
     
+    @has_docs
     def __new__(cls, old_class, *, new_class=None):
         """
         Creates a new ``KeepType`` instance with given `old_class` to extend. Can be used as a decorator if `new_class`
@@ -367,6 +405,7 @@ class KeepType:
         
         return self(new_class)
     
+    @has_docs
     def __call__(self, new_class):
         """
         Calls the ``KeepType`` extending it's old ``.old_class`` with the new given `new_class`.
@@ -399,6 +438,7 @@ class KeepType:
         return old_class
 
 
+@has_docs
 class _multidict_items:
     """
     ``multidict`` item iterator.
@@ -409,6 +449,8 @@ class _multidict_items:
         The parent multidict.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``multidict`` item iterator.
@@ -420,10 +462,12 @@ class _multidict_items:
         """
         self._parent = parent
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``multidict``'s length."""
         return len(self._parent)
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over the respective ``multidict``'s items.
@@ -439,6 +483,7 @@ class _multidict_items:
             for value in values:
                 yield key, value
     
+    @has_docs
     def __contains__(self, item):
         """Returns whether the respective multidict contains the given item."""
         key, value = item
@@ -449,7 +494,7 @@ class _multidict_items:
             return False
         return value in values
 
-
+@has_docs
 class _multidict_values:
     """
     ``multidict`` value iterator.
@@ -460,6 +505,8 @@ class _multidict_values:
         The parent multidict.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``multidict`` value iterator.
@@ -471,10 +518,12 @@ class _multidict_values:
         """
         self._parent = parent
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``multidict``'s length."""
         return len(self._parent)
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over the respective ``multidict``'s values.
@@ -489,18 +538,22 @@ class _multidict_values:
         for values in dict.values(self._parent):
             yield from values
     
+    @has_docs
     def __contains__(self, value):
         """Returns whether the respective multidict contains the given value."""
         for values in dict.values(self._parent):
             if value in values:
                 return True
         return False
-    
+
+@has_docs
 class multidict(dict):
     """
     Dictionary subclass, which can hold multiple values bound to a single key.
     """
     __slots__ = ()
+    
+    @has_docs
     def __init__(self, iterable=None):
         """
         Creates a new ``multidict`` instance.
@@ -540,6 +593,7 @@ class multidict(dict):
                 else:
                     values.append(value)
     
+    @has_docs
     def __getitem__(self, key):
         """
         Returns the multidict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
@@ -547,6 +601,7 @@ class multidict(dict):
         """
         return dict.__getitem__(self, key)[0]
     
+    @has_docs
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the multidict."""
         try:
@@ -557,6 +612,7 @@ class multidict(dict):
             if value not in line:
                 line.append(value)
     
+    @has_docs
     def __delitem__(self, key):
         """
         Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
@@ -568,6 +624,7 @@ class multidict(dict):
         else:
             del my_list[0]
     
+    @has_docs
     def extend(self, mapping):
         """
         Extends the multidict with the given `mapping`'s items.
@@ -588,6 +645,7 @@ class multidict(dict):
                 if value not in values:
                     values.append(value)
     
+    @has_docs
     def get_all(self, key, default=None):
         """
         Returns all the values matching the given `key`.
@@ -609,6 +667,7 @@ class multidict(dict):
         except KeyError:
             return default
     
+    @has_docs
     def get_one(self, key, default=None):
         """
         Returns the 0th value matching the given `key`.
@@ -634,6 +693,7 @@ class multidict(dict):
     
     get = get_one
     
+    @has_docs
     def setdefault(self, key, default=None):
         """
         Returns the value for the given `key`.
@@ -662,6 +722,7 @@ class multidict(dict):
         dict.__setitem__(self, key, [default])
         return default
     
+    @has_docs
     def pop_all(self, key, default=...):
         """
         Removes all the values from the multidict which the given `key` matched.
@@ -690,6 +751,7 @@ class multidict(dict):
                 return default
             raise
     
+    @has_docs
     def pop_one(self, key, default=...):
         """
         Removes the first value from the multidict, which matches the given `key`.
@@ -727,6 +789,7 @@ class multidict(dict):
     pop = pop_one   
     
     # inheritable:
+    @has_docs
     def copy(self):
         """
         Copies the multidict.
@@ -743,6 +806,7 @@ class multidict(dict):
         
         return new
     
+    @has_docs
     def items(self):
         """
         Returns an item iterator for the multidict.
@@ -753,6 +817,7 @@ class multidict(dict):
         """
         return _multidict_items(self)
     
+    @has_docs
     def values(self):
         """
         Returns a value iterator for the multidict.
@@ -763,6 +828,7 @@ class multidict(dict):
         """
         return _multidict_values(self)
     
+    @has_docs
     def __repr__(self):
         """Returns the multidict's representation."""
         result = [
@@ -784,7 +850,8 @@ class multidict(dict):
         return ''.join(result)
     
     __str__ = __repr__
-
+    
+    @has_docs
     def kwargs(self):
         """
         Converts the multidict to `**kwargs`-able dictionary. If a `key` has more values, then always returns the last
@@ -801,7 +868,8 @@ class multidict(dict):
         return result
     
     update = RemovedDescriptor()
-    
+
+@has_docs
 class imultidict(multidict):
     """
     ``multidict`` subclass, what can be used to hold http headers.
@@ -809,6 +877,8 @@ class imultidict(multidict):
     It's keys ignore casing.
     """
     __slots__ = ()
+    
+    @has_docs
     def __init__(self, iterable=None):
         """
         Creates a new ``imultidict`` instance.
@@ -854,6 +924,7 @@ class imultidict(multidict):
                 else:
                     values.append(value)
     
+    @has_docs
     def __getitem__(self, key):
         """
         Returns the multidict's `value` for the given `key`. If the `key` has more values, then returns the 0th of
@@ -862,11 +933,13 @@ class imultidict(multidict):
         key = istr(key)
         return dict.__getitem__(self, key)[0]
     
+    @has_docs
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the multidict."""
         key = istr(key)
         multidict.__setitem__(self, key, value)
     
+    @has_docs
     def __delitem__(self, key):
         """
         Removes the `value` for the given `key` from the multidict. If the `key` has more values, then removes only
@@ -875,6 +948,7 @@ class imultidict(multidict):
         key = istr(key)
         multidict.__delitem__(self, key)
     
+    @has_docs
     def extend(self, mapping):
         """
         Extends the multidict titled with the given `mapping`'s items.
@@ -896,6 +970,7 @@ class imultidict(multidict):
                 if value not in values:
                     values.append(value)
     
+    @has_docs
     def get_all(self, key, default=None):
         """
         Returns all the values matching the given `key`.
@@ -915,6 +990,7 @@ class imultidict(multidict):
         key = istr(key)
         return multidict.get_all(self, key, default)
     
+    @has_docs
     def get_one(self, key, default=None):
         """
         Returns the 0th value matching the given `key`.
@@ -936,6 +1012,7 @@ class imultidict(multidict):
     
     get = get_one
     
+    @has_docs
     def setdefault(self, key, default=None):
         """
         Returns the value for the given `key`.
@@ -957,6 +1034,7 @@ class imultidict(multidict):
         key = istr(key)
         return multidict.setdefault(self, key, default)
     
+    @has_docs
     def pop_all(self, key, default=...):
         """
         Removes all the values from the multidict which the given `key` matched.
@@ -980,7 +1058,8 @@ class imultidict(multidict):
         """
         key = istr(key)
         return multidict.pop_all(self, key, default)
-
+    
+    @has_docs
     def pop_one(self, key, default=...):
         """
         Removes the first value from the multidict, which matches the given `key`.
@@ -1007,7 +1086,7 @@ class imultidict(multidict):
     
     pop = pop_one
 
-
+@has_docs
 class istr(str):
     """
     Strings, which have their casing ignored.
@@ -1017,7 +1096,9 @@ class istr(str):
     _casefold : `str`
         Casefolded version of the string.
     """
-    __slots__ = '_casefold'
+    __slots__ = ('_casefold', )
+    
+    @has_docs
     def __new__(cls, value='', encoding=sys.getdefaultencoding(), errors='strict'):
         """
         Return an string which ignores casing. If object is not provided, returns the empty string. Otherwise, the
@@ -1064,10 +1145,12 @@ class istr(str):
         self._casefold = str.casefold(value)
         return self
     
+    @has_docs
     def __hash__(self):
         """Returns the string's hash value."""
         return hash(self._casefold)
     
+    @has_docs
     def __eq__(self, other):
         """Returns whether the two strings are equal."""
         other_type = other.__class__
@@ -1083,6 +1166,7 @@ class istr(str):
         return (self._casefold == other_value)
 
 
+@has_docs
 def list_difference(list1, list2):
     """
     Returns the difference of the two given lists.
@@ -1165,6 +1249,7 @@ def list_difference(list1, list2):
     
     return difference
 
+@has_docs
 class cached_property:
     """
     Cached property, what can be used as a method decorator. It operates almost like python's `@property`, but it puts
@@ -1179,6 +1264,7 @@ class cached_property:
     """
     __slots__ = ('fget', 'name',)
     
+    @has_docs
     def __new__(cls, fget):
         """
         Creates a new cached property instance with the given getter.
@@ -1232,6 +1318,7 @@ class cached_property:
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
+@has_docs
 class alchemy_incendiary:
     """
     Function wrapper familiar to `functools.partial`.
@@ -1248,6 +1335,8 @@ class alchemy_incendiary:
         Keyword arguments to call func with if applicable.
     """
     __slots__ = ('args', 'func', 'kwargs',)
+    
+    @has_docs
     def __init__(self, func, args, kwargs=None):
         """
         Creates a new `alchemy_incendiary` instance with the given parameters.
@@ -1265,6 +1354,7 @@ class alchemy_incendiary:
         self.args = args
         self.kwargs = kwargs
     
+    @has_docs
     def __call__(self):
         """
         Calls the ``alchemy_incendiary``'s inner function with t's arguments and keyword arguments.
@@ -1285,19 +1375,23 @@ class alchemy_incendiary:
         
         return self.func(*self.args, **kwargs)
 
+@has_docs
 class SubCheckType(type):
     """
     Metaclass, which can be used for subclass checks. It's type instances should implement a `.__subclasses__`
     class attribute, which contain's all of it's "subclasses".
     """
+    @has_docs
     def __instancecheck__(cls, instance):
         """Returns whether the given instance's type is a subclass of the respective type."""
         return (type(instance) in cls.__subclasses__)
-
+    
+    @has_docs
     def __subclasscheck__(cls, klass):
         """Returns whether the given type is a subclass of the respective type."""
         return (klass in cls.__subclasses__)
 
+@has_docs
 class MethodLike(metaclass=SubCheckType):
     """
     Base class for methods.
@@ -1316,6 +1410,7 @@ class MethodLike(metaclass=SubCheckType):
     
     __reserved_argcount__ = 1
     
+    @has_docs
     @classmethod
     def get_reserved_argcount(cls, instance):
         """
@@ -1346,6 +1441,7 @@ class MethodLike(metaclass=SubCheckType):
         
         raise TypeError(f'Expected a method like, got {instance_type.__name__}.')
 
+@has_docs
 class basemethod(MethodLike):
     """
     A `method-like`, which always passes to it's function the respective type and an instance. The instance might be
@@ -1368,6 +1464,7 @@ class basemethod(MethodLike):
     __slots__ = ('__base__', '__func__', '__self__', )
     __reserved_argcount__ = 2
     
+    @has_docs
     def __init__(self, func, cls, base):
         """
         Creates a new basemethod with the given parameters.
@@ -1385,6 +1482,7 @@ class basemethod(MethodLike):
         self.__func__ = func
         self.__self__ = cls
     
+    @has_docs
     def __call__(self, *args, **kwargs):
         """
         Calls the basemethod with the given parameters.
@@ -1414,6 +1512,7 @@ class basemethod(MethodLike):
     __class_doc__ = None
     
     @property
+    @has_docs
     def __instance__doc__(self):
         """
         Returns the ``basemethod``'s internal function's docstring.
@@ -1426,6 +1525,7 @@ class basemethod(MethodLike):
     
     __doc__ = doc_property()
 
+@has_docs
 class BaseMethodDescriptor:
     """
     Descriptor, which can be used as a decorator to wrap a function to a basemethod.
@@ -1436,6 +1536,8 @@ class BaseMethodDescriptor:
         The wrapped function.
     """
     __slots__ = ('fget',)
+    
+    @has_docs
     def __init__(self, fget):
         """
         Creates a new ``BaseMethodDescriptor`` instance with the given parameter.
@@ -1470,6 +1572,7 @@ if MethodDescriptorType is not FunctionType:
 
 DO_NOT_MODULIZE_TYPES = tuple(DO_NOT_MODULIZE_TYPES)
 
+@has_docs
 def _modulize_function(old, globals_, source_module, module_name, module_path):
     """
     Changes the given function's scopes and qualname if they were defined inside of a modulized class.
@@ -1504,6 +1607,7 @@ def _modulize_function(old, globals_, source_module, module_name, module_path):
     
     return new
 
+@has_docs
 def _modulize_type(klass, globals_, source_module, module_name, module_path):
     """
     Changes the given class's scopes and qualname if they were defined inside of a modulized class.
@@ -1543,6 +1647,7 @@ def _modulize_type(klass, globals_, source_module, module_name, module_path):
         if issubclass(value_type, type):
             _modulize_type(value, globals_, source_module, module_name, module_path)
 
+@has_docs
 def modulize(klass):
     """
     Transforms the given class to a module.
@@ -1611,6 +1716,7 @@ def modulize(klass):
     
     return result_module
 
+@has_docs
 class methodize:
     """
     Wraps a type to as a method, allowing instancing it with it's parent instance object passed by default.
@@ -1621,6 +1727,8 @@ class methodize:
         The type to instance as a method.
     """
     __slots__ = ('klass',)
+    
+    @has_docs
     def __init__(self, klass):
         """
         Creates a new ``methodize`` instance with the given class.
@@ -1645,6 +1753,7 @@ class methodize:
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
 
+@has_docs
 def copy_func(old):
     """
     Copies the given function.
@@ -1664,6 +1773,7 @@ def copy_func(old):
     new.__kwdefaults__ = old.__kwdefaults__
     return new
 
+@has_docs
 class sortedlist(list):
     """
     An auto sorted list.
@@ -1686,6 +1796,7 @@ class sortedlist(list):
     __imul__ = RemovedDescriptor()
     append = RemovedDescriptor()
     
+    @has_docs
     def __init__(self, iterable=None, reverse=False):
         """
         Creates a new ``sortedlist`` instance with the given parameters.
@@ -1702,6 +1813,7 @@ class sortedlist(list):
             self.extend(iterable)
             list.sort(self, reverse=reverse)
     
+    @has_docs
     def __repr__(self):
         """Returns the sortedlist's representation."""
         result = [self.__class__.__name__, '([']
@@ -1732,24 +1844,22 @@ class sortedlist(list):
     def __setstate__(self, state):
         self._reversed = state
     
-    def _get_reverse(self):
+    @property
+    @has_docs
+    def reverse(self):
+        """
+        A get-set descriptor to check or set how the sortedlist sorted.
+        """
         return self._reversed
     
-    def _set_reverse(self, value):
+    @reverse.setter
+    def reverse(self, value):
         if self._reversed == value:
             return
         self._reversed = value
         list.reverse(self)
     
-    reverse = property(_get_reverse, _set_reverse)
-    del _get_reverse, _set_reverse
-    
-    if DOCS_ENABLED:
-        reverse.__doc__ = (
-    """
-    A get-set descriptor to check or set how the sortedlist sorted.
-    """)
-    
+    @has_docs
     def add(self, value):
         """
         Adds a new value to the sortedlist.
@@ -1775,6 +1885,7 @@ class sortedlist(list):
         list.insert(self, index, value)
         return
     
+    @has_docs
     def remove(self, value):
         """
         Removes the given value from the sortedlist.
@@ -1799,6 +1910,7 @@ class sortedlist(list):
         # No more special case, remove it.
         list.__delitem__(self, index)
     
+    @has_docs
     def extend(self, iterable):
         """
         Extends the sortedlist with the given iterable object.
@@ -1854,6 +1966,7 @@ class sortedlist(list):
                 insert(self, bot, value)
                 ln += 1
     
+    @has_docs
     def __contains__(self, value):
         """Returns whether the sortedlist contains the given value."""
         index = self.relative_index(value)
@@ -1865,6 +1978,7 @@ class sortedlist(list):
         
         return False
     
+    @has_docs
     def index(self, value):
         """Returns the index of the given value inside of the sortedlist."""
         index = self.relative_index(value)
@@ -1872,6 +1986,7 @@ class sortedlist(list):
             raise ValueError(f'{value!r} is not in the {self.__class__.__name__}.')
         return index
     
+    @has_docs
     def relative_index(self, value):
         """
         Returns the relative index of the given value if it would be inside of the sortedlist.
@@ -1910,6 +2025,7 @@ class sortedlist(list):
                 break
         return bot
     
+    @has_docs
     def keyed_relative_index(self, value, key):
         """
         Returns the relative index of the given value if it would be inside of the sortedlist.
@@ -1950,6 +2066,7 @@ class sortedlist(list):
                 break
         return bot
     
+    @has_docs
     def copy(self):
         """
         Copies the sortedlist.
@@ -1963,12 +2080,14 @@ class sortedlist(list):
         list.extend(new, self)
         return new
     
+    @has_docs
     def resort(self):
         """
         Resorts the sortedlist.
         """
         list.sort(self, reverse=self._reversed)
     
+    @has_docs
     def get(self, value, key, default=None):
         """
         Gets an element from the sortedlist, what passed trough `key` equals to the given value.
@@ -1997,6 +2116,7 @@ class sortedlist(list):
         
         return default
     
+    @has_docs
     def pop(self, value, key, default=None):
         """
         Gets and removes element from the sortedlist, what's is passed trough `key` equals to the given value.
@@ -2026,6 +2146,7 @@ class sortedlist(list):
         
         return default
 
+@has_docs
 def is_weakreferable(object_):
     """
     Returns whether the given object is weakreferable.
@@ -2065,6 +2186,7 @@ else:
 del dummy_init_tester
 
 
+@has_docs
 class WeakHasher:
     """
     Object to store unhashable weakreferences.
@@ -2077,6 +2199,8 @@ class WeakHasher:
         A dead reference to hash.
     """
     __slots__ = ('_hash', 'reference',)
+    
+    @has_docs
     def __init__(self, reference):
         """
         Creates a new ``WeakHasher`` instance from the given reference.
@@ -2089,10 +2213,12 @@ class WeakHasher:
         self._hash = object.__hash__(reference)
         self.reference = reference
     
+    @has_docs
     def __hash__(self):
         """Returns the ``WeakHasher``'s hash value."""
         return self._hash
     
+    @has_docs
     def __eq__(self, other):
         """Returns whether the two ``WeakHasher``-s are the same."""
         self_reference = self.reference
@@ -2104,15 +2230,18 @@ class WeakHasher:
         
         return (self.reference is other.reference)
     
+    @has_docs
     def __repr__(self):
         """Returns the ``WeakHasher``'s representation."""
         return f'{self.__class__.__name__}({self.reference!r})'
     
+    @has_docs
     def __getattr__(self, name):
         """Returns the attribute of the ``WeakHasher``'s reference."""
         return getattr(self.reference, name)
 
 
+@has_docs
 def add_to_pending_removals(container, reference):
     """
     Adds the given weakreference to the given set.
@@ -2137,6 +2266,7 @@ def add_to_pending_removals(container, reference):
 
 
 # speedup builtin stuff, Cpython is welcome
+@has_docs
 class WeakReferer(WeakrefType):
     """
     Weakreferences to an object.
@@ -2152,6 +2282,7 @@ class WeakReferer(WeakrefType):
 
 del WeakrefType
 
+@has_docs
 class KeyedReferer(WeakReferer):
     """
     Weakreferences an object with a key, what can be used to identify it.
@@ -2162,6 +2293,8 @@ class KeyedReferer(WeakReferer):
         Key to identify the weakreferenced object.
     """
     __slots__ = ('key', )
+    
+    @has_docs
     def __new__(cls, obj, callback, key, ):
         """
         Creates a new ``KeyedReferer`` instance with the given parameters.
@@ -2179,6 +2312,7 @@ class KeyedReferer(WeakReferer):
         self.key = key
         return self
 
+@has_docs
 class WeakCallable(WeakReferer):
     """
     Weakreferences a callable object.
@@ -2186,6 +2320,8 @@ class WeakCallable(WeakReferer):
     When the object is called, calls the weakreferenced object if not yet collected.
     """
     __slots__ = ()
+    
+    @has_docs
     def __call__(self, *args, **kwargs):
         """
         Calls the weakreferenced object if not yet collected.
@@ -2213,6 +2349,7 @@ class WeakCallable(WeakReferer):
         
         return self(*args, **kwargs)
     
+    @has_docs
     def is_alive(self):
         """
         Returns whether the ``WeakCallable`` is still alive (the referred object by it is not collected yet.)
@@ -2223,6 +2360,8 @@ class WeakCallable(WeakReferer):
         """
         return (WeakReferer.__call__(self) is not None)
 
+
+@has_docs
 class weakmethod(WeakReferer, MethodLike):
     """
     A method like, what weakreferences it's object not blocking it from being garbage collected.
@@ -2240,6 +2379,7 @@ class weakmethod(WeakReferer, MethodLike):
     __slots__ = ('__func__',)
     __reserved_argcount__ = 1
     
+    @has_docs
     def __new__(cls, obj, func, callback=None):
         """
         Creates a new ``weakmethod`` instance with the given parameter.
@@ -2258,6 +2398,7 @@ class weakmethod(WeakReferer, MethodLike):
         return self
     
     @property
+    @has_docs
     def __self__(self):
         """
         Returns the weakreferenced object by the ``weakmethod`` or `None`if it was already garbage collected.
@@ -2269,6 +2410,7 @@ class weakmethod(WeakReferer, MethodLike):
         """
         return WeakReferer.__call__(self)
     
+    @has_docs
     def __call__(self, *args, **kwargs):
         """
         Calls the weakmethod object's function with it's object if not yet collected.
@@ -2296,6 +2438,7 @@ class weakmethod(WeakReferer, MethodLike):
         
         return self.__func__(obj, *args, **kwargs)
     
+    @has_docs
     def is_alive(self):
         """
         Returns whether the ``weakmethod``'s object is still alive (the referred object by it is not collected yet.)
@@ -2310,6 +2453,7 @@ class weakmethod(WeakReferer, MethodLike):
         return getattr(self.__func__, name)
     
     @classmethod
+    @has_docs
     def from_method(cls, method_, callback=None):
         """
         Creates a new ``weakmethod`` instance from the given `method`.
@@ -2326,6 +2470,7 @@ class weakmethod(WeakReferer, MethodLike):
         return self
 
 
+@has_docs
 class _WeakValueDictionaryCallback:
     """
     Callback used by ``WeakValueDictionary``-s and by ``HybridValueDictionary``-s.
@@ -2336,6 +2481,8 @@ class _WeakValueDictionaryCallback:
         The parent weak or hybrid value dictionary.
     """
     __slots__ = ('_parent', )
+    
+    @has_docs
     def __new__(cls, parent):
         """
         Creates a new ``_WeakValueDictionaryCallback`` instance bound to the given ``WeakValueDictionary`` or
@@ -2351,6 +2498,7 @@ class _WeakValueDictionaryCallback:
         self._parent = parent
         return self
     
+    @has_docs
     def __call__(self, reference):
         """
         Called when a value of the respective weak or hybrid value dictionary is garbage collected.
@@ -2373,6 +2521,7 @@ class _WeakValueDictionaryCallback:
                 pass
 
 
+@has_docs
 class _HybridValueDictionaryKeyIterator:
     """
     Key iterator for ``HybridValueDictionary``-s.
@@ -2383,6 +2532,8 @@ class _HybridValueDictionaryKeyIterator:
         The parent hybrid value dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_HybridValueDictionaryKeyIterator`` instance bound to the given ``HybridValueDictionary``.
@@ -2394,6 +2545,7 @@ class _HybridValueDictionaryKeyIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a hybrid value dictionary's keys.
@@ -2420,15 +2572,18 @@ class _HybridValueDictionaryKeyIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_key):
         """Returns whether the respective ``HybridValueDictionary`` contains the given key."""
         return (contains_key in self._parent)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``HybridValueDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class _HybridValueDictionaryValueIterator:
     """
     Value iterator for ``HybridValueDictionary``-s.
@@ -2439,6 +2594,8 @@ class _HybridValueDictionaryValueIterator:
         The parent hybrid value dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_HybridValueDictionaryValueIterator`` instance bound to the given ``HybridValueDictionary``.
@@ -2450,6 +2607,7 @@ class _HybridValueDictionaryValueIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a hybrid value dictionary's values.
@@ -2480,6 +2638,7 @@ class _HybridValueDictionaryValueIterator:
             parent._iterating -=1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_value):
         """Returns whether the respective ``HybridValueDictionary`` contains the given value."""
         parent = self._parent
@@ -2502,11 +2661,13 @@ class _HybridValueDictionaryValueIterator:
         
         return result
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``HybridValueDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class _HybridValueDictionaryItemIterator:
     """
     Item iterator for ``HybridValueDictionary``-s.
@@ -2517,6 +2678,8 @@ class _HybridValueDictionaryItemIterator:
         The parent hybrid value dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_HybridValueDictionaryItemIterator`` instance bound to the given ``HybridValueDictionary``.
@@ -2528,6 +2691,7 @@ class _HybridValueDictionaryItemIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a hybrid value dictionary's items.
@@ -2558,6 +2722,7 @@ class _HybridValueDictionaryItemIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_item):
         """Returns whether the respective ``HybridValueDictionary`` contains the given item."""
         if not isinstance(contains_item, tuple):
@@ -2588,11 +2753,13 @@ class _HybridValueDictionaryItemIterator:
         
         return (value == contains_value)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``HybridValueDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class HybridValueDictionary(dict):
     """
     Hybrid value dictionaries store their's values weakly referenced if applicable.
@@ -2619,6 +2786,7 @@ class HybridValueDictionary(dict):
     
     MAX_REPR_ELEMENT_LIMIT = 50
     
+    @has_docs
     def _commit_removals(self):
         """
         Commits the pending removals of the hybrid value dictionary if applicable.
@@ -2653,6 +2821,7 @@ class HybridValueDictionary(dict):
     
     # __class__ -> same
     
+    @has_docs
     def __contains__(self, contains_key):
         """Returns whether the hybrid value dictionary contains the given key."""
         value_pair = dict.get(self, contains_key, None)
@@ -2681,6 +2850,7 @@ class HybridValueDictionary(dict):
     # __ge__ -> same
     # __getattribute__ -> same
     
+    @has_docs
     def __getitem__(self, key):
         """Gets the value of the hybrid value dictionary which matches the given key."""
         value_weakreferable, value_or_reference = dict.__getitem__(self, key)
@@ -2701,6 +2871,7 @@ class HybridValueDictionary(dict):
     # __gt__ -> same
     # __hash__ -> same
     
+    @has_docs
     def __init__(self, iterable=None):
         """
         Creates a new ``HybridValueDictionary`` instance from the given iterable.
@@ -2718,12 +2889,14 @@ class HybridValueDictionary(dict):
     
     # __init_subclass__ -> same
     
+    @has_docs
     def __iter__(self):
         """Returns a ``_HybridValueDictionaryKeyIterator`` iterating over the hybrid value dictionary's keys."""
         return iter(_HybridValueDictionaryKeyIterator(self))
     
     # __le__ -> same
     
+    @has_docs
     def __len__(self):
         """Returns the length of the hybrid value dictionary."""
         length = dict.__len__(self)
@@ -2739,6 +2912,7 @@ class HybridValueDictionary(dict):
     # __reduce__ -> we do not care
     # __reduce_ex__ -> we do not care
     
+    @has_docs
     def __repr__(self):
         """Returns the representation of the hybrid value dictionary."""
         result = [self.__class__.__name__, '({']
@@ -2782,6 +2956,7 @@ class HybridValueDictionary(dict):
     
     #__setattr__ -> same
     
+    @has_docs
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the hybrid value dictionary."""
         if is_weakreferable(value):
@@ -2799,6 +2974,7 @@ class HybridValueDictionary(dict):
     
     # __subclasshook__ -> same
     
+    @has_docs
     def clear(self):
         """
         Clears the hybrid value dictionary.
@@ -2806,6 +2982,7 @@ class HybridValueDictionary(dict):
         dict.clear(self)
         self._pending_removals = None
     
+    @has_docs
     def copy(self):
         """
         Copies the hybrid value dictionary.
@@ -2836,6 +3013,7 @@ class HybridValueDictionary(dict):
         
         return new
     
+    @has_docs
     def get(self, key, default=None):
         """
         Gets the value of the hybrid value dictionary which matches the given key.
@@ -2872,6 +3050,7 @@ class HybridValueDictionary(dict):
         
         return value
     
+    @has_docs
     def items(self):
         """
         Returns item iterator for the hybrid value dictionary.
@@ -2882,6 +3061,7 @@ class HybridValueDictionary(dict):
         """
         return _HybridValueDictionaryItemIterator(self)
     
+    @has_docs
     def keys(self):
         """
         Returns key iterator for the hybrid value dictionary.
@@ -2893,6 +3073,7 @@ class HybridValueDictionary(dict):
         return _HybridValueDictionaryKeyIterator(self)
     
     # Need goto for better code-style
+    @has_docs
     def pop(self, key, default=...):
         """
         Pops the value of the hybrid value dictionary which matches the given key.
@@ -2931,6 +3112,7 @@ class HybridValueDictionary(dict):
         
         return default
     
+    @has_docs
     def popitem(self):
         """
         Pops an item of the hybrid value dictionary.
@@ -2957,6 +3139,7 @@ class HybridValueDictionary(dict):
         
         raise KeyError('popitem(): dictionary is empty.')
     
+    @has_docs
     def setdefault(self, key, default=None):
         """
         Returns the value for the given `key`.
@@ -2988,6 +3171,7 @@ class HybridValueDictionary(dict):
         self[key] = default
         return default
     
+    @has_docs
     def update(self, iterable):
         """
         Updates the hybrid value dictionary with the given iterable's elements.
@@ -3067,6 +3251,7 @@ class HybridValueDictionary(dict):
         
         raise TypeError(f'{iterable_type.__name__!r} object is not iterable.')
     
+    @has_docs
     def values(self):
         """
         Returns value iterator for the hybrid value dictionary.
@@ -3078,6 +3263,7 @@ class HybridValueDictionary(dict):
         return _HybridValueDictionaryValueIterator(self)
 
 
+@has_docs
 class _WeakValueDictionaryKeyIterator:
     """
     Key iterator for ``WeakValueDictionary``-s.
@@ -3088,6 +3274,8 @@ class _WeakValueDictionaryKeyIterator:
         The parent weak value dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakValueDictionaryKeyIterator`` instance bound to the given ``WeakValueDictionary``.
@@ -3099,6 +3287,7 @@ class _WeakValueDictionaryKeyIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak value dictionary's keys.
@@ -3125,15 +3314,18 @@ class _WeakValueDictionaryKeyIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, key):
         """Returns whether the respective ``WeakValueDictionary`` contains the given key."""
         return (key in self._parent)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakValueDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class _WeakValueDictionaryValueIterator:
     """
     Value iterator for ``WeakValueDictionary``-s.
@@ -3144,6 +3336,8 @@ class _WeakValueDictionaryValueIterator:
         The parent weak value dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakValueDictionaryValueIterator`` instance bound to the given ``WeakValueDictionary``.
@@ -3155,6 +3349,7 @@ class _WeakValueDictionaryValueIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak value dictionary's values.
@@ -3182,6 +3377,7 @@ class _WeakValueDictionaryValueIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_value):
         """Returns whether the respective ``WeakValueDictionary`` contains the given value."""
         parent = self._parent
@@ -3202,11 +3398,13 @@ class _WeakValueDictionaryValueIterator:
         
         return result
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakValueDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class _WeakValueDictionaryItemIterator:
     """
     Item iterator for ``WeakValueDictionary``-s.
@@ -3217,6 +3415,8 @@ class _WeakValueDictionaryItemIterator:
         The parent weak value dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakValueDictionaryItemIterator`` instance bound to the given ``WeakValueDictionary``.
@@ -3228,6 +3428,7 @@ class _WeakValueDictionaryItemIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak value dictionary's items.
@@ -3255,6 +3456,7 @@ class _WeakValueDictionaryItemIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_item):
         """Returns whether the respective ``WeakValueDictionary`` contains the given item."""
         if not isinstance(contains_item, tuple):
@@ -3282,11 +3484,13 @@ class _WeakValueDictionaryItemIterator:
         
         return (value == contains_value)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakValueDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class WeakValueDictionary(dict):
     """
     Weak value dictionary, which stores it's values weakly referenced.
@@ -3313,6 +3517,7 @@ class WeakValueDictionary(dict):
     
     MAX_REPR_ELEMENT_LIMIT = 50
     
+    @has_docs
     def _commit_removals(self):
         """
         Commits the pending removals of the weak value dictionary if applicable.
@@ -3343,6 +3548,7 @@ class WeakValueDictionary(dict):
     
     # __class__ -> same
     
+    @has_docs
     def __contains__(self, key):
         """Returns whether the weak value dictionary contains the given key."""
         value_reference = dict.get(self, key, None)
@@ -3369,6 +3575,7 @@ class WeakValueDictionary(dict):
     # __ge__ -> same
     # __getattribute__ -> same
     
+    @has_docs
     def __getitem__(self, key):
         """Gets the value of the weak value dictionary which matches the given key."""
         value_reference = dict.__getitem__(self, key)
@@ -3386,6 +3593,7 @@ class WeakValueDictionary(dict):
     # __gt__ -> same
     # __hash__ -> same
     
+    @has_docs
     def __init__(self, iterable=None):
         """
         Creates a new ``WeakValueDictionary`` instance from the given iterable.
@@ -3403,12 +3611,14 @@ class WeakValueDictionary(dict):
     
     # __init_subclass__ -> same
     
+    @has_docs
     def __iter__(self):
         """Returns a ``_WeakValueDictionaryKeyIterator`` iterating over the weak value dictionary's keys."""
         return iter(_WeakValueDictionaryKeyIterator(self))
     
     # __le__ -> same
     
+    @has_docs
     def __len__(self):
         """Returns the length of the weak value dictionary."""
         length = dict.__len__(self)
@@ -3424,6 +3634,7 @@ class WeakValueDictionary(dict):
     # __reduce__ -> we do not care
     # __reduce_ex__ -> we do not care
     
+    @has_docs
     def __repr__(self):
         """Returns the representation of the weak value dictionary."""
         result = [self.__class__.__name__, '({']
@@ -3465,6 +3676,7 @@ class WeakValueDictionary(dict):
     
     #__setattr__ -> same
     
+    @has_docs
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the weak value dictionary."""
         dict.__setitem__(self, key, KeyedReferer(value, self._callback, key))
@@ -3475,6 +3687,7 @@ class WeakValueDictionary(dict):
     
     # __subclasshook__ -> same
     
+    @has_docs
     def clear(self):
         """
         Clears the weak value dictionary.
@@ -3482,6 +3695,7 @@ class WeakValueDictionary(dict):
         dict.clear(self)
         self._pending_removals = None
     
+    @has_docs
     def copy(self):
         """
         Copies the weak value dictionary.
@@ -3508,6 +3722,7 @@ class WeakValueDictionary(dict):
         
         return new
     
+    @has_docs
     def get(self, key, default=None):
         """
         Gets the value of the weak value dictionary which matches the given key.
@@ -3539,6 +3754,7 @@ class WeakValueDictionary(dict):
         
         return default
     
+    @has_docs
     def items(self):
         """
         Returns item iterator for the weak value dictionary.
@@ -3549,6 +3765,7 @@ class WeakValueDictionary(dict):
         """
         return _WeakValueDictionaryItemIterator(self)
     
+    @has_docs
     def keys(self):
         """
         Returns key iterator for the weak value dictionary.
@@ -3559,6 +3776,7 @@ class WeakValueDictionary(dict):
         """
         return _WeakValueDictionaryKeyIterator(self)
     
+    @has_docs
     def pop(self, key, default=...):
         """
         Pops the value of the weak value dictionary which matches the given key.
@@ -3591,6 +3809,7 @@ class WeakValueDictionary(dict):
         
         return default
     
+    @has_docs
     def popitem(self):
         """
         Pops an item of the weak value dictionary.
@@ -3614,6 +3833,7 @@ class WeakValueDictionary(dict):
         
         raise KeyError('popitem(): dictionary is empty.')
     
+    @has_docs
     def setdefault(self, key, default):
         """
         Returns the value for the given `key`.
@@ -3641,6 +3861,7 @@ class WeakValueDictionary(dict):
         self[key] = default
         return default
     
+    @has_docs
     def update(self, iterable):
         """
         Updates the weak value dictionary with the given iterable's elements.
@@ -3720,6 +3941,7 @@ class WeakValueDictionary(dict):
         
         raise TypeError(f'{iterable_type.__name__!r} object is not iterable')
     
+    @has_docs
     def values(self):
         """
         Returns value iterator for the weak value dictionary.
@@ -3731,6 +3953,7 @@ class WeakValueDictionary(dict):
         return _WeakValueDictionaryValueIterator(self)
 
 
+@has_docs
 class _WeakKeyDictionaryCallback:
     """
     Callback used by ``WeakKeyDictionary``-s.
@@ -3741,6 +3964,8 @@ class _WeakKeyDictionaryCallback:
         The parent weak key dictionary.
     """
     __slots__ = ('_parent', )
+    
+    @has_docs
     def __new__(cls, parent):
         """
         Creates a new ``_WeakKeyDictionaryCallback`` instance bound to the given ``WeakKeyDictionary`` instance.
@@ -3755,6 +3980,7 @@ class _WeakKeyDictionaryCallback:
         self._parent = parent
         return self
     
+    @has_docs
     def __call__(self, reference):
         """
         Called when a key of the respective weak key dictionary is garbage collected.
@@ -3777,7 +4003,7 @@ class _WeakKeyDictionaryCallback:
                 pass
 
 
-
+@has_docs
 class _WeakKeyDictionaryKeyIterator:
     """
     Key iterator for ``WeakKeyDictionary``-s.
@@ -3788,6 +4014,8 @@ class _WeakKeyDictionaryKeyIterator:
         The parent weak key dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakKeyDictionaryKeyIterator`` instance bound to the given ``WeakKeyDictionary``.
@@ -3799,6 +4027,7 @@ class _WeakKeyDictionaryKeyIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak key dictionary's keys.
@@ -3826,15 +4055,18 @@ class _WeakKeyDictionaryKeyIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_key):
         """Returns whether the respective ``WeakKeyDictionary`` contains the given key."""
         return (contains_key in self._parent)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakKeyDictionary``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class _WeakKeyDictionaryValueIterator:
     """
     Value iterator for ``WeakKeyDictionary``-s.
@@ -3845,6 +4077,8 @@ class _WeakKeyDictionaryValueIterator:
         The parent weak key dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakKeyDictionaryValueIterator`` instance bound to the given ``WeakKeyDictionary``.
@@ -3856,6 +4090,7 @@ class _WeakKeyDictionaryValueIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak key dictionary's values.
@@ -3882,6 +4117,7 @@ class _WeakKeyDictionaryValueIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_value):
         """Returns whether the respective ``WeakKeyDictionary`` contains the given value."""
         parent = self._parent
@@ -3902,11 +4138,12 @@ class _WeakKeyDictionaryValueIterator:
         
         return result
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakKeyDictionary``'s length."""
         return len(self._parent)
 
-
+@has_docs
 class _WeakKeyDictionaryItemIterator:
     """
     Item iterator for ``WeakKeyDictionary``-s.
@@ -3917,6 +4154,8 @@ class _WeakKeyDictionaryItemIterator:
         The parent weak key dictionary.
     """
     __slots__ = ('_parent',)
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakKeyDictionaryItemIterator`` instance bound to the given ``WeakKeyDictionary``.
@@ -3928,6 +4167,7 @@ class _WeakKeyDictionaryItemIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak key dictionary's items.
@@ -3955,6 +4195,7 @@ class _WeakKeyDictionaryItemIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, contains_item):
         """Returns whether the respective ``WeakKeyDictionary`` contains the given item."""
         if not isinstance(contains_item, tuple):
@@ -3976,10 +4217,12 @@ class _WeakKeyDictionaryItemIterator:
         
         return (value == contains_value)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakKeyDictionary``'s length."""
         return len(self._parent)
 
+@has_docs
 class WeakKeyDictionary(dict):
     """
     Weak key dictionary, which stores it's keys weakly referenced.
@@ -4006,6 +4249,7 @@ class WeakKeyDictionary(dict):
     
     MAX_REPR_ELEMENT_LIMIT = 50
     
+    @has_docs
     def _commit_removals(self):
         """
         Commits the pending removals of the weak key dictionary if applicable.
@@ -4027,6 +4271,7 @@ class WeakKeyDictionary(dict):
     
     # __class__ -> same
     
+    @has_docs
     def __contains__(self, key):
         """Returns whether the weak key dictionary contains the given key."""
         try:
@@ -4038,6 +4283,7 @@ class WeakKeyDictionary(dict):
     
     # __delattr__ -> same
     
+    @has_docs
     def __delitem__(self, key):
         """Deletes the value of the weak key dictionary which matches the given key."""
         dict.__delitem__(self, WeakReferer(key))
@@ -4049,6 +4295,7 @@ class WeakKeyDictionary(dict):
     # __ge__ -> same
     # __getattribute__ -> same
     
+    @has_docs
     def __getitem__(self, key):
         """Gets the value of the weak key dictionary which matches the given key."""
         return dict.__getitem__(self, WeakReferer(key))
@@ -4056,6 +4303,7 @@ class WeakKeyDictionary(dict):
     # __gt__ -> same
     # __hash__ -> same
     
+    @has_docs
     def __init__(self, iterable=None):
         """
         Creates a new ``WeakKeyDictionary`` instance from the given iterable.
@@ -4073,12 +4321,14 @@ class WeakKeyDictionary(dict):
     
     # __init_subclass__ -> same
     
+    @has_docs
     def __iter__(self):
         """Returns a ``_WeakKeyDictionaryKeyIterator`` iterating over the weak key dictionary's keys."""
         return iter(_WeakKeyDictionaryKeyIterator(self))
     
     # __le__ -> same
     
+    @has_docs
     def __len__(self):
         """Returns the length of the weak key dictionary."""
         length = dict.__len__(self)
@@ -4094,6 +4344,7 @@ class WeakKeyDictionary(dict):
     # __reduce__ -> we do not care
     # __reduce_ex__ -> we do not care
     
+    @has_docs
     def __repr__(self):
         """Returns the representation of the weak key dictionary."""
         result = [self.__class__.__name__, '({']
@@ -4136,6 +4387,7 @@ class WeakKeyDictionary(dict):
     
     #__setattr__ -> same
     
+    @has_docs
     def __setitem__(self, key, value):
         """Adds the given `key` - `value` pair to the weak key dictionary."""
         dict.__setitem__(self, WeakReferer(key, self._callback), value)
@@ -4146,6 +4398,7 @@ class WeakKeyDictionary(dict):
     
     # __subclasshook__ -> same
     
+    @has_docs
     def clear(self):
         """
         Clears the weak key dictionary.
@@ -4153,6 +4406,7 @@ class WeakKeyDictionary(dict):
         dict.clear(self)
         self._pending_removals = None
     
+    @has_docs
     def copy(self):
         """
         Copies the weak key dictionary.
@@ -4179,6 +4433,7 @@ class WeakKeyDictionary(dict):
         
         return new
     
+    @has_docs
     def get(self, key, default=None):
         """
         Gets the value of the weak key dictionary which matches the given key.
@@ -4197,6 +4452,7 @@ class WeakKeyDictionary(dict):
         """
         return dict.get(self, WeakReferer(key), default)
     
+    @has_docs
     def items(self):
         """
         Returns item iterator for the weak key dictionary.
@@ -4207,6 +4463,7 @@ class WeakKeyDictionary(dict):
         """
         return _WeakKeyDictionaryItemIterator(self)
     
+    @has_docs
     def keys(self):
         """
         Returns key iterator for the weak key dictionary.
@@ -4217,6 +4474,7 @@ class WeakKeyDictionary(dict):
         """
         return _WeakKeyDictionaryKeyIterator(self)
     
+    @has_docs
     def pop(self, key, default=...):
         """
         Pops the value of the weak key dictionary which matches the given key.
@@ -4252,6 +4510,7 @@ class WeakKeyDictionary(dict):
         
         return default
     
+    @has_docs
     def popitem(self):
         """
         Pops an item of the key value dictionary.
@@ -4281,6 +4540,7 @@ class WeakKeyDictionary(dict):
         
         raise KeyError('popitem(): dictionary is empty.')
     
+    @has_docs
     def setdefault(self, key, default=None):
         """
         Returns the value for the given `key`.
@@ -4306,6 +4566,7 @@ class WeakKeyDictionary(dict):
         self[key] = default
         return default
     
+    @has_docs
     def update(self, iterable):
         """
         Updates the weak key dictionary with the given iterable's elements.
@@ -4385,6 +4646,7 @@ class WeakKeyDictionary(dict):
         
         raise TypeError(f'{iterable_type.__name__!r} object is not iterable')
     
+    @has_docs
     def values(self):
         """
         Returns value iterator for the weak key dictionary.
@@ -4396,6 +4658,7 @@ class WeakKeyDictionary(dict):
         return _WeakKeyDictionaryValueIterator(self)
 
 
+@has_docs
 class _WeakMapCallback:
     """
     Callback used by ``WeakMap``-s.
@@ -4406,6 +4669,8 @@ class _WeakMapCallback:
         The parent weak map.
     """
     __slots__ = ('_parent', )
+    
+    @has_docs
     def __new__(cls, parent):
         """
         Creates a new ``_WeakMapCallback`` instance bound to the given ``WeakMap`` instance.
@@ -4420,6 +4685,7 @@ class _WeakMapCallback:
         self._parent = parent
         return self
     
+    @has_docs
     def __call__(self, reference):
         """
         Called when an element of the respective weak map is garbage collected.
@@ -4442,6 +4708,7 @@ class _WeakMapCallback:
                 pass
 
 
+@has_docs
 class _WeakMapIterator:
     """
     Iterator for ``WeakKeyDictionary``-s.
@@ -4452,6 +4719,8 @@ class _WeakMapIterator:
         The parent weak map.
     """
     __slots__ = ('_parent', )
+    
+    @has_docs
     def __init__(self, parent):
         """
         Creates a new ``_WeakMapIterator`` instance bound to the given ``WeakMap``.
@@ -4463,6 +4732,7 @@ class _WeakMapIterator:
         """
         self._parent = parent
     
+    @has_docs
     def __iter__(self):
         """
         Iterates over a weak map.
@@ -4490,15 +4760,18 @@ class _WeakMapIterator:
             parent._iterating -= 1
             parent._commit_removals()
     
+    @has_docs
     def __contains__(self, key):
         """Returns whether the respective ``WeakMap`` contains the given key."""
         return (key in self._parent)
     
+    @has_docs
     def __len__(self):
         """Returns the respective ``WeakMap``'s length."""
         return len(self._parent)
 
 
+@has_docs
 class WeakMap(dict):
     """
     Weak map is a mix of weak dictionaries and weak sets. Can be used to retrieve an already existing weakreferenced
@@ -4526,6 +4799,7 @@ class WeakMap(dict):
     
     MAX_REPR_ELEMENT_LIMIT = 50
     
+    @has_docs
     def _commit_removals(self):
         """
         Commits the pending removals of the weak map if applicable.
@@ -4547,6 +4821,7 @@ class WeakMap(dict):
     
     # __class__ -> same
     
+    @has_docs
     def __contains__(self, key):
         """Returns whether the weak map contains the given key."""
         try:
@@ -4558,6 +4833,7 @@ class WeakMap(dict):
     
     # __delattr__ -> same
     
+    @has_docs
     def __delitem__(self, key):
         """Deletes the given key from the weak map"""
         try:
@@ -4578,6 +4854,7 @@ class WeakMap(dict):
     # __ge__ -> same
     # __getattribute__ -> same
     
+    @has_docs
     def __getitem__(self, key):
         """Gets the already existing key from the weak map, which matches the given one."""
         try:
@@ -4590,6 +4867,7 @@ class WeakMap(dict):
     # __gt__ -> same
     # __hash__ -> same
     
+    @has_docs
     def __init__(self, iterable=None):
         """
         Creates a new ``WeakMap`` instance from the given iterable.
@@ -4607,12 +4885,14 @@ class WeakMap(dict):
     
     # __init_subclass__ -> same
     
+    @has_docs
     def __iter__(self):
         """Returns a ``_WeakMapIterator`` iterating over the weak map's keys."""
         return iter(_WeakMapIterator(self))
     
     # __le__ -> same
     
+    @has_docs
     def __len__(self):
         """Returns the length of the weak map."""
         length = dict.__len__(self)
@@ -4628,6 +4908,7 @@ class WeakMap(dict):
     # __reduce__ -> we do not care
     # __reduce_ex__ -> we do not care
     
+    @has_docs
     def __repr__(self):
         """Returns the weak map's representation."""
         result = [self.__class__.__name__, '({']
@@ -4673,6 +4954,7 @@ class WeakMap(dict):
     
     # __subclasshook__ -> same
     
+    @has_docs
     def clear(self):
         """
         Clear's the weak map.
@@ -4680,6 +4962,7 @@ class WeakMap(dict):
         dict.clear(self)
         self._pending_removals = None
     
+    @has_docs
     def copy(self):
         """
         Copies the weak map.
@@ -4707,6 +4990,7 @@ class WeakMap(dict):
         
         return new
     
+    @has_docs
     def get(self, key, default=None):
         """
         Gets the key of the weak map, which matches the given one.
@@ -4746,6 +5030,7 @@ class WeakMap(dict):
     items = RemovedDescriptor()
     keys = RemovedDescriptor()
     
+    @has_docs
     def pop(self, key, default=...):
         """
         Pops a key from the weak map which matches the given one.
@@ -4793,6 +5078,7 @@ class WeakMap(dict):
     update = RemovedDescriptor()
     values = RemovedDescriptor()
     
+    @has_docs
     def set(self, key):
         """
         Sets a key to the ``WeakMap`` and then returns it. If they given key is already present in the ``WeakMap``,
@@ -4818,6 +5104,7 @@ class WeakMap(dict):
         dict.__setitem__(self, reference, reference)
         return key
 
+@has_docs
 class module_property:
     """
     Instead of defining a  `.__module__` attribute as `property`, define it as `module_property` to avoid getter issues,
@@ -4869,6 +5156,7 @@ class module_property:
         raise AttributeError('can\'t delete attribute')
 
 
+@has_docs
 def _do_copy_docs(source, target):
     """
     Does the actual doc-string copy described by ``copy_docs``.
@@ -4888,6 +5176,8 @@ def _do_copy_docs(source, target):
     target.__doc__ = source.__doc__
     return target
 
+
+@has_docs
 def copy_docs(source):
     """
     Copies a function's doc-string to an other one.
@@ -4918,6 +5208,7 @@ def copy_docs(source):
     return partial_func(_do_copy_docs, source)
 
 
+@has_docs
 def added_json_serializer(obj):
     """
     Default json encoder function for supporting additional object types.
@@ -4941,6 +5232,7 @@ def added_json_serializer(obj):
     
     raise TypeError(f'Object of type {obj_type.__name__!r} is not JSON serializable.',)
 
+@has_docs
 def to_json(data):
     """
     Converts the given object to json.
@@ -4959,3 +5251,56 @@ def to_json(data):
         If the given object is /or contains an object with a non convertable type.
     """
     return dump_to_json(data, separators=(',', ':'), ensure_ascii=True, default=added_json_serializer)
+
+
+@has_docs
+class un_map_pack:
+    """
+    Helper class for un-map-packing generators.
+    
+    Attributes
+    ----------
+    generator : ``GeneratorType``
+        The generator to unpack.
+    next_value : `Any`
+        The next key to return on get-item.
+    """
+    def __init__(self, generator):
+        """
+        Creates a new generator into mapping unpacker.
+        
+        Parameters
+        ----------
+        generator : ``GeneratorType``
+            A generator to un-map-pack.
+        """
+        self.generator = generator
+        self.next_value = None
+    
+    @has_docs
+    def keys(self):
+        """
+        Calling ``.keys`` returns itself.
+        
+        Returns
+        -------
+        self: ``un_map_pack``
+        """
+        return self
+    
+    @has_docs
+    def __iter__(self):
+        """Iterating an un map packer returns itself."""
+        return self
+    
+    @has_docs
+    def __next__(self):
+        """Gets the next key of the un-map-packer"""
+        key, value = next(self.generator)
+        self.next_value = value
+        return key
+    
+    @has_docs
+    def __getitem__(self, key):
+        """Gets the next value of the un-map-packer."""
+        return self.next_value

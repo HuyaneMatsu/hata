@@ -968,13 +968,12 @@ class Slasher(EventHandlerBase):
             - If `func`'s 0th argument is annotated, but not as ``Client``.
             - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -982,12 +981,12 @@ class Slasher(EventHandlerBase):
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
@@ -1058,16 +1057,15 @@ class Slasher(EventHandlerBase):
             - If `func` accepts `**kwargs`.
             - If `func` accepts less than `2` arguments.
             - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
+            - If `func`'s 0th parameter is annotated, but not as ``Client``.
+            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
             - If `name` was not given neither as `None` or `str` instance.
-            - If an argument's `annotation_value` is `list` instance, but it's elements do not match the
+            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
                 `tuple` (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is `dict` instance, but it's items do not match the
+            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
                 (`str`, `str` or `int`) pattern.
-            - If an argument's `annotation_value` is unexpected.
-            - If an argument's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `description` or `func.__doc__` is not given or is given as `None` or empty string.
+            - If a parameter's `annotation_value` is unexpected.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
             - If `is_global` and `guild` contradicts each other.
             - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
@@ -1075,12 +1073,12 @@ class Slasher(EventHandlerBase):
                 `Ellipsis`).
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
-            - If an argument's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If an argument's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If an argument's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If an argument's `choice` amount is out of the expected range [1:25].
-            - If an argument's `choice` name is duped.
-            - If an argument's `choice` values are mixed types.
+            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
+            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `choice` amount is out of the expected range [1:25].
+            - If a parameter's `choice` name is duped.
+            - If a parameter's `choice` values are mixed types.
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].

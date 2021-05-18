@@ -10,9 +10,15 @@
 - Add `InteractionEvent.is_acknowledging`.
 - `InteractionEvent.wait_for_response_message` now raises `RuntimeError` if ephemeral message was sent.
 - Add `Interaction.is_unanswered`.
+- Add `UserFlag.certified_moderator`.
 
 ##### hata.ext.slash
 - `abort` now supports `components` parameter in `show_for_invoking_user_only` mode. (Zeref Draganeel#3581)
+- Slash command description defaults to it's name instead of raising an exception. (Zeref Draganeel#3581)
+- Slash choices now can be any iterable object. (Zeref Draganeel#3581)
+- `client` and `interaction_event` parameters are now optional for slash commands.
+- `get_request_coros` now converts unhandled objects into `str` instances and propagates them to be sent.
+    (Zeref Draganeel#3581)
 
 #### Bug fixed
 
@@ -26,6 +32,8 @@
 - `components` can be missing from message payload.
 - `Message._update` was not updating components of non guild messages.
 - `Message._update_no_return` was not updating components of non guild messages.
+- `IconType` `.name` and `.value` values were reversed.
+- Fix an `AttributeError` in `Guild._delete`. (Zeref Draganeel#3581)
 
 #### Renames, Deprecation & Removals
 

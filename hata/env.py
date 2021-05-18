@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-"""
+﻿"""
 Before loading hata, it checks for related environmental variables, which are:
 
 HATA_BACKEND_ONLY : `bool` = `False`
@@ -39,6 +38,11 @@ HATA_API_VERSION : `int` = `8`
     
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still
     present.
+
+HATA_DOCS_ENABLED : `bool` = `True`
+    Whether hata should be loaded with docstrings.
+    
+    If python is run with `-OO`, then this always defaults to `False`.I
 """
 import os, warnings
 
@@ -136,6 +140,11 @@ def get_int_env(name, default):
 BACKEND_ONLY = get_bool_env('HATA_BACKEND_ONLY', False)
 CACHE_PRESENCE = get_bool_env('HATA_CACHE_PRESENCE', True)
 CACHE_USER = get_bool_env('HATA_CACHE_USERS', True)
+DOCS_ENABLED = get_bool_env('HATA_DOCS_ENABLED', (get_bool_env is not None))
+if not DOCS_ENABLED:
+    get_bool_env.__doc__ = None
+    get_str_env.__doc__ = None
+    get_int_env.__doc__ = None
 
 # You cannot store presences of not loaded users.
 if (not CACHE_USER):

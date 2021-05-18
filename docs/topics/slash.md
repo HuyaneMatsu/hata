@@ -67,7 +67,7 @@ precision.
 
 There are also choice parameters, but lets talk about those only later.
 
-##### Internal parameters
+### Internal parameters
 
 `client` (`c`) and `event` (`e`, `interaction_event`) parameters are picked up as internal parameters.
 

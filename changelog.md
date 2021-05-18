@@ -1,4 +1,10 @@
-## 1.1.78 *\[2021-05-??\]*
+## 1.1.79 *\[2021-05-??\]*
+
+## 1.1.78 *\[2021-05-18\]*
+
+#### Summary
+
+Fix some bugs and improve slash command creation.
 
 #### Improvements
 
@@ -37,7 +43,7 @@
 
 #### Renames, Deprecation & Removals
 
-- Rename `InteractionEvent._response_state` to `.response_flag`.
+- Rename `InteractionEvent._response_state` to `._response_flag`.
 
 ## 1.1.77 *\[2021-05-17\]*
 

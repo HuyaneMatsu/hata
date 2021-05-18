@@ -1907,6 +1907,7 @@ class CheckIsCategoryBase(CheckBase):
 class CheckIsCategory(CheckIsCategoryBase):
     """
     Checks whether the message was sent into any channel of the given category.
+    
     Attributes
     ----------
     category_id : `int`
@@ -1944,11 +1945,17 @@ class CheckIsCategory(CheckIsCategoryBase):
         if not isinstance(channel, ChannelGuildBase):
             return False
         
-        category = channel.category
-        if category is None:
-            return False
+        parent = channel.parent
+        if parent is None:
+            guild = channel.guild
+            if guild is None:
+                return False
+            
+            parent_id = guild.id
+        else:
+            parent_id = parent.id
         
-        if category.id == self.category_id:
+        if parent_id == self.category_id:
             return True
         
         return False

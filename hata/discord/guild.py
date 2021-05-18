@@ -2724,7 +2724,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelGuildBase`` instances
         """
-        return sorted(channel for channel in self.channels.values() if channel.category is self)
+        return sorted(channel for channel in self.channels.values() if channel.parent is None)
     
     @property
     def channel_list_flattened(self):
@@ -2735,7 +2735,7 @@ class Guild(DiscordEntity, immortal=True):
         channels : `list` of ``ChannelGuildBase`` instances
         """
         channels = []
-        for channel in sorted(channel for channel in self.channels.values() if channel.category is self):
+        for channel in sorted(channel for channel in self.channels.values() if channel.parent is None):
             channels.append(channel)
             if type(channel) is ChannelCategory:
                 channels.extend(channel.list_channels)

@@ -36,18 +36,19 @@ The parameter types can be the following:
 
 | Name              | Requires bot  | Discord field | String representation | Type representation   | Output type               |
 |-------------------|---------------|---------------|-----------------------|-----------------------|---------------------------|
-| string            | No            | string        | `'str'`               | `str`                 | `str`                     |
-| integer           | No            | string        | `'int'`               | `int`                 | `int`                     |
-| boolean           | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
-| user              | No            | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
-| user_id           | No            | user          | `'user_id'`           | N/A                   | `int`                     |
-| role              | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
-| role_id           | No            | role          | `'role_id'`           | N/A                   | `int`                     |
 | channel           | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
 | channel_id        | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
-| number            | No            | integer       | `'number'`            | N/A                   | `int`                     |
+| boolean           | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
+| integer           | No            | string        | `'int'`               | `int`                 | `int`                     |
 | mentionable       | Depends       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
 | mentionable_id    | No            | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
+| number            | No            | integer       | `'number'`            | N/A                   | `int`                     |
+| role              | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
+| role_id           | No            | role          | `'role_id'`           | N/A                   | `int`                     |
+| string            | No            | string        | `'str'`               | `str`                 | `str`                     |
+| user              | No            | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
+| user_id           | No            | user          | `'user_id'`           | N/A                   | `int`                     |
+
 
 ##### Parameter notes
 
@@ -65,6 +66,15 @@ might wont be called. On other hand `number` field is inaccurate. Discord uses j
 precision.
 
 There are also choice parameters, but lets talk about those only later.
+
+##### Internal parameters
+
+`client` (`c`) and `event` (`e`, `interaction_event`) parameters are picked up as internal parameters.
+
+> They can be also linted as `Client` or `InteractionEvent`.
+
+Internal parameters are not propagated towards discord, instead they are auto-fulfilled internally. They can be used
+to access information about the command's context if required.
 
 ## Required oauth2 scopes
 
@@ -117,7 +127,7 @@ After the extension is setuped, commands can be added using the `client.interact
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def perms(client, event):
+async def perms(event):
     """Shows your permissions."""
     user_permissions = event.user_permissions
     if user_permissions:
@@ -139,9 +149,6 @@ are also other interaction related client methods, which are mentioned [later](#
 
 ## Command Parameters
 
-By default 2 parameter is passed to every slash command, the respective client, and the received interaction event,
-which can be used to access every related information about the received event's context.
-
 An interaction event has the following top level attributes, which you may use up to produce a proper response:
 
 | Name              | Type                              | Notes                                                                     |
@@ -153,9 +160,8 @@ An interaction event has the following top level attributes, which you may use u
 
 > The rest of the attributes should be ignored if you are **not** writing your own interaction handler.
 
-> Right now interactions cannot be called from private channels, so `channel` should be always `ChannelText` and `guild`
-> should be always `Guild` instance, but Discord might allow interaction for private channels in future, so those cases
-> should be handler correspondingly.
+> If a command is called from a private channel, it's `.guild` is always `None`.
+
 
 The possible parameter types are listed above in the [Limitations](#Limitations) section, tho it is a little bit more
 complicated as might look for first time. All parameter has 3 fields what we need to fulfill; `name`, `type` and
@@ -165,7 +171,7 @@ complicated as might look for first time. All parameter has 3 fields what we nee
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def cookie(client, event,
+async def cookie(event,
         user : ('user', 'To who?'),
             ):
     """Gifts a cookie!"""
@@ -183,7 +189,7 @@ from hata.ext.slash import configure_parameter
 
 @Nitori.interactions(guild=TEST_GUILD)
 @configure_parameter('emoji', str, 'Yes?')
-async def show_emoji(client, event, emoji):
+async def show_emoji(emoji):
     """Shows the given custom emoji."""
     emoji = parse_emoji(emoji)
     if emoji is None:
@@ -206,6 +212,8 @@ Choice parameters go to the "annotation type field" and they can be either:
 - Set of tuple `name - value` pairs.
 - List of `value`-s.
 - Set of `value`-s.
+- Iterables of `name - value` pairs.
+- Iterables of `value`-s.
 
 > Dictionary and set choices are sorted alphabetically, so if order matters for you, use list.
 >
@@ -215,13 +223,13 @@ Choice parameters go to the "annotation type field" and they can be either:
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def guild_icon(client, event,
+async def guild_icon(event,
         choice: ({
             'Icon'             : 'icon'             ,
             'Banner'           : 'banner'           ,
             'Discovery-splash' : 'discovery_splash' ,
             'Invite-splash'    : 'invite_splash'    ,
-                }, 'Which icon of the guild?' ) = 'icon',
+        }, 'Which icon of the guild?' ) = 'icon',
             ):
     """Shows the guild's icon or it's selected splash."""
     guild = event.guild
@@ -262,10 +270,10 @@ GUILD_ICON_CHOICES = {
     'Banner'           : 'banner'           ,
     'Discovery-splash' : 'discovery_splash' ,
     'Invite-splash'    : 'invite_splash'    ,
-        }
+}
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def guild_icon(client, event,
+async def guild_icon(
         choice: (GUILD_ICON_CHOICES, 'Which icon of the guild?' ) = 'icon',
             ):
     """Shows the guild's icon."""
@@ -280,7 +288,7 @@ GUILD_ICON_CHOICES = [
     ('Banner'           , 'banner'           ),
     ('Discovery-splash' , 'discovery_splash' ),
     ('Invite-splash'    , 'invite_splash'    ),
-        ]
+]
 ```
 
 When defining annotations only as `value`-s, the `name`-s will set as `str(value)`.
@@ -289,8 +297,8 @@ When defining annotations only as `value`-s, the `name`-s will set as `str(value
 from random import random
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def roll(client, event,
-        dice_count: (list(range(1, 7)), 'With how much dice do you wanna roll?') = 1,
+async def roll(
+        dice_count: (range(1, 7), 'With how much dice do you wanna roll?') = 1,
             ):
     """Rolls with dices."""
     amount = 0
@@ -356,7 +364,7 @@ change up the command as well, to return just a simple string.
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD, show_for_invoking_user_only=True)
-async def perms(client, event):
+async def perms(event):
     """Shows your permissions."""
     user_permissions = event.user_permissions
     if user_permissions:
@@ -380,7 +388,7 @@ As an example: an already used function's name has conflict with the command's.
 from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitro.interactions(guild=TEST_GUILD, name='id-to-time')
-async def idtotime(client, event,
+async def idtotime(
         snowflake : ('int', 'Id please!'),
             ):
     """Converts the given Discord snowflake id to time."""
@@ -394,7 +402,7 @@ You can resolve name conflicts in an other way as well. Trailing `_` characters 
 from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitro.interactions(guild=TEST_GUILD)
-async def id_to_time_(client, event,
+async def id_to_time_(
         snowflake : ('int', 'Id please!'),
             ):
     """Converts the given Discord snowflake id to time."""
@@ -431,7 +439,7 @@ for action_name, embed_color in (('pat', 0x325b34), ('hug', 0xa4b51b), ('lick', 
         name = action_name,
         description = f'Do you want some {action_name}s, or to {action_name} someone?',
         guild = TEST_GUILD,
-            )
+    )
 
 # Cleanup
 del action_name, embed_color
@@ -461,7 +469,7 @@ still way more comfy than typing out the whole client method, so there is a midd
 
 ```py
 @Marisa.interactions(guild=GUILD__NEKO_DUNGEON)
-async def repeat(client, event,
+async def repeat(
         text : ('str', 'The content to repeat')
             ):
     """What should I exactly repeat?"""
@@ -489,10 +497,10 @@ IMPROVISATION_CHOICES = [
     'Reimu\'s armpits, yeeaaa...',
     'Have you heard of Izaoyi love-shop?',
     'Marisa's underskirt shrooms are poggers'
-        ]
+]
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def improvise(client, event):
+async def improvise():
     """Imrpovises some derpage"""
     yield '*Thinks*'
     await sleep(1.0+random()*4.0)
@@ -507,7 +515,7 @@ The first response can be also empty just to acknowledge the event.
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
-async def ping(client, event):
+async def ping():
     """HTTP ping-pong."""
     start = perf_counter()
     yield
@@ -547,7 +555,7 @@ from hata import sleep
 from hata.ext.slash import SlashResponse
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def collect_reactions(client, event):
+async def collect_reactions():
     """Collects reactions"""
     message = yield SlashResponse('Collecting reactions for 1 minute!', force_new_message=True)
     await sleep(60.0)
@@ -587,13 +595,13 @@ async def get_neko_life(client, keyword):
 
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def text_cat(client, event):
+async def text_cat(client):
     """I will send text cats :3"""
     async for content in get_neko_life(client, 'cat')
         yield content
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def why(client, event):
+async def why(client):
     """why are you using this commands?"""
     async for content in get_neko_life(client, 'why')
         yield content
@@ -605,12 +613,12 @@ loop derpy, or `yield` or `return` it, because having regard to this case, it is
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
-async def text_cat(client, event):
+async def text_cat(client):
     """I will send text cats :3"""
     return get_neko_life(client, 'cat')
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def why(client, event):
+async def why(client):
     """why are you using this commands?"""
     yield get_neko_life(client, 'why')
 ```
@@ -673,7 +681,7 @@ annotation tuple.
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
-async def user_id(client, event,
+async def user_id(event,
         user_id: ('user_id', 'Get the id of an other user?', 'user') = None,
             ):
     """Shows your or the selected user's id."""
@@ -717,7 +725,7 @@ MODERATOR_ROLE = Role.precreate(MODERATOR_ROLE_ID)
 
 @Nitori.interactions(guild=TEST_GUILD, allow_by_default=False)
 @set_permission(TEST_GUILD, MODERATOR_ROLE, True)
-async def latest_users(client, event):
+async def latest_users(event):
     """Shows the new users of the guild."""
     date_limit = datetime.now() - timedelta(days=7)
     
@@ -745,7 +753,7 @@ async def latest_users(client, event):
                 f'Joined : {joined_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(joined_at)} ago*]\n'
                 f'Created : {created_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(created_at)} ago*]\n'
                 f'Difference : {elapsed_time(relativedelta(created_at, joined_at))}',
-                    )
+            )
     
     else:
         embed.description = '*none*'
@@ -770,7 +778,7 @@ from hata import Embed
 from hata.ext.slash import abort
 
 @Nitori.interactions
-async def ping(client, event):
+async def ping(event):
     """HTTP ping-pong."""
     start = perf_counter()
     yield
@@ -868,13 +876,13 @@ async def get_image_embed(client, tags, name, color):
 SCARLET = Nitori.interactions(None, name='scarlet', description='Scarlet?', guild=TEST_GUILD)
 
 @SCARLET.interactions
-async def flandre(client, event):
+async def flandre(client):
     """Flandre!"""
     yield # Yield one to acknowledge the interaction
     yield await get_image_embed(client, 'flandre_scarlet', 'Scarlet Flandre', 0xdc143c)
 
 @SCARLET.interactions
-async def remilia(client, event):
+async def remilia(client):
     """Remilia!"""
     yield # Yield one to acknowledge the interaction
     yield await get_image_embed(client, 'remilia_scarlet', 'Scarlet Remilia', 0x9400d3)

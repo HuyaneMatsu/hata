@@ -39,7 +39,7 @@ async def converter_self_client(client, interaction_event):
     return client
 
 
-async def converter_self_interaction_event(client, interaction):
+async def converter_self_interaction_event(client, interaction_event):
     """
     Internal converter for returning the  received interaction event.
     
@@ -56,7 +56,7 @@ async def converter_self_interaction_event(client, interaction):
     -------
     interaction_event : ``ApplicationCommandInteraction``
     """
-    return interaction
+    return interaction_event
 
 
 async def converter_int(client, interaction_event, value):
@@ -356,15 +356,12 @@ ANNOTATION_TYPE_SELF_INTERACTION_EVENT = 13
 
 CLIENT_ANNOTATION_NAMES = frozenset((
     'c',
-    'clnt',
     'client',
 ))
 
 INTERACTION_EVENT_ANNOTATION_NAMES = frozenset((
     'e',
     'event',
-    'i',
-    'interaction',
     'interaction_event',
 ))
 

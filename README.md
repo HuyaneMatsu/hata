@@ -76,7 +76,7 @@ async def ready(client):
     print(f'{client:f} logged in.')
 
 @Seija.interactions(guild=GUILD)
-async def ping(client, event):
+async def ping():
     """ping-pong"""
     return 'pong'
 

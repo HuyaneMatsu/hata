@@ -8764,7 +8764,7 @@ class Client(ClientUserPBase):
         return Stage(data)
     
     
-    async def stage_edit(self, stage, topic):
+    async def stage_edit(self, stage, topic=..., *, privacy_level=...):
         """
         Edits the given stage channel.
         
@@ -8776,20 +8776,23 @@ class Client(ClientUserPBase):
         ----------
         channel : ``Stage``, ``ChannelStage`` or `int`
             The stage to edit. Can be given as it's channel's identifier.
-        topic : `str` or `None`
+        topic : `str`
             The new topic of the stage.
+        privacy_level : ``StagePrivacyLevel``, `int`, Optional (Keyword only)
+            The new privacy level of the stage.
         
         Raises
         ------
         TypeError
-            If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int` instance.
+            - If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int` instance.
+            - If `privacy_level` was not given neither as ``StagePrivacyLevel`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `topic` was not given neither as `None` or as `str` instance.
-            - If `topic`'s length is out of range [0:120].
+            - If `topic` was not given neither as `None` nor as `str` instance.
+            - If `topic`'s length is out of range [1:120].
         """
         if isinstance(stage, Stage):
             channel_id = stage.channel.id
@@ -8801,21 +8804,35 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
                     f'int` instance, got {stage.__class__.__name__}.')
         
-        if topic is None:
-            topic = ''
-        else:
+        data = {}
+        
+        if (topic is not ...):
             if __debug__:
                 if not isinstance(topic, str):
                     raise AssertionError(f'`topic` can be given as `None` or `sts` instance, got '
                         f'{topic.__class__.__name__}.')
                 
                 topic_length = len(topic)
-                if topic_length > 120:
-                    raise AssertionError(f'`topic` length can be in range [0:120], got {topic_length!r}; {topic!r}.')
+                if (topic_length < 1) or (topic_length > 120):
+                    raise AssertionError(f'`topic` length can be in range [1:120], got {topic_length!r}; {topic!r}.')
+            
+            data['topic'] = topic
         
-        data = {
-            'topic': topic,
-        }
+        
+        if (privacy_level is not ...):
+            if isinstance(privacy_level, StagePrivacyLevel):
+                privacy_level = privacy_level.value
+            elif isinstance(privacy_level, int):
+                privacy_level = privacy_level
+            else:
+                raise TypeError(f'`privacy_level` can be given either as {StagePrivacyLevel.__name__} or `int` '
+                    f'instance, got {privacy_level.__class__.__name__}.')
+            
+            data['privacy_level'] = privacy_level
+        
+        
+        if not data:
+            return
         
         await self.http.stage_edit(channel_id, data)
     

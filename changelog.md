@@ -22,7 +22,7 @@
 - Add `STAGE_INSTANCE_DELETE__CAL_MC`.
 - Add `STAGE_INSTANCE_UPDATE__CAL_MC`.
 - `Client.events` now accepts 3 parameters (from 2).
-
+- `Stage.privacy_level` is now editable.
 
 #### Bug fixed
 

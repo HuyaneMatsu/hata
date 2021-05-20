@@ -495,15 +495,17 @@ class EventHandlerManager:
     
         Every item in `old_attributes` is optional and they can be any of the following:
         
-        +---------------+-------------------+
-        | Keys          | Values            |
-        +===============+===================+
-        | discoverable  | `bool`            |
-        +---------------+-------------------+
-        | invite_code   | `None` or `str`   |
-        +---------------+-------------------+
-        | topic         | `str`             |
-        +---------------+-------------------+
+        +---------------+-----------------------+
+        | Keys          | Values                |
+        +===============+=======================+
+        | discoverable  | `bool`                |
+        +---------------+-----------------------+
+        | invite_code   | `None` or `str`       |
+        +---------------+-----------------------+
+        | privacy_level | ``StagePrivacyLevel`` |
+        +---------------+-----------------------+
+        | topic         | `str`                 |
+        +---------------+-----------------------+
     
     thread_user_add(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``):
         Called when a user is added or joined a thread channel.

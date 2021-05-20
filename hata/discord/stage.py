@@ -56,7 +56,6 @@ class Stage(DiscordEntity):
             self.channel = ChannelStage.precreate(int(data['channel_id']))
             self.guild = guild
             self.id = stage_id
-            self.privacy_level = StagePrivacyLevel.get(data['privacy_level'])
             
             scheduled_event_id = data.get('guild_scheduled_event_id', None)
             if scheduled_event_id is None:
@@ -105,6 +104,7 @@ class Stage(DiscordEntity):
         self.topic = data['topic']
         self.invite_code = data.get('invite_code', None)
         self.discoverable = not data.get('discoverable_disabled', False)
+        self.privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
     
     def _update(self, data):
         """
@@ -125,15 +125,17 @@ class Stage(DiscordEntity):
             
         Returned Data Structure
         -----------------------
-        +---------------+-------------------+
-        | Keys          | Values            |
-        +===============+===================+
-        | discoverable  | `bool`            |
-        +---------------+-------------------+
-        | invite_code   | `None` or `str`   |
-        +---------------+-------------------+
-        | topic         | `str`             |
-        +---------------+-------------------+
+        +---------------+-----------------------+
+        | Keys          | Values                |
+        +===============+=======================+
+        | discoverable  | `bool`                |
+        +---------------+-----------------------+
+        | invite_code   | `None` or `str`       |
+        +---------------+-----------------------+
+        | privacy_level | ``StagePrivacyLevel`` |
+        +---------------+-----------------------+
+        | topic         | `str`                 |
+        +---------------+-----------------------+
         """
         old_attributes = {}
         
@@ -153,6 +155,12 @@ class Stage(DiscordEntity):
         if discoverable != self.discoverable:
             old_attributes['discoverable'] = self.discoverable
             self.discoverable = discoverable
+        
+        
+        privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
+        if privacy_level != self.privacy_level:
+            privacy_level['privacy_level'] = self.privacy_level
+            self.privacy_level = privacy_level
         
         return old_attributes
     

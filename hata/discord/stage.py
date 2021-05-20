@@ -106,6 +106,7 @@ class Stage(DiscordEntity):
         self.discoverable = not data.get('discoverable_disabled', False)
         self.privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
     
+    
     def _update(self, data):
         """
         Updates the stage from the given data and returns the changed attributes in `attribute-name` - `old-value`
@@ -158,7 +159,7 @@ class Stage(DiscordEntity):
         
         
         privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
-        if privacy_level != self.privacy_level:
+        if privacy_level is not self.privacy_level:
             privacy_level['privacy_level'] = self.privacy_level
             self.privacy_level = privacy_level
         
@@ -171,10 +172,11 @@ class Stage(DiscordEntity):
         """
         guild = self.guild
         stages = guild.stages
-        try:
-            del stages[self.id]
-        except KeyError:
-            pass
-        else:
-            if not stages:
-                guild.stages = None
+        if (stages is not None):
+            try:
+                del stages[self.id]
+            except KeyError:
+                pass
+            else:
+                if not stages:
+                    guild.stages = None

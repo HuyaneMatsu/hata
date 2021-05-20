@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-__all__ = ('ActivityChange', 'ActivityUpdate', 'ClientUserBase', 'ClientUserPBase', 'GuildProfile', 'ThreadProfile',
-    'ThreadProfileFlag', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER')
+__all__ = ('ActivityChange', 'ActivityUpdate', 'ClientUserBase', 'ClientUserPBase', 'GuildProfile', 'PurchasedFlag',
+    'ThreadProfile', 'ThreadProfileFlag', 'User', 'UserBase', 'UserFlag', 'VoiceState', 'ZEROUSER')
 
 from datetime import datetime
 
@@ -22,6 +21,7 @@ from . import urls as module_urls
 
 create_partial_role = include('create_partial_role')
 Client = include('Client')
+
 
 class UserFlag(FlagBase):
     """
@@ -99,6 +99,29 @@ class ThreadProfileFlag(FlagBase):
     Represents a ``ThreadProfile``'s user specific bitwise flag based settings.
     """
     __keys__ = {}
+
+
+class PurchasedFlag(FlagBase):
+    """
+    A user's purchase flags.
+    
+    The implemented purchased flags are the following:
+    
+    +-------------------------------+-------------------+
+    | Respective name               | Bitwise position  |
+    +===============================+===================+
+    | premium_tier_1                | 1                 |
+    +-------------------------------+-------------------+
+    | premium_tier_2                | 2                 |
+    +-------------------------------+-------------------+
+    | premium_guild                 | 4                 |
+    +-------------------------------+-------------------+
+    """
+    __keys__ = {
+        'premium_tier_1': 1,
+        'premium_tier_2': 2,
+        'premium_guild': 4,
+    }
 
 
 @export

@@ -1,8 +1,11 @@
 __all__ = ('CommandContext', )
 
 from ...backend.export import export
+
 from .command_helpers import get_command_category_trace, handle_exception, run_checks
 from .exceptions import CommandCheckError
+from .responding import process_command_coroutine
+
 
 @export
 class CommandContext(object):
@@ -347,7 +350,9 @@ class CommandContext(object):
             for parameter_parsing_state in parameter_parsing_states:
                 parameter_parsing_state.get_parser_value(command_positional_parameters, command_keyword_parameters)
             
-            await command_function._function(*command_positional_parameters, **command_keyword_parameters)
+            await process_command_coroutine(self,
+                command_function._function(*command_positional_parameters, **command_keyword_parameters)
+            )
             
         except BaseException as err:
             await handle_exception(self, err)

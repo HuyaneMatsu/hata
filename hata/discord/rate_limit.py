@@ -2061,6 +2061,14 @@ class RATE_LIMIT_GROUPS:
         - Limit : `10`
         - Resets after : `3600.0`
     
+    - message_interaction
+        - Endpoint : `/channels/{channel_id}/messages/{message_id}/interaction-data`
+        - Method : `GET`
+        - Required auth : `user`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+    
     - reaction_clear
         - Endpoint : `/channels/{channel_id}/messages/{message_id}/reactions`
         - Method : `DELETE`
@@ -2915,13 +2923,13 @@ class RATE_LIMIT_GROUPS:
         - Limit : `100`
         - Resets after : `86400.0`
     
-    - stage_edit
+    - stage_get
         - Endpoint : `/stage-instances/{channel_id}`
-        - Method : `PATCH`
+        - Method : `GET`
         - Required auth : `bot`
-        - Limiter : `GLOBAL`
-        - Limit : `5`
-        - Resets after : `60.0`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
     
     - stage_delete
         - Endpoint : `/stage-instances/{channel_id}`
@@ -2930,6 +2938,14 @@ class RATE_LIMIT_GROUPS:
         - Limiter : `GLOBAL`
         - Limit : `100`
         - Resets after : `86400.0`
+    
+    - stage_edit
+        - Endpoint : `/stage-instances/{channel_id}`
+        - Method : `PATCH`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `60.0`
     
     - eula_get
         - Endpoint : `/store/eulas/{eula_id}`
@@ -3294,6 +3310,7 @@ class RATE_LIMIT_GROUPS:
     message_edit = RateLimitGroup(LIMITER_CHANNEL)
     message_ack = RateLimitGroup(optimistic=True) # untested
     message_crosspost = RateLimitGroup(LIMITER_CHANNEL)
+    message_interaction = RateLimitGroup(optimistic=True) # untested
     reaction_clear = GROUP_REACTION_MODIFY
     reaction_delete_emoji = GROUP_REACTION_MODIFY
     reaction_user_get_chunk = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
@@ -3395,8 +3412,9 @@ class RATE_LIMIT_GROUPS:
     bulk_ack = RateLimitGroup(optimistic=True) # untested
     stage_get_all = RateLimitGroup.unlimited()
     stage_create = RateLimitGroup()
-    stage_edit = RateLimitGroup()
+    stage_get = RateLimitGroup()
     stage_delete = RateLimitGroup()
+    stage_edit = RateLimitGroup()
     eula_get = RateLimitGroup(optimistic=True)
     user_info_get = RateLimitGroup(optimistic=True)
     client_user_get = RateLimitGroup(optimistic=True)

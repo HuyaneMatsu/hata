@@ -13,7 +13,7 @@ from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMA
     APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
     
 
-from .responding import process_command_coro
+from .responding import process_command_coroutine
 from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlashCommandWrapper, get_parameter_configurers
@@ -1673,7 +1673,7 @@ class SlashCommandFunction:
         
         coro = self._command(*parameters)
         try:
-            await process_command_coro(client, interaction_event, self.show_for_invoking_user_only, coro)
+            await process_command_coroutine(client, interaction_event, self.show_for_invoking_user_only, coro)
         except BaseException as err:
             await client.events.error(client, f'{self!r}.__call__', err)
     

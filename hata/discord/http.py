@@ -1460,12 +1460,20 @@ class DiscordHTTPClient(HTTPClient):
             data,
         )
     
+    
     async def stage_create(self, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.stage_create, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
             f'{API_ENDPOINT}/stage-instances',
             data,
+        )
+    
+    async def stage_get(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.stage_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/stage-instances/{channel_id}',
         )
     
     async def stage_edit(self, channel_id, data):
@@ -1736,4 +1744,12 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.interaction_followup_message_delete, interaction_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
+        )
+    
+    # User account only
+    async def message_interaction(self, channel_id, message_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.message_interaction, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/interaction-data',
         )

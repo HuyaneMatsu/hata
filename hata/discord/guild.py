@@ -680,6 +680,7 @@ class Guild(DiscordEntity, immortal=True):
             self.user_count = 1
             self.approximate_online_count = 0
             self.approximate_user_count = 0
+            self.stages = None
             
             update = True
         
@@ -782,15 +783,9 @@ class Guild(DiscordEntity, immortal=True):
             
             stage_datas = data.get('stage_instances', None)
             if (stage_datas is not None) and stage_datas:
-                stages = {}
                 for stage_data in stage_datas:
-                    stage = Stage(stage_data)
-                    stages[stage.id] = stage
-            else:
-                stages = None
-            
-            self.stages = stages
-            
+                    Stage(stage_data)
+        
         if (not CACHE_PRESENCE):
             #we get information about the client here
             try:

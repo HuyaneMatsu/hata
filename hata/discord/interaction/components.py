@@ -1485,4 +1485,4 @@ def create_component(component_data):
     component : ``ComponentBase``
         the created component instance.
     """
-    return COMPONENT_TYPE_VALUE_TO_TYPE.get(component_data['style'], ComponentDynamic).from_data(component_data)
+    return COMPONENT_TYPE_VALUE_TO_TYPE.get(component_data['type'], ComponentDynamic).from_data(component_data)

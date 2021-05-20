@@ -846,7 +846,7 @@ class InteractionResponseContext:
     
     def __new__(cls, interaction, is_deferring, is_ephemeral):
         """
-        Creates a new ``InteractionResponseContext`` instance with teh given parameters.
+        Creates a new ``InteractionResponseContext`` instance with the given parameters.
         
         parameters
         ----------

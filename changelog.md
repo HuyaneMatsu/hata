@@ -1,4 +1,10 @@
-## 1.1.79 *\[2021-05-??\]*
+## 1.1.81 *\[2021-05-??\]*
+
+## 1.1.80 *\[2021-05-20\]*
+
+#### Summary
+
+Update stages.
 
 #### Improvements
 
@@ -27,11 +33,19 @@
 - `ComponentButton.custom_id` is now auto-set if needed.
 - `ComponentSelect.custom_id` is now optional (moved after `options`) and auto-set if not given.
 - `ComponentSelectOption` label is required.
+- Add `PurchasedFlag`.
+- Add `RATE_LIMIT_GROUPS.message_interaction`.
+- Add `DiscordHTTPClient.message_interaction`.
+- Add `RATE_LIMIT_GROUPS.stage_get`.
+- Add `DiscordHTTPClient.stage_get`.
+- Add `Client.stage_get`,
 
 #### Bug fixed
 
 - When removing all the options of an application command, they was not edited accordingly. (Zeref Draganeel#3581)
 - `create_partial_guild` could drop `NameError`.
+- Fix `KeyError` in `create_component`.
+- `Client.interaction_response_message_create` ignored `show_for_invoking_user_only` if other fields were not present.
 
 ##### hata.ext.slash
 - `name` could have higher priority when setting slash command description than `description` itself.
@@ -60,7 +74,7 @@ Fix some bugs and improve slash command creation.
 - Slash command description defaults to it's name instead of raising an exception. (Zeref Draganeel#3581)
 - Slash choices now can be any iterable object. (Zeref Draganeel#3581)
 - `client` and `interaction_event` parameters are now optional for slash commands.
-- `get_request_coros` now converts unhandled objects into `str` instances and propagates them to be sent.
+- `get_request_coroutines` now converts unhandled objects into `str` instances and propagates them to be sent.
     (Zeref Draganeel#3581)
 
 #### Bug fixed

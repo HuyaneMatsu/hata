@@ -8835,6 +8835,7 @@ class Client(ClientUserPBase):
             return
         
         await self.http.stage_edit(channel_id, data)
+        # We receive data, but ignore it, so we can dispatch it.
     
     
     async def stage_delete(self, stage):
@@ -8853,7 +8854,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given as ``ChannelStage`` neither as `int` instance.
+            If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8861,8 +8862,8 @@ class Client(ClientUserPBase):
         """
         if isinstance(stage, Stage):
             channel_id = stage.channel.id
-        if isinstance(stage, ChannelStage):
-            channel_id = channel.id
+        elif isinstance(stage, ChannelStage):
+            channel_id = stage.id
         else:
             channel_id = maybe_snowflake(stage)
             if channel_id is None:
@@ -8871,6 +8872,38 @@ class Client(ClientUserPBase):
         
         await self.http.stage_delete(channel_id)
         # We receive no data.
+    
+    
+    async def stage_get(self, channel):
+        """
+        Gets the stage of the given stage channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        stage : ``ChannelStage`` or `int`
+            The stage's channel's identifier.
+        
+        Raises
+        ------
+        TypeError
+            If `channel` was not given as ``ChannelStage`` neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if isinstance(channel, ChannelStage):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
+                    f'int` instance, got {channel.__class__.__name__}.')
+        
+        data = await self.http.stage_get(channel_id)
+        return Stage(data)
     
     # Thread
     
@@ -9097,6 +9130,7 @@ class Client(ClientUserPBase):
             guild = create_partial_guild_from_id(guild_id)
         
         return User._create_and_update(data, guild)
+    
     
     async def guild_user_search(self, guild, query, limit=1):
         """
@@ -13309,6 +13343,7 @@ class Client(ClientUserPBase):
         
         if show_for_invoking_user_only:
             message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+            contains_content = True
         
         data = {}
         if contains_content:

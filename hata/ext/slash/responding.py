@@ -27,7 +27,7 @@ def is_only_embed(maybe_embeds):
     
     return True
 
-async def get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
+async def get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
     """
     Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
     
@@ -74,14 +74,14 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
         return
     
     if is_coroutine_generator(response):
-        response = await process_command_gen(client, interaction_event, show_for_invoking_user_only, response)
-        async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
+        response = await process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only, response)
+        async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
             yield request_coro
         
         return
     
     if isinstance(response, SlashResponse):
-        for request_coro in response.get_request_coros(client, interaction_event, show_for_invoking_user_only):
+        for request_coro in response.get_request_coroutines(client, interaction_event, show_for_invoking_user_only):
             yield request_coro
         
         return
@@ -118,11 +118,11 @@ async def get_request_coros(client, interaction_event, show_for_invoking_user_on
     return
 
 
-async def process_command_gen(client, interaction_event, show_for_invoking_user_only, coro):
+async def process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only, coroutine_generator):
     """
     Processes a slash command coroutine generator.
     
-    This function os a coroutine.
+    This function is a coroutine.
     
     Parameters
     ----------
@@ -132,7 +132,7 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
         The respective event to respond on.
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoking user.
-    coro : `CoroutineGenerator`
+    coroutine_generator : `CoroutineGenerator`
         A coroutine generator with will send command response.
     
     Returns
@@ -143,15 +143,15 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
     Raises
     ------
     BaseException
-        Any exception raised by `coro`.
+        Any exception raised by `coroutine_generator`.
     """
     response_message = None
     response_exception = None
     while True:
         if response_exception is None:
-            step = coro.asend(response_message)
+            step = coroutine_generator.asend(response_message)
         else:
-            step = coro.athrow(response_exception)
+            step = coroutine_generator.athrow(response_exception)
         
         try:
             response = await step
@@ -182,8 +182,6 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
                 if err.code in (
                         ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
                         ERROR_CODES.missing_access, # Client removed.
-                        ERROR_CODES.missing_permissions, # Permissions changed meanwhile; Can we get this?
-                        ERROR_CODES.cannot_message_user, # User has dm-s disallowed; Can we get this?
                         ERROR_CODES.unknown_interaction, # We times out, do not drop error.
                             ):
                     return
@@ -191,11 +189,11 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
             raise
         
         else:
-            # We set it first, since if `get_request_coros` yields nothing, we would be meowed up.
+            # We set it first, since if `get_request_coroutines` yields nothing, we would be meowed up.
             response_message = None
             response_exception = None
             
-            async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only,
+            async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only,
                     response):
                 try:
                     response_message = await request_coro
@@ -209,7 +207,7 @@ async def process_command_gen(client, interaction_event, show_for_invoking_user_
     return response
 
 
-async def process_command_coro(client, interaction_event, show_for_invoking_user_only, coro):
+async def process_command_coroutine(client, interaction_event, show_for_invoking_user_only, coroutine):
     """
     Processes a slash command coroutine.
     
@@ -225,7 +223,7 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
         The respective event to respond on.
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoking user.
-    coro : `coroutine`
+    coroutine : `Coroutine`
         A coroutine with will send command response.
     
     Raises
@@ -233,15 +231,15 @@ async def process_command_coro(client, interaction_event, show_for_invoking_user
     BaseException
         Any exception raised by `coro`.
     """
-    if is_coroutine_generator(coro):
-        response = await process_command_gen(client, interaction_event, show_for_invoking_user_only, coro)
+    if is_coroutine_generator(coroutine):
+        response = await process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only, coroutine)
     else:
         try:
-            response = await coro
+            response = await coroutine
         except InteractionAbortedError as err:
             response = err.response
     
-    async for request_coro in get_request_coros(client, interaction_event, show_for_invoking_user_only, response):
+    async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
         try:
             await request_coro
         except BaseException as err:
@@ -382,7 +380,7 @@ class SlashResponse:
         
         return response_parameters
     
-    def get_request_coros(self, client, interaction_event, show_for_invoking_user_only):
+    def get_request_coroutines(self, client, interaction_event, show_for_invoking_user_only):
         """
         Gets request coroutine buildable from the ``SlashResponse``.
         

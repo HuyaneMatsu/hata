@@ -23,6 +23,10 @@
 - Add `STAGE_INSTANCE_UPDATE__CAL_MC`.
 - `Client.events` now accepts 3 parameters (from 2).
 - `Stage.privacy_level` is now editable.
+- Add `Component._iter_components`.
+- `ComponentButton.custom_id` is now auto-set if needed.
+- `ComponentSelect.custom_id` is now optional (moved after `options`) and auto-set if not given.
+- `ComponentSelectOption` label is required.
 
 #### Bug fixed
 

@@ -123,7 +123,7 @@ class Stage(DiscordEntity):
             The changed attributes of the stage.
             
             Each item in the returned dictionary is optional.
-            
+        
         Returned Data Structure
         -----------------------
         +---------------+-----------------------+
@@ -180,3 +180,8 @@ class Stage(DiscordEntity):
             else:
                 if not stages:
                     guild.stages = None
+        
+        try:
+            del STAGES[self.id]
+        except KeyError:
+            pass

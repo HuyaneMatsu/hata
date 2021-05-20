@@ -3549,7 +3549,7 @@ def STAGE_INSTANCE_DELETE__CAL_SC(client, data):
     except KeyError:
         return
     
-    stage._delete(data)
+    stage._delete()
     
     Task(client.events.stage_delete(client, stage), KOKORO)
 
@@ -3572,6 +3572,7 @@ def STAGE_INSTANCE_DELETE__CAL_MC(client, data):
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, stage), KOKORO)
 
+
 def STAGE_INSTANCE_DELETE__OPT(client, data):
     stage_id = int(data['id'])
     try:
@@ -3579,7 +3580,7 @@ def STAGE_INSTANCE_DELETE__OPT(client, data):
     except KeyError:
         return
     
-    stage._delete(data)
+    stage._delete()
 
 
 add_parser(

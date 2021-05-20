@@ -1,6 +1,8 @@
 __all__ = ( 'ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
     'create_component')
 
+from os import urandom as random_bytes
+from base64 import b85encode as to_base85
 import reprlib
 
 from ...backend.utils import copy_docs
@@ -57,7 +59,7 @@ def _debug_component_components(components):
             f'{components.__class__.__name__}.')
 
 
-def _debug_component_custom_id(custom_id, nullable=True):
+def _debug_component_custom_id(custom_id):
     """
     Checks whether given `component.custom_id` value is correct.
     
@@ -65,22 +67,15 @@ def _debug_component_custom_id(custom_id, nullable=True):
     ----------
     custom_id : `None` or `str`
         Custom identifier to detect which button was clicked by the user.
-    nullable : `bool`, Optional
-        Whether the `custom_id` value can be `None`. Defaults to `True`.
     
     Raises
     ------
     AssertionError
         - If `custom_id` was not given neither as `None` or `str` instance.
         - If `custom_id`'s length is over `100`.
-        - If `custom_id` is empty string or `None` meanwhile not nullable.
     """
     if (custom_id is None):
-        if nullable:
-            pass
-        else:
-            raise AssertionError(f'`custom_id` is not nullable.')
-    
+        pass
     elif isinstance(custom_id, str):
         custom_id_length = len(custom_id)
         if custom_id_length == 0:
@@ -346,6 +341,18 @@ def _debug_component_max_values(max_values):
             f'[{COMPONENT_OPTION_MAX_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MAX}], got {max_values!r}.')
 
 
+def create_auto_custom_id():
+    """
+    Creates a random custom identifier for components.
+    
+    Returns
+    -------
+    custom_id : `str`
+        The created custom id.
+    """
+    return to_base85(random_bytes(64)).decode()
+
+
 @export
 class ComponentBase:
     """
@@ -423,6 +430,20 @@ class ComponentBase:
     def __hash__(self):
         """Returns the component's hash value."""
         return self.type.value
+    
+    
+    def _iter_components(self):
+        """
+        Iterates over the sub components of the component.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        component : ``ComponentBase``
+        """
+        yield self
+        return
 
 
 class ComponentRow(ComponentBase):
@@ -556,6 +577,22 @@ class ComponentRow(ComponentBase):
                 hash_value ^= hash(component)
         
         return hash_value
+    
+    def _iter_components(self):
+        """
+        Iterates over the sub components of the component.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        component : ``ComponentBase``
+        """
+        yield self
+        components = self.components
+        if (components is not None):
+            for component in components:
+                yield from component._iter_components()
 
 
 class ComponentButton(ComponentBase):
@@ -607,7 +644,7 @@ class ComponentButton(ComponentBase):
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `url` field.
-
+        
         url : `None` or `str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
@@ -618,6 +655,9 @@ class ComponentButton(ComponentBase):
         
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
+        
+        auto_custom_id : `bool`
+            Whether custom id should be automatically generated.
         
         Raises
         ------
@@ -642,7 +682,7 @@ class ComponentButton(ComponentBase):
             url = None
         
         if __debug__:
-            _debug_component_custom_id(custom_id, True)
+            _debug_component_custom_id(custom_id)
             _debug_component_emoji(emoji)
             _debug_component_label(label)
             _debug_component_enabled(enabled)
@@ -655,13 +695,17 @@ class ComponentButton(ComponentBase):
             if (custom_id is None) and (url is None):
                 raise AssertionError(f'Either `custom_id` or `url` field is required.')
         
-        if custom_id is None:
-            style = ButtonStyle.link
-        else:
+        if (url is None):
             if style is None:
                 style = cls.default_style
             else:
                 style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
+            
+            if (custom_id is None):
+                custom_id = auto_custom_id()
+        
+        else:
+            style = ButtonStyle.link
         
         if (label is not None) and (not label):
             label = None
@@ -868,7 +912,7 @@ class ComponentSelectOption(ComponentBase):
         Description of the option.
     emoji : `None` or ``Emoji``
         Emoji on the option if applicable.
-    label : `None` or `str`
+    label : `str`
         Label of the option.
     value : `str`
         Identifier value of the option.
@@ -882,7 +926,7 @@ class ComponentSelectOption(ComponentBase):
     """
     __slots__ = ('default', 'description', 'emoji', 'label', 'value')
     
-    def __new__(cls, value, label=None, emoji=None, *, description=None, default=False):
+    def __new__(cls, value, label, emoji=None, *, description=None, default=False):
         """
         Creates a new component option with the given parameters.
         
@@ -890,7 +934,7 @@ class ComponentSelectOption(ComponentBase):
         ----------
         value : `str`
             The option's value.
-        label : `None` or `str`, Optional
+        label : `str`
             Label of the component option.
         emoji : `None` or ``Emoji``, Optional
             Emoji of the option if applicable.
@@ -899,10 +943,6 @@ class ComponentSelectOption(ComponentBase):
         default : `bool`
             Whether this the the default option. Defaults to `False`.
         """
-        
-        if (label is not None) and (not label):
-            label = None
-        
         if (description is not None) and (not description):
             description = None
         
@@ -912,6 +952,9 @@ class ComponentSelectOption(ComponentBase):
             _debug_component_emoji(emoji)
             _debug_component_description(description)
             _debug_component_default(default)
+            
+            if (label is None) or (not label):
+                raise AssertionError('`label` is required.')
         
         self = object.__new__(cls)
         self.default = default
@@ -938,7 +981,7 @@ class ComponentSelectOption(ComponentBase):
             emoji = create_partial_emoji(emoji_data)
         self.emoji = emoji
         
-        self.label = data.get('label', None)
+        self.label = data['label']
         
         self.value = data['value']
         
@@ -949,6 +992,7 @@ class ComponentSelectOption(ComponentBase):
     def to_data(self):
         data = {
             'value' : self.value,
+            'label' : self.label,
         }
         
         emoji = self.emoji
@@ -961,10 +1005,6 @@ class ComponentSelectOption(ComponentBase):
         description = self.description
         if (description is not None):
             data['description'] = description
-        
-        label = self.label
-        if (label is not None):
-            data['label'] = label
         
         return data
 
@@ -1058,16 +1098,16 @@ class ComponentSelect(ComponentBase):
     """
     type = ComponentType.select
     
-    def __new__(cls, custom_id, options, *, placeholder=None, min_values=1, max_values=1):
+    def __new__(cls, options, custom_id=None, *, placeholder=None, min_values=1, max_values=1):
         """
         Creates a new ``ComponentSelect`` instance with the given parameters.
         
         Parameters
         ----------
-        custom_id : `str`
-            Custom identifier to detect which component was used by the user.
         options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``
             Options of the select.
+        custom_id : `str` or `None`, Optional
+            Custom identifier to detect which component was used by the user.
         placeholder : `str`, Optional (Keyword only)
             Placeholder text of the select.
         min_values : `int`, Optional (Keyword only)
@@ -1078,7 +1118,7 @@ class ComponentSelect(ComponentBase):
         Raises
         ------
         AssertionError
-            - If `custom_id` is not given as `str` instance.
+            - If `custom_id` is not given as `None` or `str` instance.
             - If `custom_id`'s length is out of range [0:100].
             - If `options` length is out from the expected range [1:25].
             - If `options` is neither `None` or (`list`, `tuple`) of ``ComponentSelectOption`` elements.
@@ -1091,11 +1131,14 @@ class ComponentSelect(ComponentBase):
             placeholder = None
         
         if __debug__:
-            _debug_component_custom_id(custom_id, False)
+            _debug_component_custom_id(custom_id)
             _debug_component_options(options)
             _debug_component_placeholder(placeholder)
             _debug_component_min_values(min_values)
             _debug_component_max_values(max_values)
+        
+        if custom_id is None:
+            custom_id = create_auto_custom_id()
         
         options = list(options)
         

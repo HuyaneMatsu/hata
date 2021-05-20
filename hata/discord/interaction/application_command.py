@@ -337,8 +337,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         }
     
         options = self.options
-        if (options is not None):
-            data['options'] = [option.to_data() for option in options]
+        if (options is None):
+            option_datas = []
+        else:
+            option_datas = [option.to_data() for option in options]
+        
+        data['options'] = option_datas
         
         # Always add this to data, so if we update the command with it, will be always updated.
         data['default_permission'] = self.allow_by_default

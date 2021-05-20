@@ -1,5 +1,13 @@
 ## 1.1.79 *\[2021-05-??\]*
 
+#### Bug fixed
+
+- When removing all the options of an application command, they was not edited accordingly. (Zeref Draganeel#3581)
+
+##### hata.ext.slash
+- `name` could have higher priority when setting slash command description than `description` itself.
+    (Zeref Draganeel#3581)
+
 ## 1.1.78 *\[2021-05-18\]*
 
 #### Summary

@@ -355,8 +355,8 @@ def _generate_description_from(command, name, description):
     ----------
     command : `None` or `callable`
         The command's function.
-    name : `str`
-        The command's name.
+    name : `str` or `None`
+        The command's name, if name defaulting should be applied.
     description : `Any`
         The command's description.
     
@@ -370,18 +370,20 @@ def _generate_description_from(command, name, description):
     ValueError
         If `description` length is out of range [2:100].
     """
-    if description is None:
-        if command is None:
-            description = name
-        else:
+    while True:
+        if (description is not None) or isinstance(description, str):
+            break
+        
+        if (command is not None):
             description = getattr(command, '__doc__', None)
-            if description is None:
-                description = name
-            elif not isinstance(description, str):
-                description = name
-    
-    elif not isinstance(description, str):
-        description = name
+            if (description is not None) and isinstance(description ,str):
+                break
+        
+        if (name is not None):
+            description = name
+            break
+        
+        return
     
     description = normalize_description(description)
     
@@ -954,7 +956,7 @@ class SlashCommand:
         if route_to:
             name = route_name(command, name, route_to)
             
-            default_description = _generate_description_from(command, name, None)
+            default_description = _generate_description_from(command, None, None)
             show_for_invoking_user_only = route_value(show_for_invoking_user_only, route_to)
             is_global = route_value(is_global, route_to)
             guild_ids = route_value(guild_ids, route_to)

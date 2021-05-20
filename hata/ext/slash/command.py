@@ -376,7 +376,7 @@ def _generate_description_from(command, name, description):
         
         if (command is not None):
             description = getattr(command, '__doc__', None)
-            if (description is not None) and isinstance(description ,str):
+            if (description is not None) and isinstance(description, str):
                 break
         
         if (name is not None):

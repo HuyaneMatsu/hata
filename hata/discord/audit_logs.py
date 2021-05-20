@@ -11,7 +11,7 @@ from .user import User, ClientUserBase
 from .webhook import Webhook
 from .role import PermissionOverwrite
 from .integration import Integration
-from .guild import SystemChannelFlag, Guild
+from .guild import SystemChannelFlag, Guild, create_partial_guild_from_id
 from .bases import Icon, maybe_snowflake
 from .preinstanced import AuditLogEvent, VerificationLevel, ContentFilterLevel, MessageNotificationLevel, VoiceRegion, \
     MFA, VideoQualityMode
@@ -208,7 +208,7 @@ class AuditLogIterator:
         if guild is None:
             log_data = await client.http.audit_log_get_chunk(guild_id, data)
             if guild is None:
-                guild = Guild.precreate(guild_id)
+                guild = create_partial_guild_from_id(guild_id)
         else:
             log_data = None
         

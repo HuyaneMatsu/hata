@@ -27,7 +27,7 @@ from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, Channel
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread
 from ..guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
-    VerificationScreenStep
+    VerificationScreenStep, create_partial_guild_from_id
 from ..http import DiscordHTTPClient
 from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, is_cdn_url, is_media_url
 from ..role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
@@ -7899,7 +7899,7 @@ class Client(ClientUserPBase):
         while True:
             user_datas = await self.http.guild_user_get_chunk(guild_id, data)
             if guild is None:
-                guild = Guild.precreate(guild_id)
+                guild = create_partial_guild_from_id(guild_id)
             
             for user_data in user_datas:
                 user = User(user_data, guild)
@@ -8063,7 +8063,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.guild_channel_get_all(guild_id)
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         guild._sync_channels(data)
     
@@ -8100,7 +8100,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.guild_role_get_all(guild_id)
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         guild._sync_roles(data)
     
@@ -8210,7 +8210,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.audit_log_get_chunk(guild_id, data)
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         return AuditLog(data, guild)
     
@@ -8763,7 +8763,8 @@ class Client(ClientUserPBase):
         data = await self.http.stage_create(data)
         return Stage(data)
     
-    async def stage_edit(self, channel, topic):
+    
+    async def stage_edit(self, stage, topic):
         """
         Edits the given stage channel.
         
@@ -8773,20 +8774,15 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage`` or `int`
-            The channel to edit.
+        channel : ``Stage``, ``ChannelStage`` or `int`
+            The stage to edit. Can be given as it's channel's identifier.
         topic : `str` or `None`
             The new topic of the stage.
-        
-        Returns
-        -------
-        stage : ``Stage``
-            The updated stage instance.
         
         Raises
         ------
         TypeError
-            If `channel` was not given as ``ChannelStage`` neither as `int` instance.
+            If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8795,13 +8791,15 @@ class Client(ClientUserPBase):
             - If `topic` was not given neither as `None` or as `str` instance.
             - If `topic`'s length is out of range [0:120].
         """
-        if isinstance(channel, ChannelStage):
-            channel_id = channel.id
+        if isinstance(stage, Stage):
+            channel_id = stage.channel.id
+        elif isinstance(stage, ChannelStage):
+            channel_id = stage.id
         else:
-            channel_id = maybe_snowflake(channel)
+            channel_id = maybe_snowflake(stage)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
-                    f'int` instance, got {channel.__class__.__name__}.')
+                raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
+                    f'int` instance, got {stage.__class__.__name__}.')
         
         if topic is None:
             topic = ''
@@ -8819,11 +8817,10 @@ class Client(ClientUserPBase):
             'topic': topic,
         }
         
-        data = await self.http.stage_edit(channel_id, data)
-        return Stage(data)
+        await self.http.stage_edit(channel_id, data)
     
     
-    async def stage_delete(self, channel):
+    async def stage_delete(self, stage):
         """
         Deletes the given stage channel.
         
@@ -8833,8 +8830,8 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage`` or `int`
-            The channel to edit.
+        stage : ``Stage``, ``ChannelStage`` or `int`
+            The stage to delete. Can be given as it's channel's identifier.
         
         Raises
         ------
@@ -8845,13 +8842,15 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelStage):
+        if isinstance(stage, Stage):
+            channel_id = stage.channel.id
+        if isinstance(stage, ChannelStage):
             channel_id = channel.id
         else:
-            channel_id = maybe_snowflake(channel)
+            channel_id = maybe_snowflake(stage)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
-                    f'int` instance, got {channel.__class__.__name__}.')
+                raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
+                    f'int` instance, got {stage.__class__.__name__}.')
         
         await self.http.stage_delete(channel_id)
         # We receive no data.
@@ -9078,7 +9077,7 @@ class Client(ClientUserPBase):
         data = await self.http.guild_user_get(guild_id, user_id)
         
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         return User._create_and_update(data, guild)
     
@@ -9147,7 +9146,7 @@ class Client(ClientUserPBase):
         data = await self.http.guild_user_search(guild_id, data)
         
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         return [User._create_and_update(user_data, guild) for user_data in data]
     
@@ -10745,7 +10744,7 @@ class Client(ClientUserPBase):
         
         if (emoji is None) or emoji.partial:
             if guild is None:
-                guild = Guild.precreate(guild_id)
+                guild = create_partial_guild_from_id(guild_id)
         
             emoji = Emoji(emoji_data, guild)
         else:
@@ -10784,7 +10783,7 @@ class Client(ClientUserPBase):
         data = await self.http.guild_emoji_get_all(guild_id)
         
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         guild._sync_emojis(data)
     
@@ -10879,7 +10878,7 @@ class Client(ClientUserPBase):
         data = await self.http.emoji_create(guild_id, data, reason)
         
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         emoji = Emoji(data, guild)
         emoji.user = self
@@ -11062,7 +11061,7 @@ class Client(ClientUserPBase):
             return None
         
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         invite_data = await self.http.invite_get(vanity_code, {})
         return Invite._create_vanity(guild, invite_data)
@@ -11917,7 +11916,7 @@ class Client(ClientUserPBase):
         data = await self.http.role_create(guild_id, data, reason)
         
         if guild is None:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         
         return Role(data, guild)
     

@@ -2,11 +2,15 @@ __all__ = ('Stage',)
 
 import reprlib
 
+from ..backend.export import export
+
 from .bases import DiscordEntity
 from .channel import ChannelStage
-from .guild import Guild
+from .guild import Guild, create_partial_guild_from_id
 from .preinstanced import StagePrivacyLevel
+from .core import STAGES
 
+@export
 class Stage(DiscordEntity):
     """
     Represents an active stage instance of a stage channel.
@@ -17,14 +21,22 @@ class Stage(DiscordEntity):
         The stage instance's identifier.
     channel : ``ChannelStage``
         The stage channel where the stage is active.
+    discoverable : `bool`
+        Whether the stage is discoverable.
     guild : ``Guild``
         The guild of the stage channel.
+    invite_code : `None` or `str`
+        Invite code to the stage's voice channel.
     privacy_level : ``StagePrivacyLevel``
         The privacy level of the stage.
+    scheduled_event_id : `int`
+        Whether the stage was started by a scheduled event.
     topic : `str`
         The topic of the stage. Can be empty string.
     """
-    __slots__ = ('channel', 'guild', 'privacy_level', 'topic')
+    __slots__ = ('__weakref__', 'channel', 'discoverable', 'guild', 'invite_code', 'privacy_level',
+        'scheduled_event_id', 'topic')
+    
     def __new__(cls, data):
         """
         Creates a new stage instance from the received data.
@@ -34,13 +46,37 @@ class Stage(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Stage data.
         """
-        self = object.__new__(cls)
-        self.channel = ChannelStage.precreate(int(data['channel_id']))
-        self.guild = Guild.precreate(int(data['guild_id']))
-        self.topic = data['topic']
-        self.id = int(data['id'])
-        self.privacy_level = StagePrivacyLevel.get(data['privacy_level'])
+        stage_id = int(data['id'])
+        try:
+            self = STAGES[stage_id]
+        except KeyError:
+            self = object.__new__(cls)
+            guild = create_partial_guild_from_id(int(data['guild_id']))
+            
+            self.channel = ChannelStage.precreate(int(data['channel_id']))
+            self.guild = guild
+            self.id = stage_id
+            self.privacy_level = StagePrivacyLevel.get(data['privacy_level'])
+            
+            scheduled_event_id = data.get('guild_scheduled_event_id', None)
+            if scheduled_event_id is None:
+                scheduled_event_id = 0
+            else:
+                scheduled_event_id = int(scheduled_event_id)
+            self.scheduled_event_id = scheduled_event_id
+            
+            self._update_no_return(data)
+            
+            stages = guild.stages
+            if stages is None:
+                stages = guild.stages = {}
+            
+            stages[stage_id] = self
+            
+            STAGES[stage_id] = self
+        
         return self
+    
     
     def __repr__(self):
         """Returns the stage's representation."""
@@ -55,3 +91,82 @@ class Stage(DiscordEntity):
         ]
         
         return ''.join(repr_parts)
+    
+    
+    def _update_no_return(self, data):
+        """
+        Updates the stage from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Stage data.
+        """
+        self.topic = data['topic']
+        self.invite_code = data.get('invite_code', None)
+        self.discoverable = not data.get('discoverable_disabled', False)
+    
+    def _update(self, data):
+        """
+        Updates the stage from the given data and returns the changed attributes in `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Stage data.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            The changed attributes of the stage.
+            
+            Each item in the returned dictionary is optional.
+            
+        Returned Data Structure
+        -----------------------
+        +---------------+-------------------+
+        | Keys          | Values            |
+        +===============+===================+
+        | discoverable  | `bool`            |
+        +---------------+-------------------+
+        | invite_code   | `None` or `str`   |
+        +---------------+-------------------+
+        | topic         | `str`             |
+        +---------------+-------------------+
+        """
+        old_attributes = {}
+        
+        topic = data['topic']
+        if topic != self.topic:
+            old_attributes['topic'] = self.topic
+            self.topic = topic
+        
+        
+        invite_code = data.get('invite_code', None)
+        if invite_code != self.invite_code:
+            old_attributes['invite_code'] = self.invite_code
+            self.invite_code = invite_code
+        
+        
+        discoverable = not data.get('discoverable_disabled', False)
+        if discoverable != self.discoverable:
+            old_attributes['discoverable'] = self.discoverable
+            self.discoverable = discoverable
+        
+        return old_attributes
+    
+    
+    def _delete(self):
+        """
+        Removes the stage's references.
+        """
+        guild = self.guild
+        stages = guild.stages
+        try:
+            del stages[self.id]
+        except KeyError:
+            pass
+        else:
+            if not stages:
+                guild.stages = None

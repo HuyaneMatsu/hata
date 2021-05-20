@@ -1,8 +1,33 @@
 ## 1.1.79 *\[2021-05-??\]*
 
+#### Improvements
+
+- Add `Stage.invite_code`.
+- Add `Stage._update`.
+- Add `Stage._update_no_return`.
+- Add `Stage.scheduled_event_id`.
+- Add `Stage.discoverable`.
+- Add `STAGES`.
+- `Stage` are now weakreferable.
+- Rework `Client.stage_edit`.
+- Rework `Client.stage_delete`.
+- Add `create_partial_guild_from_id`.
+- Add `Guild.stages`.
+- `Add Stage._delete`.
+- Update `STAGE_INSTANCE_CREATE__OPT`.
+- Update `STAGE_INSTANCE_UPDATE__CAL` to `STAGE_INSTANCE_UPDATE__CAL_SC`.
+- Update `STAGE_INSTANCE_UPDATE__OPT`.
+- Update `STAGE_INSTANCE_DELETE__CAL` to `STAGE_INSTANCE_DELETE__CAL_SC`.
+- Update `STAGE_INSTANCE_DELETE__OPT`.
+- Add `STAGE_INSTANCE_DELETE__CAL_MC`.
+- Add `STAGE_INSTANCE_UPDATE__CAL_MC`.
+- `Client.events` now accepts 3 parameters (from 2).
+
+
 #### Bug fixed
 
 - When removing all the options of an application command, they was not edited accordingly. (Zeref Draganeel#3581)
+- `create_partial_guild` could drop `NameError`.
 
 ##### hata.ext.slash
 - `name` could have higher priority when setting slash command description than `description` itself.

@@ -49,6 +49,9 @@ INTENT_SHIFT_EVENTS = {
         'CHANNEL_UPDATE',
         'CHANNEL_DELETE',
         'CHANNEL_PINS_UPDATE',
+        'STAGE_INSTANCE_CREATE',
+        'STAGE_INSTANCE_UPDATE',
+        'STAGE_INSTANCE_DELETE',
         'THREAD_CREATE',
         'THREAD_UPDATE',
         'THREAD_DELETE',
@@ -145,9 +148,6 @@ GLOBAL_INTENT_SHIFT_EVENTS = (
     'APPLICATION_COMMAND_PERMISSIONS_UPDATE',
     'USER_GUILD_SETTINGS_UPDATE', # User account only
     'CHANNEL_UNREAD_UPDATE', # User account only
-    'STAGE_INSTANCE_CREATE',
-    'STAGE_INSTANCE_UPDATE',
-    'STAGE_INSTANCE_DELETE',
 )
 
 INTENT_SHIFT_DEFAULT_EVENT = 255
@@ -199,6 +199,9 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                   |           |                       | CHANNEL_UPDATE,                   |
     |                                   |           |                       | CHANNEL_DELETE,                   |
     |                                   |           |                       | CHANNEL_PINS_UPDATE,              |
+    |                                   |           |                       | STAGE_INSTANCE_CREATE,            |
+    |                                   |           |                       | STAGE_INSTANCE_UPDATE,            |
+    |                                   |           |                       | STAGE_INSTANCE_DELETE,            |
     |                                   |           |                       | THREAD_CREATE,                    |
     |                                   |           |                       | THREAD_UPDATE,                    |
     |                                   |           |                       | THREAD_DELETE,                    |

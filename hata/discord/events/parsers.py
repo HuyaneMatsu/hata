@@ -7,7 +7,7 @@ from ...env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
 from ...backend.futures import Task
 from ...backend.export import include
 
-from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT
+from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, STAGES
 from ..user import User, create_partial_user, USERS, _thread_user_create, _thread_user_update, _thread_user_pop, \
     _thread_user_delete
 from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
@@ -3474,7 +3474,7 @@ def STAGE_INSTANCE_CREATE__CAL(client, data):
     Task(client.events.stage_create(client, stage), KOKORO)
 
 def STAGE_INSTANCE_CREATE__OPT(client, data):
-    pass
+    Stage(data)
 
 add_parser(
     'STAGE_INSTANCE_CREATE',
@@ -3486,39 +3486,110 @@ del STAGE_INSTANCE_CREATE__CAL, \
     STAGE_INSTANCE_CREATE__OPT
 
 
-def STAGE_INSTANCE_UPDATE__CAL(client, data):
-    stage = Stage(data)
+def STAGE_INSTANCE_UPDATE__CAL_SC(client, data):
+    stage_id = int(data['id'])
+    try:
+        stage = STAGES[stage_id]
+    except KeyError:
+        return
     
-    Task(client.events.stage_edit(client, stage), KOKORO)
+    old_attributes = stage._update(data)
+    if not old_attributes:
+        return
+    
+    Task(client.events.stage_edit(client, stage, old_attributes), KOKORO)
+
+def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
+    stage_id = int(data['id'])
+    try:
+        stage = STAGES[stage_id]
+    except KeyError:
+        return
+    
+    clients = filter_clients(stage.channel.clients, INTENT_MASK_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    old_attributes = stage._update(data)
+    if not old_attributes:
+        return
+    
+    for client_ in clients:
+        event_handler = client_.events.stage_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, stage, old_attributes), KOKORO)
+
 
 def STAGE_INSTANCE_UPDATE__OPT(client, data):
-    pass
+    stage_id = int(data['id'])
+    try:
+        stage = STAGES[stage_id]
+    except KeyError:
+        return
+    
+    stage._update_no_return(data)
+
 
 add_parser(
     'STAGE_INSTANCE_UPDATE',
-    STAGE_INSTANCE_UPDATE__CAL,
-    STAGE_INSTANCE_UPDATE__CAL,
+    STAGE_INSTANCE_UPDATE__CAL_SC,
+    STAGE_INSTANCE_UPDATE__CAL_MC,
     STAGE_INSTANCE_UPDATE__OPT,
     STAGE_INSTANCE_UPDATE__OPT)
-del STAGE_INSTANCE_UPDATE__CAL, \
+del STAGE_INSTANCE_UPDATE__CAL_SC, \
+    STAGE_INSTANCE_UPDATE__CAL_MC, \
     STAGE_INSTANCE_UPDATE__OPT
 
 
-def STAGE_INSTANCE_DELETE__CAL(client, data):
-    stage = Stage(data)
+def STAGE_INSTANCE_DELETE__CAL_SC(client, data):
+    stage_id = int(data['id'])
+    try:
+        stage = STAGES[stage_id]
+    except KeyError:
+        return
+    
+    stage._delete(data)
     
     Task(client.events.stage_delete(client, stage), KOKORO)
 
+def STAGE_INSTANCE_DELETE__CAL_MC(client, data):
+    stage_id = int(data['id'])
+    try:
+        stage = STAGES[stage_id]
+    except KeyError:
+        return
+    
+    clients = filter_clients(stage.channel.clients, INTENT_MASK_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    stage._delete()
+    
+    for client_ in clients:
+        event_handler = client_.events.stage_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, stage), KOKORO)
+
 def STAGE_INSTANCE_DELETE__OPT(client, data):
-    pass
+    stage_id = int(data['id'])
+    try:
+        stage = STAGES[stage_id]
+    except KeyError:
+        return
+    
+    stage._delete(data)
+
 
 add_parser(
     'STAGE_INSTANCE_DELETE',
-    STAGE_INSTANCE_DELETE__CAL,
-    STAGE_INSTANCE_DELETE__CAL,
+    STAGE_INSTANCE_DELETE__CAL_SC,
+    STAGE_INSTANCE_DELETE__CAL_MC,
     STAGE_INSTANCE_DELETE__OPT,
     STAGE_INSTANCE_DELETE__OPT)
-del STAGE_INSTANCE_DELETE__CAL, \
+del STAGE_INSTANCE_DELETE__CAL_SC, \
+    STAGE_INSTANCE_DELETE__CAL_MC, \
     STAGE_INSTANCE_DELETE__OPT
 
 

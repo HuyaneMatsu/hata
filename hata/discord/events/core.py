@@ -10,7 +10,7 @@ except ImportError:
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
-from ...backend.utils import DOCS_ENABLED
+from ...backend.utils import set_docs
 from ...backend.event_loop import LOOP_TIME
 from ...backend.futures import Future, Task
 
@@ -165,7 +165,7 @@ add_event_handler('application_command_update', 4, 'APPLICATION_COMMAND_UPDATE',
 add_event_handler('application_command_delete', 3, 'APPLICATION_COMMAND_DELETE',)
 add_event_handler('application_command_permission_update', 2, 'APPLICATION_COMMAND_PERMISSIONS_UPDATE',)
 add_event_handler('stage_create', 2, 'STAGE_INSTANCE_CREATE',)
-add_event_handler('stage_edit', 2, 'STAGE_INSTANCE_UPDATE',)
+add_event_handler('stage_edit', 3, 'STAGE_INSTANCE_UPDATE',)
 add_event_handler('stage_delete', 2, 'STAGE_INSTANCE_DELETE',)
 add_event_handler('thread_user_add', 4, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
 add_event_handler('thread_user_delete', 3, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
@@ -260,8 +260,7 @@ class ReadyState:
             if (not guild_left_counter) and (not self.ready_left_counter):
                 self.wake_upper.set_result_if_pending(True)
     
-    if DOCS_ENABLED:
-        feed.__doc__ = (
+    set_docs(feed,
         """
         Feeds the given `guild` to the ready state. Sets the last received guild's time to the current time and ends
         the ready state if there are no more guilds to receive.

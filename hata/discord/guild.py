@@ -29,6 +29,7 @@ from . import urls as module_urls
 
 VoiceClient = include('VoiceClient')
 Client = include('Client')
+Stage = include('Stage')
 
 LARGE_LIMIT = 250 # can be between 50 and 250
 
@@ -414,8 +415,10 @@ class GuildWidget(DiscordEntity):
         """Returns the representation of the guild widget."""
         return f'<{self.__class__.__name__} of guild {self.guild.name}>'
 
-# we need to ignore client adding, because clients count to being not
-# partial. If a guild is not partial it wont get update on Guild.__new__
+
+# We need to ignore client adding, because clients count to being not partial.
+# If a guild is not partial it wont get update on Guild.__new__
+
 def create_partial_guild(data):
     """
     Creates a partial guild from partial guild data.
@@ -469,10 +472,34 @@ def create_partial_guild(data):
     else:
         features = [GuildFeature.get(feature) for feature in features]
         features.sort()
-    
-    guild.features = features
+        guild.features = features
     
     return guild
+
+
+def create_partial_guild_from_id(guild_id):
+    """
+    Creates a guild from the given identifier and stores it in the cache as well. If the guild already exists,
+    returns that instead.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        The respective guild's identifier.
+    
+    Returns
+    -------
+    guild : ``Guild``
+        The created guild instance.
+    """
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild = Guild._create_empty(guild_id)
+        GUILDS[guild_id] = guild
+    
+    return guild
+
 
 # discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 
@@ -559,6 +586,8 @@ class Guild(DiscordEntity, immortal=True):
         The roles of the guild stored in `role_id` - `role` relation.
     rules_channel : `None` or ``ChannelText``
         The channel where the rules of a public guild's should be. The guild must be a Community guild.
+    stages : `None` or `dict` of (`int`, ``Stage``) items
+        Active stages of the guild. Defaults to `None` if would be empty.
     system_channel : `None` or ``ChannelText``
         The channel where the system messages are sent.
     system_channel_flags : ``SystemChannelFlag``
@@ -600,7 +629,7 @@ class Guild(DiscordEntity, immortal=True):
         'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
         'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
         'message_notification', 'mfa', 'name', 'nsfw', 'owner_id', 'preferred_locale', 'premium_tier',
-        'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'system_channel',
+        'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'stages', 'system_channel',
         'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states',
         'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
     
@@ -750,7 +779,18 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 for thread_data in thread_datas:
                     CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, self)
-        
+            
+            stage_datas = data.get('stage_instances', None)
+            if (stage_datas is not None) and stage_datas:
+                stages = {}
+                for stage_data in stage_datas:
+                    stage = Stage(stage_data)
+                    stages[stage.id] = stage
+            else:
+                stages = None
+            
+            self.stages = stages
+            
         if (not CACHE_PRESENCE):
             #we get information about the client here
             try:
@@ -980,6 +1020,7 @@ class Guild(DiscordEntity, immortal=True):
         self.approximate_online_count = 0
         self.approximate_user_count = 0
         self.threads = {}
+        self.stages = None
         return self
     
     def __str__(self):
@@ -2042,6 +2083,7 @@ class Guild(DiscordEntity, immortal=True):
             return PERMISSION_ALL
         
         return Permission(base)
+    
     
     def _update(self, data):
         """

@@ -490,8 +490,20 @@ class EventHandlerManager:
     stage_delete(client: ``Client``, stage:: ``Stage``):
         Called when a stage is deleted.
     
-    stage_edit(client: ``Client``, stage:: ``Stage``):
+    stage_edit(client: ``Client``, stage:: ``Stage``, old_attributes: `dict`):
         Called when a stage is edited.
+    
+        Every item in `old_attributes` is optional and they can be any of the following:
+        
+        +---------------+-------------------+
+        | Keys          | Values            |
+        +===============+===================+
+        | discoverable  | `bool`            |
+        +---------------+-------------------+
+        | invite_code   | `None` or `str`   |
+        +---------------+-------------------+
+        | topic         | `str`             |
+        +---------------+-------------------+
     
     thread_user_add(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``):
         Called when a user is added or joined a thread channel.

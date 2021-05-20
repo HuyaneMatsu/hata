@@ -10,7 +10,7 @@ from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT
 from ..channel import ChannelPrivate, ChannelText, create_partial_channel
 from ..message import Message
 from ..permission import Permission, PERMISSION_PRIVATE
-from ..guild import Guild
+from ..guild import Guild, create_partial_guild_from_id
 from ..user import User, ClientUserBase
 from ..role import Role
 
@@ -516,7 +516,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
             guild_id = int(guild_id)
         
         if guild_id:
-            guild = Guild.precreate(guild_id)
+            guild = create_partial_guild_from_id(guild_id)
         else:
             guild = None
         

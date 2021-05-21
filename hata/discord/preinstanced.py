@@ -1,6 +1,6 @@
 __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'DefaultAvatar', 'FriendRequestFlag', 'GuildFeature',
     'HypesquadHouse', 'InviteTargetType', 'MFA', 'MessageActivityType', 'MessageNotificationLevel', 'MessageType',
-    'PremiumType', 'RelationshipType', 'RoleManagerType', 'StagePrivacyLevel', 'Status', 'StickerType',
+    'NsfwLevel', 'PremiumType', 'RelationshipType', 'RoleManagerType', 'StagePrivacyLevel', 'Status', 'StickerType',
     'TeamMembershipState', 'Theme', 'VerificationLevel', 'VerificationScreenStepType', 'VideoQualityMode',
     'VoiceRegion', 'WebhookType')
 
@@ -2088,3 +2088,49 @@ class StagePrivacyLevel(PreinstancedBase):
     none = P(0, 'none')
     public = P(1, 'public')
     guild_only = P(2, 'guild_only')
+
+
+class NsfwLevel(PreinstancedBase):
+    """
+    Represents a guild's nsfw level.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the nsfw filter level.
+    value : `int`
+        The identifier value the nsfw filter level
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``NsfwLevel``) items
+        Stores the predefined ``NsfwLevel`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The nsfw level' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the nsfw levels.
+    
+    Every predefined nsfw level can be accessed as class attribute as well:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | Name              | Value |
+    +=======================+===================+=======+
+    | none                  | none              | 0     |
+    +-----------------------+-------------------+-------+
+    | explicit              | explicit          | 1     |
+    +-----------------------+-------------------+-------+
+    | safe                  | safe              | 2     |
+    +-----------------------+-------------------+-------+
+    | age_restricted        | age_restricted    | 3     |
+    +-----------------------+-------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = P(0, 'none')
+    explicit = P(1, 'explicit')
+    safe = P(2, 'safe')
+    age_restricted = P(2, 'age_restricted')

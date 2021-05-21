@@ -1,5 +1,11 @@
 ## 1.1.81 *\[2021-05-??\]*
 
+#### Improvements
+
+- Add `NsfwLevel`.
+- Add `Guild.nsfw_level`.
+- `get_components_data` now auto converts non rows elements to rows.
+
 ## 1.1.80 *\[2021-05-20\]*
 
 #### Summary

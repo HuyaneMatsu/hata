@@ -314,9 +314,9 @@ def _debug_component_min_values(min_values):
     if not isinstance(min_values, int):
         raise AssertionError(f'`min_values` can be given as `int` instance, got {min_values.__class__.__name__}.')
     
-    if (min_values < COMPONENT_OPTION_MIN_VALUES_MIN) or (min_values > COMPONENT_OPTION_MIN_VALUES_MIN):
+    if (min_values < COMPONENT_OPTION_MIN_VALUES_MIN) or (min_values > COMPONENT_OPTION_MIN_VALUES_MAX):
         raise AssertionError(f'`min_values` can be in range '
-            f'[{COMPONENT_OPTION_MIN_VALUES_MIN}:{COMPONENT_OPTION_MIN_VALUES_MIN}], got {min_values!r}.')
+            f'[{COMPONENT_OPTION_MIN_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MIN}], got {min_values!r}.')
 
 def _debug_component_max_values(max_values):
     """
@@ -446,6 +446,7 @@ class ComponentBase:
         return
 
 
+@export
 class ComponentRow(ComponentBase):
     """
     Action row component.
@@ -656,9 +657,6 @@ class ComponentButton(ComponentBase):
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
         
-        auto_custom_id : `bool`
-            Whether custom id should be automatically generated.
-        
         Raises
         ------
         TypeError
@@ -666,7 +664,6 @@ class ComponentButton(ComponentBase):
         AssertionError
             - If `custom_id` was not given neither as `None` or `str` instance.
             - `url` is mutually exclusive with `custom_id`.
-            - Either `url` or `custom_id` is required`.
             - If `emoji` was not given as ``Emoji`` instance.
             - If `url` was not given neither as `None` or `str` instance.
             - If `style` was not given as any of the `type`'s expected styles.
@@ -691,9 +688,6 @@ class ComponentButton(ComponentBase):
             if (custom_id is not None) and (url is not None):
                 raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
                     f'custom_id={custom_id!r}, url={url!r}.')
-            
-            if (custom_id is None) and (url is None):
-                raise AssertionError(f'Either `custom_id` or `url` field is required.')
         
         if (url is None):
             if style is None:
@@ -702,7 +696,7 @@ class ComponentButton(ComponentBase):
                 style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
             
             if (custom_id is None):
-                custom_id = auto_custom_id()
+                custom_id = create_auto_custom_id()
         
         else:
             style = ButtonStyle.link

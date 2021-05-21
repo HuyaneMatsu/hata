@@ -23,7 +23,7 @@ from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type, preconvert_bool
 from .preinstanced import GuildFeature, VoiceRegion, Status, VerificationLevel, MessageNotificationLevel, MFA, \
-    ContentFilterLevel, VerificationScreenStepType
+    ContentFilterLevel, VerificationScreenStepType, NsfwLevel
 
 from . import urls as module_urls
 
@@ -572,6 +572,8 @@ class Guild(DiscordEntity, immortal=True):
         The name of the guild.
     nsfw : `bool`
         Whether IOS users are blocked from the guild.
+    nsfw_level : `bool`
+        The guild's nsfw level.
     owner_id : `int`
         The guild's owner's id. Defaults to `0`.
     preferred_locale : `str`
@@ -628,7 +630,7 @@ class Guild(DiscordEntity, immortal=True):
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
         'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
-        'message_notification', 'mfa', 'name', 'nsfw', 'owner_id', 'preferred_locale', 'premium_tier',
+        'message_notification', 'mfa', 'name', 'nsfw', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
         'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'stages', 'system_channel',
         'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states',
         'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
@@ -1016,6 +1018,7 @@ class Guild(DiscordEntity, immortal=True):
         self.approximate_user_count = 0
         self.threads = {}
         self.stages = None
+        self.nsfw_level = NsfwLevel.none
         return self
     
     def __str__(self):
@@ -2136,6 +2139,8 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | nsfw                      | `bool`                        |
         +---------------------------+-------------------------------+
+        | nsfw_level                | `NsfwLevel`                   |
+        +---------------------------+-------------------------------+
         | owner_id                  | `int`                         |
         +---------------------------+-------------------------------+
         | preferred_locale          | `str`                         |
@@ -2351,10 +2356,15 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['preferred_locale'] = self.preferred_locale
             self.preferred_locale = preferred_locale
         
-        nsfw = data['nsfw']
+        nsfw = data.get('nsfw', False)
         if self.nsfw != nsfw:
             old_attributes['nsfw'] = self.nsfw
             self.nsfw = nsfw
+        
+        nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
+        if self.nsfw_level is not nsfw_level:
+            old_attributes['nsfw_level'] = self.nsfw_level
+            self.nsfw_level = nsfw_level
         
         self.self._update_counts_only(data)
         
@@ -2483,7 +2493,9 @@ class Guild(DiscordEntity, immortal=True):
         
         self.preferred_locale = parse_preferred_locale(data)
         
-        self.nsfw = data['nsfw']
+        self.nsfw = data.get('nsfw', False)
+        
+        self.nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
         
         self._update_counts_only(data)
     

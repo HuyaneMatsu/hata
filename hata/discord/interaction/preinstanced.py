@@ -162,6 +162,7 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     user = P(2, 'user',)
 
 
+@export
 class ComponentType(PreinstancedBase):
     """
     Represents a component's type.

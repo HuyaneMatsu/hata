@@ -13,7 +13,8 @@ from ..utils import random_id
 from ..bases import maybe_snowflake_pair
 
 ComponentBase = include('ComponentBase')
-
+ComponentType = include('ComponentType')
+ComponentRow = include('ComponentRow')
 
 def get_components_data(components):
     """
@@ -48,6 +49,9 @@ def get_components_data(components):
         component_datas = None
     else:
         if isinstance(components, ComponentBase):
+            if components.type is not ComponentType.row:
+                components = ComponentRow(components)
+                
             component_datas = [components.to_data()]
         elif isinstance(components, (list, tuple)):
             component_datas = None
@@ -57,6 +61,9 @@ def get_components_data(components):
                     if not isinstance(component, ComponentBase):
                         raise AssertionError(f'`components` contains non `{ComponentBase.__name__}` instance, got '
                             f'{component.__class__.__name__}')
+                
+                if component.type is not ComponentType.row:
+                    component = ComponentRow(component)
                 
                 if component_datas is None:
                     component_datas = []

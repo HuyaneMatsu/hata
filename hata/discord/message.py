@@ -1084,7 +1084,7 @@ class Message(DiscordEntity, immortal=True):
             interaction = None
         else:
             interaction = MessageInteraction(interaction_data)
-            _try_resolve_interaction_message(self, interaction)
+            try_resolve_interaction_message(self, interaction)
         
         self.interaction = interaction
         
@@ -1186,7 +1186,7 @@ class Message(DiscordEntity, immortal=True):
             interaction_data = data.get('interaction', None)
             if (interaction_data is not None):
                 interaction = MessageInteraction(interaction_data)
-                _try_resolve_interaction_message(self, interaction)
+                try_resolve_interaction_message(self, interaction)
                 self.interaction = interaction
         
         if (self.components is None):
@@ -2785,7 +2785,7 @@ class Message(DiscordEntity, immortal=True):
         return (user in reactors)
 
 
-def _try_resolve_interaction_message(message, interaction):
+def try_resolve_interaction_message(message, interaction):
     """
     Tries to resolve an interaction's message if not yet resolved.
     
@@ -2809,3 +2809,4 @@ def _try_resolve_interaction_message(message, interaction):
             pass
         else:
             waiter.set_result_if_pending(None)
+

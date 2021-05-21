@@ -5,6 +5,12 @@
 - Add `NsfwLevel`.
 - Add `Guild.nsfw_level`.
 - `get_components_data` now auto converts non rows elements to rows.
+- `Client.interaction_followup_message_create` now instantly resolves `interaction.message` if applicable.
+
+#### Bug Fixes
+
+##### hata.ext.slash
+- `SlashResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
 
 ## 1.1.80 *\[2021-05-20\]*
 

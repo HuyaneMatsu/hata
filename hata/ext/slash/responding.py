@@ -411,13 +411,16 @@ class SlashResponse:
         force_new_message = self._force_new_message
         if force_new_message:
             if force_new_message > 0:
+                show_for_invoking_user_only = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
                 if interaction_event.is_unanswered():
-                    yield client.interaction_response_message_create(interaction_event)
+                    yield client.interaction_response_message_create(interaction_event,
+                        show_for_invoking_user_only= show_for_invoking_user_only)
                 
                 response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file',
                     'tts', 'components',))
-                response_parameters['show_for_invoking_user_only'] = \
-                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                response_parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
                 
                 yield client.interaction_followup_message_create(interaction_event, **response_parameters)
                 return

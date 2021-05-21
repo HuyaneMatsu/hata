@@ -801,9 +801,13 @@ class SubterraneanHelpCommand:
             The called command's context.
         """
         categories = command_context.client.command_processor.categories
-        category_names = sorted(
-            category.display_name for category in categories if await should_show_category(command_context, category)
-        )
+        
+        category_names = []
+        for category in categories:
+            if await should_show_category(command_context, category):
+                category_names.append(category.display_name)
+        
+        category_names.sort()
         
         pages = []
         if len(category_names) == 0:

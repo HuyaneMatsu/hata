@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'GuildWidget', 'GuildWidgetChannel',
+﻿__all__ = ('DiscoveryCategory', 'Guild', 'GuildDiscovery', 'GuildPreview', 'GuildWidget', 'GuildWidgetChannel',
     'GuildWidgetUser', 'VerificationScreenStep', 'SystemChannelFlag', 'VerificationScreen', 'WelcomeChannel',
     'WelcomeScreen')
 
@@ -17,7 +16,8 @@ from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, par
 from .user import User, create_partial_user, VoiceState, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase, ChannelGuildUndefined
-from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL
+from .permission import Permission
+from .permission.permission import PERMISSION_NONE, PERMISSION_ALL
 from .emoji import Emoji, create_partial_emoji
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE

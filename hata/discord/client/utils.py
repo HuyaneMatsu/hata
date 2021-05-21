@@ -6,8 +6,8 @@ from ...backend.futures import Task, sleep
 from ...backend.export import include
 
 from ..core import CLIENTS, KOKORO
-from ..role import PERMISSION_KEY
 from ..permission import Permission
+from ..permission.utils import PERMISSION_KEY
 
 Client = include('Client')
 

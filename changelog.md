@@ -6,6 +6,11 @@
 - Add `Guild.nsfw_level`.
 - `get_components_data` now auto converts non rows elements to rows.
 - `Client.interaction_followup_message_create` now instantly resolves `interaction.message` if applicable.
+- Rework `permission.py`.
+- Rework `role.py`.
+- Add `PermissionOverwriteTargetType`.
+- Add `parse_role_mention`.
+- Add `parse_role`.
 
 #### Bug Fixes
 

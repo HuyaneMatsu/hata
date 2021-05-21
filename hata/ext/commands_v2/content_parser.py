@@ -6,7 +6,7 @@ from datetime import timedelta
 from ...env import CACHE_USER
 from ...backend.utils import cached_property, copy_docs, FunctionType
 from ...backend.analyzer import CallableAnalyzer
-from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, parse_tdelta, parse_rdelta, \
+from ...discord.utils import USER_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, parse_tdelta, parse_rdelta, \
     INVITE_CODE_RP, CHANNEL_MESSAGE_RP
 from ...discord.bases import FlagBase
 from ...discord.guild import Guild
@@ -18,7 +18,7 @@ from ...discord.channel import ChannelGuildBase, ChannelBase, ChannelTextBase, C
 from ...discord.client import Client
 from ...discord.emoji import Emoji, parse_emoji
 from ...discord.invite import Invite
-from ...discord.role import Role
+from ...discord.role import Role, parse_role_mention
 from ...discord.color import Color, parse_color
 from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
 from ...discord.message import Message
@@ -406,38 +406,7 @@ def parse_user_mention(part, message):
         return
     
     user_id = int(parsed.group(1))
-    for user in user_mentions:
-        if user.id == user_id:
-            return user
-
-
-def parse_role_mention(part, message):
-    """
-    If the message's given part is a role mention, returns the respective role.
-    
-    Parameters
-    ----------
-    part : `str`
-        A part of a message's content.
-    message : ``Message``
-        The respective message of the given content part.
-    
-    Returns
-    -------
-    role : `None` or ``Role`` instance
-    """
-    role_mentions = message.role_mentions
-    if role_mentions is None:
-        return
-    
-    parsed = ROLE_MENTION_RP.fullmatch(part)
-    if parsed is None:
-        return
-
-    role_id = int(parsed.group(1))
-    for role in role_mentions:
-        if role.id == role_id:
-            return role
+    return USERS.get(user_id, None)
 
 
 def parse_channel_mention(part, message):
@@ -1253,7 +1222,7 @@ async def role_converter(command_context, content_parser_parameter_detail, part)
                         return role
     
     if flags&CONVERTER_FLAG_MENTION:
-        role = parse_role_mention(part, message)
+        role = parse_role_mention(part)
         if (role is not None):
             return role
     

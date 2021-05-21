@@ -9,7 +9,8 @@ from ..bases import EventBase, DiscordEntity
 from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS
 from ..channel import ChannelPrivate, ChannelText, create_partial_channel
 from ..message import Message
-from ..permission import Permission, PERMISSION_PRIVATE
+from ..permission import Permission
+from ..permission.permission import PERMISSION_PRIVATE
 from ..guild import Guild, create_partial_guild_from_id
 from ..user import User, ClientUserBase
 from ..role import Role

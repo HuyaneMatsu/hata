@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelGuildMainBase',
+﻿__all__ = ('ChannelBase', 'ChannelCategory', 'ChannelGroup', 'ChannelGuildBase', 'ChannelGuildMainBase',
     'ChannelGuildUndefined', 'ChannelPrivate', 'ChannelStage', 'ChannelStore', 'ChannelText', 'ChannelTextBase',
     'ChannelThread', 'ChannelVoice', 'MessageIterator', 'cr_pg_channel_object')
 
@@ -16,12 +15,12 @@ from ..backend.export import export, include
 
 from .bases import DiscordEntity, IconSlot, ICON_TYPE_NONE, maybe_snowflake
 from .core import CHANNELS
-from .permission import Permission, PERMISSION_NONE, PERMISSION_ALL, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
+from .permission import Permission, PermissionOverwrite
+from .permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
     PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
     PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_TEXT_AND_STAGE_DENY
 from .message import Message, MESSAGES
 from .user import User, ZEROUSER, create_partial_user, _thread_user_create
-from .role import PermissionOverwrite
 from .core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \

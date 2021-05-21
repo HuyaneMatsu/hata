@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
 from ..env import API_VERSION
@@ -9,7 +8,7 @@ from .permission import Permission
 from .color import Color
 from .user import User, ClientUserBase
 from .webhook import Webhook
-from .role import PermissionOverwrite
+from .permission import PermissionOverwrite
 from .integration import Integration
 from .guild import SystemChannelFlag, Guild, create_partial_guild_from_id
 from .bases import Icon, maybe_snowflake

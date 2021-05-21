@@ -1,7 +1,6 @@
-﻿# -*- coding: utf-8 -*-
 __all__ = ('Permission', )
 
-from .bases import FlagBase
+from ..bases import FlagBase
 
 class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
     """

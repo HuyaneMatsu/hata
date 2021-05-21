@@ -30,7 +30,7 @@ from ..guild import Guild, create_partial_guild, GuildWidget, GuildFeature, Guil
     VerificationScreenStep, create_partial_guild_from_id
 from ..http import DiscordHTTPClient
 from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, is_cdn_url, is_media_url
-from ..role import Role, PermissionOverwrite, PERM_OW_TYPE_ROLE, PERM_OW_TYPE_USER
+from ..role import Role
 from ..webhook import Webhook, create_partial_webhook
 from ..gateway import DiscordGateway, DiscordGatewaySharder
 from ..events.handling_helpers import _with_error
@@ -52,7 +52,7 @@ from ..application import Application, Team, EULA
 from ..rate_limit import RateLimitProxy, RATE_LIMIT_GROUPS
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type
-from ..permission import Permission
+from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
 from ..bases import ICON_TYPE_NONE
 from ..preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, StagePrivacyLevel, \
     MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
@@ -1269,19 +1269,6 @@ class Client(ClientUserPBase):
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_info_get(headers)
         return UserOA2(data, access)
-    
-    async def user_connections(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.user_connection_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.user_connections` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.user_connection_get_all` instead.',
-            FutureWarning)
-        
-        return await self.user_connection_get_all(*args, **kwargs)
         
     
     async def user_connection_get_all(self, access):
@@ -1852,18 +1839,6 @@ class Client(ClientUserPBase):
         
         await self.http.achievement_delete(self.application.id, achievement_id)
     
-    async def user_achievements(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.user_achievement_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.user_achievements` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.user_achievement_get_all` instead.',
-            FutureWarning)
-        
-        return await self.user_achievement_get_all(*args, **kwargs)
     
     async def user_achievement_get_all(self, access):
         """
@@ -3169,18 +3144,6 @@ class Client(ClientUserPBase):
         channel = ChannelText.precreate(channel_id)
         return channel
     
-    async def message_logs(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.message_get_chunk`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.message_logs` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.message_get_chunk` instead.',
-            FutureWarning)
-        
-        return await self.message_get_chunk(*args, **kwargs)
     
     async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
         """
@@ -4958,19 +4921,6 @@ class Client(ClientUserPBase):
         return result_state
     
     
-    async def message_at_index(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.message_get_at_index`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.messages_in_range` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.message_get_at_index` instead.',
-            FutureWarning)
-        
-        return await self.message_get_at_index(*args, **kwargs)
-    
     async def message_get_at_index(self, channel, index):
         """
         Returns the message at the given channel at the specific index. Can be used to load `index` amount of messages
@@ -5535,18 +5485,6 @@ class Client(ClientUserPBase):
         
         await self.http.reaction_clear(channel_id, message_id)
     
-    async def reaction_users(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.reaction_user_get_chunk`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.reaction_users` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.reaction_user_get_chunk` instead.',
-            FutureWarning)
-        
-        return await self.reaction_user_get_chunk(*args, **kwargs)
     
     async def reaction_user_get_chunk(self, message, emoji, *, limit=None, after=None):
         """
@@ -5570,7 +5508,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        users : `list` of (```ClientUserBase``)
+        users : `list` of ``ClientUserBase``
         
         Raises
         ------
@@ -7392,18 +7330,6 @@ class Client(ClientUserPBase):
         
         await self.http.guild_edit(guild_id, data, reason)
     
-    async def guild_bans(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.guild_ban_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.guild_bans` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.guild_ban_get_all` instead.',
-            FutureWarning)
-        
-        return await self.guild_ban_get_all(*args, **kwargs)
     
     async def guild_ban_get_all(self, guild):
         """
@@ -7945,18 +7871,6 @@ class Client(ClientUserPBase):
         
         return result
     
-    async def guild_regions(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.guild_voice_region_get_all`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.guild_regions` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.guild_voice_region_get_all` instead.',
-            FutureWarning)
-        
-        return await self.guild_voice_region_get_all(*args, **kwargs)
     
     async def guild_voice_region_get_all(self, guild):
         """
@@ -8105,18 +8019,6 @@ class Client(ClientUserPBase):
         
         guild._sync_roles(data)
     
-    async def audit_logs(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.audit_log_get_chunk`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.audit_logs` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.audit_log_get_chunk` instead.',
-            FutureWarning)
-        
-        return await self.audit_log_get_chunk(*args, **kwargs)
     
     async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user=None, event=None):
         """
@@ -9566,25 +9468,13 @@ class Client(ClientUserPBase):
                         f'`int` instance, got {deny.__class__.__name__}.')
         
         data = {
-            'allow' : allow,
-            'deny'  : deny,
-            'type'  : overwrite.type
-                }
+            'allow': allow,
+            'deny': deny,
+            'type': overwrite.type.value
+        }
         
         await self.http.permission_overwrite_create(channel_id, overwrite.target.id, data, reason)
     
-    async def permission_ow_delete(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.permission_overwrite_delete`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.permission_ow_delete` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.permission_overwrite_delete` instead.',
-            FutureWarning)
-        
-        return await self.permission_overwrite_delete(*args, **kwargs)
     
     async def permission_overwrite_delete(self, channel, overwrite, *, reason=None):
         """
@@ -9674,9 +9564,9 @@ class Client(ClientUserPBase):
                     f'{channel.__class__.__name__}.')
         
         if isinstance(target, Role):
-            type_ = PERM_OW_TYPE_ROLE
+            permission_overwrite_target_type = PermissionOverwriteTargetType.role
         elif isinstance(target, ClientUserBase):
-            type_ = PERM_OW_TYPE_USER
+            permission_overwrite_target_type = PermissionOverwriteTargetType.user
         else:
             raise TypeError(f'`target` can be either `{Role.__name__}` or `{ClientUserBase.__name__}` '
                 f'instance, got {target.__class__.__name__}.')
@@ -9692,10 +9582,10 @@ class Client(ClientUserPBase):
         
         data = {
             'target': target.id,
-            'allow' : allow,
-            'deny'  : deny,
-            'type'  : type_,
-                }
+            'allow': allow,
+            'deny': deny,
+            'type': permission_overwrite_target_type.value,
+        }
         
         await self.http.permission_overwrite_create(channel_id, target.id, data, reason)
         return PermissionOverwrite.custom(target, allow, deny)
@@ -9880,18 +9770,6 @@ class Client(ClientUserPBase):
         webhook._update_no_return(data)
         return webhook
     
-    async def webhook_get_channel(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.webhook_get_all_channel`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.webhook_get_channel` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.webhook_get_all_channel` instead.',
-            FutureWarning)
-        
-        return await self.webhook_get_all_channel(*args, **kwargs)
     
     async def webhook_get_all_channel(self, channel):
         """
@@ -11055,19 +10933,6 @@ class Client(ClientUserPBase):
     
     # Invite management
     
-    async def vanity_invite(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.vanity_invite_get`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.vanity_invite` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.vanity_invite_get` instead.',
-            FutureWarning)
-        
-        return await self.vanity_invite_get(*args, **kwargs)
-    
     async def vanity_invite_get(self, guild):
         """
         Returns the vanity invite of the given guild.
@@ -11431,19 +11296,6 @@ class Client(ClientUserPBase):
         return Invite(data, False)
     
     
-    async def invite_create_pref(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.invite_create_preferred`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.invite_create_pref` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.invite_create_preferred` instead.',
-            FutureWarning)
-        
-        return await self.invite_create_preferred(*args, **kwargs)
-    
     async def invite_create_preferred(self, guild, **kwargs):
         """
         Creates an invite to the guild's preferred channel.
@@ -11626,18 +11478,6 @@ class Client(ClientUserPBase):
         invite_datas = await self.http.invite_get_all_guild(guild_id)
         return [Invite(invite_data, False) for invite_data in invite_datas]
     
-    async def invite_get_channel(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.invite_get_all_channel`` instead. Will be removed in 2021 April.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.invite_get_channel` is deprecated, and will be removed in 2021 April. '
-            f'Please use `{self.__class__.__name__}.invite_get_all_channel` instead.',
-            FutureWarning)
-        
-        return await self.invite_get_all_channel(*args, **kwargs)
     
     async def invite_get_all_channel(self, channel):
         """

@@ -11,6 +11,7 @@
 - Add `PermissionOverwriteTargetType`.
 - Add `parse_role_mention`.
 - Add `parse_role`.
+- Convert nested component list to row. (Zeref Draganeel#3581)
 
 #### Bug Fixes
 

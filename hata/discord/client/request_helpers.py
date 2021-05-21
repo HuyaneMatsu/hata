@@ -22,7 +22,8 @@ def get_components_data(components):
     
     parameters
     ----------
-    components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase`
+    components : `None`, ``ComponentBase``, (`set`, `list`) of \
+            (``ComponentBase``, (`set`, `list`) of ``ComponentBase``)
         Components to be attached to a message.
     
     Returns
@@ -42,7 +43,7 @@ def get_components_data(components):
     # Components check order:
     # 1.: None -> None
     # 2.: ComponentBase -> [component.to_data()]
-    # 3.: (list, tuple) of ComponentBase -> [component.to_data(), ...] / None
+    # 3.: (list, tuple) of ComponentBase, (list, tuple) of ComponentBase -> [component.to_data(), ...] / None
     # 4.: raise
     
     if components is None:
@@ -57,22 +58,27 @@ def get_components_data(components):
             component_datas = None
             
             for component in components:
-                if __debug__:
-                    if not isinstance(component, ComponentBase):
-                        raise AssertionError(f'`components` contains non `{ComponentBase.__name__}` instance, got '
-                            f'{component.__class__.__name__}')
+                if isinstance(component, ComponentBase):
+                    if component.type is not ComponentType.row:
+                        component = ComponentRow(component)
                 
-                if component.type is not ComponentType.row:
-                    component = ComponentRow(component)
+                elif isinstance(component, (list, tuple)):
+                    component = ComponentRow(*component)
+                
+                else:
+                    raise TypeError(f'`components` contains a non `{ComponentBase.__name__}` or as `list`, `tuple` of '
+                        f'`{ComponentBase.__name__}` instances, got {components.__class__.__name__}')
                 
                 if component_datas is None:
                     component_datas = []
                 
                 component_datas.append(component.to_data())
+                continue
         
         else:
             raise TypeError(f'`components` can be given as `{ComponentBase.__name__}` or as `list`, `tuple` of '
-                f'`{ComponentBase.__name__}` instances, got {components.__class__.__name__}')
+                f'(`{ComponentBase.__name__}` or (`list`, `tuple`) of `{ComponentBase.__name__}`), '
+                f'got {components.__class__.__name__}')
     
     return component_datas
 

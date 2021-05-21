@@ -880,6 +880,28 @@ class CommandProcessor(EventWaitforBase):
         return command
     
     
+    def __setevent_from_class__(self, klass):
+        """
+        Breaks down the given class to it's class attributes and tries to add it as a command.
+    
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+        
+        Returns
+        -------
+        command : ``Command``
+            The added command instance.
+        """
+        command = Command.from_class(klass)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        self._add_command(command)
+        return command
+    
+    
     def __delevent__(self, command, name, **kwargs):
         """
         Removes the specified command from the command processor.

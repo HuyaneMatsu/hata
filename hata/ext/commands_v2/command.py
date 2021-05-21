@@ -1270,7 +1270,30 @@ class Command:
         
         command_category = CommandCategory._from_command(command)
         self._add_command_category(command_category)
+        return command_category
     
+    
+    def __setevent_from_class__(self, klass):
+        """
+        Breaks down the given class to it's class attributes and tries to add it as a sub-command.
+    
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+        
+        Returns
+        -------
+        command : ``Command``
+            The added command instance.
+        """
+        command = Command.from_class(klass)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        command_category = CommandCategory._from_command(command)
+        self._add_command_category(command_category)
+        return command_category
     
     @property
     def commands(self):
@@ -1558,6 +1581,29 @@ class CommandCategory:
         
         command_category = CommandCategory._from_command(command)
         self._add_command_category(command_category)
+    
+    
+    def __setevent_from_class__(self, klass):
+        """
+        Breaks down the given class to it's class attributes and tries to add it as a sub-command.
+    
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+        
+        Returns
+        -------
+        command : ``Command``
+            The added command instance.
+        """
+        command = Command.from_class(klass)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        command_category = CommandCategory._from_command(command)
+        self._add_command_category(command_category)
+        return command_category
     
     
     @property

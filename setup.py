@@ -28,6 +28,8 @@ setup(
         'hata.discord.emoji',
         'hata.discord.events',
         'hata.discord.interaction',
+        'hata.discord.permission',
+        'hata.discord.role',
         'hata.ext',
         'hata.ext.asyncio',
         'hata.ext.command_utils',

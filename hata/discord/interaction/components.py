@@ -623,11 +623,11 @@ class ComponentButton(ComponentBase):
     ----------------
     type : ``ComponentType`` = `ComponentType.button`
         The component's type.
-    default_style : ``ButtonStyle`` = `ButtonStyle.secondary`
+    default_style : ``ButtonStyle`` = `ButtonStyle.violet`
         The default button style to use if style is not given.
     """
     type = ComponentType.button
-    default_style = ButtonStyle.primary
+    default_style = ButtonStyle.violet
     
     __slots__ = ('custom_id', 'enabled', 'emoji', 'label', 'style', 'url',)
     

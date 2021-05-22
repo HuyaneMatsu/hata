@@ -1,6 +1,8 @@
 __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'ButtonStyle',
     'ComponentType', 'InteractionType', )
 
+import warnings
+
 from ...backend.export import export
 
 from ..bases import PreinstancedBase, Preinstance as P
@@ -236,13 +238,13 @@ class ButtonStyle(PreinstancedBase):
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | primary               | primary       | 1     |
+    | violet                | violet        | 1     |
     +-----------------------+---------------+-------+
-    | secondary             | secondary     | 2     |
+    | gray                  | gray          | 2     |
     +-----------------------+---------------+-------+
-    | success               | success       | 3     |
+    | green                 | green         | 3     |
     +-----------------------+---------------+-------+
-    | destructive           | destructive   | 4     |
+    | red                   | red           | 4     |
     +-----------------------+---------------+-------+
     | link                  | link          | 5     |
     +-----------------------+---------------+-------+
@@ -254,8 +256,60 @@ class ButtonStyle(PreinstancedBase):
     __slots__ = ()
     
     none = P(0, 'none')
-    primary = P(1, 'primary')
-    secondary = P(2, 'secondary')
-    success = P(3, 'success')
-    destructive = P(4, 'destructive')
+    violet = P(1, 'violet')
+    gray = P(2, 'gray')
+    green = P(3, 'green')
+    red = P(4, 'red')
     link = P(5, 'link')
+    
+    
+    @property
+    def primary(self):
+        """
+        Deprecated, please use `.violet` instead. Will be removed in 2021 july.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.primary` is deprecated, and will be removed in 2021 july. '
+            f'Please use `{self.__class__.__name__}.violet` instead.',
+            FutureWarning)
+        
+        return self.violet
+    
+    
+    @property
+    def secondary(self):
+        """
+        Deprecated, please use `.gray` instead. Will be removed in 2021 july.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.secondary` is deprecated, and will be removed in 2021 july. '
+            f'Please use `{self.__class__.__name__}.gray` instead.',
+            FutureWarning)
+        
+        return self.gray
+    
+    
+    @property
+    def success(self):
+        """
+        Deprecated, please use `.green` instead. Will be removed in 2021 july.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.success` is deprecated, and will be removed in 2021 july. '
+            f'Please use `{self.__class__.__name__}.green` instead.',
+            FutureWarning)
+        
+        return self.green
+    
+    
+    @property
+    def destructive(self):
+        """
+        Deprecated, please use `.red` instead. Will be removed in 2021 july.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.destructive` is deprecated, and will be removed in 2021 july. '
+            f'Please use `{self.__class__.__name__}.red` instead.',
+            FutureWarning)
+        
+        return self.red

@@ -10341,7 +10341,7 @@ class Client(ClientUserPBase):
             
             query_parameters['thread_id'] = thread_id
         
-        message_data = await self.http.webhook_message_create(webhook_id, webhook_token, to_send, query_parameters)
+        message_data = await self.http.webhook_message_create(webhook_id, webhook_token, message_data, query_parameters)
         
         if not wait:
             return

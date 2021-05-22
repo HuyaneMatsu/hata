@@ -560,7 +560,7 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
     show_for_invoking_user_only : `bool`, Optional (Keyword only)
         Whether the sent message should only be shown to the invoking user.
         
-        If given as `True`, only the message's content will be processed by Discord.
+        If given as `True`, only the message's content and embeds and components will be processed by Discord.
     
     Raises
     ------
@@ -568,7 +568,7 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         The exception which aborts the interaction, then yields the response.
     """
     if show_for_invoking_user_only is ...:
-        if (file is not ...) or (allowed_mentions is not ...) or (tts is not ...):
+        if (file is not ...):
             show_for_invoking_user_only = False
         else:
             show_for_invoking_user_only = True

@@ -15,8 +15,22 @@
 
 #### Bug Fixes
 
+- Fix a `NameError` in `Client.webhook_message_create`.
+
 ##### hata.ext.slash
 - `SlashResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
+- When passing `allowed_mentions` or `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
+
+#### Renames, Deprecation & Removals
+
+- Rename `ButtonStyle.primary` to `.violet`.
+- Rename `ButtonStyle.secondary` to `.gray`.
+- Rename `ButtonStyle.success` to `.green`.
+- Rename `ButtonStyle.destructive` to `.red`.
+- Deprecate `ButtonStyle.primary`.
+- Deprecate `ButtonStyle.secondary`.
+- Deprecate `ButtonStyle.success`.
+- Deprecate `ButtonStyle.destructive`.
 
 ## 1.1.80 *\[2021-05-20\]*
 
@@ -422,7 +436,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 #### Improvements
 
 ##### ext.slash
-- `Button.default_style` should be `ButtonStyle.primary`. (Zeref Draganeel#3581)
+- `Button.default_style` should be `ButtonStyle.violet`. (Zeref Draganeel#3581)
 
 #### Bug Fixes
 

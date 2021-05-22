@@ -1,9 +1,10 @@
-__all__ = ('CommandWrapper', 'CommandCheckWrapper', 'CommandConverterConfigurerWrapper')
+__all__ = ('CommandCooldownWrapper', 'CommandCheckWrapper', 'CommandConverterConfigurerWrapper', 'CommandWrapper', )
 
 from ...backend.utils import copy_docs
 from ...backend.export import export
 
 from .content_parser import get_detail_for_value, ConverterFlag
+from .cooldown import CooldownHandler
 
 class CommandWrapper:
     """
@@ -164,10 +165,10 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
             
         content_parser = command_function._content_parser
         for parameter in content_parser._parameters:
-            for detail in parameter._iter_details:
+            for detail in parameter._iter_details():
                 if (detail.type is not detail_example.type):
                     continue
-                    
+                
                 if (detail.converter_setting is detail_example.converter_setting):
                     continue
                 
@@ -195,8 +196,6 @@ class CommandCheckWrapper(CommandWrapper):
     def __new__(cls, check_type, *args, **kwargs):
         """
         Creates a partial function to wrap a command.
-        
-        Subclasses should overwrite this method.
         
         Parameters
         ----------
@@ -248,3 +247,70 @@ class CommandCheckWrapper(CommandWrapper):
         new._check = self._check&other._check
         new._wrapped = None
         return new
+
+
+class CommandCooldownWrapper(CommandWrapper):
+    """
+    Command wrapper for checks.
+    
+    Attributes
+    ----------
+    _wrapped : `Any`
+        The wrapped object.
+    _cooldown_handler : ``CooldownHandler``
+        Cooldown to add to the respective command.
+    """
+    __slots__ = ('_cooldown_handler', )
+    
+    def __new__(cls, *args, **kwargs):
+        """
+        Creates a partial function to wrap a command.
+        
+        Parameters
+        ----------
+        *args : Arguments,
+            Parameters to pass to the `CooldownHandler`'s constructor.
+        **kwargs : Keyword arguments
+            Parameters to pass to the `CooldownHandler`'s constructor.
+        
+        Other Parameters
+        ----------------
+        for_ : `str`
+            By what type of entity the cooldown should limit the command.
+            
+            Possible values:
+             - `'user'`
+             - `'channel'`
+             - `'guild'`
+         
+        reset : `float`
+            The reset time of the cooldown.
+        
+        limit : `int`
+            The amount of calls after the respective command goes on cooldown.
+        
+        weight : `int`, Optional
+            The weight of one call. Defaults to `1`.
+        
+        Raises
+        ------
+        TypeError
+            - If `str` is not given as `str` instance.
+            - If `weight` is not numeric convertable to `int`.
+            - If `reset` is not numeric convertable to `float`.
+            - If `limit` is not numeric convertable to `int`.
+        ValueError
+            - If `for_` is not given as any of the expected value.
+        """
+        cooldown_handler = CooldownHandler(*args, **kwargs)
+        
+        self = object.__new__(cls)
+        self._cooldown_handler = cooldown_handler
+        self._wrapped = None
+        
+        return self
+    
+    
+    @copy_docs(CommandWrapper.apply)
+    def apply(self, command):
+        command.add_wrapper(self._cooldown_handler)

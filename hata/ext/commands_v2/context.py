@@ -344,6 +344,11 @@ class CommandContext(object):
             if (failed_check is not None):
                 raise CommandCheckError(failed_check)
             
+            wrappers = self.command._wrappers
+            if (wrappers is not None):
+                for wrapper in wrappers:
+                    await wrapper(self)
+            
             parameter_parsing_states = await command_function._content_parser.parse_content(self, index)
             command_positional_parameters = self.command_positional_parameters
             command_keyword_parameters = self.command_keyword_parameters

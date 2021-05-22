@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-__all__ = ('CommandCheckError', 'CommandParameterParsingError', 'CommandProcessingError', )
+__all__ = ('CommandCheckError', 'CommandCooldownError', 'CommandParameterParsingError', 'CommandProcessingError', )
 
 class CommandProcessingError(BaseException):
     """
@@ -53,3 +52,33 @@ class CommandCheckError(CommandProcessingError):
         CommandProcessingError.__init__(self, check)
 
 
+class CommandCooldownError(CommandProcessingError):
+    """
+    Raised when the command is on cooldown.
+    
+    Attributes
+    ----------
+    expires_after : `float`
+        After how much time the cooldown expires.
+        
+        If a prerequisite didn't pass, may be `-1.0`.
+    
+    cooldown_handler : ``CooldownHandler``
+        The respective cooldown handler which is on cooldown.
+    """
+    def __init__(self, cooldown_handler, expires_after):
+        """
+        Creates a new ``CommandCheckError`` instance.
+        
+        Parameters
+        ----------
+        cooldown_handler : ``CooldownHandler``
+            The respective cooldown handler which is on cooldown.
+        expires_after : `float`
+            After how much time the cooldown expires.
+            
+            If a prerequisite didn't pass, may be `-1.0`.
+        """
+        self.cooldown_handler = cooldown_handler
+        self.expires_after = expires_after
+        CommandProcessingError.__init__(self, cooldown_handler, expires_after)

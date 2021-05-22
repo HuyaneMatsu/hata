@@ -8,6 +8,7 @@ from .command_helpers import *
 from .command_processor import *
 from .content_parser import *
 from .context import *
+from .cooldown import *
 from .exceptions import *
 from .responding import *
 from .utils import *
@@ -15,6 +16,7 @@ from .wrappers import *
 
 __all__ = (
     'checks',
+    'cooldown',
     'configure_converter',
     'setup_ext_commands_v2',
     *category.__all__,
@@ -23,6 +25,7 @@ __all__ = (
     *command_processor.__all__,
     *content_parser.__all__,
     *context.__all__,
+    *cooldown.__all__,
     *exceptions.__all__,
     *responding.__all__,
     *utils.__all__,
@@ -34,6 +37,8 @@ from .. import register_library_extension, add_library_extension_hook, register_
 from ...discord.client import Client
 
 configure_converter = CommandConverterConfigurerWrapper
+cooldown = CommandCooldownWrapper
+
 
 def setup_ext_commands_v2(client, prefix, **kwargs):
     """

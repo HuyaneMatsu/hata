@@ -401,16 +401,20 @@ class Command:
         Weak reference to the command's category.
     _checks : `None` or `tuple` of ``CheckBase``
         The checks of the commands.
+    _command_categories : `None` or `set` of ``CommandCategory``
+        Sub command categories of the command.
     _command_function : `None` or ``CommandFunction``
         The actual command of the command to maybe call.
     _command_processor_reference : `None` or ``WeakReferer`` to ``CommandProcessor``.
         Weak reference to the command's command processor.
     _error_handlers : `None` or `list` of `function`
         Error handlers bind to the command.
-    _command_categories : `None` or `set` of ``CommandCategory``
-        Sub command categories of the command.
+    _wrappers : `None`, `Any`, `list` of `async-callable`
+        Additional wrappers, which run before the command is executed.
     aliases : `None` or `tuple` of `str`
         Name aliases of the command if any. They are always lower case.
+    command_category_name_to_command_category : `None` or `dict` of (`str`, ``CommandCategory``) items
+        Sub-command categories by name.
     description : `Any`
         The command's description if any.
     display_name : `str`
@@ -421,13 +425,11 @@ class Command:
         Whether the command should be hidden from help commands if the user's checks fail.
     name : `str`
         The command's name. Always lower case.
-    command_category_name_to_command_category : `None` or `dict` of (`str`, ``CommandCategory``) items
     """
-    __slots__ = ('_category_hint', '_category_reference', '_checks', '_command_function',
-        '_command_processor_reference', '_error_handlers', '_command_categories', 'aliases',
+    __slots__ = ('_category_hint', '_category_reference', '_checks', '_command_categories', '_command_function',
+        '_command_processor_reference', '_error_handlers', '_wrappers', 'aliases',
         'command_category_name_to_command_category', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail',
         'name')
-    
     
     def _iter_checks(self):
         """
@@ -994,6 +996,11 @@ class Command:
                 self.hidden_if_checks_fail = hidden_if_checks_fail
                 self.name = name
                 self.command_category_name_to_command_category = None
+                self._wrappers = None
+                
+                if (wrappers is not None):
+                    for wrapper in wrappers:
+                        wrapper.apply(self)
                 
                 router.append(self)
             
@@ -1017,6 +1024,11 @@ class Command:
             self.hidden_if_checks_fail = hidden_if_checks_fail
             self.name = name
             self.command_category_name_to_command_category = None
+            self._wrappers = None
+            
+            if (wrappers is not None):
+                for wrapper in wrappers:
+                    wrapper.apply(self)
             
             return self
     
@@ -1102,6 +1114,11 @@ class Command:
         new.hidden_if_checks_fail = self.hidden_if_checks_fail
         new.name = self.name
         
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            wrappers = wrappers.copy()
+        new._wrappers = wrappers
+        
         return new
     
     
@@ -1153,6 +1170,17 @@ class Command:
         hash_value ^= self.hidden<<30
         hash_value ^= self.hidden_if_checks_fail<<31
         hash_value ^= hash(self.name)
+        
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            hash_value ^= len(wrappers)<<28
+            for wrapper in wrappers:
+                try:
+                    wrapper_hash = hash(wrapper)
+                except TypeError:
+                    wrapper_hash = object.__hash__(wrapper)
+                hash_value ^= wrapper_hash
+        
         return hash_value
     
     
@@ -1189,6 +1217,9 @@ class Command:
             return False
         
         if self.name != other.name:
+            return False
+        
+        if self._wrappers != other._wrappers:
             return False
         
         return True
@@ -1295,6 +1326,7 @@ class Command:
         self._add_command_category(command_category)
         return command_category
     
+    
     @property
     def commands(self):
         """
@@ -1305,6 +1337,22 @@ class Command:
         handler : ``_EventHandlerManager``
         """
         return _EventHandlerManager(self)
+    
+    
+    def add_wrapper(self, command_wrapper):
+        """
+        Adds a wrapper to run before the command is executed.
+        
+        Parameters
+        ----------
+        command_wrapper : `async-callable`
+            Command wrapper to add.
+        """
+        wrappers = self._wrappers
+        if (wrappers is None):
+            wrappers = self._wrappers = []
+        
+        wrappers.append(command_wrapper)
 
 
 class CommandFunction:

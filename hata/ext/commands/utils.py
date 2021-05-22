@@ -193,7 +193,7 @@ class Cooldown:
     @Bot.commands
     @Cooldown('user', 30., handler=CooldownHandler())
     async def ping(client, message):
-        await client.message_create(message.channel, f'{client.gateway.latency.:.0f} ms')
+        await client.message_create(message.channel, f'{client.gateway.latency*1000.:.0f} ms')
     ```
     
     **Using shared cooldowns:**

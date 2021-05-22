@@ -778,7 +778,7 @@ from hata import Embed
 from hata.ext.slash import abort
 
 @Nitori.interactions
-async def ping(event):
+async def ping():
     """HTTP ping-pong."""
     start = perf_counter()
     yield

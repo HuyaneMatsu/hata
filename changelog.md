@@ -2,6 +2,8 @@
 
 ## 1.1.80 *\[2021-05-22\]*
 
+#### Summary
+
 Rework `role.py` and `permission.py`.
 
 #### Improvements

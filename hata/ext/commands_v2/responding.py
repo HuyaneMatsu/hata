@@ -133,7 +133,7 @@ async def process_command_coroutine_generator(command_context, coroutine_generat
         
         else:
             try:
-                response_message = send_response(command_context, response)
+                response_message = await send_response(command_context, response)
             except BaseException as err:
                 response_message = None
                 response_exception = err
@@ -164,7 +164,7 @@ async def process_command_coroutine(command_context, coroutine):
         Any exception raised by `coro`.
     """
     if is_coroutine_generator(coroutine):
-        response = await process_command_coroutine_generator(process_command_coroutine, coroutine)
+        response = await process_command_coroutine_generator(command_context, coroutine)
     else:
         response = await coroutine
     

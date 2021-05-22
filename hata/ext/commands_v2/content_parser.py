@@ -1911,8 +1911,8 @@ class ContentParserParameter:
         """
         detail = self.detail
         if (detail is None):
-            for converter_setting in self.details:
-                parsed = await converter_setting.converter(command_context, detail, part)
+            for detail in self.details:
+                parsed = await detail.converter_setting.converter(command_context, detail, part)
                 if (parsed is not None):
                     break
             else:

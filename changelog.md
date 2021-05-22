@@ -1,5 +1,9 @@
 ## 1.1.81 *\[2021-05-??\]*
 
+## 1.1.80 *\[2021-05-22\]*
+
+Rework `role.py` and `permission.py`.
+
 #### Improvements
 
 - Add `NsfwLevel`.
@@ -32,7 +36,7 @@
 - Deprecate `ButtonStyle.success`.
 - Deprecate `ButtonStyle.destructive`.
 
-## 1.1.80 *\[2021-05-20\]*
+## 1.1.79 *\[2021-05-20\]*
 
 #### Summary
 

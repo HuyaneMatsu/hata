@@ -1,5 +1,12 @@
 ## 1.1.81 *\[2021-05-??\]*
 
+#### Improvements
+
+##### hata.ext.extension_loader
+
+- Load all sub files from an extension. (Pichu#0357)
+- `ExtensionLoader.load_extension`, `.load`, `.unload`, `.reload` now accepts iterable and folders as well.
+
 ## 1.1.80 *\[2021-05-22\]*
 
 #### Summary

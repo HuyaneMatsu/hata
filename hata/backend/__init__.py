@@ -7,6 +7,7 @@ from .formdata import *
 from .futures import *
 from .http import *
 from .ios import *
+from .url import *
 from .utils import *
 from .websocket import *
 
@@ -20,6 +21,7 @@ __all__ = (
     *futures.__all__,
     *http.__all__,
     *ios.__all__,
+    *url.__all__,
     *utils.__all__,
     *websocket.__all__,
 )

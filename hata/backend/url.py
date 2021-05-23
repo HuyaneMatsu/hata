@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ('URL', )
+
 from ipaddress import ip_address
 from urllib.parse import SplitResult, parse_qsl as parse_query_string_list, urljoin as url_join, \
     urlsplit as url_split, urlunsplit as url_unsplit

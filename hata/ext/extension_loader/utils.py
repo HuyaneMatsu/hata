@@ -287,7 +287,7 @@ def _lookup_path(import_name):
                 yield import_name
                 return
     
-    raise TypeError(f'The given `import_name` could nto be detected as an extension, got {import_name!r}.')
+    raise TypeError(f'The given `import_name` could not be detected as an extension, got {import_name!r}.')
 
 
 def _iter_folder(import_name, folder_path):

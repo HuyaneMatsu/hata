@@ -2,10 +2,17 @@
 
 #### Improvements
 
+- Update discord media sizes.
+
 ##### hata.ext.extension_loader
 
 - Load all sub files from an extension. (Pichu#0357)
 - `ExtensionLoader.load_extension`, `.load`, `.unload`, `.reload` now accepts iterable and folders as well.
+
+##### hata.ext.slash
+
+- Commands were not getting their display name as their description by default (but their raw name).
+- Routing slash commands dropped `TypeError`.
 
 ## 1.1.80 *\[2021-05-22\]*
 

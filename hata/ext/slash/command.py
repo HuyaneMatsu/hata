@@ -955,6 +955,7 @@ class SlashCommand:
         
         if route_to:
             name = route_name(command, name, route_to)
+            name = [raw_name_to_display(sub_name) for sub_name in name]
             
             default_description = _generate_description_from(command, None, None)
             show_for_invoking_user_only = route_value(show_for_invoking_user_only, route_to)
@@ -965,10 +966,10 @@ class SlashCommand:
             allow_by_default = route_value(allow_by_default, route_to)
             
             description = [
-                _generate_description_from(command, name, description)
+                _generate_description_from(command, sub_name, description)
                     if ((description is None) or (description is not default_description)) else default_description
-                for description in description]
-            
+                for sub_name, description in zip(name, description)]
+        
         else:
             name = check_name(command, name)
             
@@ -978,6 +979,8 @@ class SlashCommand:
                 raise ValueError(f'`name` length is out of the expected range '
                     f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:'
                     f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {sub_name_length!r}; {name!r}.')
+            
+            name = raw_name_to_display(name)
             
             description = _generate_description_from(command, name, description)
         
@@ -997,8 +1000,6 @@ class SlashCommand:
                 if is_global and (guild_ids is not None):
                     raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
                         f'guild={guild!r}')
-                
-                name = raw_name_to_display(name)
                 
                 if (command is None):
                     command_function = None
@@ -1033,8 +1034,6 @@ class SlashCommand:
             if is_global and (guild_ids is not None):
                 raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
                     f'guild={guild!r}')
-            
-            name = raw_name_to_display(name)
             
             if (command is None):
                 sub_commands = {}

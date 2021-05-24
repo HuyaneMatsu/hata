@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ()
 
 import re
@@ -17,8 +16,13 @@ DIS_ENDPOINT = 'https://discord.com' if (CUSTOM_DIS_ENDPOINT is None) else CUSTO
 
 del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
 
+VALID_ICON_SIZES = frozenset((
+    *( 1<<x    for x in range(4, 13)),
+    *((1<<x)*3 for x in range(9, 11)),
+    *((1<<x)*5 for x in range(2,  9)),
+))
+
 VALID_ICON_FORMATS = ('jpg', 'jpeg','png','webp')
-VALID_ICON_SIZES = frozenset(1<<x for x in range(4, 13))
 VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS, 'gif',)
 
 STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')

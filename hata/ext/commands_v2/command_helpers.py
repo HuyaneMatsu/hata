@@ -57,15 +57,17 @@ async def handle_exception(command_context, exception):
     exception : ``BaseException``
         The occurred exception.
     """
-    for error_handler in command_context.command._iter_error_handlers():
-        result = await error_handler(command_context, exception)
-        if isinstance(result, int) and result:
-            break
-    else:
-        # We can ignore command processing exceptions.
-        if not isinstance(exception, CommandProcessingError):
-            client = command_context.client
-            await client.events.error(client, '_handle_exception', exception)
+    command_function = command_context.command_function
+    if (command_function is not None):
+        for error_handler in command_function._iter_error_handlers():
+            result = await error_handler(command_context, exception)
+            if isinstance(result, int) and result:
+                return
+    
+    # We can ignore command processing exceptions.
+    if not isinstance(exception, CommandProcessingError):
+        client = command_context.client
+        await client.events.error(client, '_handle_exception', exception)
 
 
 def get_command_category_trace(command, content, index):

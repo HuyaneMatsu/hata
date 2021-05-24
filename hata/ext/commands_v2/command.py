@@ -1,5 +1,6 @@
 __all__ = ('Command', )
 
+from ...backend.utils import WeakReferer
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager
 from ...discord.preconverters import preconvert_bool
 
@@ -407,9 +408,11 @@ class Command:
         The actual command of the command to maybe call.
     _command_processor_reference : `None` or ``WeakReferer`` to ``CommandProcessor``.
         Weak reference to the command's command processor.
-    _error_handlers : `None` or `list` of `function`
+    _error_handlers : `None` or `list` of `FunctionType`
         Error handlers bind to the command.
-    _wrappers : `None`, `Any`, `list` of `async-callable`
+    _self_reference = `None` or ``WeakReferer`` to ``Command``
+        Reference to the command itself.
+    _wrappers : `None`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
     aliases : `None` or `tuple` of `str`
         Name aliases of the command if any. They are always lower case.
@@ -421,21 +424,21 @@ class Command:
         The command's display name.
     hidden : `bool`
         Whether the command should be hidden from help commands.
-    hidden_if_checks_fail : bool`
+    hidden_if_checks_fail : `bool`
         Whether the command should be hidden from help commands if the user's checks fail.
     name : `str`
         The command's name. Always lower case.
     """
-    __slots__ = ('_category_hint', '_category_reference', '_checks', '_command_categories', '_command_function',
-        '_command_processor_reference', '_error_handlers', '_wrappers', 'aliases',
-        'command_category_name_to_command_category', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail',
-        'name')
+    __slots__ = ('__weakref__', '_category_hint', '_category_reference', '_checks', '_command_categories',
+        '_command_function', '_command_processor_reference', '_error_handlers', '_self_reference', '_wrappers',
+        'aliases', 'command_category_name_to_command_category', 'description', 'display_name', 'hidden',
+        'hidden_if_checks_fail', 'name')
     
     def _iter_checks(self):
         """
         Iterates over all the checks applied to the command.
         
-        This method is a generator, which should be used inside of a for loop.
+        This method is an iterable generator.
         
         Yields
         ------
@@ -458,7 +461,7 @@ class Command:
         """
         Iterates over the checks only of the command, excluding it's category's.
         
-        This method is a generator, which should be used inside of a for loop.
+        This method is an iterable generator.
         
         Yields
         ------
@@ -473,11 +476,11 @@ class Command:
         """
         Iterates over all the error handlers applied to the command.
         
-        This method is a generator, which should be used inside of a for loop.
+        This method is an iterable generator.
         
         Yields
         ------
-        error_handler : `function`
+        error_handler : `FunctionType`
         """
         error_handlers = self._error_handlers
         if (error_handlers is not None):
@@ -504,7 +507,7 @@ class Command:
         """
         Iterates overt he command's names.
 
-        This method is a generator, which should be used inside of a for loop.
+        This method is an iterable generator.
         
         Yields
         ------
@@ -514,6 +517,21 @@ class Command:
         aliases = self.aliases
         if (aliases is not None):
             yield from aliases
+    
+    
+    def _iter_wrappers(self):
+        """
+        Iterates over the wrappers of the command.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        wrappers : `Any`
+        """
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            yield from wrappers
     
     
     def get_category(self):
@@ -997,6 +1015,14 @@ class Command:
                 self.name = name
                 self.command_category_name_to_command_category = None
                 self._wrappers = None
+                self._self_reference = None
+                
+                self_reference = WeakReferer(self)
+                self._self_reference = self_reference
+                
+                if (command_function is not None):
+                    command_function._command_category_reference = self_reference
+                
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -1025,6 +1051,13 @@ class Command:
             self.name = name
             self.command_category_name_to_command_category = None
             self._wrappers = None
+            self._self_reference = None
+            
+            self_reference = WeakReferer(self)
+            self._self_reference = self_reference
+            
+            if (command_function is not None):
+                command_function._command_category_reference = self_reference
             
             if (wrappers is not None):
                 for wrapper in wrappers:
@@ -1119,6 +1152,18 @@ class Command:
             wrappers = wrappers.copy()
         new._wrappers = wrappers
         
+        new._self_reference = None
+        
+        self_reference = WeakReferer(new)
+        self._self_reference = self_reference
+        
+        if (command_function is not None):
+            command_function._command_category_reference = self_reference
+        
+        if (command_categories is not None):
+            for command_category in command_categories:
+                command_category._command_category_reference = self_reference
+        
         return new
     
     
@@ -1138,7 +1183,11 @@ class Command:
         
         command_function = self._command_function
         if (command_function is not None):
-            hash_value ^= hash(command_function)
+            try:
+                command_function_hash = hash(command_function)
+            except TypeError:
+                command_function_hash = object.__hash__(command_function)
+            hash_value ^= command_function_hash
         
         error_handlers = self._error_handlers
         if (error_handlers is not None):
@@ -1246,6 +1295,8 @@ class Command:
         command_categories.add(command_category)
         for name in command_category._iter_names():
             command_category_name_to_command_category[name] = command_category
+        
+        command_category._command_category_reference = self._self_reference
     
     
     def __setevent__(self, command, name, description=None, aliases=None, category=None, checks=None,
@@ -1361,12 +1412,14 @@ class CommandFunction:
     
     Attributes
     ----------
+    _command_category_reference : `None` or ``WeakReferer`` to (``Command`` or ``CommandCategory``)
+        Reference to the command function's parent.
     _function : `Any`
         The command's function to call.
     _content_parser : ``CommandContentParser``
         Content parser for the command.
     """
-    __slots__ = ('_function', '_content_parser')
+    __slots__ = ('_command_category_reference', '_content_parser', '_function', )
     def __new__(cls, function, content_parser):
         """
         Creates a new ``CommandFunction`` with the given parameters.
@@ -1381,6 +1434,7 @@ class CommandFunction:
         self = object.__new__(cls)
         self._function = function
         self._content_parser = content_parser
+        self._command_category_reference = None
         return self
     
     def __repr__(self):
@@ -1417,6 +1471,39 @@ class CommandFunction:
         
         return True
 
+    def _iter_wrappers(self):
+        """
+        Iterates over the wrappers of the command function and of it's parent categories.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        wrapper : `Any`
+        """
+        command_category_reference = self._command_category_reference
+        if (command_category_reference is not None):
+            command_category = command_category_reference()
+            if (command_category is not None):
+                yield from command_category._iter_wrappers()
+    
+    
+    def _iter_error_handlers(self):
+        """
+        Iterates over all the error handlers applied to the command function's parent categories..
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        error_handler : `FunctionType`
+        """
+        command_category_reference = self._command_category_reference
+        if (command_category_reference is not None):
+            command_category = command_category_reference()
+            if (command_category is not None):
+                yield from command_category._iter_error_handlers()
+
 
 class CommandCategory:
     """
@@ -1424,10 +1511,18 @@ class CommandCategory:
     
     Attributes
     ----------
-    _command_function : `None` or ``CommandFunction``
-        The actual command of the command to maybe call.
     _command_categories : `None` or `set` of ``CommandCategory``
         Sub command categories of the command.
+    _command_category_reference : `None` or ``WeakReferer`` to (``Command`` or ``CommandCategory``)
+        Reference to the command category's parent.
+    _command_function : `None` or ``CommandFunction``
+        The actual command of the command to maybe call.
+    _self_reference : `None` or ``WeakReferer`` to ``CommandCategory``
+        Reference to the command category itself.
+    _error_handlers : `None` or `list` of `FunctionType`
+        Error handlers bind to the command.
+    _wrappers : `None`, `list` of `async-callable`
+        Additional wrappers, which run before the command is executed.
     aliases : `None` or `tuple` of `str`
         Name aliases of the command category.
     command_category_name_to_command_category : `None` of `dict` of (`str`, `Any`) items
@@ -1439,7 +1534,8 @@ class CommandCategory:
     name : `str`
         The command's name. Always lower case.
     """
-    __slots__ = ('_command_function', '_command_categories', 'aliases', 'command_category_name_to_command_category',
+    __slots__ = ('__weakref__', '_command_categories', '_command_category_reference', '_command_function',
+        '_error_handlers', '_self_reference', '_wrappers', 'aliases', 'command_category_name_to_command_category',
         'description', 'display_name', 'name',)
     
     @classmethod
@@ -1461,10 +1557,96 @@ class CommandCategory:
         self.name = source_command.name
         self.display_name = source_command.display_name
         self.description = source_command.description
-        self._command_function = source_command._command_function
+        command_function = source_command._command_function
+        self._command_function = command_function
         self._command_categories = source_command._command_categories
         self.command_category_name_to_command_category = None
+        self._command_category_reference = None
+        self._self_reference = None
+        
+        wrappers = source_command._wrappers
+        if (wrappers is not None):
+            wrappers = wrappers.copy()
+        self._wrappers = wrappers
+        
+        error_handlers = source_command._error_handlers
+        if (error_handlers is not None):
+            error_handlers = error_handlers.copy()
+        self._error_handlers = error_handlers
+        
+        self_reference = WeakReferer(self)
+        self._self_reference = self_reference
+        
+        if (command_function is not None):
+            command_function._command_category_reference = self_reference
+        
         return self
+    
+    def copy(self):
+        """
+        Copies the command category.
+        
+        Returns
+        -------
+        new : ``CommandCategory``
+        """
+        new = object.__new__(type(self))
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            command_function = command_function.copy()
+        new._command_function = command_function
+        
+        error_handlers = self._error_handlers
+        if (error_handlers is not None):
+            error_handlers = error_handlers.copy()
+        new._error_handlers = error_handlers
+        
+        command_categories  = self._command_categories
+        if (command_categories is not None):
+            command_categories = {command_category.copy() for command_category in command_categories}
+        new._command_categories = command_categories
+        
+        if (command_categories is None):
+            command_category_name_to_command_category = None
+        else:
+            command_category_name_to_command_category = {}
+            for command_category in command_categories:
+                for name in command_category._iter_names():
+                    command_category_name_to_command_category[name] = command_category
+        
+        new.command_category_name_to_command_category = command_category_name_to_command_category
+        
+        aliases = self.aliases
+        if (aliases is not None):
+            aliases = tuple(aliases)
+        new.aliases = aliases
+        
+        new.description = self.description
+        new.display_name = self.display_name
+        new.name = self.name
+        
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            wrappers = wrappers.copy()
+        new._wrappers = wrappers
+        
+        new._command_category_reference = self._command_category_reference
+        
+        new._self_reference = None
+        
+        self_reference = WeakReferer(new)
+        self._self_reference = self_reference
+        
+        if (command_function is not None):
+            command_function._command_category_reference = self_reference
+        
+        if (command_categories is not None):
+            for command_category in command_categories:
+                command_category._command_category_reference = self_reference
+        
+        return new
+    
     
     def __repr__(self):
         """Returns the command category's representation."""
@@ -1489,7 +1671,17 @@ class CommandCategory:
         
         command_function = self._command_function
         if (command_function is not None):
-            hash_value ^= hash(command_function)
+            try:
+                command_function_hash = hash(command_function)
+            except TypeError:
+                command_function_hash = object.__hash__(command_function)
+            hash_value ^= command_function_hash
+        
+        error_handlers = self._error_handlers
+        if (error_handlers is not None):
+            hash_value ^= len(error_handlers)<<12
+            for error_handler in error_handlers:
+                hash_value ^= hash(error_handler)
         
         command_categories = self._command_categories
         if (command_categories is not None):
@@ -1512,6 +1704,16 @@ class CommandCategory:
             
             hash_value ^= description_hash
         
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            hash_value ^= len(wrappers)<<28
+            for wrapper in wrappers:
+                try:
+                    wrapper_hash = hash(wrapper)
+                except TypeError:
+                    wrapper_hash = object.__hash__(wrapper)
+                hash_value ^= wrapper_hash
+        
         hash_value ^= hash(self.name)
         return hash_value
     
@@ -1524,6 +1726,9 @@ class CommandCategory:
         if self._command_function != other._command_function:
             return False
         
+        if self._error_handlers != other._error_handlers:
+            return False
+        
         if self._command_categories != other._command_categories:
             return False
         
@@ -1531,6 +1736,9 @@ class CommandCategory:
             return False
         
         if self.name != other.name:
+            return False
+        
+        if self._wrappers != other._wrappers:
             return False
         
         return True
@@ -1551,6 +1759,48 @@ class CommandCategory:
         aliases = self.aliases
         if (aliases is not None):
             yield from aliases
+    
+    
+    def _iter_wrappers(self):
+        """
+        Iterates over the wrappers of the command category and of parent categories.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        wrapper : `Any`
+        """
+        wrappers = self._wrappers
+        if (wrappers is not None):
+            yield from wrappers
+        
+        command_category_reference = self._command_category_reference
+        if (command_category_reference is not None):
+            command_category = command_category_reference()
+            if (command_category is not None):
+                yield from command_category._iter_wrappers()
+    
+    
+    def _iter_error_handlers(self):
+        """
+        Iterates over all the error handlers applied to the command categories's parent categories..
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        error_handler : `FunctionType`
+        """
+        error_handlers = self._error_handlers
+        if (error_handlers is not None):
+            yield from error_handlers
+        
+        command_category_reference = self._command_category_reference
+        if (command_category_reference is not None):
+            command_category = command_category_reference()
+            if (command_category is not None):
+                yield from command_category._iter_error_handlers()
     
     
     def _add_command_category(self, command_category):
@@ -1574,6 +1824,8 @@ class CommandCategory:
         command_categories.add(command_category)
         for name in command_category._iter_names():
             command_category_name_to_command_category[name] = command_category
+        
+        command_category._command_category_reference = self._self_reference
     
     
     def __setevent__(self, command, name, description=None, aliases=None, category=None, checks=None,
@@ -1664,3 +1916,51 @@ class CommandCategory:
         handler : ``_EventHandlerManager``
         """
         return _EventHandlerManager(self)
+    
+    
+    def error(self, error_handler):
+        """
+        Adds na error handler to the command.
+        
+        Parameters
+        ----------
+        error_handler : `async-callable`
+            The error handler to add.
+            
+            The following parameters are passed to each error handler:
+            
+            +-------------------+-----------------------+
+            | Name              | Type                  |
+            +===================+=======================+
+            | command_context   | ``CommandContext``    |
+            +-------------------+-----------------------+
+            | exception         | `BaseException`       |
+            +-------------------+-----------------------+
+            
+            Should return the following parameters:
+            
+            +-------------------+-----------+
+            | Name              | Type      |
+            +===================+===========+
+            | handled           | `bool`    |
+            +-------------------+-----------+
+        
+        Returns
+        -------
+        error_handler : `async-callable`
+        
+        Raises
+        ------
+        TypeError
+            - If `error_handler` accepts bad amount of arguments.
+            - If `error_handler` is not async.
+        """
+        test_error_handler(error_handler)
+        
+        error_handlers = self._error_handlers
+        if error_handlers is None:
+            error_handlers = self._error_handlers = []
+            
+            error_handlers.append(error_handler)
+        
+        return error_handler

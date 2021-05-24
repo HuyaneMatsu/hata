@@ -635,6 +635,11 @@ class CommandProcessor(EventWaitforBase):
         RuntimeError
             The command is bound to an other command processor.
         """
+        if __debug__:
+            if not isinstance(command, Command):
+                raise AssertionError(f'`command` can be given as `{Command.__name__}` instance, got '
+                    f'{command.__class__.__name__}.')
+        
         command_processor = command.get_command_processor()
         if (command_processor is not None) and (command_processor is not self):
             raise RuntimeError(f'{Command.__name__}: {command!r} is bound to an other command processor.')

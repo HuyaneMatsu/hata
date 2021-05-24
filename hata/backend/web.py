@@ -3011,7 +3011,7 @@ class AppBase:
         Raises
         ------
         TypeError
-            If `error_code` was nto given as `int` instance.
+            If `error_code` was not given as `int` instance.
         
         Returns
         -------

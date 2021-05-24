@@ -15,7 +15,7 @@ class Category:
         The checks of the category.
     _command_processor_reference : `None` or ``WeakReferer`` to ``CommandProcessor``.
         Weak reference to the category's command processor.
-    _error_handlers : `None` or `list` of `function`
+    _error_handlers : `None` or `list` of `FunctionType`
         Error handlers bind to the category.
     _self_reference : `None` or ``WeakReferer`` to ``Category``
         Reference to the command processor itself.
@@ -39,7 +39,7 @@ class Category:
     __slots__ = ('__weakref__', '_checks', '_command_processor_reference', '_error_handlers', '_self_reference',
         'commands', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail', 'name')
     
-    def __new__(cls, name, *, checks=None, description=None, hidden=False, hidden_if_checks_fail=False):
+    def __new__(cls, name, *, checks=None, description=None, hidden=False, hidden_if_checks_fail=True):
         """
         Creates a new category with the given parameters.
         
@@ -55,7 +55,7 @@ class Category:
         hidden : `bool`, Optional (Keyword only)
             Whether the category should be hidden from help commands.
         hidden_if_checks_fail : `bool`, Optional (Keyword only)
-            Whether the category should be hidden from help commands if it's checks fail.
+            Whether the category should be hidden from help commands if it's checks fail. Defaults to `True`.
         
         Raises
         ------
@@ -158,7 +158,7 @@ class Category:
         if (command_processor is not None):
             commands = list(self.commands)
             for command in commands:
-                command.unlink()
+                command.unlink_category()
         
         category_name_to_category = command_processor.category_name_to_category
         name = self.name
@@ -231,3 +231,20 @@ class Category:
         checks = self._checks
         if (checks is not None):
             yield from checks
+    
+    
+    @property
+    def checks(self):
+        """
+        A get-set-del property to modify the category's checks.
+        """
+        return self._checks
+    
+    @checks.setter
+    def checks(self, checks):
+        checks = validate_checks(checks)
+        self._checks = checks
+    
+    @checks.deleter
+    def checks(self):
+        self._checks = None

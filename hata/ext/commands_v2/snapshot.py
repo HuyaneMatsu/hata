@@ -33,7 +33,7 @@ def take_command_processor_snapshot(client):
         if (categories is None) and (commands is None):
             collected = None
         else:
-            collected = (categories, commands)
+            collected = (commands, categories)
     
     return collected
 

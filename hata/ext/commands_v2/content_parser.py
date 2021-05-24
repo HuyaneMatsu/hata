@@ -2240,7 +2240,7 @@ def get_next_non_filled_parameter_state(parameter_parsing_states):
         if content_parser_parameter.is_args:
             return parameter_parsing_state
         
-        if not parameter_parsing_state.parsed_values:
+        if not parameter_parsing_state.is_satisfied():
             return parameter_parsing_state
         
         continue

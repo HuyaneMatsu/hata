@@ -2977,7 +2977,7 @@ class RATE_LIMIT_GROUPS:
         - Required auth : `bot`
         - Limiter : `GLOBAL`
         - Limit : `2`
-        - Resets after : `3600.0`
+        - Resets after : `600.0`
     
     - user_achievement_get_all
         - Endpoint : `/users/@me/applications/{application_id}/achievements`

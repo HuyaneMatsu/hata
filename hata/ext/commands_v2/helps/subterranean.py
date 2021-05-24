@@ -464,7 +464,7 @@ class SubterraneanHelpHelp:
         """
         self.embed_postprocessor = parent.embed_postprocessor
     
-    async def __call__(self, command_context, command):
+    async def __call__(self, command_context):
         """
         Returns the respective help command's generated help embed.
         
@@ -482,14 +482,14 @@ class SubterraneanHelpHelp:
         prefix = command_context.prefix
         
         embed = Embed(
-            command.display_name,
+            command_context.command.display_name,
             f'Shows the help command of the client.\n'
-            f'Try `{prefix}{command.display_name}` for displaying the categories or the commands\' of them.',
+            f'Try `{prefix}{command_context.command.display_name}` for displaying the categories or the commands\' of them.',
         )
         
         embed_postprocessor = self.embed_postprocessor
         if (embed_postprocessor is not None):
-            embed_postprocessor(command_context, command, embed)
+            embed_postprocessor(command_context, embed)
         
         return embed
 

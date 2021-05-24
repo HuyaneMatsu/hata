@@ -52,7 +52,7 @@ class VoiceClient:
     _protocol : `None` or ``DatagramMergerReadProtocol``
         Asynchronous protocol of the voice client to communicate with it's socket.
     _reconnecting : `bool`
-        Whether the voice client plans to reconnect and it's reader and player should nto be stopped.
+        Whether the voice client plans to reconnect and it's reader and player should not be stopped.
     _secret_box : `None` or `nacl.secret.SecretBox`
         Data encoder of the voice client.
     _sequence : `int`

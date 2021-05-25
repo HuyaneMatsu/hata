@@ -13,12 +13,12 @@ from ..backend.export import export, include
 from .bases import DiscordEntity, ReverseFlagBase, IconSlot, ICON_TYPE_NONE
 from .core import GUILDS, DISCOVERY_CATEGORIES, CHANNELS, KOKORO
 from .utils import EMOJI_NAME_RP, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, parse_time
-from .user import User, create_partial_user, VoiceState, ZEROUSER
+from .user import User, create_partial_user_from_id, VoiceState, ZEROUSER
 from .role import Role
 from .channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelBase, ChannelGuildUndefined
 from .permission import Permission
 from .permission.permission import PERMISSION_NONE, PERMISSION_ALL
-from .emoji import Emoji, create_partial_emoji
+from .emoji import Emoji, create_partial_emoji_from_data
 from .webhook import Webhook, WebhookRepr
 from .oauth2 import parse_preferred_locale, DEFAULT_LOCALE
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type, preconvert_bool
@@ -419,7 +419,7 @@ class GuildWidget(DiscordEntity):
 # We need to ignore client adding, because clients count to being not partial.
 # If a guild is not partial it wont get update on Guild.__new__
 
-def create_partial_guild(data):
+def create_partial_guild_from_data(data):
     """
     Creates a partial guild from partial guild data.
     
@@ -764,7 +764,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for voice_state_data in voice_state_datas:
-                    user = create_partial_user(int(voice_state_data['user_id']))
+                    user = create_partial_user_from_id(int(voice_state_data['user_id']))
                     if user.id in self.voice_states:
                         continue
                     
@@ -1469,7 +1469,7 @@ class Guild(DiscordEntity, immortal=True):
 ##            new_voice_states=self.voice_states={}
 ##
 ##            for voice_state_data in voice_state_datas:
-##                user=create_partial_user(int(voice_state_data['user_id']))
+##                user=create_partial_user_from_id(int(voice_state_data['user_id']))
 ##
 ##                channel_id=voice_state_data.get('channel_id',None)
 ##                if channel_id is None:
@@ -2651,7 +2651,7 @@ class Guild(DiscordEntity, immortal=True):
         if owner_id == 0:
             owner = ZEROUSER
         else:
-            owner = create_partial_user(owner_id)
+            owner = create_partial_user_from_id(owner_id)
         
         return owner
     
@@ -3507,7 +3507,7 @@ class WelcomeChannel:
         self = object.__new__(cls)
         self.channel_id = int(data['channel_id'])
         self.description = data['description']
-        self.emoji = create_partial_emoji(data)
+        self.emoji = create_partial_emoji_from_data(data)
         return self
     
     def to_data(self):
@@ -3521,7 +3521,7 @@ class WelcomeChannel:
         data = {
             'channel_id': self.channel.id,
             'description': self.description,
-                }
+        }
         
         emoji = self.emoji
         if emoji.is_unicode_emoji():

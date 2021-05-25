@@ -14,7 +14,7 @@ from ..utils import url_cutter
 from ..limits import COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX, \
     COMPONENT_OPTION_LENGTH_MAX, COMPONENT_OPTION_LENGTH_MIN, COMPONENT_OPTION_MIN_VALUES_MIN, \
     COMPONENT_OPTION_MIN_VALUES_MAX, COMPONENT_OPTION_MAX_VALUES_MIN, COMPONENT_OPTION_MAX_VALUES_MAX
-from ..emoji import create_partial_emoji, Emoji, create_partial_emoji_data
+from ..emoji import create_partial_emoji_from_data, Emoji, create_partial_emoji_data
 
 from .preinstanced import ComponentType, ButtonStyle
 
@@ -725,7 +725,7 @@ class ComponentButton(ComponentBase):
         if emoji_data is None:
             emoji = None
         else:
-            emoji = create_partial_emoji(emoji_data)
+            emoji = create_partial_emoji_from_data(emoji_data)
         self.emoji = emoji
         
         style = data.get('style', None)
@@ -972,7 +972,7 @@ class ComponentSelectOption(ComponentBase):
         if emoji_data is None:
             emoji = None
         else:
-            emoji = create_partial_emoji(emoji_data)
+            emoji = create_partial_emoji_from_data(emoji_data)
         self.emoji = emoji
         
         self.label = data['label']
@@ -1290,7 +1290,7 @@ COMPONENT_DYNAMIC_SERIALIZERS = {
 
 
 COMPONENT_DYNAMIC_DESERIALIZERS = {
-    'emoji' : create_partial_emoji,
+    'emoji' : create_partial_emoji_from_data,
 }
 
 

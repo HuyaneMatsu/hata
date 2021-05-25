@@ -14,9 +14,10 @@ from .preinstanced import WebhookType
 from . import urls as module_urls
 
 ChannelText = include('ChannelText')
+create_partial_channel_from_id = include('create_partial_channel_from_id')
 Client = include('Client')
 
-def create_partial_webhook(webhook_id, token, type_=WebhookType.bot, channel=None):
+def create_partial_webhook_from_id(webhook_id, token, type_=WebhookType.bot, channel=None):
     """
     Creates a partial webhook from the given parameters. If the webhook with the given `webhook_id` already exists,
     then returns that instead.
@@ -241,7 +242,7 @@ class Webhook(WebhookBase):
         webhook_id = int(result.group(1))
         webhook_token = result.group(2)
         
-        return create_partial_webhook(webhook_id, webhook_token)
+        return create_partial_webhook_from_id(webhook_id, webhook_token)
     
     def _update_no_return(self, data):
         """
@@ -252,7 +253,7 @@ class Webhook(WebhookBase):
         data : `dict` of (`str`, `Any`) items
             Received webhook data.
         """
-        self.channel = channel = ChannelText.precreate(int(data['channel_id']))
+        self.channel = channel = create_partial_channel_from_id(int(data['channel_id']), 0)
         if channel.clients:
             channel.guild.webhooks[self.id] = self
         
@@ -548,4 +549,4 @@ class WebhookRepr(WebhookBase):
         -------
         webhook : ``Webhook``
         """
-        return create_partial_webhook(self.id, '', self.type, self.channel)
+        return create_partial_webhook_from_id(self.id, '', self.type, self.channel)

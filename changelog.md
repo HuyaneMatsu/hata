@@ -3,6 +3,24 @@
 #### Improvements
 
 - Update discord media sizes.
+- Add `Client.thread_join`.
+- Add `Client.thread_leave`.
+- Add `Client.thread_user_add`.
+- Add `Client.thread_user_delete`.
+- Add `DiscordHTTPClient.thread_user_get_all`.
+- Add `RATE_LIMIT_GROUPS.thread_user_get_all`.
+- Add `create_partial_channel_from_id`.
+- Add `._create_empty` for each channel type.
+- Add `._from_partial_data` for super channels as well.
+- Add `Client.thread_user_get_all`.
+- Separate `DiscordHTTPClient.thread_get_all_archived` to `.thread_get_all_archived_private` and
+    `.thread_get_all_archived_public`
+- Separate `RATE_LIMIT_GROUPS.thread_get_all_archived` to `.thread_get_all_archived_private` and
+    `.thread_get_all_archived_public`
+- Add `DiscordHTTPClient.thread_get_chunk_active`.
+- Add `RATE_LIMIT_GROUPS.thread_get_chunk_active`.
+- Add `Client.thread_get_all_active`.
+- Add support for `datetime` query parameter.
 
 ##### hata.ext.extension_loader
 
@@ -13,6 +31,25 @@
 
 - Commands were not getting their display name as their description by default (but their raw name).
 - Routing slash commands dropped `TypeError`.
+
+#### Bug Fixes
+
+- Fix an `AttributeError` in `ChannelGroup._from_partial_data`.
+- `ChannelThread` has no attribute `thread_users`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `create_partial_channel` to `create_partial_channel_from_data`.
+- Rename `create_partial_user` to `create_partial_user_from_id`.
+- Rename `create_partial_emoji` to `create_partial_emoji_from_data`.
+- Rename `create_partial_integration` to `create_partial_integration_from_id`.
+- Rename `create_partial_role` to `create_partial_role_from_id`.
+- Rename `create_partial_guild` to `create_partial_guild_from_data`.
+- Rename `create_partial_webhook` to `create_partial_webhook_from_id`.
+- Rename `_thread_user_create` to `thread_user_create`.
+- Rename `_thread_user_update` to `thread_user_update`.
+- Rename `_thread_user_delete` to `thread_user_delete`.
+- Rename `_thread_user_pop` to `thread_user_pop`.
 
 ## 1.1.80 *\[2021-05-22\]*
 

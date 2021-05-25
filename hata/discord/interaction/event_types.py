@@ -7,7 +7,7 @@ from ...backend.futures import Future, shield, future_or_timeout
 
 from ..bases import EventBase, DiscordEntity
 from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS
-from ..channel import ChannelPrivate, ChannelText, create_partial_channel
+from ..channel import ChannelPrivate, ChannelText, create_partial_channel_from_data, create_partial_channel_from_id
 from ..message import Message
 from ..permission import Permission
 from ..permission.permission import PERMISSION_PRIVATE
@@ -123,7 +123,7 @@ class ApplicationCommandInteraction(DiscordEntity):
                     resolved_channels = {}
                     
                     for channel_data in resolved_channel_datas.values():
-                        channel = create_partial_channel(channel_data, guild)
+                        channel = create_partial_channel_from_data(channel_data, guild)
                         if (channel is not None):
                             resolved_channels[channel.id] = channel
                     
@@ -528,9 +528,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         channel_id = int(data['channel_id'])
         if guild_id:
-            channel = ChannelText.precreate(channel_id)
+            channel_type = 0
         else:
-            channel = ChannelPrivate._create_dataless(channel_id)
+            channel_type = 1
+        
+        channel = create_partial_channel_from_id(channel_id, channel_type, guild)
         
         try:
             user_data = data['member']

@@ -20,7 +20,7 @@ from .permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_P
     PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, PERMISSION_STAGE_MODERATOR, \
     PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_TEXT_AND_STAGE_DENY
 from .message import Message, MESSAGES
-from .user import User, ZEROUSER, create_partial_user, _thread_user_create
+from .user import User, ZEROUSER, create_partial_user_from_id, thread_user_create
 from .core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
@@ -62,7 +62,7 @@ GC_CYCLER.append(turn_message_limiting_on)
 
 del turn_message_limiting_on, GC_CYCLER
 
-def create_partial_channel(data, partial_guild=None):
+def create_partial_channel_from_data(data, partial_guild=None):
     """
     Creates a partial channel from partial channel data.
     
@@ -96,6 +96,33 @@ def create_partial_channel(data, partial_guild=None):
 
 
 @export
+def create_partial_channel_from_id(channel_id, channel_type, partial_guild=None):
+    """
+    Creates a new partial channel from the given identifier.
+    
+    Parameters
+    ----------
+    channel_id : `int`
+        The channel's identifier.
+    channel_type : `int`
+        The channel's type identifier.
+    partial_guild : `None` or ``Guild``, Optional
+        A partial guild for the created channel.
+    """
+    try:
+        return CHANNELS[channel_id]
+    except KeyError:
+        pass
+    
+    cls = CHANNEL_TYPES.get(channel_type, ChannelGuildUndefined)
+    
+    channel = cls._create_empty(channel_id, channel_type, partial_guild)
+    CHANNELS[channel_id] = channel
+    
+    return channel
+
+
+@export
 class ChannelBase(DiscordEntity, immortal=True):
     """
     Base class for Discord channels.
@@ -107,6 +134,8 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `0`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `()`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -115,6 +144,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     -----
     Channels support weakreferencing.
     """
+    DEFAULT_TYPE = 0
     INTERCHANGE = ()
     
     def __new__(cls, data, client=None, guild=None):
@@ -602,6 +632,58 @@ class ChannelBase(DiscordEntity, immortal=True):
         Used when the channel is deleted.
         """
         pass
+
+    
+    @classmethod
+    def _from_partial_data(cls, data, channel_id, partial_guild):
+        """
+        Creates a channel from partial data. Called by ``create_partial_channel_from_data`` when a new
+        partial channel is needed to be created.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Partial channel data.
+        channel_id : `int`
+            The channel's id.
+        partial_guild : ``Guild`` or `None`
+            The channel's guild if applicable.
+        
+        Returns
+        -------
+        channel : ``ChannelBase``
+        """
+        try:
+            channel_type = data['type']
+        except KeyError:
+            channel_type = cls.DEFAULT_TYPE
+        
+        self = cls._create_empty(channel_id, channel_type, partial_guild)
+        
+        return self
+    
+    @classmethod
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        """
+        Creates a partial channel from the given parameters.
+        
+        Parameters
+        ----------
+        channel_id : `int`
+            The channel's identifier.
+        channel_type : `int`
+            The channel's type identifier.
+        partial_guild : `None` or ``Guild``
+            A partial guild for the created channel.
+        
+        Returns
+        -------
+        channel : ``ChannelBase`` instance
+            The created partial channel.
+        """
+        self = object.__new__(cls)
+        self.id = channel_id
+        return self
 
 
 # sounds funny, but this is a class
@@ -1325,6 +1407,8 @@ class ChannelGuildBase(ChannelBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `0`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `()`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -1498,6 +1582,29 @@ class ChannelGuildBase(ChannelBase):
             result.append(user)
         
         return result
+    
+    @classmethod
+    @copy_docs(ChannelBase._from_partial_data)
+    def _from_partial_data(cls, data, channel_id, partial_guild):
+        self = super(ChannelGuildBase, cls)._from_partial_data(data, channel_id, partial_guild)
+        
+        try:
+            name = data['name']
+        except KeyError:
+            pass
+        else:
+            self.name = name
+        
+        return self
+    
+    @classmethod
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelGuildBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+        self.parent = None
+        self.guild = partial_guild
+        self.name = ''
+        return self
 
 
 @export
@@ -1524,6 +1631,8 @@ class ChannelGuildMainBase(ChannelGuildBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `0`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `()`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -1942,6 +2051,16 @@ class ChannelGuildMainBase(ChannelGuildBase):
             FutureWarning)
         
         return self.parent
+    
+    @classmethod
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelGuildMainBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+        self._cache_perm = None
+        self.overwrites = []
+        self.position = 0
+        return self
+
 
 @export
 class ChannelText(ChannelGuildMainBase, ChannelTextBase):
@@ -1986,6 +2105,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `0`
+        The preferred channel type, if there is no channel type included.
     INTERCHANGE : `tuple` of `int` = `(0, 5,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -1993,14 +2114,11 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         An order group what defined which guild channel type comes after the other one.
     MESSAGE_KEEP_LIMIT : `int` = `10`
         The default amount of messages to store at `.messages`.
-    DEFAULT_TYPE : `int` = `0`
-        The preferred channel type, if there is no channel type included.
     """
     __slots__ = ('nsfw', 'slowmode', 'topic', 'type',) # guild text channel related
     
     ORDER_GROUP = 0
     INTERCHANGE = (0, 5,)
-    DEFAULT_TYPE = 0
     
     def __new__(cls, data, client=None, guild=None):
         """
@@ -2065,55 +2183,26 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         repr_parts.append('>')
         return ''.join(repr_parts)
     
+    
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelText`` from partial data. Called by ``create_partial_channel`` when a new partial channel is
-        needed to be created.
-        
-        Parameters
-        ----------
-        data : `None` or `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelText``
-        """
-        self = object.__new__(cls)
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelText, cls)._create_empty(channel_id, channel_type, partial_guild)
         self._messageable_init()
         
-        self._cache_perm = None
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        
         self.nsfw = False
-        self.overwrites = []
-        self.position = 0
         self.slowmode = 0
         self.topic = None
-        
-        if data is None:
-            name = ''
-            type_ = cls.DEFAULT_TYPE
-        else:
-            name = data.get('name', '')
-            type_ = data['type']
-        
-        self.name = name
-        self.type = type_
+        self.type = channel_type
         
         return self
+    
     
     @property
     @copy_docs(ChannelBase.display_name)
     def display_name(self):
         return self.name.lower()
+    
     
     @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
@@ -2126,6 +2215,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         self.topic = data.get('topic', None)
         self.nsfw = data.get('nsfw', False)
         self.slowmode = int(data.get('rate_limit_per_user', 0))
+    
     
     def _update(self, data):
         """
@@ -2367,36 +2457,20 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-
-            channel.id = channel_id
-
-            channel._cache_perm = None
-            channel.parent = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
-            channel.type = cls.DEFAULT_TYPE
-            channel.nsfw = False
-            channel.slowmode = 0
-            channel.topic = None
-            
-            channel._messageable_init()
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            CHANNELS[channel_id] = self
             
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
 
 
 @export
@@ -2422,6 +2496,8 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `1`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `(1,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -2432,6 +2508,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     """
     __slots__ = ('users',) # private related
     
+    DEFAULT_TYPE = 1
     INTERCHANGE = (1,)
     type = 1
     
@@ -2483,32 +2560,16 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         client.private_channels[user.id] = self
         return self
     
+    
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelPrivate`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : `None`
-            compatibility parameter with the other channel types.
-        
-        Returns
-        -------
-        channel : ``ChannelPrivate``
-        """
-        self = object.__new__(cls)
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelPrivate, cls)._create_empty(channel_id, channel_type, partial_guild)
         self._messageable_init()
-        self.id = channel_id
-        # exactly what partial private channel data contains?
         self.users = []
         
         return self
+    
     
     @classmethod
     def _create_dataless(cls, channel_id):
@@ -2632,19 +2693,12 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             raise ValueError(f'Unused or unsettable attributes: {kwargs}')
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-            
-            channel.id = channel_id
-            
-            channel.users = []
-            
-            channel._messageable_init()
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.type, None)
+            CHANNELS[channel_id] = self
         
-        return channel
+        return self
 
 
 @export
@@ -2677,6 +2731,8 @@ class ChannelVoiceBase(ChannelGuildMainBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `2`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `()`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -2685,7 +2741,19 @@ class ChannelVoiceBase(ChannelGuildMainBase):
     """
     __slots__ = ('bitrate', 'region', 'user_limit') # Voice related.
     
+    DEFAULT_TYPE = 2
     ORDER_GROUP = 2
+    
+    @classmethod
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelVoiceBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+        
+        self.bitrate = 0
+        self.region = None
+        self.user_limit = 0
+        
+        return self
     
     @property
     def voice_users(self):
@@ -2745,6 +2813,8 @@ class ChannelVoice(ChannelVoiceBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `2`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `(2,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -2807,42 +2877,14 @@ class ChannelVoice(ChannelVoiceBase):
         return self
     
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelVoice`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelVoice``
-        """
-        self = object.__new__(cls)
-        
-        self._cache_perm = None
-        
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        self.name = data.get('name', '')
-        self.overwrites = []
-        self.position = 0
-        
-        self.bitrate = 0
-        self.region = None
-        self.user_limit = 0
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelVoice, cls)._create_empty(channel_id, channel_type, partial_guild)
         
         self.video_quality_mode = VideoQualityMode.auto
         
         return self
+    
     
     @copy_docs(ChannelBase._delete)
     def _delete(self):
@@ -3077,36 +3119,20 @@ class ChannelVoice(ChannelVoiceBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-            
-            channel.id = channel_id
-            
-            channel._cache_perm = None
-            channel.parent = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
-            
-            channel.bitrate = 64000
-            channel.user_limit = 0
-            channel.region = None
-            
-            channel.video_quality_mode = VideoQualityMode.auto
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            CHANNELS[channel_id] = self
         
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
 
 
 @export
@@ -3140,6 +3166,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `3`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `(3,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -3153,6 +3181,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     
     icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
     
+    DEFAULT_TYPE = 3
     INTERCHANGE = (3,)
     type = 3
     
@@ -3214,45 +3243,38 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         """
         owner_id = self.owner_id
         if owner_id:
-            owner = create_partial_user(owner_id)
+            owner = create_partial_user_from_id(owner_id)
         else:
             owner = ZEROUSER
         return owner
     
     @classmethod
+    @copy_docs(ChannelBase._from_partial_data)
     def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelGroup`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
+        self = super(ChannelGroup, cls)._from_partial_data(data, channel_id, partial_guild)
         
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : `None`
-            compatibility parameter with the other channel types.
-        
-        Returns
-        -------
-        channel : ``ChannelGroup``
-        """
-        self = object.__new__(cls)
-        self._messageable_init()
-        self.id = channel_id
-        # even if we get recipients, we will ignore them
-        self.users = []
-        
-        self._set_icon(data)
-        
-        name = data.get('name',None)
-        # should we transfer the recipients to name?
-        self.name = '' if name is None else name
-        
-        self.owner = ZEROUSER
+        name = data.get('name', None)
+        if (name is not None):
+            self.name = name
         
         return self
+    
+    @classmethod
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(cls, cls)._create_empty(channel_id, channel_type, partial_guild)
+        self._messageable_init()
+        
+        self.users = []
+        
+        self.name = None
+        self.owner_id = 0
+        
+        self.icon_hash = 0
+        self.icon_type = ICON_TYPE_NONE
+        
+        return self
+    
     
     def _delete(self, client):
         """
@@ -3267,6 +3289,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         """
         del client.group_channels[self.id]
     
+    
     @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
         name = data.get('name', None)
@@ -3275,6 +3298,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         self._set_icon(data)
         
         self.owner_id = int(data['owner_id'])
+    
     
     def _update(self, data):
         """
@@ -3412,32 +3436,20 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-            
-            channel.id = channel_id
-            
-            channel.users = []
-            
-            channel.name = ''
-            channel.icon_hash = 0
-            channel.icon_type = ICON_TYPE_NONE
-            channel.owner_id = 0
-            
-            channel._messageable_init()
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.type, None)
+            CHANNELS[channel_id] = self
             
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
 
 
 @export
@@ -3465,6 +3477,8 @@ class ChannelCategory(ChannelGuildMainBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `4`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `(4,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -3473,8 +3487,9 @@ class ChannelCategory(ChannelGuildMainBase):
     type : `int` = `4`
         The channel's Discord side type.
     """
-    __slots__=() # channel category related
+    __slots__ = () # channel category related
     
+    DEFAULT_TYPE = 4
     ORDER_GROUP = 4
     INTERCHANGE = (4,)
     type = 4
@@ -3514,41 +3529,12 @@ class ChannelCategory(ChannelGuildMainBase):
         
         return self
     
-    @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelCategory`` from partial data. Called by ``create_partial_channel`` when a new partial
-        channel is needed to be created.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelCategory``
-        """
-        self = object.__new__(cls)
-        
-        self._cache_perm = None
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        self.name = data.get('name', '')
-        self.overwrites = []
-        self.position = 0
-        
-        return self
     
     @property
     @copy_docs(ChannelBase.display_name)
     def display_name(self):
         return self.name.upper()
+    
     
     @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
@@ -3557,7 +3543,8 @@ class ChannelCategory(ChannelGuildMainBase):
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
-        
+    
+    
     def _update(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
@@ -3666,30 +3653,20 @@ class ChannelCategory(ChannelGuildMainBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-
-            channel.id = channel_id
-
-            channel._cache_perm = None
-            channel.parent = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.type, None)
+            CHANNELS[channel_id] = self
             
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
     
     @property
     def channel_list(self):
@@ -3733,6 +3710,8 @@ class ChannelStore(ChannelGuildMainBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `6`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `(6,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -3743,6 +3722,7 @@ class ChannelStore(ChannelGuildMainBase):
     """
     __slots__ = ('nsfw',) #guild channel store related
     
+    DEFAULT_TYPE = 6
     ORDER_GROUP = 0
     INTERCHANGE = (6,)
     type = 6
@@ -3783,38 +3763,16 @@ class ChannelStore(ChannelGuildMainBase):
         
         return self
     
+    
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelStore`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelStore, cls)._create_empty(channel_id, channel_type, partial_guild)
         
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelStore``
-        """
-        self = object.__new__(cls)
-        
-        self._cache_perm = None
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        self.name = data.get('name', '')
         self.nsfw = False
-        self.overwrites = []
-        self.position = 0
         
         return self
-        
+    
     @property
     @copy_docs(ChannelBase.display_name)
     def display_name(self):
@@ -3983,32 +3941,20 @@ class ChannelStore(ChannelGuildMainBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-            
-            channel.id = channel_id
-            
-            channel._cache_perm = None
-            channel.parent = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
-            
-            channel.nsfw = False
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.type, None)
+            CHANNELS[channel_id] = self
             
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
 
 
 
@@ -4057,6 +4003,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `12`
+        The preferred channel type, if there is no channel type included.
     INTERCHANGE : `tuple` of `int` = `(10, 11, 12,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -4064,17 +4012,15 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         An order group what defined which guild channel type comes after the other one.
     MESSAGE_KEEP_LIMIT : `int` = `10`
         The default amount of messages to store at `.messages`.
-    DEFAULT_TYPE : `int` = `12`
-        The preferred channel type, if there is no channel type included.
     REPRESENTED_TYPES : `tuple` = (`10`, `11`, `12`,)
         The type values which ``ChannelThread`` might represent.
     """
     __slots__ = ('archived', 'archived_at', 'archiver_id', 'auto_archive_after', 'open', 'owner_id', 'slowmode',
-        'type')
+        'thread_users', 'type')
     
+    DEFAULT_TYPE = 12
     ORDER_GROUP = 9
     INTERCHANGE = ()
-    DEFAULT_TYPE = 12
     REPRESENTED_TYPES = (10, 11, 12,)
     
     def __new__(cls, data, client=None, guild=None):
@@ -4118,7 +4064,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             except KeyError:
                 pass
             else:
-                _thread_user_create(self, client, thread_user_data)
+                thread_user_create(self, client, thread_user_data)
         
         return self
     
@@ -4156,7 +4102,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         """
         owner_id = self.owner_id
         if owner_id:
-            owner = create_partial_user(owner_id)
+            owner = create_partial_user_from_id(owner_id)
         else:
             owner = ZEROUSER
         
@@ -4174,7 +4120,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         """
         archiver_id = self.archiver_id
         if archiver_id:
-            archiver = create_partial_user(archiver_id)
+            archiver = create_partial_user_from_id(archiver_id)
         else:
             archiver = None
         
@@ -4240,53 +4186,23 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         self.parent = parent
     
+    
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelThread`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
-        
-        Parameters
-        ----------
-        data : `None` or `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelText``
-        """
-        self = object.__new__(cls)
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelThread, cls)._create_empty(channel_id, channel_type, partial_guild)
         self._messageable_init()
         
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        
-        self.slowmode = 0
-        self.owner_id = 0
         self.archived = False
         self.archived_at = None
         self.archiver_id = 0
         self.auto_archive_after = 60
         self.open = False
-        self.thread_users = None
-        
-        if data is None:
-            name = ''
-            type_ = cls.DEFAULT_TYPE
-        else:
-            name = data.get('name', '')
-            type_ = data['type']
-        
-        self.name = name
-        self.type = type_
+        self.owner_id = 0
+        self.slowmode = 0
+        self.type = channel_type
         
         return self
-    
     
     @property
     @copy_docs(ChannelBase.display_name)
@@ -4559,27 +4475,9 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = object.__new__(cls)
-
-            self.id = channel_id
-            
-            self.parent = None
-            self.guild = None
-            self.name = ''
-            self.type = cls.DEFAULT_TYPE
-            self.slowmode = 0
-            self.owner_id = 0
-            self.archived = False
-            self.archived_at = None
-            self.archiver_id = 0
-            self.auto_archive_after = 60
-            self.open = False
-            self.thread_users = None
-            
-            self._messageable_init()
-            
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
             CHANNELS[channel_id] = self
-            
+        
         else:
             if not self.partial:
                 return self
@@ -4618,15 +4516,15 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `7`
+        The default type, what ``ChannelGuildUndefined`` represents.
     INTERCHANGE : `tuple` of `int` = `()`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
-    IGNORED_NAMES : `tuple` or `str`
+    IGNORED_NAMES : `frozenset` or `str`
         Attribute names, which will not be set automatically, because they are set by other modules.
-    DEFAULT_TYPE : `int` = `7`
-        The default type, what ``ChannelGuildUndefined`` represents.
     REPRESENTED_TYPES : `tuple` = (`7`, `8`,)
         The type values which ``ChannelGuildUndefined`` might represent.
     
@@ -4635,12 +4533,12 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     This type supports dynamic attributes.
     """
     __slots__ = ('type', '__dict__', )
+    
+    DEFAULT_TYPE = 7
+    IGNORED_NAMES = frozenset(('type', 'name', 'position', 'parent_id', 'permission_overwrites', ))
     INTERCHANGE = ()
     ORDER_GROUP = 0
-    
-    IGNORED_NAMES = ('type', 'name', 'position', 'parent_id', 'permission_overwrites', )
-    DEFAULT_TYPE = 7
-    REPRESENTED_TYPES = (7, 8, 9,)
+    REPRESENTED_TYPES = (7, 8, )
     
     def __new__(cls, data, client=None, guild=None):
         """
@@ -4684,35 +4582,10 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         
         return self
     
+    
     @classmethod
     def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelThread`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelStore``
-        """
-        self = object.__new__(cls)
-        
-        self._cache_perm = None
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        self.name = data.get('name', '')
-        self.overwrites = []
-        self.position = 0
-        self.type = data['type']
+        self = super(ChannelGuildUndefined, cls)._from_partial_data(data, channel_id, partial_guild)
         
         for key in data.keys():
             if key in self.IGNORED_NAMES:
@@ -4722,10 +4595,22 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         
         return self
     
+    
+    @classmethod
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelGuildUndefined, cls)._create_empty(channel_id, channel_type, partial_guild)
+        
+        self.type = channel_type
+        
+        return self
+    
+    
     @property
     @copy_docs(ChannelBase.display_name)
     def display_name(self):
         return self.name
+    
     
     @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
@@ -4808,7 +4693,11 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
             return
         
         self.guild = None
-        del guild.channels[self.id]
+        
+        try:
+            del guild.channels[self.id]
+        except KeyError:
+            pass
         
         self.parent = None
         
@@ -4890,31 +4779,20 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-            
-            channel.id = channel_id
-            
-            channel._cache_perm = None
-            channel.parent = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
-            channel.type = cls.DEFAULT_TYPE
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            CHANNELS[channel_id] = self
             
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
 
 
 @export
@@ -4949,6 +4827,8 @@ class ChannelStage(ChannelVoiceBase):
     
     Class Attributes
     ----------------
+    DEFAULT_TYPE : `int` = `13`
+        The default type, what the channel represents.
     INTERCHANGE : `tuple` of `int` = `(13,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
@@ -4959,6 +4839,7 @@ class ChannelStage(ChannelVoiceBase):
     """
     __slots__ = ('topic',) # Stage channel related
     
+    DEFAULT_TYPE = 13
     INTERCHANGE = (13,)
     type = 13
     
@@ -5010,38 +4891,9 @@ class ChannelStage(ChannelVoiceBase):
         return self
     
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        """
-        Creates a ``ChannelVoice`` from partial data. Called by ``create_partial_channel`` when a new partial channel
-        is needed to be created.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Partial channel data.
-        channel_id : `int`
-            The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
-        
-        Returns
-        -------
-        channel : ``ChannelVoice``
-        """
-        self = object.__new__(cls)
-        
-        self._cache_perm = None
-        
-        self.parent = None
-        self.guild = partial_guild
-        self.id = channel_id
-        self.name = data.get('name', '')
-        self.overwrites = []
-        self.position = 0
-        
-        self.bitrate = 0
-        self.region = None
-        self.user_limit = 0
+    @copy_docs(ChannelBase._create_empty)
+    def _create_empty(cls, channel_id, channel_type, partial_guild):
+        self = super(ChannelStage, cls)._create_empty(channel_id, channel_type, partial_guild)
         
         self.topic = None
         
@@ -5280,34 +5132,20 @@ class ChannelStage(ChannelVoiceBase):
             processable = None
         
         try:
-            channel = CHANNELS[channel_id]
+            self = CHANNELS[channel_id]
         except KeyError:
-            channel = object.__new__(cls)
-            
-            channel.id = channel_id
-            
-            channel._cache_perm = None
-            channel.parent = None
-            channel.guild = None
-            channel.overwrites = []
-            channel.position = 0
-            channel.name = ''
-            
-            channel.bitrate = 64000
-            channel.user_limit = 0
-            channel.region = None
-            
-            CHANNELS[channel_id] = channel
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            CHANNELS[channel_id] = self
         
         else:
-            if not channel.partial:
-                return channel
+            if not self.partial:
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(channel, *item)
+                setattr(self, *item)
         
-        return channel
+        return self
     
     @property
     def audience(self):

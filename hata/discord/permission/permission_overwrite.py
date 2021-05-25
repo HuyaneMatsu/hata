@@ -5,8 +5,8 @@ from ..permission import Permission
 from .utils import get_permission_overwrite_key_value, PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
 from .preinstanced import PermissionOverwriteTargetType
 
-create_partial_role = include('create_partial_role')
-create_partial_user = include('create_partial_user')
+create_partial_role_from_id = include('create_partial_role_from_id')
+create_partial_user_from_id = include('create_partial_user_from_id')
 Role = include('Role')
 
 PERMISSION_OVERWRITE_TYPE_ROLE_VALUE = PermissionOverwriteTargetType.role.value
@@ -39,7 +39,7 @@ class PermissionOverwrite:
         """
         id_ = int(data['id'])
         if get_permission_overwrite_key_value(data) == PERMISSION_OVERWRITE_TYPE_ROLE_VALUE:
-            target_role = create_partial_role(id_)
+            target_role = create_partial_role_from_id(id_)
             target_user_id = 0
         else:
             target_role = None
@@ -61,7 +61,7 @@ class PermissionOverwrite:
         """
         target = self.target_role
         if target is None:
-            target = create_partial_user(self.target_user_id)
+            target = create_partial_user_from_id(self.target_user_id)
         
         return target
     

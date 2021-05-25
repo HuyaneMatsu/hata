@@ -1,7 +1,7 @@
 __all__ = ('AllowedMentionProxy', 'parse_allowed_mentions')
 
-from .user import UserBase, create_partial_user
-from .role import Role, create_partial_role
+from .user import UserBase, create_partial_user_from_id
+from .role import Role, create_partial_role_from_id
 
 
 def parse_allowed_mentions(allowed_mentions):
@@ -291,7 +291,7 @@ class AllowedMentionProxy:
                 allowed_roles = []
                 for role_id in allowed_roles:
                     role_id = int(role_id)
-                    role = create_partial_role(role_id)
+                    role = create_partial_role_from_id(role_id)
                     allowed_roles.append(role)
             
             allowed_users_raw = data.get('users', None)
@@ -301,7 +301,7 @@ class AllowedMentionProxy:
                 allowed_users = []
                 for user_id in allowed_users_raw:
                     user_id = int(user_id)
-                    user = create_partial_user(user_id)
+                    user = create_partial_user_from_id(user_id)
                     allowed_users.append(user)
             
             try:

@@ -6,7 +6,7 @@ from ..bases import DiscordEntity
 from ..core import ROLES
 from ..utils import DATETIME_FORMAT_CODE
 from ..color import Color
-from ..user import create_partial_user
+from ..user import create_partial_user_from_id
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
     preconvert_flag
 from ..permission.utils import PERMISSION_KEY
@@ -14,7 +14,7 @@ from ..permission.permission import Permission, PERMISSION_NONE
 
 from .preinstanced import RoleManagerType
 
-create_partial_integration = include('create_partial_integration')
+create_partial_integration_from_id = include('create_partial_integration_from_id')
 
 ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
 ROLE_MANAGER_TYPE_UNSET = RoleManagerType.unset
@@ -588,14 +588,14 @@ class Role(DiscordEntity, immortal=True):
             manager = None
         
         elif manager_type is ROLE_MANAGER_TYPE_BOT:
-            manager = create_partial_user(self.manager_id)
+            manager = create_partial_user_from_id(self.manager_id)
             
-            # `create_partial_user` sets newly created users' `.is_bot` attribute as `False`.
+            # `create_partial_user_from_id` sets newly created users' `.is_bot` attribute as `False`.
             if not manager.is_bot :
                 manager.is_bot = True
         
         elif manager_type is ROLE_MANAGER_TYPE_INTEGRATION:
-            manager = create_partial_integration(self.manager_id, role=self)
+            manager = create_partial_integration_from_id(self.manager_id, role=self)
         
         else:
             manager = None

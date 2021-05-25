@@ -1,4 +1,4 @@
-__all__ = ('create_partial_role', 'cr_p_role_object', 'parse_role', 'parse_role_mention')
+__all__ = ('create_partial_role_from_id', 'cr_p_role_object', 'parse_role', 'parse_role_mention')
 
 from ...backend.export import export
 
@@ -13,7 +13,7 @@ from .role import Role
 ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
 
 @export
-def create_partial_role(role_id):
+def create_partial_role_from_id(role_id):
     """
     Creates a partial role from the given `role_id`. If the role already exists returns that instead.
     

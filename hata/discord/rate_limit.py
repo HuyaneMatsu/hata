@@ -2219,6 +2219,15 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `UN`
         - Notes : Untested.
     
+    - thread_user_get_all
+        - Endpoint : `/channels/{channel_id}/thread-members`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Untested.
+    
     - thread_join
         - Endpoint : `/channels/{channel_id}/thread-members/@me`
         - Method : `POST`
@@ -2264,14 +2273,29 @@ class RATE_LIMIT_GROUPS:
         - Resets after : `OPT`
         - Notes : Untested.
     
-    - thread_get_all_archived
-        - Endpoint : `/channels/{channel_id}/threads/archived/{thread_type}`
+    - thread_get_chunk_active
+        - Endpoint : `/channels/{channel_id}/threads/active`
         - Method : `GET`
         - Required auth : `bot`
         - Limiter : `UNLIMITED`
         - Limit : `N/A`
         - Resets after : `N/A`
-        - Notes : `thread_type` can be either `'public'` and `'private'`.
+    
+    - thread_get_all_archived_private
+        - Endpoint : `/channels/{channel_id}/threads/archived/private`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
+    
+    - thread_get_all_archived_public
+        - Endpoint : `/channels/{channel_id}/threads/archived/public`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
     
     - typing
         - Endpoint : `/channels/{channel_id}/typing`
@@ -3328,6 +3352,7 @@ class RATE_LIMIT_GROUPS:
     channel_group_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     channel_group_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_join = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_leave = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
@@ -3335,6 +3360,9 @@ class RATE_LIMIT_GROUPS:
     thread_settings_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_create_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing = RateLimitGroup(LIMITER_CHANNEL)
+    thread_get_chunk_active = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_get_all_archived_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_get_all_archived_public = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     thread_get_all_self_archived = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)

@@ -5,7 +5,7 @@ from ..core import EMOJIS
 from ..utils import id_to_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..user import User, ZEROUSER
 from ..preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
-from ..role import create_partial_role
+from ..role import create_partial_role_from_id
 
 from .. import urls as module_urls
 
@@ -116,7 +116,7 @@ class Emoji(DiscordEntity, immortal=True):
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            roles = sorted(create_partial_role(int(role_id)) for role_id in role_ids)
+            roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
         
         emoji.roles = roles
         
@@ -411,7 +411,7 @@ class Emoji(DiscordEntity, immortal=True):
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            roles = sorted(create_partial_role(int(role_id)) for role_id in role_ids)
+            roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
         
         self.roles = roles
         
@@ -485,7 +485,7 @@ class Emoji(DiscordEntity, immortal=True):
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            roles = sorted(create_partial_role(int(role_id)) for role_id in role_ids)
+            roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
         
         if self.roles != roles:
             old_attributes['roles'] = self.roles

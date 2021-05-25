@@ -5,7 +5,7 @@ import reprlib
 from ..backend.export import export
 
 from .bases import DiscordEntity
-from .channel import ChannelStage
+from .channel import ChannelStage, create_partial_channel_from_id
 from .guild import Guild, create_partial_guild_from_id
 from .preinstanced import StagePrivacyLevel
 from .core import STAGES
@@ -53,7 +53,7 @@ class Stage(DiscordEntity):
             self = object.__new__(cls)
             guild = create_partial_guild_from_id(int(data['guild_id']))
             
-            self.channel = ChannelStage.precreate(int(data['channel_id']))
+            self.channel = create_partial_channel_from_id(int(data['channel_id']), 13, guild)
             self.guild = guild
             self.id = stage_id
             

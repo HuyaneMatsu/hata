@@ -6,11 +6,13 @@ from ...backend.utils import to_json
 from ...backend.export import include
 from ...backend.formdata import Formdata
 
-from ..core import MESSAGES
+from ..core import MESSAGES, CHANNELS
 from ..message import Message, MessageReference, MessageRepr
+from ..user import ClientUserBase
+from ..channel import ChannelThread, ChannelText
 from ..embed import EmbedBase
 from ..utils import random_id
-from ..bases import maybe_snowflake_pair
+from ..bases import maybe_snowflake_pair, maybe_snowflake
 
 ComponentBase = include('ComponentBase')
 ComponentType = include('ComponentType')
@@ -424,3 +426,172 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
             content = str(content)
     
     return content, embed
+
+
+def get_thread_channel_id(thread_channel):
+    """
+    Gets thread channel identifier from the given thread channel or of it's identifier.
+    
+    Parameters
+    ----------
+    thread_channel : ``ChannelThread``, `int`
+        The thread channel, or it's identifier.
+    
+    Returns
+    -------
+    thread_channel_id : `int`
+        The thread channel's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `thread_channel`'s type is incorrect.
+    """
+    if isinstance(thread_channel, ChannelThread):
+        thread_channel_id = thread_channel.id
+    
+    else:
+        thread_channel_id = maybe_snowflake(thread_channel)
+        if thread_channel_id is None:
+            raise TypeError(f'`thread_channel` can be either given as `{ChannelThread.__name__}` or as `int` instance, '
+                f'got {thread_channel.__class__.__name__}.')
+    
+    return thread_channel_id
+
+
+def get_guild_text_channel_id(channel):
+    """
+    Gets guild text channel identifier from the given text channel or of it's identifier.
+    
+    Parameters
+    ----------
+    channel : ``ChannelText``, `int`
+        The channel, or it's identifier.
+    
+    Returns
+    -------
+    channel_id : `int`
+        The channel's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `channel`'s type is incorrect.
+    """
+    if isinstance(channel, ChannelText):
+        channel_id = channel.id
+    
+    else:
+        channel_id = maybe_snowflake(channel)
+        if channel_id is None:
+            raise TypeError(f'`channel` can be either given as `{ChannelText.__name__}` or as `int` instance, '
+                f'got {channel.__class__.__name__}.')
+    
+    return channel_id
+
+
+def get_guild_and_guild_text_channel_id(channel):
+    """
+    Gets guild text channel identifier and it's guild from the given text channel or of it's identifier.
+    
+    Parameters
+    ----------
+    channel : ``ChannelText``, `int`
+        The channel, or it's identifier.
+    
+    Returns
+    -------
+    guild : ``Guild`` or `None`
+        The respective guild if any found.
+    channel_id : `int`
+        The channel's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `channel`'s type is incorrect.
+    """
+    if isinstance(channel, ChannelText):
+        channel_id = channel.id
+        guild = channel.guild
+    else:
+        channel_id = maybe_snowflake(channel)
+        if channel_id is None:
+            raise TypeError(f'`channel` can be either given as `{ChannelText.__name__}` or as `int` instance, '
+                f'got {channel.__class__.__name__}.')
+        
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            guild = None
+        else:
+            guild = channel.guild
+    
+    return guild, channel_id
+
+
+def get_thread_channel_and_id(thread_channel):
+    """
+    Gets thread channel and it's identifier from the given thread channel or of it's identifier.
+    
+    Parameters
+    ----------
+    thread_channel : ``ChannelThread``, `int`
+        The thread channel, or it's identifier.
+    
+    Returns
+    -------
+    thread_channel : ``ChannelThread``, `None`
+        The thread channel if found.
+    thread_channel_id : `int`
+        The thread channel's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `thread_channel`'s type is incorrect.
+    """
+    if isinstance(thread_channel, ChannelThread):
+        thread_channel_id = thread_channel.id
+    
+    else:
+        thread_channel_id = maybe_snowflake(thread_channel)
+        if thread_channel_id is None:
+            raise TypeError(f'`thread_channel` can be either given as `{ChannelThread.__name__}` or as `int` instance, '
+                f'got {thread_channel.__class__.__name__}.')
+        
+        thread_channel = CHANNELS.get(thread_channel_id, None)
+        
+    return thread_channel, thread_channel_id
+
+
+def get_user_id(user):
+    """
+    Gets user identifier from the given user or of it's identifier.
+    
+    Parameters
+    ----------
+    user : ``ClientUserBase``, `int`
+        The user, or it's identifier.
+    
+    Returns
+    -------
+    user_id : `int`
+        The user's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `user`'s type is incorrect.
+    """
+    if isinstance(user, ClientUserBase):
+        user_id = user.id
+    
+    else:
+        user_id = maybe_snowflake(user)
+        if user_id is None:
+            raise TypeError(f'`user` can be either given as `{ClientUserBase.__name__}` or as `int` instance, '
+                f'got {user.__class__.__name__}.')
+    
+    return user_id
+

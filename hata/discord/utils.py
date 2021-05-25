@@ -22,7 +22,7 @@ from .bases import DiscordEntity
 from .core import USERS, CHANNELS, ROLES
 
 MESSAGE_JUMP_URL_RP = include('MESSAGE_JUMP_URL_RP')
-create_partial_user = include('create_partial_user')
+create_partial_user_from_id = include('create_partial_user_from_id')
 RelationshipType = include('RelationshipType')
 
 DATETIME_FORMAT_CODE = '%Y-%m-%d %H:%M:%S'
@@ -632,7 +632,7 @@ class Relationship:
         user_id : `int`
             The relationship's target user's id.
         """
-        self.user = create_partial_user(user_id)
+        self.user = create_partial_user_from_id(user_id)
         self.type = RelationshipType.get(data['type'])
         client.relationships[user_id] = self
     

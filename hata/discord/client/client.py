@@ -19,19 +19,19 @@ from ...backend.url import URL
 from ...backend.export import export
 
 from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_extension, Relationship
-from ..user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user, \
+from ..user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user_from_id, thread_user_create, \
     ClientUserBase, ClientUserPBase
 from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
-    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread
-from ..guild import Guild, create_partial_guild, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
+    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id
+from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id
 from ..http import DiscordHTTPClient
-from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, CDN_ENDPOINT, is_cdn_url, is_media_url
+from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, is_media_url
 from ..role import Role
-from ..webhook import Webhook, create_partial_webhook
+from ..webhook import Webhook, create_partial_webhook_from_id
 from ..gateway import DiscordGateway, DiscordGatewaySharder
 from ..events.handling_helpers import _with_error
 from ..events.event_handler_manager import EventHandlerManager
@@ -70,7 +70,8 @@ from .functionality_helpers import SingleUserChunker, MassUserChunker, Discovery
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
     _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
-    add_file_to_message_data
+    add_file_to_message_data, get_thread_channel_id, get_user_id, get_thread_channel_and_id, \
+    get_guild_text_channel_id, get_guild_and_guild_text_channel_id
 from .utils import UserGuildPermission, Typer, BanEntry
 
 
@@ -1571,7 +1572,7 @@ class Client(ClientUserPBase):
         headers = imultidict()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_guild_get_all(headers)
-        return [(create_partial_guild(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
+        return [(create_partial_guild_from_data(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
     
     async def achievement_get_all(self):
         """
@@ -3087,7 +3088,7 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`source_channel` can be given as {ChannelText.__name__} or `int` instance, got '
                     f'{source_channel.__class__.__name__}.')
             
-            source_channel = ChannelText.precreate(source_channel_id)
+            source_channel = create_partial_channel_from_id(source_channel_id, 5)
         
         if isinstance(target_channel, ChannelText):
             target_channel_id = target_channel.id
@@ -3097,11 +3098,11 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`channel` can be given as {ChannelText.__name__} or `int` instance, got '
                     f'{target_channel.__class__.__name__}.')
             
-            target_channel = ChannelText.precreate(target_channel_id)
+            target_channel = create_partial_channel_from_id(target_channel_id, 0)
         
         data = {
             'webhook_channel_id': target_channel_id,
-                }
+        }
         
         data = await self.http.channel_follow(source_channel_id, data)
         webhook = await Webhook._from_follow_data(data, source_channel, target_channel, self)
@@ -3141,7 +3142,7 @@ class Client(ClientUserPBase):
         
         # If we do not find the channel, not it is private (probably), we create a guild text channel.
         # The exception case of real users is pretty small, so we can ignore it.
-        channel = ChannelText.precreate(channel_id)
+        channel = create_partial_channel_from_id(channel_id, 0)
         return channel
     
     
@@ -6668,7 +6669,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.guild_create(data)
         # we can create only partial, because the guild data is not completed usually
-        return create_partial_guild(data)
+        return create_partial_guild_from_data(data)
     
     async def guild_prune(self, guild, days, *, roles=None, count=False, reason=None):
         """
@@ -7864,7 +7865,7 @@ class Client(ClientUserPBase):
         params = {'after': 0}
         while True:
             data = await self.http.guild_get_all(params)
-            result.extend(create_partial_guild(guild_data) for guild_data in data)
+            result.extend(create_partial_guild_from_data(guild_data) for guild_data in data)
             if len(data) < 100:
                 break
             params['after'] = result[-1].id
@@ -8919,6 +8920,227 @@ class Client(ClientUserPBase):
         return ChannelThread(channel_data, self, guild)
     
     
+    async def thread_join(self, thread_channel):
+        """
+        Joins the client to the given thread channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        thread_channel : ``ChannelThread``, `int`
+            The channel to join to, or it's identifier.
+        
+        Raises
+        ------
+        TypeError
+            If `thread_channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel_id = get_thread_channel_id(thread_channel)
+        
+        await self.http.thread_join(channel_id)
+    
+    
+    async def thread_leave(self, thread_channel):
+        """
+        Leaves the client to the given thread channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        thread_channel : ``ChannelThread``, `int`
+            The channel to join to, or it's identifier.
+        
+        Raises
+        ------
+        TypeError
+            If `thread_channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel_id = get_thread_channel_id(thread_channel)
+        
+        await self.http.thread_leave(channel_id)
+    
+    
+    async def thread_user_add(self, thread_channel, user):
+        """
+        Adds the user to the thread channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        thread_channel : ``ChannelThread``, `int`
+            The channel to add the user to, or it's identifier.
+        user : ``ClientUserBase``, `int`
+            The user to add to the the thread.
+        
+        Raises
+        ------
+        TypeError
+            - If `thread_channel`'s type is incorrect.
+            - If `user`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel_id = get_thread_channel_id(thread_channel)
+        user_id = get_user_id(user)
+        
+        if user_id == self.id:
+            coroutine = self.http.thread_join(channel_id)
+        else:
+            coroutine = self.http.thread_user_add(channel_id, user_id)
+        await coroutine
+    
+    
+    async def thread_user_delete(self, thread_channel, user):
+        """
+        Deletes the user to the thread channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        thread_channel : ``ChannelThread``, `int`
+            The channel to remove the user from, or it's identifier.
+        user : ``ClientUserBase``, `int`
+            The user to remove from the thread.
+        
+        Raises
+        ------
+        TypeError
+            - If `thread_channel`'s type is incorrect.
+            - If `user`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel_id = get_thread_channel_id(thread_channel)
+        user_id = get_user_id(user)
+        
+        if user_id == self.id:
+            coroutine = self.http.thread_leave(channel_id)
+        else:
+            coroutine = self.http.thread_user_delete(channel_id, user_id)
+        await coroutine
+    
+    
+    async def thread_user_get_all(self, thread_channel):
+        """
+        Gets all the users of a thread channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        thread_channel : ``ChannelThread``, `int`
+            The channel to get it's users of.
+        
+        Returns
+        -------
+        users : `list` of ``ClientUserBase``
+            The created users.
+        
+        Raises
+        ------
+        TypeError
+            If `thread_channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        thread_channel, channel_id = get_thread_channel_and_id(thread_channel)
+        
+        thread_user_datas = await self.http.thread_user_get_all(channel_id)
+        
+        if thread_channel is None:
+            thread_channel = create_partial_channel_from_id(channel_id, 12)
+        
+        users = []
+        for thread_user_data in thread_user_datas:
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user_from_id(user_id)
+            users.append(user)
+            
+            thread_user_create(thread_channel, user, thread_user_data)
+        
+        return users
+    
+    
+    async def thread_get_all_active(self, channel):
+        """
+        Requests all the active threads of the given channel.
+        
+        Parameters
+        ----------
+        channel : ``ChannelText``, `int`
+            The channel to request the thread of, or it's identifier.
+        
+        Returns
+        -------
+        thread_channels : `list` of ``ChannelThread``
+        
+        Raises
+        ------
+        TypeError
+            If `channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
+        
+        thread_channels = []
+        
+        data = None
+        
+        while True:
+            data = await self.http.thread_get_chunk_active(channel_id, data)
+            thread_channel_datas = data['threads']
+            
+            for thread_channel_data in thread_channel_datas:
+                thread_channel = ChannelThread(thread_channel_data, self, guild)
+                thread_channels.append(thread_channel)
+            
+            thread_user_datas = data['members']
+            for thread_user_data in thread_user_datas:
+                thread_chanel_id = int(thread_user_data['id'])
+                try:
+                    thread_channel = CHANNELS[thread_chanel_id]
+                except KeyError:
+                    continue
+        
+                user_id = int(thread_user_data['user_id'])
+                user = create_partial_user_from_id(user_id)
+                
+                thread_user_create(thread_channel, user, thread_user_data)
+            
+            if not data.get('has_more', True):
+                break
+            
+            if thread_channels:
+                before = thread_channels[-1].created_at
+            else:
+                before = datetime.utcnow()
+            
+            data = {'before': before}
+        
+        return thread_channels
+    
+    
     async def user_get(self, user, *, force_update=False):
         """
         Gets an user by it's id. If the user is already loaded updates it.
@@ -9758,7 +9980,7 @@ class Client(ClientUserPBase):
             webhook = USERS.get(webhook_id, None)
         
         if (webhook is None):
-            webhook = create_partial_webhook(webhook_id, webhook_token)
+            webhook = create_partial_webhook_from_id(webhook_id, webhook_token)
         else:
             channel = webhook.channel
             if (channel is not None):
@@ -10353,7 +10575,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     break
             
-            channel = ChannelText.precreate(int(message_data['channel_id']))
+            channel_id = int(message_data['channel_id'])
+            channel = create_partial_channel_from_id(channel_id, 0)
             break
         
         return channel._create_new_message(message_data)
@@ -10616,7 +10839,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     break
             
-            channel = ChannelText.precreate(int(message_data['channel_id']))
+            channel_id = int(message_data['channel_id'])
+            channel = create_partial_channel_from_id(channel_id, 0)
             break
         
         return channel._create_unknown_message(message_data)
@@ -15072,7 +15296,7 @@ class Client(ClientUserPBase):
         additional_owner_ids = self._additional_owner_ids
         if (additional_owner_ids is not None):
             for user_id in additional_owner_ids:
-                user = create_partial_user(user_id)
+                user = create_partial_user_from_id(user_id)
                 owners.add(user)
         
         return owners

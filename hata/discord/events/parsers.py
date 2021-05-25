@@ -8,8 +8,8 @@ from ...backend.futures import Task
 from ...backend.export import include
 
 from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, STAGES
-from ..user import User, create_partial_user, USERS, _thread_user_create, _thread_user_update, _thread_user_pop, \
-    _thread_user_delete
+from ..user import User, create_partial_user_from_id, USERS, thread_user_create, thread_user_update, thread_user_pop, \
+    thread_user_delete
 from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
@@ -20,7 +20,7 @@ from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
 from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
 from ..integration import Integration
 from ..stage import Stage
-from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji
+from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji_from_data
 
 from .core import ReadyState, maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
 from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
@@ -660,8 +660,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = create_partial_user(user_id)
-                emoji = create_partial_emoji(data['emoji'])
+                user = create_partial_user_from_id(user_id)
+                emoji = create_partial_emoji_from_data(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -674,8 +674,8 @@ if ALLOW_DEAD_EVENTS:
             channel = message.channel
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -697,8 +697,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = create_partial_user(user_id)
-                emoji = create_partial_emoji(data['emoji'])
+                user = create_partial_user_from_id(user_id)
+                emoji = create_partial_emoji_from_data(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -717,8 +717,8 @@ if ALLOW_DEAD_EVENTS:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -738,8 +738,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         message.reactions.add(emoji, user)
         
         event = ReactionAddEvent(message, emoji, user)
@@ -759,8 +759,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         message.reactions.add(emoji, user)
         
         event = ReactionAddEvent(message, emoji, user)
@@ -776,8 +776,8 @@ def MESSAGE_REACTION_ADD__OPT_SC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = create_partial_user(user_id)
-    emoji = create_partial_emoji(data['emoji'])
+    user = create_partial_user_from_id(user_id)
+    emoji = create_partial_emoji_from_data(data['emoji'])
     message.reactions.add(emoji, user)
 
 def MESSAGE_REACTION_ADD__OPT_MC(client, data):
@@ -794,8 +794,8 @@ def MESSAGE_REACTION_ADD__OPT_MC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = create_partial_user(user_id)
-    emoji = create_partial_emoji(data['emoji'])
+    user = create_partial_user_from_id(user_id)
+    emoji = create_partial_emoji_from_data(data['emoji'])
     message.reactions.add(emoji, user)
 
 add_parser(
@@ -957,8 +957,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = create_partial_user(user_id)
-                emoji = create_partial_emoji(data['emoji'])
+                user = create_partial_user_from_id(user_id)
+                emoji = create_partial_emoji_from_data(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -972,8 +972,8 @@ if ALLOW_DEAD_EVENTS:
             channel = message.channel
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         if message is None:
             message = MessageRepr(message_id, channel)
         else:
@@ -994,8 +994,8 @@ if ALLOW_DEAD_EVENTS:
                     return
                 
                 user_id = int(data['user_id'])
-                user = create_partial_user(user_id)
-                emoji = create_partial_emoji(data['emoji'])
+                user = create_partial_user_from_id(user_id)
+                emoji = create_partial_emoji_from_data(data['emoji'])
                 
                 channel = ChannelPrivate._create_dataless(channel_id)
                 channel._finish_dataless(client, user)
@@ -1015,8 +1015,8 @@ if ALLOW_DEAD_EVENTS:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         if message is None:
             message = MessageRepr(message_id, channel)
         else:
@@ -1035,8 +1035,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         message.reactions.remove(emoji, user)
         
         event = ReactionDeleteEvent(message, emoji, user)
@@ -1056,8 +1056,8 @@ else:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
-        emoji = create_partial_emoji(data['emoji'])
+        user = create_partial_user_from_id(user_id)
+        emoji = create_partial_emoji_from_data(data['emoji'])
         message.reactions.remove(emoji, user)
         
         event = ReactionDeleteEvent(message, emoji, user)
@@ -1073,8 +1073,8 @@ def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = create_partial_user(user_id)
-    emoji = create_partial_emoji(data['emoji'])
+    user = create_partial_user_from_id(user_id)
+    emoji = create_partial_emoji_from_data(data['emoji'])
     message.reactions.remove(emoji, user)
 
 def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
@@ -1091,8 +1091,8 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
         return
     
     user_id = int(data['user_id'])
-    user = create_partial_user(user_id)
-    emoji = create_partial_emoji(data['emoji'])
+    user = create_partial_user_from_id(user_id)
+    emoji = create_partial_emoji_from_data(data['emoji'])
     message.reactions.remove(emoji, user)
 
 add_parser(
@@ -1120,7 +1120,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             channel = message.channel
         
-        emoji = create_partial_emoji(data['emoji'])
+        emoji = create_partial_emoji_from_data(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -1151,7 +1151,7 @@ if ALLOW_DEAD_EVENTS:
             clients.close()
             return
         
-        emoji = create_partial_emoji(data['emoji'])
+        emoji = create_partial_emoji_from_data(data['emoji'])
         
         if message is None:
             message = MessageRepr(message_id, channel)
@@ -1173,7 +1173,7 @@ else:
         if message is None:
             return
         
-        emoji = create_partial_emoji(data['emoji'])
+        emoji = create_partial_emoji_from_data(data['emoji'])
         users = message.reactions.remove_emoji(emoji)
         if users is None:
             return
@@ -1193,7 +1193,7 @@ else:
             clients.close()
             return
         
-        emoji = create_partial_emoji(data['emoji'])
+        emoji = create_partial_emoji_from_data(data['emoji'])
         users = message.reactions.remove_emoji(emoji)
         if users is None:
             clients.close()
@@ -1210,7 +1210,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
     if message is None:
         return
     
-    emoji = create_partial_emoji(data['emoji'])
+    emoji = create_partial_emoji_from_data(data['emoji'])
     message.reactions.remove_emoji(emoji)
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
@@ -1226,7 +1226,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
                 ) is not client:
         return
     
-    emoji = create_partial_emoji(data['emoji'])
+    emoji = create_partial_emoji_from_data(data['emoji'])
     message.reactions.remove_emoji(emoji)
 
 add_parser(
@@ -3133,7 +3133,7 @@ if CACHE_PRESENCE:
             return
         
         user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
+        user = create_partial_user_from_id(user_id)
         
         timestamp = datetime.utcfromtimestamp(data.get('timestamp', None))
         
@@ -3614,10 +3614,10 @@ def THREAD_LIST_SYNC(client, data):
         except KeyError:
             return
         
-        user_id = int(data['user_id'])
-        user = create_partial_user(user_id)
+        user_id = int(thread_user_data['user_id'])
+        user = create_partial_user_from_id(user_id)
         
-        _thread_user_create(thread_channel, user, thread_user_data)
+        thread_user_create(thread_channel, user, thread_user_data)
 
 
 add_parser(
@@ -3636,7 +3636,7 @@ def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
     except KeyError:
         return
     
-    old_attributes = _thread_user_update(thread_channel, client, data)
+    old_attributes = thread_user_update(thread_channel, client, data)
     if (old_attributes is None):
         return
     
@@ -3655,7 +3655,7 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    old_attributes = _thread_user_update(thread_channel, client, data)
+    old_attributes = thread_user_update(thread_channel, client, data)
     if (old_attributes is None):
         clients.close()
         return
@@ -3673,7 +3673,7 @@ def THREAD_MEMBER_UPDATE__OPT(client, data):
     except KeyError:
         return
     
-    _thread_user_create(thread_channel, client, data)
+    thread_user_create(thread_channel, client, data)
 
 
 add_parser(
@@ -3699,7 +3699,7 @@ def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
         for user_id in removed_user_ids:
             user_id = int(user_id)
             
-            thread_user_deletion = _thread_user_pop(thread_channel, user_id, client)
+            thread_user_deletion = thread_user_pop(thread_channel, user_id, client)
             if (thread_user_deletion is not None):
                 event_handler = client.events.thread_user_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3709,9 +3709,9 @@ def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
     if (thread_user_datas is not None) and thread_user_datas:
         for thread_user_data in thread_user_datas:
             user_id = int(thread_user_data['user_id'])
-            user = create_partial_user(user_id)
+            user = create_partial_user_from_id(user_id)
             
-            created = _thread_user_create(thread_channel, user, thread_user_datas)
+            created = thread_user_create(thread_channel, user, thread_user_datas)
             if created:
                 event_handler = client.events.thread_user_add
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3743,7 +3743,7 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
         for user_id in removed_user_ids:
             user_id = int(user_id)
             
-            thread_user_deletion = _thread_user_pop(thread_channel, user_id, client)
+            thread_user_deletion = thread_user_pop(thread_channel, user_id, client)
             if (thread_user_deletion is not None):
                 if thread_user_deletions is None:
                     thread_user_deletions = []
@@ -3757,9 +3757,9 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
     if (thread_user_datas is not None) and thread_user_datas:
         for thread_user_data in thread_user_datas:
             user_id = int(thread_user_data['user_id'])
-            user = create_partial_user(user_id)
+            user = create_partial_user_from_id(user_id)
             
-            created = _thread_user_create(thread_channel, user, thread_user_datas)
+            created = thread_user_create(thread_channel, user, thread_user_datas)
             if created or just_me:
                 if thread_user_additions is None:
                     thread_user_additions = []
@@ -3793,15 +3793,15 @@ def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):
         for user_id in removed_user_ids:
             user_id = int(user_id)
             
-            _thread_user_delete(thread_channel, user_id)
+            thread_user_delete(thread_channel, user_id)
     
     thread_user_datas = data.get('added_members', None)
     if (thread_user_datas is not None) and thread_user_datas:
         for thread_user_data in thread_user_datas:
             user_id = int(thread_user_data['user_id'])
-            user = create_partial_user(user_id)
+            user = create_partial_user_from_id(user_id)
             
-            _thread_user_create(thread_channel, user, thread_user_datas)
+            thread_user_create(thread_channel, user, thread_user_datas)
 
 
 def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
@@ -3819,15 +3819,15 @@ def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
         for user_id in removed_user_ids:
             user_id = int(user_id)
             
-            _thread_user_delete(thread_channel, user_id)
+            thread_user_delete(thread_channel, user_id)
     
     thread_user_datas = data.get('added_members', None)
     if (thread_user_datas is not None) and thread_user_datas:
         for thread_user_data in thread_user_datas:
             user_id = int(thread_user_data['user_id'])
-            user = create_partial_user(user_id)
+            user = create_partial_user_from_id(user_id)
             
-            _thread_user_create(thread_channel, user, thread_user_datas)
+            thread_user_create(thread_channel, user, thread_user_datas)
 
 add_parser(
     'THREAD_MEMBERS_UPDATE',

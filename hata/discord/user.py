@@ -19,7 +19,7 @@ from .preinstanced import Status, DefaultAvatar
 
 from . import urls as module_urls
 
-create_partial_role = include('create_partial_role')
+create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')
 
 
@@ -125,7 +125,7 @@ class PurchasedFlag(FlagBase):
 
 
 @export
-def create_partial_user(user_id):
+def create_partial_user_from_id(user_id):
     """
     Creates a partial user from the given `user_id`. If the user already exists returns that instead.
     
@@ -244,7 +244,7 @@ class GuildProfile:
             for role_id in role_ids:
                 role_id = int(role_id)
                 try:
-                    role = create_partial_role(role_id)
+                    role = create_partial_role_from_id(role_id)
                 except KeyError:
                     continue
                 
@@ -305,7 +305,7 @@ class GuildProfile:
             roles = []
             for role_id in role_ids:
                 role_id = int(role_id)
-                role = create_partial_role(role_id)
+                role = create_partial_role_from_id(role_id)
                 roles.append(role)
             
             if (not roles):
@@ -385,7 +385,7 @@ class GuildProfile:
     
 
 
-def _thread_user_create(thread_channel, user, thread_user_data):
+def thread_user_create(thread_channel, user, thread_user_data):
     """
     Resolves the given thread user data.
     
@@ -423,7 +423,7 @@ def _thread_user_create(thread_channel, user, thread_user_data):
     
     return created
 
-def _thread_user_update(thread_channel, user, thread_user_data):
+def thread_user_update(thread_channel, user, thread_user_data):
     """
     Resolves the given thread user update.
     
@@ -462,7 +462,7 @@ def _thread_user_update(thread_channel, user, thread_user_data):
     return old_attributes
 
 
-def _thread_user_delete(thread_channel, user_id):
+def thread_user_delete(thread_channel, user_id):
     """
     Removes the user for the given id from the thread's users.
     
@@ -494,7 +494,7 @@ def _thread_user_delete(thread_channel, user_id):
                         user.thread_profiles = None
 
 
-def _thread_user_pop(thread_channel, user_id, me):
+def thread_user_pop(thread_channel, user_id, me):
     """
     Removes and returns the user for the given id from the thread's users.
     
@@ -1651,7 +1651,7 @@ class ClientUserPBase(ClientUserBase):
     @classmethod
     @copy_docs(ClientUserBase._from_client)
     def _from_client(cls, client):
-        self = super(cls, cls)._from_client(client)
+        self = super(ClientUserPBase, cls)._from_client(client)
         
         activities = client.activities
         if (activities is not None):
@@ -2098,15 +2098,15 @@ class User(USER_BASE_CLASS):
         else:
             processable = None
         
-        user = create_partial_user(user_id)
-        if not user.partial:
-            return user
+        self = create_partial_user_from_id(user_id)
+        if not self.partial:
+            return self
         
         if (processable is not None):
             for item in processable:
-                setattr(user, *item)
+                setattr(self, *item)
         
-        return user
+        return self
     
     
     if CACHE_PRESENCE:
@@ -2439,7 +2439,7 @@ class VoiceState:
             The channel of the voice state.
         """
         self.channel = channel
-        self.user = create_partial_user(int(data['user_id']))
+        self.user = create_partial_user_from_id(int(data['user_id']))
         self.session_id = data['session_id']
         self.mute = data['mute']
         self.deaf = data['deaf']

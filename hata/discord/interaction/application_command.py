@@ -12,8 +12,8 @@ from ..limits import APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NA
     APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN, \
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
-from ..user import User, UserBase, ClientUserBase
-from ..role import Role
+from ..user import User, UserBase, ClientUserBase, create_partial_role_from_id
+from ..role import Role, create_partial_role_from_id
 
 from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteType
 
@@ -1632,9 +1632,9 @@ class ApplicationCommandPermissionOverwrite:
         type_ = self.type
         target_id = self.target_id
         if type_ is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE:
-            target = Role.precreate(target_id)
+            target = create_partial_role_from_id(target_id)
         else: # type_ is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER:
-            target = User.precreate(target_id)
+            target = create_partial_user_from_id(target_id)
         
         return target
     

@@ -1525,6 +1525,13 @@ class DiscordHTTPClient(HTTPClient):
             data,
         )
     
+    async def thread_user_get_all(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get_all, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/thread-members'
+        )
+    
     async def thread_join(self, channel_id):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.thread_join, channel_id),
@@ -1561,12 +1568,26 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me/settings',
         )
     
-    async def thread_get_all_archived(self, channel_id, thread_type):
-        # `thread_type` can be either `'public'` and `'private'`
+    async def thread_get_chunk_active(self, channel_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_archived, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_active, channel_id),
             METHOD_GET,
-            f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/{thread_type}',
+            f'{API_ENDPOINT}/channels/{channel_id}/threads/active',
+            params=data,
+        )
+    
+    async def thread_get_all_archived_private(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_archived_private, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/private',
+        )
+    
+    async def thread_get_all_archived_public(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_archived_public, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/public',
         )
     
     async def thread_get_all_self_archived(self, channel_id):

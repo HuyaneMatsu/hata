@@ -10,8 +10,8 @@ from .preconverters import preconvert_str, preconvert_int, preconvert_bool, prec
 from .utils import parse_time, DISCORD_EPOCH_START
 from .core import GUILDS, CHANNELS, INVITES
 from .user import User, ZEROUSER
-from .guild import create_partial_guild, Guild
-from .channel import create_partial_channel, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
+from .guild import create_partial_guild_from_data, Guild
+from .channel import create_partial_channel_from_data, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
 from .preinstanced import InviteTargetType
 from .application import Application
 
@@ -140,7 +140,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             channel = None
         else:
-            channel = create_partial_channel(channel_data, guild)
+            channel = create_partial_channel_from_data(channel_data, guild)
         self.channel = channel
         self.approximate_online_count = 0
         self.approximate_user_count = 0
@@ -197,7 +197,7 @@ class Invite(DiscordEntity, immortal=True):
                 guild_id = int(guild_id)
                 guild = GUILDS.get(guild_id, None)
         else:
-            guild = create_partial_guild(guild_data)
+            guild = create_partial_guild_from_data(guild_data)
         
         self.guild = guild
         
@@ -212,7 +212,7 @@ class Invite(DiscordEntity, immortal=True):
                 channel_id = int(channel_id)
                 channel = CHANNELS.get(channel_id, None)
         else:
-            channel = create_partial_channel(channel_data, guild)
+            channel = create_partial_channel_from_data(channel_data, guild)
         self.channel = channel
         
         try:
@@ -298,7 +298,7 @@ class Invite(DiscordEntity, immortal=True):
                     guild_id = int(guild_id)
                     guild = GUILDS.get(guild_id, None)
             else:
-                guild = create_partial_guild(guild_data)
+                guild = create_partial_guild_from_data(guild_data)
             
             self.guild = guild
         
@@ -314,7 +314,7 @@ class Invite(DiscordEntity, immortal=True):
                     channel_id = int(channel_id)
                     channel = CHANNELS.get(channel_id, None)
             else:
-                channel = create_partial_channel(channel_data, guild)
+                channel = create_partial_channel_from_data(channel_data, guild)
             
             self.channel = channel
         

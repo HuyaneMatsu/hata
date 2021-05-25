@@ -4,6 +4,7 @@ from ipaddress import ip_address
 from urllib.parse import SplitResult, parse_qsl as parse_query_string_list, urljoin as url_join, \
     urlsplit as url_split, urlunsplit as url_unsplit
 from math import isinf, isnan
+from datetime import datetime
 
 from .utils import multidict, cached_property
 from .quote import quote, unquote
@@ -1206,6 +1207,8 @@ def build_query_element_to(build_to, query_key, value):
         query_value = 'true' if value else 'false'
     elif isinstance(value, NoneType):
         query_value = 'null'
+    elif isinstance(value, datetime):
+        query_value = value.isoformat()
     elif isinstance(value, float):
         if isinf(value):
              raise ValueError('`inf` is not a supported query string parameter value.')

@@ -124,8 +124,7 @@ def guild_icon_url_as(guild, ext='png', size=None):
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the guild has
         animated icon, it can `'gif'` as well.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -145,7 +144,7 @@ def guild_icon_url_as(guild, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -197,8 +196,7 @@ def guild_invite_splash_url_as(guild, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -218,7 +216,7 @@ def guild_invite_splash_url_as(guild, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -270,8 +268,7 @@ def guild_discovery_splash_url_as(guild, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -291,7 +288,7 @@ def guild_discovery_splash_url_as(guild, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -343,8 +340,7 @@ def guild_banner_url_as(guild, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -364,7 +360,7 @@ def guild_banner_url_as(guild, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -449,8 +445,7 @@ def channel_group_icon_url_as(channel, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -470,7 +465,7 @@ def channel_group_icon_url_as(channel, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -520,8 +515,7 @@ def emoji_url_as(emoji, ext=None, size=None):
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If emoji is
         animated, it can `'gif'` as well.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -540,7 +534,7 @@ def emoji_url_as(emoji, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if emoji.animated:
@@ -615,8 +609,7 @@ def activity_asset_image_large_url_as(activity, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -644,7 +637,7 @@ def activity_asset_image_large_url_as(activity, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
 
     if ext not in VALID_ICON_FORMATS:
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
@@ -682,8 +675,7 @@ def activity_asset_image_small_url_as(activity, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the image's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the image's url.
     
     Returns
     -------
@@ -711,7 +703,7 @@ def activity_asset_image_small_url_as(activity, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext not in VALID_ICON_FORMATS:
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
@@ -749,8 +741,7 @@ def user_avatar_url_as(user, ext=None, size=None):
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
     size : `int`, Optional.
-        The preferred minimal size of the avatar's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the avatar's url.
     
     Returns
     -------
@@ -770,7 +761,7 @@ def user_avatar_url_as(user, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -832,8 +823,7 @@ def application_icon_url_as(application, ext='png', size=None):
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the icon's url.
     
     Returns
     -------
@@ -853,7 +843,7 @@ def application_icon_url_as(application, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -905,8 +895,7 @@ def application_cover_url_as(application, ext='png', size=None):
     ext : `str`, Optional
         The extension of the cover's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the cover's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the cover's url.
     
     Returns
     -------
@@ -926,7 +915,7 @@ def application_cover_url_as(application, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -978,8 +967,7 @@ def team_icon_url_as(team, ext='png', size=None):
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the icon's url.
     
     Returns
     -------
@@ -999,7 +987,7 @@ def team_icon_url_as(team, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1051,8 +1039,7 @@ def achievement_icon_url_as(achievement, ext='png', size=None):
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional.
-        The preferred minimal size of the icon's url. Can be any of: `16`, `32`, `64`, `128`, `256`, `512`,
-        `1024`, `2048`, `4096`.
+        The preferred minimal size of the icon's url.
     
     Returns
     -------
@@ -1072,7 +1059,7 @@ def achievement_icon_url_as(achievement, ext='png', size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be power of 2 between 16 and 4096, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:

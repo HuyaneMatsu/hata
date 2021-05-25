@@ -3,7 +3,7 @@ __all__ = ('reaction_mapping', 'reaction_mapping_line',)
 from ...backend.export import include
 from ...backend.utils import set_docs
 
-from .utils import create_partial_emoji
+from .utils import create_partial_emoji_from_data
 
 Client = include('Client')
 
@@ -34,7 +34,7 @@ class reaction_mapping(dict):
         
         self.fully_loaded = False
         for line in data:
-            self[create_partial_emoji(line['emoji'])] = reaction_mapping_line(line.get('count', 1))
+            self[create_partial_emoji_from_data(line['emoji'])] = reaction_mapping_line(line.get('count', 1))
     
     emoji_count = set_docs(
         property(dict.__len__),

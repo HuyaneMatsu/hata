@@ -14,7 +14,7 @@ from .preconverters import preconvert_str, preconvert_int
 
 from . import urls as module_urls
 
-create_partial_emoji = include('create_partial_emoji')
+create_partial_emoji_from_data = include('create_partial_emoji_from_data')
 
 DEFAULT_CUSTOM_ID = 'UNKNOWN'
 
@@ -1420,7 +1420,7 @@ class ActivityCustom(ActivityBase):
         if emoji_data is None:
             emoji = None
         else:
-            emoji = create_partial_emoji(emoji_data)
+            emoji = create_partial_emoji_from_data(emoji_data)
         self.emoji = emoji
         
         self.created = activity_data.get('created_at', 0)
@@ -1462,7 +1462,7 @@ class ActivityCustom(ActivityBase):
         if emoji_data is None:
             emoji = None
         else:
-            emoji = create_partial_emoji(emoji_data)
+            emoji = create_partial_emoji_from_data(emoji_data)
         
         if self.emoji != emoji:
             old_attributes['emoji'] = self.emoji

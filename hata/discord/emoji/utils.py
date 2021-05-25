@@ -1,4 +1,4 @@
-__all__ = ('create_partial_emoji', 'create_partial_emoji_data', 'parse_emoji', 'parse_custom_emojis', )
+__all__ = ('create_partial_emoji_from_data', 'create_partial_emoji_data', 'parse_emoji', 'parse_custom_emojis', )
 
 from ...backend.export import export
 
@@ -9,7 +9,7 @@ from .emoji import UNICODE_TO_EMOJI, Emoji
 
 
 @export
-def create_partial_emoji(data):
+def create_partial_emoji_from_data(data):
     """
     Creates an emoji from partial emoji data sent by Discord.
     

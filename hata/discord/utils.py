@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift', 'Relationship', 'Unknown', 'cchunkify', 'chunkify',
+﻿__all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift', 'Relationship', 'Unknown', 'cchunkify', 'chunkify',
     'elapsed_time', 'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention',
     'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id',
     'sanitize_content', 'sanitize_mentions', 'time_to_id',)
@@ -249,6 +248,7 @@ ROLE_MENTION_RP = re_compile('<@&(\d{7,21})>')
 APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\-]{3,32}):(\d{7,21})>')
 
 EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
+REACTION_RP = re_compile('([a-zA-Z0-9_]{2,32}):(\d{7,21})')
 EMOJI_NAME_RP = re_compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
 FILTER_RP = re_compile('("(.+?)"|\S+)')
 INVITE_CODE_RP = re_compile('([a-zA-Z0-9-]+)')

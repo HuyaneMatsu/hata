@@ -85,7 +85,7 @@ def _debug_component_custom_id(custom_id):
             raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
                 f'{len(custom_id)!r}; {custom_id!r}.')
     else:
-        raise AssertionError(f'`custom_id` can be given either as {"`None` or as " if nullable else ""}`str` instance, got '
+        raise AssertionError(f'`custom_id` can be given either as `None` or as `str` instance, got '
             f'{custom_id.__class__.__name__}.')
 
 

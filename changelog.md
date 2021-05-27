@@ -21,6 +21,7 @@
 - Add `RATE_LIMIT_GROUPS.thread_get_chunk_active`.
 - Add `Client.thread_get_all_active`.
 - Add support for `datetime` query parameter.
+- Add `parse_reaction`.
 
 ##### hata.ext.extension_loader
 
@@ -36,6 +37,7 @@
 
 - Fix an `AttributeError` in `ChannelGroup._from_partial_data`.
 - `ChannelThread` has no attribute `thread_users`.
+- Fix a `NameError` in `_debug_component_custom_id`. (Zeref Draganeel#3581)
 
 #### Renames, Deprecation & Removals
 
@@ -50,6 +52,7 @@
 - Rename `_thread_user_update` to `thread_user_update`.
 - Rename `_thread_user_delete` to `thread_user_delete`.
 - Rename `_thread_user_pop` to `thread_user_pop`.
+- Deprecate `Client.download_url`.
 
 ## 1.1.80 *\[2021-05-22\]*
 

@@ -6,13 +6,19 @@ from ...backend.utils import to_json
 from ...backend.export import include
 from ...backend.formdata import Formdata
 
-from ..core import MESSAGES, CHANNELS
+from ..core import MESSAGES, CHANNELS, GUILDS, USERS
 from ..message import Message, MessageReference, MessageRepr
 from ..user import ClientUserBase
-from ..channel import ChannelThread, ChannelText
+from ..channel import ChannelText, ChannelStage
 from ..embed import EmbedBase
 from ..utils import random_id
-from ..bases import maybe_snowflake_pair, maybe_snowflake
+from ..bases import maybe_snowflake_pair, maybe_snowflake, maybe_snowflake_token_pair
+from ..guild import Guild, GuildDiscovery
+from ..oauth2 import Achievement
+from ..role import Role
+from ..stage import Stage
+from ..webhook import Webhook
+from ..emoji import Emoji, parse_reaction
 
 ComponentBase = include('ComponentBase')
 ComponentType = include('ComponentType')
@@ -428,45 +434,16 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
     return content, embed
 
 
-def get_thread_channel_id(thread_channel):
+def get_channel_id(channel, channel_type):
     """
-    Gets thread channel identifier from the given thread channel or of it's identifier.
+    Gets the channel's identifier from the given channel or of it's identifier.
     
     Parameters
     ----------
-    thread_channel : ``ChannelThread``, `int`
-        The thread channel, or it's identifier.
-    
-    Returns
-    -------
-    thread_channel_id : `int`
-        The thread channel's identifier.
-    
-    Raises
-    ------
-    TypeError
-        If `thread_channel`'s type is incorrect.
-    """
-    if isinstance(thread_channel, ChannelThread):
-        thread_channel_id = thread_channel.id
-    
-    else:
-        thread_channel_id = maybe_snowflake(thread_channel)
-        if thread_channel_id is None:
-            raise TypeError(f'`thread_channel` can be either given as `{ChannelThread.__name__}` or as `int` instance, '
-                f'got {thread_channel.__class__.__name__}.')
-    
-    return thread_channel_id
-
-
-def get_guild_text_channel_id(channel):
-    """
-    Gets guild text channel identifier from the given text channel or of it's identifier.
-    
-    Parameters
-    ----------
-    channel : ``ChannelText``, `int`
+    channel : `channel_type`, `int`
         The channel, or it's identifier.
+    channel_type : `type`
+        The expected channel type of `channel`.
     
     Returns
     -------
@@ -478,13 +455,13 @@ def get_guild_text_channel_id(channel):
     TypeError
         If `channel`'s type is incorrect.
     """
-    if isinstance(channel, ChannelText):
+    if isinstance(channel, channel_type):
         channel_id = channel.id
     
     else:
         channel_id = maybe_snowflake(channel)
         if channel_id is None:
-            raise TypeError(f'`channel` can be either given as `{ChannelText.__name__}` or as `int` instance, '
+            raise TypeError(f'`channel` can be either given as `{channel_type.__name__}` or as `int` instance, '
                 f'got {channel.__class__.__name__}.')
     
     return channel_id
@@ -511,58 +488,141 @@ def get_guild_and_guild_text_channel_id(channel):
     TypeError
         If `channel`'s type is incorrect.
     """
-    if isinstance(channel, ChannelText):
-        channel_id = channel.id
-        guild = channel.guild
-    else:
-        channel_id = maybe_snowflake(channel)
-        if channel_id is None:
-            raise TypeError(f'`channel` can be either given as `{ChannelText.__name__}` or as `int` instance, '
-                f'got {channel.__class__.__name__}.')
-        
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            guild = None
-        else:
+    while True:
+        if isinstance(channel, ChannelText):
+            channel_id = channel.id
             guild = channel.guild
+            break
+        
+        channel_id = maybe_snowflake(channel)
+        if (channel_id is not None):
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                guild = None
+                break
+            
+            if isinstance(channel, ChannelText):
+                guild = channel.guild
+                break
+        
+        raise TypeError(f'`channel` can be either given as `{ChannelText.__name__}` or as `int` instance, '
+            f'got {channel.__class__.__name__}.')
     
     return guild, channel_id
 
 
-def get_thread_channel_and_id(thread_channel):
+def get_guild_id_and_channel_id(channel, channel_type):
+    """
+    Gets the channel's and it's guild's identifier from the given channel or of it's identifier.
+    
+    Parameters
+    ----------
+    channel : `channel_type` or `tuple` (`int`, `int`)
+        The role, or `guild-id`, `role-id` pair.
+    channel_type : `type`
+        The expected type of `channel`.
+    
+    Returns
+    -------
+    snowflake_pair : `None` or `tuple` (`int`, `int`)
+        The channel's guild's and it's own identifier if applicable.
+    
+    Raises
+    ------
+    TypeError
+        If `channel`'s type is incorrect.
+    """
+    if isinstance(channel, channel_type):
+        guild = channel.guild
+        if guild is None:
+            snowflake_pair = None
+        else:
+            snowflake_pair = guild.id, channel.id
+    else:
+        snowflake_pair = maybe_snowflake_pair(channel)
+        if snowflake_pair is None:
+            raise TypeError(f'`channel` can be given as `{channel_type.__name__}`, or as '
+                f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
+        
+    return snowflake_pair
+
+
+def get_channel_and_id(channel, channel_type):
     """
     Gets thread channel and it's identifier from the given thread channel or of it's identifier.
     
     Parameters
     ----------
-    thread_channel : ``ChannelThread``, `int`
-        The thread channel, or it's identifier.
+    channel : ``ChannelThread``, `int`
+        The channel, or it's identifier.
+    channel_type : `type`
+        The expected type of `channel`.
     
     Returns
     -------
-    thread_channel : ``ChannelThread``, `None`
-        The thread channel if found.
-    thread_channel_id : `int`
-        The thread channel's identifier.
+    channel : ``channel_type``, `None`
+        The channel if found.
+    channel_id : `int`
+        The channel's identifier.
     
     Raises
     ------
     TypeError
-        If `thread_channel`'s type is incorrect.
+        If `channel`'s type is incorrect.
     """
-    if isinstance(thread_channel, ChannelThread):
-        thread_channel_id = thread_channel.id
+    while True:
+        if isinstance(channel, channel_type):
+            channel_id = channel.id
+            break
+        
+        channel_id = maybe_snowflake(channel)
+        if (channel_id is not None):
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                channel = None
+                break
+            
+            if isinstance(channel, channel_type):
+                break
+        
+        raise TypeError(f'`channel` can be either given as `{channel_type.__name__}` or as `int` instance, '
+            f'got {channel.__class__.__name__}.')
     
+    return channel, channel_id
+
+
+def get_stage_channel_id(stage):
+    """
+    Gets stage's channel's identifier from the given stage or of it's identifier.
+    
+    Parameters
+    ----------
+    stage : `Stage`, ``ChannelStage``, `int`
+        The stage, or it's identifier.
+    
+    Returns
+    -------
+    channel_id : `int`
+        The channel's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `stage`'s type is incorrect.
+    """
+    if isinstance(stage, Stage):
+        channel_id = stage.channel.id
+    elif isinstance(stage, ChannelStage):
+        channel_id = stage.id
     else:
-        thread_channel_id = maybe_snowflake(thread_channel)
-        if thread_channel_id is None:
-            raise TypeError(f'`thread_channel` can be either given as `{ChannelThread.__name__}` or as `int` instance, '
-                f'got {thread_channel.__class__.__name__}.')
-        
-        thread_channel = CHANNELS.get(thread_channel_id, None)
-        
-    return thread_channel, thread_channel_id
+        channel_id = maybe_snowflake(stage)
+        if channel_id is None:
+            raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
+                f'int` instance, got {stage.__class__.__name__}.')
+    
+    return channel_id
 
 
 def get_user_id(user):
@@ -595,3 +655,614 @@ def get_user_id(user):
     
     return user_id
 
+
+def get_user_and_id(user):
+    """
+    Gets user and it's identifier from the given user or of it's identifier.
+    
+    Parameters
+    ----------
+    user : ``ClientUserBase``, `int`
+        The user, or it's identifier.
+    
+    Returns
+    -------
+    user : ``ClientUserBase`` or `None`
+        The user if found.
+    user_id : `int`
+        The user's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `user`'s type is incorrect.
+    """
+    while True:
+        if isinstance(user, ClientUserBase):
+            user_id = user.id
+            break
+        
+        user_id = maybe_snowflake(user)
+        if (user_id is not None):
+            try:
+                user = USERS[user_id]
+            except KeyError:
+                user = None
+                break
+            
+            if isinstance(user, ClientUserBase):
+                break
+        
+        raise TypeError(f'`user` can be either given as `{ClientUserBase.__name__}` or as `int` instance, '
+            f'got {user.__class__.__name__}.')
+        
+    return user, user_id
+
+
+def get_user_id_nullable(user):
+    """
+    Gets user identifier from the given user or of it's identifier. The user can be given as `None`. At that case
+    `user_id` will default to `0`.
+    
+    Parameters
+    ----------
+    user : `None`, ``ClientUserBase``, `int`
+        The user, or it's identifier.
+    
+    Returns
+    -------
+    user_id : `int`
+        The user's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `user`'s type is incorrect.
+    """
+    if user is None:
+        user_id = 0
+    
+    elif isinstance(user, ClientUserBase):
+        user_id = user.id
+    
+    else:
+        user_id = maybe_snowflake(user)
+        if user_id is None:
+            raise TypeError(f'`user` can be either given as `{ClientUserBase.__name__}` or as `int` instance, '
+                f'got {user.__class__.__name__}.')
+    
+    return user_id
+
+
+def get_guild_id(guild):
+    """
+    Gets the guild's identifier from the given guild or of it's identifier.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The guild, or it's identifier.
+    
+    Returns
+    -------
+    guild_id : `int`
+        The guild's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `guild`'s type is incorrect.
+    """
+    if isinstance(guild, Guild):
+        guild_id = guild.id
+    else:
+        guild_id = maybe_snowflake(guild)
+        if guild_id is None:
+            raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                f'{guild.__class__.__name__}.')
+    
+    return guild_id
+
+
+def get_guild_and_id(guild):
+    """
+    Gets the guild and it's identifier from the given guild or of it's identifier.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The guild, or it's identifier.
+    
+    Returns
+    -------
+    guild : ``Guild`` or `None`
+        The guild if found.
+    guild_id : `int`
+        The guild's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `guild`'s type is incorrect.
+    """
+    if isinstance(guild, Guild):
+        guild_id = guild.id
+    else:
+        guild_id = maybe_snowflake(guild)
+        if guild_id is None:
+            raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
+                f'{guild.__class__.__name__}.')
+        
+        guild = GUILDS.get(guild_id, None)
+    
+    return guild, guild_id
+
+
+def get_guild_discovery_and_id(guild):
+    """
+    Gets the guild discovery and it's identifier from the given guild or it's identifier.
+    
+    Parameters
+    ----------
+    guild : ``Guild``, `int`
+        The guild, or it's identifier.
+    
+    Returns
+    -------
+    guild : ``GuildDiscovery`` or `None`
+        The guild or the
+    guild_id : `int`
+        The guild's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `guild`'s type is incorrect.
+    """
+    if isinstance(guild, Guild):
+        guild_id = guild.id
+        guild_discovery = None
+    elif isinstance(guild, GuildDiscovery):
+        guild_id = guild.guild.id
+        guild_discovery = guild
+    else:
+        guild_id = maybe_snowflake(guild)
+        if guild_id is None:
+            raise TypeError(f'`guild` can be given as `{Guild.__name__}`, `{GuildDiscovery.__name__}` or `int` '
+                f'instance, got {guild.__class__.__name__}.')
+        
+        guild_discovery = None
+    
+    return guild_discovery, guild_id
+
+
+def get_achievement_id(achievement):
+    """
+    Gets the achievement identifier from the given achievement or of it's identifier.
+    
+    Parameters
+    ----------
+    achievement : ``Achievement``, `int`
+        The achievement, or it's identifier.
+    
+    Returns
+    -------
+    achievement_id : `int`
+        The achievement's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `achievement`'s type is incorrect.
+    """
+    if isinstance(achievement, Achievement):
+        achievement_id = achievement.id
+    else:
+        achievement_id = maybe_snowflake(achievement)
+        if achievement_id is None:
+            raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
+                f'{achievement.__class__.__name__}.')
+    
+    return achievement_id
+
+
+def get_achievement_and_id(achievement):
+    """
+    Gets the achievement and it's identifier from the given achievement or of it's identifier.
+    
+    Parameters
+    ----------
+    achievement : ``Achievement``, `int`
+        The achievement, or it's identifier.
+    
+    Returns
+    -------
+    achievement : ``Achievement``, `None`
+        The achievement if found.
+    achievement_id : `int`
+        The achievement's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `achievement`'s type is incorrect.
+    """
+    if isinstance(achievement, Achievement):
+        achievement_id = achievement.id
+    else:
+        achievement_id = maybe_snowflake(achievement)
+        if achievement_id is None:
+            raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
+                f'{achievement.__class__.__name__}.')
+        
+        achievement = None
+    
+    return achievement, achievement_id
+
+
+def get_channel_id_and_message_id(message):
+    """
+    Gets the message's channel's and it's own identifier.
+    
+    Parameters
+    ----------
+    message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        The message or it' representation.
+    
+    Returns
+    -------
+    channel_id : `int`
+        The message's channel's identifier.
+    message_id : `int`
+        The message's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `message`'s type is incorrect.
+    """
+    # 1.: Message
+    # 2.: MessageRepr
+    # 3.: MessageReference
+    # 4.: None -> raise
+    # 5.: `tuple` (`int`, `int`)
+    # 6.: raise
+    if isinstance(message, Message):
+        channel_id = message.channel.id
+        message_id = message.id
+    elif isinstance(message, MessageRepr):
+        channel_id = message.channel.id
+        message_id = message.id
+    elif isinstance(message, MessageReference):
+        channel_id = message.channel_id
+        message_id = message.message_id
+    elif message is None:
+        raise TypeError('`message` was given as `None`. Make sure to use `Client.message_create` with giving '
+            'content and using a cached channel.')
+    else:
+        snowflake_pair = maybe_snowflake_pair(message)
+        if snowflake_pair is None:
+            raise TypeError(f'`message` can be given as `{Message.__name__}` or as '
+                f'`{MessageRepr.__name__}`, `{MessageReference.__name__}` or as `tuple` of (`int`, `int`), got '
+                f'`{message.__class__.__name__}`.')
+        
+        channel_id, message_id = snowflake_pair
+    
+    return channel_id, message_id
+
+
+def get_role_id(role):
+    """
+    Gets the role identifier from the given role or of it's identifier.
+    
+    Parameters
+    ----------
+    role : ``Role``, `int`
+        The role, or it's identifier.
+    
+    Returns
+    -------
+    role_id : `int`
+        The role's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `role`'s type is incorrect.
+    """
+    if isinstance(role, Role):
+        role_id = role.id
+    else:
+        role_id = maybe_snowflake(role)
+        if role_id is None:
+            raise TypeError(f'`role` can be given as `{Role.__name__}` or `int` instance, got '
+                f'{role.__class__.__name__}.')
+    
+    return role_id
+
+
+def get_guild_id_and_role_id(role):
+    """
+    Gets the role's and it's guild's identifier from the given role or of a `guild-id`, `role-id` pair.
+    
+    Parameters
+    ----------
+    role : ``Role`` or `tuple` (`int`, `int`)
+        The role, or `guild-id`, `role-id` pair.
+    
+    Returns
+    -------
+    snowflake_pair : `None` or `tuple` (`int`, `int`)
+        The role's guild's and it's own identifier if applicable.
+    
+    Raises
+    ------
+    TypeError
+        If `role`'s type is incorrect.
+    """
+    if isinstance(role, Role):
+        guild = role.guild
+        if guild is None:
+            snowflake_pair = None
+        else:
+            snowflake_pair = guild.id, role.id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(role)
+        if snowflake_pair is None:
+            raise TypeError(f'`role` can be given as `{Role.__name__}`, or as `tuple` (`int`, `int`), got '
+                f'{role.__class__.__name__}.')
+    
+    return snowflake_pair
+
+
+def get_webhook_id(webhook):
+    """
+    Gets the webhook's identifier from the given webhook or of it's identifier.
+    
+    Parameters
+    ----------
+    webhook : ``Webhook``, `int`
+        The webhook, or it's identifier.
+    
+    Returns
+    -------
+    webhook_id : `int`
+        The webhook's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `webhook`'s type is incorrect.
+    """
+    if isinstance(webhook, Webhook):
+        webhook_id = webhook.id
+    else:
+        webhook_id = maybe_snowflake(webhook)
+        if webhook_id is None:
+            raise TypeError(f'`webhook` can be given as `{Webhook.__name__}` or `int` instance, got '
+                f'{webhook.__class__.__name__}.')
+    
+    return webhook_id
+
+
+def get_webhook_and_id(webhook):
+    """
+    Gets the webhook and it's identifier from the given webhook or of it's identifier.
+    
+    Parameters
+    ----------
+    webhook : ``Webhook``, `int`
+        The webhook, or it's identifier.
+    
+    Returns
+    -------
+    webhook : ``Webhook`` or `None`
+        The webhook if any.
+    webhook_id : `int`
+        The webhook's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `webhook`'s type is incorrect.
+    """
+    while True:
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            break
+        
+        webhook_id = maybe_snowflake(webhook)
+        if (webhook_id is not None):
+            try:
+                webhook = USERS[webhook_id]
+            except KeyError:
+                webhook = None
+                break
+            
+            if isinstance(webhook, Webhook):
+                break
+            
+            raise TypeError(f'`webhook` can be given as `{Webhook.__name__}` or `int` instance, got '
+                f'{webhook.__class__.__name__}.')
+    
+    return webhook, webhook_id
+
+
+def get_webhook_id_token(webhook):
+    """
+    Gets the webhook's identifier and token from the given webhook or it's token, identifier pair.
+    
+    Parameters
+    ----------
+    webhook : ``Webhook``, `tuple` (`int`, `str`)
+        The webhook or it's id and token.
+    
+    Returns
+    -------
+    webhook_id : `int`
+        The webhook's identifier.
+    webhook_token : `str`
+        The webhook's token.
+    
+    Raises
+    ------
+    TypeError
+        If `webhook`'s type is incorrect.
+    """
+    if isinstance(webhook, Webhook):
+        snowflake_token_pair = webhook.id, webhook.token
+    else:
+        snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+        if (snowflake_token_pair is None):
+            raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+                f'got {webhook.__class__.__name__}.')
+    
+    return snowflake_token_pair
+
+
+def get_webhook_and_id_token(webhook):
+    """
+    Gets the webhook, it's identifier and token from the given webhook or it's token, identifier pair.
+    
+    Parameters
+    ----------
+    webhook : ``Webhook``, `tuple` (`int`, `str`)
+        The webhook or it's id and token.
+    
+    Returns
+    -------
+    webhook : ``Webhook`` or `None`
+        The webhook if any.
+    webhook_id : `int`
+        The webhook's identifier.
+    webhook_token : `str`
+        The webhook's token.
+    
+    Raises
+    ------
+    TypeError
+        If `webhook`'s type is incorrect.
+    """
+    while True:
+        if isinstance(webhook, Webhook):
+            webhook_id = webhook.id
+            webhook_token = webhook.token
+            break
+        
+        snowflake_token_pair = maybe_snowflake_token_pair(webhook)
+        if (snowflake_token_pair is not None):
+            webhook_id, webhook_token = snowflake_token_pair
+            
+            try:
+                webhook = USERS[webhook_id]
+            except KeyError:
+                webhook = None
+                break
+            
+            if isinstance(webhook, Webhook):
+                break
+        
+        raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
+            f'got {webhook.__class__.__name__}.')
+    
+    return webhook, webhook_id, webhook_token
+
+
+def get_reaction(emoji):
+    """
+    Gets the reaction form of the given emoji.
+    
+    Parameters
+    ----------
+    emoji : ``Emoji`` or `str`
+        The emoji to get it's reaction form of.
+    
+    Returns
+    -------
+    as_reaction : `str`
+        The emoji's reaction form.
+    
+    Raises
+    ------
+    TypeError
+        If `emoji`'s type is incorrect.
+    """
+    if isinstance(emoji, Emoji):
+        as_reaction = emoji.as_reaction
+    elif isinstance(emoji, str):
+        as_reaction = emoji
+    else:
+        raise TypeError(f'`emoji` can be given as ``{Emoji.__class__}`` or as `str` instance, got '
+            f'{emoji.__class__.__name__}.')
+    
+    return as_reaction
+
+
+def get_emoji_from_reaction(emoji):
+    """
+    Gets emoji from the given emoji or reaction string.
+    
+    Parameters
+    ----------
+    emoji : ``Emoji`` or `str`
+        The emoji or reaction to get the emoji from.
+    
+    Returns
+    -------
+    emoji : ``Emoji``
+        The emoji itself.
+    
+    Raises
+    ------
+    TypeError
+        If `emoji`'s type is incorrect.
+    ValueError
+        The given `emoji` is not a valid reaction.
+    """
+    if isinstance(emoji, Emoji):
+        pass
+    elif isinstance(emoji, str):
+        emoji = parse_reaction(emoji)
+        if emoji is None:
+            raise ValueError(f'The given `emoji` is not a valid reaction, got {emoji!r}.')
+    else:
+        raise TypeError(f'`emoji` can be given as ``{Emoji.__class__}`` or as `str` instance, got '
+            f'{emoji.__class__.__name__}.')
+    
+    return emoji
+
+
+def get_guild_id_and_emoji_id(emoji):
+    """
+    Gets the emoji's and it's guild's identifier from the given emoji.
+    
+    Parameters
+    ----------
+    emoji : ``Emoji`` or `tuple` (`int`, `int`)
+        The emoji, or `guild-id`, `emoji-id` pair.
+    
+    Returns
+    -------
+    snowflake_pair : `None` or `tuple` (`int`, `int`)
+        The emoji's guild's and it's own identifier if applicable.
+    
+    Raises
+    ------
+    TypeError
+        If `emoji`'s type is incorrect.
+    """
+    if isinstance(emoji, Emoji):
+        guild = emoji.guild
+        if guild is None:
+            snowflake_pair = None
+        else:
+            snowflake_pair = guild.id, emoji.id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(emoji)
+        if snowflake_pair is None:
+            raise TypeError(f'`emoji` can be given as `{Emoji.__name__}`, or as `tuple` (`int`, `int`), got '
+                f'{emoji.__class__.__name__}.')
+    
+    return snowflake_pair

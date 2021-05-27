@@ -1,9 +1,10 @@
-__all__ = ('create_partial_emoji_from_data', 'create_partial_emoji_data', 'parse_emoji', 'parse_custom_emojis', )
+__all__ = ('create_partial_emoji_from_data', 'create_partial_emoji_data', 'parse_emoji', 'parse_custom_emojis',
+    'parse_reaction',)
 
 from ...backend.export import export
 
 from ..core import EMOJIS
-from ..utils import EMOJI_RP
+from ..utils import EMOJI_RP, REACTION_RP
 
 from .emoji import UNICODE_TO_EMOJI, Emoji
 
@@ -103,7 +104,10 @@ def parse_emoji(text):
     if parsed is None:
         emoji = UNICODE_TO_EMOJI.get(text, None)
     else:
-        emoji = Emoji._from_parsed_group(parsed.groups())
+        animated, name, emoji_id = parsed.groups()
+        animated = (animated is not None)
+        emoji_id = int(emoji_id)
+        emoji = Emoji._create_partial(emoji_id, name, animated)
     
     return emoji
 
@@ -123,7 +127,37 @@ def parse_custom_emojis(text):
     """
     emojis = set()
     for groups in EMOJI_RP.findall(text):
-        emoji = Emoji._from_parsed_group(groups)
+        animated, name, emoji_id = groups
+        animated = (animated is not None)
+        emoji_id = int(emoji_id)
+        emoji = Emoji._create_partial(emoji_id, name, animated)
         emojis.add(emoji)
     
     return emojis
+
+
+def parse_reaction(text):
+    """
+    Parses out an emoji from the given reaction string.
+    
+    Parameters
+    ----------
+    text : `str`
+        Reaction string.
+    
+    Returns
+    -------
+    emoji : `None` or ``Emoji``
+    """
+    try:
+        emoji = UNICODE_TO_EMOJI[text]
+    except KeyError:
+        parsed = REACTION_RP.fullmatch(text)
+        if parsed is None:
+            emoji = None
+        else:
+            name, emoji_id = parsed.parsed()
+            emoji_id = int(emoji_id)
+            emoji = Emoji._create_partial(emoji_id, name, False)
+    
+    return emoji

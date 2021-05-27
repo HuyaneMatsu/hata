@@ -80,37 +80,37 @@ class Emoji(DiscordEntity, immortal=True):
         emoji_id = int(data['id'])
 
         try:
-            emoji = EMOJIS[emoji_id]
+            self = EMOJIS[emoji_id]
         except KeyError:
-            emoji = object.__new__(cls)
-            emoji.id = emoji_id
-            EMOJIS[emoji_id] = emoji
+            self = object.__new__(cls)
+            self.id = emoji_id
+            EMOJIS[emoji_id] = self
         else:
             # whenever we receive an emoji, it will have no user data included,
             # so it is enough if we check for user data only whenever we
             # receive emoji data from a request or so.
-            if (emoji.guild is not None):
-                if not emoji.user.id:
+            if (self.guild is not None):
+                if not self.user.id:
                     try:
                         user_data = data['user']
                     except KeyError:
                         pass
                     else:
-                        emoji.user = User(user_data)
-                return emoji
+                        self.user = User(user_data)
+                return self
         
         name = data['name']
         if name is None:
             name = ''
         
-        emoji.name = name
-        emoji.animated = data.get('animated', False)
-        emoji.require_colons= data.get('require_colons', True)
-        emoji.managed = data.get('managed', False)
-        emoji.guild = guild
-        emoji.available = data.get('available', True)
-        emoji.user = ZEROUSER
-        emoji.unicode = None
+        self.name = name
+        self.animated = data.get('animated', False)
+        self.require_colons= data.get('require_colons', True)
+        self.managed = data.get('managed', False)
+        self.guild = guild
+        self.available = data.get('available', True)
+        self.user = ZEROUSER
+        self.unicode = None
         
         role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
@@ -118,9 +118,9 @@ class Emoji(DiscordEntity, immortal=True):
         else:
             roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
         
-        emoji.roles = roles
+        self.roles = roles
         
-        return emoji
+        return self
     
     @classmethod
     def precreate(cls, emoji_id, **kwargs):
@@ -182,27 +182,27 @@ class Emoji(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            emoji = EMOJIS[emoji_id]
+            self = EMOJIS[emoji_id]
         except KeyError:
-            emoji = object.__new__(cls)
+            self = object.__new__(cls)
             
-            emoji.name = ''
-            emoji.animated = False
-            emoji.id = emoji_id 
-            emoji.guild = None
-            emoji.unicode = None
-            emoji.user = ZEROUSER
+            self.name = ''
+            self.animated = False
+            self.id = emoji_id
+            self.guild = None
+            self.unicode = None
+            self.user = ZEROUSER
             
-            EMOJIS[emoji_id]= emoji
+            EMOJIS[emoji_id] = self
         else:
-            if (emoji.guild is not None) or (emoji.unicode is not None):
-                return emoji
+            if (self.guild is not None) or (self.unicode is not None):
+                return self
         
         if (processable is not None):
             for name, value in processable:
-                setattr(emoji, name, value)
+                setattr(self, name, value)
         
-        return emoji
+        return self
     
     def __str__(self):
         """Returns the emoji's name."""
@@ -506,39 +506,42 @@ class Emoji(DiscordEntity, immortal=True):
         return old_attributes
     
     @classmethod
-    def _from_parsed_group(cls, groups):
+    def _create_partial(cls, emoji_id, name, animated):
         """
-        Creates a new emoji from the given parsed out groups.
+        Creates a new emoji from the given partial data.
         
         Parameters
         ----------
-        groups : `tuple` ((`str` or `None`), `str`, `str`)
-            A tuple, which contains whether the emoji to create is animated (element 0), the emoji's name (element 1) and
-            the emoji's id. (element 2).
+        emoji_id : `int`
+            The emoji's identifier.
+        name : `str`
+            The emoji's name.
+        animated : `bool`
+            Whether the emoji is animated.
         
         Returns
         -------
         emoji : ``Emoji``
         """
-        animated, name, emoji_id = groups
         emoji_id = int(emoji_id)
         
         try:
-            emoji = EMOJIS[emoji_id]
-            if emoji.guild is None:
-                emoji.name = name
+            self = EMOJIS[emoji_id]
+            if self.guild is None:
+                self.name = name
         except KeyError:
-            emoji = object.__new__(cls)
-            emoji.id = emoji_id
-            emoji.animated = (animated is not None)
-            emoji.name = name
-            emoji.unicode = None
-            emoji.guild = None
-            emoji.available = True
-            emoji.require_colons = True
-            emoji.managed = False
-            emoji.user = ZEROUSER
-            emoji.roles = None
-            EMOJIS[emoji_id] = emoji
+            self = object.__new__(cls)
+            self.id = emoji_id
+            self.animated = (animated is not None)
+            self.name = name
+            self.unicode = None
+            self.guild = None
+            self.available = True
+            self.require_colons = True
+            self.managed = False
+            self.user = ZEROUSER
+            self.roles = None
+            
+            EMOJIS[emoji_id] = self
         
-        return emoji
+        return self

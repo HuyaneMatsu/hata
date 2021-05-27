@@ -24,7 +24,8 @@ from ..user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial
 from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
-    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id
+    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
+    ChannelGuildMainBase
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id
@@ -64,14 +65,17 @@ from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
-from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
+from ..bases import maybe_snowflake, maybe_snowflake_pair
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
     _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
-    add_file_to_message_data, get_thread_channel_id, get_user_id, get_thread_channel_and_id, \
-    get_guild_text_channel_id, get_guild_and_guild_text_channel_id
+    add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
+    get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
+    get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
+    get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
+    get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id
 from .utils import UserGuildPermission, Typer, BanEntry
 
 
@@ -698,11 +702,13 @@ class Client(ClientUserPBase):
         
         This method is a coroutine.
         
+        > Deprecated and will be removed in 2021 August, please use `client.http.get` instead.
+        
         Parameters
         ----------
         url : `str` or ``URL`` instance
             The url to request.
-
+        
         Returns
         -------
         response_data : `bytes`
@@ -714,6 +720,11 @@ class Client(ClientUserPBase):
         ConnectionError
             No internet connection.
         """
+        warnings.warn(
+            f'`{self.__class__.__name__}.download_url` is deprecated, and will be removed in 2021 August. Please use '
+            '`client.http.get` instead.',
+            FutureWarning)
+        
         if __debug__:
             if not isinstance(url, (str, URL)):
                 raise AssertionError(f'`url` can be given as `str` or `{URL.__name__}` instance, got '
@@ -930,15 +941,7 @@ class Client(ClientUserPBase):
             # Canned edit nick in private, ignore it
             return
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         # Security debug checks.
         if __debug__:
@@ -1143,13 +1146,13 @@ class Client(ClientUserPBase):
                 f'{scopes.__class__.__name__}; {scopes!r}.')
         
         data = {
-            'client_id'     : self.id,
-            'client_secret' : self.secret,
-            'grant_type'    : 'authorization_code',
-            'code'          : code,
-            'redirect_uri'  : redirect_url,
-            'scope'         : scopes,
-                }
+            'client_id': self.id,
+            'client_secret': self.secret,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': redirect_url,
+            'scope': scopes,
+        }
         
         data = await self.http.oauth2_token(data, imultidict())
         if len(data) == 1:
@@ -1351,20 +1354,20 @@ class Client(ClientUserPBase):
         redirect_url = access.redirect_url
         if redirect_url:
             data = {
-                'client_id'     : self.id,
-                'client_secret' : self.secret,
-                'grant_type'    : 'refresh_token',
-                'refresh_token' : access.refresh_token,
-                'redirect_uri'  : redirect_url,
-                'scope'         : ' '.join(access.scopes)
-                    }
+                'client_id': self.id,
+                'client_secret': self.secret,
+                'grant_type': 'refresh_token',
+                'refresh_token': access.refresh_token,
+                'redirect_uri': redirect_url,
+                'scope': ' '.join(access.scopes)
+            }
         else:
             data = {
-                'client_id'     : self.id,
-                'client_secret' : self.secret,
-                'grant_type'    : 'client_credentials',
-                'scope'         : ' '.join(access.scopes),
-                    }
+                'client_id': self.id,
+                'client_secret': self.secret,
+                'grant_type': 'client_credentials',
+                'scope': ' '.join(access.scopes),
+            }
         
         data = await self.http.oauth2_token(data, imultidict())
         
@@ -1416,15 +1419,7 @@ class Client(ClientUserPBase):
             - If `deaf` was not given as `bool` instance.
             - If `roles` was not given neither as `None` or `list`.
         """
-        if user is None:
-            user_id = 0
-        elif isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `None`, `{ClientUserBase.__name__}` or `int` '
-                    f'instance, got {user.__class__.__name__}.')
+        user_id = get_user_id_nullable(user)
         
         
         if isinstance(access, OA2Access):
@@ -1459,13 +1454,7 @@ class Client(ClientUserPBase):
                 f'user={user!r}, access={access!r}.')
         
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         
         data = {'access_token': access_token}
@@ -1693,14 +1682,14 @@ class Client(ClientUserPBase):
         data = {
             'name' : {
                 'default' : name,
-                    },
+            },
             'description' : {
                 'default' : description,
-                    },
+            },
             'secret' : secret,
             'secure' : secure,
             'icon'   : icon_data,
-                }
+        }
         
         data = await self.http.achievement_create(self.application.id, data)
         return Achievement(data)
@@ -1747,14 +1736,7 @@ class Client(ClientUserPBase):
             - If `secure` was not given as `str` instance.
             - If `icon`'s format is not any of the expected ones.
         """
-        if isinstance(achievement, Achievement):
-            achievement_id = achievement.id
-        else:
-            achievement_id = maybe_snowflake(achievement)
-            if achievement_id is None:
-                raise TypeError(f'`achievement` can be given as `int` instance, got {achievement.__class__.__name__}.')
-            
-            achievement = None
+        achievement, achievement_id = get_achievement_and_id(achievement)
         
         data = {}
         
@@ -1764,8 +1746,8 @@ class Client(ClientUserPBase):
                     raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
             
             data['name'] = {
-                'default' : name,
-                    }
+                'default': name,
+            }
         
         if (description is not None):
             if __debug__:
@@ -1774,8 +1756,8 @@ class Client(ClientUserPBase):
                         f'{description.__class__.__name__}.')
             
             data['description'] = {
-                'default' : description,
-                    }
+                'default': description,
+            }
         
         if (secret is not None):
             if __debug__:
@@ -1830,13 +1812,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(achievement, Achievement):
-            achievement_id = achievement.id
-        else:
-            achievement_id = maybe_snowflake(achievement)
-            if achievement_id is None:
-                raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
-                    f'{achievement.__class__.__name__}.')
+        achievement_id = get_achievement_id(achievement)
         
         await self.http.achievement_delete(self.application.id, achievement_id)
     
@@ -1926,22 +1902,9 @@ class Client(ClientUserPBase):
         - When updating secure achievement: `DiscordException NOT FOUND (404), code=10029: Unknown Entitlement`
         - When updating non secure: `DiscordException FORBIDDEN (403), code=40001: Unauthorized`
         """
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        user_id = get_user_id(user)
         
-        
-        if isinstance(achievement, Achievement):
-            achievement_id = achievement.id
-        else:
-            achievement_id = maybe_snowflake(achievement)
-            if achievement_id is None:
-                raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
-                    f'{achievement.__class__.__name__}.')
+        achievement_id = get_achievement_id(achievement)
         
         if __debug__:
             if not isinstance(percent_complete, int):
@@ -2127,13 +2090,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelGroup):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGroup)
         
         await self.http.channel_group_leave(channel_id)
     
@@ -2160,26 +2117,12 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelGroup):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGroup)
         
-        user_ids = []
-        
+        user_ids = set()
         for user in users:
-            if isinstance(user, ClientUserBase):
-                user_id = user.id
-            else:
-                user_id = maybe_snowflake(user)
-                if user_id is None:
-                    raise TypeError(f'`users` can be given as `{ClientUserBase.__name__}` or `int` '
-                        f'instances, but got {user.__class__.__name__}.')
-                
-            user_ids.append(user_id)
+            user_id = get_user_id(user)
+            user_ids.add(user_id)
         
         for user_id in user_ids:
             await self.http.channel_group_user_add(channel_id, user_id)
@@ -2207,26 +2150,12 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelGroup):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGroup)
         
-        user_ids = []
-        
+        user_ids = set()
         for user in users:
-            if isinstance(user, ClientUserBase):
-                user_id = user.id
-            else:
-                user_id = maybe_snowflake(user)
-                if user_id is None:
-                    raise TypeError(f'`users` can be given as `{ClientUserBase.__name__}` or `int` '
-                        f'instances, but got {user.__class__.__name__}.')
-            
-            user_ids.append(user_id)
+            user_id = get_user_id(user)
+            user_ids.add(user_id)
         
         for user_id in user_ids:
             await self.http.channel_group_user_delete(channel_id, user_id)
@@ -2266,13 +2195,7 @@ class Client(ClientUserPBase):
         -----
         No request is done if no optional parameter is provided.
         """
-        if isinstance(channel, ChannelGroup):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGroup.__name__}`, neither as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGroup)
         
         data = {}
         
@@ -2348,16 +2271,8 @@ class Client(ClientUserPBase):
         This endpoint does not support bot accounts.
         """
         user_ids = set()
-        
         for user in users:
-            if isinstance(user, ClientUserBase):
-                user_id = user.id
-            else:
-                user_id = maybe_snowflake(user)
-                if user_id is None:
-                    raise TypeError(f'`users` can be given as `{ClientUserBase.__name__}` or `int` '
-                        f'instances, but got {user.__class__.__name__}.')
-                
+            user_id = get_user_id(user)
             user_ids.add(user_id)
         
         user_ids.add(self.id)
@@ -2398,13 +2313,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        user_id = get_user_id(user)
         
         try:
             channel = self.private_channels[user_id]
@@ -2452,7 +2361,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase`` instance
+        channel : ``ChannelGuildMainBase`` instance
             The channel to be moved.
         visual_position : `int`
             The visual position where the channel should go.
@@ -2473,8 +2382,8 @@ class Client(ClientUserPBase):
             - If the `channel` would be between guilds.
             - If parent channel would be moved under an other category.
         TypeError
-            - If `ChannelGuildBase` was not passed as ``ChannelGuildBase`` instance.
-            - If `parent` was not given as `None`, or as ``Guild`` or ``ChannelCategory`` instance.
+            - If `ChannelGuildBase` was not passed as ``ChannelGuildMainBase`` instance.
+            - If `parent` was not given as `None`, or as ``ChannelCategory`` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2493,8 +2402,8 @@ class Client(ClientUserPBase):
             parent = category
         
         # Check channel type
-        if not isinstance(channel, ChannelGuildBase):
-            raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` instance, got '
+        if not isinstance(channel, ChannelGuildMainBase):
+            raise TypeError(f'`channel` can be given as `{ChannelGuildMainBase.__name__}` instance, got '
                 f'{channel.__class__.__name__}.')
         
         # Check whether the channel is partial.
@@ -2727,15 +2636,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelGuildBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` parameter can be given as {ChannelGuildBase.__name__} or `int` instance, '
-                    f'got {channel.__class__.__name__}.')
-            
-            channel = None
+        channel, channel_id = get_channel_and_id(channel, ChannelGuildBase)
         
         data = {}
         
@@ -2915,7 +2816,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild`` or `int`
             The guild where the channel will be created.
         name : `str`
             The created channel's name.
@@ -2989,16 +2890,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
-        
+        guild, guild_id = get_guild_and_id(guild)
         
         data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
         data = await self.http.channel_create(guild_id, data, reason)
@@ -3015,7 +2907,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase`` or `int` instance
+        channel : ``ChannelGuildBase`` or `int`
             The channel to delete.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -3033,13 +2925,7 @@ class Client(ClientUserPBase):
         -----
         If a category channel is deleted, it's sub-channels will not be removed, instead they will move under the guild.
         """
-        if isinstance(channel, ChannelGuildBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` parameter can be given as {ChannelGuildBase.__name__} or `int` instance, '
-                    f'got {channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGuildBase)
         
         await self.http.channel_delete(channel_id, reason)
     
@@ -3074,30 +2960,17 @@ class Client(ClientUserPBase):
         AssertionError
             - If `source_channel` is not announcement channel.
         """
-        if isinstance(source_channel, ChannelText):
+        source_channel, source_channel_id = get_channel_and_id(source_channel, ChannelText)
+        if source_channel is None:
+            source_channel = create_partial_channel_from_id(source_channel_id, 5)
+        else:
             if __debug__:
                 if source_channel.type != 5:
                     raise AssertionError(f'`source_channel` must be type 5 (announcements) channel, got '
                         f'`{source_channel}`.')
-            
-            source_channel_id = source_channel.id
         
-        else:
-            source_channel_id = maybe_snowflake(source_channel)
-            if source_channel_id is None:
-                raise TypeError(f'`source_channel` can be given as {ChannelText.__name__} or `int` instance, got '
-                    f'{source_channel.__class__.__name__}.')
-            
-            source_channel = create_partial_channel_from_id(source_channel_id, 5)
-        
-        if isinstance(target_channel, ChannelText):
-            target_channel_id = target_channel.id
-        else:
-            target_channel_id = maybe_snowflake(target_channel)
-            if target_channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelText.__name__} or `int` instance, got '
-                    f'{target_channel.__class__.__name__}.')
-            
+        target_channel, target_channel_id = get_channel_and_id(target_channel, ChannelText)
+        if target_channel is None:
             target_channel = create_partial_channel_from_id(target_channel_id, 0)
         
         data = {
@@ -3196,16 +3069,7 @@ class Client(ClientUserPBase):
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
-        if isinstance(channel, ChannelTextBase):
-            channel_id = channel.id
-        
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
-            
-            channel = CHANNELS.get(channel_id, None)
+        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3269,16 +3133,7 @@ class Client(ClientUserPBase):
             - If `limit` was not given as `int` instance.
             - If `limit` is out of range [1:100].
         """
-        if isinstance(channel, ChannelTextBase):
-            channel_id = channel.id
-        
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
-            
-            channel = CHANNELS.get(channel_id, None)
+        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3333,16 +3188,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelTextBase):
-            channel_id = channel.id
-        
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
-            
-            channel = CHANNELS.get(channel_id, None)
+        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
@@ -3778,11 +3624,18 @@ class Client(ClientUserPBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        AssertionError
+            If `channel` was not given as ``ChannelTextBase`` instance.
         
         Notes
         -----
         This method uses up 4 different rate limit groups parallelly to maximize the request and the deletion speed.
         """
+        if __debug__:
+            if not isinstance(channel, ChannelTextBase):
+                raise AssertionError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got '
+                    f'{channel.__class__.__name__}.')
+        
         # Check permissions
         permissions = channel.cached_permissions_for(self)
         if not permissions.can_manage_messages:
@@ -4525,7 +4378,6 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If the message was not sent by the client.
             - If `components` contains a non ``ComponentBase`` element.
             - If `suppress` was not given as `bool` instance.
             - If `embed` contains a non ``EmbedBase`` element.
@@ -4540,40 +4392,7 @@ class Client(ClientUserPBase):
         -----
         Do not updates he given message object, so dispatch event events can still calculate differences when received.
         """
-        
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: None -> raise
-        # 5.: `tuple` (`int`, `int`)
-        # 6.: raise
-        #
-        # Message cannot be detected by id, only cached ones, so ignore that case.
-        
-        if isinstance(message, Message):
-            if __debug__:
-                if message.author.id != self.id:
-                    raise AssertionError('The message was not send by the client.')
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageRepr):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        elif message is None:
-            raise TypeError('`message` was given as `None`. Make sure to use `Client.message_create` with giving '
-                'content and using a cached channel.')
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}` or as '
-                    f'`{MessageRepr.__name__}`, `{MessageReference.__name__}` or as `tuple` of (`int`, `int`), got '
-                    f'`{message.__class__.__name__}`.')
-            
-            channel_id, message_id = snowflake_pair
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
         content, embed = validate_content_and_embed(content, embed, False, True)
         
@@ -4637,29 +4456,7 @@ class Client(ClientUserPBase):
         AssertionError
             If `suppress` was not given as `bool` instance.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageRepr):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
         if __debug__:
             if not isinstance(suppress, bool):
@@ -4689,29 +4486,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageRepr):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
         await self.http.message_crosspost(channel_id, message_id)
     
@@ -4736,29 +4511,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageRepr):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
         await self.http.message_pin(channel_id, message_id)
     
@@ -4784,29 +4537,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageRepr):
-            channel_id = message.channel.id
-            message_id = message.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
         await self.http.message_unpin(channel_id, message_id)
     
@@ -4836,16 +4567,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelTextBase):
-            channel_id = channel.id
-        
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
-            
-            channel = CHANNELS.get(channel_id, None)
+        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
         
         data = await self.http.channel_pin_get_all(channel_id)
         
@@ -4958,24 +4680,15 @@ class Client(ClientUserPBase):
             
             if index < 0:
                 raise AssertionError(f'`index` is out from the expected [0:] range, got {index!r}.')
-    
-        if isinstance(channel, ChannelTextBase):
-            pass
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        
+        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        if channel is None:
+            messages = await self.message_get_chunk_from_zero(channel_id, min(index+1, 100))
             
-            channel = CHANNELS.get(channel_id, None)
-            
-            if channel is None:
-                messages = await self.message_get_chunk_from_zero(channel_id, min(index+1, 100))
-                
-                if messages:
-                    channel = messages[0].channel
-                else:
-                    raise IndexError(index)
+            if messages:
+                channel = messages[0].channel
+            else:
+                raise IndexError(index)
         
         messages = channel.messages
         if (messages is not None) and (index < len(messages)):
@@ -5042,23 +4755,14 @@ class Client(ClientUserPBase):
             if end < 0:
                 raise AssertionError(f'`end` is out from the expected [0:] range, got {end!r}.')
         
-        if isinstance(channel, ChannelTextBase):
-            pass
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        if channel is None:
+            messages = await self.message_get_chunk_from_zero(channel_id, min(end+1, 100))
             
-            channel = CHANNELS.get(channel_id, None)
-            
-            if channel is None:
-                messages = await self.message_get_chunk_from_zero(channel_id, min(end+1, 100))
-                
-                if messages:
-                    channel = messages[0].channel
-                else:
-                    return []
+            if messages:
+                channel = messages[0].channel
+            else:
+                return []
         
         if end <= start:
             return []
@@ -5150,13 +4854,7 @@ class Client(ClientUserPBase):
         -----
         The client will be shown up as typing for 8 seconds, or till it sends a message at the respective channel.
         """
-        if isinstance(channel, ChannelTextBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelTextBase)
         
         await self.http.typing(channel_id)
     
@@ -5189,13 +4887,7 @@ class Client(ClientUserPBase):
             await client.message_create(channel, 'Ayaya')
         ```
         """
-        if isinstance(channel, ChannelTextBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelTextBase)
         
         return Typer(self, channel_id, timeout)
     
@@ -5211,51 +4903,24 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message on which the reaction will be put on.
-        emoji : ``Emoji``
-            The emoji to react with
+        emoji : ``Emoji`` or `str`
+            The emoji to react with.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` nor as
-            `tuple` (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` nor as
+                `tuple` (`int`, `int`) instance.
+            - If `emoji`'s type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `emoji` was not given as ``Emoji`` instance.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        emoji_as_reaction = get_reaction(emoji)
         
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
-        
-        if __debug__:
-            if not isinstance(emoji, Emoji):
-                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                    f'{emoji.__class__.__name__}.')
-        
-        await self.http.reaction_add(channel_id, message_id, emoji.as_reaction)
+        await self.http.reaction_add(channel_id, message_id, emoji_as_reaction)
     
     async def reaction_delete(self, message, emoji, user):
         """
@@ -5267,7 +4932,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message from which the reaction will be removed.
-        emoji : ``Emoji``
+        emoji : ``Emoji`` or `str`
             The emoji to remove.
         user : ```ClientUserBase`` or `int` instance
             The user, who's reaction will be removed.
@@ -5278,54 +4943,20 @@ class Client(ClientUserPBase):
             - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
                 (`int`, `int`) instance.
             - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
+            - If `emoji` was not given as ``Emoji`` or `str` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `emoji` was not given as ``Emoji`` instance.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
-        
-        if __debug__:
-            if not isinstance(emoji, Emoji):
-                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                    f'{emoji.__class__.__name__}.')
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        emoji_as_reaction = get_reaction(emoji)
+        user_id = get_user_id(user)
         
         if user_id == self.id:
-            await self.http.reaction_delete_own(channel_id, message_id, emoji.as_reaction)
+            await self.http.reaction_delete_own(channel_id, message_id, emoji_as_reaction)
         else:
-            await self.http.reaction_delete(channel_id, message_id, emoji.as_reaction, user_id)
+            await self.http.reaction_delete(channel_id, message_id, emoji_as_reaction, user_id)
     
     async def reaction_delete_emoji(self, message, emoji):
         """
@@ -5337,51 +4968,24 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message from which the reactions will be removed.
-        emoji : ``Emoji`` object
+        emoji : ``Emoji`` or `str`
             The reaction to remove.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-            (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
+                (`int`, `int`) instance.
+            - If `emoji`'s type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `emoji` was not given as ``Emoji`` instance.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        as_reaction = get_reaction(emoji)
         
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
-        
-        if __debug__:
-            if not isinstance(emoji, Emoji):
-                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                    f'{emoji.__class__.__name__}.')
-        
-        await self.http.reaction_delete_emoji(channel_id, message_id, emoji.as_reaction)
+        await self.http.reaction_delete_emoji(channel_id, message_id, as_reaction)
     
     async def reaction_delete_own(self, message, emoji):
         """
@@ -5393,51 +4997,23 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message from which the reaction will be removed.
-        emoji : ``Emoji`` object
+        emoji : ``Emoji`` or `str`
             The emoji to remove.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-            (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
+                (`int`, `int`) instance.
+            - If `emoji`'s type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `emoji` was not given as ``Emoji`` instance.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
-        
-        if __debug__:
-            if not isinstance(emoji, Emoji):
-                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                    f'{emoji.__class__.__name__}.')
-        
-        await self.http.reaction_delete_own(channel_id, message_id, emoji.as_reaction)
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        as_reaction = get_reaction(emoji)
+        await self.http.reaction_delete_own(channel_id, message_id, as_reaction)
     
     async def reaction_clear(self, message):
         """
@@ -5460,29 +5036,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
-            
-            channel_id, message_id = snowflake_pair
+        channel_id, message_id = get_channel_id_and_message_id(message)
         
         await self.http.reaction_clear(channel_id, message_id)
     
@@ -5500,7 +5054,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
-        emoji : ``Emoji`` object
+        emoji : ``Emoji``, `str`
             The emoji, what's reactors will be requested.
         limit : `None` or `int`, Optional (Keyword only)
             The amount of users to request. Can be in range [1:100]. Defaults to 25 by Discord.
@@ -5517,6 +5071,9 @@ class Client(ClientUserPBase):
             - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
                 (`int`, `int`) instance.
             - If `after` was passed with an unexpected type.
+            - If `emoji`'s type is incorrect.
+        ValueError
+            The given `emoji` is not a valid reaction.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5524,7 +5081,6 @@ class Client(ClientUserPBase):
         AssertionError
             - If `limit` was not given neither as `None` or `int` instance.
             - If `limit` is out of the expected range [1:100].
-            - If `emoji` was not given as ``Emoji`` instance.
         
         Notes
         -----
@@ -5541,40 +5097,16 @@ class Client(ClientUserPBase):
                 if limit < 1 or limit > 100:
                     raise AssertionError(f'`limit` can be between in range [1:100], got `{limit!r}`.')
         
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        emoji = get_emoji_from_reaction(emoji)
         
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-            reactions = message.reactions
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-            reactions = None
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
+        try:
+            message = MESSAGES[message_id]
+        except KeyError:
             reactions = None
         else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`{MessageReference.__name__}` or as `tuple` (`int`, `int`), got {message.__class__.__name__}.')
+            reactions = message.reactions
             
-            channel_id, message_id = snowflake_pair
-            try:
-                message = MESSAGES[message_id]
-            except KeyError:
-                reactions = None
-            else:
-                reactions = message.reactions
-        
-        if (reactions is not None):
             try:
                 line = reactions[emoji]
             except KeyError:
@@ -5619,7 +5151,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
-        emoji : ``Emoji`` object
+        emoji : ``Emoji``, `str`
             The emoji, what's reactors will be requested.
         
         Returns
@@ -5629,50 +5161,26 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-            (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
+                (`int`, `int`) instance.
+            - If `emoji`'s type is incorrect.
+        ValueError
+            The given `emoji` is not a valid reaction.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `emoji` was not given as ``Emoji`` instance.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        emoji = get_emoji_from_reaction(emoji)
         
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-            reactions = message.reactions
-        elif isinstance(message, MessageRepr):
-            message_id = message.id
-            channel_id = message.channel.id
-            reactions = None
-        elif isinstance(message, MessageReference):
-            channel_id = message.channel_id
-            message_id = message.message_id
+        try:
+            message = MESSAGES[message_id]
+        except KeyError:
             reactions = None
         else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}` or as '
-                    f'`{MessageRepr.__name__}`, `{MessageReference.__name__}` or as `tuple` of (`int`, `int`), got '
-                    f'`{message.__class__.__name__}`.')
+            reactions = message.reactions
             
-            channel_id, message_id = snowflake_pair
-            try:
-                message = MESSAGES[message_id]
-            except KeyError:
-                reactions = None
-            else:
-                reactions = message.reactions
-        
-        if (reactions is not None):
             if not reactions:
                 return []
             
@@ -5732,37 +5240,10 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        # Message check order
-        # 1.: Message
-        # 2.: MessageRepr
-        # 3.: MessageReference
-        # 4.: `tuple` (`int`, `int`)
-        # 5.: raise
-        
-        if isinstance(message, Message):
-            message_id = message.id
-            channel_id = message.channel.id
-        else:
-            if isinstance(message, MessageRepr):
-                message_id = message.id
-                channel_id = message.channel.id
-                message = None
-            elif isinstance(message, MessageReference):
-                channel_id = message.channel_id
-                message_id = message.message_id
-                message = None
-            else:
-                snowflake_pair = maybe_snowflake_pair(message)
-                if snowflake_pair is None:
-                    raise TypeError(f'`message` should have be given as `{Message.__name__}` or as '
-                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}` or as `tuple` of (`int`, `int`), got '
-                        f'`{message.__class__.__name__}`.')
-                
-                channel_id, message_id = snowflake_pair
-                message = MESSAGES.get(message_id, None)
-            
-            if (message is None):
-                message = await self.message_get(channel_id, message_id)
+        channel_id, message_id = get_channel_id_and_message_id(message)
+        message = MESSAGES.get(message_id, None)
+        if (message is None):
+            message = await self.message_get(channel_id, message_id)
         
         reactions = message.reactions
         if reactions:
@@ -5817,14 +5298,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         data = await self.http.guild_preview_get(guild_id)
         return GuildPreview(data)
@@ -5855,25 +5329,8 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-        
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, got '
-                    f'{user.__class__.__name__}.')
-        
+        guild_id = get_guild_id(guild)
+        user_id = get_user_id(user)
         
         await self.http.guild_user_delete(guild_id, user_id, reason)
     
@@ -5906,17 +5363,7 @@ class Client(ClientUserPBase):
         -----
         If the guild has no welcome screen enabled, will not do any request.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
-        
+        guild, guild_id = get_guild_and_id(guild)
         
         if (guild is None) or (GuildFeature.welcome_screen in guild.features):
             welcome_screen_data = await self.http.welcome_screen_get(guild_id)
@@ -5969,14 +5416,7 @@ class Client(ClientUserPBase):
             - If `description`'s length is out of range [0:140].
             - If `welcome_channels`'s length is out of range [0:5].
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         data = {}
         
@@ -6071,16 +5511,7 @@ class Client(ClientUserPBase):
         -----
         If the guild has no verification screen enabled, will not do any request.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        guild, guild_id = get_guild_and_id(guild)
         
         if (guild is None) or (GuildFeature.verification_screen in guild.features):
             verification_screen_data = await self.http.verification_screen_get(guild_id)
@@ -6137,14 +5568,7 @@ class Client(ClientUserPBase):
         -----
         When editing steps, `DiscordException Internal Server Error (500): 500: Internal Server Error` will be dropped.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         data = {}
         
@@ -6235,25 +5659,8 @@ class Client(ClientUserPBase):
             - `delete_message_days` was not given as `int` instance.
             - `delete_message_days` is out of range [0:delete_message_days].
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-        
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, got '
-                    f'{user.__class__.__name__}.')
-        
+        guild_id = get_guild_id(guild)
+        user_id = get_user_id(user)
         
         if __debug__:
             if not isinstance(delete_message_days, int):
@@ -6299,24 +5706,8 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-        
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, got '
-                    f'{user.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
+        user_id = get_user_id(user)
         
         await self.http.guild_ban_delete(guild_id, user_id, reason)
     
@@ -6346,16 +5737,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         # sadly guild_get does not returns channel and voice state data at least we can request the channels
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         if guild is None:
             data = await self.http.guild_get(guild_id)
@@ -6446,14 +5828,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         await self.http.guild_leave(guild_id)
     
@@ -6478,14 +5853,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         await self.http.guild_delete(guild_id)
     
@@ -6629,15 +5997,15 @@ class Client(ClientUserPBase):
             channels = []
         
         data = {
-            'name'                          : name,
-            'icon'                          : icon_data,
-            'region'                        : region_value,
-            'verification_level'            : verification_level_value,
-            'default_message_notifications' : message_notification_value,
-            'explicit_content_filter'       : content_filter_value,
-            'roles'                         : roles,
-            'channels'                      : channels,
-                }
+            'name': name,
+            'icon': icon_data,
+            'region': region_value,
+            'verification_level': verification_level_value,
+            'default_message_notifications': message_notification_value,
+            'explicit_content_filter': content_filter_value,
+            'roles': roles,
+            'channels': channels,
+        }
         
         if (afk_channel_id is not None):
             if __debug__:
@@ -6715,16 +6083,7 @@ class Client(ClientUserPBase):
         --------
         ``.guild_prune_estimate`` : Returns how much user would be pruned if ``.guild_prune`` would be called.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         if __debug__:
             if not isinstance(count, bool):
@@ -6743,7 +6102,7 @@ class Client(ClientUserPBase):
         data = {
             'days': days,
             'compute_prune_count': count,
-                }
+        }
         
         if (roles is not None):
             if __debug__:
@@ -6805,14 +6164,7 @@ class Client(ClientUserPBase):
             - If `days` was not given as `int` instance.
             - If `days` is out of range [1:30].
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if __debug__:
             if not isinstance(days, int):
@@ -6823,7 +6175,7 @@ class Client(ClientUserPBase):
         
         data = {
             'days': days,
-                }
+        }
         
         if (roles is not None):
             if __debug__:
@@ -6832,15 +6184,8 @@ class Client(ClientUserPBase):
                           f'instances, got {roles.__class__.__name__}; {roles!r}.')
             
             role_ids = set()
-            for index, role in enumerate(roles):
-                if isinstance(role, Role):
-                    role_id = role.id
-                else:
-                    role_id = maybe_snowflake(role)
-                    if role_id is None:
-                        raise TypeError(f'`roles` index {index} was expected to be {Role.__name__} or `in` instance,'
-                            f'but got {role.__class__.__name__}.')
-                
+            for role in roles:
+                role_id = get_role_id(role)
                 role_ids.add(role_id)
             
             if role_ids:
@@ -6953,16 +6298,7 @@ class Client(ClientUserPBase):
         """
         data = {}
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
-        
+        guild, guild_id = get_guild_and_id(guild)
         
         if (name is not None):
             if __debug__:
@@ -7357,13 +6693,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         data = await self.http.guild_ban_get_all(guild_id)
         return [BanEntry(User(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
@@ -7396,21 +6726,8 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
+        user_id = get_user_id(user)
         
         data = await self.http.guild_ban_get(guild_id, user_id)
         return BanEntry(User(data['user']), data.get('reason', None))
@@ -7440,13 +6757,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         try:
             data = await self.http.guild_widget_get(guild_id)
@@ -7639,17 +6950,7 @@ class Client(ClientUserPBase):
         
         If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        elif isinstance(guild, GuildDiscovery):
-            guild_id = guild.guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}` '
-                    f'or `int` instance, got {guild.__class__.__name__}.')
-            
-            guild = None
+        guild_discovery, guild_id = get_guild_discovery_and_id(guild)
         
         category_type = category.__class__
         if category_type is DiscoveryCategory:
@@ -7664,8 +6965,8 @@ class Client(ClientUserPBase):
         
         await self.http.guild_discovery_add_subcategory(guild_id, category_id)
         
-        if (guild is not None) and isinstance(guild, GuildDiscovery):
-            guild.sub_categories.add(category_id)
+        if (guild_discovery is not None):
+            guild_discovery.sub_categories.add(category_id)
     
     async def guild_discovery_delete_subcategory(self, guild, category):
         """
@@ -7698,17 +6999,7 @@ class Client(ClientUserPBase):
         
         If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        elif isinstance(guild, GuildDiscovery):
-            guild_id = guild.guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}` '
-                    f' or `int` instance, got {guild.__class__.__name__}.')
-            
-            guild = None
+        guild_discovery, guild_id = get_guild_discovery_and_id(guild)
         
         category_type = category.__class__
         if category_type is DiscoveryCategory:
@@ -7723,8 +7014,8 @@ class Client(ClientUserPBase):
         
         await self.http.guild_discovery_delete_subcategory(guild_id, category_id)
         
-        if (guild is not None) and isinstance(guild, GuildDiscovery):
-            guild.sub_categories.discard(category_id)
+        if (guild_discovery is not None):
+            guild_discovery.sub_categories.discard(category_id)
     
     async def _discovery_category_get_all(self):
         """
@@ -7744,9 +7035,8 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         discovery_category_datas = await self.http.discovery_category_get_all()
-        return [
-            DiscoveryCategory.from_data(discovery_category_data) for discovery_category_data in discovery_category_datas
-                    ]
+        return [DiscoveryCategory.from_data(discovery_category_data)
+            for discovery_category_data in discovery_category_datas]
     
     # Add cached, so even tho the first request fails with `ConnectionError` will not be raised.
     discovery_category_get_all = DiscoveryCategoryRequestCacher(_discovery_category_get_all, 3600.0,
@@ -7812,15 +7102,7 @@ class Client(ClientUserPBase):
         
         When using it with user account, the client's token will be invalidated.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        guild, guild_id = get_guild_and_id(guild)
         
         data = {'limit': 1000, 'after': 0}
         users = []
@@ -7900,13 +7182,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         data = await self.http.guild_voice_region_get_all(guild_id)
         voice_regions = []
@@ -7967,15 +7243,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        guild, guild_id = get_guild_and_id(guild)
         
         data = await self.http.guild_channel_get_all(guild_id)
         if guild is None:
@@ -8004,15 +7272,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        guild, guild_id = get_guild_and_id(guild)
         
         data = await self.http.guild_role_get_all(guild_id)
         if guild is None:
@@ -8064,15 +7324,7 @@ class Client(ClientUserPBase):
             - If `limit` was not given as `int` instance.
             - If `limit` is out of the expected range [1:100].
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        guild, guild_id = get_guild_and_id(guild)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -8187,25 +7439,8 @@ class Client(ClientUserPBase):
             - If `mute` was not given as `bool` instance.
             - If `roles` is not `None`, `set`, `tuple` or `list` instance.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
-            
-            user = USERS.get(user_id, None)
+        guild, guild_id = get_guild_and_id(guild)
+        user, user_id = get_user_and_id(user)
         
         data = {}
         if (nick is not ...):
@@ -8317,28 +7552,11 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(role, Role):
-            guild = role.guild
-            if guild is None:
-                return
-            
-            role_id = role.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(role)
-            if snowflake_pair is None:
-                raise TypeError(f'`role` can be given as `{Role.__name__}`, or as `tuple` (`int`, `int`), got '
-                    f'{role.__class__.__name__}.')
-            
-            guild_id, role_id = snowflake_pair
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        snowflake_pair = get_guild_id_and_role_id(role)
+        if snowflake_pair is None:
+            return
+        guild_id, role_id = snowflake_pair
+        user_id = get_user_id(user)
         
         await self.http.user_role_add(guild_id, user_id, role_id, reason)
     
@@ -8368,28 +7586,11 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(role, Role):
-            guild = role.guild
-            if guild is None:
-                return
-            
-            role_id = role.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(role)
-            if snowflake_pair is None:
-                raise TypeError(f'`role` can be given as `{Role.__name__}`, or as `tuple` (`int`, `int`), got '
-                    f'{role.__class__.__name__}.')
-            
-            guild_id, role_id = snowflake_pair
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        snowflake_pair = get_guild_id_and_role_id(role)
+        if snowflake_pair is None:
+            return
+        guild_id, role_id = snowflake_pair
+        user_id = get_user_id(user)
         
         await self.http.user_role_delete(guild_id, user_id, role_id, reason)
     
@@ -8417,28 +7618,11 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelVoiceBase):
-            guild = channel.guild
-            if guild is None:
-                return
-            
-            channel_id = channel.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(f'`channel` can be given as `{ChannelVoiceBase.__name__}`, or as '
-                    f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
-            
-            guild_id, channel_id = snowflake_pair
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        snowflake_pair = get_guild_id_and_channel_id(channel, ChannelVoiceBase)
+        if snowflake_pair is None:
+            return
+        guild_id, channel_id = snowflake_pair
+        user_id = get_user_id(user)
        
         await self.http.user_move(guild_id, user_id, {'channel_id': channel_id})
     
@@ -8466,33 +7650,16 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelStage):
-            guild = channel.guild
-            if guild is None:
-                return
-            
-            channel_id = channel.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
-                    f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
-            
-            guild_id, channel_id = snowflake_pair
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        snowflake_pair = get_guild_id_and_channel_id(channel, ChannelStage)
+        if snowflake_pair is None:
+            return
+        guild_id, channel_id = snowflake_pair
+        user_id = get_user_id(user)
        
         data = {
             'suppress' : False,
             'channel_id': channel_id,
-                }
+        }
         
         await self.http.voice_state_user_edit(guild_id, user_id, data)
     
@@ -8520,28 +7687,11 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelStage):
-            guild = channel.guild
-            if guild is None:
-                return
-            
-            channel_id = channel.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
-                    f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
-            
-            guild_id, channel_id = snowflake_pair
-        
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
+        snowflake_pair = get_guild_id_and_channel_id(channel, ChannelStage)
+        if snowflake_pair is None:
+            return
+        guild_id, channel_id = snowflake_pair
+        user_id = get_user_id(user)
        
         data = {
             'suppress': True,
@@ -8574,21 +7724,8 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
-        
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        user_id = get_user_id(user)
+        guild_id = get_guild_id(guild)
         
         await self.http.user_move(guild_id, user_id, {'channel_id': None})
     
@@ -8630,13 +7767,7 @@ class Client(ClientUserPBase):
             - If `topic` was not given neither as `None` or as `str` instance.
             - If `topic`'s length is out of range [1:120].
         """
-        if isinstance(channel, ChannelStage):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
-                    f'int` instance, got {channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelStage)
         
         if topic is None:
             topic = ''
@@ -8698,15 +7829,7 @@ class Client(ClientUserPBase):
             - If `topic` was not given neither as `None` nor as `str` instance.
             - If `topic`'s length is out of range [1:120].
         """
-        if isinstance(stage, Stage):
-            channel_id = stage.channel.id
-        elif isinstance(stage, ChannelStage):
-            channel_id = stage.id
-        else:
-            channel_id = maybe_snowflake(stage)
-            if channel_id is None:
-                raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
-                    f'int` instance, got {stage.__class__.__name__}.')
+        channel_id = get_stage_channel_id(stage)
         
         data = {}
         
@@ -8764,15 +7887,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(stage, Stage):
-            channel_id = stage.channel.id
-        elif isinstance(stage, ChannelStage):
-            channel_id = stage.id
-        else:
-            channel_id = maybe_snowflake(stage)
-            if channel_id is None:
-                raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
-                    f'int` instance, got {stage.__class__.__name__}.')
+        channel_id = get_stage_channel_id(stage)
         
         await self.http.stage_delete(channel_id)
         # We receive no data.
@@ -8786,7 +7901,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        stage : ``ChannelStage`` or `int`
+        channel : ``ChannelStage`` or `int`
             The stage's channel's identifier.
         
         Raises
@@ -8798,13 +7913,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelStage):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}`, or as '
-                    f'int` instance, got {channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelStage)
         
         data = await self.http.stage_get(channel_id)
         return Stage(data)
@@ -8940,7 +8049,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_thread_channel_id(thread_channel)
+        channel_id = get_channel_id(thread_channel, ChannelThread)
         
         await self.http.thread_join(channel_id)
     
@@ -8965,7 +8074,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_thread_channel_id(thread_channel)
+        channel_id = get_channel_id(thread_channel, ChannelThread)
         
         await self.http.thread_leave(channel_id)
     
@@ -8993,7 +8102,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_thread_channel_id(thread_channel)
+        channel_id = get_channel_id(thread_channel, ChannelThread)
         user_id = get_user_id(user)
         
         if user_id == self.id:
@@ -9026,7 +8135,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_thread_channel_id(thread_channel)
+        channel_id = get_channel_id(thread_channel, ChannelThread)
         user_id = get_user_id(user)
         
         if user_id == self.id:
@@ -9061,7 +8170,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        thread_channel, channel_id = get_thread_channel_and_id(thread_channel)
+        thread_channel, channel_id = get_channel_and_id(thread_channel, ChannelThread)
         
         thread_user_datas = await self.http.thread_user_get_all(channel_id)
         
@@ -9172,15 +8281,7 @@ class Client(ClientUserPBase):
         TypeError
             If `user_id` was not given as `int` instance.
         """
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
-            
-            user = None
+        user, user_id = get_user_and_id(user)
         
         # a goto to check whether we should force update the user.
         while True:
@@ -9188,10 +8289,7 @@ class Client(ClientUserPBase):
                 break
             
             if user is None:
-                try:
-                    user = USERS[user_id]
-                except KeyError:
-                    break
+                break
             
             for guild in user.guild_profiles:
                 if not guild.partial:
@@ -9231,23 +8329,8 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                    f'got {user.__class__.__name__}.')
-        
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        user_id = get_user_id(user)
+        guild, guild_id = get_guild_and_id(guild)
         
         data = await self.http.guild_user_get(guild_id, user_id)
         
@@ -9290,15 +8373,7 @@ class Client(ClientUserPBase):
             - If `limit` was not given as `str` instance.
             - If `limit` is out fo expected range [1:1000].
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = None
+        guild, guild_id = get_guild_and_id(guild)
         
         if __debug__:
             if not isinstance(query, str):
@@ -9354,13 +8429,7 @@ class Client(ClientUserPBase):
             DiscordException
                 If any exception was received from the Discord API.
             """
-            if isinstance(guild, Guild):
-                guild_id = guild.id
-            else:
-                guild_id = maybe_snowflake(guild)
-                if guild_id is None:
-                    raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                        f'{guild.__class__.__name__}.')
+            guild_id = get_guild_id(guild)
             
             integration_datas = await self.http.integration_get_all(guild_id, None)
             return [Integration(integration_data) for integration_data in integration_datas]
@@ -9389,13 +8458,7 @@ class Client(ClientUserPBase):
             DiscordException
                 If any exception was received from the Discord API.
             """
-            if isinstance(guild, Guild):
-                guild_id = guild.id
-            else:
-                guild_id = maybe_snowflake(guild)
-                if guild_id is None:
-                    raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                        f'{guild.__class__.__name__}.')
+            guild_id = get_guild_id(guild)
             
             integration_datas = await self.http.integration_get_all(guild_id, {'include_applications': True})
             return [Integration(integration_data) for integration_data in integration_datas]
@@ -9432,13 +8495,7 @@ class Client(ClientUserPBase):
         AssertionError
             If `type_` is not given as `str` instance.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         integration_id_value = maybe_snowflake(integration_id)
         if integration_id_value is None:
@@ -9636,7 +8693,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ˙˙ChannelGuildBase`` or `int` instance
+        channel : ˙˙ChannelGuildMainBase`` or `int` instance
             The channel where the permission overwrite is.
         overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
@@ -9650,7 +8707,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelGuildBase`` nor as `int` instance.
+            If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9660,13 +8717,7 @@ class Client(ClientUserPBase):
             - If `allow` was not given neither as `None`, ``Permission`` not other `int` instance.
             - If `deny` was not given neither as `None`, ``Permission`` not other `int` instance.
         """
-        if isinstance(channel, ChannelGuildBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGuildMainBase)
         
         if __debug__:
             if not isinstance(overwrite, PermissionOverwrite):
@@ -9706,7 +8757,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ˙˙ChannelGuildBase`` instance
+        channel : ˙˙ChannelGuildMainBase`` instance
             The channel where the permission overwrite is.
         overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
@@ -9716,7 +8767,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelGuildBase`` nor as `int` instance.
+            If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -9724,13 +8775,7 @@ class Client(ClientUserPBase):
         AssertionError
             If `overwrite` was not given as ``PermissionOverwrite`` instance.
         """
-        if isinstance(channel, ChannelGuildBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGuildMainBase)
         
         if __debug__:
             if not isinstance(overwrite, PermissionOverwrite):
@@ -9748,7 +8793,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase`` or `int` instance
+        channel : ``ChannelGuildMainBase`` or `int` instance
             The channel to what the permission overwrite will be added.
         target : ``Role``, ``ClientUserBase`` instance
             The permission overwrite's target.
@@ -9767,7 +8812,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelGuildBase`` nor as `int` instance.
+            - If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int` instance.
             - If `target` was not passed neither as ``Role``,``User``, neither as ``Client`` instance.
         ConnectionError
             No internet connection.
@@ -9777,13 +8822,7 @@ class Client(ClientUserPBase):
             - If `allow` was not given neither as ``Permission`` nor as other `int` instance.
             - If `deny ` was not given neither as ``Permission`` not as other `int` instance.
         """
-        if isinstance(channel, ChannelGuildBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelGuildBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelGuildMainBase)
         
         if isinstance(target, Role):
             permission_overwrite_target_type = PermissionOverwriteTargetType.role
@@ -9849,13 +8888,7 @@ class Client(ClientUserPBase):
             - If `name` range is out of the expected range [1:80].
             - If `avatar`'s type is not any of the expected ones: `'jpg'`, `'png'`, `'webp'` or `'gif'`.
         """
-        if isinstance(channel, ChannelText):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given either as `{ChannelText.__name__}` or as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+        channel_id = get_channel_id(channel, ChannelText)
         
         if __debug__:
             if not isinstance(name, str):
@@ -9914,15 +8947,7 @@ class Client(ClientUserPBase):
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-        else:
-            webhook_id = maybe_snowflake(webhook)
-            if webhook_id is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
-                    f'{webhook.__class__.__name__}.')
-            
-            webhook = USERS.get(webhook_id, None)
+        webhook, webhook_id = get_webhook_and_id(webhook)
         
         if (webhook is not None):
             channel = webhook.channel
@@ -9939,6 +8964,7 @@ class Client(ClientUserPBase):
         
         return webhook
     
+    
     async def webhook_get_token(self, webhook):
         """
         Requests the webhook through Discord's webhook API. The client do not needs to be in the guild of the webhook.
@@ -9948,7 +8974,7 @@ class Client(ClientUserPBase):
         Parameters
         ----------
         webhook : ``Webhook``, `tuple` (`int`, `str`)
-            The webhook to update or the webhook's id and it's token.
+            The webhook to update or the webhook's id and token.
         
         Returns
         -------
@@ -9967,17 +8993,7 @@ class Client(ClientUserPBase):
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
-            webhook = USERS.get(webhook_id, None)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
         
         if (webhook is None):
             webhook = create_partial_webhook_from_id(webhook_id, webhook_token)
@@ -10024,8 +9040,6 @@ class Client(ClientUserPBase):
             +===============+=======================+===============================================================+
             | 10003         | unknown_channel       | The channel not exists.                                       |
             +---------------+-----------------------+---------------------------------------------------------------+
-            | 50001         | missing_access        | The bot is not in the channel's guild.                        |
-            +---------------+-----------------------+---------------------------------------------------------------+
             | 50013         | missing_permissions   | You need `manage_webhooks` permission.                        |
             +---------------+-----------------------+---------------------------------------------------------------+
             | 60003         | MFA_required          | You need to have multi-factor authorization to do this        |
@@ -10043,20 +9057,7 @@ class Client(ClientUserPBase):
         -----
         No request is done, if the passed channel is partial, or if the channel's guild's webhooks are up to date.
         """
-        if isinstance(channel, ChannelText):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` cna be given either as `{ChannelText.__name__}` or as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
-            
-            channel = CHANNELS.get(channel_id, None)
-            
-            if __debug__:
-                if (channel is not None) and (not isinstance(channel, ChannelText)):
-                    raise AssertionError(f'`channel` was given as a channel\'s identifier, but it detectably not '
-                        f'refers to a ``ChannelText`` instance. Got {channel_id}; refers to: {channel!r}.')
+        channel, channel_id = get_channel_id(channel, ChannelText)
         
         if (channel is not None):
             guild = channel.guild
@@ -10096,15 +9097,7 @@ class Client(ClientUserPBase):
         -----
         No request is done, if the guild's webhooks are up to date.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         if guild is None:
             webhook_datas = await self.http.webhook_get_all_guild(guild_id)
@@ -10156,15 +9149,10 @@ class Client(ClientUserPBase):
         --------
         ``.webhook_delete_token`` : Deleting webhook with Discord's webhook API.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-        else:
-            webhook_id = maybe_snowflake(webhook)
-            if webhook_id is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
-                    f'{webhook.__class__.__name__}.')
+        webhook_id = get_webhook_id(webhook)
         
         await self.http.webhook_delete(webhook_id)
+    
     
     async def webhook_delete_token(self, webhook):
         """
@@ -10191,16 +9179,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
+        webhook_id, webhook_token = get_webhook_id_token(webhook)
         
         await self.http.webhook_delete_token(webhook_id, webhook_token)
     
@@ -10242,13 +9221,7 @@ class Client(ClientUserPBase):
         --------
         ``.webhook_edit_token`` : Editing webhook with Discord's webhook API.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-        else:
-            webhook_id = maybe_snowflake(webhook)
-            if webhook_id is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `int` instance, got '
-                    f'{webhook.__class__.__name__}.')
+        webhook_id = get_webhook_id(webhook)
         
         data = {}
         
@@ -10342,17 +9315,7 @@ class Client(ClientUserPBase):
         -----
         This endpoint cannot edit the webhook's channel, like ``.webhook_edit``.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
-            webhook = USERS.get(webhook_id, None)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
         
         data = {}
         
@@ -10477,17 +9440,7 @@ class Client(ClientUserPBase):
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         - ``.webhook_message_get`` : Get a message created by a webhook.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
-            webhook = USERS.get(webhook_id, None)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
         
         if thread is None:
             thread_id = 0
@@ -10646,16 +9599,7 @@ class Client(ClientUserPBase):
         
         Editing the message with empty string is broken.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
+        webhook_id, webhook_token = get_webhook_id_token(webhook)
         
         # Detect message id
         # 1.: Message
@@ -10740,16 +9684,7 @@ class Client(ClientUserPBase):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_get`` : Get a message created by a webhook.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
+        webhook_id, webhook_token = get_webhook_id_token(webhook)
         
         # Detect message id
         # 1.: Message
@@ -10815,17 +9750,7 @@ class Client(ClientUserPBase):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         """
-        if isinstance(webhook, Webhook):
-            webhook_id = webhook.id
-            webhook_token = webhook.token
-        else:
-            snowflake_token_pair = maybe_snowflake_token_pair(webhook)
-            if snowflake_token_pair is None:
-                raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                    f'got {webhook.__class__.__name__}.')
-            
-            webhook_id, webhook_token = snowflake_token_pair
-            webhook = USERS.get(webhook_id, None)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
@@ -10874,15 +9799,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         if isinstance(emoji, Emoji):
             emoji_id = emoji.id
@@ -10906,6 +9823,7 @@ class Client(ClientUserPBase):
         
         return emoji
     
+    
     async def guild_sync_emojis(self, guild):
         """
         Syncs the given guild's emojis with the wrapper.
@@ -10926,13 +9844,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild, guild_id = get_guild_and_id(guild)
         
         data = await self.http.guild_emoji_get_all(guild_id)
         
@@ -10940,6 +9852,7 @@ class Client(ClientUserPBase):
             guild = create_partial_guild_from_id(guild_id)
         
         guild._sync_emojis(data)
+    
     
     async def emoji_create(self, guild, name, image, *, roles=None, reason=None):
         """
@@ -10982,15 +9895,7 @@ class Client(ClientUserPBase):
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         if __debug__:
             if not isinstance(name, str):
@@ -11038,6 +9943,7 @@ class Client(ClientUserPBase):
         emoji.user = self
         return emoji
     
+    
     async def emoji_delete(self, emoji, *, reason=None):
         """
         Deletes the given emoji.
@@ -11060,16 +9966,12 @@ class Client(ClientUserPBase):
         AssertionError
             If `emoji` was not given as ``Emoji`` instance.
         """
-        if __debug__:
-            if not isinstance(emoji, Emoji):
-                raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
-                    f'{emoji.__class__.__name__}.')
-        
-        guild = emoji.guild
-        if guild is None:
+        snowflake_pair = get_guild_id_and_emoji_id(emoji)
+        if (snowflake_pair is None):
             return
-        
-        await self.http.emoji_delete(guild.id, emoji.id, reason=reason)
+        guild_id, emoji_id = snowflake_pair
+        await self.http.emoji_delete(guild_id, emoji_id, reason=reason)
+    
     
     async def emoji_edit(self, emoji, *, name=None, roles=..., reason=None):
         """
@@ -11182,15 +10084,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         if guild is None or guild.partial:
             invite_data = await self.http.vanity_invite_get(guild_id)
@@ -11234,13 +10128,7 @@ class Client(ClientUserPBase):
         AssertionError
             If `vanity_code` was not given as `str` instance.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if __debug__:
             if not isinstance(vanity_code, str):
@@ -11691,13 +10579,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         invite_datas = await self.http.invite_get_all_guild(guild_id)
         return [Invite(invite_data, False) for invite_data in invite_datas]
@@ -11827,20 +10709,10 @@ class Client(ClientUserPBase):
             - If `mentionable` was not given as `None`, nor as `bool˛` instance.
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int` instance.
         """
-        if isinstance(role, Role):
-            guild = role.guild
-            if guild is None:
-                return
-            
-            role_id = role.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(role)
-            if snowflake_pair is None:
-                raise TypeError(f'`role` can be given as `{Role.__name__}`, or as `tuple` (`int`, `int`), got '
-                    f'{role.__class__.__name__}.')
-            
-            guild_id, role_id = snowflake_pair
+        snowflake_pair = get_guild_id_and_role_id(role)
+        if snowflake_pair is None:
+            return
+        guild_id, role_id = get_guild_id_and_role_id
         
         if (position is not None):
             await self.role_move((guild_id, role_id), position, reason)
@@ -11916,20 +10788,10 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(role, Role):
-            guild = role.guild
-            if guild is None:
-                return
-            
-            role_id = role.id
-            guild_id = guild.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(role)
-            if snowflake_pair is None:
-                raise TypeError(f'`role` can be given as `{Role.__name__}`, or as `tuple` (`int`, `int`), got '
-                    f'{role.__class__.__name__}.')
-            
-            guild_id, role_id = snowflake_pair
+        snowflake_pair = get_guild_id_and_role_id(role)
+        if snowflake_pair is None:
+            return
+        guild_id, role_id = get_guild_id_and_role_id
         
         await self.http.role_delete(guild_id, role_id, reason)
     
@@ -11973,15 +10835,7 @@ class Client(ClientUserPBase):
             - If `mentionable` was not given as `None`, nor as `bool˛` instance.
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int` instance.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given either as `{Guild.__name__}` or as `int` instance, got '
-                    f'{guild.__class__.__name__}.')
-            
-            guild = GUILDS.get(guild_id, None)
+        guild, guild_id = get_guild_and_id(guild)
         
         data = {}
         
@@ -12739,13 +11593,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
@@ -12799,13 +11647,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         data = await self.http.application_command_guild_get_all(application_id, guild_id)
         return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
@@ -12850,13 +11692,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if __debug__:
             if not isinstance(application_command, ApplicationCommand):
@@ -12911,13 +11747,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if __debug__:
             if not isinstance(new_application_command, ApplicationCommand):
@@ -12961,13 +11791,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
@@ -13020,13 +11844,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         application_command_datas = []
         
@@ -13105,13 +11923,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
@@ -13174,13 +11986,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
@@ -13250,13 +12056,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(f'`guild` can be given as ``{Guild.__name__}`` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+        guild_id = get_guild_id(guild)
         
         permission_datas = await self.http.application_command_permission_get_all_guild(application_id, guild_id)
         
@@ -14029,13 +12829,7 @@ class Client(ClientUserPBase):
         -----
         This endpoint is available only for user accounts.
         """
-        if isinstance(user, ClientUserBase):
-            user_id = user.id
-        else:
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `None`, `{ClientUserBase.__name__}` or `int` '
-                    f'instance, got {user.__class__.__name__}.')
+        user_id = get_user_id(user)
         
         if relationship_type is None:
             relationship_type_value = None
@@ -14077,12 +12871,8 @@ class Client(ClientUserPBase):
         -----
         This endpoint is available only for user accounts.
         """
-        if not isinstance(user, ClientUserBase):
-            user_id = maybe_snowflake(user)
-            if user_id is None:
-                raise TypeError(f'`user` can be given as `None`, `{ClientUserBase.__name__}` or `int` '
-                    f'instance, got {user.__class__.__name__}.')
-            
+        user, user_id = get_user_and_id(user)
+        if (user is None):
             user = await self.user_get(user_id)
         
         data = {

@@ -273,7 +273,7 @@ GUILD_ICON_CHOICES = {
 }
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def guild_icon(
+async def guild_icon(event,
         choice: (GUILD_ICON_CHOICES, 'Which icon of the guild?' ) = 'icon',
             ):
     """Shows the guild's icon."""

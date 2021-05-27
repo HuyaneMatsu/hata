@@ -38,6 +38,7 @@
 - Fix an `AttributeError` in `ChannelGroup._from_partial_data`.
 - `ChannelThread` has no attribute `thread_users`.
 - Fix a `NameError` in `_debug_component_custom_id`. (Zeref Draganeel#3581)
+- Fix a `TypeError` in `Client.message_edit`. (Zeref Draganeel#3581)
 
 #### Renames, Deprecation & Removals
 

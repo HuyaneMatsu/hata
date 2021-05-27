@@ -401,7 +401,7 @@ You can resolve name conflicts in an other way as well. Trailing `_` characters 
 ```py
 from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 
-@Nitro.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild=TEST_GUILD)
 async def id_to_time_(
         snowflake : ('int', 'Id please!'),
             ):
@@ -468,7 +468,9 @@ With `return` and `yield` statements, you can only send either `content` or `emb
 still way more comfy than typing out the whole client method, so there is a middle way, called `SlashResponse`.
 
 ```py
-@Marisa.interactions(guild=GUILD__NEKO_DUNGEON)
+from hata.ext.slash import SlashResponse
+
+@Nitori.interactions(guild=TEST_GUILD)
 async def repeat(
         text : ('str', 'The content to repeat')
             ):
@@ -496,15 +498,15 @@ IMPROVISATION_CHOICES = [
     'Suwako\'s secret family technique is so lovely.',
     'Reimu\'s armpits, yeeaaa...',
     'Have you heard of Izaoyi love-shop?',
-    'Marisa's underskirt shrooms are poggers'
+    'Marisa\'s underskirt shrooms are poggers'
 ]
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def improvise():
-    """Imrpovises some derpage"""
+    """Improvises some derpage"""
     yield '*Thinks*'
     await sleep(1.0+random()*4.0)
-    yield choose(IMPROVISATION_CHOICES)
+    yield choice(IMPROVISATION_CHOICES)
 ```
 
 > Python limitation, you cannot `return` any value if you use `yield` inside of an `async def`.
@@ -514,6 +516,8 @@ async def improvise():
 The first response can be also empty just to acknowledge the event.
 
 ```py
+from time import perf_counter
+
 @Nitori.interactions(guild=TEST_GUILD)
 async def ping():
     """HTTP ping-pong."""

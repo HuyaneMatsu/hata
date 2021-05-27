@@ -4396,6 +4396,9 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, False, True)
         
+        if (components is not ...):
+            components = get_components_data(components)
+        
         if __debug__:
             if (suppress is not ...) and (not isinstance(suppress, bool)):
                 raise AssertionError(f'`suppress` can be given as `bool` instance, got {suppress.__class__.__name__}.')

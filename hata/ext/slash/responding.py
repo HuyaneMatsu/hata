@@ -291,7 +291,7 @@ class SlashResponse:
     __slots__ = ('_force_new_message', '_message', '_parameters',)
     
     def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., components=None,
-            show_for_invoking_user_only=..., force_new_message=0, edit=...):
+            show_for_invoking_user_only=..., force_new_message=0, edit=..., event=None):
         """
         Creates a new ``SlashResponse`` instance with the given parameters.
         
@@ -327,7 +327,7 @@ class SlashResponse:
             
             If given as `-1` will only force new message if the event already deferred.
         edit : `None`, ``Message``
-            Whether the interaction's message should be edited
+            Whether the interaction's message should be edited.
         """
         self._force_new_message = force_new_message
         self._parameters = parameters = {}

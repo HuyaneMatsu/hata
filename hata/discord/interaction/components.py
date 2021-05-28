@@ -985,8 +985,8 @@ class ComponentSelectOption(ComponentBase):
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
         data = {
-            'value' : self.value,
-            'label' : self.label,
+            'value': self.value,
+            'label': self.label,
         }
         
         emoji = self.emoji

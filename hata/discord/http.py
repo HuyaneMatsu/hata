@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('DiscordHTTPClient', )
 
 import sys
@@ -19,7 +18,7 @@ from .utils.DISCORD_HEADERS import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION
 from .rate_limit import RATE_LIMIT_GROUPS, RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
 from .core import KOKORO
 
-from .urls import API_ENDPOINT, CDN_ENDPOINT, DIS_ENDPOINT
+from .urls import API_ENDPOINT, DIS_ENDPOINT
 
 @call
 def generate_user_agent():
@@ -1576,23 +1575,23 @@ class DiscordHTTPClient(HTTPClient):
             params=data,
         )
     
-    async def thread_get_all_archived_private(self, channel_id):
+    async def thread_get_chunk_archived_private(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_archived_private, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_archived_private, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/private',
         )
     
-    async def thread_get_all_archived_public(self, channel_id):
+    async def thread_get_chunk_archived_public(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_archived_public, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_archived_public, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/public',
         )
     
-    async def thread_get_all_self_archived(self, channel_id):
+    async def thread_get_chunk_self_archived(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_all_self_archived, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_self_archived, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/users/@me/threads/archived/private',
         )

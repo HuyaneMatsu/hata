@@ -2281,7 +2281,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
-    - thread_get_all_archived_private
+    - thread_get_chunk_archived_private
         - Endpoint : `/channels/{channel_id}/threads/archived/private`
         - Method : `GET`
         - Required auth : `bot`
@@ -2289,7 +2289,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
-    - thread_get_all_archived_public
+    - thread_get_chunk_archived_public
         - Endpoint : `/channels/{channel_id}/threads/archived/public`
         - Method : `GET`
         - Required auth : `bot`
@@ -2305,7 +2305,7 @@ class RATE_LIMIT_GROUPS:
         - Limit : `5`
         - Resets after : `5.0`
     
-    - thread_get_all_self_archived
+    - thread_get_chunk_self_archived
         - Endpoint : `/channels/{channel_id}/users/@me/threads/archived/private`
         - Method : `POST`
         - Required auth : `bot`
@@ -3361,9 +3361,9 @@ class RATE_LIMIT_GROUPS:
     thread_create_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     typing = RateLimitGroup(LIMITER_CHANNEL)
     thread_get_chunk_active = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-    thread_get_all_archived_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-    thread_get_all_archived_public = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-    thread_get_all_self_archived = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_get_chunk_archived_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_get_chunk_archived_public = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+    thread_get_chunk_self_archived = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
     webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     webhook_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
     discovery_category_get_all = RateLimitGroup()

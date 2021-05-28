@@ -892,6 +892,17 @@ async def remilia(client):
     yield await get_image_embed(client, 'remilia_scarlet', 'Scarlet Remilia', 0x9400d3)
 ```
 
+You can also set default sub-command, which is used if a sub command is selected.
+
+> Sub-commands and default commands are not yet fully supported by Discord.
+
+```py
+@SCARLET.interactions(is_default=True, show_for_invoking_user_only=True)
+async def devil(client, event):
+    """Flandre & Remilia!"""
+    return get_image_embed(client, 'flandre_scarlet+remilia_scarlet', 'Scarlet Flandre & Remilia', 0xa12a2a)
+```
+
 ## Manual Responding
 
 Sometimes the auto-responding feature just cannot do it. For these cases there are the questionably long named

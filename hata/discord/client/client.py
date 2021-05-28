@@ -69,7 +69,8 @@ from ..bases import maybe_snowflake, maybe_snowflake_pair
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
-    _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task
+    _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task, \
+    request_thread_channels
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -3229,7 +3230,8 @@ class Client(ClientUserPBase):
             A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -3258,8 +3260,7 @@ class Client(ClientUserPBase):
             - If `channel`'s type is incorrect.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`) of \
                 (``Sticker``, `int).
-            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
-                instances.
+            - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -3271,7 +3272,6 @@ class Client(ClientUserPBase):
             - If `tts` was not given as `bool` instance.
             - If `nonce` was not given neither as `None` nor as `str` instance.
             - If `reply_fail_fallback` was not given as `bool` instance.
-            - If `components` contains a non ``ComponentBase`` element.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
         
@@ -4354,7 +4354,8 @@ class Client(ClientUserPBase):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.
@@ -4368,8 +4369,7 @@ class Client(ClientUserPBase):
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
-            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
-                instances.
+            - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions` contains an element of invalid type.
             - If more than `10` files would be sent.
@@ -4378,7 +4378,6 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `components` contains a non ``ComponentBase`` element.
             - If `suppress` was not given as `bool` instance.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
@@ -4430,6 +4429,8 @@ class Client(ClientUserPBase):
             message_data['flags'] = flags
         
         message_data = add_file_to_message_data(message_data, file, True)
+        if (message_data is None):
+            return
         
         await self.http.message_edit(channel_id, message_id, message_data)
     
@@ -8214,43 +8215,86 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
+        return await request_thread_channels(self, guild, channel_id, type(self.http).thread_get_chunk_active)
+    
+    
+    async def thread_get_all_archived_private(self, channel):
+        """
+        Requests all the archived private of the given channel.
         
-        thread_channels = []
+        Parameters
+        ----------
+        channel : ``ChannelText``, `int`
+            The channel to request the thread of, or it's identifier.
         
-        data = None
+        Returns
+        -------
+        thread_channels : `list` of ``ChannelThread``
         
-        while True:
-            data = await self.http.thread_get_chunk_active(channel_id, data)
-            thread_channel_datas = data['threads']
-            
-            for thread_channel_data in thread_channel_datas:
-                thread_channel = ChannelThread(thread_channel_data, self, guild)
-                thread_channels.append(thread_channel)
-            
-            thread_user_datas = data['members']
-            for thread_user_data in thread_user_datas:
-                thread_chanel_id = int(thread_user_data['id'])
-                try:
-                    thread_channel = CHANNELS[thread_chanel_id]
-                except KeyError:
-                    continue
+        Raises
+        ------
+        TypeError
+            If `channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
+        return await request_thread_channels(self, guild, channel_id,
+            type(self.http).thread_get_chunk_archived_private)
+    
+    
+    async def thread_get_all_archived_public(self, channel):
+        """
+        Requests all the archived public threads of the given channel.
         
-                user_id = int(thread_user_data['user_id'])
-                user = create_partial_user_from_id(user_id)
-                
-                thread_user_create(thread_channel, user, thread_user_data)
-            
-            if not data.get('has_more', True):
-                break
-            
-            if thread_channels:
-                before = thread_channels[-1].created_at
-            else:
-                before = datetime.utcnow()
-            
-            data = {'before': before}
+        Parameters
+        ----------
+        channel : ``ChannelText``, `int`
+            The channel to request the thread of, or it's identifier.
         
-        return thread_channels
+        Returns
+        -------
+        thread_channels : `list` of ``ChannelThread``
+        
+        Raises
+        ------
+        TypeError
+            If `channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
+        return await request_thread_channels(self, guild, channel_id, type(self.http).thread_get_chunk_archived_public)
+    
+    
+    async def thread_get_all_self_archived(self, channel):
+        """
+        Requests all the archived private threads by the client.
+        
+        Parameters
+        ----------
+        channel : ``ChannelText``, `int`
+            The channel to request the thread of, or it's identifier.
+        
+        Returns
+        -------
+        thread_channels : `list` of ``ChannelThread``
+        
+        Raises
+        ------
+        TypeError
+            If `channel`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
+        return await request_thread_channels(self, guild, channel_id, type(self.http).thread_get_chunk_self_archived)
     
     
     async def user_get(self, user, *, force_update=False):
@@ -12101,7 +12145,8 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -12118,8 +12163,7 @@ class Client(ClientUserPBase):
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
-            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
-                instances.
+            - If `components` type is incorrect.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -12130,7 +12174,6 @@ class Client(ClientUserPBase):
             - If `interaction` was not given an ``InteractionEvent`` instance.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `components` contains a non ``ComponentBase`` element.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
         
@@ -12270,10 +12313,10 @@ class Client(ClientUserPBase):
         
         data = {'type': InteractionResponseTypes.component}
         
-        with InteractionResponseContext(interaction, False, False):
+        with InteractionResponseContext(interaction, True, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
-    async def interaction_response_message_edit(self, interaction, content=..., embed=..., file=None,
+    async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=None,
             allowed_mentions=...):
         """
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
@@ -12292,13 +12335,13 @@ class Client(ClientUserPBase):
             The new content of the message.
             
             If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
         embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
             raised.
+        file : `Any`, Optional (Keyword only)
+            A file or files to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
@@ -12372,8 +12415,85 @@ class Client(ClientUserPBase):
         with InteractionResponseContext(interaction, False, False):
             await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
                 message_data)
+    
+    
+    async def interaction_component_message_edit(self, interaction, content=..., *, embed=..., allowed_mentions=...,
+            components=...):
+        """
+        Edits the given component interaction's source message.
         
-        # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent`` instance
+            Interaction, what's source response message will be edited.
+        content : `str`, ``EmbedBase`` or `Any`, Optional
+            The new content of the message.
+            
+            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+            The new embedded content of the message. By passing it as `None`, you can remove the old.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            raised.
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
+        Raises
+        ------
+        TypeError
+            - If `allowed_mentions` contains an element of invalid type.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
+            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+        ValueError
+            If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If the client's application is not yet synced.
+            - If `embed` contains a non ``EmbedBase`` element.
+            - If both `content` and `embed` fields are embeds.
+        """
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        content, embed = validate_content_and_embed(content, embed, False, True)
+        
+        if (components is not ...):
+            components = get_components_data(components)
+        
+        # Build payload
+        message_data = {}
+        
+        if (content is not ...):
+            message_data['content'] = content
+        
+        if (embed is not ...):
+            if (embed is not None):
+                embed = embed.to_data()
+            
+            message_data['embed'] = embed
+        
+        if (allowed_mentions is not ...):
+            message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not ...):
+            message_data['components'] = components
+        
+        data = {
+            'data': message_data,
+            'type': InteractionResponseTypes.component_message_edit,
+        }
+        
+        with InteractionResponseContext(interaction, False, False):
+            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     
     async def interaction_response_message_delete(self, interaction):
@@ -12481,7 +12601,8 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -12505,8 +12626,7 @@ class Client(ClientUserPBase):
             - If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
-            - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
-                instances.
+            - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -12519,7 +12639,6 @@ class Client(ClientUserPBase):
             - If the client's application is not yet synced.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `components` contains a non ``ComponentBase`` element.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
         """

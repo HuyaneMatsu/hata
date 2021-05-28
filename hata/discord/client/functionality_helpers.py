@@ -1,6 +1,7 @@
 __all__ = ()
 
 from math import inf
+from datetime import datetime
 
 from ...env import CACHE_PRESENCE
 
@@ -8,11 +9,13 @@ from ...backend.utils import basemethod
 from ...backend.event_loop import LOOP_TIME
 from ...backend.futures import Future, sleep, Task, WaitTillFirst
 
-from ..core import KOKORO, CLIENTS
+from ..core import KOKORO, CLIENTS, CHANNELS
 from ..rate_limit import RateLimitProxy
 from ..gateway import DiscordGateway
 from ..utils import time_now, DISCORD_EPOCH
 from ..exceptions import DiscordException
+from ..channel import ChannelThread
+from ..user import create_partial_user_from_id, thread_user_create
 
 USER_CHUNK_TIMEOUT = 2.5
 
@@ -919,3 +922,68 @@ async def _request_members_loop(gateway, guilds):
         await gateway.send_as_json(data)
         await sleep(0.6, KOKORO)
 
+
+async def request_thread_channels(client, guild, channel_id, request_function):
+    """
+    Gets thread channels trough the discord API with the given http client and function.
+    
+    This method is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client instance.
+    guild : `Guild``
+        The source guild of the channel.
+    channel_id : `int`
+        The respective guild text channel's identifier.
+    request_function : ``CoroutineFunctionType``
+        The function to request the threads with.
+    
+    Returns
+    -------
+    thread_channels : `list` of ``ChannelThread``
+    
+    Raises
+    ------
+    ConnectionError
+        No internet connection.
+    DiscordException
+        If any exception was received from the Discord API.
+    """
+    thread_channels = []
+    
+    data = None
+    
+    while True:
+        data = await request_function(client.http, channel_id, data)
+        thread_channel_datas = data['threads']
+        
+        for thread_channel_data in thread_channel_datas:
+            thread_channel = ChannelThread(thread_channel_data, client, guild)
+            thread_channels.append(thread_channel)
+        
+        thread_user_datas = data['members']
+        for thread_user_data in thread_user_datas:
+            thread_chanel_id = int(thread_user_data['id'])
+            try:
+                thread_channel = CHANNELS[thread_chanel_id]
+            except KeyError:
+                continue
+    
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user_from_id(user_id)
+            
+            thread_user_create(thread_channel, user, thread_user_data)
+        
+        if not data.get('has_more', True):
+            break
+        
+        if thread_channels:
+            before = thread_channels[-1].created_at
+        else:
+            before = datetime.utcnow()
+        
+        data = {'before': before}
+    
+    return thread_channels

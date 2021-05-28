@@ -13,15 +13,21 @@
 - Add `._create_empty` for each channel type.
 - Add `._from_partial_data` for super channels as well.
 - Add `Client.thread_user_get_all`.
-- Separate `DiscordHTTPClient.thread_get_all_archived` to `.thread_get_all_archived_private` and
-    `.thread_get_all_archived_public`
-- Separate `RATE_LIMIT_GROUPS.thread_get_all_archived` to `.thread_get_all_archived_private` and
-    `.thread_get_all_archived_public`
+- Separate `DiscordHTTPClient.thread_get_all_archived` to `.thread_get_chunk_archived_private` and
+    `.thread_get_chunk_archived_public`
+- Separate `RATE_LIMIT_GROUPS.thread_get_all_archived` to `.thread_get_chunk_archived_private` and
+    `.thread_get_chunk_archived_public`
 - Add `DiscordHTTPClient.thread_get_chunk_active`.
 - Add `RATE_LIMIT_GROUPS.thread_get_chunk_active`.
 - Add `Client.thread_get_all_active`.
 - Add support for `datetime` query parameter.
 - Add `parse_reaction`.
+- Add `InteractionResponseTypes.component_message_edit`.
+- Add `Client.interaction_component_message_edit`.
+- Add `Client.thread_get_all_archived_public`.
+- Add `Client.thread_get_all_archived_private`
+- Add `Client.thread_get_all_self_archived`.
+
 
 ##### hata.ext.extension_loader
 
@@ -602,8 +608,8 @@ Add components.
 - Add `DiscordHTTPClient.thread_settings_edit`.
 - Add `RATE_LIMIT_GROUPS.thread_get_all_archived`.
 - Add `DiscordHTTPClient.thread_get_all_archived`.
-- Add `RATE_LIMIT_GROUPS.thread_get_all_self_archived`.
-- Add `DiscordHTTPClient.thread_get_all_self_archived`.
+- Add `RATE_LIMIT_GROUPS.thread_get_chunk_self_archived`.
+- Add `DiscordHTTPClient.thread_get_chunk_self_archived`.
 - Update `RATE_LIMIT_GROUPS.thread_user_add`.
 - Update `DiscordHTTPClient.thread_user_add`.
 - Update `RATE_LIMIT_GROUPS.thread_user_delete`.

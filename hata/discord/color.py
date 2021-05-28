@@ -403,154 +403,153 @@ class COLORS:
     """
     Contains the web colors as attributes.
     """
+    alice_blue = Color(0xF0F8FF)
+    antique_white = Color(0xFAEBD7)
+    aquamarine = Color(0x7FFFD4)
+    azure = Color(0xF0FFFF)
+    beige = Color(0xF5F5DC)
+    bisque = Color(0xFFE4C4)
+    black = Color(0x0)
+    blanched_almond = Color(0xFFEBCD)
+    blue = Color(0xFF)
+    blue_violet = Color(0x8A2BE2)
+    brown = Color(0xA52A2A)
+    burlywood = Color(0xDEB887)
+    cadet_blue = Color(0x5F9EA0)
+    chartreuse = Color(0x7FFF00)
+    chocolate = Color(0xD2691E)
+    coral = Color(0xFF7F50)
+    cornflower_blue = Color(0x6495ED)
+    cornsilk = Color(0xFFF8DC)
+    crimson = Color(0xDC143C)
+    cyan = Color(0xFFFF)
+    dark_blue = Color(0x8B)
+    dark_cyan = Color(0x8B8B)
+    dark_goldenrod = Color(0xB8860B)
+    dark_gray = Color(0xA9A9A9)
+    dark_green = Color(0x6400)
+    dark_khaki = Color(0xBDB76B)
+    dark_magenta = Color(0x8B008B)
+    dark_olive_green = Color(0x556B2F)
+    dark_orange = Color(0xFF8C00)
+    dark_orchid = Color(0x9932CC)
+    dark_red = Color(0x8B0000)
+    dark_salmon = Color(0xE9967A)
+    dark_sea_green = Color(0x8FBC8F)
+    dark_slate_blue = Color(0x483D8B)
+    dark_slate_gray = Color(0x2F4F4F)
+    dark_turquoise = Color(0xCED1)
+    dark_violet = Color(0x9400D3)
+    deep_pink = Color(0xFF1493)
+    deep_sky_blue = Color(0xBFFF)
+    dim_gray = Color(0x696969)
+    dodger_blue = Color(0x1E90FF)
+    firebrick = Color(0xB22222)
+    floral_white = Color(0xFFFAF0)
+    forest_green = Color(0x228B22)
+    gainsboro = Color(0xDCDCDC)
+    ghost_white = Color(0xF8F8FF)
+    gold = Color(0xFFD700)
+    goldenrod = Color(0xDAA520)
+    gray = Color(0x808080)
+    green = Color(0x8000)
+    green_yellow = Color(0xADFF2F)
+    honeydew = Color(0xF0FFF0)
+    hot_pink = Color(0xFF69B4)
+    indian_red = Color(0xCD5C5C)
+    indigo = Color(0x4B0082)
+    ivory = Color(0xFFFFF0)
+    khaki = Color(0xF0E68C)
+    lavender = Color(0xE6E6FA)
+    lavender_blush = Color(0xFFF0F5)
+    lawn_green = Color(0x7CFC00)
+    lemon_chiffon = Color(0xFFFACD)
+    light_blue = Color(0xADD8E6)
+    light_coral = Color(0xF08080)
+    light_cyan = Color(0xE0FFFF)
+    light_goldenrod_yellow = Color(0xFAFAD2)
+    light_gray = Color(0xD3D3D3)
+    light_green = Color(0x90EE90)
+    light_pink = Color(0xFFB6C1)
+    light_salmon = Color(0xFFA07A)
+    light_sea_green = Color(0x20B2AA)
+    light_sky_blue = Color(0x87CEFA)
+    light_slate_gray = Color(0x778899)
+    light_steel_blue = Color(0xB0C4DE)
+    light_yellow = Color(0xFFFFE0)
+    lime = Color(0xFF00)
+    lime_green = Color(0x32CD32)
+    linen = Color(0xFAF0E6)
+    magenta = Color(0xFF00FF)
+    maroon = Color(0x800000)
+    medium_aquamarine = Color(0x66CDAA)
+    medium_blue = Color(0xCD)
+    medium_orchid = Color(0xBA55D3)
+    medium_purple = Color(0x9370DB)
+    medium_sea_green = Color(0x3CB371)
+    medium_slate_blue = Color(0x7B68EE)
+    medium_spring_green = Color(0xFA9A)
+    medium_turquoise = Color(0x48D1CC)
+    medium_violet_red = Color(0xC71585)
+    midnight_blue = Color(0x191970)
+    mint_cream = Color(0xF5FFFA)
+    misty_rose = Color(0xFFE4E1)
+    moccasin = Color(0xFFE4B5)
+    navajo_white = Color(0xFFDEAD)
+    navy = Color(0x80)
+    old_lace = Color(0xFDF5E6)
+    olive = Color(0x808000)
+    olive_drab = Color(0x6B8E23)
+    orange = Color(0xFFA500)
+    orange_red = Color(0xFF4500)
+    orchid = Color(0xDA70D6)
+    pale_goldenrod = Color(0xEEE8AA)
+    pale_green = Color(0x98FB98)
+    pale_turquoise = Color(0xAFEEEE)
+    pale_violet_red = Color(0xDB7093)
+    papaya_whip = Color(0xFFEFD5)
+    peach_puff = Color(0xFFDAB9)
+    peru = Color(0xCD853F)
+    pink = Color(0xFFC0CB)
+    plum = Color(0xDDA0DD)
+    powder_blue = Color(0xB0E0E6)
+    purple = Color(0x800080)
+    red = Color(0xFF0000)
+    rosy_brown = Color(0xBC8F8F)
+    royal_blue = Color(0x4169E1)
+    saddle_brown = Color(0x8B4513)
+    salmon = Color(0xFA8072)
+    sandy_brown = Color(0xF4A460)
+    sea_green = Color(0x2E8B57)
+    seashell = Color(0xFFF5EE)
+    sienna = Color(0xA0522D)
+    silver = Color(0xC0C0C0)
+    sky_blue = Color(0x87CEEB)
+    slate_blue = Color(0x6A5ACD)
+    slate_gray = Color(0x708090)
+    snow = Color(0xFFFAFA)
+    spring_green = Color(0xFF7F)
+    steel_blue = Color(0x4682B4)
+    tan = Color(0xD2B48C)
+    teal = Color(0x8080)
+    thistle = Color(0xD8BFD8)
+    tomato = Color(0xFF6347)
+    turquoise = Color(0x40E0D0)
+    violet = Color(0xEE82EE)
+    wheat = Color(0xF5DEB3)
+    white = Color(0xFFFFFF)
+    white_smoke = Color(0xF5F5F5)
+    yellow = Color(0xFFFF00)
+    yellow_green = Color(0x9ACD32)
 
-for color, *color_names in (
-        (Color(0x000000), 'black' , ),
-        (Color(0x000080), 'navy' , ),
-        (Color(0x00008B), 'dark blue' , ),
-        (Color(0x0000CD), 'medium blue' , ),
-        (Color(0x0000FF), 'blue' , ),
-        (Color(0x006400), 'dark green' , ),
-        (Color(0x008000), 'green' , ),
-        (Color(0x008080), 'teal' , ),
-        (Color(0x008B8B), 'dark cyan' , ),
-        (Color(0x00BFFF), 'deep sky blue' , ),
-        (Color(0x00CED1), 'dark turquoise' , ),
-        (Color(0x00FA9A), 'medium spring green' , ),
-        (Color(0x00FF00), 'lime' , ),
-        (Color(0x00FF7F), 'spring green' , ),
-        (Color(0x00FFFF), 'cyan' , ),
-        (Color(0x191970), 'midnight blue' , ),
-        (Color(0x1E90FF), 'dodger blue' , ),
-        (Color(0x20B2AA), 'light sea green' , ),
-        (Color(0x228B22), 'forest green' , ),
-        (Color(0x2E8B57), 'sea green' , ),
-        (Color(0x2F4F4F), 'dark slate gray' , ),
-        (Color(0x32CD32), 'lime green' , ),
-        (Color(0x3CB371), 'medium sea green' , ),
-        (Color(0x40E0D0), 'turquoise' , ),
-        (Color(0x4169E1), 'royal blue' , ),
-        (Color(0x4682B4), 'steel blue' , ),
-        (Color(0x483D8B), 'dark slate blue' , ),
-        (Color(0x48D1CC), 'medium turquoise' , ),
-        (Color(0x4B0082), 'indigo' , ),
-        (Color(0x556B2F), 'dark olive green' , ),
-        (Color(0x5F9EA0), 'cadet blue' , ),
-        (Color(0x6495ED), 'cornflower blue' , ),
-        (Color(0x66CDAA), 'medium aquamarine' , ),
-        (Color(0x696969), 'dim gray' , ),
-        (Color(0x6A5ACD), 'slate blue' , ),
-        (Color(0x6B8E23), 'olive drab' , ),
-        (Color(0x708090), 'slate gray' , ),
-        (Color(0x778899), 'light slate gray' , ),
-        (Color(0x7B68EE), 'medium slate blue' , ),
-        (Color(0x7CFC00), 'lawn green' , ),
-        (Color(0x7FFF00), 'chartreuse' , ),
-        (Color(0x7FFFD4), 'aquamarine' , ),
-        (Color(0x800000), 'maroon' , ),
-        (Color(0x800080), 'purple' , ),
-        (Color(0x808000), 'olive' , ),
-        (Color(0x808080), 'gray' , ),
-        (Color(0x87CEEB), 'sky blue' , ),
-        (Color(0x87CEFA), 'light sky blue' , ),
-        (Color(0x8A2BE2), 'blue violet' , ),
-        (Color(0x8B0000), 'dark red' , ),
-        (Color(0x8B008B), 'dark magenta' , ),
-        (Color(0x8B4513), 'saddle brown' , ),
-        (Color(0x8FBC8F), 'dark sea green' , ),
-        (Color(0x90EE90), 'light green' , ),
-        (Color(0x9370DB), 'medium purple' , ),
-        (Color(0x9400D3), 'dark violet' , ),
-        (Color(0x98FB98), 'pale green' , ),
-        (Color(0x9932CC), 'dark orchid' , ),
-        (Color(0x9ACD32), 'yellow green' , ),
-        (Color(0xA0522D), 'sienna' , ),
-        (Color(0xA52A2A), 'brown' , ),
-        (Color(0xA9A9A9), 'dark gray' , ),
-        (Color(0xADD8E6), 'light blue' , ),
-        (Color(0xADFF2F), 'green yellow' , ),
-        (Color(0xAFEEEE), 'pale turquoise' , ),
-        (Color(0xB0C4DE), 'light steel blue' , ),
-        (Color(0xB0E0E6), 'powder blue' , ),
-        (Color(0xB22222), 'firebrick' , ),
-        (Color(0xB8860B), 'dark goldenrod' , ),
-        (Color(0xBA55D3), 'medium orchid' , ),
-        (Color(0xBC8F8F), 'rosy brown' , ),
-        (Color(0xBDB76B), 'dark khaki' , ),
-        (Color(0xC0C0C0), 'silver' , ),
-        (Color(0xC71585), 'medium violet red' , ),
-        (Color(0xCD5C5C), 'indian red' , ),
-        (Color(0xCD853F), 'peru' , ),
-        (Color(0xD2691E), 'chocolate' , ),
-        (Color(0xD2B48C), 'tan' , ),
-        (Color(0xD3D3D3), 'light gray' , ),
-        (Color(0xD8BFD8), 'thistle' , ),
-        (Color(0xDA70D6), 'orchid' , ),
-        (Color(0xDAA520), 'goldenrod' , ),
-        (Color(0xDB7093), 'pale violet red' , ),
-        (Color(0xDC143C), 'crimson' , ),
-        (Color(0xDCDCDC), 'gainsboro' , ),
-        (Color(0xDDA0DD), 'plum' , ),
-        (Color(0xDEB887), 'burlywood' , ),
-        (Color(0xE0FFFF), 'light cyan' , ),
-        (Color(0xE6E6FA), 'lavender' , ),
-        (Color(0xE9967A), 'dark salmon' , ),
-        (Color(0xEE82EE), 'violet' , ),
-        (Color(0xEEE8AA), 'pale goldenrod' , ),
-        (Color(0xF08080), 'light coral' , ),
-        (Color(0xF0E68C), 'khaki' , ),
-        (Color(0xF0F8FF), 'alice blue' , ),
-        (Color(0xF0FFF0), 'honeydew' , ),
-        (Color(0xF0FFFF), 'azure' , ),
-        (Color(0xF4A460), 'sandy brown' , ),
-        (Color(0xF5DEB3), 'wheat' , ),
-        (Color(0xF5F5DC), 'beige' , ),
-        (Color(0xF5F5F5), 'white smoke' , ),
-        (Color(0xF5FFFA), 'mint cream' , ),
-        (Color(0xF8F8FF), 'ghost white' , ),
-        (Color(0xFA8072), 'salmon' , ),
-        (Color(0xFAEBD7), 'antique white' , ),
-        (Color(0xFAF0E6), 'linen' , ),
-        (Color(0xFAFAD2), 'light goldenrod yellow' , ),
-        (Color(0xFDF5E6), 'old lace' , ),
-        (Color(0xFF0000), 'red' , ),
-        (Color(0xFF00FF), 'magenta' , ),
-        (Color(0xFF1493), 'deep pink' , ),
-        (Color(0xFF4500), 'orange red' , ),
-        (Color(0xFF6347), 'tomato' , ),
-        (Color(0xFF69B4), 'hot pink' , ),
-        (Color(0xFF7F50), 'coral' , ),
-        (Color(0xFF8C00), 'dark orange' , ),
-        (Color(0xFFA07A), 'light salmon' , ),
-        (Color(0xFFA500), 'orange' , ),
-        (Color(0xFFB6C1), 'light pink' , ),
-        (Color(0xFFC0CB), 'pink' , ),
-        (Color(0xFFD700), 'gold' , ),
-        (Color(0xFFDAB9), 'peach puff' , ),
-        (Color(0xFFDEAD), 'navajo white' , ),
-        (Color(0xFFE4B5), 'moccasin' , ),
-        (Color(0xFFE4C4), 'bisque' , ),
-        (Color(0xFFE4E1), 'misty rose' , ),
-        (Color(0xFFEBCD), 'blanched almond' , ),
-        (Color(0xFFEFD5), 'papaya whip' , ),
-        (Color(0xFFF0F5), 'lavender blush' , ),
-        (Color(0xFFF5EE), 'seashell' , ),
-        (Color(0xFFF8DC), 'cornsilk' , ),
-        (Color(0xFFFACD), 'lemon chiffon' , ),
-        (Color(0xFFFAF0), 'floral white' , ),
-        (Color(0xFFFAFA), 'snow' , ),
-        (Color(0xFFFF00), 'yellow' , ),
-        (Color(0xFFFFE0), 'light yellow' , ),
-        (Color(0xFFFFF0), 'ivory' , ),
-        (Color(0xFFFFFF), 'white' , ),
-            ):
-    
-    for color_name in color_names:
-        COLOR_BY_NAME[color_name] = color
-        COLOR_BY_NAME[color_name.replace(' ', '')] = color
-        COLORS.__dict__[color_name.replace(' ', '_')] = color
 
-del color, color_names, color_name
+for attribute_name, attribute_value in COLORS.__dict__.items():
+    if isinstance(attribute_value, Color):
+        COLOR_BY_NAME[attribute_name.replace('_', '')] = attribute_value
+        COLOR_BY_NAME[attribute_name.replace(' ', '')] = attribute_value
+
+del attribute_name, attribute_value
+
 
 def parse_color(text):
     """

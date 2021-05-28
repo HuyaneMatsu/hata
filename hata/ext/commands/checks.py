@@ -1415,7 +1415,7 @@ class has_guild_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `in` instance
+        permissions : ``Permission`` or `int` instance
             The permission, what the message's author should have at the message's guild.
         handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
@@ -1540,7 +1540,7 @@ class client_has_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `in` instance
+        permissions : ``Permission`` or `int` instance
             The permission, what the client should have at the message's channel.
         handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.
@@ -1615,7 +1615,7 @@ class client_has_guild_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `in` instance
+        permissions : ``Permission`` or `int` instance
             The permission, what the client should have at the message's guild.
         handler : `None` or `async-callable` or instantiable to `async-callable`
             The handler to convert.

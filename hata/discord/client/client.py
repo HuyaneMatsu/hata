@@ -6121,7 +6121,7 @@ class Client(ClientUserPBase):
                 else:
                     role_id = maybe_snowflake(role)
                     if role_id is None:
-                        raise TypeError(f'`roles` index {index} was expected to be {Role.__name__} or `in` instance,'
+                        raise TypeError(f'`roles` index {index} was expected to be {Role.__name__} or `int` instance,'
                             f'but got {role.__class__.__name__}.')
                 
                 role_ids.add(role_id)

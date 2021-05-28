@@ -85,7 +85,7 @@ Seija.start()
 > Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
 > (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
 > limitation.
-bo
+
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you

@@ -1,4 +1,10 @@
-## 1.1.81 *\[2021-05-??\]*
+## 1.1.82 *\[2021-05-??\]*
+
+## 1.1.81 *\[2021-05-28\]*
+
+#### Summary
+
+Add the rest of the thread endpoints to client.
 
 #### Improvements
 

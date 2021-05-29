@@ -1,5 +1,10 @@
 ## 1.1.83 *\[2021-0?-??\]*
 
+#### Improvements
+
+- Add `UserBase.custom_activity`.
+- Rework `UserBase.custom_activity`.
+
 ## 1.1.82 *\[2021-05-29\]*
 
 #### Summary

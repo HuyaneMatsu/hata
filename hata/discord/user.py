@@ -5,14 +5,14 @@ from datetime import datetime
 
 from ..env import CACHE_USER, CACHE_PRESENCE
 
-from ..backend.utils import DOCS_ENABLED, copy_docs
+from ..backend.utils import DOCS_ENABLED, copy_docs, set_docs
 from ..backend.export import export, include
 
 from .bases import DiscordEntity, FlagBase, IconSlot, ICON_TYPE_NONE
 from .core import USERS
 from .utils import parse_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from .color import Color
-from .activity import ActivityUnknown, create_activity
+from .activity import create_activity, ActivityRich, ActivityCustom
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
 from .preinstanced import Status, DefaultAvatar
@@ -914,14 +914,24 @@ class UserBase(DiscordEntity, immortal=True):
     @property
     def activity(self):
         """
-        Returns the user's top activity if applicable. If not, returns ``ActivityUnknown``.
+        Returns the user's top activity if applicable. If not.
         
         Returns
         -------
-        activity : ``ActivityBase`` instance
+        activity : ``ActivityRich`` or `None`
         """
-        return ActivityUnknown
+        return None
     
+    @property
+    def custom_activity(self):
+        """
+        Returns the user's custom activity if applicable.
+        
+        Returns
+        -------
+        activity : ``ActivityCustom`` or `None`
+        """
+        return None
     
     @property
     def platform(self):
@@ -1790,30 +1800,40 @@ class ClientUserPBase(ClientUserBase):
     
     
     @property
+    @copy_docs(UserBase.activity)
     def activity(self):
-        """
-        Returns the user's top activity if applicable. If not, returns ``ActivityUnknown``.
-        
-        Returns
-        -------
-        activity : ``ActivityBase`` instance
-        """
         activities = self.activities
         if activities is None:
-            activity = ActivityUnknown
+            activity = None
         else:
-            activity = activities[0]
+            for activity in activities:
+                if isinstance(activity, ActivityRich):
+                    break
+            else:
+                activity = None
+        
         return activity
     
+    
     @property
-    def platform(self):
-        """
-        Returns the user's top status's platform. If the user is offline it will return `an empty string.
+    @copy_docs(UserBase.custom_activity)
+    def custom_activity(self):
+        activities = self.activities
+        if activities is None:
+            activity = None
+        else:
+            for activity in activities:
+                if isinstance(activity, ActivityCustom):
+                    break
+            else:
+                activity = None
         
-        Returns
-        -------
-        platform : `str`
-        """
+        return activity
+    
+    
+    @property
+    @copy_docs(UserBase.platform)
+    def platform(self):
         statuses = self.statuses
         if statuses:
             status = self.status.value
@@ -1889,35 +1909,35 @@ class User(USER_BASE_CLASS):
             user_id = int(user_data['id'])
             
             try:
-                user = USERS[user_id]
+                self = USERS[user_id]
             except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = {}
-                user.status = Status.offline
-                user.statuses = {}
-                user.activities = None
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
+                self.status = Status.offline
+                self.statuses = {}
+                self.activities = None
                 update = True
                 
-                USERS[user_id] = user
+                USERS[user_id] = self
             else:
-                update = user.partial
+                update = self.partial
             
             if update:
-                user.partial = False
-                user.is_bot = user_data.get('bot', False)
-                user._update_no_return(user_data)
+                self.partial = False
+                self.is_bot = user_data.get('bot', False)
+                self._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = user.guild_profiles[guild]
+                    profile = self.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    guild.users[user_id] = self
+                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
             
-            return user
+            return self
     
     elif CACHE_USER:
         def __new__(cls, data, guild=None):
@@ -1931,31 +1951,32 @@ class User(USER_BASE_CLASS):
             user_id = int(user_data['id'])
 
             try:
-                user = USERS[user_id]
-                update = user.partial
+                self = USERS[user_id]
             except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = {}
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
                 update = True
                 
-                USERS[user_id] = user
+                USERS[user_id] = self
+            else:
+                update = self.partial
             
             if update:
-                user.partial = False
-                user.is_bot = user_data.get('bot', False)
-                user._update_no_return(user_data)
+                self.partial = False
+                self.is_bot = user_data.get('bot', False)
+                self._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = user.guild_profiles[guild]
+                    profile = self.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    guild.users[user_id] = self
+                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
                     
-            return user
+            return self
     
     else:
         def __new__(cls, data, guild=None):
@@ -1969,25 +1990,24 @@ class User(USER_BASE_CLASS):
             user_id = int(user_data['id'])
             
             try:
-                user = USERS[user_id]
+                self = USERS[user_id]
             except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = {}
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
                 
-                USERS[user_id] = user
+                USERS[user_id] = self
             
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
+            self.partial = False
+            self.is_bot = user_data.get('bot', False)
+            self._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild] = GuildProfile(guild_profile_data)
             
-            return user
+            return self
     
-    if DOCS_ENABLED:
-        __new__.__doc__ = (
+    set_docs(__new__,
         """
         First tries to find the user by id. If fails, then creates a new ``User`` object. If guild was given
         and the given data contains member data as well, then it will create a respective guild profile for the user

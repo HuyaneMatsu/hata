@@ -1,5 +1,22 @@
-﻿__all__ = ('instance_or_id_to_instance', 'instance_or_id_to_snowflake', 'maybe_snowflake', 'maybe_snowflake_pair',
-    'maybe_snowflake_token_pair',)
+﻿__all__ = ('id_sort_key', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake', 'maybe_snowflake',
+    'maybe_snowflake_pair', 'maybe_snowflake_token_pair',)
+
+
+def id_sort_key(entity):
+    """
+    Sort key for ``DiscordEntity`` instances.
+    
+    Parameters
+    ----------
+    entity : ``DiscordEntity``
+        The discord entity to get identifier of.
+    
+    Returns
+    -------
+    entity_id : `int`
+        The entity's identifier.
+    """
+    return entity.id
 
 
 def instance_or_id_to_instance(obj, type_, name):

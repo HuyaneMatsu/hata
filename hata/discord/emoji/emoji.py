@@ -1,6 +1,6 @@
 ﻿__all__ = ('BUILTIN_EMOJIS', 'UNICODE_TO_EMOJI', 'Emoji')
 
-from ..bases import DiscordEntity
+from ..bases import DiscordEntity, id_sort_key
 from ..core import EMOJIS
 from ..utils import id_to_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..user import User, ZEROUSER
@@ -41,7 +41,7 @@ class Emoji(DiscordEntity, immortal=True):
         Whether the emoji is managed by an integration.
     name : `int`
         The emoji's name.
-    roles : `None` or `list` of ``Role`` objects
+    roles : `None` or `tuple` of ``Role``
         The set of roles for which the custom emoji is whitelisted to. If the emoji is not limited for specific roles,
         then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this attribute is set to
         `None` as  well.
@@ -116,7 +116,7 @@ class Emoji(DiscordEntity, immortal=True):
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
+            roles = tuple(sorted((create_partial_role_from_id(int(role_id)) for role_id in role_ids), key=id_sort_key))
         
         self.roles = roles
         
@@ -411,7 +411,7 @@ class Emoji(DiscordEntity, immortal=True):
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
+            roles = tuple(sorted((create_partial_role_from_id(int(role_id)) for role_id in role_ids), key=id_sort_key))
         
         self.roles = roles
         
@@ -421,9 +421,9 @@ class Emoji(DiscordEntity, immortal=True):
             pass
         else:
             self.user = User(user_data)
-
+        
         self.available = data.get('available', True)
-            
+    
     def _update(self, data):
         """
         Updates the emoji and returns it's overwritten old attributes as a `dict` with a `attribute-name` - `old-value`
@@ -485,7 +485,7 @@ class Emoji(DiscordEntity, immortal=True):
         if (role_ids is None) or (not role_ids):
             roles = None
         else:
-            roles = sorted(create_partial_role_from_id(int(role_id)) for role_id in role_ids)
+            roles = tuple(sorted((create_partial_role_from_id(int(role_id)) for role_id in role_ids), key=id_sort_key))
         
         if self.roles != roles:
             old_attributes['roles'] = self.roles

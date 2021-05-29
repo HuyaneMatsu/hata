@@ -40,8 +40,8 @@ from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
 from ..audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
 from ..invite import Invite
-from ..message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag, \
-    try_resolve_interaction_message
+from ..message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag
+from ..message.utils import try_resolve_interaction_message
 from ..oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from ..core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \

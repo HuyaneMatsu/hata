@@ -9,6 +9,7 @@ from ..backend.export import export, include
 from .bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
 
 ChannelGuildBase = include('ChannelGuildBase')
+StickerFormat = include('StickerFormat')
 
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
 CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
@@ -114,6 +115,7 @@ def guild_icon_url(guild):
     
     return f'{CDN_ENDPOINT}/icons/{guild.id}/{prefix}{guild.icon_hash:0>32x}.{ext}'
 
+
 def guild_icon_url_as(guild, ext='png', size=None):
     """
     Returns the guild's icon's url. If the guild has no icon, then returns `None`.
@@ -123,7 +125,7 @@ def guild_icon_url_as(guild, ext='png', size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the guild has
         animated icon, it can `'gif'` as well.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -166,6 +168,7 @@ def guild_icon_url_as(guild, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/icons/{guild.id}/{prefix}{guild.icon_hash:0>32x}.{ext}{end}'
 
+
 def guild_invite_splash_url(guild):
     """
     Returns the guild's invite splash's image's url. If the guild has no invite splash, then returns `None`.
@@ -187,6 +190,7 @@ def guild_invite_splash_url(guild):
     
     return f'{CDN_ENDPOINT}/splashes/{guild.id}/{prefix}{guild.invite_splash_hash:0>32x}.{ext}'
 
+
 def guild_invite_splash_url_as(guild, ext='png', size=None):
     """
     Returns the guild's invite splash's image's url. If the guild has no invite splash, then returns `None`.
@@ -195,7 +199,7 @@ def guild_invite_splash_url_as(guild, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -238,6 +242,7 @@ def guild_invite_splash_url_as(guild, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/splashes/{guild.id}/{prefix}{guild.invite_splash_hash:0>32x}.{ext}{end}'
 
+
 def guild_discovery_splash_url(guild):
     """
     Returns the guild's discovery splash's image's url. If the guild has no discovery splash, then returns `None`.
@@ -259,6 +264,7 @@ def guild_discovery_splash_url(guild):
     
     return f'{CDN_ENDPOINT}/discovery-splashes/{guild.id}/{prefix}{guild.discovery_splash_hash:0>32x}.{ext}'
 
+
 def guild_discovery_splash_url_as(guild, ext='png', size=None):
     """
     Returns the guild's discovery splash's image's url. If the guild has no discovery splash, then returns `None`.
@@ -267,7 +273,7 @@ def guild_discovery_splash_url_as(guild, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -310,6 +316,7 @@ def guild_discovery_splash_url_as(guild, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/discovery-splashes/{guild.id}/{prefix}{guild.discovery_splash_hash:0>32x}.{ext}{end}'
 
+
 def guild_banner_url(guild):
     """
     Returns the guild's banner's image's url. If the guild has no banner, then returns `None`.
@@ -331,6 +338,7 @@ def guild_banner_url(guild):
     
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}'
 
+
 def guild_banner_url_as(guild, ext='png', size=None):
     """
     Returns the guild's banner's image's url. If the guild has no banner, then returns `None`.
@@ -339,7 +347,7 @@ def guild_banner_url_as(guild, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -382,6 +390,7 @@ def guild_banner_url_as(guild, ext='png', size=None):
 
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}{end}'
 
+
 def guild_widget_url(guild, style='shield'):
     """
     Returns the guild's widget image's url in `.png` format.
@@ -405,6 +414,7 @@ def guild_widget_url(guild, style='shield'):
     
     return f'{API_ENDPOINT}/guilds/{guild.id}/widget.png?style={style}'
 
+
 def guild_widget_json_url(guild):
     """
     Returns an url to request a ``Guild``'s widget data.
@@ -414,6 +424,7 @@ def guild_widget_json_url(guild):
     url : `str`
     """
     return  f'{API_ENDPOINT}/guilds/{guild.id}/widget.json'
+
 
 def channel_group_icon_url(channel):
     """
@@ -436,6 +447,7 @@ def channel_group_icon_url(channel):
     
     return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}'
     
+    
 def channel_group_icon_url_as(channel, ext='png', size=None):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
@@ -444,7 +456,7 @@ def channel_group_icon_url_as(channel, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -487,6 +499,7 @@ def channel_group_icon_url_as(channel, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}{end}'
 
+
 def emoji_url(emoji):
     """
     Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
@@ -505,6 +518,7 @@ def emoji_url(emoji):
         
     return f'{CDN_ENDPOINT}/emojis/{emoji.id}.{ext}'
 
+
 def emoji_url_as(emoji, ext=None, size=None):
     """
     Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
@@ -514,7 +528,7 @@ def emoji_url_as(emoji, ext=None, size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If emoji is
         animated, it can `'gif'` as well.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -551,6 +565,7 @@ def emoji_url_as(emoji, ext=None, size=None):
     
     return f'{CDN_ENDPOINT}/emojis/{emoji.id}.{ext}{end}'
 
+
 def webhook_url(webhook):
     """
     Returns the webhook's url.
@@ -561,9 +576,11 @@ def webhook_url(webhook):
     """
     return f'{API_ENDPOINT}/webhooks/{webhook.id}/{webhook.token}'
 
+
 WEBHOOK_URL_PATTERN = re.compile(
     '(?:https://)?discord(?:app)?.com/api/(?:v\d+/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_%]{60,68})(?:/.*)?'
-        )
+)
+
 
 def invite_url(invite):
     """
@@ -575,7 +592,9 @@ def invite_url(invite):
     """
     return f'http://discord.gg/{invite.code}'
 
+
 INVITE_URL_PATTERN = re.compile('(?:https?://)?discord(?:\.gg|(?:app)?\.com/invite)/([a-zA-Z0-9-]+)')
+
 
 def activity_asset_image_large_url(activity):
     """
@@ -599,6 +618,7 @@ def activity_asset_image_large_url(activity):
     
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.png'
 
+
 def activity_asset_image_large_url_as(activity, ext='png', size=None):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
@@ -608,7 +628,7 @@ def activity_asset_image_large_url_as(activity, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -643,7 +663,8 @@ def activity_asset_image_large_url_as(activity, ext='png', size=None):
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
 
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.{ext}{end}'
-    
+
+
 def activity_asset_image_small_url(activity):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
@@ -666,6 +687,7 @@ def activity_asset_image_small_url(activity):
     
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.png'
 
+
 def activity_asset_image_small_url_as(activity, ext='png', size=None):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
@@ -674,7 +696,7 @@ def activity_asset_image_small_url_as(activity, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the image's url.
     
     Returns
@@ -710,6 +732,7 @@ def activity_asset_image_small_url_as(activity, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.{ext}{end}'
 
+
 def user_avatar_url(user):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
@@ -731,6 +754,7 @@ def user_avatar_url(user):
     
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
 
+
 def user_avatar_url_as(user, ext=None, size=None):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
@@ -740,7 +764,7 @@ def user_avatar_url_as(user, ext=None, size=None):
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the avatar's url.
     
     Returns
@@ -783,6 +807,7 @@ def user_avatar_url_as(user, ext=None, size=None):
     
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}{end}'
 
+
 def default_avatar_url(default_avatar):
     """
     Returns the default avatar's url.
@@ -792,6 +817,7 @@ def default_avatar_url(default_avatar):
     url : `str`
     """
     return f'{CDN_ENDPOINT}/embed/avatars/{default_avatar.value}.png'
+
 
 def application_icon_url(application):
     """
@@ -814,6 +840,7 @@ def application_icon_url(application):
     
     return f'{CDN_ENDPOINT}/app-icons/{application.id}/{prefix}{application.icon_hash:0>32x}.{ext}'
 
+
 def application_icon_url_as(application, ext='png', size=None):
     """
     Returns the application's icon's url. If the application has no icon, then returns `None`.
@@ -822,7 +849,7 @@ def application_icon_url_as(application, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the icon's url.
     
     Returns
@@ -865,6 +892,7 @@ def application_icon_url_as(application, ext='png', size=None):
 
     return f'{CDN_ENDPOINT}/app-icons/{application.id}/{prefix}{application.icon_hash:0>32x}.{ext}{end}'
 
+
 def application_cover_url(application):
     """
     Returns the application's cover image's url. If the application has no cover image, then returns `None`.
@@ -885,7 +913,8 @@ def application_cover_url(application):
         ext = 'gif'
     
     return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{prefix}{application.cover_hash:0>32x}.{ext}'
-    
+
+
 def application_cover_url_as(application, ext='png', size=None):
     """
     Returns the application's cover image's url. If the application has no cover image, then returns `None`.
@@ -894,7 +923,7 @@ def application_cover_url_as(application, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the cover's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the cover's url.
     
     Returns
@@ -937,6 +966,7 @@ def application_cover_url_as(application, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{prefix}{application.cover_hash:0>32x}.{ext}{end}'
 
+
 def team_icon_url(team):
     """
     Returns the team's icon's url. If the team has no icon, then returns `None`.
@@ -957,7 +987,8 @@ def team_icon_url(team):
         ext = 'gif'
     
     return f'{CDN_ENDPOINT}/team-icons/{team.id}/{prefix}{team.icon_hash:0>32x}.{ext}'
-    
+
+
 def team_icon_url_as(team, ext='png', size=None):
     """
     Returns the team's icon's url. If the team has no icon, then returns `None`.
@@ -966,7 +997,7 @@ def team_icon_url_as(team, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the icon's url.
     
     Returns
@@ -1009,6 +1040,7 @@ def team_icon_url_as(team, ext='png', size=None):
     
     return f'{CDN_ENDPOINT}/team-icons/{team.id}/{prefix}{team.icon_hash:0>32x}.{ext}{end}'
 
+
 def achievement_icon_url(achievement):
     """
     Returns the achievement's icon's url.
@@ -1028,7 +1060,9 @@ def achievement_icon_url(achievement):
         prefix = 'a_'
         ext = 'gif'
     
-    return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}{achievement.icon_hash:0>32x}.{ext}'
+    return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}' \
+           f'{achievement.icon_hash:0>32x}.{ext}'
+
 
 def achievement_icon_url_as(achievement, ext='png', size=None):
     """
@@ -1038,7 +1072,7 @@ def achievement_icon_url_as(achievement, ext='png', size=None):
     ----------
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `int`, Optional.
+    size : `int`, Optional
         The preferred minimal size of the icon's url.
     
     Returns
@@ -1079,4 +1113,64 @@ def achievement_icon_url_as(achievement, ext='png', size=None):
                 raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
             prefix = 'a_'
     
-    return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}{achievement.icon_hash:0>32x}.{ext}{end}'
+    return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}' \
+           f'{achievement.icon_hash:0>32x}.{ext}{end}'
+
+
+def sticker_url(sticker):
+    """
+    Returns the sticker's url.
+    
+    Returns
+    -------
+    url : `None` or `str`
+    """
+    format_type = sticker.format_type
+    if format_type is StickerFormat.none:
+        return None
+    
+    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format_type.extension}'
+
+
+def sticker_url_as(sticker, size=None, preview=False):
+    """
+    Returns the sticker's url.
+    
+    Parameters
+    ----------
+    size : `int`, Optional
+        The preferred minimal size of the icon's url.
+    preview : `bool`, Optional
+        Whether preview url should be generated.
+    
+    Returns
+    -------
+    url : `None` or `str`
+    
+    Raises
+    ------
+    ValueError
+        If `size` was not passed as any of the expected values.
+    """
+    format_type = sticker.format_type
+    if format_type is StickerFormat.none:
+        return None
+    
+    # Resolve size
+    if size is None:
+        end = ''
+    else:
+        if format_type is StickerFormat.lottie:
+            end = ''
+        else:
+            if size in VALID_ICON_SIZES:
+                end = f'?size={size}'
+            else:
+                raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+    
+    # Resolve preview
+    if preview:
+        if format_type is StickerFormat.apng:
+            end = f'{end}{"&" if end else "?"}passthrough=false'
+    
+    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format_type.extension}{end}'

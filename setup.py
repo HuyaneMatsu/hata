@@ -28,6 +28,7 @@ setup(
         'hata.discord.emoji',
         'hata.discord.events',
         'hata.discord.interaction',
+        'hata.discord.message',
         'hata.discord.permission',
         'hata.discord.role',
         'hata.ext',

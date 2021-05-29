@@ -11,13 +11,13 @@ from ...discord.interaction.components import _debug_component_components, _debu
     _debug_component_description, _debug_component_default, _debug_component_options, _debug_component_placeholder, \
     _debug_component_min_values, _debug_component_max_values
 from ...discord.interaction import ComponentBase, ComponentRow, ComponentButton, ComponentSelect, InteractionEvent, \
-    ComponentSelectOption
+    ComponentSelectOption, ComponentType
 from ...discord.message import Message
 from ...discord.channel import ChannelTextBase
 from ...discord.embed import EmbedBase
 from ...discord.allowed_mentions import AllowedMentionProxy
 from ...discord.client import Client
-
+from ...discord.core import APPLICATION_ID_TO_CLIENT
 from .waiters import get_client_from_message
 
 
@@ -881,6 +881,8 @@ class Menu(metaclass=MenuType):
     ----------
     _allowed_mentions : ``Ellipsis``, `None` or `list` of `Any`
         The used allowed mentions when editing the respective message.
+    _components : `None` or `tuple` of ``ComponentBase``
+        Rendered components of the menu.
     _component_proxy_cache : `dict` of (`int`, ``ComponentProxy``) items
         A dictionary of component proxy identifiers and component proxies.
     _timeouter : `None` or ``Timeouter``
@@ -895,7 +897,7 @@ class Menu(metaclass=MenuType):
         The message which executes the menu.
     """
     __slots__ = ('_allowed_mentions', '_component_proxy_cache', '_timeouter', '_tracked_changes', 'channel', 'client',
-        'message', )
+        'message', '_components')
     
     async def __new__(cls, interaction_event, *args, **kwargs):
         """
@@ -911,13 +913,21 @@ class Menu(metaclass=MenuType):
         TypeError
             If `interaction_event` was not given neither as ``InteractionEvent``, ``Message`` nor as
             ``ChannelTextBase`` instance.
+        RuntimeError
+            If `interaction_event` is given as ``InteractionEvent``, but it's client cannot be detected.
         """
         # use goto
         while True:
             if isinstance(interaction_event, InteractionEvent):
                 target_channel = interaction_event.channel
                 target_message = interaction_event.message # Should be `None`
-                target_client = interaction_event.client
+            
+                try:
+                    target_client = APPLICATION_ID_TO_CLIENT[interaction_event.application_id]
+                except KeyError as err:
+                    raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
+                        f'{interaction_event!r}.') from err
+                
                 is_interaction = True
                 break
                 
@@ -948,6 +958,7 @@ class Menu(metaclass=MenuType):
         self._tracked_changes = []
         self._allowed_mentions = None
         self._component_proxy_cache = {}
+        self._components = None
         # TODO
     
     
@@ -1043,5 +1054,20 @@ class Menu(metaclass=MenuType):
     @allowed_mentions.deleter
     def allowed_mentions(self):
         self._allowed_mentions = None
-
-
+    
+    
+    @property
+    def components(self):
+        return tuple(self._components)
+    
+    @components.setter
+    def components(self, raw_components):
+        component_proxies = []
+        
+        if isinstance(raw_components, ComponentProxy):
+            if raw_components.type is ComponentType.row:
+                component_proxies.append(raw_components)
+            
+        if isinstance(raw_components, (tuple, list)):
+            for raw_sub_component in raw_components:
+                if isinstance(raw_sub_component,

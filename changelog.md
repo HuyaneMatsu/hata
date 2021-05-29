@@ -1,4 +1,34 @@
-## 1.1.82 *\[2021-05-??\]*
+## 1.1.83 *\[2021-0?-??\]*
+
+## 1.1.82 *\[2021-05-29\]*
+
+#### Summary
+
+Update stickers.
+
+#### Improvements
+
+- Rework `message.py`.
+- Add `Sticker.sort_value`.
+- Add `StickerType`.
+- Add `Sticker.url`.
+- Add `Sticker.type`.
+- Add `StickerFormat.extension`.
+- Add `Sticker.url_as`.
+- Add `Message.sticker`.
+- `Emoji.roles` now uses `None` & `tuple` (from `None` & `list`) to reduce ram usage.
+
+#### Bug Fixes
+
+- Make `Emoji.roles` ordered by id, to avoid derpy `client.events.emoji_edit` calls.
+
+#### Renames, Deprecation & Removals
+
+- Rename `StickerType` to `StickerFormat`.
+- Rename `Sticker.type` to `.format_type`.
+- Remove `Sticker.asset`.
+- Remove `Sticker.preview_asset`.
+
 
 ## 1.1.81 *\[2021-05-28\]*
 

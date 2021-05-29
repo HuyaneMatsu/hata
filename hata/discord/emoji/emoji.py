@@ -454,7 +454,7 @@ class Emoji(DiscordEntity, immortal=True):
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `set` of ``Role``   |
+        | roles             | `None` or `tuple` of ``Role`` |
         +-------------------+-------------------------------+
         """
         old_attributes = {}

@@ -195,7 +195,7 @@ class EventHandlerManager:
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `set` of ``Role``   |
+        | roles             | `None` or `tuple` of ``Role`` |
         +-------------------+-------------------------------+
     
     error(client: ``Client``, name: `str`, err: `Any`):

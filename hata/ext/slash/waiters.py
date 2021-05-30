@@ -10,6 +10,7 @@ from ...discord.message import Message
 from ...discord.client import Client
 from ...discord.interaction import InteractionEvent
 
+from .components import acknowledge_component_interaction
 
 class Timeouter:
     """
@@ -171,7 +172,7 @@ class ComponentInteractionWaiter:
         return self
     
     
-    async def __call__(self, event):
+    async def __call__(self, interaction_event):
         """
         Calls the component interaction waiter checking whether the respective event is sufficient setting the waiter's
         result.
@@ -180,28 +181,35 @@ class ComponentInteractionWaiter:
         
         Parameters
         ----------
-        event : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             The received interaction event
         """
         check = self._check
         if check is None:
-            self._future.set_result_if_pending(event)
+            self._future.set_result_if_pending(interaction_event)
+            should_acknowledge = False
         else:
             try:
-                result = check(event)
+                result = check(interaction_event)
             except BaseException as err:
                 self._future.set_exception_if_pending(err)
+                should_acknowledge = False
             else:
-                if type(result) is bool:
+                if isinstance(result, bool):
                     if result:
-                        self._future.set_result_if_pending(event)
+                        self._future.set_result_if_pending(interaction_event)
+                        should_acknowledge = False
                     else:
-                        return
+                        should_acknowledge = True
                 
                 else:
-                    self._future.set_result_if_pending((event, result))
+                    self._future.set_result_if_pending((interaction_event, result))
+                    should_acknowledge = False
         
-        self.cancel()
+        if should_acknowledge:
+            await acknowledge_component_interaction(interaction_event)
+        else:
+            self.cancel()
     
     
     def __await__(self):
@@ -266,6 +274,7 @@ class ComponentInteractionIterator:
     """
     __slots__ = ('_check', '_exception', '_finished', '_future', '_message', '_queue', '_timeouter', 'count',
         'timeout')
+    
     def __new__(cls, client, message, check, timeout, count):
         """
         Creates a new ``ComponentInteractionWaiter`` instance with the given parameters.
@@ -302,7 +311,7 @@ class ComponentInteractionIterator:
         return self
     
     
-    async def __call__(self, event):
+    async def __call__(self, interaction_event):
         """
         Calls the component interaction iterator checking whether the respective event is sufficient setting the waiter's
         result.
@@ -311,26 +320,33 @@ class ComponentInteractionIterator:
         
         Parameters
         ----------
-        event : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             The received interaction event
         """
         check = self._check
         if check is None:
-            self._feed_result(event)
+            self._feed_result(interaction_event)
+            should_acknowledge = False
         else:
             try:
-                result = check(event)
+                result = check(interaction_event)
             except BaseException as err:
                 self.cancel(err)
+                should_acknowledge = False
             else:
-                if type(result) is bool:
+                if isinstance(result, bool):
                     if result:
-                        self._feed_result(event)
+                        self._feed_result(interaction_event)
+                        should_acknowledge = False
                     else:
-                        return
+                        should_acknowledge = True
                 
                 else:
-                    self._feed_result((event, result))
+                    self._feed_result((interaction_event, result))
+                    should_acknowledge = False
+        
+        if should_acknowledge:
+            await acknowledge_component_interaction(interaction_event)
     
     
     def _feed_result(self, result):

@@ -24,15 +24,18 @@ ComponentBase = include('ComponentBase')
 ComponentType = include('ComponentType')
 ComponentRow = include('ComponentRow')
 
-def get_components_data(components):
+def get_components_data(components, is_edit):
     """
     Gets component data from the given components.
     
-    parameters
+    Parameters
     ----------
     components : `None`, ``ComponentBase``, (`set`, `list`) of \
             (``ComponentBase``, (`set`, `list`) of ``ComponentBase``)
         Components to be attached to a message.
+    is_edit : `bool`
+        Whether the processed `components` fields are for message edition. At this case passing `None` will
+        remove them.
     
     Returns
     -------
@@ -49,13 +52,24 @@ def get_components_data(components):
     """
     
     # Components check order:
-    # 1.: None -> None
+    # 1.: None -> None || []
+    # 2.: Ellipsis -> None || Ellipsis
     # 2.: ComponentBase -> [component.to_data()]
     # 3.: (list, tuple) of ComponentBase, (list, tuple) of ComponentBase -> [component.to_data(), ...] / None
     # 4.: raise
     
     if components is None:
-        component_datas = None
+        if is_edit:
+            component_datas = []
+        else:
+            component_datas = None
+    
+    elif components is ...:
+        if is_edit:
+            component_datas = ...
+        else:
+            component_datas = None
+    
     else:
         if isinstance(components, ComponentBase):
             if components.type is not ComponentType.row:

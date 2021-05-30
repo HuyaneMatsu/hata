@@ -251,7 +251,7 @@ class ExtensionLoader:
     The extensions can be accessed by their name as well, then you can use their properties to modify them.
     
     ```py
-    EXTENSION_LOADER.extensions['cute_commands'].remove_default_variables('cake')
+    EXTENSION_LOADER.get_extension('cute_commands').remove_default_variables('cake')
     ```
     
     Unloading And Exit Point

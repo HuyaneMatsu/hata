@@ -5,6 +5,17 @@
 - Add `UserBase.custom_activity`.
 - Rework `UserBase.custom_activity`.
 
+##### hata.ext.slash
+
+- Add `event` parameter to `SlashResponse`.
+- `Slasher` now do not auto-acknowledges every potentially handled component interaction in favor of using
+    `Client.interaction_component_message_edit` and `SlashResponse` with `event` parameter.
+
+#### Bug Fixes
+
+- `InteractionResponseContext` didn't mark the event responding correctly.
+- Handle component remove correctly.
+
 ## 1.1.82 *\[2021-05-29\]*
 
 #### Summary

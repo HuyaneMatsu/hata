@@ -818,7 +818,6 @@ class Slasher(EventHandlerBase):
             if (command is not None):
                 await command(client, interaction_event)
     
-    
     async def _dispatch_component_event(self, client, interaction_event):
         """
         Dispatches a component interaction event.
@@ -832,8 +831,6 @@ class Slasher(EventHandlerBase):
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
-        should_acknowledge = False
-        
         try:
             waiter = self._component_interaction_waiters[interaction_event.message]
         except KeyError:
@@ -844,22 +841,6 @@ class Slasher(EventHandlerBase):
                     Task(waiter(interaction_event), KOKORO)
             else:
                 Task(waiter(interaction_event), KOKORO)
-            
-            should_acknowledge = True
-        
-        if should_acknowledge:
-            try:
-                await client.interaction_component_acknowledge(interaction_event)
-            except BaseException as err:
-                if isinstance(err, ConnectionError):
-                    # No Internet connection
-                    return
-                
-                if isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_interaction):
-                    # We timed out, bad connection.
-                    return
-                
-                await client.events.error(client, f'{self!r}._dispatch_component_event', err)
     
     
     def add_component_interaction_waiter(self, message, waiter):

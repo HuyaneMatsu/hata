@@ -1,5 +1,5 @@
 __all__ = ('ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction',
-    'InteractionEvent', 'InteractionResponseContext')
+    'InteractionEvent', 'InteractionResponseContext', 'InteractionType')
 
 import reprlib
 
@@ -874,7 +874,7 @@ class InteractionResponseContext:
                 response_flag |= RESPONSE_FLAG_DEFERRING
         else:
             if (not response_flag&RESPONSE_FLAG_IS_RESPONDING_OR_RESPONDED) and \
-                    response_flag&RESPONSE_FLAG_IS_DEFERRING_OR_DEFERRED:
+                    (not response_flag&RESPONSE_FLAG_IS_DEFERRING_OR_DEFERRED):
                 response_flag |= RESPONSE_FLAG_RESPONDING
         
         interaction._response_flag = response_flag

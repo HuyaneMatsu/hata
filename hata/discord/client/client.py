@@ -3359,7 +3359,7 @@ class Client(ClientUserPBase):
                 else:
                     sticker_ids.append(sticker_id)
         
-        components = get_components_data(components)
+        components = get_components_data(components, False)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -4395,8 +4395,7 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, False, True)
         
-        if (components is not ...):
-            components = get_components_data(components)
+        components = get_components_data(components, True)
         
         if __debug__:
             if (suppress is not ...) and (not isinstance(suppress, bool)):
@@ -12215,7 +12214,7 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, True, False)
         
-        components = get_components_data(components)
+        components = get_components_data(components, False)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -12308,7 +12307,7 @@ class Client(ClientUserPBase):
                     f'{interaction.__class__.__name__}.')
         
         # Do not ack twice
-        if interaction.is_responded():
+        if not interaction.is_unanswered():
             return
         
         data = {'type': InteractionResponseTypes.component}
@@ -12317,7 +12316,7 @@ class Client(ClientUserPBase):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=None,
-            allowed_mentions=...):
+            allowed_mentions=..., components=...):
         """
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
         will send the message as well.
@@ -12394,6 +12393,8 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, True, True)
         
+        components = get_components_data(components, True)
+        
         # Build payload
         message_data = {}
         
@@ -12409,6 +12410,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not ...):
+            message_data['components'] = components
         
         message_data = add_file_to_message_data(message_data, file, True)
         
@@ -12466,8 +12470,7 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, False, True)
         
-        if (components is not ...):
-            components = get_components_data(components)
+        components = get_components_data(components, True)
         
         # Build payload
         message_data = {}
@@ -12665,7 +12668,7 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, True, False)
         
-        components = get_components_data(components)
+        components = get_components_data(components, False)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -12713,7 +12716,7 @@ class Client(ClientUserPBase):
         return message
     
     async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=None,
-            allowed_mentions=...,):
+            allowed_mentions=..., components=...):
         """
         Edits the given interaction followup message.
         
@@ -12803,6 +12806,8 @@ class Client(ClientUserPBase):
         
         content, embed = validate_content_and_embed(content, embed, True, True)
         
+        components = get_components_data(components, True)
+        
         # Build payload
         message_data = {}
         
@@ -12818,6 +12823,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not ...):
+            message_data['components'] = components
         
         message_data = add_file_to_message_data(message_data, file, True)
         

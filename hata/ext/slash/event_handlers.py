@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from .slasher import Slasher
 
 async def _do_initial_sync(client):

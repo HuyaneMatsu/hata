@@ -454,8 +454,8 @@ Command specific setting, to overwrite the parent slasher's [delete_commands_on_
 Whether the command should be allowed by default for everyone. Defaults to `True` of course. Not allowed commands
 in the GUI are not hidden, they show up as gray.
 
-Command permission overwrites can be set manually or with the [set_permissions](#Set command permissions) decorator.
-If a command inside of the guild has permission set with the `set_permissions` decorator, then all other command's
+Command permission overwrites can be set manually or with the [set_permission](#Set command permissions) decorator.
+If a command inside of the guild has permission set with the `set_permission` decorator, then all other command's
 manually set permission overwrites will be wiped out there, so make sure you either want manual or pre-set overwrites.
 
 > Permission overwrites are buggy from Discord side, I take no responsibility if they do not work as expected.

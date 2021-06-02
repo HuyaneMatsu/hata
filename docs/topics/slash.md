@@ -900,7 +900,8 @@ You can also set default sub-command, which is used if a sub command is selected
 @SCARLET.interactions(is_default=True, show_for_invoking_user_only=True)
 async def devil(client, event):
     """Flandre & Remilia!"""
-    return get_image_embed(client, 'flandre_scarlet+remilia_scarlet', 'Scarlet Flandre & Remilia', 0xa12a2a)
+    yield
+    return await get_image_embed(client, 'flandre_scarlet+remilia_scarlet', 'Scarlet Flandre & Remilia', 0xa12a2a)
 ```
 
 ## Manual Responding

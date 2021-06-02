@@ -36,6 +36,8 @@ setup(
         'hata.ext.command_utils',
         'hata.ext.commands',
         'hata.ext.commands.helps',
+        'hata.ext.commands_v2',
+        'hata.ext.commands_v2.helps',
         'hata.ext.extension_loader',
         'hata.ext.kokoro_sqlalchemy',
         'hata.ext.patchouli',

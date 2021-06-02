@@ -551,8 +551,8 @@ except BaseException as err:
 ```
 
 After an interaction event is acknowledged with empty content, the second `yield` will edit the source message,
-causing no `Message` object to be retrieved. This is why `SlashResponse` supports a `force_new_message` parameter,
-which will force a new message causing a `Message` object to be retrieved.
+causing no `Message` instance to be retrieved. `SlashResponse` will always acknowledge the respective event first,
+meaning it will always yield back a `Message` instance.
 
 ```py
 from hata import sleep
@@ -561,7 +561,7 @@ from hata.ext.slash import SlashResponse
 @Nitori.interactions(guild=TEST_GUILD)
 async def collect_reactions():
     """Collects reactions"""
-    message = yield SlashResponse('Collecting reactions for 1 minute!', force_new_message=True)
+    message = yield SlashResponse('Collecting reactions for 1 minute!')
     await sleep(60.0)
     
     reactions = message.reactions

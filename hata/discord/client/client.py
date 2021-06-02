@@ -12344,6 +12344,11 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
+            Components attached to the message.
+            
+            Pass it as `None` remove the actual ones.
         
         Raises
         ------
@@ -12747,6 +12752,11 @@ class Client(ClientUserPBase):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
+            Components attached to the message.
+            
+            Pass it as `None` remove the actual ones.
         
         Raises
         ------

@@ -1,20 +1,39 @@
-## 1.1.83 *\[2021-0?-??\]*
+## 1.1.84 *\[2021-06-??\]*
+
+## 1.1.83 *\[2021-06-02\]*
+
+#### Summary
+
+Fix up components in slash.
 
 #### Improvements
 
 - Add `UserBase.custom_activity`.
 - Rework `UserBase.custom_activity`.
+- Add `componnets` parameter to `Client.interaction_response_message_edit`.
+- Add `componnets` parameter to `Client.interaction_followup_message_edit`.
 
 ##### hata.ext.slash
-
-- Add `event` parameter to `SlashResponse`.
+- Add `event` parameter to `InteractionResponse`.
 - `Slasher` now do not auto-acknowledges every potentially handled component interaction in favor of using
-    `Client.interaction_component_message_edit` and `SlashResponse` with `event` parameter.
+    `Client.interaction_component_message_edit` and `InteractionResponse` with `event` parameter.
+- Add `message` parameter to `abort`.
+- Add `event` parameter to `abort`.
+- `InteractionResponse`'s `edit` parameter is now called `message` for consistency.
+- `InteractionResponse` now will always yield back a ``Message`` instance.
 
 #### Bug Fixes
 
-- `InteractionResponseContext` didn't mark the event responding correctly.
+- `InteractionResponseContext` was not marking the event responding correctly.
 - Handle component remove correctly.
+
+##### hata.ext.slash
+- Message edition with `InteractionResponse` was not working as intended.
+
+#### Renames, Deprecation & Removals
+
+##### hata.ext.slash
+- Deprecate `InteractionResponse`'s `force_new_message` parameter.
 
 ## 1.1.82 *\[2021-05-29\]*
 
@@ -44,7 +63,8 @@ Update stickers.
 - Rename `Sticker.type` to `.format_type`.
 - Remove `Sticker.asset`.
 - Remove `Sticker.preview_asset`.
-
+- Rename `SlashResponse` to `Interactionresponse`.
+- Deprecate `SlashResponse`.
 
 ## 1.1.81 *\[2021-05-28\]*
 
@@ -137,7 +157,7 @@ Rework `role.py` and `permission.py`.
 - Fix a `NameError` in `Client.webhook_message_create`.
 
 ##### hata.ext.slash
-- `SlashResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
+- `InteractionResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
 - When passing `allowed_mentions` or `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
 
 #### Renames, Deprecation & Removals
@@ -527,7 +547,7 @@ Channel input and output.
 - Add debug functions for components to avoid many repeated debug checks.
 
 ##### ext.slash
-- Add `edit` parameter to `SlashResponse`.
+- Add `edit` parameter to `InteractionResponse`.
 - Add `components` parameter to `abort`.
 
 #### Renames, Deprecation & Removals
@@ -594,7 +614,7 @@ Improve component usage.
 ##### ext.slash
 - Add `Button`.
 - Add `Row`.
-- Add `components` parameter to `SlashResponse`.
+- Add `components` parameter to `InteractionResponse`.
 - Add `iter_component_interactions`. (ToxicKidz#6969) (Zeref Draganeel#3581)
 - Add `Slasher.add_component_interaction_waiter`.
 - Add `Slasher.remove_component_interaction_waiter`.

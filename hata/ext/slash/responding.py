@@ -1,4 +1,7 @@
-__all__ = ('SlashResponse', 'abort', )
+__all__ = ('abort', 'InteractionResponse', 'SlashResponse',)
+
+import warnings
+
 from ...backend.futures import is_coroutine_generator
 
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -85,7 +88,7 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         
         return
     
-    if isinstance(response, SlashResponse):
+    if isinstance(response, InteractionResponse):
         for request_coro in response.get_request_coroutines(client, interaction_event, show_for_invoking_user_only):
             yield request_coro
         
@@ -264,7 +267,7 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
             raise
 
 
-class SlashResponse:
+class InteractionResponse:
     """
     Rich interaction response message usable with `return` or with `yield` statements.
     
@@ -278,8 +281,10 @@ class SlashResponse:
     
     Attributes
     ----------
-    _force_new_message : `int`
-        Whether a new message should be forced out from Discord and being retrieved.
+    _event : `None` or ``InteractionEvent``
+        The interaction event to use instead of the default one.
+    _is_abort : `bool`
+        Whether the slash response is derived from an ``abort`` call.
     _message : `Ellipsis`, `None` or ``Message`` instance.
         Whether a message should be edited instead of creating a new one.
     _parameters : `dict` of (`str`, `Any`) items
@@ -295,12 +300,12 @@ class SlashResponse:
         - `'show_for_invoking_user_only'`
         - `'tts'`
     """
-    __slots__ = ('_event', '_force_new_message', '_message', '_parameters',)
+    __slots__ = ('_event', '_is_abort', '_message', '_parameters',)
     
-    def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., tts=..., components=None,
-            show_for_invoking_user_only=..., force_new_message=0, edit=..., event=None):
+    def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
+            show_for_invoking_user_only=..., force_new_message=..., message=..., event=None):
         """
-        Creates a new ``SlashResponse`` instance with the given parameters.
+        Creates a new ``InteractionResponse`` instance with the given parameters.
         
         Parameters
         ----------
@@ -328,19 +333,25 @@ class SlashResponse:
             the command.
             
             If given as `True` only the message's content will be processed by Discord.
-        force_new_message : `int` or `bool`, Optional (Keyword only)
+        force_new_message : `bool`, Optional (Keyword only)
             Whether a new message should be forced out from Discord allowing the client to retrieve a new ``Message``
             object as well. Defaults to `False`.
             
-            If given as `-1` will only force new message if the event already deferred.
-        edit : `None`, ``Message``, Optional (Keyword only)
+            Deprecated and will be removed in 2021 August.
+        
+        message : `None`, ``Message``, Optional (Keyword only)
             Whether the interaction's message should be edited.
         event : `None`, ``InteractionEvent``, Optional (Keyword only)
             A specific event ot answer instead of the command's.
         """
-        self._force_new_message = force_new_message
+        if force_new_message is not ...:
+            warnings.warn(f'`{self.__class__.__name__}.__init__`\'s `show_for_invoking_user_only` parameter is '
+                f'deprecated. Defaults to `True`. Will be removed in 2021 August.',
+                FutureWarning)
+        
+        self._is_abort = False
         self._parameters = parameters = {}
-        self._message = edit
+        self._message = message
         self._event = event
         
         if (content is not ...):
@@ -392,7 +403,7 @@ class SlashResponse:
     
     def get_request_coroutines(self, client, interaction_event, show_for_invoking_user_only):
         """
-        Gets request coroutine buildable from the ``SlashResponse``.
+        Gets request coroutine buildable from the ``InteractionResponse``.
         
         This method is a generator, which should be used inside of a `for` loop.
         
@@ -415,114 +426,43 @@ class SlashResponse:
         if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
             message = self._message
             if message is not ...:
-                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'file'))
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'components',
+                    'embed', 'file'))
                 
                 if message is None:
-                    yield client.interaction_response_message_edit(interaction_event, message, **response_parameters)
+                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
                 else:
                     yield client.interaction_followup_message_edit(interaction_event, message, **response_parameters)
                 return
             
-            
-            force_new_message = self._force_new_message
-            if force_new_message:
-                if force_new_message > 0:
-                    show_for_invoking_user_only = \
-                        self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                    
-                    if interaction_event.is_unanswered():
-                        yield client.interaction_response_message_create(interaction_event,
-                            show_for_invoking_user_only= show_for_invoking_user_only)
-                    
-                    response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                        'file', 'tts', 'components',))
-                    response_parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
-                    
-                    yield client.interaction_followup_message_create(interaction_event, **response_parameters)
-                    return
-                else:
-                    if interaction_event.is_unanswered():
-                        if 'file' in self._parameters:
-                            show_for_invoking_user_only = \
-                                self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                            
-                            yield client.interaction_response_message_create(interaction_event,
-                                show_for_invoking_user_only=show_for_invoking_user_only)
-                            
-                            response_parameters = self._get_response_parameters(('allowed_mentions', 'content',
-                                'embed', 'file', 'tts', 'components'))
-                            
-                            if 'components' in response_parameters:
-                                # Enforce new message if components is present. They are not processed by interaction
-                                # message edit events.
-                                yield client.interaction_followup_message_create(interaction_event,
-                                    **response_parameters)
-                            else:
-                                yield client.interaction_response_message_edit(interaction_event,
-                                    **response_parameters)
-                        else:
-                            response_parameters = self._get_response_parameters(('allowed_mentions', 'content',
-                                'embed', 'tts', 'components'))
-                            response_parameters['show_for_invoking_user_only'] = \
-                                self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                            
-                            yield client.interaction_response_message_create(interaction_event, **response_parameters)
-                        return
-                    
-                    response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                        'file', 'tts', 'components',))
-                    response_parameters['show_for_invoking_user_only'] = \
-                        self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                    
-                    yield client.interaction_followup_message_create(interaction_event, **response_parameters)
-                    return
+            if self._is_abort:
+                show_for_invoking_user_only = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
+                if interaction_event.is_unanswered() or ('file' in self._parameters):
+                    yield client.interaction_response_message_create(interaction_event,
+                        show_for_invoking_user_only=show_for_invoking_user_only)
+                
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
+                    'file', 'tts', 'components'))
+                
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
             
             else:
+                show_for_invoking_user_only = \
+                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
+                
                 if interaction_event.is_unanswered():
-                    if 'file' in self._parameters:
-                        show_for_invoking_user_only = \
-                            self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                        
-                        yield client.interaction_response_message_create(interaction_event,
-                            show_for_invoking_user_only=show_for_invoking_user_only)
-                        
-                        response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                            'file', 'tts', 'components'))
-                        
-                        if 'components' in response_parameters:
-                            # Enforce new message.
-                            yield client.interaction_followup_message_create(interaction_event, **response_parameters)
-                        else:
-                            yield client.interaction_response_message_edit(interaction_event, **response_parameters)
-                    else:
-                        response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                            'tts', 'components',))
-                        response_parameters['show_for_invoking_user_only'] = \
-                            self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                        
-                        yield client.interaction_response_message_create(interaction_event, **response_parameters)
-                    return
+                    yield client.interaction_response_message_create(interaction_event,
+                        show_for_invoking_user_only= show_for_invoking_user_only)
                 
-                if interaction_event.is_deferred():
-                    response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed' 'file',
-                        'components',))
-                    
-                    if 'components' in response_parameters:
-                        # Enforce new message.
-                        yield client.interaction_followup_message_create(interaction_event, **response_parameters)
-                    else:
-                        yield client.interaction_response_message_edit(interaction_event, **response_parameters)
-                    return
+                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
+                    'file', 'tts', 'components',))
+                response_parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
                 
-                if interaction_event.is_responded():
-                    response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                        'file', 'tts', 'components'))
-                    response_parameters['show_for_invoking_user_only'] = \
-                        self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                    
-                    yield client.interaction_followup_message_create(interaction_event, **response_parameters)
-                    return
-            
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+            return
+        
         elif interaction_event.type is INTERACTION_TYPE_MESSAGE_COMPONENT:
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'components'))
             if response_parameters:
@@ -536,27 +476,38 @@ class SlashResponse:
     
     def __repr__(self):
         """Returns the slash response's representation."""
-        result = ['<', self.__class__.__name__, ' ']
-        if self._force_new_message:
-            result.append('(force new message) ')
+        repr_parts = ['<', self.__class__.__name__, ' ']
+        if self._is_abort:
+            repr_parts.append('(abort) ')
         
         parameters = self._parameters
         if parameters:
             for key, value in parameters.items():
-                result.append(key)
-                result.append('=')
-                result.append(repr(value))
-                result.append(', ')
+                repr_parts.append(key)
+                repr_parts.append('=')
+                repr_parts.append(repr(value))
+                repr_parts.append(', ')
             
-            result[-1] = '>'
+            repr_parts[-1] = '>'
         else:
-            result.append('>')
+            repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+
+
+def SlashResponse(*args, **kwargs):
+    """
+    ``SlashResponse`` is deprecated and will be removed in 2021 August. Please use ``InteractionResponse`` instead.
+    """
+    warnings.warn(f'`SlashResponse` is deprecated and will be removed in 2021 August. Please use'
+          f'`InteractionResponse` instead.',
+        FutureWarning)
+        
+    return InteractionResponse(*args, **kwargs)
 
 
 def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
-        show_for_invoking_user_only=...,):
+        show_for_invoking_user_only=..., message=..., event=None):
     """
     Aborts the slash response with sending the passed parameters as a response.
     
@@ -593,6 +544,10 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
     ------
     InteractionAbortedError
         The exception which aborts the interaction, then yields the response.
+    message : `None`, ``Message``, Optional (Keyword only)
+        Whether the interaction's message should be edited.
+    event : `None`, ``InteractionEvent``, Optional (Keyword only)
+        A specific event ot answer instead of the command's.
     """
     if show_for_invoking_user_only is ...:
         if (file is not ...):
@@ -600,9 +555,9 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         else:
             show_for_invoking_user_only = True
     
-    response = SlashResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, components=components,
-        tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, force_new_message=-1)
-    
+    response = InteractionResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, components=components,
+        tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, message=message, event=event)
+    response._is_abort = True
     raise InteractionAbortedError(response)
 
 
@@ -613,7 +568,7 @@ class InteractionAbortedError(BaseException):
     
     Attributes
     ----------
-    response : ``SlashResponse``
+    response : ``InteractionResponse``
         The response to send.
     """
     def __init__(self, response):
@@ -622,7 +577,7 @@ class InteractionAbortedError(BaseException):
         
         Parameters
         ----------
-        response : ``SlashResponse``
+        response : ``InteractionResponse``
             The response to send.
         """
         self.response = response

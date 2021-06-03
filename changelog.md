@@ -1,5 +1,13 @@
 ## 1.1.84 *\[2021-06-??\]*
 
+#### Improvements
+
+- `Guild.nsfw` is now a property.
+
+#### Bug Fixes
+
+- Routed wrapped command's name were detected incorrectly.
+
 ## 1.1.83 *\[2021-06-02\]*
 
 #### Summary

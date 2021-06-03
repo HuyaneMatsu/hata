@@ -570,8 +570,6 @@ class Guild(DiscordEntity, immortal=True):
         The required Multi-factor authentication level for the guild.
     name : `str`
         The name of the guild.
-    nsfw : `bool`
-        Whether IOS users are blocked from the guild.
     nsfw_level : `bool`
         The guild's nsfw level.
     owner_id : `int`
@@ -630,15 +628,27 @@ class Guild(DiscordEntity, immortal=True):
     __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
         'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
-        'message_notification', 'mfa', 'name', 'nsfw', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
+        'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
         'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'stages', 'system_channel',
         'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states',
         'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
     
-    banner = IconSlot('banner', 'banner', module_urls.guild_banner_url, module_urls.guild_banner_url_as)
-    icon = IconSlot('icon', 'icon', module_urls.guild_icon_url, module_urls.guild_icon_url_as)
-    invite_splash = IconSlot('invite_splash', 'splash', module_urls.guild_invite_splash_url, module_urls.guild_invite_splash_url_as)
-    discovery_splash = IconSlot('discovery_splash', 'discovery_splash', module_urls.guild_discovery_splash_url, module_urls.guild_discovery_splash_url_as)
+    banner = IconSlot('banner', 'banner',
+        module_urls.guild_banner_url,
+        module_urls.guild_banner_url_as,
+    )
+    icon = IconSlot('icon', 'icon',
+        module_urls.guild_icon_url,
+        module_urls.guild_icon_url_as,
+    )
+    invite_splash = IconSlot('invite_splash', 'splash',
+        module_urls.guild_invite_splash_url,
+        module_urls.guild_invite_splash_url_as,
+    )
+    discovery_splash = IconSlot('discovery_splash', 'discovery_splash',
+        module_urls.guild_discovery_splash_url,
+        module_urls.guild_discovery_splash_url_as,
+    )
     
     def __new__(cls, data, client):
         """
@@ -882,8 +892,8 @@ class Guild(DiscordEntity, immortal=True):
         region : ``VoiceRegion`` or `str`, Optional (Keyword only)
             The guild's voice region.
         
-        nsfw : `bool`, Optional (Keyword only)
-            Whether the guild iis marked as nfw.
+        nsfw_level : ``NsfwLevel``, Optional (Keyword only)
+            The nsfw level of the guild.
         
         Returns
         -------
@@ -914,21 +924,18 @@ class Guild(DiscordEntity, immortal=True):
             cls.invite_splash.preconvert(kwargs, processable)
             cls.discovery_splash.preconvert(kwargs, processable)
             
-            try:
-                region = kwargs.pop('region')
-            except KeyError:
-                pass
-            else:
-                region = preconvert_preinstanced_type(region, 'type_', VoiceRegion)
-                processable.append(('region', region))
-            
-            try:
-                nsfw = kwargs.pop('nsfw')
-            except KeyError:
-                pass
-            else:
-                nsfw = preconvert_bool(nsfw, 'nsfw')
-                processable.append(('nsfw', nsfw))
+            for attribute_name, attribute_type in (
+                    ('region', VoiceRegion),
+                    ('nsfw_level', NsfwLevel),
+                        ):
+                
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    pass
+                else:
+                    attribute_value = preconvert_preinstanced_type(attribute_value, attribute_name, attribute_type)
+                    processable.append((attribute_name, attribute_value))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -1012,7 +1019,6 @@ class Guild(DiscordEntity, immortal=True):
         self.webhooks_up_to_date = False
         self.widget_channel = None
         self.widget_enabled = False
-        self.nsfw = False
         self.user_count = 0
         self.approximate_online_count = 0
         self.approximate_user_count = 0
@@ -2137,8 +2143,6 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | name                      | `str`                         |
         +---------------------------+-------------------------------+
-        | nsfw                      | `bool`                        |
-        +---------------------------+-------------------------------+
         | nsfw_level                | `NsfwLevel`                   |
         +---------------------------+-------------------------------+
         | owner_id                  | `int`                         |
@@ -2356,11 +2360,6 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['preferred_locale'] = self.preferred_locale
             self.preferred_locale = preferred_locale
         
-        nsfw = data.get('nsfw', False)
-        if self.nsfw != nsfw:
-            old_attributes['nsfw'] = self.nsfw
-            self.nsfw = nsfw
-        
         nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
         if self.nsfw_level is not nsfw_level:
             old_attributes['nsfw_level'] = self.nsfw_level
@@ -2492,8 +2491,6 @@ class Guild(DiscordEntity, immortal=True):
         self._boosters = None
         
         self.preferred_locale = parse_preferred_locale(data)
-        
-        self.nsfw = data.get('nsfw', False)
         
         self.nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
         
@@ -2801,6 +2798,15 @@ class Guild(DiscordEntity, immortal=True):
         roles : `list` of ``Role``
         """
         return sorted(self.roles.values())
+    
+    @property
+    def nsfw(self):
+        nsfw_level = self.nsfw_level
+        if (nsfw_level is NsfwLevel.none) or (nsfw_level is NsfwLevel.safe):
+            return True
+        
+        return False
+
 
 class GuildPreview(DiscordEntity):
     """

@@ -386,8 +386,6 @@ class _EventHandlerManager:
         if func is ...:
             return self._wrapper(self, name, kwargs)
         
-        # name = check_name(func, name)
-        
         func = self.parent.__setevent__(func, name, **kwargs)
         return func
     
@@ -429,8 +427,6 @@ class _EventHandlerManager:
         **kwargs : Keyword arguments
             Additional keyword arguments.
         """
-        name = check_name(func, name)
-        
         self.parent.__delevent__(func, name, **kwargs)
     
     class _wrapper:
@@ -527,9 +523,6 @@ class _EventHandlerManager:
         parent = self.parent
         for element in iterable:
             func = element.func
-            name = element.name
-            
-            name = check_name(func, name)
             
             kwargs = element.kwargs
             if kwargs is None:
@@ -580,8 +573,6 @@ class _EventHandlerManager:
         for element in iterable:
             func = element.func
             name = element.name
-            
-            name = check_name(func, name)
             
             kwargs = element.kwargs
             try:
@@ -805,11 +796,6 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         count = len(handlers)
         if not count:
             return
-        
-        if isinstance(func, Router):
-            name = None
-        else:
-            name = check_name(func, name)
         
         if isinstance(func, Router):
             if len(func) != count:
@@ -1187,26 +1173,20 @@ def route_name(func, name, count):
             raise ValueError(f'`name` was given as `tuple`, but it\'s length ({len(name)!r}) not matches the expected '
                 f'(`{count}`) one, got {name!r}.')
         
-        last = ...
+        last = None
         for name_value in name:
             if name is None:
-                name_value = check_name(func, None)
+                name_value = None
                 last = None
             elif name_value is ...:
-                if last is ...:
-                    name_value = check_name(func, None)
-                    last = name_value
-                elif last is None:
-                    name_value = check_name(func, None)
-                else:
-                    name_value = last
+                name_value = last
             else:
                 last = name_value
             
             result.append(name_value)
     else:
         if name is None:
-            name_value = check_name(func, None)
+            name_value = None
         elif isinstance(name, str):
             name_value = str(name)
         else:

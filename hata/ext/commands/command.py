@@ -27,7 +27,7 @@ assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_AP
 
 DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME = 'general'
 
-COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks_',
+COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks',
     'parser_failure_handler', 'separator')
 COMMAND_NAME_NAME = 'name'
 COMMAND_COMMAND_NAME = 'command'
@@ -326,7 +326,7 @@ class Command:
             - category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
             - checks : `None`, ``_check_base`` instance, `list` of ``_check_base`` instances or `tuple` of \
                     (`None`, `Ellipsis`, ``_check_base`` instance, `list` of ``_check_base`` instances)
-                If no checks were provided, then the class's `.checks_` attribute will be checked as well.
+                If no checks were provided, then the class's `.checks` attribute will be checked as well.
             - parser_failure_handler : `None`, `async-callable` or `tuple` of (`None`, `Ellipsis`, `Async-callable`)
             - separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
         
@@ -346,7 +346,7 @@ class Command:
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
+            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.
@@ -709,7 +709,7 @@ class Command:
         
         return category_hint
     
-    def __new__(cls, command, name=None, description=None, aliases=None, category=None, checks_=None,
+    def __new__(cls, command, name=None, description=None, aliases=None, category=None, checks=None,
             parser_failure_handler=None, separator=None):
         """
         Creates a new ``Command`` object.
@@ -730,7 +730,7 @@ class Command:
         category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
-        checks_ : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
+        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances) \
                 , Optional
             Checks to decide in which circumstances the command should be called.
@@ -772,7 +772,7 @@ class Command:
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
+            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
@@ -801,7 +801,7 @@ class Command:
         description, route_to = cls._check_maybe_route('description', description, route_to, None)
         aliases, route_to = cls._check_maybe_route('aliases', aliases, route_to, cls._validate_aliases)
         category, route_to = cls._check_maybe_route('category', category, route_to, cls._validate_category)
-        checks_, route_to = cls._check_maybe_route('checks_', checks_, route_to, validate_checks)
+        checks, route_to = cls._check_maybe_route('checks', checks, route_to, validate_checks)
         parser_failure_handler, route_to = cls._check_maybe_route('parser_failure_handler', parser_failure_handler,
             route_to, cls._validate_parser_failure_handler)
         
@@ -814,7 +814,7 @@ class Command:
             description = route_value(description, route_to, default=default_description)
             aliases = route_value(aliases, route_to)
             category = route_value(category, route_to)
-            checks_ = route_value(checks_, route_to)
+            checks = route_value(checks, route_to)
             parser_failure_handler = route_value(parser_failure_handler, route_to)
             
             alters = [None for _ in range(route_to)]
@@ -841,8 +841,8 @@ class Command:
         if route_to:
             router = []
             
-            for name, aliases, description, alters, category_hint, checks_, parser_failure_handler in zip(
-                name, aliases, description, alters, category_hint, checks_, parser_failure_handler):
+            for name, aliases, description, alters, category_hint, checks, parser_failure_handler in zip(
+                name, aliases, description, alters, category_hint, checks, parser_failure_handler):
                 
                 self = object.__new__(cls)
                 self.command = command
@@ -853,7 +853,7 @@ class Command:
                 self.category = None
                 self._alters = alters
                 self._category_hint = category_hint
-                self._checks  = checks_
+                self._checks  = checks
                 self.parser = parser
                 self._wrappers = wrappers
                 self._parser_failure_handler = parser_failure_handler
@@ -871,7 +871,7 @@ class Command:
             self.category = None
             self._alters = alters
             self._category_hint = category_hint
-            self._checks  = checks_
+            self._checks  = checks
             self.parser = parser
             self._wrappers = wrappers
             self._parser_failure_handler = parser_failure_handler
@@ -1064,8 +1064,8 @@ class Command:
         
         return checks
     
-    def _set_checks(self, checks_):
-        self._checks = validate_checks(checks_)
+    def _set_checks(self, checks):
+        self._checks = validate_checks(checks)
     
     def _del_checks(self):
         self._checks = None
@@ -1589,7 +1589,7 @@ class Category:
     """
     __slots__ = ('_checks', 'commands', 'description', 'display_name', 'name', )
     
-    def __new__(cls, name, checks_=None, description=None):
+    def __new__(cls, name, checks=None, description=None):
         """
         Creates a new category with the given parameters.
         
@@ -1597,7 +1597,7 @@ class Category:
         ----------
         name : `None` or `str`
             The name of the category. Only a command processer's default category can have it's name as `None`.
-        checks_ : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances, Optional
+        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances, Optional
             Checks to define in which circumstances a command should be called.
         description : `Any`
             Optional description for the category. Defaults to `None`.
@@ -1609,10 +1609,10 @@ class Category:
         Raises
         ------
         TypeError
-            If `checks_` was not given neither as `None`, ``_check_base`` instance or as a `list` of ``_check_base``
+            If `checks` was not given neither as `None`, ``_check_base`` instance or as a `list` of ``_check_base``
              instances.
         """
-        checks_processed = validate_checks(checks_)
+        checks_processed = validate_checks(checks)
         
         if (description is not None) and isinstance(description, str):
             description = normalize_description(description)
@@ -1639,8 +1639,8 @@ class Category:
         
         return checks
     
-    def _set_checks(self, checks_):
-        self._checks = validate_checks(checks_)
+    def _set_checks(self, checks):
+        self._checks = validate_checks(checks)
     
     def _del_checks(self):
         self._checks = None
@@ -2321,7 +2321,7 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `checks_` was not given neither as `None`, ``_check_base`` instance or as `list` of ``_check_base``
+            If `checks` was not given neither as `None`, ``_check_base`` instance or as `list` of ``_check_base``
             instances.
         ValueError
             - If a category exists with the given name.
@@ -2608,7 +2608,7 @@ class CommandProcesser(EventWaitforBase):
         category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
-        checks_ : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
+        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             Checks to decide in which circumstances the command should be called.
         
@@ -2649,7 +2649,7 @@ class CommandProcesser(EventWaitforBase):
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
+            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.
@@ -2728,7 +2728,7 @@ class CommandProcesser(EventWaitforBase):
             - aliases : `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
             - category : `None`, ``Category`` or `str`
             - checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances
-                If no checks were provided, then the class's `.checks_` attribute will be checked as well.
+                If no checks were provided, then the class's `.checks` attribute will be checked as well.
             - parser_failure_handler : `None` or `async-callable`
         
         Returns
@@ -2746,7 +2746,7 @@ class CommandProcesser(EventWaitforBase):
                 `list` of `str`).
             - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
+            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
             - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.

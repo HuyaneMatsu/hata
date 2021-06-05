@@ -9103,7 +9103,7 @@ class Client(ClientUserPBase):
         -----
         No request is done, if the passed channel is partial, or if the channel's guild's webhooks are up to date.
         """
-        channel, channel_id = get_channel_id(channel, ChannelText)
+        channel, channel_id = get_channel_and_id(channel, ChannelText)
         
         if (channel is not None):
             guild = channel.guild

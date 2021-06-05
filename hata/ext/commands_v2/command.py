@@ -11,7 +11,7 @@ from .utils import  raw_name_to_display, normalize_description
 from .command_helpers import test_error_handler, validate_checks, validate_error_handlers
 from .content_parser import CommandContentParser
 
-COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'checks', 'error_handlers',
+COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks', 'error_handlers',
     'separator', 'assigner', 'hidden', 'hidden_if_checks_fail')
 
 COMMAND_NAME_NAME = 'name'

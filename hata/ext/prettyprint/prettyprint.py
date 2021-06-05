@@ -143,6 +143,9 @@ def str_message(message, index=None, **kwargs):
     else:
         start = f'{index}.: '
     result.append(f'{start}Message {message.id}:')
+    
+    if message.deleted:
+        result.append('- deleted', 1)
     result.append(f'- length: {len(message)}')
     
     author = message.author
@@ -174,6 +177,10 @@ def str_message(message, index=None, **kwargs):
     edited_at = message.edited_at
     if (edited_at is not None):
         result.append(f'- edited at: {edited_at:{DATETIME_FORMAT_CODE}}', 1)
+    
+    application_id = message.application_id
+    if application_id:
+        result.append(f'- application_id: {application_id}', 1)
     
     reactions = message.reactions
     if reactions:
@@ -295,6 +302,12 @@ def str_message(message, index=None, **kwargs):
         result.append(f'Stickers: ({len(stickers)})', 1)
         for index, sticker in enumerate(stickers, 1):
             result.append(str_sticker(sticker, index), 1)
+    
+    thread = message.thread
+    if (thread is not None):
+        result.append('Thread:', 1)
+        result.append(f'- id: {thread.id}', 2)
+        result.append(f'- id: {thread.name}', 2)
     
     return result
 

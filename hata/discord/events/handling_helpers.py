@@ -355,9 +355,9 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
     BasesException
         Any occurred exception.
     """
-    if not issubclass(klass, type):
+    if not isinstance(klass, type):
         raise TypeError(f'Expected `type` instance, got {klass.__class__.__name__}.')
-
+    
     parameters_by_name = {}
     for parameter_name in parameter_names:
         try:
@@ -371,6 +371,10 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
         parameters_by_name[parameter_name] = (parameter, found)
     
     if (name_name is not None):
+        if not parameters_by_name[name_name][1]:
+            name = klass.__name__
+            parameters_by_name[name_name] = (name, True)
+        
         if not parameters_by_name[event_name][1]:
             name, found = parameters_by_name[name_name]
             if found:

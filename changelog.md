@@ -9,6 +9,9 @@
 - Routed wrapped command's name were detected incorrectly.
 - Fix a `TypeError` in `Client.webhook_get_all_channel`. (Pichu#0357)
 
+##### hata.ext.kokoro_sqlalchemy
+- `AsyncResultProxy.fetchone` returned an awaitable returning the result instead of the result.
+
 ## 1.1.83 *\[2021-06-02\]*
 
 #### Summary

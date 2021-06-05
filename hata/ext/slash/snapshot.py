@@ -143,10 +143,10 @@ def revert_slasher_snapshot(client, snapshot_difference):
     
     added_commands, removed_commands = snapshot_difference
     for command in added_commands:
-        slasher._remove_command(command)
+        slasher._remove_slash_command(command)
     
     for command in removed_commands:
-        slasher._add_command(command)
+        slasher._add_slash_command(command)
     
     if client.running and client.application.id:
         slasher.sync()

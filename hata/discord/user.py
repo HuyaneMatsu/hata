@@ -654,22 +654,22 @@ class UserBase(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the user's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
         ]
         
         if self.partial:
-            result.append(' partial')
+            repr_parts.append(' partial')
         else:
-            result.append(' name=')
-            result.append(repr(self.full_name))
+            repr_parts.append(' name=')
+            repr_parts.append(repr(self.full_name))
         
-        result.append(', id=')
-        result.append(repr(self.id))
-        result.append('>')
+        repr_parts.append(', id=')
+        repr_parts.append(repr(self.id))
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     def __format__(self, code):
         """

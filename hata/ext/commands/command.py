@@ -9,7 +9,7 @@ from ...backend.futures import is_coroutine_generator
 
 from ...discord.utils import USER_MENTION_RP
 from ...discord.events.handling_helpers import EventWaitforBase, compare_converted, check_name, \
-    check_parameter_count_and_convert, Router, route_name, route_value
+    check_parameter_count_and_convert, Router, route_name, route_value, create_event_from_class
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
 
@@ -26,6 +26,11 @@ assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_AP
     f'(AUTO_DASH_APPLICABLES={AUTO_DASH_APPLICABLES!r}!)')
 
 DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME = 'general'
+
+COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks_',
+    'parser_failure_handler', 'separator')
+COMMAND_NAME_NAME = 'name'
+COMMAND_COMMAND_NAME = 'command'
 
 class CommandWrapper:
     """
@@ -298,7 +303,7 @@ class Command:
         'category', 'command', 'description', 'display_name', 'name', 'parser',)
     
     @classmethod
-    def from_class(cls, klass, kwargs=None):
+    def from_class(cls, klass):
         """
         The method used, when creating a ``Command`` object from a class.
         
@@ -324,15 +329,6 @@ class Command:
                 If no checks were provided, then the class's `.checks_` attribute will be checked as well.
             - parser_failure_handler : `None`, `async-callable` or `tuple` of (`None`, `Ellipsis`, `Async-callable`)
             - separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
-        kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
-            Additional keyword arguments. Defaults to `None`.
-            
-            The expected keyword arguments are the following:
-            - description
-            - category
-            - checks
-            - parser_failure_handler
-            - separator
         
         Returns
         -------
@@ -361,154 +357,8 @@ class Command:
             - If `separator` is given as `tuple`, but one of it's element's length is not 1.
             - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
-        klass_type = klass.__class__
-        if not issubclass(klass_type, type):
-            raise TypeError(f'Expected `type` instance, got {klass_type.__name__}.')
-        
-        name = getattr(klass, 'name', None)
-        if name is None:
-            name = klass.__name__
-        
-        command = getattr(klass, 'command', None)
-        if command is None:
-            while True:
-                command = getattr(klass, name, None)
-                if (command is not None):
-                    break
-                
-                raise ValueError('`command` class attribute is missing.')
-        
-        
-        description = getattr(klass, 'description', None)
-        if description is None:
-            description = klass.__doc__
-        
-        aliases = getattr(klass, 'aliases', None)
-        
-        category = getattr(klass, 'category', None)
-        
-        checks_ = getattr(klass, 'checks', None)
-        if checks_ is None:
-            checks_ = getattr(klass, 'checks_', None)
-        
-        parser_failure_handler = getattr(klass, 'parser_failure_handler', None)
-        
-        separator = getattr(klass, 'separator', None)
-        
-        if (kwargs is not None) and kwargs:
-            if (description is None):
-                description = kwargs.pop('description', None)
-            else:
-                try:
-                    del kwargs['description']
-                except KeyError:
-                    pass
-            
-            if (category is None):
-                category = kwargs.pop('category', None)
-            else:
-                try:
-                    del kwargs['category']
-                except KeyError:
-                    pass
-            
-            if (checks_ is None) or not checks_:
-                checks_ = kwargs.pop('checks', None)
-            else:
-                try:
-                    del kwargs['checks']
-                except KeyError:
-                    pass
-            
-            if (parser_failure_handler is None):
-                parser_failure_handler = kwargs.pop('parser_failure_handler', None)
-            else:
-                try:
-                    del kwargs['parser_failure_handler']
-                except KeyError:
-                    pass
-            
-            if (separator is None):
-                separator = kwargs.pop('separator', None)
-            else:
-                try:
-                    del kwargs['separator']
-                except KeyError:
-                    pass
-            
-            if kwargs:
-                raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
-        
-        return cls(command, name, description, aliases, category, checks_, parser_failure_handler, separator)
-    
-    @classmethod
-    def from_kwargs(cls, command, name, kwargs):
-        """
-        Called when a command is created before adding it to a ``CommandProcesser``.
-        
-        Parameters
-        ----------
-        command : `async-callable`
-            The async callable added as the command itself.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-            The name to be used instead of the passed `command`'s.
-        kwargs : `None` or `dict` of (`str`, `Any`) items.
-            Additional keyword arguments.
-            
-            The expected keyword arguments are the following:
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
-            - aliases : `None`, `str`, `list` of str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
-            - category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
-            - checks : `None`, ``_check_base`` instance, `list` of ``_check_base`` instances or `tuple` of \
-                (`None`, `Ellipsis`, ``_check_base`` instance, `list` of ``_check_base`` instances)
-            - parser_failure_handler : `None`, `async-callable` or `tuple` of (`None`, `Ellipsis`, `Async-callable`)
-            - separator : `None,  ``ContentArgumentSeparator``, `str`, `tuple` (`str`, `str`)
-        
-        Returns
-        -------
-        self : ``Command`` or ``Router``
-        
-        Raises
-        ------
-        TypeError
-            - `kwargs` was not given as `None` and not all of it's items were used up.
-            - A value is routed but to a bad count amount.
-            - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
-            - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
-                `list` of `str`).
-            - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
-                `str`)
-            - If `checks_` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
-            - If `separator` was given as `tuple`, but it's element are not `str` instances.
-        ValueError
-            - if an empty string was given as an alias.
-            - If `separator` is given as `str`, but it's length is not 1.
-            - If `separator` is given as `str`, but it is a space character.
-            - If `separator` is given as `tuple`, but one of it's element's length is not 1.
-            - If `separator` is given as `tuple`, but one of it's element's is a space character.
-        """
-        if (kwargs is None) or (not kwargs):
-            description = None
-            aliases = None
-            category = None
-            checks_ = None
-            parser_failure_handler = None
-            separator = None
-        else:
-            description = kwargs.pop('description', None)
-            aliases = kwargs.pop('aliases', None)
-            category = kwargs.pop('category', None)
-            checks_ = kwargs.pop('checks', None)
-            parser_failure_handler = kwargs.pop('parser_failure_handler', None)
-            separator = kwargs.pop('separator', None)
-            
-            if kwargs:
-                raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
-        
-        return cls(command, name, description, aliases, category, checks_, parser_failure_handler, separator)
+        return create_event_from_class(cls, klass, COMMAND_PARAMETER_NAMES, COMMAND_NAME_NAME,
+            COMMAND_COMMAND_NAME)
     
     @classmethod
     def _check_maybe_route(cls, variable_name, variable_value, route_to, validator):
@@ -859,7 +709,8 @@ class Command:
         
         return category_hint
     
-    def __new__(cls, command, name, description, aliases, category, checks_, parser_failure_handler, separator):
+    def __new__(cls, command, name=None, description=None, aliases=None, category=None, checks_=None,
+            parser_failure_handler=None, separator=None):
         """
         Creates a new ``Command`` object.
         
@@ -867,23 +718,24 @@ class Command:
         ----------
         command : `async-callable`
             The async callable added as the command itself.
-        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`), Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`)
+        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
+        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
         checks_ : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
+                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances) \
+                , Optional
             Checks to decide in which circumstances the command should be called.
         
-        parser_failure_handler : `None`, `async-callable` or `tuple` of (`None` or `async-callable`)
+        parser_failure_handler : `None`, `async-callable` or `tuple` of (`None` or `async-callable`), Optional
             Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
             ones.
             
@@ -902,7 +754,8 @@ class Command:
             +-----------------------+-------------------+
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
-        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
+        
+        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`), Optional
             The argument separator of the command's parser.
         
         Returns
@@ -953,7 +806,10 @@ class Command:
             route_to, cls._validate_parser_failure_handler)
         
         if route_to:
-            name = route_name(command, name, route_to)
+            name = route_name(name, route_to)
+            for index in range(route_to):
+                name[index] = check_name(command, name[index])
+            
             default_description = cls._generate_description_from(command, None)
             description = route_value(description, route_to, default=default_description)
             aliases = route_value(aliases, route_to)
@@ -2731,7 +2587,7 @@ class CommandProcesser(EventWaitforBase):
         
         return True
     
-    def __setevent__(self, func, name, description=None, aliases=None, category=None, checks=None,
+    def create_event(self, func, name=None, description=None, aliases=None, category=None, checks=None,
             parser_failure_handler=None, separator=None):
         """
         Method used to add commands to the command processor.
@@ -2853,7 +2709,7 @@ class CommandProcesser(EventWaitforBase):
         self._add_command(command)
         return command
     
-    def __setevent_from_class__(self, klass):
+    def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a command.
         
@@ -3101,7 +2957,7 @@ class CommandProcesser(EventWaitforBase):
             except KeyError:
                 pass
         
-    def __delevent__(self, func, name, **kwargs):
+    def delete_event(self, func, name=None):
         """
         A method to remove a command by itself, or by it's function and name combination if defined.
         
@@ -3112,10 +2968,8 @@ class CommandProcesser(EventWaitforBase):
         ----------
         func : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
             The command to remove.
-        name : `None` or `str`
+        name : `None` or `str`, Optional
             The command's name to remove.
-        **kwargs : Keyword Arguments
-            Other keyword only arguments are ignored.
         
         Raises
         ------

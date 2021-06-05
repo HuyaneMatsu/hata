@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 from ..extension_loader.snapshot import SNAPSHOT_TAKERS
 from ..extension_loader.extension_loader import EXTENSION_LOADER
 
-from .command import SYNC_ID_NON_GLOBAL
+from .slash_command import SYNC_ID_NON_GLOBAL
 from .slasher import Slasher
 from .utils import RUNTIME_SYNC_HOOKS
 

@@ -1,10 +1,10 @@
 """
 Hata extensions for supporting interactions.
 """
-from .command import *
 from .converters import *
 from .components import *
 from .responding import *
+from .slash_command import *
 from .slasher import *
 from .utils import *
 from .waiters import *
@@ -14,10 +14,10 @@ __all__ = (
     'configure_parameter',
     'set_permission',
     'setup_ext_slash',
-    *command.__all__,
     *converters.__all__,
     *components.__all__,
     *responding.__all__,
+    *slash_command.__all__,
     *slasher.__all__,
     *utils.__all__,
     *waiters.__all__,

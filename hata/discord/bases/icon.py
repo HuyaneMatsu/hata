@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', 'IconSlot',
     'PreinstancedBase', )
 

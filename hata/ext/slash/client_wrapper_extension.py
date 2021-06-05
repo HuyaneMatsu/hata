@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ()
 
 from ...backend.utils import KeepType
@@ -6,7 +5,7 @@ from ...backend.utils import KeepType
 from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
-from .command import SlashCommand
+from .slash_command import SlashCommand
 from .slasher import Slasher
 
 def interactions_getter(manager_router):

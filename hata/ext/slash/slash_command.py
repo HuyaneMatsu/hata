@@ -2,7 +2,8 @@ __all__ = ('SlashCommand', )
 
 from ...backend.utils import WeakReferer
 
-from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager
+from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
+    create_event_from_class
 from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake, preconvert_bool
 from ...discord.client import Client
@@ -20,6 +21,12 @@ from .wrappers import SlashCommandWrapper, get_parameter_configurers
 from .converters import generate_parameter_parsers
 
 # Routers
+
+SLASH_COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild',
+    'is_default', 'delete_on_unload', 'allow_by_default')
+
+SLASH_COMMAND_NAME_NAME = 'name'
+SLASH_COMMAND_COMMAND_NAME = 'command'
 
 def _check_maybe_route(variable_name, variable_value, route_to, validator):
     """
@@ -591,309 +598,62 @@ class SlashCommand:
                 if sync_id > (1<<22):
                     yield sync_id
     
+    
     @classmethod
-    def from_class(cls, klass, kwargs=None):
+    def from_class(cls, klass):
         """
-        The method use when creating a ``SlashCommand`` instance from a class.
-        
-        Extra `kwargs` are supported as well for special the use cases.
+        Creates a new ``SlashCommand`` instance from the given `klass`.
         
         Parameters
         ----------
         klass : `type`
-            The class, from what's attributes the command will be created.
-            
-            The expected attributes of the given `klass` are the following:
-            
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
-                Description of the command.
-            - command : `async-callable`
-                If no description was provided, then the class's `.__doc__` will be picked up.
-            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
-                To which guild(s) the command is bound to.
-            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the slash command is global. Defaults to `False`.
-            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-                If was not defined, or was defined as `None`, the class's name will be used.
-            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the response message should only be shown for the invoking user. Defaults to `False`.
-            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the slash command is the default command in it's category.
-            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command should be deleted from Discord when removed.
-            - `allow_by_default` : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-        
-        kwargs, `None` or `dict` of (`str`, `Any`) items, Optional
-            Additional parameters parameters. Defaults to `None`.
-            
-            The expected keyword parameters are the following:
-            
-            - guild
-            - is_global
-            - show_for_invoking_user_only
-            - is_default
-            - allow_by_default
+            The class to create slash command from.
         
         Returns
         -------
-        self : ``SlashCommand``
+        self : ``SlashCommand`` or ``Router``
         
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
-            - If `kwargs` was not given as `None` and not all of it's items were used up.
-            - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `tuple`, `set`) of
-                (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameters.
-            - If `func` accepts more than `27` parameters.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If any attribute's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If any attribute's value is incorrect.
         """
-        klass_type = klass.__class__
-        if not issubclass(klass_type, type):
-            raise TypeError(f'Expected `type` instance, got {klass_type.__name__}.')
-        
-        name = getattr(klass, 'name', None)
-        if name is None:
-            name = klass.__name__
-        
-        command = getattr(klass, 'command', None)
-        if command is None:
-            command = getattr(klass, name, None)
-        
-        description = getattr(klass, 'description', None)
-        if description is None:
-            description = klass.__doc__
-        
-        is_global = getattr(klass, 'is_global', None)
-        guild = getattr(klass, 'guild', None)
-        show_for_invoking_user_only = getattr(klass, 'show_for_invoking_user_only', None)
-        is_default = getattr(klass, 'is_default', None)
-        delete_on_unload = getattr(klass, 'delete_on_unload', None)
-        allow_by_default = getattr(klass, 'allow_by_default', None)
-        
-        if (kwargs is not None) and kwargs:
-            if (description is None):
-                description = kwargs.pop('description', None)
-            else:
-                try:
-                    del kwargs['description']
-                except KeyError:
-                    pass
-            
-            if (is_global is None):
-                is_global = kwargs.pop('is_global', None)
-            else:
-                try:
-                    del kwargs['is_global']
-                except KeyError:
-                    pass
-            
-            if (show_for_invoking_user_only is None):
-                show_for_invoking_user_only = kwargs.pop('show_for_invoking_user_only', None)
-            else:
-                try:
-                    del kwargs['show_for_invoking_user_only']
-                except KeyError:
-                    pass
-            
-            if (guild is None):
-                guild = kwargs.pop('guild', None)
-            else:
-                try:
-                    del kwargs['guild']
-                except KeyError:
-                    pass
-            
-            if (is_default is None):
-                is_default = kwargs.pop('is_default', None)
-            else:
-                try:
-                    del kwargs['is_default']
-                except KeyError:
-                    pass
-            
-            if (delete_on_unload is None):
-                delete_on_unload = kwargs.pop('delete_on_unload', None)
-            else:
-                try:
-                    del kwargs['delete_on_unload']
-                except KeyError:
-                    pass
-            
-            if (allow_by_default is None):
-                allow_by_default = kwargs.pop('allow_by_default', None)
-            else:
-                try:
-                    del kwargs['allow_by_default']
-                except KeyError:
-                    pass
-            
-            if kwargs:
-                raise TypeError(f'`{cls.__name__}.from_class` did not use up some kwargs: `{kwargs!r}`.')
-        
-        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allow_by_default)
-    
-    @classmethod
-    def from_kwargs(cls, command, name, kwargs):
-        """
-        Called when a slash command is created before adding it..
-        
-        Parameters
-        ----------
-        command : `async-callable`
-            The async callable added as the command itself.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-            The name to be used instead of the passed `command`'s.
-        kwargs : `None` or `dict` of (`str`, `Any`) items
-            Additional keyword parameter.
-            
-            The expected keyword parameters are the following:
-            
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
-            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
-            - is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-            - is_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-        
-        Returns
-        -------
-        self : ``SlashCommand``
-        
-        Raises
-        ------
-        TypeError
-            - If `kwargs` was not given as `None` and not all of it's items were used up.
-            - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `tuple`, `set`) of
-                (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameters.
-            - If `func` accepts more than `27` parameters.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
-        ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
-        """
-        if (kwargs is None) or (not kwargs):
-            description = None
-            show_for_invoking_user_only = None
-            is_global = None
-            guild = None
-            is_default = None
-            delete_on_unload = None
-            allow_by_default = None
-        else:
-            description = kwargs.pop('description', None)
-            show_for_invoking_user_only = kwargs.pop('show_for_invoking_user_only', None)
-            is_global = kwargs.pop('is_global', None)
-            guild = kwargs.pop('checks', None)
-            is_default = kwargs.pop('is_default', None)
-            delete_on_unload = kwargs.pop('delete_on_unload', None)
-            allow_by_default = kwargs.pop('allow_by_default', None)
-            
-            if kwargs:
-                raise TypeError(f'type `{cls.__name__}` not uses: `{kwargs!r}`.')
-        
-        return cls(command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allow_by_default)
-    
-    
-    def __new__(cls, command, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allow_by_default):
+        return create_event_from_class(cls, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
+            SLASH_COMMAND_COMMAND_NAME)
+
+    def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
+            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
         """
         Creates a new ``SlashCommand`` instance with the given parameters.
         
         Parameters
         ----------
-        command : `None` or `async-callable`
+        command : `None` or `async-callable`, Optional
             The function used as the command when using the respective slash command.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`), Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
+        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the response message should only be shown for the invoking user. Defaults to `False`.
-        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
+                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
-        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the slash command is the default command in it's category.
-        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
+        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
         -------
-        self : ``SlashCommand``
+        self : ``SlashCommand`` or ``Router``
         
         Raises
         ------
@@ -935,9 +695,10 @@ class SlashCommand:
             - If `name` length is out of the expected range [1:32].
         """
         # Check for routing
-        if (command is not None) and isinstance(command, SlashCommandWrapper):
-            command, wrappers = command.fetch_function_and_wrappers_back()
+        if (func is not None) and isinstance(func, SlashCommandWrapper):
+            command, wrappers = func.fetch_function_and_wrappers_back()
         else:
+            command = func
             wrappers = None
         
         route_to = 0
@@ -954,7 +715,7 @@ class SlashCommand:
             _validate_allow_by_default)
         
         if route_to:
-            name = route_name(command, name, route_to)
+            name = route_name(name, route_to)
             name = [raw_name_to_display(sub_name) for sub_name in name]
             
             default_description = _generate_description_from(command, None, None)
@@ -1256,8 +1017,7 @@ class SlashCommand:
         
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
-            is_default=None, delete_on_unload=None, allow_by_default=None):
+    def create_event(self, func, *args, **kwargs):
         """
         Adds a sub-command under the slash command.
         
@@ -1265,24 +1025,10 @@ class SlashCommand:
         ----------
         func : `async-callable`
             The function used as the command when using the respective slash command.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-            The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
-            instead.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
-            Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the response message should only be shown for the invoking user. Defaults to `False`.
-        is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the slash command is global. Defaults to `False`.
-        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
-            To which guild(s) the command is bound to.
-        is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the command is the default command in it's category.
-        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
-            Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
-            Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+        *args : Positional Parameters
+            Positional parameters to pass to ``SlashCommand``'s constructor.
+        **kwargs : Keyword parameters
+            Keyword parameters to pass to the ``SlashCommand``'s constructor.
         
         Returns
         -------
@@ -1291,40 +1037,9 @@ class SlashCommand:
         Raises
         ------
         TypeError
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameter.
-            - If `func` accepts more than `27` parameter.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If Any parameter's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If Any parameter's value is incorrect.
         RuntimeError
             - The ``SlashCommand`` is not a category.
             - The ``SlashCommand`` reached the maximal amount of children.
@@ -1337,18 +1052,18 @@ class SlashCommand:
             func = func[0]
         
         if isinstance(func, type(self)):
-            self._add_command(func)
+            self._add_slash_command(func)
             return self
         
-        command = type(self)(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allow_by_default)
+        command = type(self)(func, *args, **kwargs)
+        
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_command(command)
+        self._add_slash_command(command)
         return self
     
-    def __setevent_from_class__(self, klass):
+    def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a sub-command or sub-category.
         
@@ -1356,28 +1071,6 @@ class SlashCommand:
         ----------
         klass : `type`
             The class, from what's attributes the command will be created.
-            
-            The expected attributes of the given `klass` are the following:
-            
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
-                Description of the command.
-            - command : `async-callable`
-                If no description was provided, then the class's `.__doc__` will be picked up.
-            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
-                To which guild(s) the command is bound to.
-            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the slash command is global. Defaults to `False`.
-            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-                If was not defined, or was defined as `None`, the class's name will be used.
-            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the response message should only be shown for the invoking user. Defaults to `False`.
-            - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the command is the default command in it's category.
-            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command should be deleted from Discord when removed.
-            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
         -------
@@ -1386,56 +1079,23 @@ class SlashCommand:
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
-            - If `kwargs` was not given as `None` and not all of it's items were used up.
-            - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameters.
-            - If `func` accepts more than `27` parameters.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If Any attribute's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If Any attribute's value is incorrect.
         RuntimeError
             - The ``SlashCommand`` is not a category.
             - The ``SlashCommand`` reached the maximal amount of children.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         command = type(self).from_class(klass)
+        
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_command(command)
+        self._add_slash_command(command)
         return self
     
-    def _add_command(self, command):
+    def _add_slash_command(self, command):
         """
         Adds a sub-command or sub-category to the slash command.
         
@@ -1856,8 +1516,7 @@ class SlashCommandCategory:
         """
         return _EventHandlerManager(self)
     
-    def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
-            is_default=None, delete_on_unload=None, allow_by_default=None):
+    def create_event(self, func, *args, **kwargs):
         """
         Adds a sub-command under the slash category.
         
@@ -1865,24 +1524,10 @@ class SlashCommandCategory:
         ----------
         func : `async-callable`
             The function used as the command when using the respective slash command.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-            The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
-            instead.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
-            Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the response message should only be shown for the invoking user. Defaults to `False`.
-        is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the slash command is global. Defaults to `False`.
-        guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
-            To which guild(s) the command is bound to.
-        is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the command is the default command in it's category.
-        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
-            Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
-            Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+        *args : Positional Parameters
+            Positional parameters to pass to ``SlashCommand``'s constructor.
+        **kwargs : Keyword parameters
+            Keyword parameters to pass to the ``SlashCommand``'s constructor.
         
         Returns
         -------
@@ -1891,40 +1536,9 @@ class SlashCommandCategory:
         Raises
         ------
         TypeError
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameter.
-            - If `func` accepts more than `27` parameter.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If Any parameter's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If Any parameter's value is incorrect.
         RuntimeError
             - The ``SlashCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
@@ -1934,18 +1548,17 @@ class SlashCommandCategory:
             func = func[0]
         
         if isinstance(func, SlashCommand):
-            self._add_command(func)
+            self._add_slash_command(func)
             return self
         
-        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allow_by_default)
+        command = SlashCommand(func, *args, **kwargs)
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_command(command)
+        self._add_slash_command(command)
         return self
     
-    def __setevent_from_class__(self, klass):
+    def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a sub-command.
         
@@ -1953,28 +1566,6 @@ class SlashCommandCategory:
         ----------
         klass : `type`
             The class, from what's attributes the command will be created.
-            
-            The expected attributes of the given `klass` are the following:
-            
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
-                Description of the command.
-            - command : `async-callable`
-                If no description was provided, then the class's `.__doc__` will be picked up.
-            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
-                To which guild(s) the command is bound to.
-            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the slash command is global. Defaults to `False`.
-            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-                If was not defined, or was defined as `None`, the class's name will be used.
-            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the response message should only be shown for the invoking user. Defaults to `False`.
-            - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the command is the default command in it's category.
-            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command should be deleted from Discord when removed.
-            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
         -------
@@ -1983,56 +1574,24 @@ class SlashCommandCategory:
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
-            - If `kwargs` was not given as `None` and not all of it's items were used up.
-            - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameters.
-            - If `func` accepts more than `27` parameters.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If Any attribute's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If Any attribute's value is incorrect.
         RuntimeError
             - The ``SlashCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
-        command = SlashCommand.from_class(klass)
+        command = create_event_from_class(SlashCommand, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
+            SLASH_COMMAND_COMMAND_NAME)
+        
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_command(command)
+        self._add_slash_command(command)
         return self
     
-    def _add_command(self, command):
+    def _add_slash_command(self, command):
         """
         Adds a sub-command or sub-category to the slash command.
         

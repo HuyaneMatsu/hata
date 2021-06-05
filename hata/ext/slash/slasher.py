@@ -14,7 +14,8 @@ from ...discord.interaction import ApplicationCommand, InteractionEvent, Interac
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
-from .command import SlashCommand
+from .slash_command import SlashCommand
+
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -188,7 +189,7 @@ class CommandState:
         
         return ''.join(result)
     
-    def get_should_add_commands(self):
+    def get_should_add_slash_commands(self):
         """
         Returns the commands, which should be added.
         
@@ -250,7 +251,7 @@ class CommandState:
         
         return commands
     
-    def get_should_remove_commands(self):
+    def get_should_remove_slash_commands(self):
         """
         Returns the commands, which should be removed.
         
@@ -901,8 +902,7 @@ class Slasher(EventHandlerBase):
         self._component_interaction_waiters[message] = actual_waiter
     
     
-    def __setevent__(self, func, name, description=None, show_for_invoking_user_only=None, is_global=None, guild=None,
-            is_default=None, delete_on_unload=None, allow_by_default=None):
+    def create_event(self, func, *args, **kwargs):
         """
         Adds a slash command.
         
@@ -937,57 +937,25 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         TypeError
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` argument.
-            - If `func` accepts more than `27` argument.
-            - If `func`'s 0th argument is annotated, but not as ``Client``.
-            - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If Any parameter's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If Any parameter's value is incorrect.
         """
         if isinstance(func, Router):
             func = func[0]
         
         if isinstance(func, SlashCommand):
-            self._add_command(func)
+            self._add_slash_command(func)
             return func
         
-        command = SlashCommand(func, name, description, show_for_invoking_user_only, is_global, guild, is_default,
-            delete_on_unload, allow_by_default)
+        command = SlashCommand(func, *args, **kwargs)
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_command(command)
+        self._add_slash_command(command)
         return command
     
-    def __setevent_from_class__(self, klass):
+    def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a slash command.
         
@@ -995,84 +963,29 @@ class Slasher(EventHandlerBase):
         ----------
         klass : `type`
             The class, from what's attributes the command will be created.
-            
-            The expected attributes of the given `klass` are the following:
-            
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
-                Description of the command.
-            - command : `async-callable`
-                If no description was provided, then the class's `.__doc__` will be picked up.
-            - guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                    `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``))
-                To which guild(s) the command is bound to.
-            - is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the slash command is global. Defaults to `False`.
-            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
-                If was not defined, or was defined as `None`, the class's name will be used.
-            - show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the response message should only be shown for the invoking user. Defaults to `False`.
-            - is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`)
-                Whether the command is the default command in it's category.
-            - delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command should be deleted from Discord when removed.
-            - allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`)
-                Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         Returns
         -------
         func : ``SlashCommand``
              The created or added command.
-         
+        
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
-            - If `kwargs` was not given as `None` and not all of it's items were used up.
-            - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `bool` instance.
-            - If `global_` was not given as `bool` instance.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only arguments.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` arguments.
-            - If `func` accepts more than `27` arguments.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
-                `Ellipsis`).
+            If Any attribute's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
+            If Any attribute's value is incorrect.
         """
         command = SlashCommand.from_class(klass)
+        
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_command(command)
+        self._add_slash_command(command)
         return command
     
     
-    def _add_command(self, command):
+    def _add_slash_command(self, command):
         """
         Adds a slash command to the ``Slasher`` if applicable.
         
@@ -1125,7 +1038,7 @@ class Slasher(EventHandlerBase):
             if change_identifier == COMMAND_STATE_IDENTIFIER_NON_GLOBAL:
                 continue
     
-    def _remove_command(self, command):
+    def _remove_slash_command(self, command):
         """
         Tries to remove the given command from the ``Slasher``.
         
@@ -1245,7 +1158,7 @@ class Slasher(EventHandlerBase):
         
         return registered_any
     
-    def __delevent__(self, func, name, **kwargs):
+    def delete_event(self, func, name=None):
         """
         A method to remove a command by itself, or by it's function and name combination if defined.
         
@@ -1253,10 +1166,8 @@ class Slasher(EventHandlerBase):
         ----------
         func : ``SlashCommand``, ``Router`` of ``SlashCommand``
             The command to remove.
-        name : `None` or `str`
+        name : `None` or `str`, Optional
             The command's name to remove.
-        **kwargs : Keyword Arguments
-            Other keyword only arguments are ignored.
         
         Raises
         ------
@@ -1270,10 +1181,10 @@ class Slasher(EventHandlerBase):
                         f'`{Router.__name__}` of `{SlashCommand.__name__}` instances, got {func!r}.')
             
             for sub_func in func:
-                self._remove_command(sub_func)
+                self._remove_slash_command(sub_func)
                 
         elif isinstance(func, SlashCommand):
-            self._remove_command(func)
+            self._remove_slash_command(func)
         else:
             raise TypeError(f'`func` was not given neither as `{SlashCommand.__name__}`, or `{Router.__name__}` of '
                 f'`{SlashCommand.__name__}` instances, got {func!r}.')
@@ -1479,7 +1390,7 @@ class Slasher(EventHandlerBase):
                 guild_keep_commands = None
                 guild_removed_commands = None
             else:
-                guild_added_commands = guild_command_state.get_should_add_commands()
+                guild_added_commands = guild_command_state.get_should_add_slash_commands()
                 if not guild_added_commands:
                     guild_added_commands = None
                 
@@ -1487,7 +1398,7 @@ class Slasher(EventHandlerBase):
                 if not guild_keep_commands:
                     guild_keep_commands = None
                 
-                guild_removed_commands = guild_command_state.get_should_remove_commands()
+                guild_removed_commands = guild_command_state.get_should_remove_slash_commands()
                 if not guild_removed_commands:
                     guild_removed_commands = None
             
@@ -1496,7 +1407,7 @@ class Slasher(EventHandlerBase):
                 non_global_added_commands = None
                 non_global_keep_commands = None
             else:
-                non_global_added_commands = non_global_command_state.get_should_add_commands()
+                non_global_added_commands = non_global_command_state.get_should_add_slash_commands()
                 if not non_global_added_commands:
                     non_global_added_commands = None
                 
@@ -1647,7 +1558,7 @@ class Slasher(EventHandlerBase):
                 global_keep_commands = None
                 global_removed_commands = None
             else:
-                global_added_commands = global_command_state.get_should_add_commands()
+                global_added_commands = global_command_state.get_should_add_slash_commands()
                 if not global_added_commands:
                     global_added_commands = None
                 
@@ -1655,7 +1566,7 @@ class Slasher(EventHandlerBase):
                 if not global_keep_commands:
                     global_keep_commands = None
                 
-                global_removed_commands = global_command_state.get_should_remove_commands()
+                global_removed_commands = global_command_state.get_should_remove_slash_commands()
                 if not global_removed_commands:
                     global_removed_commands = None
             
@@ -2135,7 +2046,7 @@ class Slasher(EventHandlerBase):
         except KeyError:
             return
         
-        for command in non_global_command_state.get_should_add_commands():
+        for command in non_global_command_state.get_should_add_slash_commands():
             if command.get_schema() == application_command:
                 self._register_helper(command, non_global_command_state, guild_id, application_command.id)
                 break
@@ -2156,7 +2067,7 @@ class Slasher(EventHandlerBase):
         except KeyError:
             return
         
-        for command in non_global_command_state.get_should_add_commands():
+        for command in non_global_command_state.get_should_add_slash_commands():
             if command.get_schema() == application_command:
                 self._unregister_helper(command, non_global_command_state, guild_id)
                 break

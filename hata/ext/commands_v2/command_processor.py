@@ -829,8 +829,8 @@ class CommandProcessor(EventWaitforBase):
     def precheck(self):
         self.precheck = default_precheck
     
-    def __setevent__(self, command, name, description=None, aliases=None, category=None, checks=None, error_handlers=None,
-            separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+    def create_event(self, command, name=None, description=None, aliases=None, category=None, checks=None,
+            error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
         """
         Adds a command to the command processor.
         
@@ -885,7 +885,7 @@ class CommandProcessor(EventWaitforBase):
         return command
     
     
-    def __setevent_from_class__(self, klass):
+    def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a command.
     
@@ -907,7 +907,7 @@ class CommandProcessor(EventWaitforBase):
         return command
     
     
-    def __delevent__(self, command, name, **kwargs):
+    def delete_event(self, command, name=None):
         """
         Removes the specified command from the command processor.
         
@@ -915,10 +915,8 @@ class CommandProcessor(EventWaitforBase):
         ----------
         command : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
             The command to remove.
-        name : `None` or `str`
+        name : `None` or `str`, Optional
             The command's name to remove.
-        **kwargs : Keyword Arguments
-            Other keyword only arguments are ignored.
         
         Raises
         ------

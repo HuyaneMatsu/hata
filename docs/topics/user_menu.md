@@ -204,7 +204,7 @@ class CatFeeder:
 @Nitori.interactions(guild=TEST_GUILD)
 async def cat_feeder(client, event):
     """Feed the cat!"""
-    return await CatFeeder(client, event)
+    await CatFeeder(client, event)
 ```
 
 ##### Zeref's pagination

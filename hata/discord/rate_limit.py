@@ -26,19 +26,21 @@ Guild = include('Guild')
 
 #parsing time
 #email.utils.parse_date_to_datetime
-def parse_date_to_datetime(data):
+def parse_date_to_datetime(date_data):
     """
-    Parsers header date to `datetime`.
+    Parsers header date value to `datetime`.
     
     Parameters
     ----------
-    data : ``imultidict``
+    date_data : ``str``
+        Date value inside of a header.
 
     Returns
     -------
     date : `datetime`
+        The parsed out date time.
     """
-    *date_tuple, tz = parse_date_timezone(data)
+    *date_tuple, tz = parse_date_timezone(date_data)
     if tz is None:
         date = datetime(*date_tuple[:6])
     else:
@@ -182,26 +184,27 @@ class RateLimitGroup:
     
     def __repr__(self):
         """Returns the representation of the rate limit group."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' size=',
             repr(self.size),
             ', ',
-                ]
+        ]
         
         limiter = self.limiter
         if limiter is LIMITER_GLOBAL:
-            result.append('limited globally')
+            repr_parts.append('limited globally')
         elif limiter is LIMITER_UNLIMITED:
-            result.append('unlimited')
+            repr_parts.append('unlimited')
         else:
-            result.append('limited by ')
-            result.append(limiter)
+            repr_parts.append('limited by ')
+            repr_parts.append(limiter)
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+
 
 class RateLimitUnit:
     """
@@ -213,7 +216,7 @@ class RateLimitUnit:
     allocates : `int`
         The amount of done requests till next rate limit reset.
     drop : `float`
-        The time of the next rate limit reset in LOOP_TIME time.
+        The time of the next rate limit reset in `LOOP_TIME` time.
     next : `None` or ``RateLimitUnit``
         The next rate limit unit on the chain. It can happen that requests are done between two reset and we would need
         to store multiple rate limit units and using a chain is still better than allocating a list every time.
@@ -303,36 +306,36 @@ class RateLimitUnit:
         
     def __repr__(self):
         """Returns the representation of the rate limit unit."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' drop=',
             repr(self.drop),
             ', allocates=',
             repr(self.allocates),
-                ]
+        ]
         
         next_ = self.next
         if (next_ is not None):
-            result.append(', next=[')
+            repr_parts.append(', next=[')
             while True:
-                result.append('(')
-                result.append(repr(next_.drop))
-                result.append(', ')
-                result.append(repr(next_.allocates))
-                result.append(')')
+                repr_parts.append('(')
+                repr_parts.append(repr(next_.drop))
+                repr_parts.append(', ')
+                repr_parts.append(repr(next_.allocates))
+                repr_parts.append(')')
                 next_ = next_.next
                 if (next_ is None):
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
             
-            result.append(']')
+            repr_parts.append(']')
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 class RateLimitHandler:
     """
@@ -342,7 +345,7 @@ class RateLimitHandler:
     ----------
     active : `int`
         The amount of active requests with the same `limiter_id` and with the same `parent`.
-    drops : `None` or `RateLimitUnit`
+    drops : `None` or ``RateLimitUnit``
         The already used up rate limits.
     limiter_id : `int`
         The `id` of the Discord Entity based on what the handler is limiter.
@@ -350,7 +353,7 @@ class RateLimitHandler:
         The rate limit group of the rate limit handler.
     queue : `None` or (`deque` of ``Future``)
         Queue of ``Future`` objects of waiting requests.
-    wake_upper : `None` or `TimerHandle`
+    wake_upper : `None` or ``TimerHandle``
         Wake ups the rate limit handler, when it's rate limits are reset.
     
     Notes
@@ -411,49 +414,49 @@ class RateLimitHandler:
     
     def __repr__(self):
         """Returns the representation of the rate limit handler."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         limiter = self.parent.limiter
         if limiter is LIMITER_UNLIMITED:
-            result.append(' unlimited')
+            repr_parts.append(' unlimited')
         else:
-            result.append(' size: ')
+            repr_parts.append(' size: ')
             size = self.parent.size
             if size == -1:
-                result.append('unset')
+                repr_parts.append('unset')
             else:
-                result.append(repr(size))
+                repr_parts.append(repr(size))
             
-            result.append(', active: ')
-            result.append(repr(self.active))
+            repr_parts.append(', active: ')
+            repr_parts.append(repr(self.active))
             
-            result.append(', cooldown drops: ')
-            result.append(repr(self.drops))
+            repr_parts.append(', cooldown drops: ')
+            repr_parts.append(repr(self.drops))
             
-            result.append(', queue length: ')
+            repr_parts.append(', queue length: ')
             queue = self.queue
             if queue is None:
                 length = '0'
             else:
                 length = repr(len(self.queue))
-            result.append(length)
+            repr_parts.append(length)
             
             if limiter is LIMITER_GLOBAL:
-                result.append(', limited globally')
+                repr_parts.append(', limited globally')
             else:
-                result.append(', limited by ')
-                result.append(limiter)
-                result.append(': ')
-                result.append(repr(self.limiter_id))
+                repr_parts.append(', limited by ')
+                repr_parts.append(limiter)
+                repr_parts.append(': ')
+                repr_parts.append(repr(self.limiter_id))
             
-            result.append(', group id: ')
-            result.append(repr(self.parent.group_id))
+            repr_parts.append(', group id: ')
+            repr_parts.append(repr(self.parent.group_id))
             
-        result.append('>')
-        return ''.join(result)
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     def __bool__(self):
         """Returns whether the rate limit handler is active."""
@@ -990,15 +993,23 @@ class RateLimitProxy:
             return False
         
         return (handler.queue is not None)
+    
+    @property
+    def keep_alive(self):
+        """
+        Get-set property for accessing whether the rate limit proxy should keep alive the respective rate limit
+        handler.
         
-    def _get_keep_alive(self):
+        Accepts and returns `bool`.
+        """
         handler = self._handler
         if handler is None:
             return False
         
         return (handler() is self._key)
     
-    def _set_keep_alive(self, value):
+    @keep_alive.setter
+    def keep_alive(self, value):
         if value:
             while True:
                 handler = self._handler
@@ -1032,17 +1043,6 @@ class RateLimitProxy:
             if self._key is handler:
                 self._key = handler.copy()
             return
-        
-    keep_alive = property(_get_keep_alive, _set_keep_alive)
-    del _get_keep_alive, _set_keep_alive
-    
-    if DOCS_ENABLED:
-        keep_alive.__doc__ = (
-        """
-        Get-set property for accessing whether the rate limit proxy should keep alive the respective rate limit handler.
-        
-        Accepts and returns `bool`.
-        """)
     
     @property
     def limiter_id(self):
@@ -1331,7 +1331,7 @@ class StaticRateLimitGroup:
     
     def __repr__(self):
         """Returns the representation of the rate limit group."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' size=',
@@ -1339,20 +1339,20 @@ class StaticRateLimitGroup:
             ', timeout=',
             repr(self.timeout),
             ', ',
-                ]
+        ]
         
         limiter = self.limiter
         if limiter is LIMITER_GLOBAL:
-            result.append('limited globally')
+            repr_parts.append('limited globally')
         elif limiter is LIMITER_UNLIMITED:
-            result.append('unlimited')
+            repr_parts.append('unlimited')
         else:
-            result.append('limited by ')
-            result.append(limiter)
+            repr_parts.append('limited by ')
+            repr_parts.append(limiter)
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 
 class StaticRateLimitHandler:
@@ -1400,42 +1400,42 @@ class StaticRateLimitHandler:
     
     def __repr__(self):
         """Returns the rate limit handler's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         limiter = self.parent.limiter
         if limiter is LIMITER_UNLIMITED:
-            result.append(' unlimited')
+            repr_parts.append(' unlimited')
         else:
             parent = self.parent
-            result.append(' size: ')
-            result.append(repr(parent.size))
-            result.append(' timeout: ')
-            result.append(repr(parent.timeout))
+            repr_parts.append(' size: ')
+            repr_parts.append(repr(parent.size))
+            repr_parts.append(' timeout: ')
+            repr_parts.append(repr(parent.timeout))
             
-            result.append(', queue length: ')
+            repr_parts.append(', queue length: ')
             lock = self.lock
             if lock is None:
                 length = '0'
             else:
                 length = repr(lock.get_waiting())
-            result.append(length)
+            repr_parts.append(length)
             
             if limiter is LIMITER_GLOBAL:
-                result.append(', limited globally')
+                repr_parts.append(', limited globally')
             else:
-                result.append(', limited by ')
-                result.append(limiter)
-                result.append(': ')
-                result.append(repr(self.limiter_id))
+                repr_parts.append(', limited by ')
+                repr_parts.append(limiter)
+                repr_parts.append(': ')
+                repr_parts.append(repr(self.limiter_id))
             
-            result.append(', group id: ')
-            result.append(repr(self.parent.group_id))
+            repr_parts.append(', group id: ')
+            repr_parts.append(repr(self.parent.group_id))
             
-        result.append('>')
-        return ''.join(result)
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     def __bool__(self):
         """Returns whether the rate limit handler is active."""

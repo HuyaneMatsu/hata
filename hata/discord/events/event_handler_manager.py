@@ -1,5 +1,7 @@
 __all__ = ()
+
 import warnings
+from functools import partial as partial_func
 
 from ...backend.utils import WeakReferer
 
@@ -624,7 +626,7 @@ class EventHandlerManager:
         Returns
         -------
         func : `callable`
-            The added callable or ``._wrapper` instance if `func` was not given.
+            The added callable or `functools.partial` instance if `func` was not given.
         
         Raises
         ------
@@ -637,7 +639,7 @@ class EventHandlerManager:
             - If `name` was not passed as `None` or type `str`.
         """
         if func is None:
-            return self._wrapper(self, (name, overwrite))
+            return partial_func(self, name=name, overwrite=overwrite)
         
         name = check_name(func, name)
         
@@ -679,64 +681,6 @@ class EventHandlerManager:
         list.append(new, func)
         object.__setattr__(self, name, new)
         return func
-    
-    class _wrapper:
-        """
-        When the parent ``EventHandlerManager`` is called without passing `func`, then an instance of this class is
-        returned to enable using ``EventHandlerManager`` as a decorator with passing additional keyword arguments at the
-        same time.
-        
-        Attributes
-        ----------
-        parent : ``EventHandlerManager``
-            The owner event descriptor.
-        args: `tuple` of `Any`
-            Additional keyword arguments (in order) passed when the wrapper was created.
-        """
-        __slots__ = ('parent', 'args',)
-        def __init__(self, parent, args):
-            """
-            Creates an instance from the given parameters.
-            
-            Parameters
-            ----------
-            parent : ``EventHandlerManager``
-                The owner event descriptor.
-            args: `tuple` of `Any`
-                Additional keyword arguments (in order) passed when the wrapper was created.
-            """
-            self.parent = parent
-            self.args = args
-        
-        def __call__(self, func):
-            """
-            Adds the given `func` to the parent event handler with the stored up arguments.
-            
-            Parameters
-            ----------
-            func : `callable`
-                The event handler to add to the event descriptor.
-            
-            Returns
-            -------
-            func : `callable`
-                The added callable.
-            
-            Raises
-            ------
-            AttributeError
-                Invalid event name.
-            TypeError
-                - If `func` is given as `None`.
-                - If `func` was not given as callable.
-                - If `func` is not as async and neither cannot be converted to an async one.
-                - If `func` expects less or more non reserved positional arguments as `expected` is.
-                - If `name` was not passed as `None` or type `str`.
-            """
-            if func is None:
-                raise TypeError('`func` is given as `None`.')
-            
-            return self.parent(func, *self.args)
     
     def clear(self):
         """

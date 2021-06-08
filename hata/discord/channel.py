@@ -3262,7 +3262,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     @classmethod
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(cls, cls)._create_empty(channel_id, channel_type, partial_guild)
+        self = super(ChannelGroup, cls)._create_empty(channel_id, channel_type, partial_guild)
         self._messageable_init()
         
         self.users = []

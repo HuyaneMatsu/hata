@@ -34,7 +34,7 @@ class ComponentSourceIdentityHasher:
     __slots__ = ('component', )
     def __init__(self, component):
         """
-        Creates a new ``ComponentSourceIdentityHasher`` instance with teh given parameters.
+        Creates a new ``ComponentSourceIdentityHasher`` instance with the given parameters.
         
         Parameters
         ----------

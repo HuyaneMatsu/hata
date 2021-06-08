@@ -5,9 +5,10 @@
 
 import random, sys
 from re import compile as re_compile
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from base64 import b64encode
 from time import time as time_now
+from email._parseaddr import _parsedate_tz as parse_date_timezone
 
 try:
     from dateutil.relativedelta import relativedelta
@@ -1096,3 +1097,25 @@ def sanitize_content(content, guild=None):
     content = content.replace('`', '\\`')
     content = sanitize_mentions(content, guild=guild)
     return content
+
+
+def parse_date_header_to_datetime(date_data):
+    """
+    Parsers header date value to `datetime`.
+    
+    Parameters
+    ----------
+    date_data : ``str``
+        Date value inside of a header.
+
+    Returns
+    -------
+    date : `datetime`
+        The parsed out date time.
+    """
+    *date_tuple, tz = parse_date_timezone(date_data)
+    if tz is None:
+        date = datetime(*date_tuple[:6])
+    else:
+        date = datetime(*date_tuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
+    return date

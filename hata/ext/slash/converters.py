@@ -17,7 +17,8 @@ from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMA
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
 
 from .utils import raw_name_to_display, normalize_description
-
+from .exceptions import SlashCommandParameterConversionError
+from .expression_parser import evaluate_text
 
 async def converter_self_client(client, interaction_event):
     """
@@ -338,6 +339,32 @@ async def converter_mentionable(client, interaction_event, value):
     return entity
 
 
+async def converter_expression(client, interaction_event, value):
+    """
+    Converter for ``ApplicationCommandInteractionOption`` value to evaluable expression to an integer or to a float.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    value : `str`
+        ``ApplicationCommandInteractionOption.value``.
+    
+    Returns
+    -------
+    value : `int` or `float`
+    
+    Raises
+    ------
+    EvaluationError
+        If evaluation failed for any reason.
+    """
+    return evaluate_text(value)
+
 
 ANNOTATION_TYPE_STR = 0
 ANNOTATION_TYPE_INT = 1
@@ -353,6 +380,7 @@ ANNOTATION_TYPE_MENTIONABLE = 10
 ANNOTATION_TYPE_MENTIONABLE_ID = 11
 ANNOTATION_TYPE_SELF_CLIENT = 12
 ANNOTATION_TYPE_SELF_INTERACTION_EVENT = 13
+ANNOTATION_TYPE_EXPRESSION = 14
 
 CLIENT_ANNOTATION_NAMES = frozenset((
     'c',
@@ -378,6 +406,7 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'number': ANNOTATION_TYPE_NUMBER,
     'mentionable': ANNOTATION_TYPE_MENTIONABLE,
     'mentionable_id': ANNOTATION_TYPE_MENTIONABLE_ID,
+    'expression': ANNOTATION_TYPE_EXPRESSION,
     
     **un_map_pack((name, ANNOTATION_TYPE_SELF_CLIENT) for name in CLIENT_ANNOTATION_NAMES),
     **un_map_pack((name, ANNOTATION_TYPE_SELF_INTERACTION_EVENT) for name in CLIENT_ANNOTATION_NAMES),
@@ -397,6 +426,7 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
     ANNOTATION_TYPE_NUMBER: 'number',
     ANNOTATION_TYPE_MENTIONABLE: 'mentionable',
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable_id',
+    ANNOTATION_TYPE_EXPRESSION: 'expression',
     
     ANNOTATION_TYPE_SELF_CLIENT: 'client',
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: 'interaction_event',
@@ -428,6 +458,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_NUMBER: (converter_int, False),
     ANNOTATION_TYPE_MENTIONABLE: (converter_mentionable, False),
     ANNOTATION_TYPE_MENTIONABLE_ID: (converter_snowflake, False),
+    ANNOTATION_TYPE_EXPRESSION: (converter_expression, False),
     
     ANNOTATION_TYPE_SELF_CLIENT: (converter_self_client, True),
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: (converter_self_interaction_event, True),
@@ -453,11 +484,27 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_NUMBER: ApplicationCommandOptionType.integer,
     ANNOTATION_TYPE_MENTIONABLE: ApplicationCommandOptionType.mentionable,
     ANNOTATION_TYPE_MENTIONABLE_ID: ApplicationCommandOptionType.mentionable,
+    ANNOTATION_TYPE_EXPRESSION: ApplicationCommandOptionType.string,
     
     ANNOTATION_TYPE_SELF_CLIENT: ApplicationCommandOptionType.none,
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: ApplicationCommandOptionType.none,
 }
 
+ANNOTATION_TYPE_TO_REPRESENTATION = {
+    ANNOTATION_TYPE_STR: 'string',
+    ANNOTATION_TYPE_INT: 'integer',
+    ANNOTATION_TYPE_BOOL: 'bool',
+    ANNOTATION_TYPE_USER: 'user',
+    ANNOTATION_TYPE_USER_ID: 'user',
+    ANNOTATION_TYPE_ROLE: 'role',
+    ANNOTATION_TYPE_ROLE_ID: 'role',
+    ANNOTATION_TYPE_CHANNEL: 'channel',
+    ANNOTATION_TYPE_CHANNEL_ID: 'channel',
+    ANNOTATION_TYPE_NUMBER: 'integer',
+    ANNOTATION_TYPE_MENTIONABLE: 'mentionable',
+    ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable',
+    ANNOTATION_TYPE_EXPRESSION: 'expression',
+}
 
 def create_annotation_choice_from_int(value):
     """
@@ -973,46 +1020,37 @@ class ParameterConverter:
             The client who received the respective ``InteractionEvent``.
         interaction_event : ``InteractionEvent``
             The received application command interaction.
-        value : `str`
+        value : `str` or `None`
             ``ApplicationCommandInteractionOption.value``.
         
         Returns
         -------
-        passed : `bool`
-            Whether the conversion passed.
         value : `None` or ``Any`` instance
             If conversion fails, always returns `None`.
+        
+        Raises
+        ------
+        SlashCommandParameterConversionError
+            The parameter cannot be parsed.
         """
         if self.is_internal:
-            passed = True
-            value = await self.converter(client, interaction_event)
-        else:
-            if value is None:
-                if self.required:
-                    passed = False
-                else:
-                    passed = True
-                    value = self.default
-            else:
-                value = await self.converter(client, interaction_event, value)
-                if value is None:
-                    if self.required:
-                        passed = False
-                    else:
-                        passed = True
-                        value = self.default
-                else:
-                    choices = self.choices
-                    if choices is None:
-                        passed = True
-                    else:
-                        if value in choices:
-                            passed = True
-                        else:
-                            passed = False
-                            value = None
+            return await self.converter(client, interaction_event)
+        choices = self.choices
         
-        return passed, value
+        if (value is None):
+            if not self.required:
+                return self.default
+        else:
+            value = await self.converter(client, interaction_event, value)
+            if (value is not None) and ((choices is None) or (value in choices)):
+                return value
+        
+        raise SlashCommandParameterConversionError(
+            self.name,
+            None,
+            ANNOTATION_TYPE_TO_REPRESENTATION.get(self.type, '???'),
+            None if choices is None else list(choices.keys()),
+        )
     
     def __repr__(self):
         """Returns the argument converter's representation."""

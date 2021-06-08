@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-import json, re, codecs
+﻿import json, re, codecs
 from http.cookies import SimpleCookie, CookieError, Morsel
 from hashlib import md5, sha1, sha256
 

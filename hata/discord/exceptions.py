@@ -2,6 +2,9 @@
 __all__ = ('DiscordException', 'DiscordGatewayException', 'ERROR_CODES', 'InvalidToken',)
 
 from ..backend.headers import RETRY_AFTER
+from ..backend.headers import DATE
+
+from .utils import parse_date_header_to_datetime, DATETIME_FORMAT_CODE
 
 class DiscordException(Exception):
     """
@@ -105,7 +108,7 @@ class DiscordException(Exception):
         messages : `list` of `str`
         """
         messages = []
-        code = self.code
+        
         message_parts = []
         data = self.data
         if type(data) is dict:
@@ -234,8 +237,19 @@ class DiscordException(Exception):
         else:
             message_base = ''
         
-        message_parts.append(f'{self.__class__.__name__} {self.response.reason} ({self.response.status})')
+        response = self.response
+        message_parts.append(parse_date_header_to_datetime(response.headers[DATE]).__format__(DATETIME_FORMAT_CODE))
+        message_parts.append('; ')
+        message_parts.append(response.method)
+        message_parts.append(' ')
+        message_parts.append(str(response.url))
+        messages.append(''.join(message_parts))
         
+        message_parts.clear()
+        
+        message_parts.append(f'{self.__class__.__name__} {response.reason} ({response.status})')
+        
+        code = self.code
         if code:
             message_parts.append(f', code=')
             message_parts.append(repr(code))

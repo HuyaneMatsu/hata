@@ -3,6 +3,7 @@ __all__ = ('ApplicationCommandInteraction', 'ApplicationCommandInteractionOption
 
 import reprlib
 
+from ...backend.export import export
 from ...backend.futures import Future, shield, future_or_timeout
 
 from ..bases import EventBase, DiscordEntity
@@ -429,6 +430,7 @@ INTERACTION_TYPE_TABLE = {
 }
 
 
+@export
 class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     """
     Represents a processed `INTERACTION_CREATE` dispatch event.

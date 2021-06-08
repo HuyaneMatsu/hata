@@ -1,12 +1,10 @@
-# -*- coding: utf-8 -*-
 __all__ = ('RATE_LIMIT_GROUPS', 'RateLimitProxy', )
 
-from email._parseaddr import _parsedate_tz as parse_date_timezone
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from collections import deque
 from threading import current_thread
 
-from ..backend.utils import modulize, WeakReferer, DOCS_ENABLED
+from ..backend.utils import modulize, WeakReferer
 from ..backend.futures import Future, ScarletLock
 from ..backend.headers import DATE
 from ..backend.event_loop import LOOP_TIME
@@ -14,6 +12,7 @@ from ..backend.export import include
 
 from .core import KOKORO
 from .utils.DISCORD_HEADERS import RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER, RATE_LIMIT_REMAINING, RATE_LIMIT_LIMIT
+from .utils import parse_date_header_to_datetime
 
 ChannelBase = include('ChannelBase')
 ChannelGuildBase = include('ChannelGuildBase')
@@ -22,30 +21,7 @@ Role = include('Role')
 Webhook = include('Webhook')
 WebhookRepr = include('WebhookRepr')
 Guild = include('Guild')
-
-
-#parsing time
-#email.utils.parse_date_to_datetime
-def parse_date_to_datetime(date_data):
-    """
-    Parsers header date value to `datetime`.
-    
-    Parameters
-    ----------
-    date_data : ``str``
-        Date value inside of a header.
-
-    Returns
-    -------
-    date : `datetime`
-        The parsed out date time.
-    """
-    *date_tuple, tz = parse_date_timezone(date_data)
-    if tz is None:
-        date = datetime(*date_tuple[:6])
-    else:
-        date = datetime(*date_tuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
-    return date
+InteractionEvent = include('InteractionEvent')
 
 GLOBALLY_LIMITED = 0x4000000000000000
 RATE_LIMIT_DROP_ROUND = 0.20
@@ -573,7 +549,7 @@ class RateLimitHandler:
         optimistic = False
         while True:
             if (headers is not None):
-                size = headers.get(RATE_LIMIT_LIMIT,None)
+                size = headers.get(RATE_LIMIT_LIMIT, None)
                 if size is None:
                     if current_size < 0:
                         optimistic = True
@@ -629,7 +605,7 @@ class RateLimitHandler:
         else:
             delay1 = (
                 datetime.fromtimestamp(
-                    float(headers[RATE_LIMIT_RESET]), timezone.utc) - parse_date_to_datetime(headers[DATE])
+                    float(headers[RATE_LIMIT_RESET]), timezone.utc) - parse_date_header_to_datetime(headers[DATE])
                         ).total_seconds()
             delay2 = float(headers[RATE_LIMIT_RESET_AFTER])
             

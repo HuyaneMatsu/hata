@@ -1,8 +1,11 @@
 """
 Hata extensions for supporting interactions.
 """
-from .converters import *
 from .components import *
+from .converters import *
+from .event_handlers import *
+from .exceptions import *
+from .expression_parser import *
 from .responding import *
 from .slash_command import *
 from .slasher import *
@@ -14,8 +17,11 @@ __all__ = (
     'configure_parameter',
     'set_permission',
     'setup_ext_slash',
-    *converters.__all__,
     *components.__all__,
+    *converters.__all__,
+    *event_handlers.__all__,
+    *exceptions.__all__,
+    *expression_parser.__all__,
     *responding.__all__,
     *slash_command.__all__,
     *slasher.__all__,

@@ -19,6 +19,7 @@ from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BE
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlashCommandWrapper, get_parameter_configurers
 from .converters import generate_parameter_parsers
+from .exceptions import SlashCommandParameterConversionError
 
 # Routers
 
@@ -876,6 +877,11 @@ class SlashCommand:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
+        
+        Raises
+        ------
+        SlashCommandParameterConversionError
+            Command parameter conversion failed.
         """
         options = interaction_event.interaction.options
         
@@ -892,7 +898,12 @@ class SlashCommand:
         try:
             sub_command = self._sub_commands[option.name]
         except KeyError:
-            return
+            raise SlashCommandParameterConversionError(
+                None,
+                option.name,
+                'sub-command',
+                list(self._sub_commands.keys()),
+            )
         
         await sub_command(client, interaction_event, option.options)
     
@@ -1299,6 +1310,7 @@ class SlashCommandFunction:
         self.is_default = is_default
         return self
     
+    
     async def __call__(self, client, interaction_event, options):
         """
         Calls the slash command function.
@@ -1313,6 +1325,11 @@ class SlashCommandFunction:
             The received interaction event.
         options : `None` or `list` of ``InteractionEventChoice``
             Options bound to the function.
+        
+        Raises
+        ------
+        SlashCommandParameterConversionError
+            Exception occurred meanwhile parsing parameter.
         """
         parameters = []
         
@@ -1324,17 +1341,12 @@ class SlashCommandFunction:
         for parameter_parser in self._parameter_parsers:
             value = parameter_relation.get(parameter_parser.name, None)
             
-            passed, parameter = await parameter_parser(client, interaction_event, value)
-            if not passed:
-                return
-            
+            parameter = await parameter_parser(client, interaction_event, value)
             parameters.append(parameter)
         
-        coro = self._command(*parameters)
-        try:
-            await process_command_coroutine(client, interaction_event, self.show_for_invoking_user_only, coro)
-        except BaseException as err:
-            await client.events.error(client, f'{self!r}.__call__', err)
+        command_coroutine = self._command(*parameters)
+        
+        await process_command_coroutine(client, interaction_event, self.show_for_invoking_user_only, command_coroutine)
     
     def __repr__(self):
         """Returns the application command option's representation."""
@@ -1458,6 +1470,11 @@ class SlashCommandCategory:
             The received interaction event.
         options : `None` or `list` of ``InteractionEventChoice``
             Options bound to the category.
+        
+        Raises
+        ------
+        SlashCommandParameterConversionError
+            Exception occurred meanwhile parsing parameter.
         """
         if (options is None) or len(options) != 1:
             return
@@ -1467,7 +1484,12 @@ class SlashCommandCategory:
         try:
             sub_command = self._sub_commands[option.name]
         except KeyError:
-            return
+            raise SlashCommandParameterConversionError(
+                None,
+                option.name,
+                'sub-command',
+                list(self._sub_commands.keys()),
+            )
         
         await sub_command(client, interaction_event, option.options)
     

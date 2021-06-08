@@ -1,3 +1,5 @@
+__all__ = ()
+
 from .slasher import Slasher
 
 async def _do_initial_sync(client):

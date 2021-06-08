@@ -4,6 +4,10 @@
 
 - `Guild.nsfw` is now a property.
 
+##### hata.ext.slash
+
+- Add `expression` converter for slash commands.
+
 #### Bug Fixes
 
 - Routed wrapped command's name were detected incorrectly.

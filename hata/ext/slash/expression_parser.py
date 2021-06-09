@@ -1,6 +1,6 @@
 __all__ = ('EvaluationError', 'evaluate_text', )
 
-from math import pi
+import math
 
 from ...backend.utils import copy_docs
 
@@ -8,6 +8,11 @@ from .exceptions import SlashCommandError
 
 LIMIT_LEFT_SHIFT_MAX = 64*8
 LIMIT_RIGHT_SHIFT_MIN = -64*8
+LIMIT_POWER_MAX = 64
+LIMIT_INTEGER_BIT_LENGTH = 64*32
+LIMIT_INTEGER_MAX = 1<<LIMIT_INTEGER_BIT_LENGTH
+LIMIT_INTEGER_MIN = -LIMIT_INTEGER_MAX
+LIMIT_FACTORIAL_MAX = 80
 
 STATIC_NONE_ID = 0
 
@@ -59,18 +64,24 @@ OPERATION_POSITIVATE_STRING = '+'
 OPERATION_MULTIPLY_ID = 16
 OPERATION_MULTIPLY_STRING = '*'
 
+OPERATION_POWER_ID = 27
+OPERATION_POWER_STRING = '**'
+
 STATIC_NUMERIC_DECIMAL_ID = 17
 STATIC_NUMERIC_HEXADECIMAL_ID = 18
 STATIC_NUMERIC_OCTAL_ID = 19
 STATIC_NUMERIC_BINARY_ID = 20
-
-STATIC_VARIABLE_PI = 21
-
-TOKEN_GROUP = 22
-
-VARIABLE = 23
-
 STATIC_NUMERIC_FLOAT_ID = 24
+VARIABLE_EVALUATED = 23
+
+VARIABLE_IDENTIFIER = 21
+
+TOKEN_GROUP_PARENTHESES = 22
+TOKEN_GROUP_FUNCTION_CALL = 26
+
+VARIABLE_FUNCTION = 25
+
+# Last id is 27
 
 
 NUMERIC_POSTFIX_MULTIPLIERS = {
@@ -130,7 +141,12 @@ TOKEN_NAMES = {
     STATIC_NUMERIC_HEXADECIMAL_ID: 'hexadecimal integer',
     STATIC_NUMERIC_OCTAL_ID: 'octal integer',
     STATIC_NUMERIC_BINARY_ID: 'binary integer',
-    STATIC_VARIABLE_PI: 'pi',
+    STATIC_NUMERIC_FLOAT_ID: 'float',
+    VARIABLE_IDENTIFIER: 'identifier',
+    VARIABLE_EVALUATED: 'variable',
+    VARIABLE_FUNCTION: 'function',
+    TOKEN_GROUP_PARENTHESES: 'parentheses',
+    TOKEN_GROUP_FUNCTION_CALL : 'function call',
 }
 
 TWO_SIDE_OPERATORS = frozenset((
@@ -155,6 +171,7 @@ PREFIX_OPERATORS = frozenset((
     OPERATION_NEGATE_ID,
     OPERATION_SUBTRACTION_ID,
     OPERATION_POSITIVATE_ID,
+    OPERATION_INVERT_ID,
 ))
 
 CANT_FOLLOW_VARIABLE = frozenset((
@@ -162,10 +179,23 @@ CANT_FOLLOW_VARIABLE = frozenset((
     STATIC_NUMERIC_HEXADECIMAL_ID,
     STATIC_NUMERIC_OCTAL_ID,
     STATIC_NUMERIC_BINARY_ID,
-    STATIC_VARIABLE_PI,
+    VARIABLE_IDENTIFIER,
     STATIC_NUMERIC_FLOAT_ID,
     OPERATION_PARENTHESES_START_ID,
     OPERATION_INVERT_ID,
+    VARIABLE_FUNCTION,
+))
+
+CANT_FOLLOW_FUNCTION = frozenset((
+    STATIC_NUMERIC_DECIMAL_ID,
+    STATIC_NUMERIC_HEXADECIMAL_ID,
+    STATIC_NUMERIC_OCTAL_ID,
+    STATIC_NUMERIC_BINARY_ID,
+    VARIABLE_IDENTIFIER,
+    OPERATION_PARENTHESES_END_ID,
+    *TWO_SIDE_OPERATORS,
+    *PREFIX_OPERATORS,
+    VARIABLE_FUNCTION,
 ))
 
 CANT_START = frozenset((
@@ -194,9 +224,9 @@ CANT_FOLLOW = {
     STATIC_NUMERIC_HEXADECIMAL_ID: CANT_FOLLOW_VARIABLE,
     STATIC_NUMERIC_OCTAL_ID: CANT_FOLLOW_VARIABLE,
     STATIC_NUMERIC_BINARY_ID: CANT_FOLLOW_VARIABLE,
-    STATIC_VARIABLE_PI: CANT_FOLLOW_VARIABLE,
+    VARIABLE_EVALUATED: CANT_FOLLOW_VARIABLE,
     STATIC_NUMERIC_FLOAT_ID: CANT_FOLLOW_VARIABLE,
-    
+    VARIABLE_FUNCTION: CANT_FOLLOW_FUNCTION,
     OPERATION_PARENTHESES_START_ID: frozenset((OPERATION_PARENTHESES_END_ID,)),
     OPERATION_PARENTHESES_END_ID: CANT_FOLLOW_VARIABLE,
 
@@ -207,6 +237,7 @@ CANT_END = frozenset((
     *TWO_SIDE_OPERATORS,
     OPERATION_INVERT_ID,
     OPERATION_PARENTHESES_START_ID,
+    VARIABLE_FUNCTION,
 ))
 
 
@@ -233,7 +264,7 @@ VARIABLES = frozenset((
     STATIC_NUMERIC_HEXADECIMAL_ID,
     STATIC_NUMERIC_OCTAL_ID,
     STATIC_NUMERIC_BINARY_ID,
-    STATIC_VARIABLE_PI,
+    VARIABLE_EVALUATED,
 ))
 
 OPERATION_TWO_SIDED_BINARY = frozenset((
@@ -247,13 +278,13 @@ OPERATION_TWO_SIDED_BINARY = frozenset((
 
 
 
-def get_numeric_postfix_multiplier(value):
+def get_numeric_postfix_multiplier(raw_value):
     """
     Gets numeric postfix multiplier.
     
     Parameters
     ----------
-    value : `bytes`
+    raw_value : `tuple` of `int`
         The value to get the multiplier off.
     
     Returns
@@ -263,12 +294,12 @@ def get_numeric_postfix_multiplier(value):
     total_multiplier : `int`
         Multiplier to multiply the value with,
     """
-    limit = len(value)-1
+    limit = len(raw_value)-1
     index = limit
     
     total_multiplier = 1
     while True:
-        postfix = value[index]
+        postfix = raw_value[index]
         try:
             multiplier = NUMERIC_POSTFIX_MULTIPLIERS[postfix]
         except KeyError:
@@ -277,117 +308,232 @@ def get_numeric_postfix_multiplier(value):
         total_multiplier *= multiplier
     
     if index != limit:
-        value = value[:index+1]
+        raw_value = raw_value[:index+1]
     
-    return value, total_multiplier
+    return raw_value, total_multiplier
 
 
-def evaluate_numeric_float(value):
+def evaluate_numeric_float(raw_value):
     """
     Evaluates the given numeric decimal value.
     
     Parameter
     ---------
-    value : `bytes`
+    raw_value : `tuple` of `int`
+        The value to evaluate.
+    
+    Returns
+    -------
+    raw_value : `int`
+        The evaluated value.
+    token_id : `int`
+        The token's new identifier.
+    """
+    raw_value = bytes(raw_value)
+    value = float(raw_value)
+    return value, STATIC_NUMERIC_FLOAT_ID
+
+
+def evaluate_numeric_decimal(raw_value):
+    """
+    Evaluates the given numeric decimal value.
+    
+    Parameter
+    ---------
+    raw_value : `tuple` of `int`
         The value to evaluate.
     
     Returns
     -------
     value : `int`
         The evaluated value.
+    token_id : `int`
+        The token's new identifier.
     """
-    value = bytes(value)
-    return float(value)
+    raw_value, multiplier = get_numeric_postfix_multiplier(raw_value)
+    raw_value = bytes(raw_value)
+    value = int(raw_value)*multiplier
+    return value, STATIC_NUMERIC_DECIMAL_ID
 
 
-def evaluate_numeric_decimal(value):
-    """
-    Evaluates the given numeric decimal value.
-    
-    Parameter
-    ---------
-    value : `bytes`
-        The value to evaluate.
-    
-    Returns
-    -------
-    value : `int`
-        The evaluated value.
-    """
-    value, multiplier = get_numeric_postfix_multiplier(value)
-    value = bytes(value)
-    return int(value)*multiplier
-
-
-def evaluate_numeric_hexadecimal(value):
+def evaluate_numeric_hexadecimal(raw_value):
     """
     Evaluates the given numeric hexadecimal value.
     
     Parameter
     ---------
-    value : `bytes`
+    raw_value : `tuple` of `int`
         The value to evaluate.
     
     Returns
     -------
     value : `int`
         The evaluated value.
+    token_id : `int`
+        The token's new identifier.
     """
-    value = bytes(value)
-    return int(value, base=16)
+    raw_value = bytes(raw_value)
+    value = int(raw_value, base=16)
+    return value, STATIC_NUMERIC_HEXADECIMAL_ID
 
 
-def evaluate_numeric_octal(value):
+def evaluate_numeric_octal(raw_value):
     """
     Evaluates the given numeric octal value.
     
     Parameter
     ---------
-    value : `bytes`
+    raw_value : `tuple` of `int`
         The value to evaluate.
     
     Returns
     -------
     value : `int`
         The evaluated value.
+    token_id : `int`
+        The token's new identifier.
     """
-    value = bytes(value)
-    return int(value, base=8)
+    raw_value = bytes(raw_value)
+    value = int(raw_value, base=8)
+    return value, STATIC_NUMERIC_OCTAL_ID
 
-
-def evaluate_numeric_binary(value):
+def evaluate_numeric_binary(raw_value):
     """
     Evaluates the given numeric binary value.
     
     Parameter
     ---------
-    value : `bytes`
+    raw_value : `tuple` of `int`
         The value to evaluate.
     
     Returns
     -------
     value : `int`
         The evaluated value.
+    token_id : `int`
+        The token's new identifier.
     """
-    value = bytes(value)
-    return int(value, base=2)
+    raw_value = bytes(raw_value)
+    value = int(raw_value, base=2)
+    return value, STATIC_NUMERIC_BINARY_ID
 
 
-def evaluate_variable_pi(value):
+def check_factorial_validity(token, value):
     """
-    Evaluates the given pi value.
+    Checks whether the factorial call is in limit.
+    
+    Parameters
+    ----------
+    token : ``Token``
+        The parent token.
+    value : `int` or `float`
+        The value to use factorial on.
+    
+    Raises
+    ------
+    EvaluationError
+        - Factorial is only allowed for integral values.
+        - Factorial nto defined for negative values.
+        - Operation over factorial limit is disallowed.
+    """
+    if (not isinstance(value, int)) and (not value.is_integer()):
+        raise EvaluationError(
+            token.array, token.start, token.end,
+            f'Factorial only accepts integral values: factorial({value!r})',
+        )
+    
+    if value < 0:
+        raise EvaluationError(
+            token.array, token.start, token.end,
+            f'Factorial is not defined for negative values: factorial({value!r})',
+        )
+    
+    if value > LIMIT_FACTORIAL_MAX:
+        raise EvaluationError(
+            token.array, token.start, token.end,
+            f'Factorial over {LIMIT_INTEGER_BIT_LENGTH} is disallowed: factorial({value!r})',
+        )
+
+
+STATIC_VARIABLE_TABLE = {
+    b'e': math.e,
+    b'pi': math.pi,
+    b'tau': math.tau,
+}
+
+STATIC_FUNCTION_TABLE = {
+    b'abs': (abs, None),
+    b'acos': (math.acos, None),
+    b'acosh': (math.acosh, None),
+    b'asin': (math.asin, None),
+    b'asinh': (math.asinh, None),
+    b'atan': (math.atan, None),
+    b'atanh': (math.atanh, None),
+    b'ceil': (math.ceil, None),
+    b'cos': (math.cos, None),
+    b'cosh': (math.cosh, None),
+    b'degrees': (math.degrees, None),
+    b'erf': (math.erf, None),
+    b'erfc': (math.erfc, None),
+    b'exp': (math.exp, None),
+    b'expm1': (math.expm1, None),
+    b'fabs': (math.fabs, None),
+    b'factorial': (math.factorial, check_factorial_validity),
+    b'floor': (math.floor, None),
+    b'log': (math.log, None),
+    b'log10': (math.log10, None),
+    b'log1p': (math.log1p, None),
+    b'log2': (math.log2, None),
+    b'modf': (math.modf, None),
+    b'radians': (math.radians, None),
+    b'round': (round, None),
+    b'sin': (math.sin, None),
+    b'sinh': (math.sinh, None),
+    b'sqrt': (math.sqrt, None),
+    b'tan': (math.tan, None),
+}
+
+def evaluate_identifier(raw_value):
+    """
+    Evaluates the given identifier token.
     
     Parameter
     ---------
-    value : `bytes`
+    raw_value : `tuple` of `int`
         The value to evaluate.
     
     Returns
     -------
-    value : `float`
+    value : `float`, `FunctionType`
         The evaluated value.
+    token_id : `int`
+        The token's new identifier.
     """
-    return pi
+    raw_value = bytes(raw_value)
+    raw_value = raw_value.lower()
+    
+    while True:
+        try:
+            value = STATIC_VARIABLE_TABLE[raw_value]
+        except KeyError:
+            pass
+        else:
+            token_id = VARIABLE_EVALUATED
+            break
+        
+        try:
+            value = STATIC_FUNCTION_TABLE[raw_value]
+        except KeyError:
+            pass
+        else:
+            token_id = VARIABLE_FUNCTION
+            break
+        
+        value = None
+        token_id = STATIC_NONE_ID
+        break
+    
+    return value, token_id
 
 
 EVALUATORS = {
@@ -396,7 +542,7 @@ EVALUATORS = {
     STATIC_NUMERIC_HEXADECIMAL_ID: evaluate_numeric_hexadecimal,
     STATIC_NUMERIC_OCTAL_ID: evaluate_numeric_octal,
     STATIC_NUMERIC_BINARY_ID: evaluate_numeric_binary,
-    STATIC_VARIABLE_PI: evaluate_variable_pi,
+    VARIABLE_IDENTIFIER: evaluate_identifier,
 }
 
 
@@ -418,7 +564,7 @@ CAN_EXECUTE_PREFIX_PATTERN_2 = OPERATION_PREFIXABLE
 
 CAN_EXECUTE_PREFIX_PATTERN_3 = frozenset((
     *VARIABLES,
-    VARIABLE,
+    VARIABLE_EVALUATED,
 ))
 
 
@@ -440,7 +586,41 @@ def merge_2_tokens(token_1, token_2, value):
     token : ``Token``
         The created token.
     """
-    return Token(token_1.array, token_1.start, token_2.end, VARIABLE, None, value)
+    return Token(token_1.array, token_1.start, token_2.end, VARIABLE_EVALUATED, None, value)
+
+
+def check_2_sided_integer_limit(token_1, token_2, token_3):
+    """
+    Checks whether the integer value passes the limit.
+    
+    Parameters
+    ----------
+    token_1 : ``Token``
+        The first value to check.
+    token_2 :  ``Token``
+        The operation's token.
+    token_3 : ``Token``
+        The first value to check.
+    
+    Raises
+    ------
+    EvaluationError
+        Operation over integer bit limit is disallowed.
+    """
+    value_1 = token_1.value
+    value_2 = token_3.value
+    if isinstance(value_1, int) and isinstance(value_2, int):
+        if (value_1 >= LIMIT_INTEGER_MAX) or (value_1 <= LIMIT_INTEGER_MIN):
+            raise EvaluationError(
+                token_2.array, token_1.start, token_2.end,
+                f'Integer operation over {LIMIT_INTEGER_BIT_LENGTH} bit limit is disallowed.',
+            )
+        
+        if (value_2 >= LIMIT_INTEGER_MAX) or (value_2 <= LIMIT_INTEGER_MIN):
+            raise EvaluationError(
+                token_2.array, token_2.start, token_3.end,
+                f'Integer operation over {LIMIT_INTEGER_BIT_LENGTH} bit limit is disallowed.',
+            )
 
 
 def evaluate_prefix_operation_negate(token_1, token_2):
@@ -512,6 +692,10 @@ EVALUATE_1_SIDED_OPERATION = {
 }
 
 
+CAN_EXECUTE_POWER = frozenset((
+    OPERATION_POWER_ID,
+))
+
 CAN_EXECUTE_MULTIPLICATION_PATTERN_MIDDLE = frozenset((
     OPERATION_TRUE_DIVISION_ID,
     OPERATION_FULL_DIVISION_ID,
@@ -535,23 +719,24 @@ CAN_EXECUTE_BINARY_AND_PATTERN_MIDDLE = frozenset((
 ))
 
 
-CAN_EXECUTE_BINARY_XOR = frozenset((
+CAN_EXECUTE_BINARY_XOR_MIDDLE = frozenset((
     OPERATION_BINARY_XOR_ID,
 ))
 
 
-CAN_EXECUTE_BINARY_OR = frozenset((
+CAN_EXECUTE_BINARY_OR_MIDDLE = frozenset((
     OPERATION_BINARY_OR_ID,
 ))
 
 
 CAN_EXECUTE_TWO_SIDED_ORDERED = (
+    CAN_EXECUTE_POWER,
     CAN_EXECUTE_MULTIPLICATION_PATTERN_MIDDLE,
     CAN_EXECUTE_ADDITION_PATTERN_MIDDLE,
     CAN_EXECUTE_SHIFT_PATTERN_MIDDLE,
     CAN_EXECUTE_BINARY_AND_PATTERN_MIDDLE,
-    CAN_EXECUTE_BINARY_XOR,
-    CAN_EXECUTE_BINARY_OR,
+    CAN_EXECUTE_BINARY_XOR_MIDDLE,
+    CAN_EXECUTE_BINARY_OR_MIDDLE,
 )
 
 
@@ -576,8 +761,11 @@ def evaluate_2_sided_true_division(token_1, token_2, token_3):
     Raises
     ------
     EvaluationError
-        Division by zero disallowed.
+        - Division by zero disallowed.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 == 0:
@@ -609,8 +797,11 @@ def evaluate_2_sided_full_division(token_1, token_2, token_3):
     Raises
     ------
     EvaluationError
-        Division by zero disallowed.
+        - Division by zero disallowed.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 == 0:
@@ -638,7 +829,14 @@ def evaluate_2_sided_multiply(token_1, token_2, token_3):
     -------
     token : ``Token``
         The created token.
+    
+    Raises
+    ------
+    EvaluationError
+        Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value = token_1.value * token_3.value
     return merge_2_tokens(token_1, token_3, value)
 
@@ -664,8 +862,11 @@ def evaluate_2_sided_remainder(token_1, token_2, token_3):
     Raises
     ------
     EvaluationError
-        Remainder by zero disallowed.
+        - Remainder by zero disallowed.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 == 0:
@@ -697,8 +898,11 @@ def evaluate_2_sided_add(token_1, token_2, token_3):
     Raises
     ------
     EvaluationError
-        Remainder by zero disallowed.
+        - Remainder by zero disallowed.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value = token_1.value + token_3.value
     return merge_2_tokens(token_1, token_3, value)
 
@@ -720,12 +924,19 @@ def evaluate_2_sided_subtraction(token_1, token_2, token_3):
     -------
     token : ``Token``
         The created token.
+    
+    Raises
+    ------
+    EvaluationError
+        Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value = token_1.value - token_3.value
     return merge_2_tokens(token_1, token_3, value)
 
 
-def evaluate_2_sided_left_shift(token_1, token_2, token_3):
+def evaluate_2_sided_binary_left_shift(token_1, token_2, token_3):
     """
     Evaluates left shift on the given values.
     
@@ -746,8 +957,11 @@ def evaluate_2_sided_left_shift(token_1, token_2, token_3):
     Raises
     ------
     EvaluationError
-        Left shift limit hit.
+        - Left shift limit hit.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 > LIMIT_LEFT_SHIFT_MAX:
@@ -758,7 +972,7 @@ def evaluate_2_sided_left_shift(token_1, token_2, token_3):
     return merge_2_tokens(token_1, token_3, value)
 
 
-def evaluate_2_sided_right_shift(token_1, token_2, token_3):
+def evaluate_2_sided_binary_right_shift(token_1, token_2, token_3):
     """
     Evaluates right shift on the given values.
     
@@ -779,8 +993,11 @@ def evaluate_2_sided_right_shift(token_1, token_2, token_3):
     Raises
     ------
     EvaluationError
-        Left shift limit hit.
+        - Left shift limit hit.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 < LIMIT_RIGHT_SHIFT_MIN:
@@ -807,8 +1024,11 @@ def evaluate_2_sided_binary_and(token_1, token_2, token_3):
     Returns
     -------
     token : ``Token``
-        The created token.
+        - The created token.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value = token_1.value & token_3.value
     return merge_2_tokens(token_1, token_3, value)
 
@@ -829,8 +1049,11 @@ def evaluate_2_sided_binary_xor(token_1, token_2, token_3):
     Returns
     -------
     token : ``Token``
-        The created token.
+        - The created token.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value = token_1.value ^ token_3.value
     return merge_2_tokens(token_1, token_3, value)
 
@@ -851,9 +1074,56 @@ def evaluate_2_sided_binary_or(token_1, token_2, token_3):
     Returns
     -------
     token : ``Token``
-        The created token.
+        - The created token.
+        - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
     value = token_1.value | token_3.value
+    return merge_2_tokens(token_1, token_3, value)
+
+
+def evaluate_2_sided_power(token_1, token_2, token_3):
+    """
+    Evaluates power on the given values.
+    
+    Attributes
+    ----------
+    token_1 : ``Token``
+        The first token.
+    token_2 : ``Token``
+        The second token with the value.
+    token_3 : ``Token``
+        The third token with the value.
+    
+    Returns
+    -------
+    token : ``Token``
+        The created token.
+    
+    Raises
+    ------
+    EvaluationError
+        - Power limit hit.
+        - Operation over integer bit limit is disallowed.
+    """
+    check_2_sided_integer_limit(token_1, token_2, token_3)
+    
+    value_1 = token_1.value
+    value_2 = token_3.value
+    if value_2 > LIMIT_POWER_MAX:
+        raise EvaluationError(
+            token_2.array, token_2.start, token_3.end,
+            f'Power over {LIMIT_POWER_MAX} disallowed: {value_1} ** {value_2}.'
+        )
+    
+    if value_1.bit_length()*value_2.bit_length() > LIMIT_INTEGER_BIT_LENGTH:
+        raise EvaluationError(
+            token_1.array, token_1.start, token_3.end,
+            f'Power over possible {LIMIT_INTEGER_BIT_LENGTH} bit length disallowed: {value_1} ** {value_2}.'
+        )
+    
+    value = token_1.value ** token_3.value
     return merge_2_tokens(token_1, token_3, value)
 
 
@@ -864,12 +1134,14 @@ EVALUATE_2_SIDED_OPERATION = {
     OPERATION_REMAINDER_ID: evaluate_2_sided_remainder,
     OPERATION_ADD_ID: evaluate_2_sided_add,
     OPERATION_SUBTRACTION_ID: evaluate_2_sided_subtraction,
-    OPERATION_LEFT_SHIFT_ID: evaluate_2_sided_left_shift,
-    OPERATION_RIGHT_SHIFT_ID: evaluate_2_sided_right_shift,
+    OPERATION_LEFT_SHIFT_ID: evaluate_2_sided_binary_left_shift,
+    OPERATION_RIGHT_SHIFT_ID: evaluate_2_sided_binary_right_shift,
     OPERATION_BINARY_AND_ID: evaluate_2_sided_binary_and,
     OPERATION_BINARY_XOR_ID: evaluate_2_sided_binary_xor,
     OPERATION_BINARY_OR_ID: evaluate_2_sided_binary_or,
+    OPERATION_POWER_ID: evaluate_2_sided_power,
 }
+
 
 class ParserBase:
     """
@@ -1371,7 +1643,7 @@ PARSE_OCTAL = ParserCharRange('0', '7')
 PARSE_BINARY = ParserCharRange('0', '1')
 
 PARSE_OPTIONAL_UNDERSCORE = ParserOptional(
-    ParserCharOne('_')
+    ParserCharOne('_'),
 )
 
 PARSE_ZERO = ParserCharOne('0')
@@ -1561,6 +1833,10 @@ PARSE_OPERATION_2_CHAR = ParserAny([
         ParserCharSequence(OPERATION_FULL_DIVISION_STRING),
         OPERATION_FULL_DIVISION_ID,
     ),
+    ParserIdentifier(
+        ParserCharSequence(OPERATION_POWER_STRING),
+        OPERATION_POWER_ID,
+    ),
 ])
 
 PARSE_OPERATION = ParserAny([
@@ -1568,17 +1844,25 @@ PARSE_OPERATION = ParserAny([
     PARSE_OPERATION_1_CHAR,
 ])
 
-PARSE_STATIC_VARIABLE_PI = ParserIdentifier(
-    ParserSequence([
-        ParserCharAny(['p', 'P']),
-        ParserCharAny(['i', 'I']),
-    ]),
-    OPERATION_RIGHT_SHIFT_ID,
-)
 
-PARSE_STATIC_VARIABLE = ParserAny([
-    PARSE_STATIC_VARIABLE_PI,
-])
+PARSE_IDENTIFIER = ParserIdentifier(
+    ParserSequence([
+        ParserAny([
+            ParserCharRange('a', 'z'),
+            ParserCharRange('A', 'Z'),
+            ParserCharOne('_'),
+        ]),
+        ParserRepeat(
+            ParserAny([
+                ParserCharRange('a', 'z'),
+                ParserCharRange('A', 'Z'),
+                ParserCharOne('_'),
+                PARSE_DECIMAL,
+            ])
+        ),
+    ]),
+    VARIABLE_IDENTIFIER,
+)
 
 PARSE_SPACE_ANY = ParserCharAny([' ', '\t'])
 
@@ -1596,8 +1880,9 @@ JUST_PARSE = ParserAny([
     PARSE_SPACE,
     PARSE_NUMERIC,
     PARSE_OPERATION,
-    PARSE_STATIC_VARIABLE,
+    PARSE_IDENTIFIER,
 ])
+
 
 class EvaluationError(SlashCommandError):
     """
@@ -1751,6 +2036,7 @@ class Token:
         
         return ''.join(repr_parts)
 
+
 class ParsingState:
     """
     Parsing state storing information between parsers.
@@ -1786,6 +2072,7 @@ class ParsingState:
         self.tokens = []
         return self
     
+    
     def add_token(self, start, identifier):
         """
         Adds a token to the parsing state.
@@ -1796,6 +2083,11 @@ class ParsingState:
             The position where the token starts.
         identifier : `int`
             The token's identifier.
+        
+        Raises
+        ------
+        EvaluationError
+            Conversion failed.
         """
         array = self.array
         end = self.index
@@ -1803,7 +2095,9 @@ class ParsingState:
         if evaluator is None:
             value = None
         else:
-            value = evaluator(array[start:end])
+            value, identifier = evaluator(array[start:end])
+            if identifier == STATIC_NONE_ID:
+                raise EvaluationError(self.array, start, end, 'Unknown identifier.')
         
         token = Token(self.array, start, end, identifier, None, value)
         self.tokens.append(token)
@@ -1828,7 +2122,7 @@ def parse_cycle(state):
             break
         
         if not JUST_PARSE(state):
-            raise EvaluationError(state.array, state.index, state.index+1, 'Invalid identifier.')
+            raise EvaluationError(state.array, state.index, state.index+1, 'Unexpected character.')
 
 
 def optimize_tokens_remove_space(state):
@@ -1909,14 +2203,39 @@ def build_parentheses(state):
         
         if token_id == OPERATION_PARENTHESES_START_ID:
             parentheses_end_index = parentheses_end_indexes.pop()
+            
+            # Check whether we call a function.
+            if parentheses_end_index == 0:
+                is_function_call = False
+                value = None
+                start = token.start
+            else:
+                maybe_function_token = tokens[index-1]
+                if maybe_function_token.id == VARIABLE_FUNCTION:
+                    is_function_call = True
+                    value = tokens[index-1].value
+                    start = maybe_function_token.start
+                else:
+                    is_function_call = False
+                    value = None
+                    start = token.start
+            
+            
             parentheses_difference = parentheses_end_index-index
-            if parentheses_difference == 2:
+            if (not is_function_call) and (parentheses_difference == 2):
                 token = tokens[index+1]
             else:
                 sub_tokens = tokens[index+1:parentheses_end_index]
                 parentheses_end_token = tokens[parentheses_end_index]
                 
-                token = Token(state.array, token.start, parentheses_end_token.end, TOKEN_GROUP, sub_tokens, None)
+                if is_function_call:
+                    identifier = TOKEN_GROUP_FUNCTION_CALL
+                else:
+                    identifier = TOKEN_GROUP_PARENTHESES
+                
+                token = Token(state.array, start, parentheses_end_token.end, identifier, sub_tokens, value)
+            
+            index -= is_function_call
             
             tokens[index] = token
             del tokens[index+1:parentheses_end_index+1]
@@ -1976,7 +2295,7 @@ def check_followance(state):
         if token_id in unrepeatable_ids:
             last_token = tokens[index-1]
             raise EvaluationError(token.array, last_token.start, token.end,
-                f'{TOKEN_NAMES[last_token_id]} cannot be followed by {TOKEN_NAMES[token_id]}'
+                f'{TOKEN_NAMES[last_token_id]} cannot be followed by {TOKEN_NAMES[token_id]}.'
             )
         
         last_token_id = token_id
@@ -2049,6 +2368,47 @@ def evaluate_two_sided_operations(tokens):
     return tokens[0]
 
 
+def evaluate_function_call(token):
+    """
+    Evaluates the given function call's token.
+    
+    Parameters
+    ----------
+    token : ``Token``
+        The function call token to evaluate.
+    
+    Returns
+    -------
+    token : ``Token``
+        The evaluated token.
+    
+    Raises
+    ------
+    EvaluationError
+        Evaluation failed.
+    """
+    sub_tokens = token.sub_tokens
+    if len(sub_tokens) > 1:
+        sub_token = evaluate_tokens(sub_tokens)
+    else:
+        sub_token = sub_tokens[0]
+    
+    function, validity_checker = token.value
+    value = sub_token.value
+    
+    if (validity_checker is not None):
+        validity_checker(token, value)
+    
+    try:
+        value = function(value)
+    except BaseException as err:
+        raise EvaluationError(token.array, token.start, token.end,
+            f'{function.__name__}({value!r}) raised: {err!r}',
+        ) from None
+    
+    return Token(token.array, token.start, token.end, VARIABLE_EVALUATED, None, value)
+
+
 def evaluate_tokens(tokens):
     """
     Evaluates tokens.
@@ -2065,10 +2425,13 @@ def evaluate_tokens(tokens):
     """
     for index in range(len(tokens)):
         token = tokens[index]
-        if token.id == TOKEN_GROUP:
-            sub_tokens = token.sub_tokens
-            token = evaluate_tokens(sub_tokens)
-            tokens[index] = token
+        token_id = token.id
+        if token_id == TOKEN_GROUP_PARENTHESES:
+            tokens[index] = evaluate_tokens(token.sub_tokens)
+            continue
+        
+        if token_id == TOKEN_GROUP_FUNCTION_CALL:
+            tokens[index] = evaluate_function_call(token)
             continue
     
     evaluate_prefix_operations(tokens)

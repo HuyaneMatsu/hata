@@ -176,9 +176,9 @@ def snapshot_hook():
     from . import snapshot
 
 
-
 register_library_extension('HuyaneMatsu.commands')
 add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
+
 
 register_setup_function(
     'HuyaneMatsu.commands',

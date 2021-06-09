@@ -40,6 +40,8 @@ configure_converter = CommandConverterConfigurerWrapper
 cooldown = CommandCooldownWrapper
 
 
+EXTENSION_SETUP_HOOKS = []
+
 def setup_ext_commands_v2(client, prefix, **kwargs):
     """
     Setups the commands extension of hata on the given client with the given parameters.
@@ -84,13 +86,14 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
     if not isinstance(client, Client):
         raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client.__class__.__name__}`.')
     
-    """
     for attr_name in ('command_processor', 'commands'):
         if hasattr(client, attr_name):
             raise RuntimeError(f'The client already has an attribute named as `{attr_name}`.')
-    """
     
     command_processor = CommandProcessor(prefix, **kwargs)
+    for hook in EXTENSION_SETUP_HOOKS:
+        hook(client, command_processor)
+    
     client.events(command_processor)
     
     client.command_processor = command_processor
@@ -103,9 +106,13 @@ def snapshot_hook():
     from . import snapshot
 
 
-
 register_library_extension('HuyaneMatsu.commands_v2')
 add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
+
+def command_utils_hook():
+    from . import extension_hook_command_utils
+
+add_library_extension_hook(command_utils_hook, ['HuyaneMatsu.command_utils'])
 
 register_setup_function(
     'HuyaneMatsu.commands_v2',
@@ -121,4 +128,3 @@ register_setup_function(
         'prefix_ignore_case',
     ),
 )
-

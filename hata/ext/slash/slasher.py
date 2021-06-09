@@ -15,7 +15,7 @@ from ...discord.interaction import ApplicationCommand, InteractionEvent, Interac
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .slash_command import SlashCommand
-
+from .component_command import ComponentCommand
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -675,7 +675,6 @@ class Slasher(EventHandlerBase):
         Weak reference to the parent client.
     _command_states : `dict` of (`int`, ``CommandState``) items
         The slasher's commands's states.
-    
     _command_unloading_behaviour : `int`
         Behaviour to describe what should happen when a command is unloaded.
         
@@ -688,6 +687,8 @@ class Slasher(EventHandlerBase):
         +-------------------------------+-------+
         | UNLOADING_BEHAVIOUR_KEEP      | 1     |
         +-------------------------------+-------+
+    _component_commands : `set` of ``ComponentCommand``
+        The component commands added to the slasher.
     _component_interaction_waiters : ``WeakKeyDictionary`` of (``Message``, `async-callable`) items
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
@@ -703,12 +704,14 @@ class Slasher(EventHandlerBase):
         A nested dictionary, which contains application command permission overwrites per guild_id and per command_id.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
+    custom_id_to_command : `dict` of (`str`, ``ComponentCommand``) items
+        A dictionary which contains component commands for `custom_id`-s.
     
     Class Attributes
     ----------------
     __event_name__ : `str` = 'interaction_create'
         Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
-    SUPPORTED_TYPES : `tuple` (``SlashCommand``, )
+    SUPPORTED_TYPES : `tuple` (``SlashCommand``, ``ComponentCommand``)
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     
     Notes
@@ -717,11 +720,11 @@ class Slasher(EventHandlerBase):
     """
     __slots__ = ('__weakref__', '_call_later', '_client_reference', '_command_states', '_command_unloading_behaviour',
         '_component_interaction_waiters', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
-        '_synced_permissions', 'command_id_to_command')
+        '_synced_permissions', 'command_id_to_command', 'custom_id_to_command')
     
     __event_name__ = 'interaction_create'
     
-    SUPPORTED_TYPES = (SlashCommand, )
+    SUPPORTED_TYPES = (SlashCommand, ComponentCommand)
     
     def __new__(cls, client, delete_commands_on_unload=False):
         """
@@ -772,6 +775,7 @@ class Slasher(EventHandlerBase):
         self._component_interaction_waiters = WeakKeyDictionary()
         
         self.command_id_to_command = {}
+        self.custom_id_to_command = {}
         
         return self
     
@@ -842,7 +846,16 @@ class Slasher(EventHandlerBase):
                     Task(waiter(interaction_event), KOKORO)
             else:
                 Task(waiter(interaction_event), KOKORO)
-    
+        
+        try:
+            component_command = self.custom_id_to_command[interaction_event.interaction.custom_id]
+        except KeyError:
+            pass
+        else:
+            try:
+                await component_command(client, interaction_event)
+            except BaseException as err:
+                await client.events.error(client, f'{self!r}.__call__', err)
     
     def add_component_interaction_waiter(self, message, waiter):
         """
@@ -2219,3 +2232,14 @@ class Slasher(EventHandlerBase):
                 return
         
         Task(self._do_main_sync(client), KOKORO)
+
+    def _add_component_command(self, command):
+        """
+        Adds a slash command to the ``Slasher`` if applicable.
+        
+        Parameters
+        ---------
+        command : ``ComponentCommand``
+            The command to add.
+        """
+        pass

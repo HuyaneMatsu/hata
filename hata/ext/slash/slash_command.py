@@ -15,7 +15,7 @@ from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMA
     
 
 from .responding import process_command_coroutine
-from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, \
+from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlashCommandWrapper, get_parameter_configurers
 from .converters import generate_parameter_parsers
@@ -29,78 +29,6 @@ SLASH_COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'show_for_inv
 SLASH_COMMAND_NAME_NAME = 'name'
 SLASH_COMMAND_COMMAND_NAME = 'command'
 
-def _check_maybe_route(variable_name, variable_value, route_to, validator):
-    """
-    Helper class of ``SlashCommand`` parameter routing.
-    
-    Parameters
-    ----------
-    variable_name : `str`
-        The name of the respective variable
-    variable_value : `str`
-        The respective value to route maybe.
-    route_to : `int`
-        The value how much times the routing should happen. by default should be given as `0` if no routing was
-        done yet.
-    validator : `callable` or `None`
-        A callable, what validates the given `variable_value`'s value and converts it as well if applicable.
-    
-    Returns
-    -------
-    processed_value : `str`
-        Processed value returned by the `validator`. If routing is happening, then a `tuple` of those values is
-        returned.
-    route_to : `int`
-        The amount of values to route to.
-    
-    Raises
-    ------
-    ValueError
-        Value is routed but to a bad count amount.
-    BaseException
-        Any exception raised by `validator`.
-    """
-    if (variable_value is not None) and isinstance(variable_value, tuple):
-        route_count = len(variable_value)
-        if route_count == 0:
-            processed_value = None
-        elif route_count == 1:
-            variable_value = variable_value[0]
-            if variable_value is ...:
-                variable_value = None
-            
-            if validator is None:
-                processed_value = variable_value
-            else:
-                processed_value = validator(variable_value)
-        else:
-            if route_to == 0:
-                route_to = route_count
-            elif route_to == route_count:
-                pass
-            else:
-                raise ValueError(f'`{variable_name}` is routed to `{route_count}`, meanwhile something else is '
-                    f'already routed to `{route_to}`.')
-            
-            if validator is None:
-                processed_value = variable_value
-            else:
-                processed_values = []
-                for value in variable_value:
-                    if (value is not ...):
-                        value = validator(value)
-                    
-                    processed_values.append(value)
-                
-                processed_value = tuple(processed_values)
-    
-    else:
-        if validator is None:
-            processed_value = variable_value
-        else:
-            processed_value = validator(variable_value)
-    
-    return processed_value, route_to
 
 
 def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
@@ -623,7 +551,7 @@ class SlashCommand:
         """
         return create_event_from_class(cls, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
             SLASH_COMMAND_COMMAND_NAME)
-
+    
     def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
             guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
         """
@@ -631,7 +559,7 @@ class SlashCommand:
         
         Parameters
         ----------
-        command : `None` or `async-callable`, Optional
+        func : `None` or `async-callable`, Optional
             The function used as the command when using the respective slash command.
         name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`), Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
@@ -661,13 +589,12 @@ class SlashCommand:
         TypeError
             - If a value is routed but to a bad count amount.
             - If `show_for_invoking_user_only` was not given as `None` or `bool` instance.
-            - If `is_global` was not given as 7None` or `bool` instance.
+            - If `is_global` was not given as `None` or `bool` instance.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
             - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `func` accepts less than `2` parameters.
             - If `func` accepts more than `27` parameters.
             - If `func`'s 0th parameter is annotated, but not as ``Client``.
             - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
@@ -695,12 +622,13 @@ class SlashCommand:
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
         """
-        # Check for routing
         if (func is not None) and isinstance(func, SlashCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:
             command = func
             wrappers = None
+        
+        # Check for routing
         
         route_to = 0
         name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
@@ -1347,6 +1275,7 @@ class SlashCommandFunction:
         command_coroutine = self._command(*parameters)
         
         await process_command_coroutine(client, interaction_event, self.show_for_invoking_user_only, command_coroutine)
+    
     
     def __repr__(self):
         """Returns the application command option's representation."""

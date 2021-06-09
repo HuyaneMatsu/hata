@@ -103,7 +103,7 @@ class Application(DiscordEntity, immortal=True):
     primary_sku_id : `int`
         If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
         Defaults to `0`.
-    privacy_policy_url : `str` or 7None`
+    privacy_policy_url : `str` or `None`
         The url of the application's privacy policy. Defaults to `None`.
     publishers : `None` or `list` of ``ApplicationSubEntity``
         A list of the application's games' publishers. Defaults to `None`.

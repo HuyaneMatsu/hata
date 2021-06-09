@@ -56,27 +56,32 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
     -------
     request_coro : `None` or `coroutine`
     """
+    interaction_event_type = interaction_event.type
+    
     if (response is None):
         if interaction_event.is_unanswered():
-            yield client.interaction_response_message_create(interaction_event,
-                show_for_invoking_user_only=show_for_invoking_user_only)
+            
+            if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+                yield client.interaction_response_message_create(interaction_event,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
+            elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+                yield client.interaction_component_acknowledge(interaction_event)
         
         return
     
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
-        if interaction_event.is_unanswered():
-            yield client.interaction_response_message_create(interaction_event, response,
-                show_for_invoking_user_only=show_for_invoking_user_only)
-            return
-        
-        if interaction_event.is_deferred():
-            yield client.interaction_response_message_edit(interaction_event, response)
-            return
-        
-        if interaction_event.is_responded():
-            yield client.interaction_followup_message_create(interaction_event, response,
-                show_for_invoking_user_only=show_for_invoking_user_only)
-            return
+        if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+            if interaction_event.is_unanswered():
+                yield client.interaction_response_message_create(interaction_event, response,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
+
+            elif interaction_event.is_deferred():
+                yield client.interaction_followup_message_create(interaction_event, response)
+            elif interaction_event.is_responded():
+                yield client.interaction_followup_message_create(interaction_event, response,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
+        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+            yield client.interaction_component_message_edit(interaction_event, response)
         
         # No more cases
         return
@@ -99,26 +104,29 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         response = response[:2000]
     
     if response:
-        if interaction_event.is_unanswered():
-            yield client.interaction_response_message_create(interaction_event, response,
-                show_for_invoking_user_only=show_for_invoking_user_only)
-            return
         
-        if interaction_event.is_deferred():
-            yield client.interaction_response_message_edit(interaction_event, response)
-            return
-        
-        if interaction_event.is_responded():
-            yield client.interaction_followup_message_create(interaction_event, response,
-                show_for_invoking_user_only=show_for_invoking_user_only)
-            return
+        if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+            if interaction_event.is_unanswered():
+                yield client.interaction_response_message_create(interaction_event, response,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
+            elif interaction_event.is_deferred():
+                yield client.interaction_response_message_edit(interaction_event, response)
+            elif interaction_event.is_responded():
+                yield client.interaction_followup_message_create(interaction_event, response,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
+        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+            yield client.interaction_component_message_edit(interaction_event, response)
         
         # No more cases
         return
     else:
         if interaction_event.is_unanswered():
-            yield client.interaction_response_message_create(interaction_event,
-                show_for_invoking_user_only=show_for_invoking_user_only)
+            
+            if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+                yield client.interaction_response_message_create(interaction_event,
+                    show_for_invoking_user_only=show_for_invoking_user_only)
+            elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+                yield client.interaction_component_acknowledge(interaction_event)
             
             return
     

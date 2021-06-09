@@ -2,6 +2,7 @@
 Hata extensions for supporting interactions.
 """
 from .components import *
+from .component_command import *
 from .converters import *
 from .event_handlers import *
 from .exceptions import *
@@ -18,6 +19,7 @@ __all__ = (
     'set_permission',
     'setup_ext_slash',
     *components.__all__,
+    *component_command.__all__,
     *converters.__all__,
     *event_handlers.__all__,
     *exceptions.__all__,

@@ -1127,7 +1127,6 @@ def generate_parameter_parsers(func, parameter_configurers):
         - If `func` accepts keyword only arguments.
         - If `func` accepts `*args`.
         - If `func` accepts `**kwargs`.
-        - If `func` accepts less than `2` arguments.
         - If `func` accepts more than `27` arguments.
         - If `func`'s 0th argument is annotated, but not as ``Client``.
         - If `func`'s 1th argument is annotated, but not as ``InteractionEvent``.
@@ -1193,7 +1192,7 @@ def generate_parameter_parsers(func, parameter_configurers):
         
     if outer_option_count > APPLICATION_COMMAND_OPTIONS_MAX:
         raise TypeError(f'`{real_analyzer.real_function!r}` should accept at maximum '
-            f'`{APPLICATION_COMMAND_OPTIONS_MAX}` outer parameters,  meanwhile it accepts {outer_option_count}.')
+            f'`{APPLICATION_COMMAND_OPTIONS_MAX}` discord parameters,  meanwhile it accepts {outer_option_count}.')
     
     parameter_parsers = tuple(parameter_parsers)
     

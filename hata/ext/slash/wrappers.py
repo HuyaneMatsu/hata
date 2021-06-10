@@ -205,7 +205,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
         The slash command or other wrapper to wrap.
     _choices : `None` or `dict` of (`str` or `int`, `str`) items
         Parameter's choices.
-    _description : `str`
+    _description : `str` or `None`
         Parameter's description.
     _name : `str`
         The parameter's name.
@@ -216,7 +216,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
     """
     __slots__ = ('_choices', '_description', '_name', '_parameter_name', '_type')
     
-    def __new__(cls, parameter_name, type_or_choice, description, name=None):
+    def __new__(cls, parameter_name, type_or_choice, description=None, name=None):
         """
         Creates a partial function to wrap a slash command.
         
@@ -226,7 +226,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
             The parameter's name to modify.
         type_or_choice : `str`, `type`, `list`, `dict`
             The annotation's value to use.
-        description : `str`
+        description : `None` or `str`, Optional
             Description for the annotation.
         name : `None` or `str`, Optional
             Name to use instead of the parameter's.
@@ -239,7 +239,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
         Raises
         ------
         TypeError
-            - If `description`'s is not `str` instance.
+            - If `description`'s is not `None` nor `str` instance.
             - If `parameter_type_or_choice` is `list` instance, but it's elements do not match the `tuple`
                 (`str`, `str` or `int`) pattern.
             - If `parameter_type_or_choice` is `dict` instance, but it's items do not match the (`str`, `str` or `int`)
@@ -262,7 +262,8 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
             raise TypeError(f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}.')
         
         type_, choices = parse_annotation_type_and_choice(type_or_choice, parameter_name)
-        description = parse_annotation_description(description, parameter_name)
+        if (description is not None):
+            description = parse_annotation_description(description, parameter_name)
         name = parse_annotation_name(name, parameter_name)
         
         return partial_func(cls._decorate, cls, choices, description, name, parameter_name, type_)
@@ -324,8 +325,10 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
             repr_parts.append(', choices=')
             repr_parts.append(repr(choices))
         
-        repr_parts.append(', description=')
-        repr_parts.append(reprlib.repr(self._description))
+        description = self._description
+        if (description is not None):
+            repr_parts.append(', description=')
+            repr_parts.append(reprlib.repr(description))
         
         name = self._name
         if (name is not None):

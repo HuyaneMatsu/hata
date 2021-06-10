@@ -16,6 +16,7 @@ from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .slash_command import SlashCommand
 from .component_command import ComponentCommand
+from .exceptions import SlashCommandError
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -821,7 +822,13 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}.__call__', err)
         else:
             if (command is not None):
-                await command(client, interaction_event)
+                try:
+                    await command(client, interaction_event)
+                except SlashCommandError as err:
+                    await client.interaction_response_message_create(interaction_event, err.pretty_repr,
+                        show_for_invoking_user_only=True)
+                except BaseException as err:
+                    await client.events.error(client, f'`{self!r}.__call__` while calling `{command.name!r}`', err)
     
     async def _dispatch_component_event(self, client, interaction_event):
         """

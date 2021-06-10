@@ -3,6 +3,7 @@
 #### Improvements
 
 - `Guild.nsfw` is now a property.
+- Include date, method and url in ``DiscordException`` error message.
 
 ##### hata.ext.slash
 

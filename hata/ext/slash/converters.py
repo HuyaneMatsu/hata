@@ -840,20 +840,26 @@ def parse_annotation_tuple(parameter):
     parameter_name = parameter.name
     annotation = parameter.annotation
     annotation_tuple_length = len(annotation)
-    if annotation_tuple_length not in (2, 3):
+    if annotation_tuple_length not in (1, 2, 3):
         raise ValueError(f'Parameter `{parameter_name}` has annotation as `tuple`, but it\'s length is not in '
-            f'range [2:3], got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
+            f'range [1:3], got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
     
-    annotation_value, description = annotation[:2]
+    annotation_value = annotation[0]
     annotation_type, choices = parse_annotation_type_and_choice(annotation_value, parameter_name)
     
     if annotation_type in INTERNAL_ANNOTATION_TYPES:
         raise ValueError(f'`Internal annotations cannot be given inside of a tuple, got annotation for: '
             f'{ANNOTATION_TYPE_TO_STR_ANNOTATION[annotation_type]!r}.')
     
-    description = parse_annotation_description(description, parameter_name)
+    if annotation_tuple_length > 1:
+        description = annotation[1]
+    else:
+        description = None
     
-    if len(annotation) == 3:
+    if (description is not None):
+        description = parse_annotation_description(description, parameter_name)
+    
+    if annotation_tuple_length > 2:
         name = annotation[2]
     else:
         name = None
@@ -861,6 +867,38 @@ def parse_annotation_tuple(parameter):
     name = parse_annotation_name(name, parameter_name)
     return choices, description, name, annotation_type
 
+
+def parse_annotation_internal(annotation):
+    """
+    Tries to check whether the given annotation refers to an internal type or not.
+    
+    Parameters
+    ----------
+    annotation : `str`, `type`
+        The annotation to check.
+    
+    Returns
+    -------
+    annotation_type : `int` or `None`
+        The parsed annotation type. Returns `None` if teh annotation type not refers to an internal type.
+    """
+    if isinstance(annotation, type):
+        if issubclass(annotation, Client):
+            annotation_type = ANNOTATION_TYPE_SELF_CLIENT
+        elif issubclass(annotation, InteractionEvent):
+            annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
+        else:
+            annotation_type = None
+    else:
+        annotation = annotation.lower()
+        if annotation in CLIENT_ANNOTATION_NAMES:
+            annotation_type = ANNOTATION_TYPE_SELF_CLIENT
+        elif annotation in INTERACTION_EVENT_ANNOTATION_NAMES:
+            annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
+        else:
+            annotation_type = None
+    
+    return annotation_type
 
 def parse_annotation(parameter):
     """
@@ -878,7 +916,7 @@ def parse_annotation(parameter):
     description : `str` or `None`
         Parameter's description.
         
-        > Returned as `None` for internal parameters.
+        > Returned as `None` for internal parameters or if `description` could nto be detected.
     name : `str`
         The parameter's name.
     type_ : `int`
@@ -893,39 +931,23 @@ def parse_annotation(parameter):
         Parameter's type refers to an unknown type or string value.
     """
     if parameter.has_annotation:
-        annotation = parameter.annotation
-        if isinstance(annotation, tuple):
+        annotation_value = parameter.annotation
+        if isinstance(annotation_value, tuple):
             return parse_annotation_tuple(parameter)
     else:
-        annotation = parameter.name
+        annotation_value = parameter.name
     
-    # use goto
-    while True:
-        if isinstance(annotation, type):
-            if issubclass(annotation, Client):
-                annotation_type = ANNOTATION_TYPE_SELF_CLIENT
-                break
-            
-            if issubclass(annotation, InteractionEvent):
-                annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
-                break
-        
-        elif isinstance(annotation, str):
-            annotation = annotation.lower()
-            
-            if annotation in CLIENT_ANNOTATION_NAMES:
-                annotation_type = ANNOTATION_TYPE_SELF_CLIENT
-                break
-            
-            if annotation in INTERACTION_EVENT_ANNOTATION_NAMES:
-                annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
-                break
-        
-        raise TypeError(f'Parameter `{parameter.name}` is not `tuple`, `{Client.__name__}`, '
-            f'`{InteractionEvent.__name__}`, not a `str` referencing to them, got '
-            f'{annotation.__class__.__name__}; {annotation!r}.')
+    if not isinstance(annotation_value, (str, type)):
+        raise TypeError(f'Parameter `{parameter.name}` is not `tuple`, `str`, nor `str` instance '
+            f'{annotation_value.__class__.__name__}; {annotation_value!r}.')
+    else:
+        annotation_type = parse_annotation_internal(annotation_value)
+        if annotation_type is None:
+            annotation_type, choices = parse_annotation_type_and_choice(annotation_value, parameter.name)
+        else:
+            choices = None
     
-    return None, None, parameter.name, annotation_type
+    return choices, None, parameter.name, annotation_type
 
 
 class ParameterConverter:
@@ -972,7 +994,7 @@ class ParameterConverter:
                 (`str`, `str` or `int`) pattern.
             - If `annotation_value` is `dict` instance, but it's items do not match the (`str`, `str` or `int`) pattern.
             - If `annotation_value` is unexpected.
-            - If `annotation` is not `tuple`.
+            - If `annotation` is not `tuple`, `type` nor `str` instance.
             - If `annotation` 1st element (description) is not `str` instance.
         ValueError
             - If `annotation` is a `tuple`, but it's length is not range [2:3].
@@ -990,6 +1012,9 @@ class ParameterConverter:
             description = parameter_configurer._description
             name = parameter_configurer._name
             annotation_type = parameter_configurer._type
+            
+        if description is None:
+            description = raw_name_to_display(name)
         
         if parameter.has_default:
             default = parameter.default
@@ -1025,7 +1050,7 @@ class ParameterConverter:
         
         Returns
         -------
-        value : `None` or ``Any`` instance
+        converted_value : `None` or ``Any`` instance
             If conversion fails, always returns `None`.
         
         Raises
@@ -1041,13 +1066,13 @@ class ParameterConverter:
             if not self.required:
                 return self.default
         else:
-            value = await self.converter(client, interaction_event, value)
-            if (value is not None) and ((choices is None) or (value in choices)):
-                return value
+            converted_value = await self.converter(client, interaction_event, value)
+            if (converted_value is not None) and ((choices is None) or (converted_value in choices)):
+                return converted_value
         
         raise SlashCommandParameterConversionError(
             self.name,
-            None,
+            value,
             ANNOTATION_TYPE_TO_REPRESENTATION.get(self.type, '???'),
             None if choices is None else list(choices.keys()),
         )

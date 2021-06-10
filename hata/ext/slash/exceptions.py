@@ -1,4 +1,6 @@
-__all__ = ('SlashCommandError',)
+__all__ = ('SlashCommandError', 'SlashCommandParameterConversionError')
+
+from ...backend.utils import copy_docs
 
 class SlashCommandError(Exception):
     """
@@ -6,6 +8,16 @@ class SlashCommandError(Exception):
     """
     pass
 
+    @property
+    def pretty_repr(self):
+        """
+        Returns the pretty representation of the exception.
+        
+        Returns
+        -------
+        representation : `str`
+        """
+        return ''
 
 class SlashCommandParameterConversionError(SlashCommandError):
     """
@@ -13,6 +25,8 @@ class SlashCommandParameterConversionError(SlashCommandError):
     
     Attributes
     ----------
+    _pretty_repr : `None` or `str`
+        generated pretty representation of the exception.
     _repr : `None` or `str`
         The generated error message.
     parameter_name : `str` or `None`
@@ -44,6 +58,7 @@ class SlashCommandParameterConversionError(SlashCommandError):
         self.excepted_type = excepted_type
         self.expected_values = expected_values
         self._repr = None
+        self._pretty_repr = None
         Exception.__init__(self, parameter_name, received_value, excepted_type, expected_values)
     
     def __repr__(self):
@@ -70,16 +85,6 @@ class SlashCommandParameterConversionError(SlashCommandError):
             repr_parts.append('\n')
             repr_parts.append('parameter name: ')
             repr_parts.append(repr(parameter_name))
-        
-        repr_parts.append(
-            '\n'
-            'received value: '
-        )
-        received_value = self.received_value
-        if (received_value is None):
-            repr_parts.append('N/A')
-        else:
-            repr_parts.append(repr(received_value))
         
         excepted_type = self.excepted_type
         if (excepted_type is not None):
@@ -109,6 +114,83 @@ class SlashCommandParameterConversionError(SlashCommandError):
                 repr_parts.append(', ')
                 continue
         
+        repr_parts.append(
+            '\n'
+            'received value: '
+        )
+        received_value = self.received_value
+        if (received_value is None):
+            repr_parts.append('N/A')
+        else:
+            repr_parts.append(repr(received_value))
+        
         repr_ = ''.join(repr_parts)
         self._repr = repr_
         return repr_
+    
+    
+    @property
+    @copy_docs(SlashCommandError.pretty_repr)
+    def pretty_repr(self):
+        pretty_repr = self._pretty_repr
+        if pretty_repr is None:
+            pretty_repr = self._create_pretty_repr()
+        
+        return pretty_repr
+    
+    
+    def _create_pretty_repr(self):
+        """
+        Creates the pretty representation of the parameter conversion error.
+        
+        Returns
+        -------
+        repr_ : `str`
+            The representation of the parameter conversion error.
+        """
+        repr_parts = ['Parameter conversion failed\n']
+        
+        parameter_name = self.parameter_name
+        if (parameter_name is not None):
+            repr_parts.append('\n')
+            repr_parts.append('Name: `')
+            repr_parts.append(parameter_name)
+            repr_parts.append('`')
+        
+        excepted_type = self.excepted_type
+        if (excepted_type is not None):
+            repr_parts.append(
+                '\n'
+                'Excepted type: `'
+            )
+            repr_parts.append(excepted_type)
+            repr_parts.append('`')
+    
+        
+        expected_values = self.expected_values
+        if (expected_values is not None):
+            repr_parts.append(
+                '\n'
+                'Expected value(s):'
+            )
+            
+            for expected_value in expected_values:
+                repr_parts.append('\n- `')
+                repr_parts.append(expected_value)
+                repr_parts.append('`')
+        
+        repr_parts.append(
+            '\n'
+            'Received: '
+        )
+        received_value = self.received_value
+        if (received_value is None):
+            repr_parts.append('N/A')
+        else:
+            repr_parts.append('`')
+            repr_parts.append(received_value)
+            repr_parts.append('`')
+        
+        pretty_repr = ''.join(repr_parts)
+        self._pretty_repr = pretty_repr
+        return pretty_repr

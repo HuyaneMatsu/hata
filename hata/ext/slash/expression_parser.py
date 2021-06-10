@@ -3,6 +3,7 @@ __all__ = ('EvaluationError', 'evaluate_text', )
 import math
 
 from ...backend.utils import copy_docs
+from ...discord.utils import sanitize_content
 
 from .exceptions import SlashCommandError
 
@@ -13,6 +14,15 @@ LIMIT_INTEGER_BIT_LENGTH = 64*32
 LIMIT_INTEGER_MAX = 1<<LIMIT_INTEGER_BIT_LENGTH
 LIMIT_INTEGER_MIN = -LIMIT_INTEGER_MAX
 LIMIT_FACTORIAL_MAX = 80
+
+LIMIT_INTEGER_CONVERSION = 1000
+LIMIT_INTEGER_DECIMAL_MAX = LIMIT_INTEGER_CONVERSION // 10
+LIMIT_INTEGER_HEXADECIMAL_MAX = LIMIT_INTEGER_CONVERSION // 16
+LIMIT_INTEGER_OCTAL_MAX = LIMIT_INTEGER_CONVERSION // 8
+LIMIT_INTEGER_BINARY_MAX = LIMIT_INTEGER_CONVERSION // 2
+LIMIT_INTEGER_DECIMAL_MULTIPLIER_MAX = 12
+
+EXCEPTION_MESSAGE_MAX_LINE_LENGTH = 59
 
 STATIC_NONE_ID = 0
 
@@ -85,14 +95,14 @@ VARIABLE_FUNCTION = 25
 
 
 NUMERIC_POSTFIX_MULTIPLIERS = {
-    b'k'[0]: 1_000,
-    b'K'[0]: 1_000,
-    b'm'[0]: 1_000_000,
-    b'M'[0]: 1_000_000,
-    b'g'[0]: 1_000_000_000,
-    b'G'[0]: 1_000_000_000,
-    b't'[0]: 1_000_000_000_000,
-    b'T'[0]: 1_000_000_000_000,
+    b'k'[0]: 1,
+    b'K'[0]: 1,
+    b'm'[0]: 2,
+    b'M'[0]: 2,
+    b'g'[0]: 3,
+    b'G'[0]: 3,
+    b't'[0]: 4,
+    b'T'[0]: 4,
 }
 
 SPACE_CHARACTERS = frozenset((
@@ -118,6 +128,7 @@ OPERATION_CHARACTERS = frozenset((
     *OPERATION_FULL_DIVISION_STRING,
     *OPERATION_POSITIVATE_STRING,
     *OPERATION_MULTIPLY_STRING,
+    *OPERATION_POWER_STRING,
 ))
 
 TOKEN_NAMES = {
@@ -159,6 +170,7 @@ TWO_SIDE_OPERATORS = frozenset((
     OPERATION_TRUE_DIVISION_ID,
     OPERATION_FULL_DIVISION_ID,
     OPERATION_MULTIPLY_ID,
+    OPERATION_POWER_ID,
 ))
 
 TWO_SIDE_OPERATORS_AND_PARENTHESES_END = frozenset((
@@ -184,6 +196,7 @@ CANT_FOLLOW_VARIABLE = frozenset((
     OPERATION_PARENTHESES_START_ID,
     OPERATION_INVERT_ID,
     VARIABLE_FUNCTION,
+    VARIABLE_EVALUATED,
 ))
 
 CANT_FOLLOW_FUNCTION = frozenset((
@@ -196,6 +209,7 @@ CANT_FOLLOW_FUNCTION = frozenset((
     *TWO_SIDE_OPERATORS,
     *PREFIX_OPERATORS,
     VARIABLE_FUNCTION,
+    VARIABLE_EVALUATED,
 ))
 
 CANT_START = frozenset((
@@ -276,16 +290,18 @@ OPERATION_TWO_SIDED_BINARY = frozenset((
 ))
 
 
-
-
-def get_numeric_postfix_multiplier(raw_value):
+def get_numeric_postfix_multiplier(array, start, end):
     """
     Gets numeric postfix multiplier.
     
     Parameters
     ----------
-    raw_value : `tuple` of `int`
-        The value to get the multiplier off.
+    array : `tuple` of `int`
+        The array to evaluate from.
+    start : `int`
+        The first value's index to evaluate.
+    end : `int`
+        The last value's index to evaluate.
     
     Returns
     -------
@@ -294,26 +310,30 @@ def get_numeric_postfix_multiplier(raw_value):
     total_multiplier : `int`
         Multiplier to multiply the value with,
     """
-    limit = len(raw_value)-1
-    index = limit
+    index = end-1
     
-    total_multiplier = 1
+    total_multiplier = 0
     while True:
-        postfix = raw_value[index]
+        postfix = array[index]
         try:
             multiplier = NUMERIC_POSTFIX_MULTIPLIERS[postfix]
         except KeyError:
             break
         
-        total_multiplier *= multiplier
+        index -= 1
+        total_multiplier += multiplier
     
-    if index != limit:
-        raw_value = raw_value[:index+1]
+    if total_multiplier > LIMIT_INTEGER_DECIMAL_MULTIPLIER_MAX:
+        raise EvaluationError(
+            array, index+1, end,
+            f'Decimal integer multiplier conversion over limit is disallowed: 1000 ** '
+            f'{LIMIT_INTEGER_DECIMAL_MULTIPLIER_MAX}.'
+        )
     
-    return raw_value, total_multiplier
+    return index+1, 1000**total_multiplier
 
 
-def evaluate_numeric_float(raw_value):
+def evaluate_numeric_float(array, start, end):
     """
     Evaluates the given numeric decimal value.
     
@@ -329,19 +349,23 @@ def evaluate_numeric_float(raw_value):
     token_id : `int`
         The token's new identifier.
     """
-    raw_value = bytes(raw_value)
+    raw_value = bytes(array[start:end])
     value = float(raw_value)
     return value, STATIC_NUMERIC_FLOAT_ID
 
 
-def evaluate_numeric_decimal(raw_value):
+def evaluate_numeric_decimal(array, start, end):
     """
     Evaluates the given numeric decimal value.
     
     Parameter
     ---------
-    raw_value : `tuple` of `int`
-        The value to evaluate.
+    array : `tuple` of `int`
+        The array to evaluate from.
+    start : `int`
+        The first value's index to evaluate.
+    end : `int`
+        The last value's index to evaluate.
     
     Returns
     -------
@@ -349,21 +373,36 @@ def evaluate_numeric_decimal(raw_value):
         The evaluated value.
     token_id : `int`
         The token's new identifier.
+    
+    Raises
+    ------
+    EvaluationError
+        Integer conversion over limit.
     """
-    raw_value, multiplier = get_numeric_postfix_multiplier(raw_value)
-    raw_value = bytes(raw_value)
+    if end-start > LIMIT_INTEGER_DECIMAL_MAX:
+        raise EvaluationError(
+            array, start, end,
+            f'Decimal integer conversion over limit is disallowed: {LIMIT_INTEGER_DECIMAL_MAX}.'
+        )
+    
+    end, multiplier = get_numeric_postfix_multiplier(array, start, end)
+    raw_value = bytes(array[start:end])
     value = int(raw_value)*multiplier
     return value, STATIC_NUMERIC_DECIMAL_ID
 
 
-def evaluate_numeric_hexadecimal(raw_value):
+def evaluate_numeric_hexadecimal(array, start, end):
     """
     Evaluates the given numeric hexadecimal value.
     
     Parameter
     ---------
-    raw_value : `tuple` of `int`
-        The value to evaluate.
+    array : `tuple` of `int`
+        The array to evaluate from.
+    start : `int`
+        The first value's index to evaluate.
+    end : `int`
+        The last value's index to evaluate.
     
     Returns
     -------
@@ -371,20 +410,35 @@ def evaluate_numeric_hexadecimal(raw_value):
         The evaluated value.
     token_id : `int`
         The token's new identifier.
+    
+    Raises
+    ------
+    EvaluationError
+        Integer conversion over limit.
     """
-    raw_value = bytes(raw_value)
+    if end-start > LIMIT_INTEGER_HEXADECIMAL_MAX:
+        raise EvaluationError(
+            array, start, end,
+            f'Hexadecimal integer conversion over limit is disallowed: {LIMIT_INTEGER_HEXADECIMAL_MAX}.'
+        )
+    
+    raw_value = bytes(array[start:end])
     value = int(raw_value, base=16)
     return value, STATIC_NUMERIC_HEXADECIMAL_ID
 
 
-def evaluate_numeric_octal(raw_value):
+def evaluate_numeric_octal(array, start, end):
     """
     Evaluates the given numeric octal value.
     
     Parameter
     ---------
-    raw_value : `tuple` of `int`
-        The value to evaluate.
+    array : `tuple` of `int`
+        The array to evaluate from.
+    start : `int`
+        The first value's index to evaluate.
+    end : `int`
+        The last value's index to evaluate.
     
     Returns
     -------
@@ -392,19 +446,34 @@ def evaluate_numeric_octal(raw_value):
         The evaluated value.
     token_id : `int`
         The token's new identifier.
+    
+    Raises
+    ------
+    EvaluationError
+        Integer conversion over limit.
     """
-    raw_value = bytes(raw_value)
+    if end-start > LIMIT_INTEGER_OCTAL_MAX:
+        raise EvaluationError(
+            array, start, end,
+            f'Octal integer conversion over limit is disallowed: {LIMIT_INTEGER_OCTAL_MAX}.'
+        )
+    
+    raw_value = bytes(array[start:end])
     value = int(raw_value, base=8)
     return value, STATIC_NUMERIC_OCTAL_ID
 
-def evaluate_numeric_binary(raw_value):
+def evaluate_numeric_binary(array, start, end):
     """
     Evaluates the given numeric binary value.
     
     Parameter
     ---------
-    raw_value : `tuple` of `int`
-        The value to evaluate.
+    array : `tuple` of `int`
+        The array to evaluate from.
+    start : `int`
+        The first value's index to evaluate.
+    end : `int`
+        The last value's index to evaluate.
     
     Returns
     -------
@@ -412,8 +481,19 @@ def evaluate_numeric_binary(raw_value):
         The evaluated value.
     token_id : `int`
         The token's new identifier.
+    
+    Raises
+    ------
+    EvaluationError
+        Integer conversion over limit.
     """
-    raw_value = bytes(raw_value)
+    if end-start > LIMIT_INTEGER_BINARY_MAX:
+        raise EvaluationError(
+            array, start, end,
+            f'Binary integer conversion over limit is disallowed: {LIMIT_INTEGER_BINARY_MAX}.'
+        )
+    
+    raw_value = bytes(array[start:end])
     value = int(raw_value, base=2)
     return value, STATIC_NUMERIC_BINARY_ID
 
@@ -457,6 +537,7 @@ def check_factorial_validity(token, value):
 
 STATIC_VARIABLE_TABLE = {
     b'e': math.e,
+    b'inf': math.inf,
     b'pi': math.pi,
     b'tau': math.tau,
 }
@@ -493,14 +574,18 @@ STATIC_FUNCTION_TABLE = {
     b'tan': (math.tan, None),
 }
 
-def evaluate_identifier(raw_value):
+def evaluate_identifier(array, start, end):
     """
     Evaluates the given identifier token.
     
     Parameter
     ---------
-    raw_value : `tuple` of `int`
-        The value to evaluate.
+    array : `tuple` of `int`
+        The array to evaluate from.
+    start : `int`
+        The first value's index to evaluate.
+    end : `int`
+        The last value's index to evaluate.
     
     Returns
     -------
@@ -509,7 +594,7 @@ def evaluate_identifier(raw_value):
     token_id : `int`
         The token's new identifier.
     """
-    raw_value = bytes(raw_value)
+    raw_value = bytes(array[start:end])
     raw_value = raw_value.lower()
     
     while True:
@@ -537,11 +622,11 @@ def evaluate_identifier(raw_value):
 
 
 EVALUATORS = {
-    STATIC_NUMERIC_FLOAT_ID: evaluate_numeric_float,
-    STATIC_NUMERIC_DECIMAL_ID: evaluate_numeric_decimal,
     STATIC_NUMERIC_HEXADECIMAL_ID: evaluate_numeric_hexadecimal,
     STATIC_NUMERIC_OCTAL_ID: evaluate_numeric_octal,
     STATIC_NUMERIC_BINARY_ID: evaluate_numeric_binary,
+    STATIC_NUMERIC_FLOAT_ID: evaluate_numeric_float,
+    STATIC_NUMERIC_DECIMAL_ID: evaluate_numeric_decimal,
     VARIABLE_IDENTIFIER: evaluate_identifier,
 }
 
@@ -1766,11 +1851,11 @@ PARSE_NUMERIC_BINARY = ParserIdentifier(
 )
 
 PARSE_NUMERIC = ParserAny([
-    PARSE_NUMERIC_FLOAT,
-    PARSE_NUMERIC_DECIMAL,
     PARSE_NUMERIC_HEXADECIMAL,
     PARSE_NUMERIC_OCTAL,
     PARSE_NUMERIC_BINARY,
+    PARSE_NUMERIC_FLOAT,
+    PARSE_NUMERIC_DECIMAL,
 ])
 
 PARSE_OPERATION_1_CHAR = ParserAny([
@@ -1890,6 +1975,8 @@ class EvaluationError(SlashCommandError):
     
     Attributes
     ----------
+    _pretty_repr : `None` or `str`
+        generated pretty representation of the exception.
     _repr : `None` or `str`
         The generated error message.
     array : `tuple` of `int`
@@ -1921,6 +2008,7 @@ class EvaluationError(SlashCommandError):
         self.end = end
         self.message = message
         self._repr = None
+        self._pretty_repr = None
         Exception.__init__(self, array, start, end, message)
     
     def __repr__(self):
@@ -1953,6 +2041,135 @@ class EvaluationError(SlashCommandError):
         repr_ = ''.join(repr_parts)
         self._repr = repr_
         return repr_
+    
+    @property
+    @copy_docs(SlashCommandError.pretty_repr)
+    def pretty_repr(self):
+        pretty_repr = self._pretty_repr
+        if pretty_repr is None:
+            pretty_repr = self._create_pretty_repr()
+        
+        return pretty_repr
+    
+    def _create_pretty_repr(self):
+        """
+        Creates the pretty representation of the parsing syntax error.
+        
+        Returns
+        -------
+        repr_ : `str`
+            The representation of the syntax error.
+        """
+        repr_parts = ['Evaluation failed: ', sanitize_content(self.message), '\n```\n']
+        
+        start = self.start
+        end = self.end
+        middle = end-start
+        array = self.array
+        length = len(array)
+        if middle <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
+            if length <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
+                for character in array:
+                    repr_parts.append(chr(character))
+                repr_parts.append('\n')
+                repr_parts.append(' '*start)
+                repr_parts.append('^'*middle)
+            else:
+                cut_over = (EXCEPTION_MESSAGE_MAX_LINE_LENGTH-middle)>>1
+                
+                start_at = start-cut_over
+                if start_at > 0:
+                    start_cut = 3
+                else:
+                    start_cut = 0
+                    if start_at < 0:
+                        start_at = 0
+                
+                end_at = end+cut_over
+                if end_at < length:
+                    end_cut = 3
+                else:
+                    end_cut = 0
+                    if end_at > length:
+                        end_at = length
+                
+                if start_cut:
+                    repr_parts.append('...')
+                
+                for character in array[start_at+start_cut:end_at-end_cut]:
+                    repr_parts.append(chr(character))
+                
+                if end_cut:
+                    repr_parts.append('...')
+                
+                repr_parts.append('\n')
+                repr_parts.append(' '*(start-start_at))
+                repr_parts.append('^'*middle)
+        
+        elif length < (EXCEPTION_MESSAGE_MAX_LINE_LENGTH<<1)-6:
+            for character in array[:EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3]:
+                repr_parts.append(chr(character))
+            
+            repr_parts.append('...\n')
+            repr_parts.append(' '*start)
+            repr_parts.append('^'*(EXCEPTION_MESSAGE_MAX_LINE_LENGTH-start-3))
+            
+            repr_parts.append('\n...')
+            for character in array[EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3:]:
+                repr_parts.append(chr(character))
+            
+            repr_parts.append('\n')
+            repr_parts.append(' '*3)
+            repr_parts.append('^'*(middle-EXCEPTION_MESSAGE_MAX_LINE_LENGTH+start+3))
+        else:
+            start_start = start-(EXCEPTION_MESSAGE_MAX_LINE_LENGTH>>1)
+            if start_start <= 0:
+                start_start = 0
+                mark_start = start
+                start_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH
+                start_cut = 0
+            else:
+                mark_start = start-start_start
+                start_end = start_start+EXCEPTION_MESSAGE_MAX_LINE_LENGTH
+                start_cut = 3
+            
+            end_end = end+(EXCEPTION_MESSAGE_MAX_LINE_LENGTH>>1)
+            if end_end > length:
+                end_end = length
+                end_start = length - EXCEPTION_MESSAGE_MAX_LINE_LENGTH
+                mark_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH-length+end
+                end_cut = 0
+            else:
+                end_start = end_end-EXCEPTION_MESSAGE_MAX_LINE_LENGTH
+                mark_end = end-end_start
+                end_cut = 3
+            
+            if start_cut:
+                repr_parts.append('...')
+            
+            for character in array[start_start+start_cut:start_end-3]:
+                repr_parts.append(chr(character))
+            
+            repr_parts.append('...\n')
+            
+            repr_parts.append(' '*(mark_start))
+            repr_parts.append('^'*(EXCEPTION_MESSAGE_MAX_LINE_LENGTH-mark_start))
+            
+            repr_parts.append('\n...')
+            for character in array[end_start+3:end_end-end_cut]:
+                repr_parts.append(chr(character))
+            
+            if end_cut:
+                repr_parts.append('...')
+            
+            repr_parts.append('\n')
+            repr_parts.append('^'*mark_end)
+        
+        repr_parts.append('\n```')
+        
+        pretty_repr = ''.join(repr_parts)
+        self._pretty_repr = pretty_repr
+        return pretty_repr
 
 
 class Token:
@@ -2095,7 +2312,7 @@ class ParsingState:
         if evaluator is None:
             value = None
         else:
-            value, identifier = evaluator(array[start:end])
+            value, identifier = evaluator(array, start, end)
             if identifier == STATIC_NONE_ID:
                 raise EvaluationError(self.array, start, end, 'Unknown identifier.')
         
@@ -2125,7 +2342,7 @@ def parse_cycle(state):
             raise EvaluationError(state.array, state.index, state.index+1, 'Unexpected character.')
 
 
-def optimize_tokens_remove_space(state):
+def remove_space(state):
     """
     Removes the spaces from the given tokens.
     
@@ -2460,7 +2677,7 @@ def evaluate_text(text):
     """
     state = ParsingState(text)
     parse_cycle(state)
-    optimize_tokens_remove_space(state)
+    remove_space(state)
     check_followance(state)
     check_parentheses(state)
     build_parentheses(state)

@@ -1226,9 +1226,11 @@ class ConverterSetting:
     uses_flags : `bool`
         Whether the converter processes any flags.
     """
-    __slots__ = ('all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags', 'default_type', 'uses_flags')
+    __slots__ = ('all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags',
+        'default_type', 'uses_flags')
     
-    def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type, alternative_types):
+    def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
+            alternative_types):
         """
         Creates a new ``ConverterSetting`` instance to store settings related to a converter function.
         
@@ -1365,8 +1367,9 @@ class ConverterSetting:
         if (default_type is not None):
             CONVERTER_SETTING_TYPE_RELATION_MAP[default_type] = self
             CONVERTER_SETTING_NAME_TO_TYPE[default_type.__name__] = default_type
-            if (alternative_type_name is not None):
-                CONVERTER_SETTING_NAME_TO_TYPE[alternative_type_name] = default_type
+        
+        if (alternative_type_name is not None):
+            CONVERTER_SETTING_NAME_TO_TYPE[alternative_type_name] = default_type
         
         if (alternative_types_processed is not None):
             for alternative_type in alternative_types_processed:

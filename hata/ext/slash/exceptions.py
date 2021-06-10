@@ -1,6 +1,12 @@
 __all__ = ('SlashCommandError', 'SlashCommandParameterConversionError')
 
 from ...backend.utils import copy_docs
+from ...backend.export import include
+
+from ...discord.interaction import InteractionType
+from ...discord.exceptions import DiscordException, ERROR_CODES
+
+SlashCommand = include('SlashCommand')
 
 class SlashCommandError(Exception):
     """
@@ -194,3 +200,60 @@ class SlashCommandParameterConversionError(SlashCommandError):
         pretty_repr = ''.join(repr_parts)
         self._pretty_repr = pretty_repr
         return pretty_repr
+
+
+async def _default_slasher_exception_handler(client, interaction_event, command, exception):
+    """
+    Default ``Slasher`` exception handler.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
+    command : ``SlashCommand`` or ``ComponentCommand``
+        The command, which raised.
+    exception : `BaseException`
+        The occurred exception.
+    
+    Returns
+    -------
+    handled : `bool`
+        Whether the error handler handled the exception.
+    """
+    if isinstance(exception, SlashCommandError):
+        forward = exception.pretty_repr
+        render = False
+    elif (interaction_event.type is InteractionType.application_command) and (not interaction_event.responded()):
+        forward = (
+           'Exception occurred meanwhile processing your interaction.\n'
+           'Our highly educated Cirno-s are already working on the problem.'
+        )
+        render = True
+    else:
+        forward = None
+        render = True
+    
+    if (forward is not None):
+        try:
+            await client.interaction_response_message_create(interaction_event, forward, show_for_invoking_user_only=True)
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                pass
+            elif isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_interaction):
+                pass
+            else:
+                raise
+    
+    if render:
+        if isinstance(command, SlashCommand):
+            command_name = command.name
+        else:
+            command_name = command.__class__.__name__
+        
+        await client.events.error(client, f'`Slasher` while calling `{command_name}', exception)
+    
+    return True

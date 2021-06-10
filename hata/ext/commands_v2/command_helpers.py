@@ -67,7 +67,7 @@ async def handle_exception(command_context, exception):
     # We can ignore command processing exceptions.
     if not isinstance(exception, CommandProcessingError):
         client = command_context.client
-        await client.events.error(client, '_handle_exception', exception)
+        await client.events.error(client, 'handle_exception', exception)
 
 
 def get_command_category_trace(command, content, index):

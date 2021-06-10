@@ -16,7 +16,7 @@ from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .slash_command import SlashCommand
 from .component_command import ComponentCommand
-from .exceptions import SlashCommandError
+from .exceptions import SlashCommandError, _default_slasher_exception_handler
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -693,6 +693,8 @@ class Slasher(EventHandlerBase):
     _component_interaction_waiters : ``WeakKeyDictionary`` of (``Message``, `async-callable`) items
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
+    _error_handlers : `None` or `list` of `CoroutineFunction`
+        Error handlers added with `.error` to the interaction handler.
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
     _sync_permission_tasks : `dict` of (`int`, ``Task``) items
@@ -720,8 +722,8 @@ class Slasher(EventHandlerBase):
     ``Slasher`` instances are weakreferable.
     """
     __slots__ = ('__weakref__', '_call_later', '_client_reference', '_command_states', '_command_unloading_behaviour',
-        '_component_interaction_waiters', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
-        '_synced_permissions', 'command_id_to_command', 'custom_id_to_command')
+        '_component_interaction_waiters', '_error_handlers', '_sync_done', '_sync_permission_tasks', '_sync_should',
+        '_sync_tasks', '_synced_permissions', 'command_id_to_command', 'custom_id_to_command')
     
     __event_name__ = 'interaction_create'
     
@@ -774,6 +776,7 @@ class Slasher(EventHandlerBase):
         self._sync_permission_tasks = {}
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
+        self._error_handlers = None
         
         self.command_id_to_command = {}
         self.custom_id_to_command = {}

@@ -1202,7 +1202,8 @@ def evaluate_2_sided_power(token_1, token_2, token_3):
             f'Power over {LIMIT_POWER_MAX} disallowed: {value_1} ** {value_2}.'
         )
     
-    if value_1.bit_length()*value_2.bit_length() > LIMIT_INTEGER_BIT_LENGTH:
+    if isinstance(value_1, int) and isinstance(value_2, int) and \
+            value_1.bit_length()*value_2.bit_length() > LIMIT_INTEGER_BIT_LENGTH:
         raise EvaluationError(
             token_1.array, token_1.start, token_3.end,
             f'Power over possible {LIMIT_INTEGER_BIT_LENGTH} bit length disallowed: {value_1} ** {value_2}.'

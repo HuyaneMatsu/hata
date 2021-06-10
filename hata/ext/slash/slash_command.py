@@ -1,6 +1,7 @@
 __all__ = ('SlashCommand', )
 
 from ...backend.utils import WeakReferer
+from ...backend.export import export
 
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
     create_event_from_class
@@ -336,7 +337,7 @@ def _generate_description_from(command, name, description):
     
     return description
 
-
+@export
 class SlashCommand:
     """
     Class to wrap an application command providing interface for ``Slasher``.

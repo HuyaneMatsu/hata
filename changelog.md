@@ -17,6 +17,12 @@
 ##### hata.ext.kokoro_sqlalchemy
 - `AsyncResultProxy.fetchone` returned an awaitable returning the result instead of the result.
 
+##### hata.ext.commands
+- Converters without type could not be registered correctly.
+
+##### hata.ext.commands_v2
+- Converters without type could not be registered correctly.
+
 ## 1.1.83 *\[2021-06-02\]*
 
 #### Summary

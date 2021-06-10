@@ -735,11 +735,11 @@ class ConverterSetting:
             CONVERTER_SETTING_TYPE_TO_SETTING[default_type] = self
             CONVERTER_SETTING_NAME_TO_SETTING[default_type.__name__] = self
             CONVERTER_NAME_TO_TYPE[default_type.__name__] = default_type
-            
-            if (alternative_type_name is not None):
-                CONVERTER_SETTING_NAME_TO_SETTING[alternative_type_name] = self
-                CONVERTER_NAME_TO_TYPE[alternative_type_name] = default_type
-            
+        
+        if (alternative_type_name is not None):
+            CONVERTER_SETTING_NAME_TO_SETTING[alternative_type_name] = self
+            CONVERTER_NAME_TO_TYPE[alternative_type_name] = default_type
+        
         if (alternative_types_processed is not None):
             for alternative_type in alternative_types_processed:
                 CONVERTER_SETTING_TYPE_TO_SETTING[alternative_type] = self
@@ -750,7 +750,7 @@ class ConverterSetting:
     
     def __repr__(self):
         """Returns the converter setting's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' converter=',
@@ -761,21 +761,21 @@ class ConverterSetting:
         if default_type is None:
             alternative_type_name = self.alternative_type_name
             if (alternative_type_name is not None):
-                result.append(', alternative_type_name=')
-                result.append(repr(alternative_type_name))
+                repr_parts.append(', alternative_type_name=')
+                repr_parts.append(repr(alternative_type_name))
         else:
             default_type_name = default_type.__name__
-            result.append(', default_type=')
-            result.append(default_type_name)
+            repr_parts.append(', default_type=')
+            repr_parts.append(default_type_name)
             
             alternative_type_name = self.alternative_type_name
             if alternative_type_name != default_type_name:
-                result.append(', alternative_type_name=')
-                result.append(repr(alternative_type_name))
+                repr_parts.append(', alternative_type_name=')
+                repr_parts.append(repr(alternative_type_name))
             
             alternative_types = self.alternative_types
             if (alternative_types is not None):
-                result.append(', alternative_types=[')
+                repr_parts.append(', alternative_types=[')
                 
                 index = 0
                 limit = len(alternative_types)
@@ -783,28 +783,28 @@ class ConverterSetting:
                     alternative_type_= alternative_types[index]
                     index += 1
                     
-                    result.append(alternative_type_.__name__)
+                    repr_parts.append(alternative_type_.__name__)
                     
                     if index == limit:
                         break
                     
-                    result.append(', ')
+                    repr_parts.append(', ')
                     continue
                 
-                result.append(']')
+                repr_parts.append(']')
         
         if self.uses_flags:
             default_flags = self.default_flags
-            result.append(', default_flags=')
-            result.append(int.__repr__(default_flags))
+            repr_parts.append(', default_flags=')
+            repr_parts.append(int.__repr__(default_flags))
             
             all_flags = self.all_flags
             if default_flags != all_flags:
-                result.append(', all_flags=')
-                result.append(int.__repr__(all_flags))
+                repr_parts.append(', all_flags=')
+                repr_parts.append(int.__repr__(all_flags))
         
-        result.append('>')
-        return ''.join(result)
+        repr_parts.append('>')
+        return ''.join(repr_parts)
 
 
 async def none_converter(command_context, content_parser_parameter_detail):

@@ -16,7 +16,7 @@ from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .slash_command import SlashCommand
 from .component_command import ComponentCommand
-from .exceptions import SlashCommandError, _default_slasher_exception_handler
+from .exceptions import handle_command_exception, test_exception_handler
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -693,7 +693,7 @@ class Slasher(EventHandlerBase):
     _component_interaction_waiters : ``WeakKeyDictionary`` of (``Message``, `async-callable`) items
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
-    _error_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None` or `list` of `CoroutineFunction`
         Error handlers added with `.error` to the interaction handler.
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
@@ -721,9 +721,10 @@ class Slasher(EventHandlerBase):
     -----
     ``Slasher`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_call_later', '_client_reference', '_command_states', '_command_unloading_behaviour',
-        '_component_interaction_waiters', '_error_handlers', '_sync_done', '_sync_permission_tasks', '_sync_should',
-        '_sync_tasks', '_synced_permissions', 'command_id_to_command', 'custom_id_to_command')
+    __slots__ = ('__weakref__', '_call_later', '_client_reference', '_component_commands', '_command_states',
+        '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers', '_sync_done',
+        '_sync_permission_tasks', '_sync_should', '_sync_tasks', '_synced_permissions', 'command_id_to_command',
+        'custom_id_to_command')
     
     __event_name__ = 'interaction_create'
     
@@ -776,7 +777,8 @@ class Slasher(EventHandlerBase):
         self._sync_permission_tasks = {}
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
-        self._error_handlers = None
+        self._exception_handlers = None
+        self._component_commands = set()
         
         self.command_id_to_command = {}
         self.custom_id_to_command = {}
@@ -827,11 +829,8 @@ class Slasher(EventHandlerBase):
             if (command is not None):
                 try:
                     await command(client, interaction_event)
-                except SlashCommandError as err:
-                    await client.interaction_response_message_create(interaction_event, err.pretty_repr,
-                        show_for_invoking_user_only=True)
                 except BaseException as err:
-                    await client.events.error(client, f'`{self!r}.__call__` while calling `{command.name!r}`', err)
+                    await handle_command_exception(self._exception_handlers, client, interaction_event, command, err)
     
     async def _dispatch_component_event(self, client, interaction_event):
         """
@@ -865,7 +864,8 @@ class Slasher(EventHandlerBase):
             try:
                 await component_command(client, interaction_event)
             except BaseException as err:
-                await client.events.error(client, f'{self!r}.__call__', err)
+                await handle_command_exception(self._exception_handlers, client, interaction_event, component_command,
+                    err)
     
     def add_component_interaction_waiter(self, message, waiter):
         """
@@ -951,10 +951,12 @@ class Slasher(EventHandlerBase):
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+        custom_id : `str`, (`list` or `set`) of `str`, `tuple` of (`str`, (`list` or `set`) of `str`)
+            Custom id to match by the component command.
         
         Returns
         -------
-        func : ``SlashCommand``
+        func : ``SlashCommand``, ``ComponentCommand``
              The created or added command.
         
         Raises
@@ -971,11 +973,23 @@ class Slasher(EventHandlerBase):
             self._add_slash_command(func)
             return func
         
-        command = SlashCommand(func, *args, **kwargs)
+        if isinstance(func, ComponentCommand):
+            self._add_component_command(func)
+            return func
+        
+        if 'custom_id' in kwargs:
+            command = ComponentCommand(func, *args, **kwargs)
+        else:
+            command = SlashCommand(func, *args, **kwargs)
+        
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_slash_command(command)
+        if isinstance(command, SlashCommand):
+            self._add_slash_command(command)
+        else:
+            self._add_component_command(command)
+        
         return command
     
     def create_event_from_class(self, klass):
@@ -989,7 +1003,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        func : ``SlashCommand``
+        func : ``SlashCommand``, ``ComponentCommand``
              The created or added command.
         
         Raises
@@ -999,12 +1013,19 @@ class Slasher(EventHandlerBase):
         ValueError
             If Any attribute's value is incorrect.
         """
-        command = SlashCommand.from_class(klass)
+        if hasattr(klass, 'custom_id'):
+            command = ComponentCommand.from_class(klass)
+        else:
+            command = SlashCommand.from_class(klass)
         
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_slash_command(command)
+        if isinstance(command, SlashCommand):
+            self._add_slash_command(command)
+        else:
+            self._add_component_command(command)
+        
         return command
     
     
@@ -1023,6 +1044,7 @@ class Slasher(EventHandlerBase):
         self._register_slash_command(command)
         
         self._maybe_sync()
+    
     
     def _register_slash_command(self, command):
         """
@@ -1061,6 +1083,7 @@ class Slasher(EventHandlerBase):
             if change_identifier == COMMAND_STATE_IDENTIFIER_NON_GLOBAL:
                 continue
     
+    
     def _remove_slash_command(self, command):
         """
         Tries to remove the given command from the ``Slasher``.
@@ -1076,6 +1099,7 @@ class Slasher(EventHandlerBase):
         self._unregister_slash_command(command)
         
         self._maybe_sync()
+    
     
     def _unregister_slash_command(self, command):
         """
@@ -1103,8 +1127,8 @@ class Slasher(EventHandlerBase):
             if change_identifier == COMMAND_STATE_IDENTIFIER_REMOVED:
                 if sync_id == SYNC_ID_NON_GLOBAL:
                     for guild_id in removed_command._iter_guild_ids():
-                        self._sync_should.add(sync_id)
-                        self._sync_done.discard(sync_id)
+                        self._sync_should.add(guild_id)
+                        self._sync_done.discard(guild_id)
                 else:
                     self._sync_should.add(sync_id)
                     self._sync_done.discard(sync_id)
@@ -2242,7 +2266,29 @@ class Slasher(EventHandlerBase):
                 return
         
         Task(self._do_main_sync(client), KOKORO)
-
+    
+    
+    def error(self, exception_handler):
+        """
+        Registers an exception handler to teh slasher.
+        
+        Parameters
+        ----------
+        exception_handler : `CoroutineFunction`
+        
+        Returns
+        -------
+        exception_handler : `CoroutineFunction`
+        """
+        test_exception_handler(exception_handler)
+        
+        exception_handlers = self._exception_handlers
+        if exception_handlers is None:
+            self._exception_handlers = exception_handlers = []
+        
+        exception_handlers.append(exception_handler)
+    
+    
     def _add_component_command(self, command):
         """
         Adds a slash command to the ``Slasher`` if applicable.
@@ -2251,5 +2297,60 @@ class Slasher(EventHandlerBase):
         ---------
         command : ``ComponentCommand``
             The command to add.
+        
+        Raises
+        ------
+        RuntimeError
+            If `command` would only partially overwrite an other commands.
         """
-        pass
+        custom_id_to_command = self.custom_id_to_command
+        
+        overwrite_commands = None
+        for custom_id in command.custom_ids:
+            try:
+                maybe_overwrite_command = custom_id_to_command[custom_id]
+            except KeyError:
+                continue
+            
+            if overwrite_commands is None:
+                overwrite_commands = set()
+            
+            overwrite_commands.add(maybe_overwrite_command)
+            continue
+        
+        if (overwrite_commands is not None):
+            would_overwrite_custom_ids = set()
+            for overwrite_command in overwrite_commands:
+                would_overwrite_custom_ids.update(overwrite_command.custom_ids)
+            
+            if not would_overwrite_custom_ids.issuperset(command.custom_ids):
+                raise RuntimeError(f'Command: {command!r} would only partially overwrite the following commands: '
+                    f'{", ".join(overwrite_commands)}.')
+            
+            for overwrite_command in overwrite_commands:
+                self._component_commands.discard(overwrite_command)
+        
+        for custom_id in command.custom_ids:
+            custom_id_to_command[custom_id] = command
+        
+        self._component_commands.add(command)
+    
+    def _remove_component_command(self, command):
+        """
+        Removes the given component command from the slasher.
+        
+        Parameters
+        ----------
+        command : ``ComponentCommand``
+            The command to remove.
+        """
+        try:
+            self._component_commands.remove(command)
+        except KeyError:
+            pass
+        else:
+            custom_id_to_command = self.custom_id_to_command
+            
+            for custom_id in command.custom_ids:
+                if custom_id_to_command[custom_id] is command:
+                    del custom_id_to_command[custom_id]

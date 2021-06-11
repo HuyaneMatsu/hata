@@ -16,7 +16,9 @@ def take_slasher_snapshot(client):
     
     Returns
     -------
-    collected : `None` or `dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items
+    collected : `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items, \
+            `None` or `set` of ``ComponentCommand``)
+        The collected commands of the slasher.
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is None) or (not isinstance(slasher, Slasher)):
@@ -25,7 +27,7 @@ def take_slasher_snapshot(client):
     else:
         command_states = slasher._command_states
         
-        collected = None
+        collected_slash_commands = None
         for guild_id, command_state in command_states.items():
             if guild_id == SYNC_ID_NON_GLOBAL:
                 active_commands = command_state._active
@@ -41,10 +43,21 @@ def take_slasher_snapshot(client):
                 
                 command_changes = [tuple(change) for change in changes]
             
-            if collected is None:
-                collected = {}
+            if collected_slash_commands is None:
+                collected_slash_commands = {}
             
-            collected[guild_id] = command_changes
+            collected_slash_commands[guild_id] = command_changes
+        
+        collected_component_commands = slasher._component_commands
+        if collected_component_commands:
+            collected_component_commands = collected_component_commands.copy()
+        else:
+            collected_component_commands = None
+        
+        if (collected_slash_commands is None) and (collected_component_commands is None):
+            collected = None
+        else:
+            collected = (collected_slash_commands, collected_component_commands)
     
     return collected
 
@@ -56,75 +69,126 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     ----------
     client : ``Client``
         The respective client.
-    snapshot_old :  `None` or `dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items
+    snapshot_old :  `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items, \
+            `None` or `set` of ``ComponentCommand``)
         An old snapshot taken.
-    snapshot_new :  `None` or `dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items
+    snapshot_new :  `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` (`bool`, ``SlashCommand``)) items, \
+            `None` or `set` of ``ComponentCommand``)
         A new snapshot.
     
     Returns
     -------
-    snapshot_difference : `None` or `tuple` (`set` of ``SlashCommand``, `set` of ``SlashCommand``)
+    snapshot_difference : `None` or `tuple` (`tuple` (`set` of ``SlashCommand``, `set` of ``SlashCommand``), \
+            `tuple` (`None` or `set` of ``ComponentCommand``, `None` or `set` of ``ComponentCommand``)
+        The difference between the two snapshots.
     """
     if (snapshot_old is None) and (snapshot_new is None):
         return None
     
-    # Keep the order!
-    added_commands = []
-    removed_commands = []
     
-    guild_ids = set()
-    if (snapshot_old is not None):
-        guild_ids.update(snapshot_old.keys())
+    if snapshot_old is None:
+        slash_command_snapshot_old = None
+        component_command_snapshot_old = None
+    else:
+        slash_command_snapshot_old, component_command_snapshot_old = snapshot_old
     
-    if (snapshot_new is not None):
-        guild_ids.update(snapshot_new.keys())
-    
-    for guild_id in guild_ids:
-        local_added_commands = []
-        local_removed_commands = []
+    if snapshot_new is None:
+        slash_command_snapshot_new = None
+        component_command_snapshot_new = None
+    else:
+        slash_command_snapshot_new, component_command_snapshot_new = snapshot_new
         
-        if (snapshot_new is not None):
-            try:
-                new_changes = snapshot_new[guild_id]
-            except KeyError:
-                pass
-            else:
-                for added, command in new_changes:
-                    if added:
-                        local_added_commands.append(command)
-                    else:
-                        local_removed_commands.remove(command)
+    
+    if (slash_command_snapshot_old is not None) or (slash_command_snapshot_new is not None):
+        added_slash_commands = []
+        removed_slash_commands = []
         
-        if (snapshot_old is not None):
-            try:
-                old_changes = snapshot_old[guild_id]
-            except KeyError:
-                pass
-            else:
-                for added, command in old_changes:
-                    if added:
-                        try:
-                            local_added_commands.remove(command)
-                        except ValueError:
-                            local_removed_commands.append(command)
-                    else:
-                        try:
-                            local_removed_commands.remove(command)
-                        except ValueError:
-                            local_added_commands.append(command)
+        guild_ids = set()
+        if (slash_command_snapshot_old is not None):
+            guild_ids.update(slash_command_snapshot_old.keys())
         
-        added_commands.extend(local_added_commands)
-        removed_commands.extend(local_removed_commands)
+        if (slash_command_snapshot_new is not None):
+            guild_ids.update(slash_command_snapshot_new.keys())
+        
+        for guild_id in guild_ids:
+            local_added_slash_commands = []
+            local_removed_slash_commands = []
+            
+            if (slash_command_snapshot_new is not None):
+                try:
+                    new_changes = slash_command_snapshot_new[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    for added, command in new_changes:
+                        if added:
+                            local_added_slash_commands.append(command)
+                        else:
+                            local_removed_slash_commands.remove(command)
+            
+            if (slash_command_snapshot_old is not None):
+                try:
+                    old_changes = slash_command_snapshot_old[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    for added, command in old_changes:
+                        if added:
+                            try:
+                                local_added_slash_commands.remove(command)
+                            except ValueError:
+                                local_removed_slash_commands.append(command)
+                        else:
+                            try:
+                                local_removed_slash_commands.remove(command)
+                            except ValueError:
+                                local_added_slash_commands.append(command)
+            
+            added_slash_commands.extend(local_added_slash_commands)
+            removed_slash_commands.extend(local_removed_slash_commands)
+        
+        if (not added_slash_commands):
+            added_slash_commands = None
+        
+        if (not removed_slash_commands):
+            removed_slash_commands = None
     
-    if (not added_commands) and (not removed_commands):
-        return None
+        if (added_slash_commands is None) and (removed_slash_commands is None):
+            slash_command_difference = None
+        else:
+            if client.running and client.application.id:
+                slasher = getattr(client, 'slasher', None)
+                if (slasher is not None):
+                    slasher.sync()
     
-    if client.running and client.application.id:
-        slasher = getattr(client, 'slasher', None)
-        if (slasher is not None):
-            slasher.sync()
+        slash_command_difference = added_slash_commands, removed_slash_commands
+    else:
+        slash_command_difference = None
     
-    return added_commands, removed_commands
+    if (component_command_snapshot_old is None) or (component_command_snapshot_new is None):
+        removed_component_commands = component_command_snapshot_old
+        added_component_commands = component_command_snapshot_new
+    else:
+        removed_component_commands = component_command_snapshot_old-component_command_snapshot_new
+        added_component_commands = component_command_snapshot_new-component_command_snapshot_old
+        
+        if (not removed_component_commands):
+            removed_component_commands = None
+        
+        if (not added_component_commands):
+            added_component_commands = None
+    
+    if (added_component_commands is None) and (removed_component_commands is None):
+        component_command_difference = None
+    else:
+        component_command_difference = (removed_component_commands, added_component_commands)
+    
+    if (slash_command_difference is None) and (component_command_difference is None):
+        snapshot_difference = None
+    else:
+        snapshot_difference = (slash_command_difference, component_command_difference)
+    
+    return snapshot_difference
 
 def revert_slasher_snapshot(client, snapshot_difference):
     """
@@ -134,28 +198,46 @@ def revert_slasher_snapshot(client, snapshot_difference):
     ----------
     client : ``Client``
         The respective client instance.
-    snapshot_difference : `tuple` (`set` of ``SlashCommand``, `set` of ``SlashCommand``)
+    snapshot_difference : `None` or `tuple` (`tuple` (`set` of ``SlashCommand``, `set` of ``SlashCommand``), \
+            `tuple` (`None` or `set` of ``ComponentCommand``, `None` or `set` of ``ComponentCommand``)
         The taken snapshot.
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is None) or (not isinstance(slasher, Slasher)):
         return
     
-    added_commands, removed_commands = snapshot_difference
-    for command in added_commands:
-        slasher._remove_slash_command(command)
-    
-    for command in removed_commands:
-        slasher._add_slash_command(command)
-    
-    if client.running and client.application.id:
-        slasher.sync()
+    if (snapshot_difference is not None):
+        slash_command_difference, component_command_difference = snapshot_difference
+        
+        if (slash_command_difference is not None):
+            added_slash_commands, removed_slash_commands = slash_command_difference
+            if (added_slash_commands is not None):
+                for slash_command in added_slash_commands:
+                    slasher._remove_slash_command(slash_command)
+            
+            if (removed_slash_commands is not None):
+                for slash_command in removed_slash_commands:
+                    slasher._add_slash_command(slash_command)
+            
+            if client.running and client.application.id:
+                slasher.sync()
+        
+        if (component_command_difference is not None):
+            added_component_commands, removed_component_commands = component_command_difference
+            
+            if (added_component_commands is not None):
+                for component_command in added_component_commands:
+                    slasher._remove_component_command(component_command)
+
+            if (removed_component_commands is not None):
+                for component_command in removed_component_commands:
+                    slasher._add_component_command(component_command)
 
 SNAPSHOT_TAKERS['client.slasher'] = (
     take_slasher_snapshot,
     calculate_slasher_snapshot_difference,
     revert_slasher_snapshot,
-        )
+)
 
 
 def runtime_sync_hook_is_executing_extension(client):

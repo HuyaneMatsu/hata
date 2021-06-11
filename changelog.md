@@ -1,4 +1,6 @@
-## 1.1.84 *\[2021-06-??\]*
+## 1.1.85 *\[2021-06-??\]*
+
+## 1.1.84 *\[2021-06-11\]*
 
 #### Improvements
 
@@ -6,7 +8,7 @@
 - Include date, method and url in ``DiscordException`` error message.
 
 ##### hata.ext.slash
-
+- Add `ComponentCommand`.
 - Add `expression` converter for slash commands.
 
 #### Bug Fixes
@@ -16,9 +18,6 @@
 
 ##### hata.ext.kokoro_sqlalchemy
 - `AsyncResultProxy.fetchone` returned an awaitable returning the result instead of the result.
-
-##### hata.ext.commands
-- Converters without type could not be registered correctly.
 
 ##### hata.ext.commands_v2
 - Converters without type could not be registered correctly.

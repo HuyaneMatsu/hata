@@ -209,7 +209,7 @@ def test_precheck(precheck):
 
 def test_error_handler(error_handler):
     """
-    Tests whether the given precheck accepts the expected amount of parameters.
+    Tests whether the given error handler accepts the expected amount of parameters.
     
     Parameters
     ----------

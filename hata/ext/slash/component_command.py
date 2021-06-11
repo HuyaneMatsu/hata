@@ -240,6 +240,19 @@ class ComponentCommand:
         hash_value ^= command_hash_value
         return hash_value
     
+    def __eq__(self, other):
+        """Returns whether self equals to other."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._command_function != other._command_function:
+            return False
+        
+        if self.custom_ids != other.custom_ids:
+            return False
+        
+        return True
+    
     def copy(self):
         """
         Copies the component command.

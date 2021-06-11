@@ -2,6 +2,7 @@ __all__ = ('SlashCommandError', 'SlashCommandParameterConversionError')
 
 from ...backend.utils import copy_docs
 from ...backend.export import include
+from ...backend.analyzer import CallableAnalyzer
 
 from ...discord.interaction import InteractionType
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -249,11 +250,112 @@ async def _default_slasher_exception_handler(client, interaction_event, command,
                 raise
     
     if render:
-        if isinstance(command, SlashCommand):
-            command_name = command.name
-        else:
-            command_name = command.__class__.__name__
-        
-        await client.events.error(client, f'`Slasher` while calling `{command_name}', exception)
+        await _render_slash_command_exception(client, command, exception)
     
     return True
+
+async def _render_slash_command_exception(client, command, exception):
+    """
+    Renders interaction command exception.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    command : ``SlashCommand`` or ``ComponentCommand``
+        The command, which raised.
+    exception : `BaseException`
+        The occurred exception.
+    """
+    if isinstance(command, SlashCommand):
+        command_name = command.name
+    else:
+        command_name = command.__class__.__name__
+    
+    await client.events.error(client, f'`Slasher` while calling `{command_name}', exception)
+
+
+async def handle_command_exception(exception_handlers, client, interaction_event, command, exception):
+    """
+    handles slash command exception.
+    
+    This function is a coroutine.
+
+    Parameters
+    ----------
+    exception_handlers : `None` or `list` of `CoroutineFunction`
+        Exception handlers to call.
+    client : ``Client``
+        The respective client.
+    interaction_event : ``InteractionEvent``
+        The received interaction event.
+    command : ``SlashCommand`` or ``ComponentCommand``
+        The command, which raised.
+    exception : `BaseException`
+        The occurred exception.
+    """
+    if (exception_handlers is not None):
+        for exception_handler in exception_handlers:
+            try:
+                handled = await exception_handler(client, interaction_event, command, exception)
+            except BaseException as err:
+                await client.events.error(client, 'handle_command_exception', err)
+                return
+            
+            if handled:
+                return
+    
+    await _render_slash_command_exception(client, command, exception)
+
+
+def test_exception_handler(exception_handler):
+    """
+    Tests whether the given exception handler accepts the expected amount of parameters.
+    
+    Parameters
+    ----------
+    exception_handler : `CoroutineFunction`
+        A function, which handles an exception and returns whether handled it.
+        
+        The following parameters are passed to it:
+        
+        +-------------------+-------------------------------------------+
+        | Name              | Type                                      |
+        +===================+===========================================+
+        | client            | ``Client``                                |
+        +-------------------+-------------------------------------------+
+        | interaction_event | ``InteractionEvent``                      |
+        +-------------------+-------------------------------------------+
+        | command           | ``SlashCommand``, ``ComponentCommand``    |
+        +-------------------+-------------------------------------------+
+        | exception         | `BaseException`                           |
+        +-------------------+-------------------------------------------+
+        
+        Should return the following parameters:
+        
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | handled           | `bool`    |
+        +-------------------+-----------+
+    
+    Raises
+    ------
+    TypeError
+        - If `exception_handler` accepts bad amount of parameters.
+        - If `exception_handler` is not a coroutine function.
+    """
+    analyzer = CallableAnalyzer(exception_handler)
+    if not analyzer.is_async():
+        raise TypeError('`exception_handler` should be given as `async` function.')
+    
+    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    if min_ > 4:
+        raise TypeError(f'`exception_handler` should accept `4` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got `{exception_handler!r}`.')
+    
+    if min_ != 4:
+        if max_ < 4:
+            if not analyzer.accepts_args():
+                raise TypeError(f'`exception_handler` should accept `4` parameters, meanwhile the given callable '
+                    f'expects up to `{max_!r}`, got `{exception_handler!r}`.')

@@ -1,6 +1,21 @@
-## 1.1.85 *\[2021-06-??\]*
+## 1.1.85 *\[2021-06-11\]*
+
+#### Summary
+
+Bug fixes.
+
+#### Bug Fixes
+
+##### hata.ext.slash
+- `default_slasher_exception_handler` could raise `TypeError`.
+- `handle_command_exception` rendered `SlashCommandError`-s by default as well.
+- Prefix operations were not executed on floats.
 
 ## 1.1.84 *\[2021-06-11\]*
+
+#### Summary
+
+Add component commands and expression parser for slash commands.
 
 #### Improvements
 
@@ -34,7 +49,7 @@ Fix up components in slash.
 
 - Add `UserBase.custom_activity`.
 - Rework `UserBase.custom_activity`.
-- Add `componnets` parameter to `Client.interaction_response_message_edit`.
+- ###### Add `componnets` parameter to `Client.interaction_response_message_edit`.
 - Add `componnets` parameter to `Client.interaction_followup_message_edit`.
 
 ##### hata.ext.slash

@@ -228,7 +228,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     if isinstance(exception, SlashCommandError):
         forward = exception.pretty_repr
         render = False
-    elif (interaction_event.type is InteractionType.application_command) and (not interaction_event.responded()):
+    elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
         forward = (
            'Exception occurred meanwhile processing your interaction.\n'
            'Our highly educated Cirno-s are already working on the problem.'
@@ -305,7 +305,8 @@ async def handle_command_exception(exception_handlers, client, interaction_event
             if handled:
                 return
     
-    await _render_slash_command_exception(client, command, exception)
+    if not isinstance(exception, SlashCommandError):
+        await _render_slash_command_exception(client, command, exception)
 
 
 def test_exception_handler(exception_handler):

@@ -62,6 +62,8 @@ def setup_ext_slash(client, **kwargs):
     ----------------
     delete_commands_on_unload: `bool`, Optional
         Whether commands should be deleted when unloaded.
+    use_default_exception_handler : `bool`, Optional
+        Whether the default slash exception handler should be added as an exception handler.
     
     Returns
     -------
@@ -75,6 +77,7 @@ def setup_ext_slash(client, **kwargs):
     TypeError
         - If `client` was not given as ``Client`` instance.
         - If `delete_commands_on_unload` was not given as `bool` instance.
+        - If `use_default_exception_handler` was not given as `bool` instance.
     """
     for attr_name in ('slasher', 'interactions'):
         if hasattr(client, attr_name):
@@ -95,7 +98,7 @@ def setup_ext_slash(client, **kwargs):
 
 def snapshot_hook():
     from . import snapshot
-    
+
 
 register_library_extension('HuyaneMatsu.slash')
 add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
@@ -106,5 +109,6 @@ register_setup_function(
     None,
     (
         'delete_commands_on_unload',
+        'use_default_exception_handler',
     ),
 )

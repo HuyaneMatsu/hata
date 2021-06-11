@@ -16,7 +16,7 @@ from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .slash_command import SlashCommand
 from .component_command import ComponentCommand
-from .exceptions import handle_command_exception, test_exception_handler
+from .exceptions import handle_command_exception, test_exception_handler, default_slasher_exception_handler
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -695,6 +695,29 @@ class Slasher(EventHandlerBase):
         a ``Task``.
     _exception_handlers : `None` or `list` of `CoroutineFunction`
         Error handlers added with `.error` to the interaction handler.
+    
+        The following parameters are passed to it:
+        
+        +-------------------+-------------------------------------------+
+        | Name              | Type                                      |
+        +===================+===========================================+
+        | client            | ``Client``                                |
+        +-------------------+-------------------------------------------+
+        | interaction_event | ``InteractionEvent``                      |
+        +-------------------+-------------------------------------------+
+        | command           | ``SlashCommand``, ``ComponentCommand``    |
+        +-------------------+-------------------------------------------+
+        | exception         | `BaseException`                           |
+        +-------------------+-------------------------------------------+
+        
+        Should return the following parameters:
+        
+        +-------------------+-----------+
+        | Name              | Type      |
+        +===================+===========+
+        | handled           | `bool`    |
+        +-------------------+-----------+
+    
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
     _sync_permission_tasks : `dict` of (`int`, ``Task``) items
@@ -730,7 +753,7 @@ class Slasher(EventHandlerBase):
     
     SUPPORTED_TYPES = (SlashCommand, ComponentCommand)
     
-    def __new__(cls, client, delete_commands_on_unload=False):
+    def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True):
         """
         Creates a new interaction event handler.
         
@@ -740,11 +763,14 @@ class Slasher(EventHandlerBase):
             The owner client instance.
         delete_commands_on_unload : `bool`, Optional
             Whether commands should be deleted when unloaded.
+        use_default_exception_handler : `bool`, Optional
+            Whether the default slash exception handler should be added as an exception handler.
         
         Raises
         ------
         TypeError
             - If `delete_commands_on_unload` was not given as `bool` instance.
+            - If `use_default_exception_handler` was not given as `bool` instance.
             - If `client` was not given as ``Client`` instance.
         """
         if not isinstance(client, Client):
@@ -760,10 +786,25 @@ class Slasher(EventHandlerBase):
             raise TypeError(f'`delete_commands_on_unload` can be given as `bool` instance, got '
                 f'{delete_commands_on_unload.__class__.__name__}.')
         
+        if type(use_default_exception_handler) is bool:
+            pass
+        elif isinstance(use_default_exception_handler, bool):
+            use_default_exception_handler = bool(use_default_exception_handler)
+        else:
+            raise TypeError(f'`use_default_exception_handler` can be given as `bool` instance, got '
+                f'{use_default_exception_handler.__class__.__name__}.')
+        
+        
         if delete_commands_on_unload:
             command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
         else:
             command_unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
+        
+        
+        if use_default_exception_handler:
+            exception_handlers = [default_slasher_exception_handler]
+        else:
+            exception_handlers = None
         
         
         self = object.__new__(cls)
@@ -777,7 +818,7 @@ class Slasher(EventHandlerBase):
         self._sync_permission_tasks = {}
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
-        self._exception_handlers = None
+        self._exception_handlers = exception_handlers
         self._component_commands = set()
         
         self.command_id_to_command = {}

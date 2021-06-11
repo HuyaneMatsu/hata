@@ -203,7 +203,7 @@ class SlashCommandParameterConversionError(SlashCommandError):
         return pretty_repr
 
 
-async def _default_slasher_exception_handler(client, interaction_event, command, exception):
+async def default_slasher_exception_handler(client, interaction_event, command, exception):
     """
     Default ``Slasher`` exception handler.
     

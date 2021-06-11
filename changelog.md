@@ -10,6 +10,8 @@
 ##### hata.ext.slash
 - Add `ComponentCommand`.
 - Add `expression` converter for slash commands.
+- Add `use_default_exception_handler` parameter to slasher.
+- Add `Slasher.error`.
 
 #### Bug Fixes
 

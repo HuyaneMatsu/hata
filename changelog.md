@@ -49,7 +49,7 @@ Fix up components in slash.
 
 - Add `UserBase.custom_activity`.
 - Rework `UserBase.custom_activity`.
-- ###### Add `componnets` parameter to `Client.interaction_response_message_edit`.
+- Add `componnets` parameter to `Client.interaction_response_message_edit`.
 - Add `componnets` parameter to `Client.interaction_followup_message_edit`.
 
 ##### hata.ext.slash

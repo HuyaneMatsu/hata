@@ -120,7 +120,7 @@ class Role(DiscordEntity, immortal=True):
         ----------
         role_id : `int` or `str`
             The role's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the role.
         
         Other Parameters
@@ -149,9 +149,9 @@ class Role(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         role_id = preconvert_snowflake(role_id, 'role_id')
         

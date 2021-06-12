@@ -222,7 +222,7 @@ class CommandProcessor(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `precheck` accepts bad amount of arguments.
+            - If `precheck` accepts bad amount of parameters.
             - If `precheck` is async.
             - If `mention_prefix_enabled` was not given as a `bool` instance.
             - If `category_name_rule` is not `None` nor `function`.
@@ -300,7 +300,7 @@ class CommandProcessor(EventWaitforBase):
         
         This method is a coroutine.
         
-        Arguments
+        Parameters
         ---------
         client : ``Client``
             The client, who received the message.
@@ -385,7 +385,7 @@ class CommandProcessor(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `error_handler` accepts bad amount of arguments.
+            - If `error_handler` accepts bad amount of parameters.
             - If `error_handler` is not async.
         """
         test_error_handler(error_handler)

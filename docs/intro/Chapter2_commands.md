@@ -33,7 +33,7 @@ start_clients()
 
 ```
 
-`setup_ext_commands` function accepts the following arguments:
+`setup_ext_commands` function accepts the following parameters:
 
 | name                  | type                                          | default   | description                                                                                           |
 |-----------------------|-----------------------------------------------|-----------|-------------------------------------------------------------------------------------------------------|
@@ -46,14 +46,14 @@ start_clients()
 | command_name_rule     | `None` or `function`                          | `None`    | Function to generate display names for commands.                                                      |
 | precheck              | `None` or `function`                          | `None`    | Decides whether a message should be processed.                                                        |
 
-## Command Arguments
+## Command Parameters
 
-Every command has to have at least `client` and `message` arguments, but you can add more arguments as well.
+Every command has to have at least `client` and `message` parameters, but you can add more parameters as well.
 
-#### Non-annotated arguments
+#### Non-annotated parameters
 
-If the command accepts more arguments than the default 2, and those arguments are not annotated nor do they have 
-a default value, then the message content will be split by words and passed to those arguments  (until newline).
+If the command accepts more parameters than the default 2, and those parameters are not annotated nor do they have 
+a default value, then the message content will be split by words and passed to those parameters  (until newline).
 
 Example for the above case:
 ```py
@@ -66,7 +66,7 @@ If we call command test with `n!test abc 123 zzz` this will print `third` which 
 However if we call it with newline `n!test abc 123 zzz\nnewline` the newline(s) will be ignored and `third` would still
 be a string with value `abc 123 zzz`
 
-If we had multiple arguments like this:
+If we had multiple parameters like this:
 ```py
 @NekoBot.commands
 async def test(client, message, third, fourth, fifth):
@@ -76,7 +76,7 @@ async def test(client, message, third, fourth, fifth):
 We would have these results:
 `n!test abc 123 zzz` would result in third="abc" fourth=123 fifth=zzz
 
-#### Parsing command arguments (annotated arguments)
+#### Parsing command parameters (annotated parameters)
 
 Sometimes we want to deal with certain types inside our command, for example let's say we want a command that hugs a user:
 
@@ -85,7 +85,7 @@ Sometimes we want to deal with certain types inside our command, for example let
 async def hug(client, message, user):
     ...
 ```
-Let's say we call the above command with `n!hug some_user#1234`, it would be easier for us if argument `user` was
+Let's say we call the above command with `n!hug some_user#1234`, it would be easier for us if parameter `user` was
 already a `User` object that we can use right away inside that function instead of string which we would then need to 
 additionally convert to user object inside our command.
 
@@ -101,7 +101,7 @@ async def hug(client, message, user: User = None):
     
     await client.message_create(message.channel, f'Hugs {user:m} !')
 ```
-- If the user was not found and the argument has default value given as well, then that will be passed instead.
+- If the user was not found and the parameter has default value given as well, then that will be passed instead.
 - If the user was not found (or not passed in command call aka just `n!hug`) then user will have default value, in this case `None`.
 
 The supported types are the following:
@@ -379,8 +379,8 @@ The following parameters are passed to a parser failure handler.
 | client                | `Client`          | The respective client.                                                |
 | message               | `Message`         | The respective message.                                               |
 | command               | `Command`         | The respective command.                                               |
-| content               | `str`             | The message content, from what the arguments would have be parsed.    |
-| args                  | `list` of `Any`   | The successfully parsed argument.                                     |
+| content               | `str`             | The message content, from what the parameters would have be parsed.   |
+| args                  | `list` of `Any`   | The successfully parsed parameter.                                    |
 
 Can be added to a command by passing it to the decorator:
 
@@ -459,7 +459,7 @@ Every check also accepts an additional keyword parameter called `handler` which 
 fails (aka returns `False`).
 You can use check handlers to define additional specific functionality in case the check fails.
 
-The following arguments are passed to check handler:
+The following parameters are passed to check handler:
 
 | Respective name   | Type                    |
 |-------------------|-------------------------|
@@ -528,7 +528,7 @@ Note that `invalid_command` and `command_error` also supports checks.
 
 Ensured when a command is referenced but it doesn't exist or check without handlers fails.
 
-The following arguments are passed to `invalid_command`:
+The following parameters are passed to `invalid_command`:
 
 | Respective name   | Type          | Description                               |
 |-------------------|---------------|-------------------------------------------|
@@ -549,7 +549,7 @@ async def invalid_command(client, message, command, content):
 
 Ensured when an exception occurs inside of a command.
 
-The following arguments are passed to `command_error`:
+The following parameters are passed to `command_error`:
 
 | Respective name   | Type              | Description                               |
 |-------------------|-------------------|-------------------------------------------|

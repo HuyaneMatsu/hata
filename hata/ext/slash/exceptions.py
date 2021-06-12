@@ -350,7 +350,7 @@ def test_exception_handler(exception_handler):
     if not analyzer.is_async():
         raise TypeError('`exception_handler` should be given as `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 4:
         raise TypeError(f'`exception_handler` should accept `4` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{exception_handler!r}`.')

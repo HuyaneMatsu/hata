@@ -234,10 +234,10 @@ class AsyncIO:
         
         Parameters
         ----------
-        *args : arguments
-            Arguments to use when opening the respective file.
-        **kwargs : keyword arguments
-            Keyword arguments to use when opening the respective file.
+        *args : parameters
+            Parameters to use when opening the respective file.
+        **kwargs : keyword parameters
+            Keyword parameters to use when opening the respective file.
         
         Notes
         -----
@@ -931,10 +931,10 @@ class ReuAsyncIO(AsyncIO):
             The file's path to open.
         mode : `str`
             The mode to open with the file. Defaults to `'rb'`.
-        *args : arguments
-            Arguments to use when opening the respective file.
-        **kwargs : keyword arguments
-            Keyword arguments to use when opening the respective file.
+        *args : parameters
+            Parameters to use when opening the respective file.
+        **kwargs : keyword parameters
+            Keyword parameters to use when opening the respective file.
         
         Raises
         ------
@@ -1024,8 +1024,8 @@ class ReuAsyncIO(AsyncIO):
             The respective asynchronous io instance.
         func : `callable`
             The callable to call after seeking.
-        *args : Arguments
-            Additional arguments to call the given `func` with.
+        *args : Parameters
+            Additional parameters to call the given `func` with.
         
         Returns
         -------

@@ -414,7 +414,7 @@ class Invite(DiscordEntity, immortal=True):
         ----------
         code : `str`
             The invite's code.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the invite.
         
         Other Parameters
@@ -453,9 +453,9 @@ class Invite(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         code = preconvert_str(code, 'code', 2, 32)
 

@@ -201,9 +201,9 @@ class CommandCheckWrapper(CommandWrapper):
         ----------
         check_type : ``CheckBase`` subclass
             The check's type.
-        *args : Arguments,
+        *args : Parameters,
             Additional parameters to pass to the `check_type`'s constructor.
-        **kwargs : Keyword arguments
+        **kwargs : Keyword parameters
             Additional parameters to pass to the `check_type`'s constructor.
         """
         check = check_type(*args, **kwargs)
@@ -268,9 +268,9 @@ class CommandCooldownWrapper(CommandWrapper):
         
         Parameters
         ----------
-        *args : Arguments,
+        *args : Parameters
             Parameters to pass to the `CooldownHandler`'s constructor.
-        **kwargs : Keyword arguments
+        **kwargs : Keyword parameters
             Parameters to pass to the `CooldownHandler`'s constructor.
         
         Other Parameters

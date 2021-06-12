@@ -434,7 +434,7 @@ class Application(DiscordEntity, immortal=True):
         ----------
         application_id : `int` or `str`
             The application's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the application.
         
         Other parameters
@@ -494,9 +494,9 @@ class Application(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         application_id = preconvert_snowflake(application_id, 'application_id')
         
@@ -791,8 +791,8 @@ class ApplicationExecutable:
     
     Attributes
     ----------
-    arguments : `None` or `str`
-        The arguments to start the application with. Defaults to `None`.
+    parameters : `None` or `str`
+        The parameters to start the application with. Defaults to `None`.
     is_launcher : `bool`
         Whether the application is a launcher. Defaults to `False`.
     name : `str`
@@ -800,7 +800,7 @@ class ApplicationExecutable:
     os : `str`
         The operation system, the executable is for.
     """
-    __slots__ = ('arguments', 'is_launcher', 'name', 'os')
+    __slots__ = ('parameters', 'is_launcher', 'name', 'os')
     
     def __init__(self, data):
         """
@@ -813,7 +813,7 @@ class ApplicationExecutable:
         """
         self.name = data['name']
         self.os = data['os']
-        self.arguments = data.get('arguments', None)
+        self.parameters = data.get('parameters', None)
         self.is_launcher = data.get('is_launcher', False)
     
     def __repr__(self):
@@ -827,10 +827,10 @@ class ApplicationExecutable:
             repr(self.os),
         ]
         
-        arguments = self.arguments
-        if (arguments is not None):
-            result.append(', arguments=')
-            result.append(repr(arguments))
+        parameters = self.parameters
+        if (parameters is not None):
+            result.append(', parameters=')
+            result.append(repr(parameters))
         
         is_launcher = self.is_launcher
         if is_launcher:
@@ -851,7 +851,7 @@ class ApplicationExecutable:
         if self.os != other.os:
             return False
         
-        if self.arguments != other.arguments:
+        if self.parameters != other.parameters:
             return False
         
         if self.is_launcher != other.is_launcher:
@@ -863,9 +863,9 @@ class ApplicationExecutable:
         """Returns the entity's hash."""
         result = hash(self.name) ^ hash(self.os)
         
-        arguments = self.arguments
-        if (arguments is not None):
-            result ^= hash(arguments)
+        parameters = self.parameters
+        if (parameters is not None):
+            result ^= hash(parameters)
         
         if self.is_launcher:
             result ^= (1<<15)

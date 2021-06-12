@@ -191,7 +191,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
 
 class ContentParameterParser:
     """
-    Content argument parser used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
+    Content parameter parser used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
     instances.
     
     Attributes
@@ -216,7 +216,7 @@ class ContentParameterParser:
         separator : `None`, `str`, `tuple` (`str`, `str`)
             The executed separator by the ``ContentParameterSeparator`` instance.
         assigner : `None`, `str`
-            The assigner for keyword-only arguments.
+            The assigner for keyword-only parameters.
         
         Raises
         ------
@@ -336,7 +336,7 @@ class ContentParameterParser:
     
     def __call__(self, content, index):
         """
-        Calls the content argument separator to get the next part of the given content.
+        Calls the content parameter separator to get the next part of the given content.
         
         Parameters
         ----------
@@ -358,15 +358,15 @@ class ContentParameterParser:
         return context.keyword, context.value, context.end
     
     def __repr__(self):
-        """Returns the content argument separator's representation."""
+        """Returns the content parameter separator's representation."""
         return f'{self.__class__.__name__}({self.separator!r}, {self.assigner!r})'
     
     def __hash__(self):
-        """Returns the content argument parser's hash."""
+        """Returns the content parameter parser's hash."""
         return hash(self.separator) ^ hash(self.assigner)
     
     def __eq__(self, other):
-        """Returns whether the two content argument separator are the same."""
+        """Returns whether the two content parameter separator are the same."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -659,10 +659,10 @@ class ConverterSetting:
             raise TypeError(f'`converter` should have been given as an async function instance, got '
                 f'{converter!r}.')
         
-        non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count != (3 if requires_part else 2):
+        non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+        if non_reserved_positional_parameter_count != (3 if requires_part else 2):
             raise TypeError(f'`converter` should accept `3` (or 2 if `requires_part` is `False`) non reserved '
-                f'positional arguments , meanwhile it expects {non_reserved_positional_argument_count}.')
+                f'positional parameters , meanwhile it expects {non_reserved_positional_parameter_count}.')
         
         if analyzed.accepts_args():
             raise TypeError(f'`converter` should accept not expect args, meanwhile it does.')
@@ -670,10 +670,10 @@ class ConverterSetting:
         if analyzed.accepts_kwargs():
             raise TypeError(f'`converter` should accept not expect kwargs, meanwhile it does.')
         
-        non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
-        if non_default_keyword_only_argument_count:
-            raise TypeError(f'`converter` should accept `0` keyword only arguments, meanwhile it expects '
-                f'{non_default_keyword_only_argument_count}.')
+        non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
+        if non_default_keyword_only_parameter_count:
+            raise TypeError(f'`converter` should accept `0` keyword only parameters, meanwhile it expects '
+                f'{non_default_keyword_only_parameter_count}.')
         
         if type(uses_flags) is not bool:
             raise TypeError(f'`uses_flags` can be given as `bool`, got {uses_flags.__class__.__name__}.')
@@ -1712,7 +1712,7 @@ class ContentParserParameter:
         
         Parameters
         ----------
-        parameter : ``Argument``
+        parameter : ``Parameter``
             The analyzed parameter to process.
         index : `int`
             The parameter's index.
@@ -2080,7 +2080,7 @@ class CommandContentParser:
     _parameters : `list` of ``ContentParserParameter``
         The parameters of the respective function.
     _content_parameter_parser : ``ContentParameterParser``
-        The argument separator of the parser.
+        The parameter separator of the parser.
     """
     __slots__ = ('_content_parameter_parser', '_parameters',)
     
@@ -2094,7 +2094,7 @@ class CommandContentParser:
         func : `async-callable`
             The callable function.
         separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`)
-            The argument separator of the parser.
+            The parameter separator of the parser.
         
         Returns
         -------
@@ -2143,7 +2143,7 @@ class CommandContentParser:
         parameters = []
         
         index = 0
-        for parameter in real_analyzer.arguments:
+        for parameter in real_analyzer.parameters:
             if not parameter.reserved:
                 content_parser_parameter = ContentParserParameter(parameter, index)
                 parameters.append(content_parser_parameter)
@@ -2414,9 +2414,9 @@ class ParameterParsingStateBase:
         Parameters
         ----------
         args : `list`
-            Arguments to pass to a command's function.
+            Parameters to pass to a command's function.
         kwargs : `dict`
-            Keyword argument to pass to a command's function.
+            Keyword parameter to pass to a command's function.
 
         Raises
         ------

@@ -292,7 +292,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If any parameter's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         RuntimeError
@@ -553,7 +553,7 @@ class Client(ClientUserPBase):
         """
         Fills up the client's instance attributes on login. If there is an already existing User object with the same
         id, the client will replace it at channel participants, at ``USERS`` weakreference dictionary, at
-        ``guild.users``. This replacing is avoidable, if at the creation of the client the ``.client_id`` argument is
+        ``guild.users``. This replacing is avoidable, if at the creation of the client the ``.client_id`` parameter is
         set.
         
         Parameters
@@ -774,7 +774,7 @@ class Client(ClientUserPBase):
     
     async def client_edit(self, *, name=None, avatar=..., password=None, new_password=None, email=None, house=...):
         """
-        Edits the client. Only the provided parameters will be changed. Every argument what refers to a user
+        Edits the client. Only the provided parameters will be changed. Every parameter what refers to a user
         account is not tested.
         
         This method is a coroutine.
@@ -908,7 +908,7 @@ class Client(ClientUserPBase):
     
     async def client_edit_nick(self, guild, nick, *, reason=None):
         """
-        Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra argument
+        Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra parameter
         reason is accepted as well, what will show zp at the respective guild's audit logs.
         
         This method is a coroutine.
@@ -1164,7 +1164,7 @@ class Client(ClientUserPBase):
     async def owners_access(self, scopes):
         """
         Similar to ``.activate_authorization_code``, but it requests the application's owner's access. It does not
-        requires the redirect_url and the code argument either.
+        requires the redirect_url and the code parameter either.
         
         This method is a coroutine.
         
@@ -2367,7 +2367,7 @@ class Client(ClientUserPBase):
         visual_position : `int`
             The visual position where the channel should go.
         parent : `None` or ``ChannelGroup``, Optional (Keyword only)
-            If not set, then the channel will keep it's current parent. If the argument is set ``Guild`` instance or to
+            If not set, then the channel will keep it's current parent. If the parameter is set ``Guild`` instance or to
             `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory.md``,
             then the channel will be moved under it.
         category : `None` or ``ChannelGroup`` or ``Guild``, Optional (Keyword only)
@@ -2825,8 +2825,8 @@ class Client(ClientUserPBase):
             The type of the created channel. Defaults to ``ChannelText``.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
-        **kwargs : Keyword arguments
-            Additional keyword arguments to describe the created channel.
+        **kwargs : Keyword parameters
+            Additional keyword parameters to describe the created channel.
         
         Other Parameters
         ----------------
@@ -3022,7 +3022,7 @@ class Client(ClientUserPBase):
     
     async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
         """
-        Requests messages from the given text channel. The `after`, `around` and the `before` arguments are mutually
+        Requests messages from the given text channel. The `after`, `around` and the `before` parameters are mutually
         exclusive and they can be passed as `int`, or as a ``DiscordEntity`` instance or as a `datetime` object.
         If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
@@ -3612,7 +3612,7 @@ class Client(ClientUserPBase):
         limit : `int`, Optional (Keyword only)
             The maximal amount of messages to delete.
         filter : `callable`, Optional (Keyword only)
-            A callable filter, what should accept a message object as argument and return either `True` or `False`.
+            A callable filter, what should accept a message object as parameter and return either `True` or `False`.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -3952,7 +3952,7 @@ class Client(ClientUserPBase):
         limit : `int`, Optional (Keyword only)
             The maximal amount of messages to delete.
         filter : `callable`, Optional (Keyword only)
-            A callable filter, what should accept a message object as argument and return either `True` or `False`.
+            A callable filter, what should accept a message object as parameter and return either `True` or `False`.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -5087,7 +5087,7 @@ class Client(ClientUserPBase):
         
         Notes
         -----
-        `before` argument is not supported by Discord.
+        `before` parameter is not supported by Discord.
         """
         if limit is None:
             limit = 25
@@ -7286,7 +7286,7 @@ class Client(ClientUserPBase):
     
     async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user=None, event=None):
         """
-        Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` arguments
+        Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
         are mutually exclusive and they can be passed as `int`, or as a ``DiscordEntity`` instance or as a `datetime`
         object.
         
@@ -10464,8 +10464,8 @@ class Client(ClientUserPBase):
         ----------
         guild . ``Guild``
             The guild to her the invite will be created to.
-        **kwargs : Keyword arguments
-            Additional keyword arguments to describe the created invite.
+        **kwargs : Keyword parameters
+            Additional keyword parameters to describe the created invite.
         
         Other Parameters
         ----------------
@@ -13726,7 +13726,7 @@ class Client(ClientUserPBase):
         Returns
         -------
         result : `Any`
-            Arguments passed to the `check` and the value returned by the `check` if it's type is not `bool`.
+            Parameters passed to the `check` and the value returned by the `check` if it's type is not `bool`.
         
         Raised
         ------

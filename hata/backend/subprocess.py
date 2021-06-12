@@ -1105,7 +1105,7 @@ class AsyncProcess:
         '_pending_calls', '_subprocess_stderr_protocol', '_subprocess_stdin_protocol', '_subprocess_stdout_protocol',
         'closed', 'loop', 'process_id', 'process', 'return_code', 'stderr', 'stdin', 'stdout', )
     
-    async def __new__(cls, loop, process_arguments, shell, stdin, stdout, stderr, buffer_size, extra,
+    async def __new__(cls, loop, process_parameters, shell, stdin, stdout, stderr, buffer_size, extra,
             process_open_kwargs):
         """
         Creates a new ``AsyncProcess`` instance.
@@ -1114,8 +1114,8 @@ class AsyncProcess:
         ----------
         loop : ``EventThread``
             The event loop to what the async process is bound to.
-        process_arguments : `tuple` of `Any`
-            Process arguments to open the subprocess with.
+        process_parameters : `tuple` of `Any`
+            Process parameters to open the subprocess with.
         shell : `bool
             Whether the specified command will be executed through the shell.
         stdin : `file-like`, `subprocess.PIPE`.
@@ -1125,7 +1125,7 @@ class AsyncProcess:
         stderr : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, `subprocess.STDOUT`
             Standard error for the created shell.
         buffer_size : `int`
-            Will be supplied as the corresponding argument to the open() function when creating the
+            Will be supplied as the corresponding parameter to the open() function when creating the
             stdin/stdout/stderr pipe file objects:
             
             Expected values:
@@ -1164,7 +1164,7 @@ class AsyncProcess:
         process = None
         
         try:
-            process = Popen(process_arguments, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr,
+            process = Popen(process_parameters, shell=shell, stdin=stdin_r, stdout=stdout, stderr=stderr,
                 universal_newlines=False, bufsize=buffer_size, **process_open_kwargs)
             
             if (stdin_w is not None):

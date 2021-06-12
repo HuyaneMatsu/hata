@@ -37,24 +37,24 @@ ARGUMENT_KEYWORD_ONLY = 2
 ARGUMENT_ARGS = 3
 ARGUMENT_KWARGS = 4
 
-class Argument:
+class Parameter:
     """
-    Represents a callable's argument.
+    Represents a callable's parameter.
     
     Attributes
     ----------
     annotation : `Any`
-        The argument's annotation if applicable. Defaults to `None`.
+        The parameter's annotation if applicable. Defaults to `None`.
     default : `Any`
-        The default value of the argument if applicable. Defaults to `None`.
+        The default value of the parameter if applicable. Defaults to `None`.
     has_annotation : `bool`
-        Whether the argument has annotation.
+        Whether the parameter has annotation.
     has_default : `bool`
-        Whether the argument has default value.
+        Whether the parameter has default value.
     name : `str`
-        The argument's name.
+        The parameter's name.
     positionality : `int`
-        Whether the argument is positional, keyword or such.
+        Whether the parameter is positional, keyword or such.
         
         Can be set one of the following:
         +-----------------------------------+-----------+
@@ -71,14 +71,14 @@ class Argument:
         | ARGUMENT_KWARGS                   | 4         |
         +-----------------------------------+-----------+
     reserved : `bool`
-        Whether the argument is reserved.
+        Whether the parameter is reserved.
         
-        For example at the case of methods, the first argument is reserved for the `self` argument.
+        For example at the case of methods, the first parameter is reserved for the `self` parameter.
     """
     __slots__ = ('annotation', 'default', 'has_annotation', 'has_default', 'name', 'positionality', 'reserved', )
     
     def __repr__(self):
-        """Returns the argument's representation."""
+        """Returns the parameter's representation."""
         result = []
         result.append('<')
         result.append(self.__class__.__name__)
@@ -104,7 +104,7 @@ class Argument:
     
     def is_positional_only(self):
         """
-        Returns whether the argument is positional only.
+        Returns whether the parameter is positional only.
         
         Returns
         -------
@@ -118,7 +118,7 @@ class Argument:
     
     def is_positional(self):
         """
-        Returns whether the argument is positional.
+        Returns whether the parameter is positional.
         
         Returns
         -------
@@ -135,7 +135,7 @@ class Argument:
     
     def is_keyword(self):
         """
-        Returns whether the argument can be used as a keyword argument.
+        Returns whether the parameter can be used as a keyword parameter.
         
         Returns
         -------
@@ -152,7 +152,7 @@ class Argument:
     
     def is_keyword_only(self):
         """
-        Returns whether they argument is keyword only.
+        Returns whether they parameter is keyword only.
         
         Returns
         -------
@@ -166,7 +166,7 @@ class Argument:
     
     def is_args(self):
         """
-        Returns whether the argument is an `*args` argument.
+        Returns whether the parameter is an `*args` parameter.
         
         Returns
         -------
@@ -180,7 +180,7 @@ class Argument:
     
     def is_kwargs(self):
         """
-        Returns whether the argument is an `**kwargs` argument.
+        Returns whether the parameter is an `**kwargs` parameter.
         
         Returns
         -------
@@ -223,10 +223,10 @@ class CallableAnalyzer:
     
     Attributes
     ----------
-    args_argument : `None` or ``Argument``
-        If the analyzed callable has `*args` argument, then this attribute is set to it. Defaults to `None`.
-    arguments : `list` of ``Argument``
-        The analyzed callable's arguments.
+    args_parameter : `None` or ``Parameter``
+        If the analyzed callable has `*args` parameter, then this attribute is set to it. Defaults to `None`.
+    parameters : `list` of ``Parameter``
+        The analyzed callable's parameters.
     callable : `callable`
         The analyzed object.
     instance_to_async : `int`
@@ -242,14 +242,14 @@ class CallableAnalyzer:
         +---------------------------+-----------+-------------------------------------------+
         | INSTANCE_TO_ASYNC_CANNOT  | 2         | Whether the object is not async.          |
         +---------------------------+-----------+-------------------------------------------+
-    kwargs_argument : `None` or ``Argument``
+    kwargs_parameter : `None` or ``Parameter``
         If the analyzed callable has `**kwargs`, then this attribute is set to it. Defaults to `None`.
     method_allocation : `int`
-        How much argument is allocated if the analyzed callable is method if applicable.
+        How much parameter is allocated if the analyzed callable is method if applicable.
     real_function : `callable`
         The function wrapped by the given callable.
     """
-    __slots__ = ('args_argument', 'arguments', 'callable', 'instance_to_async', 'kwargs_argument', 'method_allocation',
+    __slots__ = ('args_parameter', 'parameters', 'callable', 'instance_to_async', 'kwargs_parameter', 'method_allocation',
         'real_function', )
     
     def __repr__(self):
@@ -284,18 +284,18 @@ class CallableAnalyzer:
             result.append(repr(real_function))
             result.append(')')
         
-        result.append(', arguments=')
-        result.append(repr(self.arguments))
+        result.append(', parameters=')
+        result.append(repr(self.parameters))
         
-        args_argument = self.args_argument
-        if (args_argument is not None):
+        args_parameter = self.args_parameter
+        if (args_parameter is not None):
             result.append(', args=')
-            result.append(repr(args_argument))
+            result.append(repr(args_parameter))
         
-        kwargs_argument = self.kwargs_argument
-        if (kwargs_argument is not None):
+        kwargs_parameter = self.kwargs_parameter
+        if (kwargs_parameter is not None):
             result.append(', kwargs=')
-            result.append(repr(kwargs_argument))
+            result.append(repr(kwargs_parameter))
         
         result.append('>')
         return ''.join(result)
@@ -440,15 +440,15 @@ class CallableAnalyzer:
         if (real_function is not None) and ( not hasattr(real_function, '__code__')):
             raise TypeError(f'Expected function, got `{real_function!r}`')
         
-        arguments = []
+        parameters = []
         if (real_function is not None):
-            argument_count = real_function.__code__.co_argcount
+            parameter_count = real_function.__code__.co_argcount
             accepts_args = real_function.__code__.co_flags&CO_VARARGS
-            keyword_only_argument_count = real_function.__code__.co_kwonlyargcount
+            keyword_only_parameter_count = real_function.__code__.co_kwonlyargcount
             accepts_kwargs = real_function.__code__.co_flags&CO_VARKEYWORDS
             positional_only_argcount = getattr(real_function.__code__, 'co_posonlyargcount', 0)
-            default_argument_values = real_function.__defaults__
-            default_keyword_only_argument_values = real_function.__kwdefaults__
+            default_parameter_values = real_function.__defaults__
+            default_keyword_only_parameter_values = real_function.__kwdefaults__
             annotations = getattr(real_function, '__annotations__', None)
             if (annotations is None):
                 annotations = {}
@@ -456,12 +456,12 @@ class CallableAnalyzer:
                 annotations = compile_annotations(real_function, annotations)
             
             start = 0
-            end = argument_count
-            argument_names = real_function.__code__.co_varnames[start:end]
+            end = parameter_count
+            parameter_names = real_function.__code__.co_varnames[start:end]
             
             start = end
-            end = start+keyword_only_argument_count
-            keyword_only_argument_names = real_function.__code__.co_varnames[start:end]
+            end = start+keyword_only_parameter_count
+            keyword_only_parameter_names = real_function.__code__.co_varnames[start:end]
             
             if accepts_args:
                 args_name = real_function.__code__.co_varnames[end]
@@ -475,147 +475,147 @@ class CallableAnalyzer:
                 kwargs_name = None
             
             names_to_defaults = {}
-            if (default_argument_values is not None) and default_argument_values:
-                argument_index = argument_count - len(default_argument_values)
+            if (default_parameter_values is not None) and default_parameter_values:
+                parameter_index = parameter_count - len(default_parameter_values)
                 default_index = 0
-                while argument_index < argument_count:
-                    name = argument_names[argument_index]
-                    default = default_argument_values[default_index]
+                while parameter_index < parameter_count:
+                    name = parameter_names[parameter_index]
+                    default = default_parameter_values[default_index]
                     
                     names_to_defaults[name] = default
                     
-                    argument_index += 1
+                    parameter_index += 1
                     default_index += 1
             
-            if (default_keyword_only_argument_values is not None) and default_keyword_only_argument_values:
-                argument_index = keyword_only_argument_count - len(default_keyword_only_argument_values)
-                while argument_index < keyword_only_argument_count:
-                    name = keyword_only_argument_names[argument_index]
-                    default = default_keyword_only_argument_values[name]
+            if (default_keyword_only_parameter_values is not None) and default_keyword_only_parameter_values:
+                parameter_index = keyword_only_parameter_count - len(default_keyword_only_parameter_values)
+                while parameter_index < keyword_only_parameter_count:
+                    name = keyword_only_parameter_names[parameter_index]
+                    default = default_keyword_only_parameter_values[name]
                     
                     names_to_defaults[name] = default
                     
-                    argument_index += 1
+                    parameter_index += 1
             
-            if (method_allocation>argument_count) and (args_name is None):
-                raise TypeError(f'The passed object is a method like, but has not enough positional arguments: '
+            if (method_allocation>parameter_count) and (args_name is None):
+                raise TypeError(f'The passed object is a method like, but has not enough positional parameters: '
                     f'`{real_function!r}`.')
             
             index = 0
-            while index < argument_count:
-                argument = Argument()
-                name = argument_names[index]
-                argument.name = name
+            while index < parameter_count:
+                parameter = Parameter()
+                name = parameter_names[index]
+                parameter.name = name
                 
                 try:
                     annotation = annotations[name]
                 except KeyError:
-                    argument.has_annotation = False
-                    argument.annotation = None
+                    parameter.has_annotation = False
+                    parameter.annotation = None
                 else:
-                    argument.has_annotation = True
-                    argument.annotation = annotation
+                    parameter.has_annotation = True
+                    parameter.annotation = annotation
                 
                 try:
                     default = names_to_defaults[name]
                 except KeyError:
-                    argument.has_default = False
-                    argument.default = None
+                    parameter.has_default = False
+                    parameter.default = None
                 else:
-                    argument.has_default = True
-                    argument.default = default
+                    parameter.has_default = True
+                    parameter.default = default
                 
                 if index<positional_only_argcount:
-                    argument.positionality = ARGUMENT_POSITIONAL_ONLY
+                    parameter.positionality = ARGUMENT_POSITIONAL_ONLY
                 else:
-                    argument.positionality = ARGUMENT_POSITIONAL_AND_KEYWORD
+                    parameter.positionality = ARGUMENT_POSITIONAL_AND_KEYWORD
                 
-                argument.reserved = (index<method_allocation)
-                arguments.append(argument)
+                parameter.reserved = (index<method_allocation)
+                parameters.append(parameter)
                 index = index+1
             
             if args_name is None:
-                args_argument = None
+                args_parameter = None
             else:
-                args_argument = Argument()
-                args_argument.name = args_name
+                args_parameter = Parameter()
+                args_parameter.name = args_name
                 
                 try:
                     annotation = annotations[args_name]
                 except KeyError:
-                    args_argument.has_annotation = False
-                    args_argument.annotation = None
+                    args_parameter.has_annotation = False
+                    args_parameter.annotation = None
                 else:
-                    args_argument.has_annotation = True
-                    args_argument.annotation = annotation
+                    args_parameter.has_annotation = True
+                    args_parameter.annotation = annotation
 
-                args_argument.has_default = False
-                args_argument.default = None
-                args_argument.positionality = ARGUMENT_ARGS
+                args_parameter.has_default = False
+                args_parameter.default = None
+                args_parameter.positionality = ARGUMENT_ARGS
                 
-                if method_allocation > argument_count:
-                    args_argument.reserved = True
+                if method_allocation > parameter_count:
+                    args_parameter.reserved = True
                 else:
-                    args_argument.reserved = False
-                arguments.append(args_argument)
+                    args_parameter.reserved = False
+                parameters.append(args_parameter)
             
             index = 0
-            while index < keyword_only_argument_count:
-                argument = Argument()
-                name = keyword_only_argument_names[index]
-                argument.name = name
+            while index < keyword_only_parameter_count:
+                parameter = Parameter()
+                name = keyword_only_parameter_names[index]
+                parameter.name = name
                 
                 try:
                     annotation = annotations[name]
                 except KeyError:
-                    argument.has_annotation = False
-                    argument.annotation = None
+                    parameter.has_annotation = False
+                    parameter.annotation = None
                 else:
-                    argument.has_annotation = True
-                    argument.annotation = annotation
+                    parameter.has_annotation = True
+                    parameter.annotation = annotation
                 
                 try:
                     default = names_to_defaults[name]
                 except KeyError:
-                    argument.has_default = False
-                    argument.default = None
+                    parameter.has_default = False
+                    parameter.default = None
                 else:
-                    argument.has_default = True
-                    argument.default = default
+                    parameter.has_default = True
+                    parameter.default = default
                 
-                argument.positionality = ARGUMENT_KEYWORD_ONLY
-                argument.reserved = False
-                arguments.append(argument)
+                parameter.positionality = ARGUMENT_KEYWORD_ONLY
+                parameter.reserved = False
+                parameters.append(parameter)
                 index = index+1
             
             if kwargs_name is None:
-                kwargs_argument = None
+                kwargs_parameter = None
             else:
-                kwargs_argument = Argument()
-                kwargs_argument.name = kwargs_name
+                kwargs_parameter = Parameter()
+                kwargs_parameter.name = kwargs_name
                 try:
                     annotation = annotations[kwargs_name]
                 except KeyError:
-                    kwargs_argument.has_annotation = False
-                    kwargs_argument.annotation = None
+                    kwargs_parameter.has_annotation = False
+                    kwargs_parameter.annotation = None
                 else:
-                    kwargs_argument.has_annotation = True
-                    kwargs_argument.annotation = annotation
+                    kwargs_parameter.has_annotation = True
+                    kwargs_parameter.annotation = annotation
                 
-                kwargs_argument.has_default = False
-                kwargs_argument.default = None
-                kwargs_argument.positionality = ARGUMENT_KWARGS
-                kwargs_argument.reserved = False
-                arguments.append(kwargs_argument)
+                kwargs_parameter.has_default = False
+                kwargs_parameter.default = None
+                kwargs_parameter.positionality = ARGUMENT_KWARGS
+                kwargs_parameter.reserved = False
+                parameters.append(kwargs_parameter)
         
         else:
-            args_argument = None
-            kwargs_argument = None
+            args_parameter = None
+            kwargs_parameter = None
         
         self = object.__new__(cls)
-        self.arguments = arguments
-        self.args_argument = args_argument
-        self.kwargs_argument = kwargs_argument
+        self.parameters = parameters
+        self.args_parameter = args_parameter
+        self.kwargs_parameter = kwargs_parameter
         self.callable = callable_
         self.method_allocation = method_allocation
         self.real_function = real_function
@@ -658,11 +658,11 @@ class CallableAnalyzer:
         if self.instance_to_async != INSTANCE_TO_ASYNC_TRUE:
             return False
         
-        for argument in self.arguments:
-            if argument.reserved:
+        for parameter in self.parameters:
+            if parameter.reserved:
                 continue
             
-            if argument.has_default:
+            if parameter.has_default:
                 continue
             
             return False
@@ -680,11 +680,11 @@ class CallableAnalyzer:
         if self.instance_to_async != INSTANCE_TO_ASYNC_GENERATOR_TRUE:
             return False
         
-        for argument in self.arguments:
-            if argument.reserved:
+        for parameter in self.parameters:
+            if parameter.reserved:
                 continue
             
-            if argument.has_default:
+            if parameter.has_default:
                 continue
             
             return False
@@ -704,16 +704,16 @@ class CallableAnalyzer:
         """
         return self.callable()
     
-    def get_non_default_keyword_only_argument_count(self):
+    def get_non_default_keyword_only_parameter_count(self):
         """
-        Returns the amount of non default keyword only arguments of the analyzed callable.
+        Returns the amount of non default keyword only parameters of the analyzed callable.
         
         Returns
         -------
-        non_default_keyword_only_argument_count : `int`
+        non_default_keyword_only_parameter_count : `int`
         """
         count = 0
-        for value in self.arguments:
+        for value in self.parameters:
             if not value.is_keyword_only():
                 continue
             
@@ -725,41 +725,41 @@ class CallableAnalyzer:
         
         return count
     
-    def get_non_reserved_positional_arguments(self):
+    def get_non_reserved_positional_parameters(self):
         """
-        Returns the non reserved positional arguments of the analyzed callable.
+        Returns the non reserved positional parameters of the analyzed callable.
         
         Returns
         -------
-        non_reserved_positional_arguments : `list` of ``Argument``
+        non_reserved_positional_parameters : `list` of ``Parameter``
         """
         result = []
-        for argument in self.arguments:
-            if not argument.is_positional():
+        for parameter in self.parameters:
+            if not parameter.is_positional():
                 break
             
-            if argument.reserved:
+            if parameter.reserved:
                 continue
             
-            result.append(argument)
+            result.append(parameter)
             continue
         
         return result
     
-    def get_non_reserved_positional_argument_count(self):
+    def get_non_reserved_positional_parameter_count(self):
         """
-        Returns the amount of the non reserved positional arguments of the analyzed callable.
+        Returns the amount of the non reserved positional parameters of the analyzed callable.
         
         Returns
         -------
-        non_reserved_positional_arguments : `int`
+        non_reserved_positional_parameters : `int`
         """
         count = 0
-        for argument in self.arguments:
-            if not argument.is_positional():
+        for parameter in self.parameters:
+            if not parameter.is_positional():
                 break
             
-            if argument.reserved:
+            if parameter.reserved:
                 continue
             
             count +=1
@@ -767,23 +767,23 @@ class CallableAnalyzer:
         
         return count
     
-    def get_non_reserved_non_default_argument_count(self):
+    def get_non_reserved_non_default_parameter_count(self):
         """
-        Returns the amount of the non reserved non default arguments of the analyzed callable.
+        Returns the amount of the non reserved non default parameters of the analyzed callable.
         
         Returns
         -------
-        non_reserved_non_default_argument_count : `int`
+        non_reserved_non_default_parameter_count : `int`
         """
         count = 0
-        for argument in self.arguments:
-            if not argument.is_positional():
+        for parameter in self.parameters:
+            if not parameter.is_positional():
                 break
             
-            if argument.reserved:
+            if parameter.reserved:
                 continue
             
-            if argument.has_default:
+            if parameter.has_default:
                 continue
             
             count +=1
@@ -791,32 +791,32 @@ class CallableAnalyzer:
         
         return count
 
-    def get_non_reserved_positional_argument_range(self):
+    def get_non_reserved_positional_parameter_range(self):
         """
-        Returns the minimal and the maximal amount how much non reserved positional arguments the analyzed callable
+        Returns the minimal and the maximal amount how much non reserved positional parameters the analyzed callable
         expects / accepts.
         
         Returns
         -------
         start : `int`
-            The minimal amount of non reserved arguments, what the analyzed callable expects.
+            The minimal amount of non reserved parameters, what the analyzed callable expects.
         end : `int`
-            The maximal amount of non reserved arguments, what the analyzed callable accepts.
+            The maximal amount of non reserved parameters, what the analyzed callable accepts.
         
         Notes
         -----
-        `*args` argument is ignored from the calculation.
+        `*args` parameter is ignored from the calculation.
         """
-        iterator = iter(self.arguments)
+        iterator = iter(self.parameters)
         start = 0
-        for argument in iterator:
-            if not argument.is_positional():
+        for parameter in iterator:
+            if not parameter.is_positional():
                 return start, start
             
-            if argument.reserved:
+            if parameter.reserved:
                 continue
             
-            if argument.has_default:
+            if parameter.has_default:
                 break
             
             start += 1
@@ -826,11 +826,11 @@ class CallableAnalyzer:
             return start, start
         
         end = start
-        for argument in iterator:
-            if not argument.is_positional():
+        for parameter in iterator:
+            if not parameter.is_positional():
                 return start, end
             
-            if argument.reserved:
+            if parameter.reserved:
                 continue
             
             end += 1
@@ -840,20 +840,20 @@ class CallableAnalyzer:
     
     def accepts_args(self):
         """
-        Returns whether the analyzed callable accepts `*args` argument.
+        Returns whether the analyzed callable accepts `*args` parameter.
         
         Returns
         -------
         accepts_args : `bool`
         """
-        return (self.args_argument is not None)
+        return (self.args_parameter is not None)
     
     def accepts_kwargs(self):
         """
-        Returns whether the analyzed callable accepts `**kwargs` argument.
+        Returns whether the analyzed callable accepts `**kwargs` parameter.
         
         Returns
         -------
         accepts_kwargs : `bool`
         """
-        return (self.kwargs_argument is not None)
+        return (self.kwargs_parameter is not None)

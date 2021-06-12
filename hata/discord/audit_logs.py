@@ -140,7 +140,7 @@ class AuditLogIterator:
     
     async def __new__(cls, client, guild, user=None, event=None):
         """
-        Creates an audit log iterator with the given arguments.
+        Creates an audit log iterator with the given parameters.
         
         This method is a coroutine.
         

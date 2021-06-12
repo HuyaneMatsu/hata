@@ -48,13 +48,13 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     prefix : `str`, (`tuple`, `list`, `deque`) of `str`, or `callable` -> `str`, Optional
         The prefix of the client's command processer.
         
-        Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` argument,
+        Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` parameter,
         the respective ``Message`` instance and returns `str`.
     lite : `bool`, Optional
         Whether only the extensions utility feature should be setup. May be useful for example when the client uses
         only slash commands. Defaults to `False`.
-    **kwargs : Keyword arguments
-        Additional keyword arguments to be passed to the created ``CommandProcesser``.
+    **kwargs : Keyword parameters
+        Additional keyword parameters to be passed to the created ``CommandProcesser``.
     
     Other Parameters
     ----------------
@@ -67,10 +67,10 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
         The command processer's default category's name. Defaults to `None`.
     category_name_rule : `None` or `function`, Optional (Keyword only)
         Function to generate display names for categories.
-        Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
+        Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` instance as well.
     command_name_rule : `None` or `function`, Optional (Keyword only)
         Function to generate display names for commands.
-        Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
+        Should accept only 1 parameter, what is `str` instance and should return a `str` instance as well.
     precheck : `None` or `callable`, Optional (Keyword only)
         Function, which decides whether a received message should be processed
         

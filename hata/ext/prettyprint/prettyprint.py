@@ -1710,18 +1710,18 @@ def str_application(application, index=None, **kwargs):
     if (executables is not None):
         result.append(f'- executables: ({len(executables)})', 1)
         for index, executable in enumerate(executables, 1):
-            arguments = executable.arguments
-            if arguments is None:
-                arguments_r = ''
+            parameters = executable.parameters
+            if parameters is None:
+                parameters_r = ''
             else:
-                arguments_r = f', arguments={arguments!r}'
+                parameters_r = f', parameters={parameters!r}'
             
             if executable.is_launcher:
                 is_launcher_r = f', is_launcher=True'
             else:
                 is_launcher_r = ''
             
-            result.append(f'{index}.: name={executable.name!r}, os={executable.os!r}{arguments_r}{is_launcher_r}', 2)
+            result.append(f'{index}.: name={executable.name!r}, os={executable.os!r}{parameters_r}{is_launcher_r}', 2)
     
     third_party_skus = application.third_party_skus
     if (third_party_skus is not None):

@@ -66,8 +66,8 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
         
         Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` parameter,
         the respective ``Message`` instance and returns `str`.
-    **kwargs : Keyword arguments
-        Additional keyword arguments to be passed to the created ``CommandProcessor``.
+    **kwargs : Keyword parameters
+        Additional keyword parameters to be passed to the created ``CommandProcessor``.
     
     Returns
     -------

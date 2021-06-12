@@ -2134,7 +2134,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -2373,7 +2373,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -2396,9 +2396,9 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -2526,7 +2526,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (client is not None), f'`client` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (client is not None), f'`client` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -2673,7 +2673,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Returns
@@ -2683,9 +2683,9 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -2842,7 +2842,7 @@ class ChannelVoice(ChannelVoiceBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -3045,7 +3045,7 @@ class ChannelVoice(ChannelVoiceBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -3068,9 +3068,9 @@ class ChannelVoice(ChannelVoiceBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -3199,7 +3199,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (client is not None), f'`client` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (client is not None), f'`client` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -3383,7 +3383,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -3402,9 +3402,9 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -3508,7 +3508,7 @@ class ChannelCategory(ChannelGuildMainBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -3614,7 +3614,7 @@ class ChannelCategory(ChannelGuildMainBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -3629,9 +3629,9 @@ class ChannelCategory(ChannelGuildMainBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -3741,7 +3741,7 @@ class ChannelStore(ChannelGuildMainBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -3892,7 +3892,7 @@ class ChannelStore(ChannelGuildMainBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -3909,9 +3909,9 @@ class ChannelStore(ChannelGuildMainBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -4411,7 +4411,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -4430,9 +4430,9 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -4554,7 +4554,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -4730,7 +4730,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -4747,9 +4747,9 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
@@ -4857,7 +4857,7 @@ class ChannelStage(ChannelVoiceBase):
         guild : `None` or ``Guild``, Optional
             The guild of the channel.
         """
-        assert (guild is not None), f'`guild` argument cannot be `None` when calling `{cls.__name__}.__new__`.'
+        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
         
         channel_id = int(data['id'])
         try:
@@ -5054,7 +5054,7 @@ class ChannelStage(ChannelVoiceBase):
         ----------
         channel_id : `int` or `str`
             The channel's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -5077,9 +5077,9 @@ class ChannelStage(ChannelVoiceBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         

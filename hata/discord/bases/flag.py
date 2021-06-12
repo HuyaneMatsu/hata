@@ -388,7 +388,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         
         Parameters
         ----------
-        **kwargs : Keyword arguments
+        **kwargs : Keyword parameters
             `flag-name` - `bool` relations.
         
         Returns
@@ -530,7 +530,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         
         Parameters
         ----------
-        **kwargs : Keyword arguments
+        **kwargs : Keyword parameters
             `flag-name` - `bool` relations.
         
         Returns

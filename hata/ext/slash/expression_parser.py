@@ -20,7 +20,6 @@ LIMIT_INTEGER_DECIMAL_MAX = LIMIT_INTEGER_CONVERSION // 10
 LIMIT_INTEGER_HEXADECIMAL_MAX = LIMIT_INTEGER_CONVERSION // 16
 LIMIT_INTEGER_OCTAL_MAX = LIMIT_INTEGER_CONVERSION // 8
 LIMIT_INTEGER_BINARY_MAX = LIMIT_INTEGER_CONVERSION // 2
-LIMIT_INTEGER_DECIMAL_MULTIPLIER_MAX = 12
 
 EXCEPTION_MESSAGE_MAX_LINE_LENGTH = 59
 
@@ -95,14 +94,14 @@ VARIABLE_FUNCTION = 25
 
 
 NUMERIC_POSTFIX_MULTIPLIERS = {
-    b'k'[0]: 1,
-    b'K'[0]: 1,
-    b'm'[0]: 2,
-    b'M'[0]: 2,
-    b'g'[0]: 3,
-    b'G'[0]: 3,
-    b't'[0]: 4,
-    b'T'[0]: 4,
+    b'k': 1_000,
+    b'K': 1_000,
+    b'm': 1_000_000,
+    b'M': 1_000_000,
+    b'g': 1_000_000_000,
+    b'G': 1_000_000_000,
+    b't': 1_000_000_000_000,
+    b'T': 1_000_000_000_000,
 }
 
 SPACE_CHARACTERS = frozenset((
@@ -308,30 +307,29 @@ def get_numeric_postfix_multiplier(array, start, end):
     -------
     value : `bytes`
         The value without the multiplier.
-    total_multiplier : `int`
+    multiplier : `int`
         Multiplier to multiply the value with,
     """
     index = end-1
     
-    total_multiplier = 0
     while True:
-        postfix = array[index]
-        try:
-            multiplier = NUMERIC_POSTFIX_MULTIPLIERS[postfix]
-        except KeyError:
+        character = array[index]
+        if (character <= b'9'[0]) and (character >= b'0'[0]):
             break
         
         index -= 1
-        total_multiplier += multiplier
+        continue
     
-    if total_multiplier > LIMIT_INTEGER_DECIMAL_MULTIPLIER_MAX:
-        raise EvaluationError(
-            array, index+1, end,
-            f'Decimal integer multiplier conversion over limit is disallowed: 1000 ** '
-            f'{LIMIT_INTEGER_DECIMAL_MULTIPLIER_MAX}.'
-        )
+    index += 1
+    if index == end:
+        multiplier = 1
+    else:
+        try:
+            multiplier = NUMERIC_POSTFIX_MULTIPLIERS[bytes(array[index:end])]
+        except KeyError:
+            raise EvaluationError(array, index, end, 'Unknown decimal integer postfix.') from None
     
-    return index+1, 1000**total_multiplier
+    return index, multiplier
 
 
 def evaluate_numeric_float(array, start, end):
@@ -389,7 +387,13 @@ def evaluate_numeric_decimal(array, start, end):
     end, multiplier = get_numeric_postfix_multiplier(array, start, end)
     raw_value = bytes(array[start:end])
     value = int(raw_value)*multiplier
-    return value, STATIC_NUMERIC_DECIMAL_ID
+    
+    if isinstance(multiplier, int):
+        token_id = STATIC_NUMERIC_DECIMAL_ID
+    else:
+        token_id = VARIABLE_EVALUATED
+    
+    return value, token_id
 
 
 def evaluate_numeric_hexadecimal(array, start, end):
@@ -1746,7 +1750,10 @@ PARSE_NUMERIC_POSTFIX = ParserPostfixCheck(
 
 PARSE_NUMERIC_DECIMAL_POSTFIX = ParserOptional(
     ParserRepeat(
-        ParserCharAny(['k', 'K', 'm', 'M', 'g', 'G', 't', 'T']),
+        ParserAny([
+            ParserCharRange('a', 'z'),
+            ParserCharRange('A', 'Z'),
+        ]),
     ),
 )
 

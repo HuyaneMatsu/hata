@@ -624,7 +624,7 @@ class SubterraneanHelpCommand:
         """
         if (embed_postprocessor is not None):
             analyzer = CallableAnalyzer(embed_postprocessor)
-            min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+            min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
             if min_ > 3:
                 raise TypeError(f'`embed_postprocessor` should accept `3` parameters: `command_context, '
                     f'command_context`, meanwhile the given one expects at least `{min_!r}`, got '

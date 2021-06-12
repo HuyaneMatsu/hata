@@ -2283,7 +2283,7 @@ class _SelectorDatagramTransport:
             If `address` was given but it is different from the currently set one.
         """
         if not isinstance(data, (bytes, bytearray, memoryview)):
-            raise TypeError(f'data argument must be a bytes-like object, not {type(data).__name__!r}')
+            raise TypeError(f'data parameter must be a bytes-like object, not {type(data).__name__!r}')
         
         if not data:
             return

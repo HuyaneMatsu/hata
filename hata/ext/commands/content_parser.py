@@ -37,9 +37,9 @@ NUMERIC_CONVERSION_LIMIT = 100
 
 CONTENT_ARGUMENT_SEPARATORS = {}
 
-class ContentArgumentSeparator:
+class ContentParameterSeparator:
     """
-    Content argument separator used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
+    Content parameter separator used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
     instances.
     
     Attributes
@@ -53,24 +53,24 @@ class ContentArgumentSeparator:
     _rp : `_sre.SRE_Pattern`
         The regex pattern what is passed and used by the caller.
     separator : `str` or `tuple` (`str`, `str`)
-        The executed separator by the ``ContentArgumentSeparator`` instance.
+        The executed separator by the ``ContentParameterSeparator`` instance.
     """
     __slots__ = ('_caller', '_rp', 'separator', )
     
     def __new__(cls, separator):
         """
-        Creates a new ``ContentArgumentSeparator`` instance. If one already exists with the given parameters, returns
+        Creates a new ``ContentParameterSeparator`` instance. If one already exists with the given parameters, returns
         that instead.
         
         Parameters
         ----------
         separator : `str`, `tuple` (`str`, `str`)
-            The executed separator by the ``ContentArgumentSeparator`` instance.
+            The executed separator by the ``ContentParameterSeparator`` instance.
         
         Raises
         ------
         TypeError
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
@@ -224,7 +224,7 @@ class ContentArgumentSeparator:
     
     def __call__(self, content, index):
         """
-        Calls the content argument separator to get the next part of the given content.
+        Calls the content parameter separator to get the next part of the given content.
         
         Parameters
         ----------
@@ -243,22 +243,22 @@ class ContentArgumentSeparator:
         return self._caller(self._rp, content, index)
     
     def __repr__(self):
-        """Returns the content argument separator's representation."""
+        """Returns the content parameter separator's representation."""
         return f'{self.__class__.__name__}({self.separator!r})'
     
     def __hash__(self):
-        """Returns the content argument parser's hash."""
+        """Returns the content parameter parser's hash."""
         return hash(self.separator)
     
     def __eq__(self, other):
-        """Returns whether the two content argument separator are the same."""
+        """Returns whether the two content parameter separator are the same."""
         if type(self) is not type(other):
             return NotImplemented
         
         return (self.separator == other.separator)
 
 
-DEFAULT_SEPARATOR = ContentArgumentSeparator(('"', '"'))
+DEFAULT_SEPARATOR = ContentParameterSeparator(('"', '"'))
 
 def parse_user_mention(part, message):
     """
@@ -482,8 +482,8 @@ class ContentParserContext:
         The respective message.
     result : `list` of `Any`
         The successfully parsed objects.
-    separator : ``ContentArgumentSeparator``
-        The argument separator of the parser.
+    separator : ``ContentParameterSeparator``
+        The parameter separator of the parser.
     """
     __slots__ = ('client', 'content', 'index', 'last_part', 'last_start', 'length', 'message', 'result', 'separator', )
     
@@ -493,8 +493,8 @@ class ContentParserContext:
         
         Parameters
         ----------
-        separator : ``ContentArgumentSeparator``
-            The argument separator of the parser.
+        separator : ``ContentParameterSeparator``
+            The parameter separator of the parser.
         client : ``Client``
             The respective client.
         message : ``Message``
@@ -1256,7 +1256,7 @@ class ConverterSetting:
         TypeError
             - If `converter` is not `function` type.
             - If `converter` is not `async`.
-            - If `converter` accepts bad amount of arguments.
+            - If `converter` accepts bad amount of parameters.
             - If `uses_flags` was not given as `bool`, nether as `int` as `0` or `1`.
             - If `default_flags` or `all_flags` was not given as `ConverterFlag` instance.
             - If `alternative_type_name` was not given as `None`, neither as `str` instance.
@@ -1276,10 +1276,10 @@ class ConverterSetting:
             raise TypeError(f'`converter` should have been given as an async function instance, got '
                 f'{converter!r}.')
         
-        non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count != 2:
-            raise TypeError(f'`converter` should accept `2` non reserved positional arguments, meanwhile it expects '
-                f'{non_reserved_positional_argument_count}.')
+        non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+        if non_reserved_positional_parameter_count != 2:
+            raise TypeError(f'`converter` should accept `2` non reserved positional parameters, meanwhile it expects '
+                f'{non_reserved_positional_parameter_count}.')
         
         if analyzed.accepts_args():
             raise TypeError(f'`converter` should accept not expect args, meanwhile it does.')
@@ -1287,10 +1287,10 @@ class ConverterSetting:
         if analyzed.accepts_kwargs():
             raise TypeError(f'`converter` should accept not expect kwargs, meanwhile it does.')
         
-        non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
-        if non_default_keyword_only_argument_count:
-            raise TypeError(f'`converter` should accept `0` keyword only arguments, meanwhile it expects '
-                f'{non_default_keyword_only_argument_count}.')
+        non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
+        if non_default_keyword_only_parameter_count:
+            raise TypeError(f'`converter` should accept `0` keyword only parameters, meanwhile it expects '
+                f'{non_default_keyword_only_parameter_count}.')
         
         uses_flags_type = uses_flags.__class__
         if uses_flags_type is bool:
@@ -2280,7 +2280,7 @@ def validate_default_code(default_code):
     TypeError
         - If `default_code` is neither `str` or `function`.
         - If `default_code` is given as `function`, but not as `async`
-        - If `default_code` is given as `function`, but accepts bad amount of arguments.
+        - If `default_code` is given as `function`, but accepts bad amount of parameters.
     """
     default_code_type = type(default_code)
     if default_code_type is str:
@@ -2293,10 +2293,10 @@ def validate_default_code(default_code):
             raise TypeError(f'`default_code` should have been given as `str`, or as an `async-callable` `function`, '
                 f'got a function, but not an `async` one: an async function instance, got {default_code!r}.')
         
-        non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count!=1:
-            raise TypeError(f'`default_code` should accept `1` non reserved positional arguments, meanwhile it expects '
-                f'{non_reserved_positional_argument_count}.')
+        non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+        if non_reserved_positional_parameter_count!=1:
+            raise TypeError(f'`default_code` should accept `1` non reserved positional parameters, meanwhile it expects '
+                f'{non_reserved_positional_parameter_count}.')
         
         if analyzed.accepts_args():
             raise TypeError(f'`default_code` should accept not expect args, meanwhile it does.')
@@ -2304,10 +2304,10 @@ def validate_default_code(default_code):
         if analyzed.accepts_kwargs():
             raise TypeError(f'`default_code` should accept not expect kwargs, meanwhile it does.')
         
-        non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
-        if non_default_keyword_only_argument_count:
-            raise TypeError(f'`default_code` should accept `0` keyword only arguments, meanwhile it expects '
-                f'{non_default_keyword_only_argument_count}.')
+        non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
+        if non_default_keyword_only_parameter_count:
+            raise TypeError(f'`default_code` should accept `0` keyword only parameters, meanwhile it expects '
+                f'{non_default_keyword_only_parameter_count}.')
         
         return default_code
     
@@ -2639,7 +2639,7 @@ class Converter:
             - If `default` and `default_code` parameters were given at the same time.
             - If `default_code` is given, but neither as `str` or `function`.
             - If `default_code` is given as `function`, but not as `async`.
-            - If `default_code` is given as `function`, but accepts bad amount of arguments.
+            - If `default_code` is given as `function`, but accepts bad amount of parameters.
         """
         if (flags is not None):
            flags = preconvert_flag(flags, 'flags', ConverterFlag)
@@ -2744,11 +2744,11 @@ class Converter:
         
         return ''.join(result)
 
-class ContentParserArgumentHinter:
+class ContentParserParameterHinter:
     """
-    Hinter for content parser about it's arguments.
+    Hinter for content parser about it's parameters.
     
-    Arguments
+    Parameters
     ---------
     default : `Any`
         The default object to return if the parser fails
@@ -2786,8 +2786,8 @@ class CommandContentParser:
     ----------
     _parsers : `None` or `list` of ``ParserContextBase`` instances
         The events of the command content parser. Set as `None` if it would be an empty `list`.
-    _separator : ``ContentArgumentSeparator``
-        The argument separator of the parser.
+    _separator : ``ContentParameterSeparator``
+        The parameter separator of the parser.
     """
     __slots__ = ('_parsers', '_separator')
     
@@ -2797,8 +2797,8 @@ class CommandContentParser:
         ----------
         func : `async-callable`
             The callable function.
-        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
-            The argument separator of the parser.
+        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`)
+            The parameter separator of the parser.
         
         Raises
         ------
@@ -2807,20 +2807,20 @@ class CommandContentParser:
         TypeError
             - If `func` is not given as `callable`
             - If `func` is not given as `async-callable`, and cannot be instanced to one neither.
-            - If `func` (or it's converted form) accepts keyword only arguments.
+            - If `func` (or it's converted form) accepts keyword only parameters.
             - If `func` (or it's converted form) accepts keyword **kwargs.
-            - If `func` (or it's converted form) accepts less then 2 non reversed argument without *args.
-            - If `func`'s (or it's converted form's) first argument has default value set.
-            - If `func`'s (or it's converted form's) first argument has annotation set, but not as type ``Client``.
-            - If `func`'s (or it's converted form's) second argument has default value set.
-            - If `func`'s (or it's converted form's) second argument has annotation set, but not as type ``Message``.
-            - If an argument has annotation as a ``Converter`` instance with default value, meanwhile the argument
+            - If `func` (or it's converted form) accepts less then 2 non reversed parameter without *args.
+            - If `func`'s (or it's converted form's) first parameter has default value set.
+            - If `func`'s (or it's converted form's) first parameter has annotation set, but not as type ``Client``.
+            - If `func`'s (or it's converted form's) second parameter has default value set.
+            - If `func`'s (or it's converted form's) second parameter has annotation set, but not as type ``Message``.
+            - If an parameter has annotation as a ``Converter`` instance with default value, meanwhile the parameter
                 itself also has it's own default value.
             - If an annotation was given as `None` or as empty `tuple` meanwhile.
             - If an annotation was given as `tuple`, but any of it's element is not `None`, or `str`, `type` or `tuple`
                 instance.
-            - If `*args` argument's annotation was given as ``Converter`` instance with default value set.
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `*args` parameter's annotation was given as ``Converter`` instance with default value set.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
@@ -2828,7 +2828,7 @@ class CommandContentParser:
             - If `separator` is given as `tuple`, but one of it's element's length is not 1.
             - If `separator` is given as `tuple`, but one of it's element's is a space character.
         """
-        separator = ContentArgumentSeparator(separator)
+        separator = ContentParameterSeparator(separator)
         
         analyzer = CallableAnalyzer(func)
         if analyzer.is_async() or analyzer.is_async_generator():
@@ -2846,41 +2846,41 @@ class CommandContentParser:
         else:
             raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.')
         
-        keyword_only_argument_count = real_analyzer.get_non_default_keyword_only_argument_count()
-        if keyword_only_argument_count:
-            raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only arguments.')
+        keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_parameter_count()
+        if keyword_only_parameter_count:
+            raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
         
         if real_analyzer.accepts_kwargs():
             raise TypeError(f'`{real_analyzer.real_function!r}` accepts **kwargs.')
         
-        arguments = real_analyzer.get_non_reserved_positional_arguments()
+        parameters = real_analyzer.get_non_reserved_positional_parameters()
         
-        argument_count = len(arguments)
-        if argument_count<2:
-            raise TypeError(f'`{real_analyzer.real_function!r}` should accept at least 2 arguments (without *args): '
-                f'`client` and `message`, meanwhile it accepts only {argument_count}.')
+        parameter_count = len(parameters)
+        if parameter_count<2:
+            raise TypeError(f'`{real_analyzer.real_function!r}` should accept at least 2 parameters (without *args): '
+                f'`client` and `message`, meanwhile it accepts only {parameter_count}.')
         
-        client_argument = arguments[0]
-        if client_argument.has_default:
-            raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
+        client_parameter = parameters[0]
+        if client_parameter.has_default:
+            raise TypeError(f'`{real_analyzer.real_function!r}` has default parameter set as it\'s first not '
                 'reserved, meanwhile it should not have.')
         
-        if client_argument.has_annotation and (client_argument.annotation is not Client):
-            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the client\'s argument slot, '
+        if client_parameter.has_annotation and (client_parameter.annotation is not Client):
+            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the client\'s parameter slot, '
                 f'what is not `{Client.__name__}`.')
         
-        message_argument = arguments[1]
-        if message_argument.has_default:
-            raise TypeError(f'`{real_analyzer.real_function!r}` has default argument set as it\'s first not '
+        message_parameter = parameters[1]
+        if message_parameter.has_default:
+            raise TypeError(f'`{real_analyzer.real_function!r}` has default parameter set as it\'s first not '
                 f'reserved, meanwhile it should not have.')
         
-        if message_argument.has_annotation and (message_argument.annotation is not Message):
-            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the message\'s argument slot '
+        if message_parameter.has_annotation and (message_parameter.annotation is not Message):
+            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the message\'s parameter slot '
                 f'what is not `{Message.__name__}`.')
         
         hinters = []
-        to_check = arguments[2:]
-        args_argument = real_analyzer.args_argument
+        to_check = parameters[2:]
+        args_parameter = real_analyzer.args_parameter
         
         index = 0
         limit = len(to_check)
@@ -2888,30 +2888,30 @@ class CommandContentParser:
             if index == limit:
                 break
             
-            argument = to_check[index]
+            parameter = to_check[index]
             index += 1
             
-            if argument.has_annotation:
-                annotation = argument.annotation
+            if parameter.has_annotation:
+                annotation = parameter.annotation
                 if type(annotation) is Converter:
                     hinter_default = annotation.default
                     hinter_default_type = annotation.default_type
                     hinter_annotation = annotation.annotation
                 
-                    if argument.has_default:
+                    if parameter.has_default:
                         if hinter_default_type:
-                            raise TypeError(f'`annotation` of `{argument.name}` is given as '
+                            raise TypeError(f'`annotation` of `{parameter.name}` is given as '
                                 f'`{Converter.__class__.__name__}` instance, as {Converter!r} (with default value '
-                                f'set), meanwhile the argument has default value set as well: {argument.default!r}.')
+                                f'set), meanwhile the parameter has default value set as well: {parameter.default!r}.')
                         
-                        hinter_default = argument.default
+                        hinter_default = parameter.default
                         hinter_default_type = DEFAULT_TYPE_OBJ
                 
                 else:
                     annotation = validate_annotation(annotation)
                     
-                    if argument.has_default:
-                        hinter_default = argument.default
+                    if parameter.has_default:
+                        hinter_default = parameter.default
                         hinter_default_type = DEFAULT_TYPE_OBJ
                     else:
                         hinter_default = None
@@ -2920,9 +2920,9 @@ class CommandContentParser:
                     hinter_annotation = annotation
                 
             else:
-                if argument.has_default:
-                    default = argument.default
-                    if (index == limit) and (args_argument is None):
+                if parameter.has_default:
+                    default = parameter.default
+                    if (index == limit) and (args_parameter is None):
                         hinter_annotation = None
                     else:
                         hinter_annotation = FlaggedAnnotation(str)
@@ -2931,7 +2931,7 @@ class CommandContentParser:
                     hinter_default_type = DEFAULT_TYPE_OBJ
                     
                 else:
-                    if (index == limit) and (args_argument is None):
+                    if (index == limit) and (args_parameter is None):
                         hinter_annotation = None
                     else:
                         hinter_annotation = FlaggedAnnotation(str)
@@ -2939,16 +2939,16 @@ class CommandContentParser:
                     hinter_default = None
                     hinter_default_type = DEFAULT_TYPE_NONE
             
-            hinter = ContentParserArgumentHinter()
+            hinter = ContentParserParameterHinter()
             hinter.default = hinter_default
             hinter.default_type = hinter_default_type
             hinter.annotation = hinter_annotation
             hinter.is_args = False
             hinters.append(hinter)
         
-        if (args_argument is not None):
-            if args_argument.has_annotation:
-                annotation = args_argument.annotation
+        if (args_parameter is not None):
+            if args_parameter.has_annotation:
+                annotation = args_parameter.annotation
                 if type(annotation) is Converter:
                     if annotation.default_type:
                         raise TypeError(f'`*args` annotation is given as `{Converter.__class__.__name__} as '
@@ -2960,7 +2960,7 @@ class CommandContentParser:
             else:
                 hinter_annotation = FlaggedAnnotation(str)
             
-            hinter = ContentParserArgumentHinter()
+            hinter = ContentParserParameterHinter()
             hinter.default = None
             hinter.default_type = DEFAULT_TYPE_NONE
             hinter.annotation = hinter_annotation
@@ -3021,7 +3021,7 @@ class CommandContentParser:
         Returns
         -------
         passed : `bool`
-            Whether the parsing all the arguments of the message succeeded.
+            Whether the parsing all the parameters of the message succeeded.
         args : `None` or `list` of `Any`
             The parsed out entities. Can be empty list.
         """
@@ -3079,12 +3079,12 @@ class ContentParser(CommandContentParser):
     ----------
     _parsers : `None` or `list` of ``ParserContextBase`` instances
         The events of the command content parser. Set as`None` if it would be an empty `list`.
-    _separator : ``ContentArgumentSeparator``
-        The argument separator of the parser.
+    _separator : ``ContentParameterSeparator``
+        The parameter separator of the parser.
     _func : `async-callable`
         The wrapped function.
     _handler : `None` or `async-callable`
-        A coroutine function what is ensured, when parsing the arguments fail.
+        A coroutine function what is ensured, when parsing the parameters fail.
     _is_method : `bool`
         Whether the ``ContentParser`` should act like a method descriptor.
     """
@@ -3098,7 +3098,7 @@ class ContentParser(CommandContentParser):
         handler : `None`, `async-callable` or instantiable to `async-callable`, Optional
             An async callable, what is ensured when the parser's cannot parse all the required parameters out.
             
-            If given, should accept the following arguments:
+            If given, should accept the following parameters:
             +-----------------------+-------------------+
             | Respective name       | Type              |
             +=======================+===================+
@@ -3117,8 +3117,8 @@ class ContentParser(CommandContentParser):
         
         is_method : `bool`, Optional
             Whether the content parser should act like a method. Default to `False`.
-        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`), Optional
-            The argument separator of the parser.
+        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the parser.
         
         Returns
         -------
@@ -3131,8 +3131,8 @@ class ContentParser(CommandContentParser):
         TypeError
             - If `is_method` is not given as `bool` instance.
             - If `handler` is not async, neither cannot be instanced to async.
-            - If `handler` (or it's converted form) would accept bad amount of arguments.
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `handler` (or it's converted form) would accept bad amount of parameters.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
@@ -3144,10 +3144,10 @@ class ContentParser(CommandContentParser):
         
         if (handler is not None):
             handler = check_parameter_count_and_convert(handler, 6, name='handler', error_message= \
-                '`ContentParser` expects to pass `6` arguments to it\'s `handler`: client, message, content_parser, '
+                '`ContentParser` expects to pass `6` parameters to it\'s `handler`: client, message, content_parser, '
                 'content, args, obj (can be `None`).')
         
-        separator = ContentArgumentSeparator(separator)
+        separator = ContentParameterSeparator(separator)
         
         if func is None:
             return cls._wrapper(handler, is_method, separator)
@@ -3172,7 +3172,7 @@ class ContentParser(CommandContentParser):
         _handler : `None`, `async-callable`
             An async callable, what is ensured when the parser's cannot parse all the required parameters out.
             
-            If given as not `None` should accept the following arguments:
+            If given as not `None` should accept the following parameters:
             +-----------------------+-------------------+
             | Respective name       | Type              |
             +=======================+===================+
@@ -3190,8 +3190,8 @@ class ContentParser(CommandContentParser):
             +-----------------------+-------------------+
         _is_method : `bool`
             Whether the content parser should act like a method.
-        _separator : ``ContentArgumentSeparator``
-            The argument separator of the parser.
+        _separator : ``ContentParameterSeparator``
+            The parameter separator of the parser.
         """
         __slots__ = ('_handler', '_is_method', '_separator', )
         
@@ -3204,7 +3204,7 @@ class ContentParser(CommandContentParser):
             handler : `None`, `async-callable`
                 An async callable, what is ensured when the parser's cannot parse all the required parameters out.
                 
-                If given as not `None` should accept the following arguments:
+                If given as not `None` should accept the following parameters:
             +-----------------------+-------------------+
             | Respective name       | Type              |
             +=======================+===================+
@@ -3222,8 +3222,8 @@ class ContentParser(CommandContentParser):
             +-----------------------+-------------------+
             is_method : `bool`
                 Whether the content parser should act like a method.
-            separator : ``ContentArgumentSeparator``
-                The argument separator of the parser.
+            separator : ``ContentParameterSeparator``
+                The parameter separator of the parser.
             """
             self._handler = handler
             self._is_method = is_method
@@ -3284,13 +3284,13 @@ class ContentParser(CommandContentParser):
         Raises
         ------
         TypeError
-            Unexpected amount of arguments were passed.
+            Unexpected amount of parameters were passed.
         """
-        # Parse out arguments.
+        # Parse out parameters.
         args_count = len(args)
         if self._is_method:
             if args_count < 3 or args_count > 4:
-                raise TypeError(f'{self!r} expects 3-4 positional arguments to be given, got {args_count}.')
+                raise TypeError(f'{self!r} expects 3-4 positional parameters to be given, got {args_count}.')
             
             if args_count == 3:
                 parent, client, message = args
@@ -3299,7 +3299,7 @@ class ContentParser(CommandContentParser):
                 parent, client, message, content = args
         else:
             if args_count < 2 or args_count > 3:
-                raise TypeError(f'{self!r} expects 2-3 positional arguments to be given, got {args_count}.')
+                raise TypeError(f'{self!r} expects 2-3 positional parameters to be given, got {args_count}.')
             
             if args_count == 2:
                 client, message = args
@@ -3444,7 +3444,7 @@ class ContentParserMethod(MethodLike):
         Raises
         ------
         TypeError
-            Unexpected amount of arguments were passed.
+            Unexpected amount of parameters were passed.
         """
         return await self._content_parser(self.__self__, *args)
     

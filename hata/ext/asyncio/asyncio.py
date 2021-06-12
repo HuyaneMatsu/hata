@@ -466,7 +466,7 @@ class Future:
     
     - This class is not thread-safe.
     
-    - result() and exception() do not take a timeout argument and
+    - result() and exception() do not take a timeout parameter and
       raise an exception when the future isn't done yet.
     
     - Callbacks registered with add_done_callback() are always called
@@ -622,7 +622,7 @@ class Semaphore:
     
     Semaphores also support the context management protocol.
     
-    The optional argument gives the initial value for the internal counter; it defaults to 1. If the value given is
+    The optional parameter gives the initial value for the internal counter; it defaults to 1. If the value given is
     less than 0, ValueError is raised.
     """
     def __new__(cls, value=1, *, loop=None):
@@ -679,7 +679,7 @@ class Protocol(BaseProtocol):
     
     When the connection is made successfully, connection_made() is called with a suitable transport object.
     Then data_received() will be called 0 or more times with data (bytes) received from the transport; finally,
-    connection_lost() will be called exactly once with either an exception object or None as an argument.
+    connection_lost() will be called exactly once with either an exception object or None as an parameter.
     
     State machine of calls:
     
@@ -926,7 +926,7 @@ async def staggered_race(coro_fns, delay, *, loop=None):
     
     Args:
         coro_fns: an iterable of coroutine functions, i.e. callables that return a coroutine object when called. Use
-        ``functools.partial`` or lambdas to pass arguments.
+        ``functools.partial`` or lambdas to pass parameters.
         
         delay: amount of time, in seconds, between starting coroutines. If `None`, the coroutines will run
         sequentially.
@@ -957,10 +957,10 @@ async def open_connection(host=None, port=None, *, loop=None, limit=_DEFAULT_LIM
     
     The reader returned is a StreamReader instance; the writer is a StreamWriter instance.
     
-    The arguments are all the usual arguments to create_connection() except protocol_factory; most common are
-    positional host and port, with various optional keyword arguments following.
+    The parameters are all the usual parameters to create_connection() except protocol_factory; most common are
+    positional host and port, with various optional keyword parameters following.
     
-    Additional optional keyword arguments are loop (to set the event loop instance to use) and limit (to set the buffer
+    Additional optional keyword parameters are loop (to set the event loop instance to use) and limit (to set the buffer
     limit passed to the StreamReader).
     
     (If you want to customize the StreamReader and/or StreamReaderProtocol classes, just copy the code -- there's
@@ -969,7 +969,7 @@ async def open_connection(host=None, port=None, *, loop=None, limit=_DEFAULT_LIM
     if loop is None:
         loop = get_event_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     reader = StreamReader(limit=limit, loop=loop)
@@ -985,11 +985,11 @@ async def start_server(client_connected_cb, host=None, port=None, *, loop=None, 
     StreamWriter object. This parameter can either be a plain callback function or a coroutine; if it is a coroutine,
     it will be automatically converted into a Task.
     
-    The rest of the arguments are all the usual arguments to loop.create_server() except protocol_factory; most common
-    are positional host and port, with various optional keyword arguments following.  The return value is the same as
+    The rest of the parameters are all the usual parameters to loop.create_server() except protocol_factory; most common
+    are positional host and port, with various optional keyword parameters following.  The return value is the same as
     loop.create_server().
     
-    Additional optional keyword arguments are loop (to set the event loop instance to use) and limit (to set the buffer
+    Additional optional keyword parameters are loop (to set the event loop instance to use) and limit (to set the buffer
     limit passed to the StreamReader).
     
     The return value is the same as loop.create_server(), i.e. a Server object which can be used to stop the service.
@@ -997,7 +997,7 @@ async def start_server(client_connected_cb, host=None, port=None, *, loop=None, 
     if loop is None:
         loop = get_event_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     def factory():
@@ -1478,7 +1478,7 @@ if IS_UNIX:
         if loop is None:
             loop = get_event_loop()
         else:
-            warnings.warn('The loop argument is deprecated since Python 3.8 and scheduled for removal in Python 3.10.',
+            warnings.warn('The loop parameter is deprecated since Python 3.8 and scheduled for removal in Python 3.10.',
                           DeprecationWarning, stacklevel=2)
         
         if stdin is None:
@@ -1499,7 +1499,7 @@ if IS_UNIX:
         if loop is None:
             loop = get_event_loop()
         else:
-            warnings.warn('The loop argument is deprecated since Python 3.8 and scheduled for removal in Python 3.10.',
+            warnings.warn('The loop parameter is deprecated since Python 3.8 and scheduled for removal in Python 3.10.',
                           DeprecationWarning, stacklevel=2)
             
         if stdin is None:
@@ -1625,7 +1625,7 @@ async def wait(fs, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
     if loop is None:
         loop = get_running_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     if any(iscoroutine(f) for f in set(fs)):
@@ -1663,7 +1663,7 @@ async def wait_for(fut, timeout, *, loop=None):
     if loop is None:
         loop = get_running_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     if timeout is None:
@@ -1736,7 +1736,7 @@ def as_completed(fs, *, loop=None, timeout=None):
     if loop is None:
         loop = get_event_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     tasks = set()
@@ -1761,7 +1761,7 @@ async def sleep(delay, result=None, *, loop=None):
     if loop is None:
         loop = get_running_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     if delay <= 0.0:
@@ -1777,12 +1777,12 @@ def ensure_future(coro_or_future, *, loop=None):
     """
     Wrap a coroutine or an awaitable in a future.
     
-    If the argument is a Future, it is returned directly.
+    If the parameter is a Future, it is returned directly.
     """
     if loop is None:
         loop = get_running_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     return loop.ensure_future(coro_or_future)
@@ -1895,7 +1895,7 @@ def gather(*coros_or_futures, loop=None, return_exceptions=False):
     if loop is None:
         loop = get_event_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
     future = HataFuture(loop)
@@ -1952,7 +1952,7 @@ def shield(arg, *, loop=None):
     if loop is None:
         loop = get_running_loop()
     else:
-        warnings.warn('The loop argument is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
 
     return hata_shield(arg, loop)

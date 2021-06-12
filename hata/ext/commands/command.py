@@ -275,11 +275,11 @@ class Command:
     _checks : `None` or `list` of ``_check_base`` instances
         The internal slot used by the ``.checks`` property. Defaults to `None`.
     parser : `None` or ``CommandContentParser``
-        Collection of content part events to parse argument for the command. Defaults to `None`.
+        Collection of content part events to parse parameter for the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
         
-        If given as an `async-callable`, then it should accept 5 arguments:
+        If given as an `async-callable`, then it should accept 5 parameters:
         
         +-----------------------+-------------------+---------------------------------------+
         | Respective name       | Type              | Description                           |
@@ -291,9 +291,9 @@ class Command:
         | command               | ``Command``       | The respective command.               |
         +-----------------------+-------------------+---------------------------------------+
         | content               | `str`             | The message's content, from what the  |
-        |                       |                   | arguments would have be parsed.       |
+        |                       |                   | parameters would have be parsed.       |
         +-----------------------+-------------------+---------------------------------------+
-        | args                  | `list` of `Any`   | The successfully parsed argument.     |
+        | args                  | `list` of `Any`   | The successfully parsed parameter.     |
         +-----------------------+-------------------+---------------------------------------+
     
     _wrappers : `None`, `Any`, `list` of `async-callable`
@@ -328,7 +328,7 @@ class Command:
                     (`None`, `Ellipsis`, ``_check_base`` instance, `list` of ``_check_base`` instances)
                 If no checks were provided, then the class's `.checks` attribute will be checked as well.
             - parser_failure_handler : `None`, `async-callable` or `tuple` of (`None`, `Ellipsis`, `Async-callable`)
-            - separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`)
+            - separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`)
         
         Returns
         -------
@@ -348,7 +348,7 @@ class Command:
                 `str`)
             - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - if an empty string was given as an alias.
@@ -480,10 +480,10 @@ class Command:
         Parameters
         ----------
         parser_failure_handler : `None` or `async-callable`
-            Called when the respective uses a parser to parse it's arguments, but it cannot parse out all the required
+            Called when the respective uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
-            If given as an `async-callable`, then it should accept 5 arguments:
+            If given as an `async-callable`, then it should accept 5 parameters:
             
             +-----------------------+-------------------+
             | Respective name       | Type              |
@@ -509,12 +509,12 @@ class Command:
         TypeError
             - If `func` was not given as callable.
             - If `func` is not as async and neither cannot be converted to an async one.
-            - If `func` expects less or more non reserved positional arguments as `expected` is.
+            - If `func` expects less or more non reserved positional parameters as `expected` is.
         """
         if (parser_failure_handler is not None):
             parser_failure_handler = check_parameter_count_and_convert(parser_failure_handler, 5,
                 name='parser_failure_handler', can_be_async_generator=True, error_message= \
-                '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
+                '`parser_failure_handler` expected 5 parameters (client, message, command, content, args).')
         
         return parser_failure_handler
     
@@ -736,10 +736,10 @@ class Command:
             Checks to decide in which circumstances the command should be called.
         
         parser_failure_handler : `None`, `async-callable` or `tuple` of (`None` or `async-callable`), Optional
-            Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
+            Called when the command uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
-            If given as an `async-callable`, then it should accept 5 arguments:
+            If given as an `async-callable`, then it should accept 5 parameters:
             
             +-----------------------+-------------------+
             | Respective name       | Type              |
@@ -755,8 +755,8 @@ class Command:
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
         
-        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`), Optional
-            The argument separator of the command's parser.
+        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the command's parser.
         
         Returns
         -------
@@ -774,7 +774,7 @@ class Command:
                 `str`)
             - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - if an empty string was given as an alias.
@@ -1095,7 +1095,7 @@ class Command:
         
         parser_failure_handler = check_parameter_count_and_convert(parser_failure_handler, 5, name='parser_failure_handler',
             can_be_async_generator=True, error_message= \
-            '`parser_failure_handler` expected 5 arguments (client, message, command, content, args).')
+            '`parser_failure_handler` expected 5 parameters (client, message, command, content, args).')
         self._parser_failure_handler = parser_failure_handler
     
     def _del_parser_failure_handler(self):
@@ -1109,7 +1109,7 @@ class Command:
         parser_failure_handler.__doc__ = ("""
         Get-set-del property for accessing the ``Command``'s parser failure handler.
         
-        Can be set as `None` or as an `async-callable`, what accepts the following 5 arguments:
+        Can be set as `None` or as an `async-callable`, what accepts the following 5 parameters:
         +-----------------------+-------------------+
         | Respective name       | Type              |
         +=======================+===================+
@@ -1124,7 +1124,7 @@ class Command:
         | args                  | `list` of `Any`   |
         +-----------------------+-------------------+
         
-        If a bad type was given or if the given value accepts bad amount of non reserved positional arguments, then
+        If a bad type was given or if the given value accepts bad amount of non reserved positional parameters, then
         `TypeError` is raised.
         
         When deleting it removes the commands's parser failure handler.
@@ -1141,7 +1141,7 @@ class Command:
         applicable.
         
         At the next step the call options of the command are checked, and if needed the command's parser is ensured.
-        If the parser could not parse out all the required arguments, then the command's `parser_failure_handler` is
+        If the parser could not parse out all the required parameters, then the command's `parser_failure_handler` is
         called if applicable.
         
         If the command returns not `None` it will be interpreted as a response as will be tried to send to the
@@ -1780,7 +1780,7 @@ def test_name_rule(rule, rule_name, nullable):
     TypeError
         - If `rule` is not `None` or `function` instance.
         - If `rule` is `async` `function`.
-        - If `rule` accepts bad amount of arguments.
+        - If `rule` accepts bad amount of parameters.
         - If `rule` raised exception when `str` was passed to it.
         - If `rule` did not return `str`, when passing `str` to it.
         - If `nullable` is given as `True` and `rule` raised exception when `None` was passed to it.
@@ -1799,10 +1799,10 @@ def test_name_rule(rule, rule_name, nullable):
         raise TypeError(f'`{rule_name}` should have been given as an non async function instance, got '
             f'{rule!r}.')
     
-    non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-    if non_reserved_positional_argument_count != 1:
-        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional arguments, meanwhile it expects '
-            f'{non_reserved_positional_argument_count}.')
+    non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+    if non_reserved_positional_parameter_count != 1:
+        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional parameters, meanwhile it expects '
+            f'{non_reserved_positional_parameter_count}.')
     
     if analyzed.accepts_args():
         raise TypeError(f'`{rule_name}` should accept not expect args, meanwhile it does.')
@@ -1810,10 +1810,10 @@ def test_name_rule(rule, rule_name, nullable):
     if analyzed.accepts_kwargs():
         raise TypeError(f'`{rule_name}` should accept not expect kwargs, meanwhile it does.')
     
-    non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
-    if non_default_keyword_only_argument_count:
-        raise TypeError(f'`{rule_name}` should accept `0` keyword only arguments, meanwhile it expects '
-            f'{non_default_keyword_only_argument_count}.')
+    non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
+    if non_default_keyword_only_parameter_count:
+        raise TypeError(f'`{rule_name}` should accept `0` keyword only parameters, meanwhile it expects '
+            f'{non_default_keyword_only_parameter_count}.')
     
     try:
         result = rule('test-this-name')
@@ -1861,22 +1861,22 @@ def test_precheck(precheck):
     Raises
     ------
     TypeError
-        - If `precheck` accepts bad amount of arguments.
+        - If `precheck` accepts bad amount of parameters.
         - If `precheck` is async.
     """
     analyzer = CallableAnalyzer(precheck)
     if analyzer.is_async():
         raise TypeError('`precheck` should not be given as `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
-        raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects at '
+        raise TypeError(f'`precheck` should accept `2` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{precheck!r}`.')
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects '
+                raise TypeError(f'`precheck` should accept `2` parameters, meanwhile the given callable expects '
                     f'up to `{max_!r}`, got `{precheck!r}`.')
 
 
@@ -1927,7 +1927,7 @@ class CommandProcesser(EventWaitforBase):
         will move on the next step.
     
     - `default_event`
-        If the received message was not a command call, then this event is ensured (if set) with 2 arguments:
+        If the received message was not a command call, then this event is ensured (if set) with 2 parameters:
         
         +-------------------+---------------+
         | Respective name   | Type          |
@@ -1961,7 +1961,7 @@ class CommandProcesser(EventWaitforBase):
         Container to store the entities where message is expected to be sent and their waiters.
     _category_name_rule : `None` or `function`
         Function to generate display names for categories.
-        Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
+        Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` instance as well.
     _command_error : `None` or `async-callable`
         Called when execution of a command raised. Internal slot used by the ``.command_error`` property.
     _command_error_checks : `None` or `list` of ``_check_base`` instances
@@ -1969,7 +1969,7 @@ class CommandProcesser(EventWaitforBase):
         ``.command_error_checks`` property.
     _command_name_rule : `None` or `function`
         Function to generate display names for commands.
-        Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
+        Should accept only 1 parameter, what is `str` instance and should return a `str` instance as well.
     _default_category_name : `None` or `str`
         The command processor's default category's name.
     _default_event : `None` or `async-callable`
@@ -2013,7 +2013,7 @@ class CommandProcesser(EventWaitforBase):
     get_prefix_for : `callable`
         A function to get the client's preferred prefix for the given message.
         
-        ``.get_prefix_for`` accepts only `1` argument:
+        ``.get_prefix_for`` accepts only `1` parameter:
         +-------------------+---------------+
         | Respective name   | Type          |
         +===================+===============+
@@ -2056,7 +2056,7 @@ class CommandProcesser(EventWaitforBase):
         prefix :  `str`, ((`tuple`, `list`) of `str`), `callable`
             Prefix for the command processer.
             
-            Can be given as normal or as `async` `callable` as well, what should accept `1` argument:
+            Can be given as normal or as `async` `callable` as well, what should accept `1` parameter:
             +-------------------+---------------+
             | Respective name   | Type          |
             +===================+===============+
@@ -2072,10 +2072,10 @@ class CommandProcesser(EventWaitforBase):
             The command processor's default category's name. Defaults to `None`.
         category_name_rule : `None` or `function`, Optional
             Function to generate display names for categories.
-            Should accept only 1 argument, what can be `str`  or `None` and should return a `str` instance as well.
+            Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` instance as well.
         command_name_rule : `None` or `function`, Optional
             Function to generate display names for commands.
-            Should accept only 1 argument, what is `str` instance and should return a `str` instance as well.
+            Should accept only 1 parameter, what is `str` instance and should return a `str` instance as well.
         precheck : `None` or `callable`, Optional
             Function, which decides whether a received message should be processed. Defaults to ``._default_precheck``.
             
@@ -2099,12 +2099,12 @@ class CommandProcesser(EventWaitforBase):
         ------
         TypeError
             - If `default_category_name` was not passed as `None`, or as `str` instance.
-            - If `prefix` was given as a `callable`, but accepts bad amount of arguments.
+            - If `prefix` was given as a `callable`, but accepts bad amount of parameters.
             - If `prefix` was given as `tuple` or `list`, but contains a non `str`.
             - If `prefix` was not given as `str`, (`tuple`, `list`) of `str` or as `callable`.
             - If `category_name_rule` is not `None` or `function` instance.
             - If `category_name_rule` is `async` `function`.
-            - If `category_name_rule` accepts bad amount of arguments.
+            - If `category_name_rule` accepts bad amount of parameters.
             - If `category_name_rule` raised exception when `str` was passed to it.
             - If `category_name_rule` did not return `str`, when passing `str` to it.
             - If `nullable` is given as `True` and `category_name_rule` raised exception when `None` was passed to it.
@@ -2112,12 +2112,12 @@ class CommandProcesser(EventWaitforBase):
                 to it.
             - If `command_name_rule` is not `None` or `function` instance.
             - If `command_name_rule` is `async` `function`.
-            - If `command_name_rule` accepts bad amount of arguments.
+            - If `command_name_rule` accepts bad amount of parameters.
             - If `command_name_rule` raised exception when `str` was passed to it.
             - If `command_name_rule` did not return `str`, when passing `str` to it.
             - If `category_name_rule` raised exception when `None` was passed to it.
             - If `category_name_rule` did not return `str` when passing `None` to it.
-            - If `precheck` accepts bad amount of arguments.
+            - If `precheck` accepts bad amount of parameters.
             - If `precheck` is async.
         ValueError
             - If `prefix` was given as an empty `str`.
@@ -2397,7 +2397,7 @@ class CommandProcesser(EventWaitforBase):
         prefix :  `str`, ((`tuple`, `list`, `set`) of `str`), `callable`
             Prefix for the command processer.
             
-            Can be given as normal or as `async` `callable` as well, what should accept `1` argument:
+            Can be given as normal or as `async` `callable` as well, what should accept `1` parameter:
             +-------------------+---------------+
             | Respective name   | Type          |
             +===================+===============+
@@ -2410,7 +2410,7 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `prefix` was given as a `callable`, but accepts bad amount of arguments.
+            - If `prefix` was given as a `callable`, but accepts bad amount of parameters.
             - If `prefix` was given as `tuple`or `list`, but contains a non `str`.
             - If `prefix` was not given as `str`, (`tuple`, `list`) of `str` or as `callable`.
         ValueError
@@ -2428,11 +2428,11 @@ class CommandProcesser(EventWaitforBase):
         while True:
             if callable(prefix):
                 analyzed = CallableAnalyzer(prefix)
-                non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-                if non_reserved_positional_argument_count != 1:
+                non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+                if non_reserved_positional_parameter_count != 1:
                     raise TypeError(f'If `prefix` is given as a `callable`, got {callable!r}, then it should accept '
-                        'only `1` non reserved position argument, meanwhile it accepts: '
-                        f'`{non_reserved_positional_argument_count}`.')
+                        'only `1` non reserved position parameter, meanwhile it accepts: '
+                        f'`{non_reserved_positional_parameter_count}`.')
                 
                 if analyzed.is_async():
                     async def prefix_filter(message):
@@ -2613,10 +2613,10 @@ class CommandProcesser(EventWaitforBase):
             Checks to decide in which circumstances the command should be called.
         
         parser_failure_handler : `None`, `async-callable` or `tuple` of (`None` or `async-callable`)
-            Called when the command uses a parser to parse it's arguments, but it cannot parse out all the required
+            Called when the command uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
-            If given as an `async-callable`, then it should accept 5 arguments:
+            If given as an `async-callable`, then it should accept 5 parameters:
             
             +-----------------------+-------------------+
             | Respective name       | Type              |
@@ -2631,8 +2631,8 @@ class CommandProcesser(EventWaitforBase):
             +-----------------------+-------------------+
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
-        separator : `None`, ``ContentArgumentSeparator``, `str` or `tuple` (`str`, `str`), Optional
-            The argument separator of the parser.
+        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the parser.
         
         Returns
         -------
@@ -2651,7 +2651,7 @@ class CommandProcesser(EventWaitforBase):
                 `str`)
             - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If the added command's `.name` would overwrite an alias of an other command.
@@ -2673,7 +2673,7 @@ class CommandProcesser(EventWaitforBase):
             # called every time, but only if every other fails
             if name == 'default_event':
                 func = check_parameter_count_and_convert(func, 2, name='default_event', can_be_async_generator=True,
-                    error_message='`default_event` expects 2 arguments (client, message).')
+                    error_message='`default_event` expects 2 parameters (client, message).')
                 
                 checks_processed = validate_checks(checks)
                 self._default_event = func
@@ -2683,7 +2683,7 @@ class CommandProcesser(EventWaitforBase):
             if name == 'command_error':
                 func = check_parameter_count_and_convert(func, 5, name='command_error', can_be_async_generator=True,
                     error_message= \
-                        '`command_error` expected 5 arguments (client, message, command, content, exception).')
+                        '`command_error` expected 5 parameters (client, message, command, content, exception).')
                 
                 checks_processed = validate_checks(checks)
                 self._command_error = func
@@ -2693,7 +2693,7 @@ class CommandProcesser(EventWaitforBase):
             # called when user used bad command after the preset prefix, called if a command fails
             if name == 'invalid_command':
                 func = check_parameter_count_and_convert(func, 4, name='invalid_command', can_be_async_generator=True,
-                    error_message='`invalid_command` expected 4 arguments (client, message, command, content).')
+                    error_message='`invalid_command` expected 4 parameters (client, message, command, content).')
                 
                 checks_processed = validate_checks(checks)
                 self._invalid_command = func
@@ -2748,7 +2748,7 @@ class CommandProcesser(EventWaitforBase):
                 `str`)
             - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
                 `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentArgumentSeparator``, `str`, neither as `tuple` instance.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
             - If `separator` was given as `tuple`, but it's element are not `str` instances.
         ValueError
             - If `.command` attribute is missing of the class.
@@ -3081,7 +3081,7 @@ class CommandProcesser(EventWaitforBase):
         
         This method is a coroutine.
         
-        Arguments
+        Parameters
         ---------
         client : ``Client``
             The client, who received the message.
@@ -3309,7 +3309,7 @@ class CommandProcesser(EventWaitforBase):
     
     def _set_default_event(self, default_event):
         default_event = check_parameter_count_and_convert(default_event, 2, name=default_event, can_be_async_generator=True,
-            error_message='`default_event` expects 2 arguments (client, message).')
+            error_message='`default_event` expects 2 parameters (client, message).')
         self._default_event = default_event
     
     def _del_default_event(self):
@@ -3322,7 +3322,7 @@ class CommandProcesser(EventWaitforBase):
         default_event.__doc__ = ("""
         A get-set-del property for changing the command processer's default event.
         
-        If the received message was not a command call, then this event is ensured (if set) with 2 arguments:
+        If the received message was not a command call, then this event is ensured (if set) with 2 parameters:
         
         +-------------------+---------------+
         | Respective name   | Type          |
@@ -3361,7 +3361,7 @@ class CommandProcesser(EventWaitforBase):
     def _set_command_error(self, command_error):
         command_error = check_parameter_count_and_convert(command_error, 5, name='command_error',
             can_be_async_generator=True, error_message= \
-            '`command_error` expected 5 arguments (client, message, command, content, err).')
+            '`command_error` expected 5 parameters (client, message, command, content, err).')
         
         self._command_error = command_error
     
@@ -3421,7 +3421,7 @@ class CommandProcesser(EventWaitforBase):
     def _set_invalid_command(self, invalid_command):
         invalid_command = check_parameter_count_and_convert(invalid_command, 4, name='invalid_command',
             can_be_async_generator=True, error_message= \
-            '`invalid_command` expected 4 arguments (client, message, command, content).')
+            '`invalid_command` expected 4 parameters (client, message, command, content).')
         
         self._invalid_command = invalid_command
     
@@ -3436,7 +3436,7 @@ class CommandProcesser(EventWaitforBase):
         A get-set-del property for changing the command processer's invalid command.
         
         If `prefix` is valid, but the command not exists (or it returned `0`) will be called (if set) with `4`
-        arguments:
+        parameters:
         
         +-------------------+---------------+
         | Respective name   | Type          |

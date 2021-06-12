@@ -1151,8 +1151,8 @@ class WSClient(WebSocketCommonProtocol):
             Extra request headers.
         http_client : `None` or ``HTTPClient`` instance, Optional (Keyword only)
             Http client to use to connect the websocket.
-        **websocket_kwargs : Keyword arguments
-            Additional keyword arguments to create the websocket with.
+        **websocket_kwargs : Keyword parameters
+            Additional keyword parameters to create the websocket with.
         
         Other Parameters
         ----------------
@@ -1481,7 +1481,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             The parent websocket server.
         """
         handler, host, port, is_ssl, origin, available_extensions, available_subprotocols , extra_response_headers, \
-        request_processor, subprotocol_selector, websocket_kwargs = server.protocol_arguments
+        request_processor, subprotocol_selector, websocket_kwargs = server.protocol_parameters
         
         self.handler = handler
         self.server = server
@@ -1839,8 +1839,8 @@ class WSServer:
         protocol implementations.
     server : `None` or ``Server``
         Asynchronous server instance. Set meanwhile the websocket server is running.
-    protocol_arguments : `tuple` of `Any`
-        Websocket protocol arguments.
+    protocol_parameters : `tuple` of `Any`
+        Websocket protocol parameters.
         
         Contains the following elements:
             - `handler` : `async-callable` Same as ``.handler``.
@@ -1884,7 +1884,7 @@ class WSServer:
                     Max queue size of ``.messages``. If a new payload is added to a full queue, the oldest element of
                     it is removed. Defaults to `None`.
     """
-    __slots__ = ('loop', 'websockets', 'close_connection_task', 'handler', 'server', 'protocol_arguments')
+    __slots__ = ('loop', 'websockets', 'close_connection_task', 'handler', 'server', 'protocol_parameters')
     async def __new__(cls, loop, host, port, handler, *, protocol=WSServerProtocol, available_extensions=None,
             extra_response_headers=None, origin=None, available_subprotocols=None, request_processor=None,
             subprotocol_selector=None, websocket_kwargs=None, ssl=None, **server_kwargs):
@@ -1951,8 +1951,8 @@ class WSServer:
                 it is removed. Defaults to `None`.
         ssl : `None` or ``SSLContext``, Optional (Keyword only)
             Whether and what ssl is enabled for the connections.
-        **server_kwargs : Keyword arguments
-            Additional keyword arguments to create the websocket server with.
+        **server_kwargs : Keyword parameters
+            Additional keyword parameters to create the websocket server with.
         
         Other Parameters
         ----------------
@@ -2023,7 +2023,7 @@ class WSServer:
         self.websockets = set()
         self.close_connection_task = None
         self.server = None
-        self.protocol_arguments = (handler, host, port, is_ssl, origin, available_extensions, available_subprotocols,
+        self.protocol_parameters = (handler, host, port, is_ssl, origin, available_extensions, available_subprotocols,
             extra_response_headers, request_processor, subprotocol_selector, websocket_kwargs)
         
         factory = functools.partial(protocol, self,)

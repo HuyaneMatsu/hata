@@ -293,8 +293,8 @@ class HTTPServer:
             The port to use by the `host`(s).
         ssl : `None` or ``SSLContext``, Optional (Keyword only)
             Whether and what ssl is enabled for the connections.
-        **server_kwargs : Keyword arguments
-            Additional keyword arguments to create the websocket server with.
+        **server_kwargs : Keyword parameters
+            Additional keyword parameters to create the websocket server with.
         
         Other Parameters
         ----------------
@@ -2515,10 +2515,10 @@ def _analyze_handler(handler, handler_name, expected_parameter_count):
         raise TypeError(f'`{handler_name}` can be given as `async-callable`, got {analyzed.__class__.__name__}; '
             f'{analyzed!r}.')
     
-    non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-    if non_reserved_positional_argument_count != expected_parameter_count:
+    non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+    if non_reserved_positional_parameter_count != expected_parameter_count:
         raise TypeError(f'`{handler_name}` should accept `{expected_parameter_count}` non reserved positional '
-            f'arguments, meanwhile it expects {non_reserved_positional_argument_count}.')
+            f'parameters, meanwhile it expects {non_reserved_positional_parameter_count}.')
     
     if analyzed.accepts_args():
         raise TypeError(f'`{handler_name}` should accept not expect args, meanwhile it does.')
@@ -2526,10 +2526,10 @@ def _analyze_handler(handler, handler_name, expected_parameter_count):
     if analyzed.accepts_kwargs():
         raise TypeError(f'`{handler_name}` should accept not expect kwargs, meanwhile it does.')
     
-    non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
-    if non_default_keyword_only_argument_count:
-        raise TypeError(f'`{handler_name}` should accept `0` keyword only arguments, meanwhile it expects '
-            f'{non_default_keyword_only_argument_count}.')
+    non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
+    if non_default_keyword_only_parameter_count:
+        raise TypeError(f'`{handler_name}` should accept `0` keyword only parameters, meanwhile it expects '
+            f'{non_default_keyword_only_parameter_count}.')
 
 
 class AppBase:
@@ -2610,7 +2610,7 @@ class AppBase:
         The folder from where the templates should be loaded from.
     
     url_default_functions : `None` or `list` of `async-callable`
-        Keyword argument preprocessors for ``url_for``.
+        Keyword parameter preprocessors for ``url_for``.
         
         To register them use the ``.url_defaults`` method.
         
@@ -2725,7 +2725,7 @@ class AppBase:
             The url rule as string.
         endpoint  : `None` or `str`, Optional
             The internal endpoint of the url. Defaults to the name of the added function.
-        **options : keyword arguments
+        **options : keyword parameters
             Additional options to be forward to the underlying ``Rule`` object.
         
         Returns
@@ -2744,7 +2744,7 @@ class AppBase:
         ----------
         rule : `str`
             The url rule as string.
-        *args : arguments
+        *args : parameters
             `endpoint` and `view_func` depending 1 or 2 parameters were given.
         endpoint  : `None` or `str`, Optional
             The internal endpoint of the url. Defaults to the name of the added function.
@@ -2752,7 +2752,7 @@ class AppBase:
             The function to call when serving a request to the provided endpoint.
         provide_automatic_options : `None` or `bool`, Optional (Keyword only)
             Controls whether `options` should be handled manually.
-        **options : keyword arguments
+        **options : keyword parameters
             Additional options to be forward to the underlying ``Rule`` object.
         
         Returns
@@ -2820,21 +2820,21 @@ class AppBase:
             view_func_keyword_parameter_names = None
             view_func_kwargs_parameter_supported = analyzed.accepts_kwargs()
             
-            for argument in analyzed.arguments:
-                if argument.reserved:
+            for parameter in analyzed.parameters:
+                if parameter.reserved:
                     continue
                 
-                if argument.is_kwargs():
+                if parameter.is_kwargs():
                     continue
                 
-                if argument.is_positional():
+                if parameter.is_positional():
                     if view_func_positional_parameter_names is None:
                         view_func_positional_parameter_names = []
-                    view_func_positional_parameter_names.append(argument.name)
+                    view_func_positional_parameter_names.append(parameter.name)
                 else:
                     if view_func_keyword_parameter_names is None:
                         view_func_keyword_parameter_names = []
-                    view_func_keyword_parameter_names.append(argument.name)
+                    view_func_keyword_parameter_names.append(parameter.name)
             
             if (view_func_positional_parameter_names is not None):
                 view_func_positional_parameter_names = tuple(view_func_positional_parameter_names)
@@ -2843,12 +2843,12 @@ class AppBase:
                 view_func_keyword_parameter_names = tuple(view_func_keyword_parameter_names)
         
         view_func_parameters = None
-        for argument in analyzed.arguments:
-            if argument.has_default:
+        for parameter in analyzed.parameters:
+            if parameter.has_default:
                 if view_func_parameters is None:
                     view_func_parameters = []
                 
-                view_func_parameters.append((argument.name, argument.default))
+                view_func_parameters.append((parameter.name, parameter.default))
         
         if (view_func_parameters is not None):
             view_func_parameters = tuple(view_func_parameters)
@@ -3067,7 +3067,7 @@ class AppBase:
     
     def url_defaults(self, url_default_function):
         """
-        Registers a keyword argument processor for ``url_for``.
+        Registers a keyword parameter processor for ``url_for``.
         
         Parameters
         ----------
@@ -3146,7 +3146,7 @@ class AppBase:
         ----------
         parent : ``Blueprint``
             The parent blueprint or webapp to register self to.
-        **options : Keyword arguments
+        **options : Keyword parameters
             Extra options to overwrite the blueprint's.
         
         Other Parameters
@@ -3328,7 +3328,7 @@ class Blueprint(AppBase):
         The folder from where the templates should be loaded from.
     
     url_default_functions : `None` or `list` of `async-callable`
-        Keyword argument preprocessors for ``url_for``.
+        Keyword parameter preprocessors for ``url_for``.
         
         To register them use the ``.url_defaults`` method.
         
@@ -3499,7 +3499,7 @@ class WebApp(AppBase):
         The folder from where the templates should be loaded from.
     
     url_default_functions : `None` or `list` of `async-callable`
-        Keyword argument preprocessors for ``url_for``.
+        Keyword parameter preprocessors for ``url_for``.
         
         To register them use the ``.url_defaults`` method.
         

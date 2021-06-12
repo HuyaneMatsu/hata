@@ -183,7 +183,7 @@ def _convert_handler(handler):
         The handler to convert.
         
         If the handler is `async-callable` or if it would be instanced to it, then it should accept the following
-        arguments:
+        parameters:
         +-------------------+---------------------------+
         | Respective name   | Type                      |
         +===================+===========================+
@@ -203,11 +203,11 @@ def _convert_handler(handler):
     Raises
     ------
     TypeError
-        If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+        If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
     """
     if (handler is not None):
         handler = check_parameter_count_and_convert(handler, 4, name='handler', error_message= \
-            '`handler` expects to pass 4 arguments (client, message, command, check).')
+            '`handler` expects to pass 4 parameters (client, message, command, check).')
     return handler
 
 def _convert_permissions(permissions):
@@ -298,7 +298,7 @@ class _check_base(metaclass=_check_meta):
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -314,7 +314,7 @@ class _check_base(metaclass=_check_meta):
         Raises
         ------
         TypeError
-            If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         handler = _convert_handler(handler)
         self = object.__new__(cls)
@@ -816,7 +816,7 @@ class has_role(_check_base):
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -833,7 +833,7 @@ class has_role(_check_base):
         ------
         TypeError
             - If `role` was not given neither as ``Role``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role``
                 instance cannot be precreated with it.
@@ -933,7 +933,7 @@ class has_any_role(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -951,7 +951,7 @@ class has_any_role(_check_base):
         TypeError
             - If `roles` was not given as an `iterable`.
             - If an element of `roles` was not given neither as ``Role``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
                 ``Role`` instance cannot be precreated with it.
@@ -1028,7 +1028,7 @@ class owner_or_has_any_role(has_any_role):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1046,7 +1046,7 @@ class owner_or_has_any_role(has_any_role):
         TypeError
             - If `roles` was not given as an `iterable`.
             - If an element of `roles` was not given neither as ``Role``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
                 ``Role`` instance cannot be precreated with it.
@@ -1306,7 +1306,7 @@ class has_permissions(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1323,7 +1323,7 @@ class has_permissions(_check_base):
         ------
         TypeError
             - `permissions` was not given as `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
         handler = _convert_handler(handler)
@@ -1421,7 +1421,7 @@ class has_guild_permissions(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1438,7 +1438,7 @@ class has_guild_permissions(_check_base):
         ------
         TypeError
             - `permissions` was not given as `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
         handler = _convert_handler(handler)
@@ -1546,7 +1546,7 @@ class client_has_permissions(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1563,7 +1563,7 @@ class client_has_permissions(_check_base):
         ------
         TypeError
             - `permissions` was not given as `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
         handler = _convert_handler(handler)
@@ -1621,7 +1621,7 @@ class client_has_guild_permissions(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1638,7 +1638,7 @@ class client_has_guild_permissions(_check_base):
         ------
         TypeError
             - `permissions` was not given as `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
         handler = _convert_handler(handler)
@@ -1700,7 +1700,7 @@ class is_guild(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1717,7 +1717,7 @@ class is_guild(_check_base):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
         """
@@ -1781,7 +1781,7 @@ class is_any_guild(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1799,7 +1799,7 @@ class is_any_guild(_check_base):
         TypeError
             - If `guilds` was not given as an `iterable`.
             - If an element of `guilds` was not given neither as ``Guild``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If an element of `guilds` was given as `str` or as `int` instance, but not as a valid snowflake.
         """
@@ -1880,7 +1880,7 @@ class custom(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1897,18 +1897,18 @@ class custom(_check_base):
         ------
         TypeError
             - If `function` was not given as an `callable`.
-            - `function` accepts more or less non reserved positional non default arguments.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - `function` accepts more or less non reserved positional non default parameters.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         
         Notes
         -----
         Only `int` instances are evaluated to boolean.
         """
         analyzer = CallableAnalyzer(function)
-        non_reserved_positional_argument_count = analyzer.get_non_reserved_positional_argument_count()
-        if  non_reserved_positional_argument_count != 2:
+        non_reserved_positional_parameter_count = analyzer.get_non_reserved_positional_parameter_count()
+        if  non_reserved_positional_parameter_count != 2:
             raise TypeError(f'The passed function: {function!r} should have accept `2` non reserved, positional, '
-                f'non default arguments, meanwhile it accepts `{non_reserved_positional_argument_count}`.')
+                f'non default parameters, meanwhile it accepts `{non_reserved_positional_parameter_count}`.')
         
         is_async = analyzer.is_async()
         handler = _convert_handler(handler)
@@ -1978,7 +1978,7 @@ class is_channel(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -1995,7 +1995,7 @@ class is_channel(_check_base):
         ------
         TypeError
             - If `channel` was not given neither as ``ChannelBase``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
         """
@@ -2055,7 +2055,7 @@ class is_any_channel(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -2073,7 +2073,7 @@ class is_any_channel(_check_base):
         TypeError
             - If `channels` was not given as an `iterable`.
             - If an element of `channels` was not given neither as ``ChannelBase``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If an element of `channels` was given as `str` or as `int` instance, but not as a valid snowflake.
         """
@@ -2449,7 +2449,7 @@ class is_in_category(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -2466,7 +2466,7 @@ class is_in_category(_check_base):
         ------
         TypeError
             - If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str` or `int` instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If `category` was given as `str` or as `int` instance, but not as a valid snowflake.
         """
@@ -2543,7 +2543,7 @@ class is_in_any_category(_check_base):
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
-            following arguments:
+            following parameters:
             +-------------------+---------------------------+
             | Respective name   | Type                      |
             +===================+===========================+
@@ -2562,7 +2562,7 @@ class is_in_any_category(_check_base):
             - If `categories` was not given as an `iterable`.
             - If an element of `categories` was not given neither as ``ChannelCategory``, ``Guild``, `str` or `int`
                 instance.
-            - If `handler` was given as an invalid type, or it accepts a bad amount of arguments.
+            - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If an element of `categories` was given as `str` or as `int` instance, but not as a valid snowflake.
         """

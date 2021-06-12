@@ -194,7 +194,7 @@ class ExtensionLoader:
     EXTENSION_LOADER.add(['cute_commands', 'nice_commands'])
     ```
     
-    If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed argument is not
+    If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed parameter is not
     `str` instance or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
@@ -217,7 +217,7 @@ class ExtensionLoader:
     EXTENSION_LOADER.load_extension('cute_commands')
     ```
     
-    `.load_extension` method supports all the keyword arguments as `.add`.
+    `.load_extension` method supports all the keyword parameters as `.add`.
     
     ##### Passing variables to extensions
     
@@ -419,7 +419,7 @@ class ExtensionLoader:
         
         Parameters
         ----------
-        **variables : Keyword Arguments
+        **variables : Keyword Parameters
             Variables to assigned to an extension's module before it is loaded.
         
         Raises
@@ -490,10 +490,10 @@ class ExtensionLoader:
             If the given name do not refers to any loadable file.
         TypeError
             - If `entry_point` was not given as `None`, `str` or as `callable`.
-            - If `entry_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `exit_point` was not given as `None`, `str` or as `callable`.
-            - If `exit_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `extend_default_variables` was not given as `bool`.
             - If `locked` was not given as `bool`.
@@ -610,10 +610,10 @@ class ExtensionLoader:
             If the given name do not refers to any loadable file.
         TypeError
             - If `entry_point` was not given as `None`, `str` or as `callable`.
-            - If `entry_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `exit_point` was not given as `None`, `str` or as `callable`.
-            - If `exit_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `extend_default_variables` was not given as `bool`.
             - If `locked` was not given as `bool`.

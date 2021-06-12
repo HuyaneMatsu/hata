@@ -1,3 +1,10 @@
+## 1.1.85 *\[2021-06-??\]*
+
+#### Improvements
+
+##### hata.ext.slash
+- Add regex based matching for `ComponentCommand`-s.
+
 ## 1.1.85 *\[2021-06-11\]*
 
 #### Summary
@@ -323,7 +330,7 @@ Start supporting anyio (all bugs included). (Mina Ashido]|[💻⭐#3506)
 
 #### Bug fixed
 
-- `CallableAnalyzer` was not adding `*args` and `**kwargs` to `.arguments`.
+- `CallableAnalyzer` was not adding `*args` and `**kwargs` to `.parameters`.
 - Avoid using discord's media endpoint for attachments.
 
 ## 1.1.76 *\[2021-05-16\]*

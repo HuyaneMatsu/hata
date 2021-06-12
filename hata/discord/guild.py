@@ -833,7 +833,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         guild_id : `snowflake`
             The guild's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the guild.
         
         Other Parameters
@@ -902,9 +902,9 @@ class Guild(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         guild_id = preconvert_snowflake(guild_id, 'guild_id')
         
@@ -3550,7 +3550,7 @@ class WelcomeChannel:
         
         Parameters
         ----------
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional attributes of the created welcome channel.
         
         Other Parameters
@@ -3829,7 +3829,7 @@ class VerificationScreenStep:
         
         Parameters
         ----------
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional attributes of the verification screen step.
         
         Other Parameters

@@ -2038,7 +2038,7 @@ class User(USER_BASE_CLASS):
         ----------
         user_id : `int` or `str`
             The user's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the user.
         
         Other Parameters
@@ -2069,9 +2069,9 @@ class User(USER_BASE_CLASS):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         user_id = preconvert_snowflake(user_id, 'user_id')
         

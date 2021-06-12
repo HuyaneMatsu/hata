@@ -1430,17 +1430,17 @@ class CheckCustom(CheckBase):
         ------
         TypeError
             - If `check` was not given as an `callable`.
-            - If `check` accepts more or less non reserved positional non default arguments.
+            - If `check` accepts more or less non reserved positional non default parameters.
         
         Notes
         -----
         Only `int` instances are evaluated to boolean.
         """
         analyzer = CallableAnalyzer(check)
-        non_reserved_positional_argument_count = analyzer.get_non_reserved_positional_argument_count()
-        if  non_reserved_positional_argument_count != 1:
+        non_reserved_positional_parameter_count = analyzer.get_non_reserved_positional_parameter_count()
+        if  non_reserved_positional_parameter_count != 1:
             raise TypeError(f'The passed check: {check!r} should have accept `1` non reserved, positional, '
-                f'non default arguments, meanwhile it accepts `{non_reserved_positional_argument_count}`.')
+                f'non default parameters, meanwhile it accepts `{non_reserved_positional_parameter_count}`.')
         
         is_async = analyzer.is_async()
         

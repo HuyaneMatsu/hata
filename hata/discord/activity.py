@@ -761,9 +761,9 @@ class ActivityRich(ActivityBase):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         name = preconvert_str(name, 'name', 0, 2048)
         

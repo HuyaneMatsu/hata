@@ -48,7 +48,7 @@ class Handle:
     func : `callable`
         The wrapped function.
     args : `tuple` of `Any`
-        Arguments to call ``.func`` with.
+        Parameters to call ``.func`` with.
     cancelled : `bool`
         Whether the handle is cancelled.
     """
@@ -63,7 +63,7 @@ class Handle:
         func : `callable`
             The function. to wrap.
         args : `tuple` of `Any`
-            Arguments to call `func` with.
+            Parameters to call `func` with.
         """
         self.func = func
         self.args = args
@@ -113,7 +113,7 @@ class Handle:
     
     def _run(self):
         """
-        Calls the handle's function with it's arguments. If exception occurs meanwhile, renders it.
+        Calls the handle's function with it's parameters. If exception occurs meanwhile, renders it.
         
         Notes
         -----
@@ -143,7 +143,7 @@ class TimerHandle(Handle):
     func : `callable`
         The wrapped function.
     args : `tuple` of `Any`
-        Arguments to call ``.func`` with.
+        Parameters to call ``.func`` with.
     cancelled : `bool`
         Whether the handle is cancelled.
     when : `float`
@@ -162,7 +162,7 @@ class TimerHandle(Handle):
         func : `callable`
             The function. to wrap.
         args : `tuple` of `Any`
-            Arguments to call `func` with.
+            Parameters to call `func` with.
         """
         self.func = func
         self.args = args
@@ -265,7 +265,7 @@ class TimerWeakHandle(TimerHandle):
     func : `callable`
         The wrapped function.
     args : `tuple` of `Any`
-        Arguments to call ``.func`` with.
+        Parameters to call ``.func`` with.
     cancelled : `bool`
         Whether the handle is cancelled.
     when : `float`
@@ -288,7 +288,7 @@ class TimerWeakHandle(TimerHandle):
         func : `callable`
             The function. to wrap.
         args : `tuple` of `Any`
-            Arguments to call `func` with.
+            Parameters to call `func` with.
         
         Raises
         ------
@@ -381,7 +381,7 @@ class CyclerCallable:
         TypeError
             - `priority` is not `int` instance, neither other numeric convertable to it.
             - `func` is not `callable`.
-            - `func` accepts less or more reserved positional arguments than `1`.
+            - `func` accepts less or more reserved positional parameters than `1`.
         """
         if type(func) is cls:
             return func
@@ -397,13 +397,13 @@ class CyclerCallable:
             priority = __int__(priority)
         
         analyzer = CallableAnalyzer(func)
-        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+        min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
         if min_ > 1:
-            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile `1` would be '
+            raise TypeError(f'`{func!r}` excepts at least `{min_!r}` non reserved parameters, meanwhile `1` would be '
                 'passed to it.')
         
         if not ((min_ == 1) or max_ >= 1 or analyzer.accepts_args()):
-            raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved arguments, meanwhile the event '
+            raise TypeError(f'`{func!r}` expects maximum `{max_!r}` non reserved parameters, meanwhile the event '
                 'expects to pass `1`.')
         
         is_async = analyzer.is_async()
@@ -519,7 +519,7 @@ class Cycler:
             - `cycle_time` is not `float` instance, neither other numeric convertable to it.
             - `priority` is not `int` instance, neither other numeric convertable to it.
             - Any `func` is not `callable`.
-            - Any `func` accepts less or more reserved positional arguments than `1`.
+            - Any `func` accepts less or more reserved positional parameters than `1`.
         ValueError
             If `cycle_time` is negative or `0`.
         
@@ -768,7 +768,7 @@ class Cycler:
         TypeError
             - `priority` is not `int` instance, neither other numeric convertable to it.
             - Any `func` is not `callable`.
-            - Any `func` accepts less or more reserved positional arguments than `1`.
+            - Any `func` accepts less or more reserved positional parameters than `1`.
         """
         validated_func = CyclerCallable(func, priority)
         
@@ -1629,7 +1629,7 @@ class EventThreadType(type):
             The created thread's name.
         start_later : `bool`
             Whether the event loop should be started only later
-        kwargs : keyword arguments
+        kwargs : keyword parameters
             Additional event thread specific parameters.
         
         Other Parameters
@@ -1835,8 +1835,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The delay after the `callback` would be called.
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -1861,8 +1861,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The exact loop time, when the callback should be called.
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -1887,8 +1887,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The delay after the `callback` would be called.
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -1918,8 +1918,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The exact loop time, when the callback should be called.
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -1947,8 +1947,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -1972,8 +1972,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -1998,8 +1998,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         ----------
         callback : `callable`
             The function to call later.
-        *args : arguments
-            The arguments to call the `callback` with.
+        *args : parameters
+            The parameters to call the `callback` with.
         
         Returns
         -------
@@ -2541,7 +2541,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Whether the created ssl transport is a server side. Defaults to `False`.
         server_hostname : `None` or `str`, Optional (Keyword only)
             Overwrites the hostname that the target server’s certificate will be matched against.
-            By default the value of the host argument is used. If host is empty, there is no default and you must pass
+            By default the value of the host parameter is used. If host is empty, there is no default and you must pass
             a value for `server_hostname`. If `server_hostname` is an empty string, hostname matching is disabled
             (which is a serious security risk, allowing for potential man-in-the-middle attacks).
         extra : `None` or `dict` of (`str`, `Any`) item, Optional (Keyword only)
@@ -2728,8 +2728,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The respective file descriptor.
         callback : `callable`
             The function, what is called, when data is received on the respective file descriptor.
-        *args : Arguments
-            Arguments to call `callback` with.
+        *args : Parameters
+            Parameters to call `callback` with.
         """
         if not self.running:
             if not self._maybe_start():
@@ -2795,8 +2795,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The respective file descriptor.
         callback : `callable`
             The function, what is called, when data the respective file descriptor becomes writable.
-        *args : Arguments
-            Arguments to call `callback` with.
+        *args : Parameters
+            Parameters to call `callback` with.
         """
         if not self.running:
             if not self._maybe_start():
@@ -2925,7 +2925,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             `local_port` are looked up by ``.get_address_info``.
         server_hostname : `None` or `str`, Optional (Keyword only)
             Overwrites the hostname that the target server’s certificate will be matched against.
-            Should only be passed if `ssl` is not `None`. By default the value of the host argument is used. If host is
+            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If host is
             empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
             empty string, hostname matching is disabled (which is a serious security risk, allowing for potential
             man-in-the-middle attacks).
@@ -3065,7 +3065,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The socket to what the created transport should be connected to.
         server_hostname : `None` or `str`
             Overwrites the hostname that the target server’s certificate will be matched against.
-            Should only be passed if `ssl` is not `None`. By default the value of the host argument is used. If host is
+            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If host is
             empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
             empty string, hostname matching is disabled (which is a serious security risk, allowing for potential
             man-in-the-middle attacks).
@@ -3565,7 +3565,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 if allow_broadcast:
                     collected.append(('allow_broadcast', allow_broadcast))
                 
-                error_message_parts = ['Socket modifier keyword arguments can not be used when `socket` is given: ']
+                error_message_parts = ['Socket modifier keyword parameters can not be used when `socket` is given: ']
                 
                 index = 0
                 limit = len(error_message_parts)
@@ -4102,7 +4102,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """)
         subprocess_exec.__doc__ = (
         """
-        Create a subprocess from one or more string arguments specified by args.
+        Create a subprocess from one or more string parameters specified by args.
         
         This is similar to the standard library `subprocess.Popen` class called with `shell=False`.
         
@@ -4113,7 +4113,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         program : `str`
             The program executable.
         *args : `str`
-            Arguments to open the `program` with.
+            Parameters to open the `program` with.
         stdin : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional (Keyword only)
             Standard input for the created shell. Defaults to `subprocess.PIPE`.
         stdout : `file-like`, `subprocess.PIPE`, `subprocess.DEVNULL`, Optional (Keyword only)

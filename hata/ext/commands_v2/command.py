@@ -696,7 +696,7 @@ class Command:
         Raises
         ------
         TypeError
-            - If `error_handler` accepts bad amount of arguments.
+            - If `error_handler` accepts bad amount of parameters.
             - If `error_handler` is not async.
         """
         test_error_handler(error_handler)
@@ -1740,7 +1740,7 @@ class CommandCategory:
         Raises
         ------
         TypeError
-            - If `error_handler` accepts bad amount of arguments.
+            - If `error_handler` accepts bad amount of parameters.
             - If `error_handler` is not async.
         """
         test_error_handler(error_handler)

@@ -15,7 +15,7 @@ class EventHandlerManager:
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
     inside of a ``EventHandlerManager`` and can be accessed through ``Client.events``.
     
-    Each added event should be an async callable accepting a predefined amount of positional arguments.
+    Each added event should be an async callable accepting a predefined amount of positional parameters.
     
     Attributes
     ----------
@@ -67,7 +67,7 @@ class EventHandlerManager:
         Called when a channel is deleted.
     
     channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: `dict`)
-        Called when a channel is edited. The passed `old_attributes` argument contains the channel's overwritten
+        Called when a channel is edited. The passed `old_attributes` parameter contains the channel's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -124,7 +124,7 @@ class EventHandlerManager:
         Called when a channel's pins are updated.
     
     client_edit(client: ``Client``, old_attributes: `dict`):
-        Called when the client is edited. The passed `old_attributes` argument contains the client's overwritten
+        Called when the client is edited. The passed `old_attributes` parameter contains the client's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -179,7 +179,7 @@ class EventHandlerManager:
         Deleted emoji's `.guild` attribute is set to `None`.
         
     emoji_edit(client : Client, emoji: ``Emoji``, old_attributes: `dict`):
-        Called when an emoji is edited. The passed `old_attributes` argument contains the emoji's overwritten
+        Called when an emoji is edited. The passed `old_attributes` parameter contains the emoji's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -204,7 +204,7 @@ class EventHandlerManager:
         Called when an unexpected error happens. Mostly the user itself should define where it is called, because
         it is not Discord event bound, but an internal event.
         
-        The `name` argument should be a `str` what tell where the error occurred, and `err` should be a `BaseException`
+        The `name` parameter should be a `str` what tell where the error occurred, and `err` should be a `BaseException`
         instance or an error message (can be other as type `str` as well.)
         
         > This event has a default handler called ``default_error_event``, which writes the error message to
@@ -224,10 +224,10 @@ class EventHandlerManager:
     
     guild_delete(client: ``Client``, guild: ``Guild``, profile: ``GuildProfile``):
         Called when the guild is deleted or just the client left (kicked or banned as well) from it. The `profile`
-        argument is the client's respective guild profile for the guild.
+        parameter is the client's respective guild profile for the guild.
     
     guild_edit(client: ``Client``, guild: ``Guild``, old_attributes: `dict`):
-        Called when a guild is edited. The passed `old_attributes` argument contains the guild's overwritten attributes
+        Called when a guild is edited. The passed `old_attributes` parameter contains the guild's overwritten attributes
         in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -311,11 +311,11 @@ class EventHandlerManager:
     
     guild_user_delete(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``, \
             profile: ``GuildProfile``):
-        Called when a user left (kicked or banned counts as well) from a guild. The `profile` argument is the user's
+        Called when a user left (kicked or banned counts as well) from a guild. The `profile` parameter is the user's
         respective guild profile for the guild.
     
     guild_user_edit(client : Client, user: ``ClientUserBase``, guild: ``Guild``, old_attributes: `dict`):
-        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` argument contains the message's
+        Called when a user's ``GuildProfile`` is updated. The passed `old_attributes` parameter contains the message's
         overwritten attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -372,7 +372,7 @@ class EventHandlerManager:
         > then `message` is given as ``MessageRepr`` instance.
     
     message_edit(client: ``Client``, message: ``Message``, old_attributes: {`None`, `dict`}):
-        Called when a loaded message is edited. The passed `old_attributes` argument contains the message's overwritten
+        Called when a loaded message is edited. The passed `old_attributes` parameter contains the message's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
@@ -407,7 +407,7 @@ class EventHandlerManager:
         | role_mentions     | `None` or (`tuple` of ``Role``)                                       |
         +-------------------+-----------------------------------------------------------------------+
         
-        A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` argument is
+        A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` parameter is
         not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
         
@@ -422,7 +422,7 @@ class EventHandlerManager:
     
     reaction_clear(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
             old_reactions: {`None`, ``reaction_mapping``}):
-        Called when the reactions of a message are cleared. The passed `old_reactions` argument are the old reactions
+        Called when the reactions of a message are cleared. The passed `old_reactions` parameter are the old reactions
         of the message.
     
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
@@ -436,7 +436,7 @@ class EventHandlerManager:
     
     reaction_delete_emoji(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
             users: {`None`, ``reaction_mapping_line``}):
-        Called when all the reactions of a specified emoji are removed from a message. The passed `users` argument
+        Called when all the reactions of a specified emoji are removed from a message. The passed `users` parameter
         are the old reactor users of the given emoji.
         
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
@@ -517,13 +517,13 @@ class EventHandlerManager:
         Called when a user is removed or left a thread channel.
     
     typing(client: ``Client``, channel: ``ChannelTextBase``, user: ``ClientUserBase``, timestamp: `datetime`):
-        Called when a user is typing at a channel. The `timestamp` argument represents when the typing started.
+        Called when a user is typing at a channel. The `timestamp` parameter represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
     user_edit(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
-        argument contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
+        parameter contains the message's overwritten attributes in `attribute-name` - `old-value` relation.
         
         Every item in `old_attributes` is optional they can be any of the following:
         
@@ -542,7 +542,7 @@ class EventHandlerManager:
     user_presence_update(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
         Called when a user's presence is updated.
         
-        The passed `old_attributes` argument contain the user's changed presence related attributes in
+        The passed `old_attributes` parameter contain the user's changed presence related attributes in
         `attribute-name` - `old-value` relation. An exception from this is `activities`, because that is a
         ``ActivityChange`` instance containing all the changes of the user's activities.
         
@@ -635,7 +635,7 @@ class EventHandlerManager:
         TypeError
             - If `func` was not given as callable.
             - If `func` is not as async and neither cannot be converted to an async one.
-            - If `func` expects less or more non reserved positional arguments as `expected` is.
+            - If `func` expects less or more non reserved positional parameters as `expected` is.
             - If `name` was not passed as `None` or type `str`.
         """
         if func is None:

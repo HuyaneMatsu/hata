@@ -291,7 +291,7 @@ class Webhook(WebhookBase):
         ----------
         webhook_id : `int` or `str`
             The webhook's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the webhook.
         
         Other Parameters

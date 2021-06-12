@@ -122,7 +122,7 @@ class LocalAudio(AudioSource):
     Attributes
     ----------
     _process_args : `tuple` ((`list` of `str`),  (`None` or `file-like`))
-        Arguments and the stdin used to open the postprocess when postprocess happens.
+        Parameters and the stdin used to open the postprocess when postprocess happens.
     _stdout : `_io.BufferedReader`
         Stdout of `.process`.
     path : `str` or `None`
@@ -155,16 +155,16 @@ class LocalAudio(AudioSource):
         pipe : `bool`
             Whether the source is passed to stdin.
         before_options : `str` or (`iterable` of `str`)
-            Extra arguments passed before the `-i` flag.
+            Extra parameters passed before the `-i` flag.
         options : `str` or (`iterable` of `str`)
-            Extra arguments passed after the `-i` flag.
+            Extra parameters passed after the `-i` flag.
         
         Returns
         -------
         executable : `str`
             The executable's name.
         args : `list` of `str`
-            Subprocess arguments.
+            Subprocess parameters.
         stdin : `None or `file-like`
             Input for the postprocess.
         
@@ -273,9 +273,9 @@ class LocalAudio(AudioSource):
         pipe : `bool`, Optional
             Whether the source is passed to stdin. Defaults to `False`
         before_options : `str` or (`iterable` of `str`), Optional
-            Extra arguments passed before the `-i` flag.
+            Extra parameters passed before the `-i` flag.
         options : `str` or (`iterable` of `str`), Optional
-            Extra arguments passed after the `-i` flag.
+            Extra parameters passed after the `-i` flag.
         
         Returns
         -------
@@ -390,7 +390,7 @@ else:
         Attributes
         ----------
         _process_args : `tuple` ((`list` of `str`),  (`None` or `file-like`))
-            Arguments and the stdin used to open the postprocess when postprocess happens.
+            Parameters and the stdin used to open the postprocess when postprocess happens.
         _stdout : `_io.BufferedReader`
             Stdout of `.process`.
         path : `str` or `None`
@@ -429,7 +429,7 @@ else:
             data : `dict` of (`str`, `Any`)
                 All extracted data by YTDL.
             args : `list` of `str`
-                Subprocess arguments.
+                Subprocess parameters.
             
             Raises
             ------

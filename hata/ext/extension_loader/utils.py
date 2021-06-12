@@ -20,7 +20,7 @@ def _validate_entry_or_exit(point):
     Raises
     ------
     TypeError
-        If `point` was given as `callable`, but accepts less or more positional arguments, as would be given.
+        If `point` was given as `callable`, but accepts less or more positional parameters, as would be given.
     """
     if point is None:
         return True
@@ -30,9 +30,9 @@ def _validate_entry_or_exit(point):
     
     if callable(point):
         analyzer = CallableAnalyzer(point)
-        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+        min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
         if min_ > 1:
-            raise TypeError(f'`{point!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
+            raise TypeError(f'`{point!r}` excepts at least `{min_!r}` non reserved parameters, meanwhile the event '
                 'expects to pass `1`.')
         
         if min_ == 1:
@@ -45,7 +45,7 @@ def _validate_entry_or_exit(point):
         if analyzer.accepts_args():
             return True
         
-        raise TypeError(f'`{point!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects '
+        raise TypeError(f'`{point!r}` expects maximum `{max_!r}` non reserved parameters  meanwhile the event expects '
             'to pass `1`.')
     
     return False
@@ -72,10 +72,10 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     ------
     TypeError
         - If `entry_point` was not given as `None`, `str` or as `callable`.
-        - If `entry_point` was given as `callable`, but accepts less or more positional arguments, as would be
+        - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
             given.
         - If `exit_point` was not given as `None`, `str` or as `callable`.
-        - If `exit_point` was given as `callable`, but accepts less or more positional arguments, as would be
+        - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
             given.
         - If `extend_default_variables` was not given as `bool`.
         - If `locked` was not given as `bool`.

@@ -35,7 +35,7 @@ def validate_check(check):
     if analyzer.is_async():
         raise TypeError('`check` should have NOT be be `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
         raise TypeError(f'`check` should accept `1` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{check!r}`.')
@@ -68,7 +68,7 @@ def validate_invoke(invoke):
     if not analyzer.is_async():
         raise TypeError('`invoke` should have be `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
         raise TypeError(f'`invoke` should accept `1` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{invoke!r}`.')
@@ -101,7 +101,7 @@ def validate_initial_invoke(initial_invoke):
     if not analyzer.is_async():
         raise TypeError('`initial_invoke` should have be `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 0:
         raise TypeError(f'`initial_invoke` should accept `0` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{initial_invoke!r}`.')
@@ -134,7 +134,7 @@ def validate_close(close):
     if not analyzer.is_async():
         raise TypeError('`close` should have be `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
         raise TypeError(f'`close` should accept `1` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{close!r}`.')

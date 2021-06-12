@@ -730,7 +730,9 @@ class Slasher(EventHandlerBase):
         A nested dictionary, which contains application command permission overwrites per guild_id and per command_id.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
-    custom_id_to_command : `dict` of (`str`, ``ComponentCommand``) items
+    regex_custom_id_to_component_command : `dict` of (``RegexMatcher``, ``ComponentCommand``) items.
+        A dictionary which contains component commands based on regex patterns.
+    string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
         A dictionary which contains component commands for `custom_id`-s.
     
     Class Attributes
@@ -747,7 +749,7 @@ class Slasher(EventHandlerBase):
     __slots__ = ('__weakref__', '_call_later', '_client_reference', '_component_commands', '_command_states',
         '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers', '_sync_done',
         '_sync_permission_tasks', '_sync_should', '_sync_tasks', '_synced_permissions', 'command_id_to_command',
-        'custom_id_to_command')
+        'regex_custom_id_to_component_command', 'string_custom_id_to_component_command')
     
     __event_name__ = 'interaction_create'
     
@@ -822,7 +824,8 @@ class Slasher(EventHandlerBase):
         self._component_commands = set()
         
         self.command_id_to_command = {}
-        self.custom_id_to_command = {}
+        self.string_custom_id_to_component_command = {}
+        self.regex_custom_id_to_component_command = {}
         
         return self
     
@@ -873,6 +876,7 @@ class Slasher(EventHandlerBase):
                 except BaseException as err:
                     await handle_command_exception(self._exception_handlers, client, interaction_event, command, err)
     
+    
     async def _dispatch_component_event(self, client, interaction_event):
         """
         Dispatches a component interaction event.
@@ -896,17 +900,31 @@ class Slasher(EventHandlerBase):
                     Task(waiter(interaction_event), KOKORO)
             else:
                 Task(waiter(interaction_event), KOKORO)
+            
+            return
+        
+        custom_id = interaction_event.interaction.custom_id
+        try:
+            component_command = self.string_custom_id_to_component_command[custom_id]
+        except KeyError:
+            for regex_matcher in self.regex_custom_id_to_component_command:
+                regex_match = regex_matcher(custom_id)
+                if (regex_match is None):
+                    continue
+                
+                component_command = self.regex_custom_id_to_component_command[regex_matcher]
+                break
+            else:
+                return
+        else:
+            regex_match = None
         
         try:
-            component_command = self.custom_id_to_command[interaction_event.interaction.custom_id]
-        except KeyError:
-            pass
-        else:
-            try:
-                await component_command(client, interaction_event)
-            except BaseException as err:
-                await handle_command_exception(self._exception_handlers, client, interaction_event, component_command,
-                    err)
+            await component_command(client, interaction_event, regex_match)
+        except BaseException as err:
+            await handle_command_exception(self._exception_handlers, client, interaction_event, component_command,
+                err)
+    
     
     def add_component_interaction_waiter(self, message, waiter):
         """
@@ -2330,13 +2348,13 @@ class Slasher(EventHandlerBase):
         exception_handlers.append(exception_handler)
     
     
-    def _add_component_command(self, command):
+    def _add_component_command(self, component_command):
         """
         Adds a slash command to the ``Slasher`` if applicable.
         
         Parameters
         ---------
-        command : ``ComponentCommand``
+        component_command : ``ComponentCommand``
             The command to add.
         
         Raises
@@ -2344,54 +2362,96 @@ class Slasher(EventHandlerBase):
         RuntimeError
             If `command` would only partially overwrite an other commands.
         """
-        custom_id_to_command = self.custom_id_to_command
+        string_custom_id_to_component_command = self.string_custom_id_to_component_command
+        regex_custom_id_to_component_command = self.regex_custom_id_to_component_command
         
         overwrite_commands = None
-        for custom_id in command.custom_ids:
-            try:
-                maybe_overwrite_command = custom_id_to_command[custom_id]
-            except KeyError:
+        
+        string_custom_ids = component_command._string_custom_ids
+        if (string_custom_ids is not None):
+            for string_custom_id in string_custom_ids:
+                try:
+                    maybe_overwrite_command = string_custom_id_to_component_command[string_custom_id]
+                except KeyError:
+                    continue
+                
+                if overwrite_commands is None:
+                    overwrite_commands = set()
+                
+                overwrite_commands.add(maybe_overwrite_command)
                 continue
-            
-            if overwrite_commands is None:
-                overwrite_commands = set()
-            
-            overwrite_commands.add(maybe_overwrite_command)
-            continue
+        
+        regex_custom_ids = component_command._regex_custom_ids
+        if (regex_custom_ids is not None):
+            for regex_custom_id in regex_custom_ids:
+                try:
+                    maybe_overwrite_command = regex_custom_id_to_component_command[regex_custom_id]
+                except KeyError:
+                    continue
+                
+                if overwrite_commands is None:
+                    overwrite_commands = set()
+                
+                overwrite_commands.add(maybe_overwrite_command)
+                continue
         
         if (overwrite_commands is not None):
             would_overwrite_custom_ids = set()
             for overwrite_command in overwrite_commands:
-                would_overwrite_custom_ids.update(overwrite_command.custom_ids)
+                overwrite_string_custom_ids = overwrite_command._string_custom_ids
+                if (overwrite_string_custom_ids is not None):
+                    would_overwrite_custom_ids.update(overwrite_string_custom_ids)
             
-            if not would_overwrite_custom_ids.issuperset(command.custom_ids):
-                raise RuntimeError(f'Command: {command!r} would only partially overwrite the following commands: '
-                    f'{", ".join(overwrite_commands)}.')
+                overwrite_regex_custom_ids = overwrite_command.regex_custom_ids
+                if (overwrite_regex_custom_ids is not None):
+                    would_overwrite_custom_ids.update(overwrite_regex_custom_ids)
+            
+            if not would_overwrite_custom_ids.issuperset(component_command.string_custom_ids):
+                raise RuntimeError(f'Command: {component_command!r} would only partially overwrite the following '
+                    f'commands: {", ".join(overwrite_commands)}.')
             
             for overwrite_command in overwrite_commands:
                 self._component_commands.discard(overwrite_command)
         
-        for custom_id in command.custom_ids:
-            custom_id_to_command[custom_id] = command
+        string_custom_ids = component_command._string_custom_ids
+        if (string_custom_ids is not None):
+            for string_custom_id in string_custom_ids:
+                string_custom_id_to_component_command[string_custom_id] = component_command
         
-        self._component_commands.add(command)
+        regex_custom_ids = component_command._regex_custom_ids
+        if (regex_custom_ids is not None):
+            for regex_custom_id in regex_custom_ids:
+                regex_custom_id_to_component_command[regex_custom_id] = component_command
+        
+        self._component_commands.add(component_command)
     
-    def _remove_component_command(self, command):
+    
+    def _remove_component_command(self, component_command):
         """
         Removes the given component command from the slasher.
         
         Parameters
         ----------
-        command : ``ComponentCommand``
+        component_command : ``ComponentCommand``
             The command to remove.
         """
         try:
-            self._component_commands.remove(command)
+            self._component_commands.remove(component_command)
         except KeyError:
             pass
         else:
-            custom_id_to_command = self.custom_id_to_command
+            string_custom_id_to_component_command = self.string_custom_id_to_component_command
             
-            for custom_id in command.custom_ids:
-                if custom_id_to_command[custom_id] is command:
-                    del custom_id_to_command[custom_id]
+            string_custom_ids = component_command.string_custom_ids
+            if (string_custom_ids is not None):
+                for string_custom_id in string_custom_ids:
+                    if string_custom_id_to_component_command[string_custom_id] is component_command:
+                        del string_custom_id_to_component_command[string_custom_id]
+            
+            regex_custom_id_to_component_command = self.regex_custom_id_to_component_command
+            
+            regex_custom_ids = component_command._regex_custom_ids
+            if (regex_custom_ids is not None):
+                for regex_custom_id in regex_custom_ids:
+                    if regex_custom_id_to_component_command[regex_custom_id] is component_command:
+                        del regex_custom_id_to_component_command[regex_custom_id]

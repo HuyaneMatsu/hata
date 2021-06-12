@@ -257,7 +257,7 @@ class HTTPClient:
         headers = imultidict(headers)
         
         if (headers and (auth is not None) and AUTHORIZATION in headers):
-            raise ValueError('Can\'t combine \'Authorization\' header with \'auth\' argument')
+            raise ValueError('Can\'t combine \'Authorization\' header with \'auth\' parameter')
         
         if (proxy_url is ...):
             proxy_url = self.proxy_url

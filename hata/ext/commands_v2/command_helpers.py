@@ -188,22 +188,22 @@ def test_precheck(precheck):
     Raises
     ------
     TypeError
-        - If `precheck` accepts bad amount of arguments.
+        - If `precheck` accepts bad amount of parameters.
         - If `precheck` is async.
     """
     analyzer = CallableAnalyzer(precheck)
     if analyzer.is_async():
         raise TypeError('`precheck` should not be given as `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
-        raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects at '
+        raise TypeError(f'`precheck` should accept `2` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{precheck!r}`.')
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`precheck` should accept `2` arguments, meanwhile the given callable expects '
+                raise TypeError(f'`precheck` should accept `2` parameters, meanwhile the given callable expects '
                     f'up to `{max_!r}`, got `{precheck!r}`.')
 
 
@@ -244,7 +244,7 @@ def test_error_handler(error_handler):
     if not analyzer.is_async():
         raise TypeError('`error_handler` should be given as `async` function.')
     
-    min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
         raise TypeError(f'`error_handler` should accept `2` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{error_handler!r}`.')
@@ -333,7 +333,7 @@ def test_name_rule(rule, rule_name):
     TypeError
         - If `rule` is not `None` or `function` instance.
         - If `rule` is `async` `function`.
-        - If `rule` accepts bad amount of arguments.
+        - If `rule` accepts bad amount of parameters.
         - If `rule` raised exception when `str` was passed to it.
         - If `rule` did not return `str`, when passing `str` to it.
         - If `nullable` is given as `True` and `rule` raised exception when `None` was passed to it.
@@ -351,10 +351,10 @@ def test_name_rule(rule, rule_name):
     if analyzed.is_async():
         raise TypeError(f'`{rule_name}` should have been given as an non async function, got {rule!r}.')
     
-    non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-    if non_reserved_positional_argument_count != 1:
-        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional arguments, meanwhile it expects '
-            f'{non_reserved_positional_argument_count}.')
+    non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+    if non_reserved_positional_parameter_count != 1:
+        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional parameters, meanwhile it expects '
+            f'{non_reserved_positional_parameter_count}.')
     
     if analyzed.accepts_args():
         raise TypeError(f'`{rule_name}` should accept not expect args, meanwhile it does.')
@@ -362,10 +362,10 @@ def test_name_rule(rule, rule_name):
     if analyzed.accepts_kwargs():
         raise TypeError(f'`{rule_name}` should accept not expect kwargs, meanwhile it does.')
     
-    non_default_keyword_only_argument_count = analyzed.get_non_default_keyword_only_argument_count()
-    if non_default_keyword_only_argument_count:
-        raise TypeError(f'`{rule_name}` should accept `0` keyword only arguments, meanwhile it expects '
-            f'{non_default_keyword_only_argument_count}.')
+    non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
+    if non_default_keyword_only_parameter_count:
+        raise TypeError(f'`{rule_name}` should accept `0` keyword only parameters, meanwhile it expects '
+            f'{non_default_keyword_only_parameter_count}.')
     
     try:
         result = rule('test-this-name')
@@ -687,10 +687,10 @@ def get_prefix_parser(prefix, prefix_ignore_case):
     
     if callable(prefix):
         analyzed = CallableAnalyzer(prefix)
-        non_reserved_positional_argument_count = analyzed.get_non_reserved_positional_argument_count()
-        if non_reserved_positional_argument_count != 1:
+        non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
+        if non_reserved_positional_parameter_count != 1:
             raise TypeError(f'Callable `prefix` should accept `1` non reserved positional parameter, meanwhile it '
-                f'accepts: `{non_reserved_positional_argument_count}`.')
+                f'accepts: `{non_reserved_positional_parameter_count}`.')
         
         if analyzed.is_async():
             prefix_wrapper_function = prefix_wrapper_async_callable

@@ -376,7 +376,7 @@ class DiscoveryTermRequestCacher:
     _minimal_cleanup_interval : `float`
         The minimal time what needs to pass between cleanups.
     _rate_limit_proxy_args : `tuple` (``RateLimitGroup``, (``DiscordEntity`` or `None`))
-        Rate limit proxy arguments used when looking up the rate limits of clients.
+        Rate limit proxy parameters used when looking up the rate limits of clients.
     _waiters : `dict` of (`str`, `
         Waiters for requests already being done.
     cached : `dict`
@@ -453,7 +453,7 @@ class DiscoveryTermRequestCacher:
         elif issubclass(arg_type, str):
             arg = str(arg)
         else:
-            raise TypeError(f'The argument can be given as `str` instance, got {arg_type.__class__}.')
+            raise TypeError(f'The parameter can be given as `str` instance, got {arg_type.__class__}.')
         
         # First check cache
         try:
@@ -659,7 +659,7 @@ class WaitForHandler:
         client : ``Client``
             The client who received the respective events.
         args : `tuple` of `Any`
-            Other received arguments by the event.
+            Other received parameters by the event.
         """
         for future, check in self.waiters.items():
             try:

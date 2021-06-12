@@ -133,7 +133,7 @@ class Emoji(DiscordEntity, immortal=True):
         ----------
         emoji_id : `snowflake`
             The emoji's id.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional predefined attributes for the emoji.
         
         Other Parameters
@@ -150,9 +150,9 @@ class Emoji(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If any argument's type is bad or if unexpected argument is passed.
+            If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an argument's type is good, but it's value is unacceptable.
+            If an parameter's type is good, but it's value is unacceptable.
         """
         emoji_id = preconvert_snowflake(emoji_id, 'emoji_id')
         

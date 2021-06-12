@@ -250,8 +250,8 @@ class ClientWrapper:
         """
         Adds the given `func` as event handler to the contained clients's with the given parameters.
         
-        If `func` argument is not given, returns an ``._events_wrapper`` instance, what allows using this method
-        as a decorator with passing additional keyword arguments at the same time.
+        If `func` parameter is not given, returns an ``._events_wrapper`` instance, what allows using this method
+        as a decorator with passing additional keyword parameters at the same time.
         
         Parameters
         ----------
@@ -271,7 +271,7 @@ class ClientWrapper:
             - If `func` is given as `None`.
             - If `func` was not given as callable.
             - If `func` is not as async and neither cannot be converted to an async one.
-            - If `func` expects less or more non reserved positional arguments as `expected` is.
+            - If `func` expects less or more non reserved positional parameters as `expected` is.
             - If `name` was not passed as `None` or type `str`.
         """
 
@@ -286,7 +286,7 @@ class ClientWrapper:
     class _events_wrapper:
         """
         When the parent ``ClientWrapper``'s `.events` is called without giving the `func` parameter to it an instance
-        of this class is created for allowing using it as a decorator with passing additional keyword arguments at the
+        of this class is created for allowing using it as a decorator with passing additional keyword parameters at the
         same time.
         
         Attributes
@@ -294,7 +294,7 @@ class ClientWrapper:
         parent : ``ClientWrapper``
             The owner event descriptor.
         args: `tuple` of `Any`
-            Additional keyword arguments (in order) passed when the wrapper was created.
+            Additional keyword parameters (in order) passed when the wrapper was created.
         """
         __slots__ = ('parent', 'args',)
         def __init__(self, parent, args):
@@ -306,7 +306,7 @@ class ClientWrapper:
             parent : ``EventHandlerManager``
                 The owner event descriptor.
             args: `tuple` of `Any`
-                Additional keyword arguments (in order) passed when the wrapper was created.
+                Additional keyword parameters (in order) passed when the wrapper was created.
             """
             self.parent = parent
             self.args = args
@@ -333,7 +333,7 @@ class ClientWrapper:
                 - If `func` is given as `None`.
                 - If `func` was not given as callable.
                 - If `func` is not as async and neither cannot be converted to an async one.
-                - If `func` expects less or more non reserved positional arguments as `expected` is.
+                - If `func` expects less or more non reserved positional parameters as `expected` is.
                 - If `name` was not passed as `None` or type `str`.
             """
             if func is None:

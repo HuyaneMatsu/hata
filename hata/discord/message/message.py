@@ -434,7 +434,7 @@ class Message(DiscordEntity, immortal=True):
         validate : `bool`, Optional
             Whether contradictory between the message's attributes should be checked. If there is any, `ValueError`
             is raised. Defaults to `True`.
-        **kwargs : keyword arguments
+        **kwargs : keyword parameters
             Additional attributes of the created message.
         
         Other Parameters
@@ -573,9 +573,9 @@ class Message(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If any of the argument's type is incorrect.
+            If any of the parameter's type is incorrect.
         ValueError
-            - If a passed argument's type is correct, but it's value is not.
+            - If a passed parameter's type is correct, but it's value is not.
             - If `validate` is passed as `True` and there is a contradictory between the message's attributes.
         """
         if (base is not None) and (type(base) is not cls):

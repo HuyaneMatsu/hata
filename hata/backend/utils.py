@@ -1112,7 +1112,7 @@ class istr(str):
         is a `byte-like` object, then `istr(bytes, encoding, errors)` is equivalent to `bytes.decode(encoding, errors)`.
         Otherwise, the bytes object underlying the buffer object is obtained before calling `bytes.decode()`.
         
-        Passing a `bytes-like` object to ``istr`` without the encoding or errors arguments falls under the first case
+        Passing a `bytes-like` object to ``istr`` without the encoding or errors parameters falls under the first case
         of returning the informal string representation.
         
         Parameters
@@ -1328,11 +1328,11 @@ class alchemy_incendiary:
     Attributes
     ----------
     args : `tuple` of `Any`
-        Arguments to call `func` with.
+        Parameters to call `func` with.
     func : `callable`
         The function to call.
     kwargs : `None` of `dict` of (`str`, `Any`) items
-        Keyword arguments to call func with if applicable.
+        Keyword parameters to call func with if applicable.
     """
     __slots__ = ('args', 'func', 'kwargs',)
     
@@ -1346,9 +1346,9 @@ class alchemy_incendiary:
         func : `callable`
             The function to call.
         args : `tuple` of `Any`
-            Arguments to call `func` with.
+            Parameters to call `func` with.
         kwargs : `None` of `dict` of (`str`, `Any`) items, Optional
-            Keyword arguments to call func with if applicable.
+            Keyword parameters to call func with if applicable.
         """
         self.func = func
         self.args = args
@@ -1357,7 +1357,7 @@ class alchemy_incendiary:
     @has_docs
     def __call__(self):
         """
-        Calls the ``alchemy_incendiary``'s inner function with t's arguments and keyword arguments.
+        Calls the ``alchemy_incendiary``'s inner function with t's parameters and keyword parameters.
         
         Returns
         -------
@@ -1401,7 +1401,7 @@ class MethodLike(metaclass=SubCheckType):
     __subclasses__ : `set` of `type`
         Registered method types.
     __reserved_argcount__ : `int` = `1`
-        The amount of reserved arguments by a method subclass.
+        The amount of reserved parameters by a method subclass.
     """
     __subclasses__ = {MethodType}
     __slots__ = ()
@@ -1459,7 +1459,7 @@ class basemethod(MethodLike):
     Class Attributes
     ----------------
     __reserved_argcount__ : `int` = `2`
-        The amount of reserved arguments by basemethods.
+        The amount of reserved parameters by basemethods.
     """
     __slots__ = ('__base__', '__func__', '__self__', )
     __reserved_argcount__ = 2
@@ -1489,10 +1489,10 @@ class basemethod(MethodLike):
         
         Parameters
         ----------
-        *args : Arguments
-            Arguments to call the internal function with.
-        **kwargs : Keyword arguments
-            Keyword arguments to call the internal function with.
+        *args : Parameters
+            Parameters to call the internal function with.
+        **kwargs : Keyword parameters
+            Keyword parameters to call the internal function with.
         
         Returns
         -------
@@ -2328,10 +2328,10 @@ class WeakCallable(WeakReferer):
         
         Parameters
         ----------
-        *args : Arguments
-            Arguments to call the weakreferenced callable with.
-        **kwargs : Keyword arguments
-            Keyword arguments to call the weakreferenced callable with..
+        *args : Parameters
+            Parameters to call the weakreferenced callable with.
+        **kwargs : Keyword parameters
+            Keyword parameters to call the weakreferenced callable with..
         
         Returns
         -------
@@ -2374,7 +2374,7 @@ class weakmethod(WeakReferer, MethodLike):
     Class Attributes
     ----------------
     __reserved_argcount__ : `int` = `1`
-        The amount of reserved arguments by weakmethod.
+        The amount of reserved parameters by weakmethod.
     """
     __slots__ = ('__func__',)
     __reserved_argcount__ = 1
@@ -2417,10 +2417,10 @@ class weakmethod(WeakReferer, MethodLike):
         
         Parameters
         ----------
-        *args : Arguments
-            Arguments to call the function with.
-        **kwargs : Keyword arguments
-            Keyword arguments to call the function with.
+        *args : Parameters
+            Parameters to call the function with.
+        **kwargs : Keyword parameters
+            Keyword parameters to call the function with.
         
         Returns
         -------

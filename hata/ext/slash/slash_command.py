@@ -19,7 +19,7 @@ from .responding import process_command_coroutine
 from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlashCommandWrapper, get_parameter_configurers
-from .converters import generate_parameter_parsers
+from .converters import get_slash_command_parameter_converters
 from .exceptions import SlashCommandParameterConversionError
 
 # Routers
@@ -676,10 +676,10 @@ class SlashCommand:
             description = _generate_description_from(command, name, description)
         
         if command is None:
-            parameter_parsers = None
+            parameter_converters = None
         else:
             parameter_configurers = get_parameter_configurers(wrappers)
-            command, parameter_parsers = generate_parameter_parsers(command, parameter_configurers)
+            command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
         
         if route_to:
             router = []
@@ -696,7 +696,7 @@ class SlashCommand:
                     command_function = None
                     sub_commands = {}
                 else:
-                    command_function = SlashCommandFunction(command, parameter_parsers, name, description,
+                    command_function = SlashCommandFunction(command, parameter_converters, name, description,
                         show_for_invoking_user_only, is_default)
                     sub_commands = None
                 
@@ -730,7 +730,7 @@ class SlashCommand:
                 sub_commands = {}
                 command_function = None
             else:
-                command_function = SlashCommandFunction(command, parameter_parsers, name, description,
+                command_function = SlashCommandFunction(command, parameter_converters, name, description,
                     show_for_invoking_user_only, is_default)
                 sub_commands = None
             
@@ -863,11 +863,11 @@ class SlashCommand:
             sub_commands = self._sub_commands
             options = [sub_command.as_option() for sub_command in sub_commands.values()]
         else:
-            parameter_parsers = command._parameter_parsers
+            parameter_converters = command._parameter_converters
             
             options = None
-            for parameter_parser in parameter_parsers:
-                option = parameter_parser.as_option()
+            for parameter_converter in parameter_converters:
+                option = parameter_converter.as_option()
                 if (option is not None):
                     if (options is None):
                         options = []
@@ -1195,7 +1195,7 @@ class SlashCommandFunction:
     
     Attributes
     ----------
-    _parameter_parsers : `tuple` of ``ParameterConverter``
+    _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
     _command : `async-callable˛
         The command's function to call.
@@ -1208,10 +1208,10 @@ class SlashCommandFunction:
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoker user.
     """
-    __slots__ = ('_parameter_parsers', '_command', 'category', 'description', 'is_default', 'name',
+    __slots__ = ('_parameter_converters', '_command', 'category', 'description', 'is_default', 'name',
         'show_for_invoking_user_only')
     
-    def __new__(cls, command, parameter_parsers, name, description, show_for_invoking_user_only, is_default):
+    def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
         Creates a new ``SlashCommandFunction`` instance with the given parameters-
         
@@ -1219,7 +1219,7 @@ class SlashCommandFunction:
         ----------
         command : `async-callable`
             The command's function to call.
-        parameter_parsers : `tuple` of ``ParameterConverter``
+        parameter_converters : `tuple` of ``ParameterConverter``
             Parsers to parse command parameters.
         name : `str`
             The name of the slash command.
@@ -1232,7 +1232,7 @@ class SlashCommandFunction:
         """
         self = object.__new__(cls)
         self._command = command
-        self._parameter_parsers = parameter_parsers
+        self._parameter_converters = parameter_converters
         self.show_for_invoking_user_only = show_for_invoking_user_only
         self.description = description
         self.name = name
@@ -1267,10 +1267,10 @@ class SlashCommandFunction:
             for option in options:
                 parameter_relation[option.name] = option.value
         
-        for parameter_parser in self._parameter_parsers:
-            value = parameter_relation.get(parameter_parser.name, None)
+        for parameter_converter in self._parameter_converters:
+            value = parameter_relation.get(parameter_converter.name, None)
             
-            parameter = await parameter_parser(client, interaction_event, value)
+            parameter = await parameter_converter(client, interaction_event, value)
             parameters.append(parameter)
         
         command_coroutine = self._command(*parameters)
@@ -1299,10 +1299,10 @@ class SlashCommandFunction:
         -------
         option : ``ApplicationCommandOption``
         """
-        parameter_parsers = self._parameter_parsers
+        parameter_converters = self._parameter_converters
         options = None
-        for parameter_parser in parameter_parsers:
-            option = parameter_parser.as_option()
+        for parameter_converter in parameter_converters:
+            option = parameter_converter.as_option()
             if (option is not None):
                 if options is None:
                     options = []
@@ -1332,7 +1332,7 @@ class SlashCommandFunction:
         if self._command != other._command:
             return False
         
-        if self._parameter_parsers != other._parameter_parsers:
+        if self._parameter_converters != other._parameter_converters:
             return False
         
         if self.show_for_invoking_user_only != other.show_for_invoking_user_only:

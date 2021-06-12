@@ -388,7 +388,7 @@ class IconSlot:
         Parameters
         ----------
         kwargs : `dict` of (`str`, `Any`) items
-            Keyword arguments passed to the respective preconverter.
+            Keyword parameters passed to the respective preconverter.
         processable : `list` of `tuple` (`str`, `Any`)
             A list of instance attributes which will be set when all the passed kwargs are validated.
         

@@ -175,7 +175,7 @@ class Extension:
         
         Parameters
         ----------
-        **variables : Keyword Arguments
+        **variables : Keyword Parameters
             Variables to assigned to the extension's module before it is loaded.
         
         Raises

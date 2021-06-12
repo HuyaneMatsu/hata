@@ -29,7 +29,7 @@ def create_payload(data, kwargs):
             `BytesIO`, `StringIO`, `TextIOBase`, `BufferedReader`, `BufferedRandom`, `IOBase`, ``AsyncIO``, \
             `async-iterable` instance
     kwargs : `dict` of (`str`, (`None` or `str`)) items
-        Keyword arguments for the payload.
+        Keyword parameters for the payload.
     
     Returns
     -------
@@ -100,7 +100,7 @@ class PayloadBase:
                 `async-iterable` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         self.data = data
         self.encoding = kwargs.get('encoding', None)
@@ -189,7 +189,7 @@ class BytesPayload(PayloadBase):
         data : `bytes`, `bytearray`, `memoryview` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         kwargs.setdefault('content_type', DEFAULT_CONTENT_TYPE)
         
@@ -240,7 +240,7 @@ class StringPayload(BytesPayload):
         data : `str` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         encoding = kwargs.get('encoding', None)
         content_type = kwargs.get('content_type', None)
@@ -295,7 +295,7 @@ class StringIOPayload(StringPayload):
         data : `StringIO` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         data = data.read()
         StringPayload.__init__(self, data, kwargs)
@@ -330,7 +330,7 @@ class IOBasePayload(PayloadBase):
         data : `IOBase` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         if 'filename' not in kwargs:
             kwargs['filename'] = getattr(data, 'name', None)
@@ -400,7 +400,7 @@ class TextIOPayload(IOBasePayload):
         data : `TextIOBase` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         encoding = kwargs.get('encoding', None)
         content_type = kwargs.get('content_type', None)
@@ -481,7 +481,7 @@ class BytesIOPayload(IOBasePayload):
         data : `BytesIO` instance
             The payload's data.
         kwargs : ``imultidict`` of (`str`, `str`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         IOBasePayload.__init__(self, data, kwargs)
         
@@ -520,7 +520,7 @@ class BufferedReaderPayload(IOBasePayload):
         data : `BufferedReader`, `BufferedRandom` instance
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         IOBasePayload.__init__(self, data, kwargs)
         try:
@@ -561,7 +561,7 @@ class JsonPayload(BytesPayload):
         data : `None`, `str`, `int`, `float`, `list` of repeat, `dict` of (`str`, repeat) items
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         encoding = kwargs.get('encoding', None)
         if (encoding is None):
@@ -603,7 +603,7 @@ class AsyncIterablePayload(PayloadBase):
         data : `async-iterable`
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         kwargs.setdefault('content_type', DEFAULT_CONTENT_TYPE)
         
@@ -700,7 +700,7 @@ class BodyPartReaderPayload(PayloadBase):
         data : ``BodyPartReader``
             The payload's data.
         kwargs : `dict` of (`str`, `Any`) items
-            Additional keyword arguments.
+            Additional keyword parameters.
         """
         PayloadBase.__init__(self, data, kwargs)
         

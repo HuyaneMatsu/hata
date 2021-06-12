@@ -80,7 +80,7 @@ class VoiceClient:
         this attribute is set to the ``._play_next`` function of the voice client (plays the next audio at the voice
         clients's ``.queue`` as expected.
         
-        This attribute of the client can be modified freely. To it `2` arguments are passed:
+        This attribute of the client can be modified freely. To it `2` parameters are passed:
          +------------------+---------------------------+
          | Respective name  | Type                      |
          +==================+===========================+
@@ -290,8 +290,8 @@ class VoiceClient:
         ----------
         user : ``UserBase`` instance
             The user, who's voice will be captured.
-        **kwargs : Keyword arguments
-            Additional keyword arguments.
+        **kwargs : Keyword parameters
+            Additional keyword parameters.
         
         Other Parameters
         ----------------
@@ -569,7 +569,7 @@ class VoiceClient:
         
         This method is a coroutine.
         
-        Arguments
+        Parameters
         ---------
         channel : ``ChannelVoiceBase``
             The channel where the voice client will move to.
@@ -689,7 +689,7 @@ class VoiceClient:
         """
         Starts playing the given audio source. If the voice client is already playing, puts it on it's queue instead.
         
-        Arguments
+        Parameters
         ---------
         source : ``AudioSource`` instance
             The audio source to put on the queue.
@@ -971,8 +971,8 @@ class VoiceClient:
         
         Notes
         -----
-        If you want to disconnect a voice client, then you should let the method to use it's default arguments. Passing
-        bad arguments can cause misbehaviour.
+        If you want to disconnect a voice client, then you should let the method to use it's default parameters. Passing
+        bad parameters can cause misbehaviour.
         """
         
         if not (force or self.connected.is_set()):

@@ -55,7 +55,7 @@ In this case our decorator will capture `ready` event and handle it in `async de
 The `ready` event will be activated after the client finished logging in to Discord.
 When it happens, in the example above, we print out the client's full name and its ID.
 
-Event function can take multiple arguments depending on the event, but all of them take `client` as the first one.
+Event function can take multiple parameters depending on the event, but all of them take `client` as the first one.
 The example we used is the most straightforward way but there are multiple ways of adding event handlers and there
 are multiple events that you can register. You can read about this [Event Examples](#Event-examples).
 
@@ -128,9 +128,9 @@ Examples for the above errors:
     ```
 
 - `ValueError: Invalid argcount, expected 2, got 1.`
-   Our function took to many/little arguments.
+   Our function took to many/little parameters.
     ```py
-    # emoji_create should take 2 arguments, client and emoji
+    # emoji_create should take 2 parameters, client and emoji
     @NekoBot.events
     async def emoji_create(client):
         pass

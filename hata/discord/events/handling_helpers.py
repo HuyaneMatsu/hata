@@ -47,7 +47,7 @@ def _check_name_should_break(name):
 def check_name(func, name):
     """
     Tries to find the given `func`'s preferred name. The check order is the following:
-    - Passed `name` argument.
+    - Passed `name` parameter.
     - `func.__event_name__`.
     - `func.__name__`.
     - `func.__class__.__name__`.
@@ -114,12 +114,12 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
     `func` can be either:
     - An async `callable`.
     - A class with non async `__new__` (neither `__init__` of course) accepting no non reserved parameters,
-        meanwhile it's `__call__` is async. This is the convert (or instance) case and it causes the final argument
+        meanwhile it's `__call__` is async. This is the convert (or instance) case and it causes the final parameter
         count check to be applied on the type's `__call__`.
     - A class with async `__new__`.
     
     After the callable was chosen, then the amount of positional parameters are checked what it expects. Reserved
-    parameters, like `self` are ignored and if the callable accepts keyword only argument, then it is a no-go.
+    parameters, like `self` are ignored and if the callable accepts keyword only parameter, then it is a no-go.
     
     If every check passed, then at the convert case instances the type and returns that, meanwhile at the other cases
     it returns the received `func`.
@@ -127,7 +127,7 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
     Parameters
     ----------
     func : `callable`
-        The callable, what's type and argument count will checked.
+        The callable, what's type and parameter count will checked.
     expected : `int`
         The amount of parameters, what would be passed to the given `func` when called at the future.
     name : `str`, Optional (Keyword only)
@@ -151,7 +151,7 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
     """
     analyzer = CallableAnalyzer(func)
     if analyzer.is_async() or (analyzer.is_async_generator() if can_be_async_generator else False):
-        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
+        min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
         if min_ > expected:
             raise TypeError(f'A `{name}` should accept `{expected!r}` parameters, meanwhile the given callable expects '
                 f'at least `{min_!r}`, got `{func!r}`.')
@@ -174,7 +174,7 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
         
         sub_analyzer = CallableAnalyzer(func.__call__, as_method=True)
         if sub_analyzer.is_async():
-            min_, max_ = sub_analyzer.get_non_reserved_positional_argument_range()
+            min_, max_ = sub_analyzer.get_non_reserved_positional_parameter_range()
             
             if min_ > expected:
                 raise TypeError(f'A `{name}` should accept `{expected!r}` parameters, meanwhile the given callable '
@@ -423,7 +423,7 @@ class _EventHandlerManager:
     def __call__(self, func=..., *args, **kwargs):
         """
         Adds the given `func` to the event handler manager's parent. If `func` is not passed, then returns a
-        ``._wrapper` to allow using the manager as a decorator with still passing keyword arguments.
+        ``._wrapper` to allow using the manager as a decorator with still passing keyword parameters.
         
         Parameters
         ----------
@@ -1304,7 +1304,7 @@ class eventlist(list):
     Attributes
     ----------
     kwargs : `None` or `dict` of (`str`, `Any`) items
-        Keyword arguments used for each element when extending the client's events with the event-list.
+        Keyword parameters used for each element when extending the client's events with the event-list.
     type : `None` or `type`
         If `type_` was passed when creating the eventlist, then each added element is pre-validated with the given type
         before adding them. Some extension classes might support behaviour.
@@ -1342,8 +1342,8 @@ class eventlist(list):
             An iterable of events to extend the eventlist with.
         type_ : `type`, Optional
             A type to validate each added element to the eventlist.
-        **kwargs : Keyword arguments
-            Additional keyword arguments to be used when adding each element.
+        **kwargs : Keyword parameters
+            Additional keyword parameters to be used when adding each element.
         
         Raises
         ------
@@ -1462,9 +1462,9 @@ class eventlist(list):
         
     def __call__(self, func=..., *args, **kwargs):
         """
-        Adds the given `func` to the ``eventlist`` with the other given keyword arguments. If `func` is not passed,
+        Adds the given `func` to the ``eventlist`` with the other given keyword parameters. If `func` is not passed,
         then returns a ``._wrapper` to allow using the ``eventlist`` as a decorator with still passing keyword
-        arguments.
+        parameters.
         
         Parameters
         ----------
@@ -1472,7 +1472,7 @@ class eventlist(list):
             The event to be added to the eventlist.
         *args : Positional parameter
             Additionally passed positional parameters to be used when the passed `func` is used up.
-        **kwargs : Keyword arguments
+        **kwargs : Keyword parameters
             Additionally passed keyword parameters to be used when the passed `func` is used up.
         
         Returns
@@ -1559,12 +1559,12 @@ class eventlist(list):
     
     def add_kwargs(self, **kwargs):
         """
-        Adds keyword arguments to the ``eventlist`'s.
+        Adds keyword parameters to the ``eventlist`'s.
         
         Parameters
         ----------
-        **kwargs : Keyword arguments
-            KeyWord arguments to extend the ``eventlist``'s with.
+        **kwargs : Keyword parameters
+            KeyWord parameters to extend the ``eventlist``'s with.
         """
         if not kwargs:
             return
@@ -1577,12 +1577,12 @@ class eventlist(list):
     
     def remove_kwargs(self, *names):
         """
-        Removes keyword arguments of the ``eventlist`` by their name.
+        Removes keyword parameters of the ``eventlist`` by their name.
         
         Parameters
         ----------
         *names : Positional parameters
-            Keyword argument's name added to the ``eventlist``.
+            Keyword parameter's name added to the ``eventlist``.
         """
         if not names:
             return
@@ -1616,21 +1616,21 @@ class EventHandlerBase:
     # subclasses should overwrite it
     async def __call__(self, *args):
         """
-        The method what will be called by the respective parser. The first received argument is always a ``Client``
+        The method what will be called by the respective parser. The first received parameter is always a ``Client``
         meanwhile the rest depends on the dispatch event.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        *args : Additional positional arguments
+        *args : Additional positional parameters
         """
         pass
     
     # subclasses should overwrite it
     def create_event(self, func, *args, **kwargs):
         """
-        Adds the specified event to the event handler. Subclasses might add additional keyword arguments as well.
+        Adds the specified event to the event handler. Subclasses might add additional keyword parameters as well.
         
         Parameters
         ----------
@@ -1651,7 +1651,7 @@ class EventHandlerBase:
     # subclasses should overwrite it
     def delete_event(self, func):
         """
-        Removes the specified event from the event handler. Subclasses might add additional keyword arguments as well.
+        Removes the specified event from the event handler. Subclasses might add additional keyword parameters as well.
         
         Parameters
         ----------
@@ -1706,8 +1706,8 @@ class EventWaitforMeta(type):
         
         Parameters
         ----------
-        *args : Additional positional arguments
-        **kwargs : Additional keyword arguments
+        *args : Additional positional parameters
+        **kwargs : Additional keyword parameters
         
         Returns
         -------
@@ -2099,7 +2099,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         target : ``DiscordEntity`` instance
             The target entity.
         args : `tuple` of `Any`
-            Arguments to ensure the waitfors with.
+            Parameters to ensure the waitfors with.
         """
         try:
             event = self.waitfors[target]
@@ -2285,8 +2285,8 @@ class asynclist(list):
         
         Parameters
         ----------
-        *args : Additional position arguments
-            Arguments to call with the contained async callables.
+        *args : Additional position parameters
+            Parameters to call with the contained async callables.
         """
         for coro in list.__iter__(self):
             Task(coro(*args), KOKORO)

@@ -538,9 +538,9 @@ def format_callback(func, args=None, kwargs=None):
     func : `callable`
         The callback to format.
     args : `None` or `iterable` of `Any`, Optional
-        Additional arguments to call the `func` with.
+        Additional parameters to call the `func` with.
     kwargs : `None` or `dict` of (`str`, `Any`) items, Optional
-        Additional keyword arguments to call the `func` with.
+        Additional keyword parameters to call the `func` with.
     
     Returns
     -------
@@ -698,7 +698,7 @@ class Future:
     """
     __slots__ = ('_blocking', '_callbacks', '_exception', '_loop', '_result', '_state')
     
-    # If arguments are not passed will not call `__del__`
+    # If parameters are not passed will not call `__del__`
     def __new__(cls, loop):
         """
         Creates a new ``Future`` object bound to the given `loop`.
@@ -3942,7 +3942,7 @@ def sleep(delay, loop=None):
     if loop is None:
         loop = current_thread()
         if not isinstance(loop, EventThread):
-            raise RuntimeError(f'`sleep` called without passing `loop` argument from a non {EventThread.__name__}: '
+            raise RuntimeError(f'`sleep` called without passing `loop` parameter from a non {EventThread.__name__}: '
                 f'{loop!r}.')
     
     future = Future(loop)

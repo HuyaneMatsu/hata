@@ -34,7 +34,7 @@ async def DEFAULT_EVENT_HANDLER(*args):
     
     Parameters
     ----------
-    *args : Positional arguments
+    *args : Positional parameters
     """
     pass
 
@@ -71,7 +71,7 @@ def add_event_handler(name, value, parser):
     name : `str`
         The name of the event.
     value : `int`
-        The amount of arguments what the parser passes the respective event.
+        The amount of parameters what the parser passes the respective event.
     parser : `str` or (`tuple` of `str`)
         The name of events, which might call the respective event.
     """
@@ -83,7 +83,7 @@ def add_event_handler(name, value, parser):
 
 def get_event_parser_parameter_count(name):
     """
-    Returns the amount of arguments, what the events would pass to the respective event.
+    Returns the amount of parameters, what the events would pass to the respective event.
     
     Parameters
     ----------

@@ -2,7 +2,7 @@ __all__ = ('ClientWrapper', 'BanEntry', 'Typer', 'start_clients', 'stop_clients'
 
 from threading import current_thread
 
-from ...backend.futures import Task, sleep
+from ...backend.futures import Task, sleep, CancelledError
 from ...backend.export import include
 
 from ..core import CLIENTS, KOKORO
@@ -168,6 +168,29 @@ class Typer:
             await waiter
         
         self.waiter = None
+    
+    def __await__(self):
+        """Keeps typing till timeout occurs."""
+        while True:
+            timeout = self.timeout
+            if timeout <= 0.0:
+                break
+            
+            self.timeout = new_timeout = timeout -8.0
+            if new_timeout < 0.0:
+                sleep_duration = 8.0+new_timeout
+            else:
+                sleep_duration = 8.0
+            
+            self.waiter = waiter = sleep(sleep_duration, KOKORO)
+            yield from self.client.http.typing(self.channel_id).__await__()
+            
+            try:
+                yield from waiter
+            except CancelledError:
+                # Reraise if cancelled from outside
+                if (self.waiter is not None):
+                    raise
     
     def cancel(self):
         """

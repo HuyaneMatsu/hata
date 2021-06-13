@@ -5,6 +5,10 @@
 ##### hata.ext.slash
 - Add regex based matching for `ComponentCommand`-s.
 
+#### Bug Fixes
+
+- `Client.interaction_component_message_edit` was not sending embeds.
+
 ## 1.1.85 *\[2021-06-11\]*
 
 #### Summary

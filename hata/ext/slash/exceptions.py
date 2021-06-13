@@ -1,5 +1,7 @@
 __all__ = ('SlashCommandError', 'SlashCommandParameterConversionError')
 
+from random import choice
+
 from ...backend.utils import copy_docs
 from ...backend.export import include
 from ...backend.analyzer import CallableAnalyzer
@@ -203,6 +205,24 @@ class SlashCommandParameterConversionError(SlashCommandError):
         return pretty_repr
 
 
+
+ERROR_MESSAGES = [
+    (
+       'Exception occurred meanwhile processing your interaction.\n'
+       'Our highly educated Cirno-s are already working on the problem.'
+    ), (
+        'Your command\'s execution failed.\n'
+        'We are putting Reimu to investigate about the issue.'
+    ), (
+        'The command died out.\n'
+        'Maybe Izaoyi love-shop has some antidote.'
+    ), (
+        'Something went wrong.\n'
+        'Do you need driver license for broom riding?'
+    ),
+]
+
+
 async def default_slasher_exception_handler(client, interaction_event, command, exception):
     """
     Default ``Slasher`` exception handler.
@@ -229,10 +249,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         forward = exception.pretty_repr
         render = False
     elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
-        forward = (
-           'Exception occurred meanwhile processing your interaction.\n'
-           'Our highly educated Cirno-s are already working on the problem.'
-        )
+        forward = choice(ERROR_MESSAGES)
         render = True
     else:
         forward = None

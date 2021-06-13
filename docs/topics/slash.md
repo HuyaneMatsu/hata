@@ -4,7 +4,7 @@
 
 Slash refers to slash commands as probably known by the users or by interactions as mentioned by the api.
 
-You can also find Discord's API documentation
+You can also find Discord's insufficient API documentation
 [here](https://github.com/discord/discord-api-docs/blob/master/docs/interactions/Slash_Commands.md).
 
 Hata supports interactions with many methods and classes, but this topic is not about their raw usage, but about the
@@ -36,36 +36,51 @@ The parameter types can be the following:
 
 | Name              | Requires bot  | Discord field | String representation | Type representation   | Output type               |
 |-------------------|---------------|---------------|-----------------------|-----------------------|---------------------------|
+| boolean           | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
 | channel           | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
 | channel_id        | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
-| boolean           | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
+| expression        | No            | string        | `'expression'`        | N/A                   | `int` / `float`           |
 | integer           | No            | string        | `'int'`               | `int`                 | `int`                     |
-| mentionable       | Depends       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
-| mentionable_id    | No            | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
-| number            | No            | integer       | `'number'`            | N/A                   | `int`                     |
 | role              | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
 | role_id           | No            | role          | `'role_id'`           | N/A                   | `int`                     |
 | string            | No            | string        | `'str'`               | `str`                 | `str`                     |
+| mentionable       | Depends       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
+| mentionable_id    | No            | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
+| number            | No            | integer       | `'number'`            | N/A                   | `int`                     |
 | user              | No            | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
 | user_id           | No            | user          | `'user_id'`           | N/A                   | `int`                     |
 
 
-##### Parameter notes
+#### Parameter notes
+
+> There are choice parameters as well, but lets talk about those only later.
+
+##### user, channel, role
 
 `user`, `channel` and `role` data may not be included within the interaction. However users can be requested from
 Discord, but channels and roles can not be. It means `role` and `channel` conversions can fail and the command wont be
 called. To avoid this case, you may use `role_id` or `channel_id` parameter types instead.
 
+##### mentionable
+
 `mentionable` field stands for `user` + `role`.
 
-In hata there is 2 numeric input option available, one is `int` and the other one is `number`. Both has it's pros and
-cons. `int` field is converted to `string` by the extension, then when receiving an interaction is converted back to
-`int`. It means, when the user not gives a valid integer, the payload validation will fail and the interaction command 
-might wont be called. On other hand `number` field is inaccurate. Discord uses javascript `number` type
-(that's from the name comes from as well), what equals to float64. It means integers over 53 bit will lose from their
-precision.
+##### int, number
 
-There are also choice parameters, but lets talk about those only later.
+In hata there are 2 integer input options available, one is `int` and the other one is `number`. Both has it's pros and
+cons. `int` field is converted to `string` by the extension, then when receiving an interaction is converted back to
+`int`. It means, when the user not gives a valid integer, the payload validation will fail and the interaction will 
+fail. On other hand `number` field is inaccurate. Discord uses javascript `number` type (that's from the name comes
+from as well), what equals to float64. It means integers over 53 bit will lose from their precision.
+
+##### expression
+
+Hata implements a mathematical expression field as well. For example, you can enter `3*2` or `10/5+4` instead of `6`.
+Even constants like `pi` or functions like `sqrt(2)` may be used. The field idea is based on
+[Blender](https://www.blender.org/)'s numeric field.
+
+The evaluation of these fields are completely safe, do not uses `eval` or other cheaped out solutions, which have
+critical security vulnerabilities.
 
 ### Internal parameters
 
@@ -105,15 +120,26 @@ Nitori = Client(TOKEN)
 setup_ext_slash(Nitori)
 ```
 
-#### delete_commands_on_unload
+#### Optional Slasher parameters
 
-Optional parameter for the slasher.
+When setupping slash extension, a few optional parameters are also supported.
+
+##### delete_commands_on_unload
 
 Tells to the slasher whether it should delete the commands from Discord when they are removed. Defaults to `False` in
 favor of working with extensions.
 
 When unloading an extension, all of it's commands are deleted from Discord as well if set as `True`. This might be
 painful when reloading global commands, because it would need 1 hour for the changes to take place.
+
+##### use_default_exception_handler
+
+Whether the slasher default exception handler should be used to handle exceptions dropped while handling or running a
+slash or a component command. Defaults to `True`.
+
+The default slasher exception handler forwards `SlashCommandError`-s' prettified error messages. These exceptions
+are raised meanwhile looking up, or validating slash command parameters. If any other exception occurs, it will forward
+a random not related error message, and call `client.events.error`.
 
 ## Adding commands & responding
 

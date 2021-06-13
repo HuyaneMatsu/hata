@@ -12473,7 +12473,7 @@ class Client(ClientUserPBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        content, embed = validate_content_and_embed(content, embed, False, True)
+        content, embed = validate_content_and_embed(content, embed, True, True)
         
         components = get_components_data(components, True)
         
@@ -12485,9 +12485,9 @@ class Client(ClientUserPBase):
         
         if (embed is not ...):
             if (embed is not None):
-                embed = embed.to_data()
+                embed = [embed.to_data() for embed in embed]
             
-            message_data['embed'] = embed
+            message_data['embeds'] = embed
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
@@ -12499,6 +12499,7 @@ class Client(ClientUserPBase):
             'data': message_data,
             'type': InteractionResponseTypes.component_message_edit,
         }
+        
         
         with InteractionResponseContext(interaction, False, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)

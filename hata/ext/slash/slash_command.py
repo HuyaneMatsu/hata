@@ -19,7 +19,7 @@ from .responding import process_command_coroutine
 from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlashCommandWrapper, get_parameter_configurers
-from .converters import get_slash_command_parameter_converters
+from .converters import get_slash_command_parameter_converters, InternalParameterConverter
 from .exceptions import SlashCommandParameterConversionError
 
 # Routers
@@ -1268,9 +1268,13 @@ class SlashCommandFunction:
                 parameter_relation[option.name] = option.value
         
         for parameter_converter in self._parameter_converters:
-            value = parameter_relation.get(parameter_converter.name, None)
+            if isinstance(parameter_converter, InternalParameterConverter):
+                value = None
+            else:
+                value = parameter_relation.get(parameter_converter.name, None)
             
             parameter = await parameter_converter(client, interaction_event, value)
+            
             parameters.append(parameter)
         
         command_coroutine = self._command(*parameters)

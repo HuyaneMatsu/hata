@@ -1,6 +1,11 @@
 __all__ = ('ComponentCommand', )
 
-from re import Pattern
+try:
+    # CPython
+    from re import Pattern
+except ImportError:
+    # ChadPython (PyPy)
+    from re import _pattern_type as Pattern
 
 from ...discord.limits import COMPONENT_CUSTOM_ID_LENGTH_MAX
 from ...discord.events.handling_helpers import route_value, Router, create_event_from_class

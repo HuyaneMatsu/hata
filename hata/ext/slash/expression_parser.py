@@ -159,7 +159,7 @@ TOKEN_NAMES = {
     TOKEN_GROUP_FUNCTION_CALL : 'function call',
 }
 
-TWO_SIDE_OPERATORS = frozenset((
+TWO_SIDE_OPERATORS_ONLY = frozenset((
     OPERATION_BINARY_AND_ID,
     OPERATION_LEFT_SHIFT_ID,
     OPERATION_RIGHT_SHIFT_ID,
@@ -172,15 +172,19 @@ TWO_SIDE_OPERATORS = frozenset((
     OPERATION_POWER_ID,
 ))
 
+TWO_SIDE_OPERATORS = frozenset((
+    *TWO_SIDE_OPERATORS_ONLY,
+    OPERATION_ADD_ID,
+    OPERATION_SUBTRACTION_ID,
+))
+
 TWO_SIDE_OPERATORS_AND_PARENTHESES_END = frozenset((
-    *TWO_SIDE_OPERATORS,
+    *TWO_SIDE_OPERATORS_ONLY,
     OPERATION_PARENTHESES_END_ID,
 ))
 
 PREFIX_OPERATORS = frozenset((
-    OPERATION_ADD_ID,
     OPERATION_NEGATE_ID,
-    OPERATION_SUBTRACTION_ID,
     OPERATION_POSITIVATE_ID,
     OPERATION_INVERT_ID,
 ))
@@ -212,7 +216,7 @@ CANT_FOLLOW_FUNCTION = frozenset((
 ))
 
 CANT_START = frozenset((
-    *TWO_SIDE_OPERATORS,
+    *TWO_SIDE_OPERATORS_ONLY,
     OPERATION_PARENTHESES_END_ID,
 ))
 
@@ -289,6 +293,35 @@ OPERATION_TWO_SIDED_BINARY = frozenset((
     OPERATION_BINARY_XOR_ID,
 ))
 
+MERGEABLE_PREFIXES = {
+    (OPERATION_POSITIVATE_ID, OPERATION_NEGATE_ID): OPERATION_NEGATE_ID,
+    (OPERATION_ADD_ID, OPERATION_NEGATE_ID): OPERATION_NEGATE_ID,
+    
+    (OPERATION_NEGATE_ID, OPERATION_POSITIVATE_ID): OPERATION_NEGATE_ID,
+    (OPERATION_SUBTRACTION_ID, OPERATION_POSITIVATE_ID): OPERATION_NEGATE_ID,
+    
+    (OPERATION_POSITIVATE_ID, OPERATION_POSITIVATE_ID): OPERATION_POSITIVATE_ID,
+    (OPERATION_ADD_ID, OPERATION_POSITIVATE_ID): OPERATION_POSITIVATE_ID,
+    
+    (OPERATION_NEGATE_ID, OPERATION_NEGATE_ID): OPERATION_POSITIVATE_ID,
+    (OPERATION_SUBTRACTION_ID, OPERATION_NEGATE_ID): OPERATION_POSITIVATE_ID,
+    
+    (OPERATION_INVERT_ID, OPERATION_INVERT_ID): OPERATION_POSITIVATE_ID,
+}
+
+PREFIX_TRANSFER = {
+    OPERATION_ADD_ID: OPERATION_POSITIVATE_ID,
+    OPERATION_SUBTRACTION_ID: OPERATION_NEGATE_ID,
+    OPERATION_INVERT_ID: OPERATION_INVERT_ID,
+}
+
+PREFIXABLE = {
+    OPERATION_POSITIVATE_ID,
+    OPERATION_NEGATE_ID,
+    OPERATION_INVERT_ID,
+    OPERATION_ADD_ID,
+    OPERATION_SUBTRACTION_ID,
+}
 
 def get_numeric_postfix_multiplier(array, start, end):
     """
@@ -635,26 +668,20 @@ EVALUATORS = {
     VARIABLE_IDENTIFIER: evaluate_identifier,
 }
 
-
-OPERATION_PREFIXABLE = frozenset((
+CAN_EXECUTE_PREFIX_PATTERN_1 = frozenset((
+    STATIC_NONE_ID,
     OPERATION_ADD_ID,
     OPERATION_NEGATE_ID,
     OPERATION_SUBTRACTION_ID,
     OPERATION_INVERT_ID,
     OPERATION_POSITIVATE_ID,
-))
-
-CAN_EXECUTE_PREFIX_PATTERN_1 = frozenset((
-    STATIC_NONE_ID,
-    *OPERATION_PREFIXABLE,
     *TWO_SIDE_OPERATORS,
 ))
-
-CAN_EXECUTE_PREFIX_PATTERN_2 = OPERATION_PREFIXABLE
 
 CAN_EXECUTE_PREFIX_PATTERN_3 = frozenset((
     *VARIABLES,
     VARIABLE_EVALUATED,
+    *PREFIXABLE,
 ))
 
 
@@ -774,59 +801,52 @@ def evaluate_prefix_operation_invert(token_1, token_2):
 
 
 EVALUATE_1_SIDED_OPERATION = {
-    OPERATION_ADD_ID: evaluate_prefix_operation_positivate,
     OPERATION_NEGATE_ID: evaluate_prefix_operation_negate,
-    OPERATION_SUBTRACTION_ID: evaluate_prefix_operation_negate,
     OPERATION_INVERT_ID: evaluate_prefix_operation_invert,
     OPERATION_POSITIVATE_ID: evaluate_prefix_operation_positivate,
 }
 
 
-CAN_EXECUTE_POWER = frozenset((
-    OPERATION_POWER_ID,
-))
-
-CAN_EXECUTE_MULTIPLICATION_PATTERN_MIDDLE = frozenset((
+CAN_EXECUTE_MULTIPLICATION = frozenset((
     OPERATION_TRUE_DIVISION_ID,
     OPERATION_FULL_DIVISION_ID,
     OPERATION_MULTIPLY_ID,
     OPERATION_REMAINDER_ID,
 ))
 
-CAN_EXECUTE_ADDITION_PATTERN_MIDDLE = frozenset((
+CAN_EXECUTE_ADDITION = frozenset((
     OPERATION_ADD_ID,
     OPERATION_SUBTRACTION_ID,
 ))
 
-CAN_EXECUTE_SHIFT_PATTERN_MIDDLE = frozenset((
+CAN_EXECUTE_SHIFT_PATTERN = frozenset((
     OPERATION_LEFT_SHIFT_ID,
     OPERATION_RIGHT_SHIFT_ID,
 ))
 
 
-CAN_EXECUTE_BINARY_AND_PATTERN_MIDDLE = frozenset((
+CAN_EXECUTE_BINARY_AND = frozenset((
     OPERATION_BINARY_AND_ID,
 ))
 
 
-CAN_EXECUTE_BINARY_XOR_MIDDLE = frozenset((
+CAN_EXECUTE_BINARY_XOR = frozenset((
     OPERATION_BINARY_XOR_ID,
 ))
 
 
-CAN_EXECUTE_BINARY_OR_MIDDLE = frozenset((
+CAN_EXECUTE_BINARY_OR = frozenset((
     OPERATION_BINARY_OR_ID,
 ))
 
 
 CAN_EXECUTE_TWO_SIDED_ORDERED = (
-    CAN_EXECUTE_POWER,
-    CAN_EXECUTE_MULTIPLICATION_PATTERN_MIDDLE,
-    CAN_EXECUTE_ADDITION_PATTERN_MIDDLE,
-    CAN_EXECUTE_SHIFT_PATTERN_MIDDLE,
-    CAN_EXECUTE_BINARY_AND_PATTERN_MIDDLE,
-    CAN_EXECUTE_BINARY_XOR_MIDDLE,
-    CAN_EXECUTE_BINARY_OR_MIDDLE,
+    CAN_EXECUTE_MULTIPLICATION,
+    CAN_EXECUTE_ADDITION,
+    CAN_EXECUTE_SHIFT_PATTERN,
+    CAN_EXECUTE_BINARY_AND,
+    CAN_EXECUTE_BINARY_XOR,
+    CAN_EXECUTE_BINARY_OR,
 )
 
 
@@ -1230,7 +1250,6 @@ EVALUATE_2_SIDED_OPERATION = {
     OPERATION_BINARY_AND_ID: evaluate_2_sided_binary_and,
     OPERATION_BINARY_XOR_ID: evaluate_2_sided_binary_xor,
     OPERATION_BINARY_OR_ID: evaluate_2_sided_binary_or,
-    OPERATION_POWER_ID: evaluate_2_sided_power,
 }
 
 
@@ -2528,6 +2547,91 @@ def check_followance(state):
         continue
 
 
+def create_prefixes(tokens):
+    """
+    Modifies non-prefix operators to prefix iff applicable.
+    
+    Parameters
+    ----------
+    tokens : `list` of ``Token``
+        The tokens to iterate trough.
+    """
+    for index in range(len(tokens)-1):
+        token = tokens[index]
+        try:
+            new_token_id = PREFIX_TRANSFER[token.id]
+        except KeyError:
+            continue
+        
+        if tokens[index+1].id not in CAN_EXECUTE_PREFIX_PATTERN_3:
+            continue
+        
+        if index:
+            if tokens[index-1].id not in CAN_EXECUTE_PREFIX_PATTERN_1:
+                continue
+        
+        token.id = new_token_id
+        continue
+
+def merge_prefixes(tokens):
+    """
+    Merges repeated prefixes if applicable.
+    
+    Parameters
+    ----------
+    tokens : `list` of ``Token``
+        The tokens to iterate trough.
+    """
+    for index in reversed(range(1, len(tokens)-1)):
+        token = tokens[index]
+        token_id = token.id
+        if token_id not in PREFIX_OPERATORS:
+            continue
+        
+        before_token = tokens[index-1]
+        before_token_id = before_token.id
+        
+        if before_token_id not in PREFIXABLE:
+            continue
+        
+        try:
+            new_token_id = MERGEABLE_PREFIXES[(before_token_id, token_id)]
+        except KeyError:
+            continue
+        
+        new_token = Token(token.array, token.start, token.end, new_token_id, None, None)
+        tokens[index-1] = new_token
+        del tokens[index]
+
+def remove_unused_prefixes(tokens):
+    """
+    Removes unused prefixes if applicable.
+    
+    Parameters
+    ----------
+    tokens : `list` of ``Token``
+        The tokens to iterate trough.
+    """
+    for index in reversed(range(len(tokens)-1)):
+        if tokens[index].id == OPERATION_POSITIVATE_ID:
+            del tokens[index]
+
+
+def build_prefixes(state):
+    """
+    Builds prefix operations, optimises and removes unused ones.
+    
+    Parameters
+    ----------
+    state : ``ParsingState``
+        The parsing state to use it's tokens of.
+    """
+    tokens = state.tokens
+    create_prefixes(tokens)
+    merge_prefixes(tokens)
+    remove_unused_prefixes(tokens)
+
+
 def evaluate_prefix_operations(tokens):
     """
     Evaluates prefix operations.
@@ -2537,24 +2641,68 @@ def evaluate_prefix_operations(tokens):
     tokens : `list` of ``Token``
         Tokens to evaluate.
     """
-    for index in reversed(range(1, len(tokens))):
+    for index in reversed(range(0, len(tokens)-1)):
         token = tokens[index]
         token_id = token.id
-        if token_id not in CAN_EXECUTE_PREFIX_PATTERN_3:
+        try:
+            evaluator = EVALUATE_1_SIDED_OPERATION[token_id]
+        except KeyError:
             continue
         
-        operation_token = tokens[index-1]
-        if operation_token.id not in CAN_EXECUTE_PREFIX_PATTERN_2:
+        token = evaluator(token, tokens[index+1])
+        tokens[index] = token
+        del tokens[index+1]
+        continue
+
+
+def evaluate_powered_prefix(tokens):
+    """
+    Evaluates prefix operations only before power values.
+    
+    Parameters
+    ----------
+    tokens : `list` of ``Token``
+        Tokens to evaluate.
+    """
+    for index in reversed(range(1, len(tokens)-2)):
+        if tokens[index].id != OPERATION_POWER_ID:
             continue
         
-        if (index != 1):
-            if tokens[index-2].id not in CAN_EXECUTE_PREFIX_PATTERN_1:
-                continue
+        token = tokens[index+1]
+        token_id = token.id
         
-        token = EVALUATE_1_SIDED_OPERATION[operation_token.id](operation_token, token)
-        del tokens[index]
+        try:
+            evaluator = EVALUATE_1_SIDED_OPERATION[token_id]
+        except KeyError:
+            continue
+        
+        token = evaluator(token, tokens[index+2])
+        tokens[index+1] = token
+        del tokens[index+2]
+        continue
+
+
+def evaluate_power(tokens):
+    """
+    Evaluates power operations on the given tokens.
+    
+    Parameters
+    ----------
+    tokens : `list` of ``Token``
+        Tokens to evaluate.
+    """
+    limit = len(tokens)-1
+    index = 1
+    while index < limit:
+        token = tokens[index]
+        if token.id != OPERATION_POWER_ID:
+            index += 1
+            continue
+        
+        token = evaluate_2_sided_power(tokens[index-1], token, tokens[index+1])
         tokens[index-1] = token
-        
+        del tokens[index:index+2]
+        limit -= 2
         continue
 
 
@@ -2588,10 +2736,8 @@ def evaluate_two_sided_operations(tokens):
             limit -= 2
             continue
         
-        if limit == 0:
+        if limit < 3:
             break
-    
-    return tokens[0]
 
 
 def evaluate_function_call(token):
@@ -2615,9 +2761,9 @@ def evaluate_function_call(token):
     """
     sub_tokens = token.sub_tokens
     if len(sub_tokens) > 1:
-        sub_token = evaluate_tokens(sub_tokens)
-    else:
-        sub_token = sub_tokens[0]
+        evaluate_tokens(sub_tokens)
+    
+    sub_token = sub_tokens[0]
     
     function, validity_checker = token.value
     value = sub_token.value
@@ -2633,6 +2779,25 @@ def evaluate_function_call(token):
         ) from None
     
     return Token(token.array, token.start, token.end, VARIABLE_EVALUATED, None, value)
+
+
+def evaluate_parentheses(token):
+    """
+    Evaluates parentheses.
+    
+    Parameters
+    ----------
+    token : ``Token``
+    
+    Returns
+    -------
+    new_token : ``Token``
+        The final evaluated token.
+    """
+    new_token = evaluate_tokens(token.sub_tokens)
+    new_token.start = token.start
+    new_token.end = token.end
+    return new_token
 
 
 def evaluate_tokens(tokens):
@@ -2653,13 +2818,15 @@ def evaluate_tokens(tokens):
         token = tokens[index]
         token_id = token.id
         if token_id == TOKEN_GROUP_PARENTHESES:
-            tokens[index] = evaluate_tokens(token.sub_tokens)
+            tokens[index] = evaluate_parentheses(token)
             continue
         
         if token_id == TOKEN_GROUP_FUNCTION_CALL:
             tokens[index] = evaluate_function_call(token)
             continue
     
+    evaluate_powered_prefix(tokens)
+    evaluate_power(tokens)
     evaluate_prefix_operations(tokens)
     evaluate_two_sided_operations(tokens)
     return tokens[0]
@@ -2689,6 +2856,8 @@ def evaluate_text(text):
     remove_space(state)
     check_followance(state)
     check_parentheses(state)
+    build_prefixes(state)
     build_parentheses(state)
+    
     token = evaluate_tokens(state.tokens)
     return token.value

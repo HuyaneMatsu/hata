@@ -2,12 +2,18 @@
 
 #### Improvements
 
+- Add `typer.__await__`. (Zeref Draganeel#3581)
+
 ##### hata.ext.slash
 - Add regex based matching for `ComponentCommand`-s.
 
 #### Bug Fixes
 
 - `Client.interaction_component_message_edit` was not sending embeds.
+
+##### hata.ext.slash
+- Parentheses evaluated by `evaluate_text` had wrong start and end index set.
+- Prefix operations had higher priority than power in `evaluate_text`.
 
 ## 1.1.85 *\[2021-06-11\]*
 

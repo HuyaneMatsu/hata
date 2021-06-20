@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 import sys, zlib
 from time import time as time_now, perf_counter
 from collections import deque

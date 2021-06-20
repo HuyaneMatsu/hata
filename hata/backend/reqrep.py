@@ -304,7 +304,7 @@ class ClientRequest:
             The url to request.
         headers : `None`, `dict` or ``imultidict``
             Headers of the request.
-        data : `None`, `bytes-like`, `io-like`, ``FormData`
+        data : `None`, `bytes-like`, `io-like`, ``Formdata`
             Data to send as the request's body.
         params : `dict` of (`str`, (`str`, `int`, `float`, `bool`)) items
             Query string parameters.

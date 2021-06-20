@@ -45,10 +45,6 @@ class MessageApplication(DiscordEntity):
         self.id = int(data['id'])
         self.name = data['name']
     
-    icon_url = property(module_urls.application_icon_url)
-    icon_url_as = module_urls.application_icon_url_as
-    cover_url = property(module_urls.application_cover_url)
-    cover_url_as = module_urls.application_cover_url_as
     
     def __repr__(self):
         """Returns the representation of the message application."""

@@ -1094,7 +1094,7 @@ def parse_annotation_internal(annotation):
     Returns
     -------
     annotation_type : `int` or `None`
-        The parsed annotation type. Returns `None` if teh annotation type not refers to an internal type.
+        The parsed annotation type. Returns `None` if the annotation type not refers to an internal type.
     """
     if isinstance(annotation, type):
         if issubclass(annotation, Client):

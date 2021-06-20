@@ -37,8 +37,8 @@ NUMERIC_CONVERSION_LIMIT = 100
 
 CONTENT_ARGUMENT_PARSERS = {}
 
-DEFAULT_ARGUMENT_SEPARATOR = ('"', '"')
-DEFAULT_ARGUMENT_ASSIGNER = ':'
+DEFAULT_PARAMETER_SEPARATOR = ('"', '"')
+DEFAULT_PARAMETER_ASSIGNER = ':'
 
 
 class ContentParameterParserContextBase:
@@ -232,7 +232,7 @@ class ContentParameterParser:
             - If `assigner`'s length is not `1`.
         """
         if separator is None:
-            separator = DEFAULT_ARGUMENT_SEPARATOR
+            separator = DEFAULT_PARAMETER_SEPARATOR
             separator_type = type(separator)
         else:
             separator_type = type(separator)
@@ -288,7 +288,7 @@ class ContentParameterParser:
                 separator = tuple(processed_separator)
         
         if assigner is None:
-            assigner = DEFAULT_ARGUMENT_ASSIGNER
+            assigner = DEFAULT_PARAMETER_ASSIGNER
         else:
             assigner_type = type(assigner)
             if assigner_type is str:
@@ -309,19 +309,19 @@ class ContentParameterParser:
         assigner_escaped = re.escape(assigner)
         if separator_type is str:
             escaped_separator = re.escape(separator)
-            rp = re.compile(f'[{escaped_separator}\s]*((?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s*)?(.+?))\s*(?:$|[{escaped_separator})]+)', re.M|re.S)
+            rp = re.compile(f'[{escaped_separator}\s]*((?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(.+?))\s*(?:$|[{escaped_separator})]+)', re.M|re.S)
             
             context_class = ContentParameterParserContextSeparator
         else:
             start, end = separator
             if start == end:
                 escaped_separator = re.escape(start)
-                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s*)?(?:(?:{escaped_separator}(.+?)(?:$|{escaped_separator}))|(?:(.+?)(?:$|[{escaped_separator}\s]+)))', re.M|re.S)
+                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(?:(?:{escaped_separator}(.+?)(?:$|{escaped_separator}))|(?:(.+?)(?:$|[{escaped_separator}\s]+)))', re.M|re.S)
             
             else:
                 separator_start_escaped = re.escape(start)
                 separator_end_escaped = re.escape(end)
-                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s*)?(?:(?:{separator_start_escaped}(.+?)(?:$|{separator_end_escaped}))|(?:(.+?)(?:$|[{separator_start_escaped}\s]+)))', re.M|re.S)
+                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(?:(?:{separator_start_escaped}(.+?)(?:$|{separator_end_escaped}))|(?:(.+?)(?:$|[{separator_start_escaped}\s]+)))', re.M|re.S)
             
             context_class = ContentParameterParserContextEncapsulator
         
@@ -379,7 +379,7 @@ class ContentParameterParser:
         return True
 
 
-DEFAULT_SEPARATOR = ContentParameterParser(DEFAULT_ARGUMENT_SEPARATOR, DEFAULT_ARGUMENT_ASSIGNER)
+DEFAULT_SEPARATOR = ContentParameterParser(DEFAULT_PARAMETER_SEPARATOR, DEFAULT_PARAMETER_ASSIGNER)
 
 
 def parse_user_mention(part, message):
@@ -2197,6 +2197,7 @@ class CommandContentParser:
                 if (parameter_parsing_state is not None):
                     rest = parse_rest_content(content, index)
                     parameter_parsing_state.add_parsed_value(rest, None)
+                
                 break
             
             keyword, part, index = content_parameter_parser(content, index)

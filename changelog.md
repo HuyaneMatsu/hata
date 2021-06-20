@@ -1,8 +1,46 @@
-## 1.1.85 *\[2021-06-??\]*
+## 1.1.85 *\[2021-06-20\]*
+
+#### Summary
+
+Add sticker related endpoints and such.
 
 #### Improvements
 
 - Add `typer.__await__`. (Zeref Draganeel#3581)
+- Add `GuildProfile.avatar`.
+- Add `UserBase.avatar_url_for`.
+- Add `UserBase.avatar_url_for_as`.
+- Add `UserBase.avatar_url_at`.
+- Add `UserBase.avatar_url_at_as`.
+- Add `StickerType.standard`.
+- Add `StickerType.guild`.
+- Add `Sticker.guild_id`.
+- Add `Sticker.user`.
+- Add `STICKERS`.
+- Add `STICKER_PACKS`.
+- Stickers are now cached.
+- Add `Sticker._update_no_return`.
+- Add `Sticker._update`.
+- `Sticker.tags` are now use `frozsenset` + `None` (from `list` + `None`).
+- Add `RATE_LIMIT_GROUPS.sticker_guild_get_all`.
+- Add `DiscordHTTPClient.sticker_guild_get_all`.
+- Add `ERROR_CODES.unknown_sticker`.
+- Add `RATE_LIMIT_GROUPS.sticker_pack_get_all`.
+- Add `DiscordHTTPClient.sticker_pack_get_all`.
+- Add `RATE_LIMIT_GROUPS.sticker_guild_get`.
+- Add `DiscordHTTPClient.sticker_guild_get`.
+- Add `RATE_LIMIT_GROUPS.sticker_guild_create`.
+- Add `DiscordHTTPClient.sticker_guild_create`.
+- Add `StickerPack`.
+- Add `ERROR_CODES.invalid_asset`.
+- Add `ERROR_CODES.max_thread_participants`.
+- Add `ERROR_CODES.message_has_thread`.
+- Add `ERROR_CODES.thread_locked`.
+- Add `ERROR_CODES.max_active_threads`.
+- Add `ERROR_CODES.max_active_announcement_threads`.
+- Add `ChannelText.default_auto_archive_after`.
+- `ChannelThread.auto_archive_duration` is now in seconds to match everything else.
+- Add `ERROR_CODES.max_guild_members`.
 
 ##### hata.ext.slash
 - Add regex based matching for `ComponentCommand`-s.
@@ -10,10 +48,15 @@
 #### Bug Fixes
 
 - `Client.interaction_component_message_edit` was not sending embeds.
+- `Emoji._create_partial` always set `animated` as `True`.
 
 ##### hata.ext.slash
 - Parentheses evaluated by `evaluate_text` had wrong start and end index set.
 - Prefix operations had higher priority than power in `evaluate_text`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `ERROR_CODES.team_users_must_be_verified` to `team_members_must_be_verified`.
 
 ## 1.1.85 *\[2021-06-11\]*
 
@@ -87,6 +130,9 @@ Fix up components in slash.
 - Message edition with `InteractionResponse` was not working as intended.
 
 #### Renames, Deprecation & Removals
+
+- Remove `ChannelThread.archiver_id`.
+- Remove `ChannelThread.archiver`.
 
 ##### hata.ext.slash
 - Deprecate `InteractionResponse`'s `force_new_message` parameter.

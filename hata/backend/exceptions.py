@@ -130,7 +130,7 @@ class ConnectionClosed(Exception):
         1013: 'Try again later',
         1014: 'Bad gateway',
         1015: 'TLS failure [internal]',
-            }
+    }
 
     @classmethod
     def _get_close_reason(cls, code):

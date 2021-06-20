@@ -25,7 +25,7 @@ class PaginationBase:
     
     Attributes
     ----------
-    _canceller : `None` or `function`
+    _canceller : `None` or `Function`
         The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     
@@ -122,7 +122,8 @@ class PaginationBase:
         
         self._task_flag = GUI_STATE_CANCELLED
         
-        await self._handle_close_exception(exception)
+        if not await self._handle_close_exception(exception):
+            await client.events.error(client, f'{self!r}._canceller_function', exception)
     
     
     async def _handle_close_exception(self, exception):
@@ -142,7 +143,7 @@ class PaginationBase:
             Whether the exception was handled.
         """
         if exception is None:
-            return
+            return True
         
         client = self.client
         message = self.message
@@ -151,9 +152,10 @@ class PaginationBase:
             try:
                 await client.message_delete(message)
             except BaseException as err:
+                
                 if isinstance(err, ConnectionError):
                     # no internet
-                    return
+                    return True
                 
                 if isinstance(err, DiscordException):
                     if err.code in (
@@ -161,9 +163,9 @@ class PaginationBase:
                             ERROR_CODES.unknown_message, # message deleted
                             ERROR_CODES.missing_access, # client removed
                                 ):
-                        return
+                        return True
                 
-                await client.events.error(client, f'{self!r}.close', err)
+                await client.events.error(client, f'{self!r}._handle_close_exception', err)
             
             return True
         
@@ -175,7 +177,7 @@ class PaginationBase:
                     
                     if isinstance(err, ConnectionError):
                         # no internet
-                        return
+                        return True
                     
                     if isinstance(err, DiscordException):
                         if err.code in (
@@ -184,9 +186,9 @@ class PaginationBase:
                                 ERROR_CODES.missing_access, # client removed
                                 ERROR_CODES.missing_permissions, # permissions changed meanwhile
                                     ):
-                            return
+                            return True
                     
-                    await client.events.error(client, f'{self!r}._canceller_function', err)
+                    await client.events.error(client, f'{self!r}._handle_close_exception', err)
             
             return True
         
@@ -194,7 +196,7 @@ class PaginationBase:
             return True
         
         return False
-        
+    
     
     def cancel(self, exception=None):
         """
@@ -204,6 +206,10 @@ class PaginationBase:
         ----------
         exception : `None` or ``BaseException`` instance, Optional
             Exception to cancel the pagination with. Defaults to `None`
+        
+        Returns
+        -------
+        canceller_task : `None` or ``Task``
         """
         if self._task_flag in (GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING):
             self._task_flag = GUI_STATE_CANCELLED

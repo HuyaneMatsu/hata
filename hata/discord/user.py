@@ -16,6 +16,7 @@ from .activity import create_activity, ActivityRich, ActivityCustom
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag
 from .preinstanced import Status, DefaultAvatar
+from .bases.entity import Slotted
 
 from . import urls as module_urls
 
@@ -146,7 +147,7 @@ def create_partial_user_from_id(user_id):
     return User._create_empty(user_id)
 
 
-class GuildProfile:
+class GuildProfile(metaclass=Slotted):
     """
     Represents a user's profile at a guild.
     
@@ -166,8 +167,14 @@ class GuildProfile:
         The user's roles at the guild.
         
         Feel free to use `.sort()` on it.
+    avatar_hash : `int`
+        The respective user's avatar hash at the guild in `uint128`.
+    avatar_type : `bool`
+        The respective user's avatar type at the guild.
     """
     __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'roles',)
+    
+    avatar = IconSlot('avatar', 'avatar', None, None)
     
     @property
     def created_at(self):
@@ -263,6 +270,8 @@ class GuildProfile:
         self.boosts_since = boosts_since
         
         self.pending = data.get('pending', None)
+        
+        self._set_avatar(data)
     
     def _update(self, data):
         """
@@ -285,6 +294,8 @@ class GuildProfile:
         +-------------------+-------------------------------+
         | Keys              | Values                        |
         +===================+===============================+
+        | avatar            | ``Icon``                      |
+        +-------------------+-------------------------------+
         | boosts_since      | `None` or `datetime`          |
         +-------------------+-------------------------------+
         | nick              | `None` or `str`               |
@@ -342,6 +353,8 @@ class GuildProfile:
             old_attributes['pending'] = self.pending
             self.pending = pending
         
+        self._update_avatar(data, old_attributes)
+        
         return old_attributes
     
     def get_top_role(self, default=None):
@@ -363,6 +376,7 @@ class GuildProfile:
         
         roles.sort()
         return roles[-1]
+    
     
     @property
     def color(self):
@@ -636,9 +650,9 @@ class UserBase(DiscordEntity, immortal=True):
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
-        The client's avatar's hash in `uint128`.
+        The user's avatar's hash in `uint128`.
     avatar_type : `bool`
-        The client's avatar's type.
+        The user's avatar's type.
     
     Notes
     -----
@@ -1111,7 +1125,11 @@ class UserBase(DiscordEntity, immortal=True):
         has_higher_role_than_at : `bool`
         """
         return False
-
+    
+    avatar_url_for = property(module_urls.user_avatar_url_for)
+    avatar_url_for_as = module_urls.user_avatar_url_for_as
+    avatar_url_at = property(module_urls.user_avatar_url_at)
+    avatar_url_at_as = module_urls.user_avatar_url_at_as
 
 class ClientUserBase(UserBase):
     """

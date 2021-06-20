@@ -269,6 +269,35 @@ def preconvert_preinstanced_type(value, name, type_):
     
     return value
 
+def _pre_validate_int(value, name):
+    """
+    Converts the given `value` to `int`.
+
+    Parameters
+    ----------
+    value : `Any`
+        The value to convert.
+    name : `str`
+        The name of the value.
+    
+    Returns
+    -------
+    value : `int`
+    
+    Raises
+    ------
+    TypeError
+        If `value` was not given as `int` instance.
+    """
+    if type(value) is int:
+        pass
+    elif isinstance(value, int):
+        value = int(value)
+    else:
+        raise TypeError(f'`{name}` can be `int` instance, got {value.__class__.__name__}.')
+
+    return value
+
 def preconvert_int(value, name, lower_limit, upper_limit):
     """
     Converts the given `value` to an acceptable integer by the wrapper.
@@ -295,14 +324,41 @@ def preconvert_int(value, name, lower_limit, upper_limit):
     ValueError
         If `value` is less than `lower_limit`, or is higher than the `upper_limit`.
     """
-    if type(value) is int:
-        pass
-    elif isinstance(value, int):
-        value = int(value)
-    else:
-        raise TypeError(f'`{name}` can be `int` instance, got {value.__class__.__name__}.')
+    value = _pre_validate_int(value, name)
     
     if value < lower_limit or value > upper_limit:
         raise ValueError(f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.')
+    
+    return value
+
+
+def preconvert_int_options(value, name, options):
+    """
+    Converts the given `value` to an acceptable integer by the wrapper.
+    
+    Parameters
+    ----------
+    value : `Any`
+        The value to convert.
+    name : `str`
+        The name of the value.
+    options : `frozenset`
+        The options, from which `value` should be one.
+    
+    Returns
+    -------
+    value : `int`
+    
+    Raises
+    ------
+    TypeError
+        If `value` was not given as `int` instance.
+    ValueError
+        If `value` is less than `lower_limit`, or is higher than the `upper_limit`.
+    """
+    value = _pre_validate_int(value, name)
+    
+    if value not in options:
+        raise ValueError(f'`{name}` can be any of: {", ".join(options)}, got {value!r}.')
     
     return value

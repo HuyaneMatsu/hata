@@ -2774,6 +2774,42 @@ class RATE_LIMIT_GROUPS:
         - Limit : `1000`
         - Resets after : `86400.0`
     
+    - sticker_guild_get_all
+        - Endpoint : `/guilds/{guild_id}/stickers`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Forbidden (403), code=50001: Missing Access
+    
+    - sticker_guild_create
+        - Endpoint : `/guilds/{guild_id}/stickers`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Forbidden (403), code=50001: Missing Access
+    
+    - sticker_guild_delete
+        - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
+        - Method : `POST`
+        - Required auth : `bot`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Forbidden (403), code=50001: Missing Access
+    
+    - sticker_guild_get
+        - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UN`
+        - Limit : `UN`
+        - Resets after : `UN`
+        - Notes : Forbidden (403), code=50001: Missing Access
+    
     - vanity_invite_get
         - Endpoint : `/guilds/{guild_id}/vanity-url`
         - Method : `GET`
@@ -2946,6 +2982,14 @@ class RATE_LIMIT_GROUPS:
         - Limiter : `GLOBAL`
         - Limit : `5`
         - Resets after : `60.0`
+    
+    - sticker_pack_get_all
+        - Endpoint : `/sticker-packs`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `UNLIMITED`
+        - Limit : `N/A`
+        - Resets after : `N/A`
     
     - eula_get
         - Endpoint : `/store/eulas/{eula_id}`
@@ -3399,6 +3443,10 @@ class RATE_LIMIT_GROUPS:
     role_create = RateLimitGroup(LIMITER_GUILD)
     role_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     role_edit = RateLimitGroup(LIMITER_GUILD)
+    sticker_guild_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
+    sticker_guild_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
+    sticker_guild_create = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
+    sticker_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
     vanity_invite_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
     vanity_invite_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True) # untested
     voice_state_client_edit = RateLimitGroup()

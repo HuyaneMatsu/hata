@@ -24,11 +24,11 @@ from .user import User, ZEROUSER, create_partial_user_from_id, thread_user_creat
 from .core import GC_CYCLER
 from .webhook import Webhook, WebhookRepr
 from .preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
-    preconvert_preinstanced_type
+    preconvert_preinstanced_type, preconvert_int_options
 from .utils import DATETIME_FORMAT_CODE, parse_time
 from .exceptions import DiscordException, ERROR_CODES
 from .preinstanced import VoiceRegion, VideoQualityMode
-from .limits import CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES
+from .limits import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 from . import urls as module_urls
 
@@ -36,6 +36,7 @@ Client = include('Client')
 Guild = include('Guild')
 
 TURN_MESSAGE_LIMITING_ON = WeakSet()
+
 
 def turn_message_limiting_on(cycler):
     """
@@ -2093,6 +2094,9 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
+    default_auto_archive_after : `int`
+        The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
+        to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
     slowmode : `int`
@@ -2115,7 +2119,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     MESSAGE_KEEP_LIMIT : `int` = `10`
         The default amount of messages to store at `.messages`.
     """
-    __slots__ = ('nsfw', 'slowmode', 'topic', 'type',) # guild text channel related
+    __slots__ = ('default_auto_archive_after', 'nsfw', 'slowmode', 'topic', 'type',) # guild text channel related
     
     ORDER_GROUP = 0
     INTERCHANGE = (0, 5,)
@@ -2157,7 +2161,18 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         
         self.topic = data.get('topic', None)
         self.nsfw = data.get('nsfw', False)
-        self.slowmode = int(data.get('rate_limit_per_user', 0))
+        
+        slowmode = data.get('rate_limit_per_user', None)
+        if slowmode is None:
+            slowmode = 0
+        self.slowmode = slowmode
+        
+        default_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_auto_archive_after is None:
+            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_auto_archive_after *= 60
+        self.default_auto_archive_after = default_auto_archive_after
         
         return self
     
@@ -2190,6 +2205,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         self = super(ChannelText, cls)._create_empty(channel_id, channel_type, partial_guild)
         self._messageable_init()
         
+        self.default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
         self.nsfw = False
         self.slowmode = 0
         self.topic = None
@@ -2214,8 +2230,18 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         self.type = data['type']
         self.topic = data.get('topic', None)
         self.nsfw = data.get('nsfw', False)
-        self.slowmode = int(data.get('rate_limit_per_user', 0))
-    
+        
+        slowmode = data.get('rate_limit_per_user', None)
+        if slowmode is None:
+            slowmode = 0
+        self.slowmode = slowmode
+        
+        default_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_auto_archive_after is None:
+            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_auto_archive_after *= 60
+        self.default_auto_archive_after = default_auto_archive_after
     
     def _update(self, data):
         """
@@ -2234,25 +2260,27 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | parent        | ``ChannelCategory``               |
-        +---------------+-----------------------------------+
-        | name          | `str`                             |
-        +---------------+-----------------------------------+
-        | nsfw          | `bool`                            |
-        +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite`` |
-        +---------------+-----------------------------------+
-        | position      | `int`                             |
-        +---------------+-----------------------------------+
-        | slowmode      | `int`                             |
-        +---------------+-----------------------------------+
-        | topic         | `None` or `str`                   |
-        +---------------+-----------------------------------+
-        | type          | `int`                             |
-        +---------------+-----------------------------------+
+        +-------------------------------+-----------------------------------+
+        | Keys                          | Values                            |
+        +===============================+===================================+
+        | default_auto_archive_after    | `int`                             |
+        +-------------------------------+-----------------------------------+
+        | parent                        | ``ChannelCategory``               |
+        +-------------------------------+-----------------------------------+
+        | name                          | `str`                             |
+        +-------------------------------+-----------------------------------+
+        | nsfw                          | `bool`                            |
+        +-------------------------------+-----------------------------------+
+        | overwrites                    | `list` of ``PermissionOverwrite`` |
+        +-------------------------------+-----------------------------------+
+        | position                      | `int`                             |
+        +-------------------------------+-----------------------------------+
+        | slowmode                      | `int`                             |
+        +-------------------------------+-----------------------------------+
+        | topic                         | `None` or `str`                   |
+        +-------------------------------+-----------------------------------+
+        | type                          | `int`                             |
+        +-------------------------------+-----------------------------------+
         """
         self._cache_perm = None
         old_attributes = {}
@@ -2277,10 +2305,21 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             old_attributes['nsfw'] = self.nsfw
             self.nsfw = nsfw
         
-        slowmode = int(data.get('rate_limit_per_user', 0))
+        slowmode = data.get('rate_limit_per_user', None)
+        if slowmode is None:
+            slowmode = 0
         if self.slowmode != slowmode:
             old_attributes['slowmode'] = self.slowmode
             self.slowmode = slowmode
+        
+        default_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_auto_archive_after is None:
+            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_auto_archive_after *= 60
+        if self.default_auto_archive_after != default_auto_archive_after:
+            old_attributes['default_auto_archive_after'] = self.default_auto_archive_after
+            self.default_auto_archive_after = default_auto_archive_after
         
         overwrites = self._parse_overwrites(data)
         if self.overwrites != overwrites:
@@ -2378,6 +2417,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         
         Other Parameters
         ----------------
+        default_auto_archive_after : `int`, Optional (Keyword only)
+            The channel's ``.default_auto_archive_after``.
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
         topic : `None` or `str`, Optional (Keyword only)
@@ -2430,6 +2471,15 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             else:
                 slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
                 processable.append(('slowmode', slowmode))
+            
+            try:
+                default_auto_archive_after = kwargs.pop('default_auto_archive_duration')
+            except KeyError:
+                pass
+            else:
+                default_auto_archive_after = preconvert_int_options(default_auto_archive_after,
+                    'default_auto_archive_after', AUTO_ARCHIVE_OPTIONS)
+                processable.append(('default_auto_archive_after', default_auto_archive_after))
             
             try:
                 type_ = kwargs.pop('type')
@@ -3984,11 +4034,9 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         Whether the thread s archived.
     archived_at : `None` or `datetime`
         When the thread's archive status was last changed.
-    archiver_id : `int`
-        The (un)archiver's identifier number.
     auto_archive_after : `int`
-        Duration in minutes to automatically archive the thread after recent activity. Can be one of: `60`, `1440`,
-        `4320`, `10080`.
+        Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
+        `259200`, `604800`.
     open : `bool`
         Whether the thread channel is open.
     slowmode : `int`
@@ -4015,7 +4063,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     REPRESENTED_TYPES : `tuple` = (`10`, `11`, `12`,)
         The type values which ``ChannelThread`` might represent.
     """
-    __slots__ = ('archived', 'archived_at', 'archiver_id', 'auto_archive_after', 'open', 'owner_id', 'slowmode',
+    __slots__ = ('archived', 'archived_at', 'auto_archive_after', 'open', 'owner_id', 'slowmode',
         'thread_users', 'type')
     
     DEFAULT_TYPE = 12
@@ -4108,24 +4156,6 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         return owner
     
-    @property
-    def archiver(self):
-        """
-        Returns who (un)archived the thread last.
-        
-        Returns
-        -------
-        owner : `None` or ``UserClientBase``
-            Defaults to `None`.
-        """
-        archiver_id = self.archiver_id
-        if archiver_id:
-            archiver = create_partial_user_from_id(archiver_id)
-        else:
-            archiver = None
-        
-        return archiver
-    
     def is_announcements(self):
         """
         Returns whether the thread channel is bound to an announcements channel.
@@ -4195,8 +4225,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         self.archived = False
         self.archived_at = None
-        self.archiver_id = 0
-        self.auto_archive_after = 60
+        self.auto_archive_after = AUTO_ARCHIVE_DEFAULT
         self.open = False
         self.owner_id = 0
         self.slowmode = 0
@@ -4231,22 +4260,18 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     @copy_docs(ChannelBase._update_no_return)
     def _update_no_return(self, data):
         self.name = data['name']
-        self.slowmode = int(data.get('rate_limit_per_user', 0))
+        slowmode = data.get('rate_limit_per_user', None)
+        if slowmode is None:
+            slowmode = 0
+        self.slowmode = slowmode
         
         # Move to sub data
         data = data['thread_metadata']
         
         self.archived = data.get('archived', False)
         
-        archiver_id = data.get('archiver_id', None)
-        if archiver_id is None:
-            archiver_id = 0
-        else:
-            archiver_id = int(archiver_id)
         
-        self.archiver_id = archiver_id
-        
-        self.auto_archive_after = data['auto_archive_after']
+        self.auto_archive_after = data['auto_archive_duration']*60
         
         archived_at_data = data.get('archive_timestamp', None)
         if archived_at_data is None:
@@ -4282,8 +4307,6 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         +-----------------------+-----------------------------------+
         | archived_at           | `None` or `datetime`              |
         +-----------------------+-----------------------------------+
-        | archiver_id           | `int`                             |
-        +-----------------------+-----------------------------------+
         | auto_archive_after    | `int`                             |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
@@ -4300,7 +4323,9 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             old_attributes['name'] = self.name
             self.name = name
         
-        slowmode = int(data.get('rate_limit_per_user', 0))
+        slowmode = data.get('rate_limit_per_user', None)
+        if slowmode is None:
+            slowmode = 0
         if self.slowmode != slowmode:
             old_attributes['slowmode'] = self.slowmode
             self.slowmode = slowmode
@@ -4316,17 +4341,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             self.archived = archived
         
         
-        archiver_id = data.get('archiver_id', None)
-        if archiver_id is None:
-            archiver_id = 0
-        else:
-            archiver_id = int(archiver_id)
-        if (self.archiver_id != archiver_id):
-            old_attributes['archiver_id'] = self.archiver_id
-            self.archiver_id = archiver_id
-        
-        
-        auto_archive_after = data['auto_archive_after']
+        auto_archive_after = data['auto_archive_duration']*60
         if (self.auto_archive_after != auto_archive_after):
             old_attributes['auto_archive_after'] = self.auto_archive_after
             self.auto_archive_after = auto_archive_after
@@ -4416,6 +4431,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         Other Parameters
         ----------------
+        auto_archive_after: `int`, Optional (Keyword only)
+            The channel's ``.auto_archive_after``.
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
         slowmode : `int`, Optional (Keyword only)
@@ -4447,6 +4464,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
                 name = preconvert_str(value, 'name', 2, 100)
                 processable.append(('name', name))
             
+            
             try:
                 slowmode = kwargs.pop('slowmode')
             except KeyError:
@@ -4454,6 +4472,17 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             else:
                 slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
                 processable.append(('slowmode', slowmode))
+            
+            
+            try:
+                auto_archive_after = kwargs.pop('auto_archive_after')
+            except KeyError:
+                pass
+            else:
+                auto_archive_after = preconvert_int_options(auto_archive_after, 'auto_archive_after',
+                    AUTO_ARCHIVE_OPTIONS)
+                processable.append(('auto_archive_after', auto_archive_after))
+            
             
             try:
                 type_ = kwargs.pop('type')
@@ -5242,7 +5271,7 @@ CHANNEL_THREAD_NAMES = {
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
         user_limit=None, region=None, video_quality_mode=None, archived=None, archived_at=None,
-        auto_archive_after=None, open_=None, parent=None, category=None, guild=None):
+        auto_archive_after=None, open_=None, default_auto_archive_after=None, parent=None, category=None, guild=None):
     """
     Creates a json serializable object representing a ``GuildChannelBase`` instance.
     
@@ -5274,10 +5303,13 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     archived_at : `None` or `datetime`, Optional (Keyword only)
         When the thread's archive status was last changed.
     auto_archive_after : `None` or `int`, Optional (Keyword only)
-        Duration in minutes to automatically archive the thread after recent activity. Can be one of: `60`, `1440`,
-        `4320`, `10080`.
+        Duration in minutes to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
+        `259200`, `604800`.
     open_ : `bool`, Optional (Keyword only)
         Whether the thread channel is open.
+    default_auto_archive_after : `None` or `int`
+        The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
+        one of: `3600`, `86400`, `259200`, `604800`.
     parent : `None`, ``ChannelCategory`` or `int`, Optional (Keyword only)
         The channel's parent. If the parent is under a guild, leave it empty.
     category : `None`, ``ChannelCategory`` or `int`, Optional (Keyword only)
@@ -5326,9 +5358,12 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `archived_at` was given, but not as `None` or `datetime` instance.
         - If `auto_archive_after` was given, but the respective channel's type is not ``ChannelThread``.
         - If `auto_archive_after` was given, but not as `None` or `int` instance.
-        - If `auto_archive_after` was ot given neither as `60`, `1440`, `4320`, `10080`.
+        - If `auto_archive_after` is not any of the expected values.
         - If `open_` was given meanwhile the respective channel type is not ``ChannelThread``.
         - If `open_` was given, but not as `None` or `bool` instance.
+        - If `default_auto_archive_after` was given as non `None`, but the respective channel type is not `ChannelText`.
+        - If `default_auto_archive_after` was not given neither as `None` or `int` instance.
+        - If `default_auto_archive_after` is not any of the expected values.
     """
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
@@ -5550,11 +5585,28 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
                 raise AssertionError(f'`auto_archive_after` can be given as `None` or as `datetime` instance, got '
                     f'{auto_archive_after.__class__.__name__}.')
             
-            if auto_archive_after not in CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES:
+            if auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
                 raise AssertionError(f'`auto_archive_after` can be any of: '
-                    f'{CHANNEL_THREAD_AUTO_ARCHIVE_AFTER_VALUES}, got {auto_archive_after}.')
+                    f'{AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after}.')
         
-        channel_data['auto_archive_after'] = auto_archive_after
+        channel_data['auto_archive_duration'] = auto_archive_after//60
+    
+    
+    if (default_auto_archive_after is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelText):
+                raise AssertionError(f'`default_auto_archive_after` is a valid parameter only for `{ChannelText.__name__}` '
+                    f'instances, but got {channel_type.__name__}.')
+            
+            if not isinstance(default_auto_archive_after, int):
+                raise AssertionError(f'`default_auto_archive_after` can be given as `None` or as `datetime` instance, got '
+                    f'{default_auto_archive_after.__class__.__name__}.')
+            
+            if default_auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
+                raise AssertionError(f'`default_auto_archive_after` can be any of: '
+                    f'{AUTO_ARCHIVE_OPTIONS}, got {default_auto_archive_after}.')
+        
+        channel_data['default_auto_archive_duration'] = default_auto_archive_after//60
     
     
     if (open_ is not None):

@@ -529,6 +529,10 @@ class StickerType(PreinstancedBase):
     +=======================+===========+=======+
     | none                  | none      | 0     |
     +-----------------------+-----------+-------+
+    | standard              | standard  | 1     |
+    +-----------------------+-----------+-------+
+    | guild                 | guild     | 2     |
+    +-----------------------+-----------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -538,3 +542,5 @@ class StickerType(PreinstancedBase):
     
     # predefined
     none = P(0, 'none')
+    standard = P(1, 'standard')
+    guild = P(2, 'guild')

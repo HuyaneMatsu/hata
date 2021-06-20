@@ -2329,7 +2329,7 @@ class Slasher(EventHandlerBase):
     
     def error(self, exception_handler):
         """
-        Registers an exception handler to teh slasher.
+        Registers an exception handler to the slasher.
         
         Parameters
         ----------

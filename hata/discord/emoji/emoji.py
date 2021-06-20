@@ -532,7 +532,7 @@ class Emoji(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = emoji_id
-            self.animated = (animated is not None)
+            self.animated = animated
             self.name = name
             self.unicode = None
             self.guild = None

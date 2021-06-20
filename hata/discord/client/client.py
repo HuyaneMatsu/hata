@@ -61,8 +61,8 @@ from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext
 from ..color import Color
-from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
-    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, AUTO_ARCHIVE_DEFAULT, \
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, AUTO_ARCHIVE_OPTIONS
 from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
@@ -7923,7 +7923,7 @@ class Client(ClientUserPBase):
     
     # Thread
     
-    async def thread_create(self, message, name):
+    async def thread_create(self, message, name, *, auto_archive_after=None):
         """
         Creates a new thread derived from the given message.
         
@@ -7937,6 +7937,8 @@ class Client(ClientUserPBase):
             > If given as a channel instance, will create a private thread, else a public one.
         name : `str`
             The created thread's name.
+        auto_archive_after : `None` or `int`, Optional (Keyword only)
+            The duration in seconds after the thread auto archives. Can be any of `3600`, `86400`, `259200`, `604800`.
         
         Returns
         -------
@@ -7953,7 +7955,8 @@ class Client(ClientUserPBase):
         AssertionError
             - If `name` is not `str` instance.
             - If `name`'s length is out of range [2:100].
-            - If `public` was not given nas `bool` instance.
+            - If `auto_archive_after` is neither `int`, nor `bool` instance.
+            - If `auto_archive_after` is not any of the expected ones.
         """
         # Message check order
         # 1.: Message
@@ -7967,8 +7970,9 @@ class Client(ClientUserPBase):
         
         if isinstance(message, ChannelTextBase):
             message_id = None
-            channel_id = message.id
-            guild = message.guild
+            channel = message
+            channel_id = channel.id
+            guild = channel.guild
         elif isinstance(message, Message):
             message_id = message.id
             channel = message.channel
@@ -7978,6 +7982,7 @@ class Client(ClientUserPBase):
             channel_id = maybe_snowflake(message)
             if (channel_id is not None):
                 message_id = None
+                channel = CHANNELS.get(channel_id)
                 guild = None
             elif isinstance(message, MessageRepr):
                 message_id = message.id
@@ -7986,6 +7991,7 @@ class Client(ClientUserPBase):
                 guild = channel.id
             elif isinstance(message, MessageReference):
                 channel_id = message.channel_id
+                channel = CHANNELS.get(channel_id)
                 message_id = message.message_id
                 guild = message.guild
             else:
@@ -7996,6 +8002,7 @@ class Client(ClientUserPBase):
                         f'got {message.__class__.__name__}.')
                 
                 channel_id, message_id = snowflake_pair
+                channel = CHANNELS.get(channel_id)
                 guild = None
         
         if __debug__:
@@ -8004,21 +8011,38 @@ class Client(ClientUserPBase):
             
             name_length = len(name)
             
-            if name_length < 2 or name_length > 100:
+            if (name_length) < 2 or (name_length > 100):
                 raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
         
         if __debug__:
             if not isinstance(public, bool):
                 raise TypeError(f'`public can be given as `bool` instance, got {public.__class__.__name__}.')
         
+        
+        if auto_archive_after is None:
+            if channel is None:
+                auto_archive_after = AUTO_ARCHIVE_DEFAULT
+            else:
+                auto_archive_after = channel.default_auto_archive_after
+        else:
+            if __debug__:
+                if not isinstance(auto_archive_after, int):
+                    raise AssertionError(f'`auto_archive_after` can be given as `None` or as `datetime` instance, got '
+                        f'{auto_archive_after.__class__.__name__}.')
+                
+                if auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
+                    raise AssertionError(f'`auto_archive_after` can be any of: '
+                        f'{AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after}.')
+        
         data = {
             'name': name,
+            'auto_archive_duration': auto_archive_after,
         }
         
-        if public:
-            coroutine = self.http.thread_create_pulic(channel_id, message_id, data)
-        else:
+        if message_id is None:
             coroutine = self.http.thread_create_private(channel_id, data)
+        else:
+            coroutine = self.http.thread_create_pulic(channel_id, message_id, data)
         
         channel_data = await coroutine
         if guild is None:
@@ -14244,31 +14268,29 @@ class Client(ClientUserPBase):
         Returns
         -------
         old_attributes : `dict` of (`str`, `Any`) items
-            All item in the returned dict is optional.
-        
-        Returned Data Structure
-        -----------------------
-        +-----------------------+-------------------+
-        | Keys                  | Values            |
-        +=======================+===================+
-        | avatar                | ``Icon``          |
-        +-----------------------+-------------------+
-        | discriminator         | `int`             |
-        +-----------------------+-------------------+
-        | email                 | `None` or `str`   |
-        +-----------------------+-------------------+
-        | flags                 | ``UserFlag``      |
-        +-----------------------+-------------------+
-        | locale                | `str              |
-        +-----------------------+-------------------+
-        | mfa                   | `bool`            |
-        +-----------------------+-------------------+
-        | name                  | `str              |
-        +-----------------------+-------------------+
-        | premium_type          | ``PremiumType``   |
-        +-----------------------+-------------------+
-        | verified              | `bool`            |
-        +-----------------------+-------------------+
+            All item in the returned dictionary is optional.
+            
+            +-----------------------+-------------------+
+            | Keys                  | Values            |
+            +=======================+===================+
+            | avatar                | ``Icon``          |
+            +-----------------------+-------------------+
+            | discriminator         | `int`             |
+            +-----------------------+-------------------+
+            | email                 | `None` or `str`   |
+            +-----------------------+-------------------+
+            | flags                 | ``UserFlag``      |
+            +-----------------------+-------------------+
+            | locale                | `str              |
+            +-----------------------+-------------------+
+            | mfa                   | `bool`            |
+            +-----------------------+-------------------+
+            | name                  | `str              |
+            +-----------------------+-------------------+
+            | premium_type          | ``PremiumType``   |
+            +-----------------------+-------------------+
+            | verified              | `bool`            |
+            +-----------------------+-------------------+
         """
         old_attributes = ClientUserPBase._update(self, data)
         

@@ -430,7 +430,7 @@ class IconSlot:
                 if (type(icon_type) is not IconType):
                     raise TypeError(f'`{icon_type_name}` can be passed as `{IconType.__name__}` instance, got '
                         f'{icon_type.__class__.__name__}.')
-            
+                
                 if (icon_type is ICON_TYPE_NONE) and icon_hash:
                     raise ValueError(f'If `{icon_type_name}` is passed as `ICON_TYPE_NONE`, then `{icon_hash_name}` '
                         f'can be passed only as `0`, meanwhile got `{icon_hash}`.')

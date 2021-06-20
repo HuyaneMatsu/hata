@@ -1,4 +1,4 @@
-__all__ = ('iter_component_interactions', 'wait_for_component_interaction',)
+__all__ = ('Timeouter', 'iter_component_interactions', 'wait_for_component_interaction',)
 
 from collections import deque
 

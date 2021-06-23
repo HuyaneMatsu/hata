@@ -1811,3 +1811,10 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers/{sticker_id}',
         )
+    
+    async def sticker_get(self, sticker_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/stickers/{sticker_id}',
+        )

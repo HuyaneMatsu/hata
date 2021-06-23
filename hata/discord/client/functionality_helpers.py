@@ -987,3 +987,49 @@ async def request_thread_channels(client, guild, channel_id, request_function):
         data = {'before': before}
     
     return thread_channels
+
+
+class ForceUpdateCache:
+    """
+    Cache for static `force_update` endpoints.
+    
+    Attributes
+    ----------
+    synced : `bool`
+        Whether the cache was synced already.
+    value : `Any`
+        The cached value.
+    """
+    __slots__ = ('synced', 'value')
+    
+    def __new__(cls):
+        """
+        Creates a new ``ForceUpdateCache`` instance.
+        """
+        self = object.__new__(cls)
+        self.synced = False
+        self.value = None
+        return self
+    
+    def __repr__(self):
+        """Returns the cache's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        if self.synced:
+            repr_parts.append(' value=')
+            repr_parts.append(repr(self.value))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+    
+    def set(self, value):
+        """
+        Sets value to the cache and marks it as synced.
+        
+        Parameters
+        ----------
+        value : `Any`
+            The cached value.
+        """
+        self.value = value
+        self.synced = True

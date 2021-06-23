@@ -643,6 +643,8 @@ class UserBase(DiscordEntity, immortal=True):
     """
     Base class for user instances.
     
+    Attributes
+    ----------
     id : `int`
         The client's unique identifier number.
     name : str
@@ -1130,6 +1132,7 @@ class UserBase(DiscordEntity, immortal=True):
     avatar_url_for_as = module_urls.user_avatar_url_for_as
     avatar_url_at = property(module_urls.user_avatar_url_at)
     avatar_url_at_as = module_urls.user_avatar_url_at_as
+
 
 class ClientUserBase(UserBase):
     """

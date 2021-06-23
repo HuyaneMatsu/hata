@@ -1,6 +1,6 @@
-__all__ = ('Sticker', 'StickerPack')
+__all__ = ('Sticker', )
 
-from ..core import STICKERS, STICKER_PACKS
+from ..core import STICKERS
 from ..bases import DiscordEntity
 from ..user import ZEROUSER, User
 from .. import urls as module_urls
@@ -108,7 +108,7 @@ class Sticker(DiscordEntity, immortal=True):
     
     def _update(self, data):
         """
-        Updates the sticker with teh given data and returns the changed attributes in `attribute-name` - `old-value`
+        Updates the sticker with the given data and returns the changed attributes in `attribute-name` - `old-value`
         relation.
         
         Parameters
@@ -233,58 +233,3 @@ class Sticker(DiscordEntity, immortal=True):
                 return True
         
         return False
-
-
-class StickerPack(DiscordEntity, immortal=True):
-    """
-    A sticker's pack.
-    
-    Attributes
-    ----------
-    id : `int`
-        The sticker pack's identifier.
-    banner_id : `int`
-        The banner asset identifier of the sticker pack.
-    cover_sticker_id : `int`
-        The sticker's identifier, which the pack uses as it's banner.
-    description : `str`
-        The pack's description.
-    sku_id : `int`
-        The Stock Keeping Unit identifier of the sticker pack.
-    stickers : `frozenset` of ``Sticker``
-        The stickers of the pack.
-    name : `str`
-        The name of the sticker pack.
-    """
-    __slots__ = ('banner_id', 'cover_sticker_id', 'description', 'stickers', 'sku_id', 'name')
-    
-    def __new__(cls, data):
-        """
-        Creates a new ``StickerPack`` from the received data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            sticker-pack data.
-        """
-        sticker_pack_id = int(data['id'])
-        
-        try:
-            self = STICKER_PACKS[sticker_pack_id]
-        except KeyError:
-            self = object.__new__(cls)
-            self.id = sticker_pack_id
-            
-            self.name = data['name']
-            self.sku_id = int(data['sku_id'])
-            self.cover_sticker_id = int(data['cover_sticker_id'])
-            self.banner_id = int(data['banner_asset_id'])
-            self.description = data['description']
-            
-            self.stickers = frozenset(Sticker(sticker_data) for sticker_data in data['stickers'])
-        
-        return self
-    
-    def __repr__(self):
-        """Returns the sticker pack's representation."""
-        return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'

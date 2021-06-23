@@ -2991,6 +2991,14 @@ class RATE_LIMIT_GROUPS:
         - Limit : `N/A`
         - Resets after : `N/A`
     
+    - sticker_get
+        - Endpoint : `/stickers/{sticker_id}`
+        - Method : `GET`
+        - Required auth : `bot`
+        - Limiter : `GLOBAL`
+        - Limit : `5`
+        - Resets after : `2.0`
+    
     - eula_get
         - Endpoint : `/store/eulas/{eula_id}`
         - Method : `GET`
@@ -3467,6 +3475,8 @@ class RATE_LIMIT_GROUPS:
     stage_get = RateLimitGroup()
     stage_delete = RateLimitGroup()
     stage_edit = RateLimitGroup()
+    sticker_pack_get_all = RateLimitGroup.unlimited()
+    sticker_get = RateLimitGroup.unlimited()
     eula_get = RateLimitGroup(optimistic=True)
     user_info_get = RateLimitGroup(optimistic=True)
     client_user_get = RateLimitGroup(optimistic=True)

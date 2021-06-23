@@ -16,6 +16,7 @@ from ..webhook import WebhookRepr, create_partial_webhook_from_id, WebhookType, 
 from ..role import Role
 from ..preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
     preconvert_preinstanced_type
+from ..sticker import Sticker
 
 from .. import urls as module_urls
 
@@ -26,7 +27,6 @@ from .attachment import Attachment
 from .message_application import MessageApplication
 from .message_interaction import MessageInteraction
 from .message_reference import MessageReference
-from .sticker import Sticker
 from .flags import MessageFlag
 from .preinstanced import MessageType
 

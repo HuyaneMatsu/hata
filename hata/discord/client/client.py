@@ -40,7 +40,8 @@ from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
 from ..audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
 from ..invite import Invite
-from ..message import Message, MessageRepr, MessageReference, Attachment, Sticker, MessageFlag
+from ..message import Message, MessageRepr, MessageReference, Attachment, MessageFlag
+from ..sticker import Sticker, StickerPack
 from ..message.utils import try_resolve_interaction_message
 from ..oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
@@ -70,13 +71,13 @@ from ..bases import maybe_snowflake, maybe_snowflake_pair
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
     _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task, \
-    request_thread_channels
+    request_thread_channels, ForceUpdateCache
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
-    get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id
+    get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id
 from .utils import UserGuildPermission, Typer, BanEntry
 
 
@@ -84,8 +85,9 @@ _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
 
-AUTO_CLIENT_ID_LIMIT = (1<<22)
+AUTO_CLIENT_ID_LIMIT = 1<<22
 
+STICKER_PACK_CACHE = ForceUpdateCache()
 
 @export
 class Client(ClientUserPBase):
@@ -3319,7 +3321,7 @@ class Client(ClientUserPBase):
                 channel_id, message_id = snowflake_pair
                 channel = CHANNELS.get(channel_id, None)
         
-        content, embed = validate_content_and_embed(content, embed, False, False)
+        content, embed = validate_content_and_embed(content, embed, False)
         
         # Sticker check order:
         # 1.: None -> None
@@ -3382,7 +3384,7 @@ class Client(ClientUserPBase):
             contains_content = True
         
         if (embed is not None):
-            message_data['embed'] = embed.to_data()
+            message_data['embeds'] = [embed.to_data() for embed in embed]
             contains_content = True
         
         if (sticker_ids is not None):
@@ -4393,7 +4395,7 @@ class Client(ClientUserPBase):
         """
         channel_id, message_id = get_channel_id_and_message_id(message)
         
-        content, embed = validate_content_and_embed(content, embed, False, True)
+        content, embed = validate_content_and_embed(content, embed, True)
         
         components = get_components_data(components, True)
         
@@ -4409,7 +4411,7 @@ class Client(ClientUserPBase):
         
         if (embed is not ...):
             if (embed is not None):
-                embed = embed.to_data()
+                embed = [embed.to_data() for embed in embed]
             
             message_data['embed'] = embed
         
@@ -8349,7 +8351,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `user_id` was not given as `int` instance.
+            If `user` was not given as ``ClientUserBase``, nor as `int` instance.
         """
         user, user_id = get_user_and_id(user)
         
@@ -9435,7 +9437,7 @@ class Client(ClientUserPBase):
         return webhook
     
     async def webhook_message_create(self, webhook, content=None, *, embed=None, file=None, allowed_mentions=...,
-            tts=False, name=None, avatar_url=None, thread=None, wait=False):
+            components=None, tts=False, name=None, avatar_url=None, thread=None, wait=False):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
         returns `None`.
@@ -9462,6 +9464,11 @@ class Client(ClientUserPBase):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
         tts : `bool`, Optional (Keyword only)
             Whether the message is text-to-speech.
         name : `str`, Optional (Keyword only)
@@ -9487,6 +9494,7 @@ class Client(ClientUserPBase):
             - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `thread` was not given either as `None`, ``ChannelThread`` nor as `int` instance.
+            - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` files would be sent.
@@ -9522,7 +9530,9 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`thread` can be given as `None`, `{ChannelThread.__name__}`, or as `int` instance, '
                     f'got {thread.__class__.__name__}.')
         
-        content, embed = validate_content_and_embed(content, embed, True, False)
+        content, embed = validate_content_and_embed(content, embed, False)
+        
+        components = get_components_data(components, False)
         
         if __debug__:
             if not isinstance(tts, bool):
@@ -9544,6 +9554,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not None):
+            message_data['components'] = components
         
         if tts:
             message_data['tts'] = True
@@ -9605,7 +9618,8 @@ class Client(ClientUserPBase):
         return channel._create_new_message(message_data)
     
     
-    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=None, allowed_mentions=...):
+    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=None, allowed_mentions=...,
+            components=None):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.
         
@@ -9633,6 +9647,9 @@ class Client(ClientUserPBase):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
+        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
+                ``ComponentBase``), Optional (Keyword only)
+            Components attached to the message.
         
         Raises
         ------
@@ -9644,6 +9661,7 @@ class Client(ClientUserPBase):
             - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
                 giving any content to it as well.
             - `message` was not given neither as ``Message``, ``MessageRepr``  or `int` instance.
+            - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
             - If more than `10` file would be sent.
@@ -9698,7 +9716,9 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
                     f'`int` instance, got {message.__class__.__name__}`.')
         
-        content, embed = validate_content_and_embed(content, embed, True, True)
+        content, embed = validate_content_and_embed(content, embed, True)
+        
+        components = get_components_data(components, True)
         
         # Build payload
         message_data = {}
@@ -9715,6 +9735,9 @@ class Client(ClientUserPBase):
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
+        
+        if (components is not ...):
+            message_data['components'] = components
         
         message_data = add_file_to_message_data(message_data, file, True)
         
@@ -10156,7 +10179,7 @@ class Client(ClientUserPBase):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        if guild is None or guild.partial:
+        if (guild is None) or guild.partial:
             invite_data = await self.http.vanity_invite_get(guild_id)
             vanity_code = invite_data['code']
         else:
@@ -10206,6 +10229,7 @@ class Client(ClientUserPBase):
                     f'{vanity_code.__class__.__name__}.')
         
         await self.http.vanity_invite_edit(guild_id, {'code': vanity_code}, reason)
+    
     
     async def invite_create(self, channel, *, max_age=0, max_uses=0, unique=True, temporary=False):
         """
@@ -10691,6 +10715,7 @@ class Client(ClientUserPBase):
         
         invite_datas = await self.http.invite_get_all_channel(channel_id)
         return [Invite(invite_data, False) for invite_data in invite_datas]
+    
     
     async def invite_delete(self, invite, *, reason=None):
         """
@@ -12236,7 +12261,7 @@ class Client(ClientUserPBase):
             return await self.interaction_followup_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions, tts=tts)
         
-        content, embed = validate_content_and_embed(content, embed, True, False)
+        content, embed = validate_content_and_embed(content, embed, False)
         
         components = get_components_data(components, False)
         
@@ -12420,7 +12445,7 @@ class Client(ClientUserPBase):
             return await self.interaction_response_message_create(interaction, content, embed=embed,
                 allowed_mentions=allowed_mentions)
         
-        content, embed = validate_content_and_embed(content, embed, True, True)
+        content, embed = validate_content_and_embed(content, embed, True)
         
         components = get_components_data(components, True)
         
@@ -12497,7 +12522,7 @@ class Client(ClientUserPBase):
                 raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
                     f'{interaction.__class__.__name__}.')
         
-        content, embed = validate_content_and_embed(content, embed, True, True)
+        content, embed = validate_content_and_embed(content, embed, True)
         
         components = get_components_data(components, True)
         
@@ -12696,7 +12721,7 @@ class Client(ClientUserPBase):
             if application_id == 0:
                 raise AssertionError('The client\'s application is not yet synced.')
         
-        content, embed = validate_content_and_embed(content, embed, True, False)
+        content, embed = validate_content_and_embed(content, embed, False)
         
         components = get_components_data(components, False)
         
@@ -12839,7 +12864,7 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
                     f'`int` instance, got {message.__class__.__name__}`.')
         
-        content, embed = validate_content_and_embed(content, embed, True, True)
+        content, embed = validate_content_and_embed(content, embed, True)
         
         components = get_components_data(components, True)
         
@@ -12928,6 +12953,90 @@ class Client(ClientUserPBase):
         await self.http.interaction_followup_message_delete(application_id, interaction.id, interaction.token, message_id)
     
     
+    # Sticker
+    
+    async def sticker_get(self, sticker, force_update=False):
+        """
+        Gets an sticker by it's id. If the sticker is already loaded updates it.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        sticker : ``Sticker`` or `int`
+            The sticker, who will be requested.
+        force_update : `bool`
+            Whether the sticker should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        sticker : ``Sticker``
+        
+        Raises
+        ------
+        TypeError
+            If `sticker` was not given neither as ``Sticker``, neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Raises
+        ------
+        TypeError
+            If `sticker` was not given as ``Sticker``, nor as `int` instance.
+        """
+        sticker, sticker_id = get_sticker_and_id(sticker)
+        if not force_update:
+            return sticker
+        
+        data = await self.http.sticker_get(sticker_id)
+        if sticker is None:
+            sticker = Sticker(data)
+        else:
+            sticker._update_no_return(data)
+        
+        return sticker
+    
+    
+    async def sticker_pack_get_all(self, force_update=False):
+        """
+        Gets the sticker packs. If the sticker-packs are already loaded, updates them.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        force_update : `bool`
+            Whether the sticker-packs should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        sticker_packs : `list` of ``StickerPack``
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        if force_update or (not STICKER_PACK_CACHE.synced):
+            data = await self.http.sticker_pack_get_all()
+            sticker_pack_datas = data['sticker_packs'] # Discord pls.
+            if force_update:
+                sticker_packs = [StickerPack._create_and_update(sticker_pack_data) for sticker_pack_data in
+                    sticker_pack_datas]
+            else:
+                sticker_packs = [StickerPack(sticker_pack_data) for sticker_pack_data in sticker_pack_datas]
+            
+            STICKER_PACK_CACHE.set(sticker_packs)
+        else:
+            sticker_packs = STICKER_PACK_CACHE.value
+        
+        return sticker_packs
+    
+    
     # Relationship related
     
     async def relationship_delete(self, relationship):
@@ -12966,6 +13075,7 @@ class Client(ClientUserPBase):
                     f'`{Client.__name__}` or as `int` instance, got {relationship.__class__.__name__}.')
         
         await self.http.relationship_delete(user_id)
+    
     
     async def relationship_create(self, user, relationship_type=None):
         """

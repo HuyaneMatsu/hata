@@ -31,6 +31,7 @@ setup(
         'hata.discord.message',
         'hata.discord.permission',
         'hata.discord.role',
+        'hata.discord.sticker',
         'hata.ext',
         'hata.ext.asyncio',
         'hata.ext.command_utils',

@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+__all__ = ()
+
 from collections import deque
 
 from ..backend.utils import WeakReferer

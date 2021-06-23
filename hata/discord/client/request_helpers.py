@@ -6,7 +6,7 @@ from ...backend.utils import to_json
 from ...backend.export import include
 from ...backend.formdata import Formdata
 
-from ..core import MESSAGES, CHANNELS, GUILDS, USERS
+from ..core import MESSAGES, CHANNELS, GUILDS, USERS, STICKERS
 from ..message import Message, MessageReference, MessageRepr
 from ..user import ClientUserBase
 from ..channel import ChannelText, ChannelStage
@@ -19,6 +19,8 @@ from ..role import Role
 from ..stage import Stage
 from ..webhook import Webhook
 from ..emoji import Emoji, parse_reaction
+from ..sticker import Sticker
+
 
 ComponentBase = include('ComponentBase')
 ComponentType = include('ComponentType')
@@ -303,7 +305,7 @@ def add_file_to_message_data(message_data, file, contains_content):
     return message_data
 
 
-def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edit):
+def validate_content_and_embed(content, embed, is_edit):
     """
     Validates the given content and embed fields of a message creation or edition.
     
@@ -319,9 +321,6 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
         
         > If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
         raised.
-    is_multiple_embed_allowed : `bool`
-        Whether sending multiple embeds is allowed. If given as `True`, the returned `embed`-s will be a `list` or
-        `tuple`.
     is_edit : `bool`
         Whether the processed `content` and `embed` fields are for message edition. At this case passing `None` will
         remove them.
@@ -355,8 +354,7 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
             embed = None
     
     elif isinstance(embed, EmbedBase):
-        if is_multiple_embed_allowed:
-            embed = [embed]
+        embed = [embed]
     
     elif isinstance(embed, (list, tuple)):
         if embed:
@@ -366,10 +364,7 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
                         raise AssertionError(f'`embed` was given as a `list` or `tuple`, but it\'s it contains a non '
                             f'`{EmbedBase.__name__}` instance element, got {embed_element.__class__.__name__}.')
             
-            if is_multiple_embed_allowed:
-                embed = embed[:10]
-            else:
-                embed = embed[0]
+            embed = embed[:10]
         else:
             embed = None
     
@@ -401,10 +396,7 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
             if (embed is not (... if is_edit else None)):
                 raise AssertionError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
         
-        if is_multiple_embed_allowed:
-            embed = [content]
-        else:
-            embed = content
+        embed = [content]
         
         if is_edit:
             content = ...
@@ -433,10 +425,7 @@ def validate_content_and_embed(content, embed, is_multiple_embed_allowed, is_edi
                 if (embed is not (... if is_edit else None)):
                     raise AssertionError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
             
-            if is_multiple_embed_allowed:
-                embed = content[:10]
-            else:
-                embed = content[0]
+            embed = content[:10]
             
             if is_edit:
                 content = ...
@@ -1280,3 +1269,46 @@ def get_guild_id_and_emoji_id(emoji):
                 f'{emoji.__class__.__name__}.')
     
     return snowflake_pair
+
+
+def get_sticker_and_id(sticker):
+    """
+    Gets sticker and it's identifier from the given sticker or of it's identifier.
+    
+    Parameters
+    ----------
+    sticker : ``Sticker``, `int`
+        The sticker, or it's identifier.
+    
+    Returns
+    -------
+    sticker : ``Sticker`` or `None`
+        The sticker if found.
+    sticker_id : `int`
+        The sticker's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `sticker`'s type is incorrect.
+    """
+    while True:
+        if isinstance(sticker, Sticker):
+            sticker_id = sticker.id
+            break
+        
+        sticker_id = maybe_snowflake(sticker)
+        if (sticker_id is not None):
+            try:
+                sticker = STICKERS[sticker_id]
+            except KeyError:
+                sticker = None
+                break
+            
+            if isinstance(sticker, Sticker):
+                break
+        
+        raise TypeError(f'`sticker` can be either given as `{Sticker.__name__}` or as `int` instance, '
+            f'got {sticker.__class__.__name__}.')
+        
+    return sticker, sticker_id

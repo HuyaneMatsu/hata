@@ -1,3 +1,31 @@
+## 1.1.87 *\[2021-06-??\]*
+
+#### Summary
+
+Separate sticker sources from message's. They can be guild bound as well.
+
+
+#### Improvements
+
+- Add `ERROR_CODES.name_contains_disallowed_word`.
+- Add `ERROR_CODES.stage_already_open`.
+- Add `InviteStage`.
+- Add `Invite.stage`.
+- Add `Guild.stickers`.
+- Add `Guild.get_sticker_like`.
+- Add `Guild.get_sticker`.
+- Add `Guild._update_stickers`.
+- Add `Guild._sync_stickers`.
+- `Guild.max_presences` now default to `0` if not received.
+- Add `DiscordHTTPClient.sticker_get`.
+- `Client.message_create` supports multiple embeds.
+- `Client.message_edit` supports multiple embeds.
+- Add `components` parameter to `Client.webhook_message_create`.
+- Add `components` parameter to `Client.webhook_message_edit`.
+- Add `Client.sticker_get`.
+- Add `StickerPack._set_attributes`.
+- Add `StickerPack._create_and_update`.
+
 ## 1.1.86 *\[2021-06-20\]*
 
 #### Summary

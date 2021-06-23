@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('Invite', )
 
 from datetime import datetime
@@ -53,6 +52,8 @@ class Invite(DiscordEntity, immortal=True):
         If the invite has no use limit, then this value is set as `0`.
     partial : `bool`
         Whether the invite is only partially loaded.
+    stage : `None` or ``InviteStage``
+        A invite stage instance representing the stage to which the invite is created to.
     target_type : ``InviteTargetType``
         The invite's target type.
     target_application : `None` or ``Application``
@@ -67,8 +68,8 @@ class Invite(DiscordEntity, immortal=True):
         The amount how much times the invite was used. If not included, set as `None`.
     """
     __slots__ = ('approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild',
-        'inviter', 'max_age', 'max_uses', 'partial', 'target_application', 'target_type', 'target_user', 'temporary',
-        'uses',)
+        'inviter', 'max_age', 'max_uses', 'partial', 'target_application', 'stage', 'target_type', 'target_user',
+        'temporary', 'uses',)
     
     def __new__(cls, data, data_partial):
         """
@@ -148,6 +149,7 @@ class Invite(DiscordEntity, immortal=True):
         self.target_user = ZEROUSER
         self.target_application = None
         self.partial = True
+        self.stage = None
         
         return self
     
@@ -275,6 +277,14 @@ class Invite(DiscordEntity, immortal=True):
             target_application = Application(target_application_data)
         
         self.target_application = target_application
+        
+        try:
+            invite_stage_data = data['stage_instance']
+        except KeyError:
+            invite_stage = None
+        else:
+            invite_stage = InviteStage(invite_stage_data, guild)
+        self.stage = invite_stage
     
     def _update_attributes(self, data):
         """
@@ -375,7 +385,14 @@ class Invite(DiscordEntity, immortal=True):
         else:
             self.target_application = Application(target_application_data)
         
-        
+        try:
+            invite_stage_data = data['stage_instance']
+        except KeyError:
+            pass
+        else:
+            self.invite_stage = InviteStage(invite_stage_data, guild)
+    
+    
     def _update_counts_only(self, data):
         """
         Updates the invite's counts if given.
@@ -562,6 +579,7 @@ class Invite(DiscordEntity, immortal=True):
             self.target_user = None
             self.target_user = ZEROUSER
             self.partial = True
+            self.stage = None
             
             INVITES[code] = self
         else:
@@ -573,3 +591,53 @@ class Invite(DiscordEntity, immortal=True):
                 setattr(self, *item)
         
         return self
+
+
+class InviteStage:
+    """
+    Represents an invite's stage.
+    
+    Attributes
+    ----------
+    participant_count : `int`
+        The numbers of participants of the stage.
+    participants : `tuple` of ``ClientUserBase``
+        The users inside of the stage.
+    speaker_count : int`
+        The number of speakers in the stage.
+    topic : `str` or `None`
+        The stage's topic if any.
+    """
+    __slots__ = ('participant_count', 'participants', 'speaker_count', 'topic',)
+    
+    
+    def __new__(cls, data, guild):
+        """
+        Creates a new ``InviteStage`` instance from the given data.
+        
+        Parameters
+        ----------
+        data : `str`
+            Data received from Discord.
+        guild : ``Guild`` or `None`
+            The respective guild if any.
+        """
+        user_datas = data['members']
+        users = tuple(User(user_data, guild) for user_data in user_datas)
+        
+        topic = data['topic']
+        if (topic is not None) and (not topic):
+            topic = None
+        
+        self = object.__new__(cls)
+        self.participant_count = data['participant_count']
+        self.speaker_count = data['speaker_count']
+        self.participants = users
+        self.topic = topic
+        
+        return self
+    
+    
+    def __repr__(self):
+        """Returns the invite stage's representation."""
+        return f'<{self.__class__.__name__}>'

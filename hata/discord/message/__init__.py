@@ -7,7 +7,6 @@ from .message_interaction import *
 from .message_reference import *
 from .message_repr import *
 from .preinstanced import *
-from .sticker import *
 from .utils import *
 
 __all__ = (
@@ -20,6 +19,5 @@ __all__ = (
     *message_reference.__all__,
     *message_repr.__all__,
     *preinstanced.__all__,
-    *sticker.__all__,
     *utils.__all__,
 )

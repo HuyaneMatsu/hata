@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('pretty_print', 'pchunkify', 'pconnect', )
+﻿__all__ = ('pretty_print', 'pchunkify', 'pconnect', )
 
 from datetime import datetime, timedelta
 try:
@@ -1041,7 +1040,7 @@ def str_invite(invite, index=None,write_parents=True, **kwargs):
         result.append(f'- user count : {user_count}', 1)
     
     result.append(f'- {"temporary" if invite.temporary else "permanent"}', 1)
-
+    
     return result
 
 def str_list(list_, index=None, mixed=True, name=None, **kwargs):

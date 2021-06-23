@@ -33,6 +33,8 @@ from .stage import *
 from .user import *
 from .voice_client import *
 from .webhook import *
+from .sticker import *
+from .reader import *
 
 __all__ = (
     *activity.__all__,
@@ -70,4 +72,6 @@ __all__ = (
     *user.__all__,
     *voice_client.__all__,
     *webhook.__all__,
+    *sticker.__all__,
+    *reader.__all__,
 )

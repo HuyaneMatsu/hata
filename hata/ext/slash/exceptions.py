@@ -289,7 +289,7 @@ async def _render_slash_command_exception(client, command, exception):
     else:
         command_name = command.__class__.__name__
     
-    await client.events.error(client, f'`Slasher` while calling `{command_name}', exception)
+    await client.events.error(client, f'`Slasher` while calling `{command_name}`', exception)
 
 
 async def handle_command_exception(exception_handlers, client, interaction_event, command, exception):

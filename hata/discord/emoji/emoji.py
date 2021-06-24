@@ -7,7 +7,7 @@ from ..user import User, ZEROUSER
 from ..preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 from ..role import create_partial_role_from_id
 
-from .. import urls as module_urls
+from ..http import urls as module_urls
 
 UNICODE_EMOJI_LIMIT = 1<<21
 

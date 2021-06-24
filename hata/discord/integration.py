@@ -9,7 +9,7 @@ from .user import User, ZEROUSER
 from .utils import parse_time, DISCORD_EPOCH_START
 from .role import create_partial_role_from_id
 
-from . import urls as module_urls
+from .http import urls as module_urls
 
 INTEGRATION_TYPE_DISCORD = 'discord'
 

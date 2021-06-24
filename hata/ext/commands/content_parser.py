@@ -29,7 +29,7 @@ from ...discord.role import Role
 from ...discord.events.handling_helpers import check_parameter_count_and_convert
 from ...discord.preconverters import preconvert_flag, preconvert_bool
 from ...discord.guild import Guild
-from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
+from ...discord.http import MESSAGE_JUMP_URL_RP, INVITE_URL_RP
 from ...discord.invite import Invite
 from ...discord.color import Color, parse_color
 
@@ -2083,7 +2083,7 @@ async def invite_converter(parser_ctx, content_parser_ctx):
     # It would not be a Huyane code without some GOTO
     while True:
         if flags&CONVERTER_FLAG_URL:
-            parsed = INVITE_URL_PATTERN.fullmatch(part)
+            parsed = INVITE_URL_RP.fullmatch(part)
             if parsed is not None:
                 break
         

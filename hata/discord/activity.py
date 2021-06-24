@@ -12,7 +12,7 @@ from .bases import FlagBase
 from .color import Color
 from .preconverters import preconvert_str, preconvert_int
 
-from . import urls as module_urls
+from .http import urls as module_urls
 
 create_partial_emoji_from_data = include('create_partial_emoji_from_data')
 
@@ -123,17 +123,18 @@ class ActivityTimestamps:
         self.start = timestamps_data.get('start', 0)
         self.end = timestamps_data.get('end', 0)
     
+    
     def __repr__(self):
         """Returns the activity timestamp's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         start = self.start
         if start:
-            result.append(' start=')
-            result.append(repr(start))
+            repr_parts.append(' start=')
+            repr_parts.append(repr(start))
             put_comma = True
         else:
             put_comma = False
@@ -141,14 +142,15 @@ class ActivityTimestamps:
         end = self.end
         if end:
             if put_comma:
-                result.append(',')
+                repr_parts.append(',')
             
-            result.append(' end=')
-            result.append(repr(start))
+            repr_parts.append(' end=')
+            repr_parts.append(repr(start))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+    
     
     def __eq__(self, other):
         """Returns whether the two activity timestamps are equal."""
@@ -162,6 +164,7 @@ class ActivityTimestamps:
             return False
         
         return True
+    
     
     def to_data(self):
         """
@@ -214,17 +217,18 @@ class ActivityAssets:
         self.text_large = assets_data.get('large_text', None)
         self.text_small = assets_data.get('small_text', None)
     
+    
     def __repr__(self):
         """Returns the activity asset's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         image_large = self.image_large
         if (image_large is not None):
-            result.append(' image_large=')
-            result.append(repr(image_large))
+            repr_parts.append(' image_large=')
+            repr_parts.append(repr(image_large))
             put_comma = True
         else:
             put_comma = False
@@ -232,31 +236,32 @@ class ActivityAssets:
         image_small = self.image_small
         if (image_small is not None):
             if put_comma:
-                result.append(',')
+                repr_parts.append(',')
             else:
                 put_comma = True
-            result.append(' image_small=')
-            result.append(repr(image_small))
+            repr_parts.append(' image_small=')
+            repr_parts.append(repr(image_small))
         
         text_large = self.text_large
         if (text_large is not None):
             if put_comma:
-                result.append(',')
+                repr_parts.append(',')
             else:
                 put_comma = True
-            result.append(' text_large=')
-            result.append(repr(text_large))
+            repr_parts.append(' text_large=')
+            repr_parts.append(repr(text_large))
         
         text_small = self.text_small
         if (text_small is not None):
             if put_comma:
-                result.append(',')
-            result.append(' text_small=')
-            result.append(repr(text_small))
+                repr_parts.append(',')
+            repr_parts.append(' text_small=')
+            repr_parts.append(repr(text_small))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+    
     
     def __eq__(self, other):
         """Returns whether the two activity assets are equal."""
@@ -276,6 +281,7 @@ class ActivityAssets:
             return False
         
         return True
+    
     
     def to_data(self):
         """
@@ -972,6 +978,7 @@ class ActivityRich(ActivityBase):
         
         self.url = activity_data.get('url', None)
     
+    
     def _update(self, activity_data):
         """
         Updates the activity and returns the changes in a `dict` of (`attribute-name`, `old-value`) items.
@@ -1117,6 +1124,7 @@ class ActivityRich(ActivityBase):
         
         return old_attributes
     
+    
     def bot_dict(self):
         """
         Converts the activity to json serializable dictionary, which can be sent with bot account to change activity.
@@ -1128,13 +1136,14 @@ class ActivityRich(ActivityBase):
         activity_data = {
             'type' : self.type,
             'name' : self.name,
-                }
+        }
         
         url = self.url
         if (url is not None):
             activity_data['url'] = url
         
         return activity_data
+    
     
     def user_dict(self):
         """
@@ -1196,6 +1205,7 @@ class ActivityRich(ActivityBase):
         
         return activity_data
     
+    
     def full_dict(self):
         """
         Converts the whole activity to a dictionary.
@@ -1216,6 +1226,7 @@ class ActivityRich(ActivityBase):
         
         return activity_data
     
+    
     def __hash__(self):
         """Returns the activity's hash value."""
         id_ = self.id
@@ -1225,10 +1236,13 @@ class ActivityRich(ActivityBase):
         # Spotify activity has no `.id`, but has `.session_id`
         return hash(self.session_id)
     
+    
     @property
     def twitch_name(self):
         """
         If the user streams on twitch, returns it's twitch name.
+        
+        Only applicable for stream activities.
         
         Returns
         -------
@@ -1250,10 +1264,13 @@ class ActivityRich(ActivityBase):
         
         return image_large[7:]
     
+    
     @property
     def duration(self):
         """
         Returns the spotify activity's duration, or `None` if not applicable.
+        
+        Only applicable for spotify activities.
         
         Returns
         -------
@@ -1273,10 +1290,13 @@ class ActivityRich(ActivityBase):
         
         return datetime.utcfromtimestamp(end/1000.0) - datetime.utcfromtimestamp(start/1000.0)
     
+    
     @property
     def album_cover_url(self):
         """
         Returns the spotify activity's currently playing track's album url if applicable.
+        
+        Only applicable for spotify activities.
         
         Returns
         -------
@@ -1294,6 +1314,41 @@ class ActivityRich(ActivityBase):
             return None
             
         return f'https://i.scdn.co/image/{image_large}'
+    
+    
+    @property
+    def track_id(self):
+        """
+        Returns the song's identifier.
+        
+        Only applicable for spotify activities.
+        
+        Returns
+        -------
+        track_id : `None` or `str`
+        """
+        if self.type != ActivityTypes.spotify:
+            return None
+        
+        return self.sync_id
+    
+    
+    @property
+    def track_url(self):
+        """
+        Returns url to the spotify activity's song.
+        
+        Only applicable for spotify activities.
+        
+        Returns
+        -------
+        url : `None` or `str`
+        """
+        if self.type != ActivityTypes.spotify:
+            return None
+        
+        return f'https://open.spotify.com/track/{self.sync_id}'
+
 
 class ActivityUnknown(ActivityBase):
     """

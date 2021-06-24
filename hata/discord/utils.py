@@ -16,7 +16,6 @@ except ImportError:
     relativedelta = None
 
 from ..backend.export import export, include
-from ..backend.utils import istr, modulize
 
 from .bases import DiscordEntity
 from .core import USERS, CHANNELS, ROLES
@@ -796,16 +795,6 @@ class Gift:
         self.uses = data['uses']
         self.code = data['code']
 
-@modulize
-class DISCORD_HEADERS:
-    # to receive
-    AUDIT_LOG_REASON = istr('X-Audit-Log-Reason')
-    RATE_LIMIT_REMAINING = istr('X-RateLimit-Remaining')
-    RATE_LIMIT_RESET = istr('X-RateLimit-Reset')
-    RATE_LIMIT_RESET_AFTER = istr('X-RateLimit-Reset-After')
-    RATE_LIMIT_LIMIT = istr('X-RateLimit-Limit')
-    # to send
-    RATE_LIMIT_PRECISION = istr('X-RateLimit-Precision')
 
 def url_cutter(url):
     """

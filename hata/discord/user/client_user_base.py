@@ -1,0 +1,745 @@
+__all__ = ('ClientUserBase', 'ClientUserPBase',)
+
+from ...backend.utils import DOCS_ENABLED, copy_docs, set_docs
+
+from ..bases import ICON_TYPE_NONE
+from ..core import USERS
+
+from ..color import Color
+from ..activity import create_activity, ActivityRich, ActivityCustom
+
+from .preinstanced import Status, DefaultAvatar
+
+from .user_base import UserBase
+from .flags import UserFlag
+from .guild_profile import GuildProfile
+
+class ClientUserBase(UserBase):
+    """
+    Base class for discord users and clients.
+    
+    Attributes
+    ----------
+    id : `int`
+        The user's unique identifier number.
+    name : str
+        The user's name.
+    discriminator : `int`
+        The user's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The user's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The user's avatar's type.
+    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+        A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
+        have a respective guild profile accordingly.
+    is_bot : `bool`
+        Whether the user is a bot or a user account.
+    flags : ``UserFlag``
+        The user's user flags.
+    partial : `bool`
+        Partial users have only their `.id` set and every other field might not reflect the reality.
+    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
+    """
+    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', 'thread_profiles')
+    
+    def _update_no_return(self, data):
+        """
+        Updates the user with the given data by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data received from Discord.
+        """
+        self.name = data['username']
+        self.discriminator = int(data['discriminator'])
+        
+        self._set_avatar(data)
+        
+        self.flags = UserFlag(data.get('public_flags', 0))
+        self.thread_profiles = None
+    
+    def _update(self, data):
+        """
+        Updates the user and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        
+        +---------------+---------------+
+        | Keys          | Values        |
+        +===============+===============+
+        | avatar        | ``Icon``      |
+        +---------------+---------------+
+        | discriminator | `int          |
+        +---------------+---------------+
+        | flags         | ``UserFlag``  |
+        +---------------+---------------+
+        | name          | `str`         |
+        +---------------+---------------+
+        """
+        old_attributes = {}
+        
+        name = data['username']
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
+        
+        discriminator = int(data['discriminator'])
+        if self.discriminator != discriminator:
+            old_attributes['discriminator'] = self.discriminator
+            self.discriminator = discriminator
+        
+        self._update_avatar(data, old_attributes)
+        
+        flags = data.get('public_flags', 0)
+        if self.flags != flags:
+            old_attributes['flags'] = self.flags
+            self.flags = UserFlag(flags)
+        
+        return old_attributes
+    
+    
+    @classmethod
+    def _update_profile(cls, data, guild):
+        """
+        First tries to find the user, then it's respective guild profile for the given guild to update it.
+        
+        If the method cannot find the user, or the respective guild profile, then creates them.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        guild : ``Guild``
+            The respective guild of the profile to update.
+
+        Returns
+        -------
+        user : ``user`` or ``Client``
+            The respective user.
+        old_attributes : `dict` of (`str`, `Any`) items
+            The changed attributes of the respective guild profile as a `dict` with `attribute-name` - `old-attribute`
+            relation.
+            
+            The possible keys and values within `old_attributes` are all optional and they can be any of the following:
+            +-------------------+-----------------------+
+            | Keys              | Values                |
+            +===================+=======================+
+            | boosts_since      | `None` or `datetime`  |
+            +-------------------+-----------------------+
+            | nick              | `None` or `str`       |
+            +-------------------+-----------------------+
+            | roles             | `list` of ``Role``    |
+            +-------------------+-----------------------+
+        """
+        user_id = int(data['user']['id'])
+        
+        try:
+            user = USERS[user_id]
+        except KeyError:
+            user = cls(data, guild)
+            return user,{}
+        
+        try:
+            profile = user.guild_profiles[guild]
+        except KeyError:
+            user.guild_profiles[guild] = GuildProfile(data)
+            guild.users[user_id] = user
+            return user, {}
+
+        profile._set_joined(data)
+        return user, profile._update(data)
+    
+    
+    @classmethod
+    def _update_profile_no_return(cls, data, guild):
+        """
+        First tries to find the user, then it's respective guild profile for the given guild to update it.
+        
+        If the method cannot find the user, or the respective guild profile, then creates them.
+        
+        Not like ``._update_profile``, this method not calculates changes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        guild : ``Guild``
+            The respective guild of the profile to update.
+        
+        Returns
+        -------
+        user : ``UserBase``
+            The updated user.
+        """
+        user_id = int(data['user']['id'])
+        
+        try:
+            user = USERS[user_id]
+        except KeyError:
+            user = cls(data, guild)
+        else:
+            try:
+                profile = user.guild_profiles[guild]
+            except KeyError:
+                user.guild_profiles[guild] = GuildProfile(data)
+            else:
+                profile._update_no_return(data)
+        
+        return user
+    
+    
+    @staticmethod
+    def _bypass_no_cache(data, guild):
+        """
+        Sets a ``Client``'s guild profile.
+        
+        > Only available when user or presence caching is disabled.
+        
+        Parameters
+        ----------
+        data : `dict`
+            Received user data.
+        guild : ``Guild``
+            A respective guild from where the user data was received. Picked up if the given data includes
+            guild member data as well.
+        """
+        user_data = data['user']
+        guild_profile_data = data
+        
+        user_id = int(user_data['id'])
+        
+        try:
+            user = USERS[user_id]
+        except KeyError:
+            return
+        
+        try:
+            profile = user.guild_profiles[guild]
+        except KeyError:
+            guild.users[user_id] = user
+            user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+        else:
+            profile._set_joined(guild_profile_data)
+            profile._update_no_return(guild_profile_data)
+
+    
+    @classmethod
+    def _from_client(cls, client):
+        """
+        Creates a client alter ego.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client to copy.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+        """
+        self = object.__new__(cls)
+        self.id = client.id
+        self.discriminator = client.discriminator
+        self.name = client.name
+        
+        guild_profiles = client.guild_profiles
+        if (guild_profiles is not None):
+            guild_profiles = guild_profiles.copy()
+        
+        self.guild_profiles = guild_profiles
+        self.is_bot = client.is_bot
+        self.flags = client.flags
+        self.partial = client.partial
+        self.thread_profiles = client.thread_profiles.copy()
+        
+        return self
+    
+    
+    @classmethod
+    def _create_empty(cls, user_id):
+        """
+        Creates a user instance with the given `user_id` and with the default user attributes.
+        
+        Parameters
+        ----------
+        user_id : `int`
+            The user's id.
+        
+        Returns
+        -------
+        self : ``ClientUserBase``
+        """
+        self = object.__new__(cls)
+        self.id = user_id
+        self._set_default_attributes()
+        return self
+    
+    
+    def _set_default_attributes(self):
+        """
+        Sets the user's attribute's to their default.
+        """
+        self.name = ''
+        self.discriminator = 0
+        self.avatar_hash = 0
+        self.avatar_type = ICON_TYPE_NONE
+        self.is_bot = False
+        self.flags = UserFlag()
+        
+        self.guild_profiles = {}
+        self.partial = True
+        self.thread_profiles = None
+    
+    # if CACHE_PRESENCE is False, this should be never called from this class
+    def _update_presence(self, data):
+        """
+        Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
+        `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange`` instance
+        containing all the changes of the user's activities.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        +---------------+-----------------------------------+
+        | Keys          | Values                            |
+        +===============+===================================+
+        | activities    | ``ActivityChange``                |
+        +---------------+-----------------------------------+
+        | status        | ``Status``                        |
+        +---------------+-----------------------------------+
+        | statuses      | `dict` of (`str`, `str`) items    |
+        +---------------+-----------------------------------+
+        """
+        return {}
+    
+    
+    def _update_presence_no_return(self, data):
+        """
+        Updates the user's presences with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received guild member data.
+        """
+        pass
+
+    
+    def _delete(self):
+        """
+        Deletes the user from it's guilds.
+        """
+        # we cannot full delete a user, because of the mentions, so we delete it only from the guilds
+        guild_profiles = self.guild_profiles
+        while guild_profiles:
+            guild, profile = guild_profiles.popitem()
+            try:
+                del guild.users[self.id]
+            except KeyError:
+                pass
+    
+    
+    @copy_docs(UserBase.color_at)
+    def color_at(self, guild):
+        if (guild is not None):
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                pass
+            else:
+                return profile.color
+        
+        return Color()
+    
+    
+    @copy_docs(UserBase.name_at)
+    def name_at(self, guild):
+        if (guild is not None):
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                pass
+            else:
+                nick = profile.nick
+                if nick is not None:
+                    return nick
+        
+        return self.name
+    
+    
+    @copy_docs(UserBase.has_role)
+    def has_role(self, role):
+        # if role is deleted, it's guild is None
+        guild = role.guild
+        if guild is None:
+            return False
+        
+        try:
+            profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        roles = profile.roles
+        if roles is None:
+            return False
+        
+        return (role in profile.roles)
+    
+    
+    @copy_docs(UserBase.top_role_at)
+    def top_role_at(self, guild, default=None):
+        if (guild is not None):
+            try:
+                profile = self.guild_profiles[guild]
+            except KeyError:
+                pass
+            else:
+                return profile.get_top_role(default)
+        
+        return default
+    
+    
+    @copy_docs(UserBase.can_use_emoji)
+    def can_use_emoji(self, emoji):
+        if emoji.is_unicode_emoji():
+            return True
+        
+        guild = emoji.guild
+        if guild is None:
+            return False
+        
+        try:
+            profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        emoji_roles = emoji.roles
+        if (emoji_roles is None):
+            return True
+        
+        if guild.owner_id == self.id:
+            return True
+        
+        profile_roles = profile.roles
+        if (profile_roles is None):
+            return False
+        
+        if emoji_roles.isdisjoint(profile_roles):
+            return False
+        
+        return True
+    
+    
+    @copy_docs(UserBase.has_higher_role_than)
+    def has_higher_role_than(self, role):
+        guild = role.guild
+        if guild is None:
+            return False
+        
+        try:
+            profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        if guild.owner_id == self.id:
+            return True
+        
+        top_role = profile.get_top_role()
+        if top_role is None:
+            return False
+        
+        if top_role > role:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(UserBase.has_higher_role_than_at)
+    def has_higher_role_than_at(self, user, guild):
+        if (guild is None):
+            return False
+        
+        try:
+            own_profile = self.guild_profiles[guild]
+        except KeyError:
+            return False
+        
+        if guild.owner_id == self.id:
+            return True
+        
+        try:
+            other_profile = user.guild_profiles[guild]
+        except KeyError:
+            # We always have higher permissions if the other user is not in the guild or if it is a webhook.
+            # webhook_guild = getattr(user, 'guild', None)
+            # if (webhook_guild is not guild):
+            #     return True
+            #
+            # if (own_profile.roles is not None):
+            #    return True
+            return True
+        
+        if guild.owner_id == user.id:
+            return False
+        
+        own_top_role = own_profile.get_top_role()
+        if own_top_role is None:
+            return False
+        
+        other_top_role = other_profile.get_top_role()
+        if other_top_role is None:
+            return True
+        
+        if own_top_role > other_top_role:
+            return True
+        
+        return False
+
+
+class ClientUserPBase(ClientUserBase):
+    """
+    Base class for discord users and clients. This class is used as ``user`` superclass only if presence is enabled,
+    so by default.
+    
+    Attributes
+    ----------
+    id : `int`
+        The user's unique identifier number.
+    name : str
+        The user's name.
+    discriminator : `int`
+        The user's discriminator. Given to avoid overlapping names.
+    avatar_hash : `int`
+        The user's avatar's hash in `uint128`.
+    avatar_type : `bool`
+        The user's avatar's type.
+    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+        A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
+        have a respective guild profile accordingly.
+    is_bot : `bool`
+        Whether the user is a bot or a user account.
+    flags : ``UserFlag``
+        The user's user flags.
+    partial : `bool`
+        Partial users have only their `.id` set and every other field might not reflect the reality.
+    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
+    activities : `None` or `list` of ``ActivityBase`` instances
+        A list of the client's activities. Defaults to `None`
+    status : `Status`
+        The user's display status.
+    statuses : `dict` of (`str`, `str`) items
+        The user's statuses for each platform.
+    """
+    __slots__ = ('activities', 'status', 'statuses')
+    
+    @classmethod
+    @copy_docs(ClientUserBase._from_client)
+    def _from_client(cls, client):
+        self = super(ClientUserPBase, cls)._from_client(client)
+        
+        activities = client.activities
+        if (activities is not None):
+            activities = activities.copy()
+        self.activities = activities
+        self.status = client.status
+        statuses = client.statuses
+        if (statuses is not None):
+            statuses = statuses.copy()
+        self.statuses = statuses
+        
+        return self
+
+    @copy_docs(ClientUserBase._set_default_attributes)
+    def _set_default_attributes(self):
+        ClientUserBase._set_default_attributes(self)
+        
+        self.status = Status.offline
+        self.statuses = {}
+        self.activities = None
+    
+    @copy_docs(ClientUserBase._update_presence)
+    def _update_presence(self, data):
+        old_attributes = {}
+        
+        statuses = data['client_status']
+        if self.statuses != statuses:
+            old_attributes['statuses'] = self.statuses
+            self.statuses = statuses
+            
+            status = data['status']
+            if self.status.value != status:
+                old_attributes['status'] = self.status
+                self.status = Status.get(status)
+        
+        activity_datas = data['activities']
+        
+        old_activities = self.activities
+        new_activities = None
+        
+        if activity_datas:
+            if old_activities is None:
+                for activity_data in activity_datas:
+                    activity = create_activity(activity_data)
+                    
+                    if new_activities is None:
+                        new_activities = []
+                    
+                    new_activities.append(activity)
+                
+                activity_change = ActivityChange(new_activities, None, None)
+                
+            else:
+                added_activities = None
+                updated_activities = None
+                removed_activities = old_activities.copy()
+                
+                for activity_data in activity_datas:
+                    activity_type = activity_data['type']
+                    for index in range(len(removed_activities)):
+                        activity = removed_activities[index]
+                        
+                        if activity_type != activity.type:
+                            continue
+                            
+                        if activity_data['id'] != activity.discord_side_id:
+                            continue
+                        
+                        del removed_activities[index]
+                        
+                        activity_old_attributes = activity._update(activity_data)
+                        if activity_old_attributes:
+                            activity_update = ActivityUpdate(activity, activity_old_attributes)
+                            
+                            if updated_activities is None:
+                                updated_activities = []
+                            
+                            updated_activities.append(activity_update)
+                        
+                        if new_activities is None:
+                            new_activities = []
+                        
+                        new_activities.append(activity)
+                        break
+                    else:
+                        activity = create_activity(activity_data)
+                        
+                        if new_activities is None:
+                            new_activities = []
+                        
+                        new_activities.append(activity)
+                        
+                        if added_activities is None:
+                            added_activities = []
+                        
+                        added_activities.append(activity)
+                
+                if not removed_activities:
+                    removed_activities = None
+                
+                if None is added_activities is updated_activities is removed_activities:
+                    activity_change = None
+                else:
+                    activity_change = ActivityChange(added_activities, updated_activities, removed_activities)
+        
+        else:
+            if old_activities is None:
+                activity_change = None
+            else:
+                activity_change = ActivityChange(None, None, old_activities)
+        
+        if (activity_change is not None):
+            old_attributes['activities'] = activity_change
+        
+        self.activities = new_activities
+        
+        return old_attributes
+    
+    @copy_docs(ClientUserBase._update_presence_no_return)
+    def _update_presence_no_return(self, data):
+        self.status = Status.get(data['status'])
+        
+        try:
+            # not included sometimes
+            self.statuses = data['client_status']
+        except KeyError:
+            pass
+        
+        activity_datas = data['activities']
+        if activity_datas:
+            new_activities = [create_activity(activity_data) for activity_data in activity_datas]
+        else:
+            new_activities = None
+        
+        self.activities = new_activities
+    
+    
+    @property
+    @copy_docs(UserBase.activity)
+    def activity(self):
+        activities = self.activities
+        if activities is None:
+            activity = None
+        else:
+            for activity in activities:
+                if isinstance(activity, ActivityRich):
+                    break
+            else:
+                activity = None
+        
+        return activity
+    
+    
+    @property
+    @copy_docs(UserBase.custom_activity)
+    def custom_activity(self):
+        activities = self.activities
+        if activities is None:
+            activity = None
+        else:
+            for activity in activities:
+                if isinstance(activity, ActivityCustom):
+                    break
+            else:
+                activity = None
+        
+        return activity
+    
+    
+    @property
+    @copy_docs(UserBase.platform)
+    def platform(self):
+        statuses = self.statuses
+        if statuses:
+            status = self.status.value
+            for platform, l_status in statuses.items():
+                if l_status == status:
+                    return platform
+        return ''
+

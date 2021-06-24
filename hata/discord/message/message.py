@@ -18,7 +18,7 @@ from ..preconverters import preconvert_flag, preconvert_bool, preconvert_snowfla
     preconvert_preinstanced_type
 from ..sticker import Sticker
 
-from .. import urls as module_urls
+from ..http import urls as module_urls
 
 from .utils import try_resolve_interaction_message
 from .cross_mention import UnknownCrossMention

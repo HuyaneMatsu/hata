@@ -1,4 +1,4 @@
-__all__ = ('DiscordEntity', )
+__all__ = ('DiscordEntity', 'Slotted', )
 
 from ...backend.export import include
 

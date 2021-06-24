@@ -19,52 +19,50 @@ from ...backend.url import URL
 from ...backend.export import export
 
 from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_extension, Relationship
-from ..user import User, USERS, GuildProfile, UserBase, UserFlag, create_partial_user_from_id, thread_user_create, \
-    ClientUserBase, ClientUserPBase
+from ..user import User, GuildProfile, UserBase, UserFlag, create_partial_user_from_id, thread_user_create, \
+    ClientUserBase, ClientUserPBase, Status, PremiumType, HypesquadHouse, RelationshipType
 from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
-    ChannelGuildMainBase
+    ChannelGuildMainBase, VideoQualityMode
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
-    VerificationScreenStep, create_partial_guild_from_id
-from ..http import DiscordHTTPClient
-from ..urls import VALID_ICON_FORMATS, VALID_ICON_FORMATS_EXTENDED, is_media_url
+    VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
+    ContentFilterLevel, VerificationLevel, MessageNotificationLevel
+from ..http import DiscordHTTPClient, RateLimitProxy, rate_limit_groups, VALID_ICON_FORMATS, \
+    VALID_ICON_FORMATS_EXTENDED, is_media_url
 from ..role import Role
 from ..webhook import Webhook, create_partial_webhook_from_id
-from ..gateway import DiscordGateway, DiscordGatewaySharder
+from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
+    PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
 from ..events.handling_helpers import _with_error
 from ..events.event_handler_manager import EventHandlerManager
 from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
-from ..audit_logs import AuditLog, AuditLogIterator, AuditLogEvent
-from ..invite import Invite
+from ..invite import Invite, InviteTargetType
 from ..message import Message, MessageRepr, MessageReference, Attachment, MessageFlag
 from ..sticker import Sticker, StickerPack
 from ..message.utils import try_resolve_interaction_message
 from ..oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
 from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
 from ..core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
-    MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT
-from ..voice_client import VoiceClient
+    MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, USERS
+from ..voice import VoiceClient
 from ..activity import ActivityUnknown, ActivityBase, ActivityCustom
 from ..integration import Integration
 from ..application import Application, Team, EULA
-from ..rate_limit import RateLimitProxy, RATE_LIMIT_GROUPS
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type
 from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
 from ..bases import ICON_TYPE_NONE
-from ..preinstanced import Status, VoiceRegion, ContentFilterLevel, PremiumType, VerificationLevel, StagePrivacyLevel, \
-    MessageNotificationLevel, HypesquadHouse, RelationshipType, InviteTargetType, VideoQualityMode
 from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext
 from ..color import Color
 from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, AUTO_ARCHIVE_DEFAULT, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, AUTO_ARCHIVE_OPTIONS
-from ..stage import Stage
+from ..stage import Stage, StagePrivacyLevel
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
 
@@ -1067,7 +1065,7 @@ class Client(ClientUserPBase):
                 raise AssertionError(f'`afk` can be given as `bool` instance, got {afk.__class__.__name__}.')
         
         data = {
-            'op': DiscordGateway.PRESENCE,
+            'op': GATEWAY_OPERATION_CODE_PRESENCE,
             'd': {
                 'game': activity,
                 'since': since,
@@ -4413,7 +4411,7 @@ class Client(ClientUserPBase):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
-            message_data['embed'] = embed
+            message_data['embeds'] = embed
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
@@ -7073,7 +7071,7 @@ class Client(ClientUserPBase):
         return data['valid']
     
     discovery_validate_term = DiscoveryTermRequestCacher(discovery_validate_term, 86400.0,
-        RATE_LIMIT_GROUPS.discovery_validate_term)
+        rate_limit_groups.discovery_validate_term)
     
     
     async def guild_user_get_all(self, guild):
@@ -13987,7 +13985,7 @@ class Client(ClientUserPBase):
         event_handler.waiters[nonce] = waiter = MassUserChunker(1)
         
         data = {
-            'op': DiscordGateway.REQUEST_MEMBERS,
+            'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
             'd': {
                 'guild_id': guild_id,
                 'query': '',
@@ -14070,7 +14068,7 @@ class Client(ClientUserPBase):
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
         data = {
-            'op': DiscordGateway.REQUEST_MEMBERS,
+            'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
             'd': {
                 'guild_id': guild_id,
                 'query': name,

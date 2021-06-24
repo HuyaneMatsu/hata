@@ -8,10 +8,9 @@ from time import time as time_now
 from .bases import DiscordEntity, IconSlot
 from .integration import Integration
 from .utils import DATETIME_FORMAT_CODE
-from .user import UserBase, UserFlag
-from .preinstanced import PremiumType
+from .user import UserBase, UserFlag, PremiumType
 
-from . import urls as module_urls
+from .http import urls as module_urls
 
 DEFAULT_LOCALE = 'en-US'
 LOCALES = {DEFAULT_LOCALE: DEFAULT_LOCALE}
@@ -41,7 +40,8 @@ def parse_locale(data):
 
 def parse_preferred_locale(data):
     """
-    Gets `'preferred_locale'`'s value out from the given `dict`. If found returns it, if not, then returns `DEFAULT_LOCAL`.
+    Gets `'preferred_locale'`'s value out from the given `dict`. If found returns it, if not, then returns
+    `DEFAULT_LOCAL`.
     
     To not keep using new local values at every case, the already used local values are cached at `LOCALE`.
     

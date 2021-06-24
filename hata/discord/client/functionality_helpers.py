@@ -10,8 +10,8 @@ from ...backend.event_loop import LOOP_TIME
 from ...backend.futures import Future, sleep, Task, WaitTillFirst
 
 from ..core import KOKORO, CLIENTS, CHANNELS
-from ..rate_limit import RateLimitProxy
-from ..gateway import DiscordGateway
+from ..http import RateLimitProxy
+from ..gateway.client_gateway import REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
 from ..utils import time_now, DISCORD_EPOCH
 from ..exceptions import DiscordException
 from ..channel import ChannelThread
@@ -388,6 +388,7 @@ class DiscoveryTermRequestCacher:
     """
     __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_rate_limit_proxy_args', '_waiters', 'cached', 'func',
         'timeout')
+    
     def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter=None,):
         """
         Creates a new ``DiscoveryTermRequestCacher`` object with the given parameters.
@@ -642,6 +643,7 @@ class WaitForHandler:
         A dictionary which contains the waiter futures and the respective checks.
     """
     __slots__ = ('waiters', )
+    
     def __init__(self):
         """
         Creates a new ``WaitForHandler`` instance.
@@ -667,7 +669,7 @@ class WaitForHandler:
             except BaseException as err:
                 future.set_exception_if_pending(err)
             else:
-                if type(result) is bool:
+                if isinstance(result, bool):
                     if result:
                         if len(args) == 1:
                             args = args[0]
@@ -909,11 +911,11 @@ async def _request_members_loop(gateway, guilds):
         'query': '',
         'limit': 0,
         'presences': CACHE_PRESENCE,
-        'nonce' : '0000000000000000',
+        'nonce': '0000000000000000',
     }
     
     data = {
-        'op': DiscordGateway.REQUEST_MEMBERS,
+        'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
         'd': sub_data
     }
     

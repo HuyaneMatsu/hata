@@ -2,8 +2,7 @@
 
 #### Summary
 
-Separate sticker sources from message's. They can be guild bound as well.
-
+Regroup many code parts.
 
 #### Improvements
 
@@ -25,6 +24,14 @@ Separate sticker sources from message's. They can be guild bound as well.
 - Add `Client.sticker_get`.
 - Add `StickerPack._set_attributes`.
 - Add `StickerPack._create_and_update`.
+- Add `ActivityRich.track_id`.
+- Add `ActivityRich.track_url`.
+
+#### Bug Fixes
+
+- `int` had higher priority, than `bool` query parameter conversion causing badly generated url.
+- Fix `NameError` in `cr_pg_channel_object`.
+- Fix `TypeError` in a few channel `__repr__` methods. (Pichu#0357)
 
 ## 1.1.86 *\[2021-06-20\]*
 

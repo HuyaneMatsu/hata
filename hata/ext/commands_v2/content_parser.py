@@ -20,7 +20,7 @@ from ...discord.emoji import Emoji, parse_emoji
 from ...discord.invite import Invite
 from ...discord.role import Role, parse_role_mention
 from ...discord.color import Color, parse_color
-from ...discord.urls import MESSAGE_JUMP_URL_RP, INVITE_URL_PATTERN
+from ...discord.http import MESSAGE_JUMP_URL_RP, INVITE_URL_RP
 from ...discord.message import Message
 
 from .exceptions import CommandParameterParsingError
@@ -1492,7 +1492,7 @@ async def invite_converter(command_context, part, content_parser_parameter_detai
     # It would not be a Huyane code without some GOTO
     while True:
         if flags&CONVERTER_FLAG_URL:
-            parsed = INVITE_URL_PATTERN.fullmatch(part)
+            parsed = INVITE_URL_RP.fullmatch(part)
             if parsed is not None:
                 break
         

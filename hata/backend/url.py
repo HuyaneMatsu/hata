@@ -167,7 +167,7 @@ class URL:
                 quote(value.path, safe='@:', protected='/'),
                 quote(value.query, safe='=+&?/:@', protected='=+&', query_string=True),
                 quote(value.fragment, safe='?/:@'),
-                    )
+            )
         
         self = object.__new__(cls)
         self._value = value
@@ -1201,10 +1201,10 @@ def build_query_element_to(build_to, query_key, value):
     """
     if isinstance(value, str):
         query_value = value
-    elif isinstance(value, int):
-        query_value = str(value)
     elif isinstance(value, bool):
         query_value = 'true' if value else 'false'
+    elif isinstance(value, int):
+        query_value = str(value)
     elif isinstance(value, NoneType):
         query_value = 'null'
     elif isinstance(value, datetime):

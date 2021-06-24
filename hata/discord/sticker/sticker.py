@@ -3,7 +3,7 @@ __all__ = ('Sticker', )
 from ..core import STICKERS
 from ..bases import DiscordEntity
 from ..user import ZEROUSER, User
-from .. import urls as module_urls
+from ..http import urls as module_urls
 
 from .preinstanced import StickerFormat, StickerType
 

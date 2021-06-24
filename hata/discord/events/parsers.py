@@ -7,8 +7,9 @@ from ...env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
 from ...backend.futures import Task
 from ...backend.export import include
 
-from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, STAGES
-from ..user import User, create_partial_user_from_id, USERS, thread_user_create, thread_user_update, thread_user_pop, \
+from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, \
+    STAGES, USERS
+from ..user import User, create_partial_user_from_id, thread_user_create, thread_user_update, thread_user_pop, \
     thread_user_delete
 from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift

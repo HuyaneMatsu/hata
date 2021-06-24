@@ -4413,7 +4413,7 @@ class Client(ClientUserPBase):
             if (embed is not None):
                 embed = [embed.to_data() for embed in embed]
             
-            message_data['embed'] = embed
+            message_data['embeds'] = embed
         
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)

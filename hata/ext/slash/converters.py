@@ -13,8 +13,8 @@ from ...discord.role import Role
 from ...discord.channel import ChannelBase
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, \
     ApplicationCommandOptionType, InteractionEvent
-from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
 
 from .utils import raw_name_to_display, normalize_description
 from .exceptions import SlashCommandParameterConversionError
@@ -1422,7 +1422,7 @@ class SashCommandParameterConverter(ParameterConverter):
     
     @copy_docs(ParameterConverter.__repr__)
     def __repr__(self):
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' name=',
@@ -1434,17 +1434,17 @@ class SashCommandParameterConverter(ParameterConverter):
         ]
         
         if not self.required:
-            result.append(', default=')
-            result.append(repr(self.default))
+            repr_parts.append(', default=')
+            repr_parts.append(repr(self.default))
         
         choices = self.choices
         if (choices is not None):
-            result.append(', choices=')
-            result.append(repr(choices))
+            repr_parts.append(', choices=')
+            repr_parts.append(repr(choices))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     @copy_docs(ParameterConverter.as_option)
     def as_option(self):
@@ -1717,14 +1717,16 @@ def get_component_command_parameter_converters(func):
         parameter_converter = create_internal_parameter_converter(parameter)
         parameter_converters.append(parameter_converter)
     
+    parameter_index = 0
     for index in range(len(parameter_converters)):
         parameter_converter = parameter_converters[index]
         if (parameter_converter is not None):
             continue
         
         parameter = parameters[index]
-        parameter_converter = RegexParameterConverter(parameter, index)
+        parameter_converter = RegexParameterConverter(parameter, parameter_index)
         parameter_converters[index] = parameter_converter
+        parameter_index += 1
     
     parameter_converters = tuple(parameter_converters)
     

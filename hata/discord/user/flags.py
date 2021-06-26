@@ -1,6 +1,5 @@
 __all__ = ('PurchasedFlag', 'ThreadProfileFlag', 'UserFlag', )
 
-
 from ..bases import FlagBase
 
 class UserFlag(FlagBase):

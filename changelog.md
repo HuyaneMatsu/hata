@@ -26,12 +26,36 @@ Regroup many code parts.
 - Add `StickerPack._create_and_update`.
 - Add `ActivityRich.track_id`.
 - Add `ActivityRich.track_url`.
+- Add `Sticker.partial`.
+- Add `Emoji._create_empty`.
+- Add `Sticker.precreate`.
+- Add `Sticker._create_empty`.
+- Add `available` parameter to `Emoji.precreate`.
+- Add `managed` parameter to `Emoji.precreate`.
+- Add `require_colons` parameter to `Emoji.precreate`.
+- Add `guild` parameter to `Emoji.precreate`.
+- Add `roles` parameter to `Emoji.precreate`.
+- Add `user` parameter to `Emoji.precreate`.
+- Add `iterable_of_instance_or_id_to_instances`.
+- Add `preconvert_iterable_of_str`.
 
 #### Bug Fixes
 
 - `int` had higher priority, than `bool` query parameter conversion causing badly generated url.
 - Fix `NameError` in `cr_pg_channel_object`.
 - Fix `TypeError` in a few channel `__repr__` methods. (Pichu#0357)
+- `Emoji.partial` could return bad value.
+- `Emoji.__new__` could not set `.user` even if received.
+- `Sticker.user` is now set correctly.
+- `instance_or_id_to_instance`, `instance_or_id_to_snowflake` and `maybe_snowflake` had bad string max length check.
+
+##### hata.ext.slash
+- Component commands regex parsers could be generated with bad parameter index.
+
+#### Renames, Deprecation & Removals
+
+- Rename `ActivityTypes` to `ACTIVITY_TYPES`.
+- Deprecate `ActivityTypes`.
 
 ## 1.1.86 *\[2021-06-20\]*
 

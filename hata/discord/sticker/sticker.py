@@ -1,12 +1,20 @@
 __all__ = ('Sticker', )
 
-from ..core import STICKERS
+from ...backend.export import include
+
+from ..core import STICKERS, GUILDS, STICKER_PACKS
 from ..bases import DiscordEntity
 from ..user import ZEROUSER, User
 from ..http import urls as module_urls
+from ..preconverters import preconvert_str, preconvert_int, preconvert_snowflake, preconvert_preinstanced_type, \
+    preconvert_iterable_of_str
+from ..bases import instance_or_id_to_instance
 
 from .preinstanced import StickerFormat, StickerType
 
+Client = include('Client')
+
+DEFAULT_SORT_VALUE = 100
 
 class Sticker(DiscordEntity, immortal=True):
     """
@@ -35,7 +43,7 @@ class Sticker(DiscordEntity, immortal=True):
     type : ``StickerType``
         The sticker's type.
     user : ``ClientUserBase``
-        The use who uploaded the emoji. Defaults to ``ZEROUSER``.
+        The user who uploaded the emoji. Defaults to ``ZEROUSER``.
     """
     __slots__ = ('description', 'format_type', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags', 'type', 'user')
     
@@ -54,24 +62,8 @@ class Sticker(DiscordEntity, immortal=True):
             self = STICKERS[sticker_id]
         except KeyError:
             self = object.__new__(cls)
-            self.id = int(data['id'])
-            
-            pack_id = data.get('pack_id', None)
-            if pack_id is None:
-                pack_id = 0
-            else:
-                pack_id = int(pack_id)
-            self.pack_id = pack_id
-            
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            self.guild_id = guild_id
-            
-            self.format_type = StickerFormat.get(data.get('format_type', 0))
-            self.type = StickerType.get(data['type'])
+            self.id = sticker_id
+            STICKERS[sticker_id] = self
             
             try:
                 user_data = data['user']
@@ -80,8 +72,35 @@ class Sticker(DiscordEntity, immortal=True):
             else:
                 user = User(user_data)
             self.user = user
-            
-            self._update_no_return(data)
+        
+        else:
+            if not self.partial:
+                if self.user is ZEROUSER:
+                    try:
+                        user_data = data['user']
+                    except KeyError:
+                        pass
+                    else:
+                        self.user = User(user_data)
+                
+                return self
+        
+        pack_id = data.get('pack_id', None)
+        if pack_id is None:
+            pack_id = 0
+        else:
+            pack_id = int(pack_id)
+        self.pack_id = pack_id
+        
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        self.guild_id = guild_id
+        
+        self.format_type = StickerFormat.get(data.get('format_type', 0))
+        self.type = StickerType.get(data['type'])
         
         return self
     
@@ -104,7 +123,6 @@ class Sticker(DiscordEntity, immortal=True):
             tags = frozenset(tags.split(', '))
         
         self.tags = tags
-    
     
     def _update(self, data):
         """
@@ -233,3 +251,194 @@ class Sticker(DiscordEntity, immortal=True):
                 return True
         
         return False
+    
+    @property
+    def partial(self):
+        """
+        Returns whether the sticker is partial.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
+        pack_id = self.pack_id
+        if pack_id:
+            if pack_id in STICKER_PACKS:
+                return False
+            
+            return True
+        
+        guild_id = self.guild_id
+        if guild_id:
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                return False
+            else:
+                return guild.partial
+        
+        return True
+    
+    
+    @classmethod
+    def precreate(cls, sticker_id, **kwargs):
+        """
+        Precreates the sticker by creating a partial one with the given parameters. When the sticker is loaded
+        the precrated one will be picked up. If an already existing sticker would be precreated, returns that
+        instead and updates that only, if that is partial.
+        
+        Parameters
+        ----------
+        sticker_id : `snowflake`
+            The sticker's id.
+        **kwargs : keyword parameters
+            Additional predefined attributes for the sticker.
+        
+        Other Parameters
+        ----------------
+        description : `str`, Optional (Keyword only)
+            The sticker's ``.name``. It's length can be in range [0:1024]
+        format_type : ``StickerFormat``, Optional (Keyword only)
+            The sticker's ``.format_type``.
+        guild_id : `int`, Optional (Keyword only)
+            The sticker's ``.guild_id``.
+        name : `str`, Optional (Keyword only)
+            The sticker's ``.name``. It's length can be in range [0:32].
+        pack_id : `int`, Optional (Keyword only)
+            The sticker's ``.pack_id``.
+        sort_value : `int`, Optional (Keyword only)
+            The sticker's ``.sort_value``.
+        tags : `iterable` of `str`
+            The sticker's ``.tags``.
+        type : ``StickerType``, Optional (Keyword only)
+            The sticker's ``.type``.
+        user : ``ClientUserBase``, Optional (Keyword only)
+            The sticker's ``.user``.
+        
+        Returns
+        -------
+        self : ``Sticker``
+        
+        Raises
+        ------
+        TypeError
+            If any parameter's type is bad or if unexpected parameter is passed.
+        ValueError
+            If an parameter's type is good, but it's value is unacceptable.
+        """
+        sticker_id = preconvert_snowflake(sticker_id, 'sticker_id')
+        
+        if kwargs:
+            processable = []
+            
+            for attribute_name, lower_limit, upper_limit in (
+                        ('description', 0, 1024),
+                        ('name', 2, 32),
+                    ):
+            
+                try:
+                    attribute_value = kwargs.pop('attribute_name')
+                except KeyError:
+                    pass
+                else:
+                    attribute_value = preconvert_str(attribute_value, attribute_name, lower_limit, upper_limit)
+                    processable.append((attribute_name, attribute_value))
+            
+            for attribute_name, preinstanced_type in (
+                        ('format_type', StickerFormat),
+                        ('type', StickerType),
+                    ):
+                try:
+                    attribute_value = kwargs.pop('attribute_name')
+                except KeyError:
+                    pass
+                else:
+                    attribute_value = preconvert_preinstanced_type(attribute_value, attribute_name, preinstanced_type)
+                    processable.append((attribute_name, attribute_value))
+            
+            for attribute_name in ('guild_id', 'pack_id'):
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    pass
+                else:
+                    attribute_value = preconvert_snowflake(attribute_value, attribute_name)
+                    processable.append((attribute_name, attribute_value))
+            
+            try:
+                sort_value = kwargs.pop('sort_value')
+            except KeyError:
+                pass
+            else:
+                sort_value = preconvert_int(sort_value, 'sort_value', 0, (1<<16)-1)
+                processable.append(('sort_value', sort_value))
+            
+            try:
+                tags = kwargs.pop('tags')
+            except KeyError:
+                pass
+            else:
+                tags = preconvert_iterable_of_str(tags, 'tags', 0, 256, 2, 32)
+                tags = frozenset(tags)
+                processable.append(('tags', tags))
+            
+            try:
+                user = kwargs.pop('user')
+            except KeyError:
+                pass
+            else:
+                user = instance_or_id_to_instance(user, (User, Client), 'user')
+                processable.append(('user', user))
+            
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        else:
+            processable = None
+        
+        
+        try:
+            self = STICKERS[sticker_id]
+        except KeyError:
+            self = cls._create_empty(sticker_id)
+            STICKERS[sticker_id] = self
+        else:
+            if not self.partial:
+                return self
+        
+        if (processable is not None):
+            for name, value in processable:
+                setattr(self, name, value)
+        
+        return self
+    
+    
+    @classmethod
+    def _create_empty(cls, sticker_id):
+        """
+        Creates an empty sticker with teh given identifier.
+        
+        Parameters
+        ----------
+        sticker_id : `int`
+            The sticker's identifier.
+        
+        Returns
+        -------
+        self : ``Sticker``
+            The created sticker.
+        """
+        self = object.__new__(cls)
+        self.id = sticker_id
+        self.description = ''
+        self.format_type = StickerFormat.none
+        self.guild_id = 0
+        self.name = ''
+        self.pack_id = 0
+        self.sort_value = DEFAULT_SORT_VALUE
+        self.tags = frozenset()
+        self.type = StickerType.none
+        self.user = ZEROUSER
+        return self
+

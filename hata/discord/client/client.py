@@ -25,7 +25,7 @@ from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
-    ChannelGuildMainBase, VideoQualityMode
+    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
@@ -44,12 +44,14 @@ from ..invite import Invite, InviteTargetType
 from ..message import Message, MessageRepr, MessageReference, Attachment, MessageFlag
 from ..sticker import Sticker, StickerPack
 from ..message.utils import try_resolve_interaction_message
-from ..oauth2 import Connection, parse_locale, DEFAULT_LOCALE, OA2Access, UserOA2, Achievement
-from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken
+from ..oauth2 import Connection, OA2Access, UserOA2, Achievement
+from ..oauth2.helpers import parse_locale, DEFAULT_LOCALE
+from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken, INTENT_ERROR_CODES, \
+    RESHARD_ERROR_CODES
 from ..core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
     MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, USERS
 from ..voice import VoiceClient
-from ..activity import ActivityUnknown, ActivityBase, ActivityCustom
+from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
 from ..integration import Integration
 from ..application import Application, Team, EULA
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
@@ -59,9 +61,9 @@ from ..bases import ICON_TYPE_NONE
 from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext
+from ..interaction.application_command import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ..color import Color
-from ..limits import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, AUTO_ARCHIVE_DEFAULT, \
-    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, AUTO_ARCHIVE_OPTIONS
 from ..stage import Stage, StagePrivacyLevel
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
@@ -228,7 +230,7 @@ class Client(ClientUserPBase):
     loop = KOKORO
     _next_auto_id = 1
     
-    def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ActivityUnknown, status=None,
+    def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ACTIVITY_UNKNOWN, status=None,
             is_bot=True, shard_count=0, intents=-1, additional_owners=None, extensions=None, **kwargs):
         """
         Creates a new ``Client`` instance with the given parameters.
@@ -658,7 +660,6 @@ class Client(ClientUserPBase):
         alter_ego = User._from_client(self)
         USERS[client_id] = alter_ego
         
-        USERS[client_id] = alter_ego
         guild_profiles = self.guild_profiles
         for guild in guild_profiles:
             guild.users[client_id] = alter_ego
@@ -692,7 +693,7 @@ class Client(ClientUserPBase):
         self.thread_profiles = None
         self.status = Status.offline
         self.statuses.clear()
-        self._activity = ActivityUnknown
+        self._activity = ACTIVITY_UNKNOWN
         self.activities = None
         self.ready_state = None
     
@@ -1038,7 +1039,7 @@ class Client(ClientUserPBase):
         if activity is ...:
             activity = self._activity
         elif activity is None:
-            self._activity = ActivityUnknown
+            self._activity = ACTIVITY_UNKNOWN
         elif isinstance(activity, ActivityBase) and (not isinstance(activity, ActivityCustom)):
             self._activity = activity
         else:
@@ -1047,7 +1048,7 @@ class Client(ClientUserPBase):
         
         if activity is None:
             pass
-        elif activity is ActivityUnknown:
+        elif activity is ACTIVITY_UNKNOWN:
             activity = None
         else:
             if self.is_bot:
@@ -13565,7 +13566,7 @@ class Client(ClientUserPBase):
                     continue
                 
                 except DiscordGatewayException as err:
-                    if err.code in DiscordGatewayException.RESHARD_ERROR_CODES:
+                    if err.code in RESHARD_ERROR_CODES:
                         sys.stderr.write(
                             f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
                             f'{err!r}\n'
@@ -13608,8 +13609,7 @@ class Client(ClientUserPBase):
                     continue
         except BaseException as err:
             if isinstance(err, InvalidToken) or \
-                    (isinstance(err, DiscordGatewayException) and \
-                     err.code in DiscordGatewayException.INTENT_ERROR_CODES):
+                    (isinstance(err, DiscordGatewayException) and (err.code in INTENT_ERROR_CODES)):
                 
                 sys.stderr.write(
                     f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'

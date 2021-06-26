@@ -1,3 +1,4 @@
+from .activity_change import *
 from .client_user_base import *
 from .flags import *
 from .guild_profile import *
@@ -10,6 +11,7 @@ from .voice_state import *
 
 
 __all__ = (
+    *activity_change.__all__,
     *client_user_base.__all__,
     *flags.__all__,
     *guild_profile.__all__,

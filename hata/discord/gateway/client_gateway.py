@@ -7,11 +7,11 @@ from ...backend.futures import sleep, Task, future_or_timeout, WaitTillExc, Wait
 from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 from ...backend.utils import to_json, from_json
 
-from ..activity import ActivityUnknown
+from ..activity import ACTIVITY_UNKNOWN
 from ..events.core import PARSERS
 from ..guild import LARGE_GUILD_LIMIT
 from ..core import KOKORO
-from ..exceptions import DiscordGatewayException
+from ..exceptions import DiscordGatewayException, GATEWAY_EXCEPTION_CODE_TABLE
 
 from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
@@ -188,7 +188,7 @@ class DiscordGateway:
                     if code in (1000, 1006):
                         continue
                     
-                    if code in DiscordGatewayException.CODETABLE:
+                    if code in GATEWAY_EXCEPTION_CODE_TABLE:
                         raise DiscordGatewayException(code) from err
                 
                 if isinstance(err, TimeoutError):
@@ -513,7 +513,7 @@ class DiscordGateway:
         """
         client = self.client
         activity = client._activity
-        if activity is ActivityUnknown:
+        if activity is ACTIVITY_UNKNOWN:
             activity = None
         else:
             if client.is_bot:

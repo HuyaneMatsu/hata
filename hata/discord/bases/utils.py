@@ -1,5 +1,5 @@
-﻿__all__ = ('id_sort_key', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake', 'maybe_snowflake',
-    'maybe_snowflake_pair', 'maybe_snowflake_token_pair',)
+﻿__all__ = ('id_sort_key', 'iterable_of_instance_or_id_to_instances', 'instance_or_id_to_instance',
+    'instance_or_id_to_snowflake', 'maybe_snowflake', 'maybe_snowflake_pair', 'maybe_snowflake_token_pair',)
 
 
 def id_sort_key(entity):
@@ -55,7 +55,7 @@ def instance_or_id_to_instance(obj, type_, name):
         if obj_type is int:
             snowflake = obj
         elif issubclass(obj_type, str):
-            if 6 < len(obj) < 18 and obj.isdigit():
+            if 6 < len(obj) < 22 and obj.isdigit():
                 snowflake = int(obj)
             else:
                 raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
@@ -81,6 +81,78 @@ def instance_or_id_to_instance(obj, type_, name):
         instance = type_.precreate(snowflake)
     
     return instance
+
+
+def iterable_of_instance_or_id_to_instances(iterable_obj, type_, name):
+    """
+    Converts the given `iterable_obj` to it's `type_`'s representation.
+    
+    Parameters
+    ----------
+    iterable_obj : `iterable` of `int`, `str` or`type_` instance
+        The object to convert.
+    type_ : `type` or (`tuple` of `type`)
+        The type to convert.
+    name : `str`
+        The respective name of the object.
+    
+    Returns
+    -------
+    instances : `set` of `type_`
+    
+    Raises
+    ------
+    TypeError
+        If `obj` was not given neither as `type_`, `str` or `int` instance.
+    ValueError
+        If `obj` was given as `str` or as `int` instance, but not as a valid snowflake, so `type_` cannot be precreated
+        with it.
+    
+    Notes
+    -----
+    The given `type_` must have a `.precreate` function`.
+    """
+    iterator = getattr(type(iterable_obj), '__iter__', None)
+    if iterator is None:
+        raise TypeError(f'`{name}` can be `iterable`, got {iterable_obj.__class__.__name__}.')
+    
+    instances = set()
+    
+    for obj in iterator(iterable_obj):
+        obj_type = obj.__class__
+        if issubclass(obj_type, type_):
+            instance = obj
+        else:
+            if obj_type is int:
+                snowflake = obj
+            elif issubclass(obj_type, str):
+                if 6 < len(obj) < 22 and obj.isdigit():
+                    snowflake = int(obj)
+                else:
+                    raise ValueError(f'`{name}` contains a `str` instance, but not as a valid snowflake, got {obj!r}.')
+            
+            elif issubclass(obj_type, int):
+                snowflake = int(obj)
+            else:
+                if type(type_) is tuple:
+                    type_name = ', '.join(t.__name__ for t in type_)
+                else:
+                    type_name = type_.__name__
+                
+                raise TypeError(f'`{name}` can contain either {type_name} instance, or an `int` or `str` representing '
+                    f'a snowflake, got {obj_type.__name__}.')
+            
+            if snowflake < 0 or snowflake > ((1<<64)-1):
+                raise ValueError(f'`{name}` contains an `int` or a `str` instance, but not as representing a '
+                    f'`uint64`, got {obj!r}.')
+            
+            if type(type_) is tuple:
+                type_ = type_[0]
+            
+            instance = type_.precreate(snowflake)
+            instances.add(instance)
+    
+    return instances
 
 
 def instance_or_id_to_snowflake(obj, type_, name):
@@ -118,7 +190,7 @@ def instance_or_id_to_snowflake(obj, type_, name):
         if obj_type is int:
             snowflake = obj
         elif issubclass(obj_type, str):
-            if 6 < len(obj) < 18 and obj.isdigit():
+            if 6 < len(obj) < 22 and obj.isdigit():
                 snowflake = int(obj)
             else:
                 raise ValueError(f'`{name}` was given as `str` instance, but not as a valid snowflake, got {obj!r}.')
@@ -134,7 +206,7 @@ def instance_or_id_to_snowflake(obj, type_, name):
             raise TypeError(f'`{name}` can be given either as {type_name} instance, or as `int` or `str` representing '
                 f'a snowflake, got {obj_type.__name__}.')
         
-        if snowflake < 0 or snowflake>((1<<64)-1):
+        if (snowflake < 0) or (snowflake > ((1<<64)-1)):
             raise ValueError(f'`{name}` was given either as `int` or as `str` instance, but not as representing a '
                 f'`uint64`, got {obj!r}.')
     
@@ -165,7 +237,8 @@ def maybe_snowflake(value):
     elif isinstance(value, str):
         if value.isdigit():
             if __debug__:
-                if not 6 < len(value) < 21:
+                value_length = len(value)
+                if (value_length < 7) or (value_length > 21):
                     raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint '
                         f'range, got {value!r}.')
             
@@ -176,7 +249,7 @@ def maybe_snowflake(value):
         return None
     
     if __debug__:
-        if value < 0 or value > ((1<<64)-1):
+        if (value < 0) or (value > ((1<<64)-1)):
             raise AssertionError('An `id` was given as `str` instance, but it\'s value is out of 64uint range, got '
                 f'{value!r}.')
     

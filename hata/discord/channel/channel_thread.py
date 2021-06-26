@@ -1,4 +1,4 @@
-__all__ = ('ChannelThread', )
+__all__ = ('AUTO_ARCHIVE_DEFAULT', 'AUTO_ARCHIVE_OPTIONS', 'ChannelThread', )
 
 from ...backend.utils import copy_docs
 from ...backend.export import export
@@ -9,12 +9,14 @@ from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_int_options
 from ..utils import parse_time
-from ..limits import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
 from .channel_text_base import ChannelTextBase
 
+
+AUTO_ARCHIVE_DEFAULT = 3600
+AUTO_ARCHIVE_OPTIONS = frozenset((3600, 86400, 259200, 604800))
 
 CHANNEL_THREAD_NAMES = {
      9: None,

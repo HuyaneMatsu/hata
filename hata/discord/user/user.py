@@ -54,7 +54,7 @@ class User(USER_BASE_CLASS):
         A list of the client's activities. Defaults to `None`
         
         > Only available if presence caching is enabled.
-    status : `Status`
+    status : ``Status``
         The user's display status.
         
         > Only available if presence caching is enabled.

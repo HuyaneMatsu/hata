@@ -8,7 +8,6 @@ from ...backend.export import export, include
 
 from ..bases import maybe_snowflake
 from ..core import CHANNELS
-from ..limits import AUTO_ARCHIVE_OPTIONS
 
 from .channel_guild_text import ChannelText
 from .channel_private import ChannelPrivate, ChannelGroup
@@ -20,6 +19,7 @@ from .channel_guild_undefined import ChannelGuildUndefined
 from .preinstanced import VideoQualityMode
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
+from .channel_thread import AUTO_ARCHIVE_OPTIONS
 
 VoiceRegion = include('VoiceRegion')
 Guild = include('Guild')
@@ -380,6 +380,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         
         channel_data['video_quality_mode'] = video_quality_mode_value
     
+    
     if (archived is not None):
         if __debug__:
             if not issubclass(channel_type, ChannelThread):
@@ -472,4 +473,3 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         channel_data['parent_id'] = parent_id
     
     return channel_data
-

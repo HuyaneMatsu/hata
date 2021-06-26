@@ -1,18 +1,19 @@
 __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
-from ...backend.utils import DOCS_ENABLED, copy_docs, set_docs
+from ...backend.utils import copy_docs
 
 from ..bases import ICON_TYPE_NONE
 from ..core import USERS
 
 from ..color import Color
-from ..activity import create_activity, ActivityRich, ActivityCustom
+from ..activity import create_activity_from_data, ActivityRich, ActivityCustom
 
-from .preinstanced import Status, DefaultAvatar
+from .preinstanced import Status
 
 from .user_base import UserBase
 from .flags import UserFlag
 from .guild_profile import GuildProfile
+from .activity_change import ActivityChange, ActivityUpdate
 
 class ClientUserBase(UserBase):
     """
@@ -606,7 +607,7 @@ class ClientUserPBase(ClientUserBase):
         if activity_datas:
             if old_activities is None:
                 for activity_data in activity_datas:
-                    activity = create_activity(activity_data)
+                    activity = create_activity_from_data(activity_data)
                     
                     if new_activities is None:
                         new_activities = []
@@ -648,7 +649,7 @@ class ClientUserPBase(ClientUserBase):
                         new_activities.append(activity)
                         break
                     else:
-                        activity = create_activity(activity_data)
+                        activity = create_activity_from_data(activity_data)
                         
                         if new_activities is None:
                             new_activities = []
@@ -693,7 +694,7 @@ class ClientUserPBase(ClientUserBase):
         
         activity_datas = data['activities']
         if activity_datas:
-            new_activities = [create_activity(activity_data) for activity_data in activity_datas]
+            new_activities = [create_activity_from_data(activity_data) for activity_data in activity_datas]
         else:
             new_activities = None
         

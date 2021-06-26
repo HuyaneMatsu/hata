@@ -11,9 +11,6 @@ from ...backend.export import export
 from ..bases import PreinstancedBase
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import url_cutter
-from ..limits import COMPONENT_SUB_COMPONENT_LIMIT, COMPONENT_LABEL_LENGTH_MAX, COMPONENT_CUSTOM_ID_LENGTH_MAX, \
-    COMPONENT_OPTION_LENGTH_MAX, COMPONENT_OPTION_LENGTH_MIN, COMPONENT_OPTION_MIN_VALUES_MIN, \
-    COMPONENT_OPTION_MIN_VALUES_MAX, COMPONENT_OPTION_MAX_VALUES_MIN, COMPONENT_OPTION_MAX_VALUES_MAX
 from ..emoji import create_partial_emoji_from_data, Emoji, create_partial_emoji_data
 
 from .preinstanced import ComponentType, ButtonStyle
@@ -21,6 +18,16 @@ from .preinstanced import ComponentType, ButtonStyle
 COMPONENT_TYPE_ROW = ComponentType.row
 COMPONENT_TYPE_BUTTON = ComponentType.button
 COMPONENT_TYPE_SELECT = ComponentType.select
+
+COMPONENT_SUB_COMPONENT_LIMIT = 5
+COMPONENT_LABEL_LENGTH_MAX = 80
+COMPONENT_CUSTOM_ID_LENGTH_MAX = 100
+COMPONENT_OPTION_LENGTH_MIN = 1
+COMPONENT_OPTION_LENGTH_MAX = 25
+COMPONENT_OPTION_MIN_VALUES_MIN = 1
+COMPONENT_OPTION_MIN_VALUES_MAX = 15
+COMPONENT_OPTION_MAX_VALUES_MIN = 1
+COMPONENT_OPTION_MAX_VALUES_MAX = 25
 
 
 def _debug_component_components(components):

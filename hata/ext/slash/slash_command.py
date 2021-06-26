@@ -10,9 +10,10 @@ from ...discord.preconverters import preconvert_snowflake, preconvert_bool
 from ...discord.client import Client
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommand, InteractionEvent, \
     ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType
-from ...discord.limits import APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, \
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, \
-    APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX
+from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, \
+    APPLICATION_COMMAND_NAME_LENGTH_MAX
     
 
 from .responding import process_command_coroutine

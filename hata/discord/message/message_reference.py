@@ -138,37 +138,37 @@ class MessageReference:
     
     def __repr__(self):
         """Returns the representation of the message reference."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
         ]
         
         message_id = self.message_id
         if message_id:
-            result.append(' message_id=')
-            result.append(repr(message_id))
-            put_comma = True
+            repr_parts.append(' message_id=')
+            repr_parts.append(repr(message_id))
+            field_added = True
         else:
-            put_comma = False
+            field_added = False
         
         channel_id = self.channel_id
         if channel_id:
-            if put_comma:
-                result.append(',')
+            if field_added:
+                repr_parts.append(',')
             else:
-                put_comma = True
+                field_added = True
             
-            result.append(' channel_id=')
-            result.append(repr(channel_id))
+            repr_parts.append(' channel_id=')
+            repr_parts.append(repr(channel_id))
         
         guild_id = self.guild_id
         if guild_id:
-            if put_comma:
-                result.append(',')
+            if field_added:
+                repr_parts.append(',')
             
-            result.append(' guild_id=')
-            result.append(repr(guild_id))
+            repr_parts.append(' guild_id=')
+            repr_parts.append(repr(guild_id))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)

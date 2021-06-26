@@ -7,15 +7,13 @@ from ...backend.export import export
 from ..core import CHANNELS
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY
-
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
     preconvert_int_options
-
-from ..limits import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildMainBase
 from .channel_text_base import ChannelTextBase
+from .channel_thread import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 
 CHANNEL_TEXT_NAMES = {

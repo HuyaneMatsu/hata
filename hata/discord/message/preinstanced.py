@@ -4,7 +4,7 @@ from ...backend.utils import any_to_any
 
 from ..bases import PreinstancedBase, Preinstance as P
 from ..utils import sanitize_mentions
-from ..activity import ActivityTypes
+from ..activity import ACTIVITY_TYPES
 
 class MessageActivityType(PreinstancedBase):
     """
@@ -200,7 +200,7 @@ def convert_new_follower_channel(self):
 def convert_stream(self):
     user = self.author
     for activity in user.activities:
-        if activity.type == ActivityTypes.stream:
+        if activity.type == ACTIVITY_TYPES.stream:
             activity_name = activity.name
             break
     else:

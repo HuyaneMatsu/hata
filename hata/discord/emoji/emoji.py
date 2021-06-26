@@ -1,13 +1,18 @@
 ﻿__all__ = ('BUILTIN_EMOJIS', 'UNICODE_TO_EMOJI', 'Emoji')
 
+from ...backend.export import include
+
 from ..bases import DiscordEntity, id_sort_key
 from ..core import EMOJIS
 from ..utils import id_to_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..user import User, ZEROUSER
 from ..preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
-from ..role import create_partial_role_from_id
-
+from ..role import create_partial_role_from_id, Role
+from ..bases import instance_or_id_to_instance, iterable_of_instance_or_id_to_instances
 from ..http import urls as module_urls
+
+Client = include('Client')
+Guild = include('Guild')
 
 UNICODE_EMOJI_LIMIT = 1<<21
 
@@ -85,18 +90,29 @@ class Emoji(DiscordEntity, immortal=True):
             self = object.__new__(cls)
             self.id = emoji_id
             EMOJIS[emoji_id] = self
+            
+            try:
+                user_data = data['user']
+            except KeyError:
+                user = ZEROUSER
+            else:
+                user = User(user_data)
+            self.user = user
+            
         else:
             # whenever we receive an emoji, it will have no user data included,
             # so it is enough if we check for user data only whenever we
             # receive emoji data from a request or so.
-            if (self.guild is not None):
-                if not self.user.id:
+            if not self.partial:
+                
+                if self.user is ZEROUSER:
                     try:
                         user_data = data['user']
                     except KeyError:
                         pass
                     else:
                         self.user = User(user_data)
+                
                 return self
         
         name = data['name']
@@ -110,6 +126,7 @@ class Emoji(DiscordEntity, immortal=True):
         self.guild = guild
         self.available = data.get('available', True)
         self.user = ZEROUSER
+        
         self.unicode = None
         
         role_ids = data.get('roles', None)
@@ -138,14 +155,24 @@ class Emoji(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
+        animated : `bool`, Optional (Keyword only)
+             The emoji's ``.animated``.
+        available : `bool`, Optional (Keyword only)
+             The emoji's ``.available``.
+        guild : ``Guild``, `bool`, Optional (Keyword only)
+             The emoji's ``.guild``.
         name : `str`, Optional (Keyword only)
             The emoji's ``.name``. Can be between length `2` and `32`.
-        animated : `bool`, Optional (Keyword only)
-            Whether the emoji is animated.
+        require_colons : `bool`, Optional (Keyword only)
+             The emoji's ``.require_colons``.
+        roles : `None` or `iterable` of (``Role``, `int`), Optional (Keyword only)
+            The emoji's ``.roles``.
+        user : ``ClientUserBase`, `int`, Optional (Keyword only)
+            The emoji's ``.user``.
         
         Returns
         -------
-        emoji : ``Emoji``
+        self : ``Emoji``
         
         Raises
         ------
@@ -165,15 +192,40 @@ class Emoji(DiscordEntity, immortal=True):
                 pass
             else:
                 name = preconvert_str(name, 'name', 2, 32)
-                processable.append(('name',name))
+                processable.append(('name', name))
+            
+            for attribute_name in ('animated', 'available', 'managed', 'require_colons',):
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    pass
+                else:
+                    animated = preconvert_bool(attribute_value, attribute_name)
+                    processable.append((attribute_name, animated))
+            
+            
+            for attribute_name, attribute_type in (
+                        ('guild', Guild),
+                        ('user', (User, Client)),
+                    ):
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    pass
+                else:
+                    attribute_value = instance_or_id_to_instance(attribute_value, attribute_type, attribute_name)
+                    processable.append((attribute_name, attribute_value))
             
             try:
-                animated = kwargs.pop('animated')
+                roles = kwargs.pop('roles')
             except KeyError:
                 pass
             else:
-                animated = preconvert_bool(animated, 'animated')
-                processable.append(('animated', animated))
+                if (roles is not None):
+                    roles = iterable_of_instance_or_id_to_instances(roles, Role, 'roles')
+                    if roles:
+                        roles = tuple(sorted(roles, key=id_sort_key))
+                        processable.append(('roles', roles))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -181,21 +233,15 @@ class Emoji(DiscordEntity, immortal=True):
         else:
             processable = None
         
+        
         try:
             self = EMOJIS[emoji_id]
         except KeyError:
-            self = object.__new__(cls)
-            
-            self.name = ''
-            self.animated = False
-            self.id = emoji_id
-            self.guild = None
-            self.unicode = None
-            self.user = ZEROUSER
+            self = cls._create_empty(emoji_id)
             
             EMOJIS[emoji_id] = self
         else:
-            if (self.guild is not None) or (self.unicode is not None):
+            if not self.partial:
                 return self
         
         if (processable is not None):
@@ -296,10 +342,11 @@ class Emoji(DiscordEntity, immortal=True):
         if (self.unicode is not None):
             return False
         
-        if (self.guild is not None):
-            return False
+        guild = self.guild
+        if (guild is None):
+            return True
         
-        return True
+        return guild.partial
     
     def is_custom_emoji(self):
         """
@@ -505,6 +552,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         return old_attributes
     
+    
     @classmethod
     def _create_partial(cls, emoji_id, name, animated):
         """
@@ -527,21 +575,39 @@ class Emoji(DiscordEntity, immortal=True):
         
         try:
             self = EMOJIS[emoji_id]
-            if self.guild is None:
+            if self.partial:
                 self.name = name
         except KeyError:
-            self = object.__new__(cls)
-            self.id = emoji_id
-            self.animated = animated
-            self.name = name
-            self.unicode = None
-            self.guild = None
-            self.available = True
-            self.require_colons = True
-            self.managed = False
-            self.user = ZEROUSER
-            self.roles = None
-            
+            self = cls._create_empty(emoji_id)
             EMOJIS[emoji_id] = self
         
+        return self
+    
+    
+    @classmethod
+    def _create_empty(cls, emoji_id):
+        """
+        Creates an empty emoji with teh given identifier.
+        
+        Parameters
+        ----------
+        emoji_id : `int`
+            The emoji's identifier.
+        
+        Returns
+        -------
+        self : ``Emoji``
+            The created emoji.
+        """
+        self = object.__new__(cls)
+        self.id = emoji_id
+        self.animated = False
+        self.name = ''
+        self.unicode = None
+        self.guild = None
+        self.available = True
+        self.require_colons = True
+        self.managed = False
+        self.user = ZEROUSER
+        self.roles = None
         return self

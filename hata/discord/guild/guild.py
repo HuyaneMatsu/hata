@@ -19,7 +19,7 @@ from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL
 from ..emoji import Emoji
 from ..webhook import Webhook, WebhookRepr
-from ..oauth2 import parse_preferred_locale, DEFAULT_LOCALE
+from ..oauth2.helpers import parse_preferred_locale, DEFAULT_LOCALE
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .preinstanced import GuildFeature, VoiceRegion, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, NsfwLevel

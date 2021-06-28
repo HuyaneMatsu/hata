@@ -2,7 +2,7 @@ __all__ = ('UserBase', )
 
 from ...backend.export import include
 
-from ..bases import DiscordEntity, IconSlot
+from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..utils import DATETIME_FORMAT_CODE
 from ..color import Color
 
@@ -509,3 +509,21 @@ class UserBase(DiscordEntity, immortal=True):
     avatar_url_for_as = module_urls.user_avatar_url_for_as
     avatar_url_at = property(module_urls.user_avatar_url_at)
     avatar_url_at_as = module_urls.user_avatar_url_at_as
+    
+    
+    @classmethod
+    def _create_empty(cls, user_id):
+        self = object.__new__(cls)
+        self.id = user_id
+        self._set_default_attributes()
+        return self
+    
+    
+    def _set_default_attributes(self):
+        """
+        Sets the user's attribute's to their default.
+        """
+        self.name = ''
+        self.discriminator = 0
+        self.avatar_hash = 0
+        self.avatar_type = ICON_TYPE_NONE

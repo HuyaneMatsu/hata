@@ -426,6 +426,21 @@ class ComponentBase:
         return None
     
     
+    def copy_with(self, **kwargs):
+        """
+        Copies the component and modifies the created one with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+            Keyword parameters referencing attributes.
+        """
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        return None
+    
+    
     def __eq__(self, other):
         """Returns Whether the two component are equal."""
         if type(other) is not type(self):
@@ -552,6 +567,7 @@ class ComponentRow(ComponentBase):
         
         return ''.join(repr_parts)
     
+    
     @copy_docs(ComponentBase.copy)
     def copy(self):
         new = object.__new__(type(self))
@@ -564,6 +580,43 @@ class ComponentRow(ComponentBase):
         
         return new
     
+    
+    def copy_with(self, **kwargs):
+        """
+        Copies the component and modifies the created one with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+            Keyword parameters referencing attributes.
+        
+        Other Parameters
+        ----------------
+        components : `iterable` of ``ComponentBase`` instances, Optional (Keyword only)
+            Sub components.
+        
+        Returns
+        -------
+        new : ``ComponentRow``
+        """
+        try:
+            components = kwargs.pop('components')
+        except KeyError:
+            components = self.components
+        else:
+            components = tuple(components)
+            
+            if __debug__:
+                _debug_component_components(components)
+            
+            if not components:
+                components = None
+        
+        self = object.__new__(cls)
+        self.components = components
+        return self
+    
+    
     @copy_docs(ComponentBase.__eq__)
     def __eq__(self, other):
         if type(other) is not type(self):
@@ -573,6 +626,7 @@ class ComponentRow(ComponentBase):
             return False
         
         return True
+    
     
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
@@ -585,6 +639,7 @@ class ComponentRow(ComponentBase):
                 hash_value ^= hash(component)
         
         return hash_value
+    
     
     def _iter_components(self):
         """
@@ -601,6 +656,7 @@ class ComponentRow(ComponentBase):
         if (components is not None):
             for component in components:
                 yield from component._iter_components()
+
 
 
 class ComponentButton(ComponentBase):
@@ -620,7 +676,7 @@ class ComponentButton(ComponentBase):
     label : `None` or `str`
         Label of the component.
     style : `None` or ``ButtonStyle``
-        The components's style. Applicable for buttons.
+        The button's style.
     url : `None` or `str`
         Url to redirect to when clicking on the button.
         
@@ -659,7 +715,7 @@ class ComponentButton(ComponentBase):
             > Mutually exclusive with the `custom_id` field.
         
         style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
-            The components's style. Applicable for buttons.
+            The button's style.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
@@ -679,6 +735,13 @@ class ComponentButton(ComponentBase):
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
         """
+        if __debug__:
+            _debug_component_custom_id(custom_id)
+            _debug_component_emoji(emoji)
+            _debug_component_label(label)
+            _debug_component_enabled(enabled)
+            _debug_component_url(url)
+        
         if (custom_id is not None) and (not custom_id):
             custom_id = None
         
@@ -686,12 +749,6 @@ class ComponentButton(ComponentBase):
             url = None
         
         if __debug__:
-            _debug_component_custom_id(custom_id)
-            _debug_component_emoji(emoji)
-            _debug_component_label(label)
-            _debug_component_enabled(enabled)
-            _debug_component_url(url)
-            
             if (custom_id is not None) and (url is not None):
                 raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
                     f'custom_id={custom_id!r}, url={url!r}.')
@@ -845,6 +902,122 @@ class ComponentButton(ComponentBase):
         return new
     
     
+    def copy_with(self, **kwargs):
+        """
+        Copies the component and modifies the created one with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+            Keyword parameters referencing attributes.
+        
+        Other Parameters
+        ----------------
+        label : `None` or `str`, Optional (Keyword only)
+            Label of the component.
+        
+        emoji : `None` or ``Emoji``, Optional (Keyword only)
+            Emoji of the button if applicable.
+        
+        custom_id : `None` or `str`, Optional (Keyword only)
+            Custom identifier to detect which button was clicked by the user.
+            
+        url : `None` or `str`, Optional (Keyword only)
+            Url to redirect to when clicking on the button.
+            
+        style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
+            The button's style.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
+        
+        Returns
+        -------
+        new : ``ComponentButton``
+        """
+        try:
+            custom_id = kwargs.pop('custom_id')
+        except KeyError:
+            custom_id = self.custom_id
+        else:
+            if __debug__:
+                _debug_component_custom_id(custom_id)
+        
+        try:
+            emoji = kwargs.pop('emoji')
+        except KeyError:
+            emoji = self.emoji
+        else:
+            if __debug__:
+                _debug_component_emoji(emoji)
+        
+        try:
+            label = kwargs.pop('label')
+        except KeyError:
+            label = self.label
+        else:
+            if __debug__:
+                _debug_component_label(label)
+        
+        try:
+            enabled = kwargs.pop('enabled')
+        except KeyError:
+            enabled = self.enabled
+        else:
+            if __debug__:
+                _debug_component_enabled(enabled)
+        
+        try:
+            url = kwargs.pop('url')
+        except KeyError:
+            url = self.url
+        else:
+            if __debug__:
+                _debug_component_url(url)
+        
+        try:
+            style = kwargs.pop('style')
+        except KeyError:
+            style = self.style
+        
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        if (custom_id is not None) and (not custom_id):
+            custom_id = None
+        
+        if (url is not None) and (not url):
+            url = None
+        
+        if __debug__:
+            if (custom_id is not None) and (url is not None):
+                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
+                    f'custom_id={custom_id!r}, url={url!r}.')
+        
+        if (url is None):
+            if style is None:
+                style = cls.default_style
+            else:
+                style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
+            
+            if (custom_id is None):
+                custom_id = create_auto_custom_id()
+        
+        else:
+            style = ButtonStyle.link
+        
+        new = object.__new__(type(self))
+        
+        new.custom_id = custom_id
+        new.emoji = emoji
+        new.style = style
+        new.url = url
+        new.label = label
+        new.enabled = enabled
+        
+        return new
+    
+    
     @copy_docs(ComponentBase.__eq__)
     def __eq__(self, other):
         if type(other) is not type(self):
@@ -944,9 +1117,6 @@ class ComponentSelectOption(ComponentBase):
         default : `bool`
             Whether this the the default option. Defaults to `False`.
         """
-        if (description is not None) and (not description):
-            description = None
-        
         if __debug__:
             _debug_component_value(value)
             _debug_component_label(label)
@@ -955,7 +1125,11 @@ class ComponentSelectOption(ComponentBase):
             _debug_component_default(default)
             
             if (label is None) or (not label):
-                raise AssertionError('`label` is required.')
+                raise AssertionError('`label` cannot be empty..')
+        
+        if (description is not None) and (not description):
+            description = None
+        
         
         self = object.__new__(cls)
         self.default = default
@@ -1049,6 +1223,90 @@ class ComponentSelectOption(ComponentBase):
         return new
     
     
+    def copy_with(self, **kwargs):
+        """
+        Copies the component and modifies the created one with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+            Keyword parameters referencing attributes.
+        
+        Other Parameters
+        ----------------
+        value : `str`, Optional (Keyword only)
+            The option's value.
+        label : `str`, Optional (Keyword only)
+            Label of the component option.
+        emoji : `None` or ``Emoji``, Optional (Keyword only)
+            Emoji of the option if applicable.
+        description : `None` or `str`, Optional (Keyword only)
+            Description of the component option.
+        default : `bool`
+            Whether this the the default option. Defaults to `False`.
+        
+        Returns
+        -------
+        new : ``ComponentSelectOption``
+        """
+        try:
+            value = kwargs.pop('value')
+        except KeyError:
+            value = self.value
+        else:
+            if __debug__:
+                _debug_component_value(value)
+        
+        try:
+            label = kwargs.pop('label')
+        except KeyError:
+            label = self.label
+        else:
+            if __debug__:
+                _debug_component_label(label)
+                
+                if (label is None) or (not label):
+                    raise AssertionError('`label` cannot be empty..')
+        
+        try:
+            emoji = kwargs.pop('emoji')
+        except KeyError:
+            emoji = self.emoji
+        else:
+            if __debug__:
+                _debug_component_emoji(emoji)
+        
+        try:
+            description = kwargs.pop('description')
+        except KeyError:
+            description = self.description
+        else:
+            if __debug__:
+                _debug_component_description(description)
+            
+            if (description is not None) and (not description):
+                description = None
+        
+        try:
+            default = kwargs.pop('default')
+        except KeyError:
+            default = self.default
+        else:
+            if __debug__:
+                _debug_component_default(default)
+        
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        new = object.__new__(type(self))
+        new.default = default
+        new.description = description
+        new.emoji = emoji
+        new.label = label
+        new.value = value
+        return new
+    
+    
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
         hash_value = 0
@@ -1128,15 +1386,15 @@ class ComponentSelect(ComponentBase):
             - If `max_values` is not `int` instance.
             - If `max_values` is out of range [1:25].
         """
-        if (placeholder is not None) and (not placeholder):
-            placeholder = None
-        
         if __debug__:
             _debug_component_custom_id(custom_id)
             _debug_component_options(options)
             _debug_component_placeholder(placeholder)
             _debug_component_min_values(min_values)
             _debug_component_max_values(max_values)
+        
+        if (placeholder is not None) and (not placeholder):
+            placeholder = None
         
         if custom_id is None:
             custom_id = create_auto_custom_id()
@@ -1244,6 +1502,94 @@ class ComponentSelect(ComponentBase):
         new.max_values = self.max_values
         
         return new
+    
+    
+    def copy_with(self, **kwargs):
+        """
+        Copies the component and modifies the created one with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+            Keyword parameters referencing attributes.
+        
+        Other Parameters
+        ----------------
+        options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``, Optional (Keyword only)
+            Options of the select.
+        custom_id : `str` or `None`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        placeholder : `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
+        max_values : `int`, Optional (Keyword only)
+            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
+        
+        Returns
+        -------
+        new : ``ComponentSelect``
+        """
+        try:
+            options = kwargs.pop('options')
+        except KeyError:
+            options = self.options
+            if (options is not None):
+                options = [option.copy() for option in options]
+        else:
+            if __debug__:
+                _debug_component_options(options)
+            
+            options = list(options)
+        
+        try:
+            custom_id = kwargs.pop('custom_id')
+        except KeyError:
+            custom_id = self.custom_id
+        else:
+            if __debug__:
+                _debug_component_custom_id(custom_id)
+            
+            if custom_id is None:
+                custom_id = self.custom_id
+        
+        try:
+            placeholder = kwargs.pop('placeholder')
+        except KeyError:
+            placeholder = self.placeholder
+        else:
+            if __debug__:
+                _debug_component_placeholder(placeholder)
+            
+            if (placeholder is not None) and (not placeholder):
+                placeholder = None
+        
+        try:
+            min_values = kwargs.pop('min_values')
+        except KeyError:
+            min_values = self.min_values
+        else:
+            if __debug__:
+                _debug_component_min_values(min_values)
+        
+        try:
+            max_values = kwargs.pop('max_values')
+        except KeyError:
+            max_values = self.max_values
+        else:
+            if __debug__:
+                _debug_component_max_values(max_values)
+        
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        self = object.__new__(type(self))
+        self.custom_id = custom_id
+        self.options = options
+        self.placeholder = placeholder
+        self.min_values = min_values
+        self.max_values = max_values
+        return self
     
     
     @copy_docs(ComponentBase.__eq__)
@@ -1429,6 +1775,27 @@ class ComponentDynamic(ComponentBase):
         return new
     
     
+    def copy_with(self, **kwargs):
+        """
+        Copies the component and modifies the created one with the given parameters.
+        
+        > Dynamic component do not accepts any additional attributes, and returns just a copy of itself.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+            Keyword parameters referencing attributes.
+        
+        Returns
+        -------
+        new : ``ComponentDynamic``
+        """
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+        
+        return self.copy()
+    
+    
     @copy_docs(ComponentBase.__eq__)
     def __eq__(self, other):
         if type(other) is not type(self):
@@ -1442,9 +1809,11 @@ class ComponentDynamic(ComponentBase):
         
         return True
     
+    
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
         return object.__hash__(self)
+    
     
     def __getattr__(self, attribute_name):
         """Returns the component's fields if applicable"""

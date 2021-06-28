@@ -2,7 +2,6 @@ __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
 from ...backend.utils import copy_docs
 
-from ..bases import ICON_TYPE_NONE
 from ..core import USERS
 
 from ..color import Color
@@ -272,34 +271,10 @@ class ClientUserBase(UserBase):
         return self
     
     
-    @classmethod
-    def _create_empty(cls, user_id):
-        """
-        Creates a user instance with the given `user_id` and with the default user attributes.
-        
-        Parameters
-        ----------
-        user_id : `int`
-            The user's id.
-        
-        Returns
-        -------
-        self : ``ClientUserBase``
-        """
-        self = object.__new__(cls)
-        self.id = user_id
-        self._set_default_attributes()
-        return self
-    
-    
+    @copy_docs(UserBase._set_default_attributes)
     def _set_default_attributes(self):
-        """
-        Sets the user's attribute's to their default.
-        """
-        self.name = ''
-        self.discriminator = 0
-        self.avatar_hash = 0
-        self.avatar_type = ICON_TYPE_NONE
+        UserBase._set_default_attributes(self)
+        
         self.is_bot = False
         self.flags = UserFlag()
         

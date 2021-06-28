@@ -4,6 +4,7 @@ from ...backend.export import export
 
 from .utils import create_partial_webhook_from_id
 from .webhook_base import WebhookBase
+from .preinstanced import WebhookType
 
 @export
 class WebhookRepr(WebhookBase):
@@ -31,7 +32,7 @@ class WebhookRepr(WebhookBase):
     -----
     Instances of the type support weakreferencing.
     """
-    __slots__ = ('type', )
+    __slots__ = ()
     
     def __init__(self, data, webhook_id, type_, channel):
         """
@@ -54,6 +55,7 @@ class WebhookRepr(WebhookBase):
         self._set_avatar(data)
         self.type = type_
         self.channel = channel
+    
     
     @property
     def webhook(self):

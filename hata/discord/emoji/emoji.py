@@ -587,7 +587,7 @@ class Emoji(DiscordEntity, immortal=True):
     @classmethod
     def _create_empty(cls, emoji_id):
         """
-        Creates an empty emoji with teh given identifier.
+        Creates an empty emoji with the given identifier.
         
         Parameters
         ----------

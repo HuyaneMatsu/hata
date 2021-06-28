@@ -4,6 +4,8 @@ from ...backend.utils import copy_docs
 
 from ..user import UserBase
 
+from .preinstanced import WebhookType
+
 class WebhookBase(UserBase):
     """
     Base class for webhook like-types.
@@ -22,8 +24,10 @@ class WebhookBase(UserBase):
         The webhook's avatar's type.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
+    type : ``WebhookType``
+        The webhook's type.
     """
-    __slots__ = ('channel',)
+    __slots__ = ('channel', 'type',)
     
     @property
     def is_bot(self):
@@ -92,3 +96,11 @@ class WebhookBase(UserBase):
             return True
         
         return False
+    
+    
+    @copy_docs(UserBase._set_default_attributes)
+    def _set_default_attributes(self):
+        UserBase._set_default_attributes(self)
+        
+        self.channel = None
+        self.type = WebhookType.none

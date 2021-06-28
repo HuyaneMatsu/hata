@@ -518,6 +518,18 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | preview_enabled               | PREVIEW_ENABLED                   |
     +-------------------------------+-----------------------------------+
+    | ticket_events_enabled         | TICKETED_EVENTS_ENABLED           |
+    +-------------------------------+-----------------------------------+
+    | monetization_enabled          | MONETIZATION_ENABLED              |
+    +-------------------------------+-----------------------------------+
+    | more_sticker                  | MORE_STICKERS                     |
+    +-------------------------------+-----------------------------------+
+    | thread_archive_3_day          | THREE_DAY_THREAD_ARCHIVE          |
+    +-------------------------------+-----------------------------------+
+    | thread_archive_7_day          | SEVEN_DAY_THREAD_ARCHIVE          |
+    +-------------------------------+-----------------------------------+
+    | private_threads               | PRIVATE_THREADS                   |
+    +-------------------------------+-----------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = str
@@ -546,6 +558,7 @@ class GuildFeature(PreinstancedBase):
         self.INSTANCES[value] = self
         return self
     
+    
     # predefined
     animated_icon = P('ANIMATED_ICON', 'animated_icon')
     banner = P('BANNER', 'banner')
@@ -569,6 +582,12 @@ class GuildFeature(PreinstancedBase):
     welcome_screen = P('WELCOME_SCREEN_ENABLED', 'welcome_screen')
     verification_screen = P('MEMBER_VERIFICATION_GATE_ENABLED', 'verification_screen')
     preview_enabled = P('PREVIEW_ENABLED', 'preview_enabled')
+    ticket_events_enabled = P('TICKETED_EVENTS_ENABLED', 'ticket_events_enabled')
+    monetization_enabled = P('MONETIZATION_ENABLED', 'monetization_enabled')
+    more_sticker = P('MORE_STICKERS', 'more_sticker')
+    thread_archive_3_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread_archive_3_day')
+    thread_archive_7_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread_archive_7_day')
+    private_threads = P('PRIVATE_THREADS', 'private_threads')
 
 
 class NsfwLevel(PreinstancedBase):

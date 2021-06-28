@@ -1,21 +1,24 @@
 __all__ = ('Webhook', )
 
 from ...backend.export import export, include
+from ...backend.utils import copy_docs
 
 from ..core import USERS
-from ..user import User, ZEROUSER, ClientUserBase
+from ..user import User, ZEROUSER, ClientUserBase, UserBase
 from ..exceptions import DiscordException, ERROR_CODES
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
-from ..bases import ICON_TYPE_NONE, Icon
+from ..bases import ICON_TYPE_NONE, Icon, instance_or_id_to_instance
 from ..http.urls import WEBHOOK_URL_PATTERN
 from ..http import urls as module_urls
 
 from .webhook_base import WebhookBase
 from .preinstanced import WebhookType
+from .webhook_sources import WebhookSourceChannel, WebhookSourceGuild
 
 create_partial_webhook_from_id = include('create_partial_webhook_from_id')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 ChannelText = include('ChannelText')
+Client = include('Client')
 
 @export
 class Webhook(WebhookBase):
@@ -36,20 +39,24 @@ class Webhook(WebhookBase):
         The webhook's avatar's type.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
-    application_id : `int`
-        The application's id what created the webhook. Defaults to `0` if not applicable.
-    token : `str`
-        The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
     type : ``WebhookType``
         The webhook's type.
-    user : ``Client`` or ``User``
+    application_id : `int`
+        The application's id what created the webhook. Defaults to `0` if not applicable.
+    source_channel : `None` or ``WebhookSourceChannel``
+        The webhook's source channel. Applicable for ``WebhookType.server`` webhooks.
+    source_guild : `None` or ``WebhookSourceGuild``
+        The webhook's source guild. Applicable for ``WebhookType.server`` webhooks.
+    token : `str`
+        The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
+    user : ``ClientUserBase``
         The creator of the webhook, or `ZEROUSER` if unknown.
     
     Notes
     -----
     Instances of this class are weakreferable.
     """
-    __slots__ = ('application_id', 'token', 'type', 'user', )
+    __slots__ = ('application_id', 'source_channel', 'source_guild', 'token', 'user')
     
     def __new__(cls, data):
         """
@@ -83,6 +90,20 @@ class Webhook(WebhookBase):
         else:
             application_id = int(application_id)
         self.application_id = application_id
+        
+        source_channel_data = data.get('source_channel', None)
+        if source_channel_data is None:
+            source_channel = None
+        else:
+            source_channel = WebhookSourceChannel(source_channel_data)
+        self.source_channel = source_channel
+        
+        source_guild_data = data.get('source_guild', None)
+        if source_guild_data is None:
+            source_guild = None
+        else:
+            source_guild = WebhookSourceGuild(source_guild_data)
+        self.source_guild = source_guild
         
         return self
     
@@ -172,7 +193,7 @@ class Webhook(WebhookBase):
             The webhooks's avatar's type. Mutually exclusive with `avatar_type`.
         avatar_hash : `int`, Optional (Keyword only)
             The webhooks's avatar hash. Mutually exclusive with `avatar`.
-        user : ``Client`` or ``User``, Optional (Keyword only)
+        user : ``ClientUserBase``, Optional (Keyword only)
             The webhook's ``.user``.
         channel : ``ChannelText``, Optional (Keyword only)
             The webhook's ``.channel``.
@@ -188,33 +209,32 @@ class Webhook(WebhookBase):
         if kwargs:
             processable = []
             
-            for key, details in (
-                    ('name' , (0 , 80,)),
-                    ('token', (60, 68,)),
+            for attribute_name, lower_limit, upper_limit in (
+                    ('name' , 0 , 80,),
+                    ('token', 60, 68,),
                         ):
                 
                 try:
-                    value = kwargs.pop(key)
+                    attribute_value = kwargs.pop(attribute_name)
                 except KeyError:
                     pass
                 else:
-                    value = preconvert_str(value, key, *details)
-                    processable.append((key, value))
+                    attribute_value = preconvert_str(attribute_value, attribute_name, lower_limit, upper_limit)
+                    processable.append((attribute_name, attribute_value))
             
             cls.avatar.precovert(kwargs, processable)
             
-            for key, type_ in (
-                    ('user', (ClientUserBase)),
-                    ('channel', ChannelText),
+            for attribute_name, attribute_type in (
+                    ('user'   , (User, Client),),
+                    ('channel', ChannelText   ,),
                         ):
                 try:
-                    value = kwargs.pop(key)
+                    attribute_value = kwargs.pop(attribute_name)
                 except KeyError:
                     pass
                 else:
-                    if not isinstance(value,type_):
-                        raise TypeError(f'`{key}` can be instance of: {type_!r}, got: {value.__class__.__name__}.')
-                    processable.append((key, value))
+                    attribute_value = instance_or_id_to_instance(attribute_value, attribute_type, attribute_name)
+                    processable.append((attribute_name, attribute_value))
             
             try:
                 type_ = kwargs.pop('type')
@@ -231,9 +251,9 @@ class Webhook(WebhookBase):
             else:
                 application_id = preconvert_snowflake(application_id, 'application_id')
                 processable.append(('application_id', application_id))
-            
+        
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
         else:
             processable = None
@@ -241,19 +261,7 @@ class Webhook(WebhookBase):
         try:
             self = USERS[webhook_id]
         except KeyError:
-            self = object.__new__(cls)
-            
-            self.id = webhook_id
-            self.token = ''
-            self.name = ''
-            self.discriminator = 0
-            self.avatar_hash = 0
-            self.avatar_type = ICON_TYPE_NONE
-            self.user = ZEROUSER
-            self.channel = None
-            self.type = WebhookType.bot
-            self.application_id = 0
-            
+            self = cls.create_empty(webhook_id)
             USERS[webhook_id] = self
         else:
             if not self.partial:
@@ -273,12 +281,14 @@ class Webhook(WebhookBase):
         channel = self.channel
         if channel is None:
             return
+        
         guild = channel.guild
         if (guild is not None):
             try:
                 del guild.webhooks[self.id]
             except KeyError:
                 pass
+        
         self.channel = None
         self.user = ZEROUSER
     
@@ -320,6 +330,8 @@ class Webhook(WebhookBase):
                     name = ''
                     avatar_type = ICON_TYPE_NONE
                     avatar_hash = 0
+                    
+                    source_guild = None
                 else:
                     raise
             
@@ -329,23 +341,39 @@ class Webhook(WebhookBase):
                     name = ''
                 
                 avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar', None))
+                
+            source_guild_data = data.get('source_guild', None)
+            if source_guild_data is None:
+                source_guild = None
+            else:
+                source_guild = WebhookSourceGuild(source_guild_data)
+        
         else:
             # TODO: can it be animated if the guild's icon is animated?
             avatar_hash = guild.icon_hash
             avatar_type = guild.icon_type
             name = f'{guild.name} #{source_channel.name}'
+            
+            source_guild = WebhookSourceGuild._from_guild(guild)
+        
+        source_channel = WebhookSourceChannel._from_channel(source_channel)
         
         self = object.__new__(cls)
         self.id = webhook_id
-        self.name = name
+
         self.discriminator = 0
         self.avatar_hash = avatar_hash
         self.avatar_type = avatar_type
+        self.name = name
+        
         self.channel = target_channel
+        self.type = WebhookType.server
+        
+        self.application_id = 0
+        self.source_channel = source_channel
+        self.source_guild = source_guild
         self.token = ''
         self.user = client
-        self.type = WebhookType.server
-        self.application_id = 0
         
         guild = target_channel.guild
         if (guild is not None):
@@ -354,3 +382,13 @@ class Webhook(WebhookBase):
         USERS[webhook_id] = self
         
         return self
+
+    @copy_docs(UserBase._set_default_attributes)
+    def _set_default_attributes(self):
+        WebhookBase._set_default_attributes(self)
+        
+        self.application_id = 0
+        self.source_guild = None
+        self.source_channel = None
+        self.token = ''
+        self.user = ZEROUSER

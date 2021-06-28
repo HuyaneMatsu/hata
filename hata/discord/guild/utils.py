@@ -1,5 +1,7 @@
 __all__ = ('create_partial_guild_from_data', 'create_partial_guild_from_id' )
 
+from ...backend.export import export
+
 from ..core import GUILDS
 
 from .guild import Guild
@@ -41,7 +43,7 @@ def create_partial_guild_from_data(data):
     
     guild.available = available
     
-    guild.name = data.get('name','')
+    guild.name = data.get('name', '')
     guild._set_icon(data)
     guild._set_invite_splash(data)
     guild._set_discovery_splash(data)
@@ -66,6 +68,7 @@ def create_partial_guild_from_data(data):
     return guild
 
 
+@export
 def create_partial_guild_from_id(guild_id):
     """
     Creates a guild from the given identifier and stores it in the cache as well. If the guild already exists,

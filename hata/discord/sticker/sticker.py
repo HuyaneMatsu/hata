@@ -417,7 +417,7 @@ class Sticker(DiscordEntity, immortal=True):
     @classmethod
     def _create_empty(cls, sticker_id):
         """
-        Creates an empty sticker with teh given identifier.
+        Creates an empty sticker with the given identifier.
         
         Parameters
         ----------

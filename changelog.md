@@ -38,6 +38,22 @@ Regroup many code parts.
 - Add `user` parameter to `Emoji.precreate`.
 - Add `iterable_of_instance_or_id_to_instances`.
 - Add `preconvert_iterable_of_str`.
+- Add `GuildFeature.ticket_events_enabled`.
+- Add `GuildFeature.monetization_enabled`.
+- Add `GuildFeature.more_sticker`.
+- Add `GuildFeature.thread_archive_3_day`.
+- Add `GuildFeature.thread_archive_7_day`.
+- Add `GuildFeature.private_threads`.
+- Add `UserBase._set_default_attributes`.
+- Move `ClientUserBase._create_empty` up to `UserBase`.
+- Add `WebhookBase._set_default_attributes`.
+- Add `Webhook._set_default_attributes`.
+- Move `Webhook.type` and `WebhookRepr.type` up to `WebhookBase`.
+- Add `WebhookSourceGuild`.
+- Add `WebhookSourceChannel`.
+- Add `Webhook.source_channel`.
+- Add `Webhook.source_guild`.
+- Add `ComponentBase.copy_with` (and to sub classes).
 
 #### Bug Fixes
 

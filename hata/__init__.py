@@ -1,8 +1,7 @@
-﻿# -*- coding: utf-8 -*-
-"""
+﻿"""
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
-If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it got some real
+If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some real
 stuff:
 
 - Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for
@@ -10,21 +9,21 @@ stuff:
 - Usage of Privileged Intents
 - Running more clients from the same instance.
 - Shared entity cache between shards and clients.
-- Feature rich API for common usacases.
-- Fast ratelimit handling.
+- Feature rich API for common use cases.
+- Fast rate limit handling.
 - No more member objects associated with guilds, if there is a user in more guilds, then there is only ONE user.
-- Optimized dispatch event parsers depending on intents, client count and on handled events as well.
+- Optimized dispatch event events depending on intents, client count and on handled events as well.
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
-- Command and extension loader extension.
+- Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.
-- Can interacting with the Discord API without gateway connection.
+- Can interact with the Discord API without gateway connection.
 
 Usage
 -----
 
 The following example answers on `ping` message.
 
-```
+```py
 from hata import Client
 
 Nue = Client('TOKEN')
@@ -44,14 +43,12 @@ async def message_create(client, message):
 Nue.start()
 ```
 
-An improved example using the `commands` extension to handle common usecases.
+An improved example using the `commands` extension to handle common use cases.
 
-```
+```py
 from hata import Client
-from hata.ext.commands import setup_ext_commands
 
-Saki = Client('TOKEN')
-setup_ext_commands(Saki, 's!')
+Saki = Client('TOKEN', extensions='commands', prefix='s!')
 
 @Saki.events
 async def ready(client):
@@ -59,30 +56,62 @@ async def ready(client):
 
 @Saki.commands
 async def ping(client, message):
-    await client.message_create(message.channel, 'pong')
+    return 'pong'
 
 Saki.start()
 ```
+
+Or use slash commands!
+
+```py
+from hata import Client, Guild
+
+GUILD = Guild.precreate(guild_id)
+
+Seija = Client('TOKEN', extensions='slash')
+
+@Seija.events
+async def ready(client):
+    print(f'{client:f} logged in.')
+
+@Seija.interactions(guild=GUILD)
+async def ping():
+    \"\"\"ping-pong\"\"\"
+    return 'pong'
+
+Seija.start()
+```
+
+> Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
+> (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
+> limitation.
 
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you
 can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
 ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
+
+We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """
-__version__ = '1.0.42'
+__version__ = '1.1.86'
 
 from .env import BACKEND_ONLY
 
+from .backend import *
+
 if BACKEND_ONLY:
-    from .backend import *
     __all__ = backend.__all__
 
 else:
-    from .backend import *
     from .discord import *
+    from .ext import *
     
     __all__ = (
         *backend.__all__,
         *discord.__all__,
-            )
+        *ext.__all__,
+    )
+
+from .backend.export import check_satisfaction
+check_satisfaction()

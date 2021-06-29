@@ -2,29 +2,29 @@
 
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
-If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it got some
+If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some
 real stuff:
 
 - Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for
     embedding into a threaded system.
-- Usage of [Privileged Intents](https://github.com/discordapp/discord-api-docs/issues/1363).
 - Running more clients from the same instance.
 - Shared entity cache between shards and clients.
-- Feature rich API for common usacases.
-- Fast ratelimit handling.
-- No more member objects associated with guilds, if there is a user in more guilds, then there is only ONE user.
+- Feature rich API for common use cases.
+- Fast rate limit handling.
+- No member objects associated with guilds. Hata uses guild -> user -> guild relation enabling implementing
+    cross-guild features more easily.
 - Optimized dispatch event parsers depending on intents, client count and on handled events as well.
 - Option to disable user presences or even user caching, although disabling user cache is not recommended.
-- Command and extension loader extension.
+- Many builtin extension. Including a slash command one as well.
 - Audio sending and receiving.
-- Can interacting with the Discord API without gateway connection.
+- Can interact with the Discord API without gateway connection.
+- Switching between api version with environmental variable.
 
 ## Usage
 
 The following example answers on `ping` message.
 
 ```py
-
 from hata import Client
 
 Nue = Client('TOKEN')
@@ -42,18 +42,14 @@ async def message_create(client, message):
         await client.message_create(message.channel, 'pong')
 
 Nue.start()
-
 ```
 
-An improved example using the `commands` extension to handle common usecases.
+An improved example using the `commands` extension to handle common use cases.
 
 ```py
-
 from hata import Client
-from hata.ext.commands import setup_ext_commands
 
-Saki = Client('TOKEN')
-setup_ext_commands(Saki, 's!')
+Saki = Client('TOKEN', extensions='commands', prefix='s!')
 
 @Saki.events
 async def ready(client):
@@ -61,11 +57,35 @@ async def ready(client):
 
 @Saki.commands
 async def ping(client, message):
-    await client.message_create(message.channel, 'pong')
+    return 'pong'
 
 Saki.start()
-
 ```
+
+Or use slash commands!
+
+```py
+from hata import Client, Guild
+
+GUILD = Guild.precreate(guild_id)
+
+Seija = Client('TOKEN', extensions='slash')
+
+@Seija.events
+async def ready(client):
+    print(f'{client:f} logged in.')
+
+@Seija.interactions(guild=GUILD)
+async def ping():
+    """ping-pong"""
+    return 'pong'
+
+Seija.start()
+```
+
+> Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
+> (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
+> limitation.
 
 If you wonder, how to run up more clients, just put the two code snippet into the same file.
 
@@ -77,15 +97,15 @@ ahead and start python with `-i` option, then interact with the clients from you
 
 To install the package use:
 
-``` shell
-
+```shell
 # Linux/OS X
-$ python3 -m pip install https://github.com/HuyaneMatsu/hata/archive/master.zip
+$ python3 -m pip install hata
 
 # Windows
-$ python -m pip install https://github.com/HuyaneMatsu/hata/archive/master.zip
-
+$ python -m pip install hata
 ```
+
+Hata has native pypy support as well if you need some more speed!
 
 #### Requirements
 
@@ -102,14 +122,15 @@ $ python -m pip install https://github.com/HuyaneMatsu/hata/archive/master.zip
 
 If you have issues, suggestions, want to contribute, or just want to send cute neko pictures, join our discord server.
 
-[![](https://discordapp.com/api/guilds/388267636661682178/embed.png?style=banner1)](http://discord.gg/3cH2r5d)
+[![](https://discordapp.com/api/v8/guilds/388267636661682178/widget.png?style=banner1)](http://discord.gg/3cH2r5d)
 
 ## Acknowledgement
 
-The project is based on early versions of:
-- [aiohttp](https://github.com/aio-libs/aiohttp)
-- [asyncio](https://github.com/python/cpython/tree/master/Lib/asyncio)
-- [discord.py](https://github.com/Rapptz/discord.py)
-- [sqlalchemy_aoi](https://github.com/RazerM/sqlalchemy_aio)
-- [trio](https://github.com/python-trio/trio)
-- [websockets](https://github.com/aaugustin/websockets)
+Shout-Outs for our brave testers, who are helping the most improving the library:
+
+- `Nekosia` \[Grammar\]
+- [`Mina Ashido`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
+- [`Hime Esuto`](https://github.com/HimeEsuto) \[Bug hunting\]
+- [`BrainDead`](https://github.com/albertopoljak) \[Documentation improvements\]
+- [`Zeref Draganeel`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]
+- [`vinam`](https://github.com/saiTama-max) \[Bug hunting\[asyncio extension\]\]

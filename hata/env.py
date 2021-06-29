@@ -1,12 +1,11 @@
-﻿# -*- coding: utf-8 -*-
-"""
-Before loading hata, it checks for related envirnormental variables, which are:
+﻿"""
+Before loading hata, it checks for related environmental variables, which are:
 
 HATA_BACKEND_ONLY : `bool` = `False`
-    Whether `hata.discord` should be imported as well.
+    Whether `hata.discord` should not be imported as well.
 
 HATA_ALLOW_DEAD_EVENTS : `bool` = `False`
-    Whether events of non cached entities should be handled. Affetcs the following events right now:
+    Whether events of non cached entities should be handled. Affects the following events right now:
     
     - `Client.events.message_edit`
     - `Client.events.message_delete`
@@ -16,9 +15,9 @@ HATA_ALLOW_DEAD_EVENTS : `bool` = `False`
     - `Client.events.reaction_delete_emoji`
 
 HATA_CACHE_PRESENCE : `bool` = `True`
-    Whether hata should enable and dispatch users presence related events. By disabling it, ``User.status``,
-    ``User.statuses``, ``User.platform``, ``User.activties``, ``User.activity`` will be disabled. And each will be
-    replaced by a dummy property.
+    Whether hata should enable presence related attributes and dispatch users presence related events. By disabling it,
+    ``User.status``, ``User.statuses``, ``User.platform``, ``User.activities``, ``User.activity`` will be disabled. And
+    each will be replaced by a dummy property.
     
     If `HATA_CACHE_USERS` is defined as `False`, `HATA_CACHE_PRESENCE` will be set as `False` as well.
 
@@ -34,11 +33,16 @@ HATA_CDN_ENDPOINT : `None`, `str` = `None`
 HATA_DIS_ENDPOINT : `None`, `str` = `None`
     The endpoint of Discord, to use instead of it's own.
 
-HATA_API_VERSION : `int` = `7`
-    The Discord api version used by hata. The accepted values are `6`, `7` and `8`.
+HATA_API_VERSION : `int` = `8`
+    The Discord api version used by hata. The accepted values are `6`, `7`, `8` and `9`.
     
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still
     present.
+
+HATA_DOCS_ENABLED : `bool` = `True`
+    Whether hata should be loaded with docstrings.
+    
+    If python is run with `-OO`, then this always defaults to `False`.I
 """
 import os, warnings
 
@@ -51,7 +55,7 @@ def get_bool_env(name, default):
     Parameters
     ----------
     name : `str`
-        The name of an enviromental variable.
+        The name of an environmental variable.
     default : `bool`
         The default value of the respective variable.
     
@@ -81,7 +85,7 @@ def get_str_env(name, default=None):
     Parameters
     ----------
     name : `str`
-        The name of an enviromental variable.
+        The name of an environmental variable.
     default : `Any`, Optional
         The default value of the respective variable. Defaults to `None`
     
@@ -108,7 +112,7 @@ def get_int_env(name, default):
     Parameters
     ----------
     name : `str`
-        The name of an enviromental variable.
+        The name of an environmental variable.
     default : `int`
     
     Returns
@@ -136,6 +140,11 @@ def get_int_env(name, default):
 BACKEND_ONLY = get_bool_env('HATA_BACKEND_ONLY', False)
 CACHE_PRESENCE = get_bool_env('HATA_CACHE_PRESENCE', True)
 CACHE_USER = get_bool_env('HATA_CACHE_USERS', True)
+DOCS_ENABLED = get_bool_env('HATA_DOCS_ENABLED', (get_bool_env is not None))
+if not DOCS_ENABLED:
+    get_bool_env.__doc__ = None
+    get_str_env.__doc__ = None
+    get_int_env.__doc__ = None
 
 # You cannot store presences of not loaded users.
 if (not CACHE_USER):
@@ -147,14 +156,14 @@ CUSTOM_API_ENDPOINT = get_str_env('HATA_API_ENDPOINT')
 CUSTOM_CDN_ENDPOINT = get_str_env('HATA_CDN_ENDPOINT')
 CUSTOM_DIS_ENDPOINT = get_str_env('HATA_DIS_ENDPOINT')
 
-API_VERSION = get_int_env('HATA_API_VERSION', 7)
+API_VERSION = get_int_env('HATA_API_VERSION', 9)
 
 if API_VERSION not in (7, 8):
     if API_VERSION < 6:
         warnings.warn(f'`API_VERSION` given with a value less than `6`, got {API_VERSION!r}, defaulting to {7!r}!')
         API_VERSION = 7
-    elif API_VERSION > 8:
-        warnings.warn(f'`API_VERSION` given with a value greater than `8`, got {API_VERSION!r}, defaulting to {8!r}!')
-        API_VERSION = 8
+    elif API_VERSION > 9:
+        warnings.warn(f'`API_VERSION` given with a value greater than `9`, got {API_VERSION!r}, defaulting to {9!r}!')
+        API_VERSION = 9
     elif API_VERSION == 6:
-        warnings.warn('`API_VERSION` given as 6, please version `7` or `8`.', DeprecationWarning)
+        warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)

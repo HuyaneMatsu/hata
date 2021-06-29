@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 __all__ = ('QualPath',)
 
-class QualPath(object):
+class QualPath:
     """
-    Represents a classe's module path.
+    Represents a class's module path.
     
     Attributes
     ----------
     _hash : `None` or `int`
-        Cached slot for the hash of the qualpath.
+        Cached slot for the hash of the qual-path.
     _str : `None` or `str`
-        Cached slot for `str` of the qualpath.
+        Cached slot for `str` of the qual-path.
     parts : `list` of `str`
         Broken down parts of the module path.
     """
@@ -23,7 +23,7 @@ class QualPath(object):
         Parameters
         ----------
         *paths : `str` or ``QualPath`` instances
-            Paths to create the qualpath from.
+            Paths to create the qual-path from.
         
         Returns
         -------
@@ -34,7 +34,7 @@ class QualPath(object):
         TypeError
             A path was given neither as `str` or as ``QualPath`` instance.
         ValueError
-            A path was given as `str` instance, but it contains an empty subpath.
+            A path was given as `str` instance, but it contains an empty sub-path.
         """
         parts = []
         for path in paths:
@@ -53,7 +53,7 @@ class QualPath(object):
                 
                 for sub_part in sub_parts:
                     if not sub_part:
-                        raise ValueError(f'`{path!r}` contains empty subpath.')
+                        raise ValueError(f'`{path!r}` contains empty sub-path.')
                 parts.extend(sub_parts)
                 continue
             
@@ -66,7 +66,7 @@ class QualPath(object):
         return self
     
     def __str__(self):
-        """Returns the qualpath's parts joined together."""
+        """Returns the qual-path's parts joined together."""
         str_ = self._str
         if str_ is None:
             self._str = str_ = '.'.join(self.parts)
@@ -74,7 +74,7 @@ class QualPath(object):
         return str_
     
     def __repr__(self):
-        """Returns the qualpath's represnetation."""
+        """Returns the qual-path's representation."""
         result = [
             self.__class__.__name__,
             '(',
@@ -99,11 +99,11 @@ class QualPath(object):
         return ''.join(result)
     
     def __truediv__(self, other):
-        """Adds the two qualpath together returning a new one."""
+        """Adds the two qual-path together returning a new one."""
         return type(self)(self, other)
     
     def __rtruediv__(self, other):
-        """Adds the two qualpath together returning a new one."""
+        """Adds the two qual-path together returning a new one."""
         return type(self)(other, self)
     
     def __eq__(self, other):
@@ -148,7 +148,7 @@ class QualPath(object):
         Parameters
         ----------
         other : ``QualPath``
-            The other qualpatch to subtract.
+            The other qual-path to subtract.
         
         Returns
         -------

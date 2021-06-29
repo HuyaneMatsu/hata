@@ -18,10 +18,10 @@ additional functionality to make end-user life easier.
 ### About Hata
 
 Similarly to other wrappers Hata runs the clients in an asynchronous environment.
-But unlike other wrappers it uses it's own event thread.
+But unlike other wrappers it uses its own event thread.
 This makes integrating sync code easier but has some downside too - it is not completely
 compatible with other asynchronous libraries, but there's nothing to fear because Hata 
-either includes it's own code (like Hata backend http which is similar to aiohttp) or
+either includes its own code (like Hata backend http which is similar to aiohttp) or
 has support to run it (most of the things from asyncio should work).
 
 One of the unique features of the wrapper is that it can run multiple clients at 

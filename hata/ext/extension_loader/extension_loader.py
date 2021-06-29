@@ -1,607 +1,56 @@
-# -*- coding: utf-8 -*-
-__all__ = ('EXTENSION_LOADER', 'ExtensionError', 'ExtensionLoader', )
+__all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 
-import sys
+import warnings
 from io import StringIO
-from importlib.util import find_spec, module_from_spec
-from importlib import reload as reload_module
 from threading import current_thread
 
-from ...backend.eventloop import EventThread
-from ...backend.dereaddons_local import alchemy_incendiary, HybridValueDictionary, WeakValueDictionary, DOCS_ENABLED
-from ...backend.futures import iscoroutinefunction as is_coro, Task
-from ...backend.analyzer import CallableAnalyzer
+from ...backend.event_loop import EventThread
+from ...backend.utils import alchemy_incendiary, HybridValueDictionary
+from ...backend.futures import is_coroutine_function, Task
+from ...backend.export import export
 
-from ...discord.client_core import KOKORO
+from ...discord.core import KOKORO
 
-EXTENSIONS = WeakValueDictionary()
+from .extension import EXTENSIONS, Extension, EXTENSION_STATE_LOADED
+from .utils import PROTECTED_NAMES, _iter_extension_names, _validate_entry_or_exit, validate_extension_parameters
+from .exceptions import ExtensionError
 
-EXTENSION_STATE_UNDEFINED = 0
-EXTENSION_STATE_LOADED    = 1
-EXTENSION_STATE_UNLOADED  = 2
 
-class ExtensionError(Exception):
+def _get_extensions(name):
     """
-    An exception raised by the ``ExtensionLoader``, if loading, reloading or unloading an extension fails with any
-    reason.
-    
-    Attributes
-    ----------
-    _message : `str` or `list` of `str`
-        The error's message.
-    """
-    
-    def __init__(self, message):
-        """
-        Creates a new extension error.
-        
-        Parameters
-        ----------
-        message : `str` or `list` of `str`
-            The error's message.
-        """
-        self._message = message
-    
-    @property
-    def message(self):
-        """
-        Returns the extension error's message.
-        
-        If the extnesion error contains more message,s connects them.
-        
-        Returns
-        -------
-        message : ``Message``
-        """
-        message = self._message
-        if type(message) is str:
-            return message
-        
-        return '\n\n'.join(message)
-    
-    @property
-    def messages(self):
-        """
-        Returns a list containing the exception error's messages.
-        
-        Returns
-        -------
-        messages : `list` of `str`
-        """
-        message = self._message
-        if type(message) is str:
-           return [message]
-        
-        return message
-    
-    def __len__(self):
-        """Returns the amount of messages, what the extension error contains."""
-        message = self._message
-        if type(message) is str:
-            return 1
-        
-        return len(message)
-    
-    def __repr__(self):
-        """Returns the exception error's representation."""
-        return f'{self.__class__.__name__} ({len(self)}):\n{self.message}\n'
-    
-    __str__ = __repr__
-
-def _validate_entry_or_exit(point):
-    """
-    Validates the given entry or exit point, returning `True`, if they passed.
+    Gets the extensions with the given name.
     
     Parameters
     ----------
-    point : `None`, `str` or `callable`
-        The point to validate.
+    name : `str` or `iterable` of `str`
+        Extension by name to find.
+    
+    Returns
+    -------
+    extensions : `set` of ``Extension``
+        The found extensions.
     
     Raises
     ------
-    TypeError
-        If `point` was given as `callable`, but accepts less or more positional arguments, as would be given.
+    ExtensionError
+        If an extension could not be found.
     """
-    if point is None:
-        return True
-    
-    if isinstance(point, str):
-        return True
-    
-    if callable(point):
-        analyzer = CallableAnalyzer(point)
-        min_, max_ = analyzer.get_non_reserved_positional_argument_range()
-        if min_>1:
-            raise TypeError(f'`{point!r}` excepts at least `{min_!r}` non reserved arguments, meanwhile the event '
-                'expects to pass `1`.')
-        
-        if min_==1:
-            return True
-        
-        #min<expected
-        if max_>=1:
-            return True
-        
-        if analyzer.accepts_args():
-            return True
-        
-        raise TypeError(f'`{point!r}` expects maximum `{max_!r}` non reserved arguments  meanwhile the event expects '
-            'to pass `1`.')
-    
-    return False
-
-class Extension(object):
-    """
-    Represents an extension.
-    
-    Attributes
-    ----------
-    _added_variable_names : `list of `str`
-        A list of the added variables' names to the module.
-    _default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
-        An optionally weak value dictionary to store objects for asigning them to modules before loading them.
-        If it would be set as empty, then it is set as `None` instead.
-    _entry_point : `None`, `str`, or `callable`
-        Internat slot used by the ``.entry_point`` property.
-    _exit_point : `None`, `str`, or `callable`
-        Internat slot used by the ``.exit_point`` property.
-    _extend_default_variables : `bool`
-        Internal slot used by the ``.extend_default_variables`` property.
-    _lib : `None` or module`
-        The extension's module. Set as `module` object if it the extension was already loaded.
-    _locked : `bool`
-        The internal slot used for the ``.locked`` property.
-    _spec : `ModuleSpec`
-        The module specification for the extension's module's import system related state.
-    _state : `int`
-        The state of the extension. Can be:
-        +---------------------------+-------+
-        | Respective name           | Value |
-        +===========================+=======+
-        | EXTENSION_STATE_UNDEFINED | 0     |
-        +---------------------------+-------+
-        | EXTENSION_STATE_LOADED    | 1     |
-        +---------------------------+-------+
-        | EXTENSION_STATE_UNLOADED  | 2     |
-        +---------------------------+-------+
-    """
-    __slots__ = ('__weakref__', '_added_variable_names', '_default_variables', '_entry_point', '_exit_point',
-        '_extend_default_variables', '_lib', '_locked', '_spec', '_state', )
-    
-    def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, default_variables, ):
-        """
-        Creates an extension with the given parameters. If an extension already exists with the given name, returns that.
-        
-        Parameters
-        ----------
-        name : `str`
-            The extension's name (or import path).
-        entry_point : `None`, `str` or `callable`
-            The entry point of the extension.
-        exit_point : `None`, `str` or `callable`
-            The exit point of the extension.
-        extend_default_variables : `bool`
-            Wether the extension should use the loader's default variables or just it's own's.
-        locked : `bool`
-            Whether the extension should be picked up by the `{}_all` methods of the extension loader.
-        default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
-            An optionally weak value dictionary to store objects for asigning them to modules before loading them.
-            If would be empty, is set as `None` instead.
-        
-        Returns
-        -------
-        self : ``Extension``
-        
-        Raises
-        ------
-        ModuleNotFoundError
-            If the extension was not found.
-        """
+    extensions = set()
+    extension_names = set(_iter_extension_names(name))
+    for extension_name in extension_names:
         try:
-            return EXTENSIONS[name]
+            extension = EXTENSION_LOADER._extensions_by_name[extension_name]
         except KeyError:
-            pass
+            raise ExtensionError(f'No extension was added with name: `{extension_name}`.') from None
         
-        spec = find_spec(name)
-        if spec is None:
-            raise ModuleNotFoundError(name)
-        
-        self = object.__new__(cls)
-        self._state = EXTENSION_STATE_UNDEFINED
-        self._spec = spec
-        self._lib = None
-        self._entry_point = entry_point
-        self._exit_point = exit_point
-        self._extend_default_variables = extend_default_variables
-        self._locked = locked
-        self._default_variables = default_variables
-        self._added_variable_names = []
-        EXTENSIONS[name]= self
-        
-        return self
+        extensions.add(extension)
     
-    def __hash__(self):
-        """Returns the extension's ``._spec``'s `.origin`'s hash."""
-        return hash(self._spec.origin)
-    
-    def __repr__(self):
-        """Returns the extension's represnetation."""
-        result = []
-        result.append('<')
-        result.append(self.__class__.__name__)
-        result.append(' name=')
-        result.append(repr(self._spec.name))
-        
-        state = self._state
-        result.append(', state=')
-        result.append(repr(state))
-        result.append(' (')
-        result.append(('undefined', 'loaded', 'unloaded')[state])
-        result.append(')')
-        
-        if self._locked:
-            result.append(', locked=True')
-        
-        default_variables = self._default_variables
-        if self._extend_default_variables:
-            if (default_variables is not None):
-                result.append(' extends loader\'s defaults with: ')
-                result.append(repr(default_variables))
-        else:
-            if default_variables is None:
-                result.append(' clears loader\'s defaults')
-            else:
-                result.append(' clears loader\'s defaults and uses: ')
-                result.append(repr(default_variables))
-        
-        result.append('>')
-        
-        return ''.join(result)
-    
-    def add_default_variables(self, **variables):
-        """
-        Adds default variables to the extension.
-        
-        Parameters
-        ----------
-        **variables : Keyword Arguments
-            Variables to asigned to the extension's module before it is loaded.
-        
-        Raises
-        ------
-        ValueError
-             If a variable name is would be used, what is `module` attribute.
-        """
-        if not variables:
-            return
-        
-        default_variables = self._default_variables
-        if default_variables is None:
-            default_variables = HybridValueDictionary()
-            self._default_variables = default_variables
-        
-        for key, value in variables.items():
-            if key in PROTECTED_NAMES:
-                raise ValueError(f'The passed {key!r} is a protected variable name of module type.')
-            default_variables[key] = value
-    
-    def remove_default_variables(self, *names):
-        """
-        Removes the mentioned default variables of the extension.
-        
-        If a variable with a specified name is not found, no error is raised.
-        
-        Parameters
-        ----------
-        *names : `str`
-            Default variable names.
-        """
-        default_variables = self._default_variables
-        if default_variables is None:
-            return
-        
-        for name in names:
-            try:
-                del default_variables[name]
-            except KeyError:
-                pass
-        
-        if default_variables:
-            return
-        
-        self._default_variables=None
-    
-    def clear_default_variables(self):
-        """
-        Removes all the default variables of the extension.
-        """
-        self._default_variables=None
-        
-    def _get_entry_point(self):
-        return self._entry_point
-    
-    def _set_entry_point(self, entry_point):
-        if not _validate_entry_or_exit(entry_point):
-            raise TypeError(f'`{self.__class__.__name__}.entry_point` expected `None`, `str` or a `callable`, got '
-                f'{entry_point.__class__.__name__}.')
-        
-        self._entry_point = entry_point
-    
-    def _del_entry_point(self):
-        self._entry_point = None
-    
-    entry_point = property(_get_entry_point, _set_entry_point, _del_entry_point)
-    del _get_entry_point, _set_entry_point, _del_entry_point
-    
-    if DOCS_ENABLED:
-        entry_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension's entry point.
-        
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
-    
-    def _get_exit_point(self):
-        return self._exit_point
-    
-    def _set_exit_point(self, exit_point):
-        if not _validate_entry_or_exit(exit_point):
-            raise TypeError(f'`{self.__class__.__name__}.exit_point` expected `None`, `str` or a `callable`, got '
-                f'{exit_point.__class__.__name__}.')
-        
-        self._exit_point = exit_point
-    
-    def _del_exit_point(self):
-        self._exit_point = None
-    
-    exit_point = property(_get_exit_point, _set_exit_point, _del_exit_point)
-    del _get_exit_point, _set_exit_point, _del_exit_point
-    
-    if DOCS_ENABLED:
-        exit_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension's exit point.
-        
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
-    
-    def _get_extend_default_variables(self):
-        return self._extend_default_variables
-    
-    def _set_extend_default_variables(self, extend_default_variables):
-        extend_default_variables_type = extend_default_variables.__class__
-        if extend_default_variables_type is bool:
-            pass
-        elif issubclass(extend_default_variables_type, int):
-            extend_default_variables = bool(extend_default_variables)
-        else:
-            raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got '
-                f'{extend_default_variables_type.__name__}.')
-        
-        self._extend_default_variables = extend_default_variables
-    
-    extend_default_variables = property(_get_extend_default_variables,_set_extend_default_variables)
-    del _get_extend_default_variables, _set_extend_default_variables
-    
-    if DOCS_ENABLED:
-        extend_default_variables.__doc__ = ("""
-        Set-del descriptor to define whether the extension uses the loader's default variables or just it's own's.
-        
-        Accepts and returns `bool`.
-        """)
-    
-    def _get_locked(self):
-        return self._locked
-    
-    def _set_locked(self, locked):
-        locked_type = locked.__class__
-        if locked_type is bool:
-            pass
-        elif issubclass(locked_type, int):
-            locked = bool(locked)
-        else:
-            raise TypeError(f'`locked` should have been passed as `bool`, got: {locked_type.__name__}.')
-        
-        self._locked = locked
-    
-    locked = property(_get_locked, _set_locked)
-    del _get_locked, _set_locked
-    
-    if DOCS_ENABLED:
-        locked.__doc__ = ("""
-        Set-del descriptor to define whether the extension should be picked up by the `{}_all` methods of the
-        extension loader.
-        
-        Accepts and returns `bool`.
-        """)
-    
-    def _load(self):
-        """
-        Loads the module and returns it. If it is already loaded returns `None`.
-        
-        Returns
-        -------
-        lib : `None` or `lib`
-        """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
-            
-            spec = self._spec
-            lib = sys.modules.get(spec.name)
-            if lib is None:
-                # lib is not imported yet, nice
-                lib = module_from_spec(spec)
-                
-                added_variable_names = self._added_variable_names
-                if self._extend_default_variables:
-                    for name, value in EXTENSION_LOADER._default_variables.items():
-                        setattr(lib, name, value)
-                        added_variable_names.append(name)
-                
-                default_variables = self._default_variables
-                if (default_variables is not None):
-                    for name, value in default_variables.items():
-                        setattr(lib, name, value)
-                        added_variable_names.append(name)
-                
-                spec.loader.exec_module(lib)
-                sys.modules[spec.name] = lib
-            
-            self._lib = lib
-            
-            self._state = EXTENSION_STATE_LOADED
-            return lib
-        
-        if state == EXTENSION_STATE_LOADED:
-            # return None -> already loaded
-            return None
-        
-        if state == EXTENSION_STATE_UNLOADED:
-            # reload
-            lib = self._lib
-            
-            added_variable_names = self._added_variable_names
-            if self._extend_default_variables:
-                for name, value in EXTENSION_LOADER._default_variables.items():
-                    setattr(lib, name, value)
-                    added_variable_names.append(name)
-            
-            default_variables = self._default_variables
-            if (default_variables is not None):
-                for name, value in default_variables.items():
-                    setattr(lib, name, value)
-                    added_variable_names.append(name)
-            
-            reload_module(lib)
-            
-            self._state = EXTENSION_STATE_LOADED
-            return lib
-        
-        # no more cases
-    
-    def _unload(self):
-        """
-        Unloads the module and returns it. If it is already unloaded returns `None`.
-        
-        Returns
-        -------
-        lib : `None` or `lib`
-        """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
-            return None
-        
-        if state == EXTENSION_STATE_LOADED:
-            self._state = EXTENSION_STATE_UNLOADED
-            return self._lib
-        
-        if state == EXTENSION_STATE_UNLOADED:
-            return None
-        
-        # no more cases
-    
-    def _unasign_variables(self):
-        """
-        Unasigns the asigned variables to the respective module and clears ``._added_variable_names``.
-        """
-        lib = self._lib
-        if lib is None:
-            return
-        
-        added_variable_names = self._added_variable_names
-        for name in added_variable_names:
-            try:
-                delattr(lib, name)
-            except AttributeError:
-                pass
-        added_variable_names.clear()
-    
-    @property
-    def name(self):
-        """
-        Returns the extension's name.
-        
-        Returns
-        -------
-        name : `str`
-        """
-        return self._spec.name
-    
-    def _unlink(self):
-        """
-        Removes the extension's module from the loaded ones.
-        
-        Should not be called on oaded extensions.
-        """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
-            return
-        
-        if state == EXTENSION_STATE_LOADED:
-            self._state = EXTENSION_STATE_UNLOADED
-            lib = self._lib
-            
-            if self._extend_default_variables:
-                for name in EXTENSION_LOADER._default_variables:
-                    try:
-                        delattr(lib, name)
-                    except AttributeError:
-                        pass
-            
-            default_variables = self._default_variables
-            if (default_variables is not None):
-                for name in default_variables:
-                    delattr(lib, name)
-            
-            del sys.modules[self._spec.name]
-            return
-        
-        if state == EXTENSION_STATE_UNLOADED:
-            del sys.modules[self._spec.name]
-            return
-        
-        # no more cases
+    return extensions
 
-PROTECTED_NAMES = {
-    '__class__',
-    '__delattr__',
-    '__dict__',
-    '__dir__',
-    '__doc__',
-    '__eq__',
-    '__format__',
-    '__ge__',
-    '__getattribute__',
-    '__gt__',
-    '__hash__',
-    '__init__',
-    '__init_subclass__',
-    '__le__',
-    '__lt__',
-    '__module__',
-    '__ne__',
-    '__new__',
-    '__reduce__',
-    '__reduce_ex__',
-    '__repr__',
-    '__setattr__',
-    '__sizeof__',
-    '__str__',
-    '__subclasshook__',
-    '__weakref__',
-    '_cached',
-    '_set_fileattr',
-    'cached',
-    'has_location',
-    'loader',
-    'loader_state',
-    'name',
-    'origin',
-    'parent',
-    'submodule_search_locations',
-        }
 
-class ExtensionLoader(object):
+class ExtensionLoader:
     """
-    There are some cases when you propably want to change some functional part of your client in runtime. Load,
+    There are some cases when you probably want to change some functional part of your client in runtime. Load,
     unload or reload code. Hata provides an easy to use (that's what she said) solution to solve this issue.
     
     It is called extension loader is an extension of hata. It is separated from `commands` extension, but it does not
@@ -613,13 +62,13 @@ class ExtensionLoader(object):
     `extension_loader.py`. Instancing the class again will yield the same object.
     
     Because hata can have more clients, we needed a special extension loader what can handle using more clients at any
-    file, so the choice ended up on a  really interesting idea: asign variables to a module before it is (re)loaded.
+    file, so the choice ended up on a  really interesting idea: assign variables to a module before it is (re)loaded.
     
     To show this is not blackmagic, here is an example:
     
     **main.py**
     
-    ```
+    ```py
     from hata.ext.extension_loader import EXTENSION_LOADER
     from datetime import datetime
     
@@ -632,7 +81,7 @@ class ExtensionLoader(object):
     
     **extension.py**
     
-    ```
+    ```py
     print(cake, now)
     ```
     
@@ -656,7 +105,7 @@ class ExtensionLoader(object):
     
     Because now we have the interpreter, you can change the variables.
     
-    ```
+    ```py
     >>> EXTENSION_LOADER.add_default_variables(cake='cakes taste good, and now is:')
     >>> EXTENSION_LOADER.reload_all()
     ```
@@ -669,14 +118,14 @@ class ExtensionLoader(object):
     
     Now lets edit `extension.py`.
     
-    ```
+    ```py
     cake = cake.split()
     print(*cake, now, sep='\\n')
     ```
     
     And reload the extension:
     
-    ```
+    ```py
     >>> EXTENSION_LOADER.reload_all()
     ```
     
@@ -694,7 +143,7 @@ class ExtensionLoader(object):
     
     If you remove default variables and the extension file still uses them, you get an ``ExtensionError``:
     
-    ```
+    ```py
     >>> EXTENSION_LOADER.remove_default_variables('cake')
     >>> EXTENSION_LOADER.reload_all()
     ```
@@ -703,21 +152,21 @@ class ExtensionLoader(object):
     Traceback (most recent call last):
       File "<pyshell#13>", line 1, in <module>
         EXTENSION_LOADER.reload_all()
-      File ".../hata/extension_loader.py", line 652, in reload_all
-        task.syncwrap().wait()
-      File ".../hata/futures.py", line 823, in wait
+      File ".../hata/backend/extension_loader.py", line 652, in reload_all
+        task.sync_wrap().wait()
+      File ".../hata/backend/futures.py", line 823, in wait
         return self.result()
-      File ".../hata/futures.py", line 723, in result
+      File ".../hata/backend/futures.py", line 723, in result
         raise exception
-      File ".../hata/futures.py", line 1602, in __step
+      File ".../hata/backend/futures.py", line 1602, in _step
         result=coro.throw(exception)
-      File ".../hata/extension_loader.py", line 670, in _reload_all
+      File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all
         raise ExtensionError(error_messages) from None
-    hata.extension_loader.ExtensionError: ExtensionError (1):
-    Exception occured meanwhile loading an extension: `extension`.
+    hata.ext.extension_loader.ExtensionError: ExtensionError (1):
+    Exception occurred meanwhile loading an extension: `extension`.
     
     Traceback (most recent call last):
-      File ".../hata/extension_loader.py", line 675, in _load_extension
+      File ".../hata/ext/extension_loader/extension_loader.py", line 675, in _load_extension
         lib = await KOKORO.run_in_executor(extension.load)
       File ".../hata/extension_loader.py", line 270, in load
         reload_module(lib)
@@ -735,87 +184,87 @@ class ExtensionLoader(object):
     -----------------
     Extensions can be added with the `.add` method.
     
-    ```
+    ```py
     EXTENSION_LOADER.add('cute_commands')
     ```
     
     Or more extension can be added as well by passing an iterable:
     
-    ```
+    ```py
     EXTENSION_LOADER.add(['cute_commands', 'nice_commands'])
     ```
     
-    > If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed argument is not
-    > `str` instance or not `iterable` of `str`, `TypeError` is raised.
+    If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed parameter is not
+    `str` instance or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
     -------
     Extensions can be loaded by their name:
     
-    ```
+    ```py
     EXTENSION_LOADER.load('cute_commands')
     ```
     
     All extension can be loaded by using:
     
-    ```
+    ```py
     EXTENSION_LOADER.load_all()
     ```
     
     Or extension can be added and loaded at the same time as well:
     
-    ```
+    ```py
     EXTENSION_LOADER.load_extension('cute_commands')
     ```
     
-    > `.load_extension` method supports all the keyword argumnts as `.add`.
+    `.load_extension` method supports all the keyword parameters as `.add`.
     
     ##### Passing variables to extensions
     
     You can pass variables to extensions with the `.add_default_variables` method:
     
-    ```
+    ```py
     EXTENSION_LOADER.add_default_variables(cake=cake, now=now)
     ```
     
-    > Adding or removing variables wont change the already loaded extensions' state, those needs to be reloaded to see
-    > them.
+    Adding or removing variables wont change the already loaded extensions' state, those needs to be reloaded to see
+    them.
     
     Or pass variables to just specific extensions:
     
-    ```
+    ```py
     EXTENSION_LOADER.add('cute_commands', cake=cake, now=now)
     ```
     
     You can specify if the extension should use just it's own variables and ignore the default ones too:
     
-    ```
+    ```py
     EXTENSION_LOADER.add('cute_commands', extend_default_variables=False, cake=cake, now=now)
     ```
     
     Every variable added is stored in an optionally weak value dictionary, but you are able remove the added variables as well:
     
-    ```
+    ```py
     EXTENSION_LOADER.remove_default_variables('cake', 'now')
     ```
     
     The extensions can be accessed by their name as well, then you can use their properties to modify them.
     
-    ```
-    EXTENSION_LOADER.extensions['cute_commands'].remove_default_variables('cake')
+    ```py
+    EXTENSION_LOADER.get_extension('cute_commands').remove_default_variables('cake')
     ```
     
     Unloading And Exit Point
     ------------------------
     You can unload extension on the same way as loading them.
     
-    ```
+    ```py
     EXTENSION_LOADER.unload('cute_commands')
     ```
     
     Or unload all:
     
-    ```
+    ```py
     EXTENSION_LOADER.unload_all()
     ```
     
@@ -826,34 +275,34 @@ class ExtensionLoader(object):
     
     Can be set almost on the same way as well:
     
-    ```
+    ```py
     EXTENSION_LOADER.default_exit_point = 'exit'
     ```
     
     Or:
     
-    ```
+    ```py
     EXTENSION_LOADER.add('cute_commands', exit_point='exit')
     ```
     
-    > There are also methods for reloaing: `.reload(name)` and `.reload_all()`
+    There are also methods for reloading: `.reload(name)` and `.reload_all()`
     
     Removing Extensions
     -------------------
     
     Unloaded extensions can be removed from the extension loader by using the `.remove` method:
     
-    ```
+    ```py
     EXTENSION_LOADER.remove('cute_commands')
     ```
     
     Or more extension with an iterable:
     
-    ```
+    ```py
     EXTENSION_LOADER.remove(['cute_commands', 'nice_commands'])
     ```
     
-    > Removing loaded extension will yield `RuntimeError`.
+    Removing loaded extension will yield `RuntimeError`.
     
     Threading Model
     ---------------
@@ -875,8 +324,8 @@ class ExtensionLoader(object):
     
     These methods also act differently depending from which thread they were called from. Whenever they are called from
     the client's thread, a ``Task`` is returned what can be `awaited`. If called from other ``EventThread``, then the task
-    is asyncwrapped and that is returned. When calling from any other thread (like the main thread for example), the
-    task is syncwrapped and the thread is blocked till the extension's loading is finished.
+    is async_wrapped and that is returned. When calling from any other thread (like the main thread for example), the
+    task is sync_wrapped and the thread is blocked till the extension's loading is finished.
     
     Attributes
     ----------
@@ -885,17 +334,20 @@ class ExtensionLoader(object):
     _default_exit_point : `None`, `str` or `callable`
         Internal slot for the ``.default_exit_point`` property.
     _default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
-        An optionally weak value dictionary to store objects for asigning them to modules before loading them.
+        An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
-    extensions : `dict` of (`str`, ``Extension``) items
+    _execute_counter : `int`
+        Whether the extension loader is executing an extension.
+    _extensions_by_name : `dict` of (`str`, ``Extension``) items
         A dictionary of the added extensions to the extension loader in `extension-name` - ``Extension`` relation.
     
-    Class Attrbites
+    Class Attributes
     ---------------
     _instance : `None` or ``ExtensionLoader``
         The already created instance of the ``ExtensionLoader`` if there is any.
     """
-    __slots__ = ('_default_entry_point', '_default_exit_point', '_default_variables', 'extensions', )
+    __slots__ = ('_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter',
+        '_extensions_by_name', )
     
     _instance = None
     def __new__(cls,):
@@ -912,56 +364,54 @@ class ExtensionLoader(object):
             self = object.__new__(cls)
             self._default_entry_point = 'setup'
             self._default_exit_point = 'teardown'
-            self.extensions = {}
+            self._extensions_by_name = {}
             self._default_variables = HybridValueDictionary()
+            self._execute_counter = 0
         
         return self
     
-    def _get_default_entry_point(self):
+    @property
+    def default_entry_point(self):
+        """
+        Get-set-del descriptor for modifying the extension loader's default entry point.
+        
+        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
+        """
         return self._default_entry_point
     
-    def _set_default_entry_point(self, default_entry_point):
+    @default_entry_point.setter
+    def default_entry_point(self, default_entry_point):
         if not _validate_entry_or_exit(default_entry_point):
             raise TypeError(f'`{self.__class__.__name__}.default_entry_point` expected `None`, `str` or a `callable`, '
                 f'got {default_entry_point.__class__.__name__}.')
         
-        self._default_entry_point=default_entry_point
+        self._default_entry_point = default_entry_point
     
-    def _del_default_entry_point(self):
+    @default_entry_point.deleter
+    def default_entry_point(self):
         self._default_entry_point = None
     
-    default_entry_point = property(_get_default_entry_point, _set_default_entry_point, _del_default_entry_point)
-    del _get_default_entry_point, _set_default_entry_point, _del_default_entry_point
     
-    if DOCS_ENABLED:
-        default_entry_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension loader's default entry point.
+    @property
+    def default_exit_point(self):
+        """
+        Get-set-del descriptor for modifying the extension loader's default exit point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
-    
-    def _get_default_exit_point(self):
+        """
         return self._default_exit_point
     
-    def _set_default_exit_point(self, default_exit_point):
+    @default_exit_point.setter
+    def default_exit_point(self, default_exit_point):
         if not _validate_entry_or_exit(default_exit_point):
             raise TypeError(f'`{self.__class__.__name__}.default_exit_point` expected `None`, `str` or a `callable`, '
                 f'got {default_exit_point.__class__.__name__}.')
         
-        self._default_exit_point=default_exit_point
+        self._default_exit_point = default_exit_point
     
-    def _del_default_exit_point(self):
-        self._default_exit_point=None
-    
-    default_exit_point = property(_get_default_exit_point, _set_default_exit_point, _del_default_exit_point)
-    del _get_default_exit_point, _set_default_exit_point, _del_default_exit_point
-    
-    if DOCS_ENABLED:
-        default_exit_point.__doc__ = ("""
-        Get-set-del descriptor for modifying the extension loader's default exit point.
-        
-        Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
-        """)
+    @default_exit_point.deleter
+    def default_exit_point(self):
+        self._default_exit_point = None
     
     def add_default_variables(self, **variables):
         """
@@ -969,8 +419,8 @@ class ExtensionLoader(object):
         
         Parameters
         ----------
-        **variables : Keyword Arguments
-            Variables to asigned to an extension's module before it is loaded.
+        **variables : Keyword Parameters
+            Variables to assigned to an extension's module before it is loaded.
         
         Raises
         ------
@@ -1007,31 +457,43 @@ class ExtensionLoader(object):
         """
         self._default_variables.clear()
     
-    def add(self, name, entry_point=None, exit_point=None, extend_default_variables=True, locked=False, **variables):
+    
+    def add(self, name, *args, **kwargs):
         """
-        Adds an extension to the extension laoder
+        Adds an extension to the extension loader.
         
         Parameters
         ----------
         name : `str` or `iterable` of `str`
-            The extension(s)'s name(s) to add.
-        entry_point : `None, `str` or `callable`, Optional
-            Extension specific entry point, to use over the extension loader's default.
-        exit_point : `None, `str` or `callable`, Optional
-            Extension specific exit point, to use over the extension loader's default.
-        locked : `bool`
-            Whether the given extension(s) should not be affected by `.{}_all` methods.
-        **variables : Keyword arguments
-            Variables to asign to an extension(s)'s module before they are loaded.
+            The extension's name to load.
+        *args : Parameters
+            Additional parameters to create the extension with.
+        **kwargs : Keyword parameters
+            Additional parameters to create the extension with.
         
+        Other Parameters
+        ----------------
+        entry_point : `None`, `str` or `callable`, Optional
+            Extension specific entry point, to use over the extension loader's default.
+        exit_point : `None`, `str` or `callable`, Optional
+            Extension specific exit point, to use over the extension loader's default.
+        locked : `bool`, Optional
+            Whether the given extension(s) should not be affected by `.{}_all` methods.
+        take_snapshot_difference : `bool`, Optional
+            Whether snapshot feature should be used.
+        **variables : Keyword parameters
+            Variables to assign to an extension(s)'s module before they are loaded.
+            
         Raises
         ------
+        ImportError
+            If the given name do not refers to any loadable file.
         TypeError
             - If `entry_point` was not given as `None`, `str` or as `callable`.
-            - If `entry_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `exit_point` was not given as `None`, `str` or as `callable`.
-            - If `exit_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `extend_default_variables` was not given as `bool`.
             - If `locked` was not given as `bool`.
@@ -1039,73 +501,44 @@ class ExtensionLoader(object):
         ValueError
             If a variable name is would be used, what is `module` attribute.
         """
-        if not _validate_entry_or_exit(entry_point):
-            raise TypeError(f'`{self.__class__.__name__}.add` expected `None`, `str` or a `callable` as '
-                f'`entry_point`, got {entry_point.__class__.__name__}.')
+        extension_names = set(_iter_extension_names(name))
+        entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
+            validate_extension_parameters(*args, **kwargs)
         
-        if not _validate_entry_or_exit(exit_point):
-            raise TypeError(f'`{self.__class__.__name__}.add` expected `None`, `str` or a `callable` as `exit_point`, '
-                f'got {exit_point.__clas__.__name__}.')
+        for extension_name in extension_names:
+            self._add(extension_name, entry_point, exit_point, extend_default_variables, locked,
+                take_snapshot_difference, default_variables)
+    
+    
+    def _add(self, extension_name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
+            default_variables):
+        """
+        Adds an extension to the extension loader.
         
-        if variables:
-            default_variables=HybridValueDictionary(variables)
-            for key, value in variables.items():
-                if key in PROTECTED_NAMES:
-                    raise ValueError(f'The passed {key!r} is a protected variable name of module type.')
-                default_variables[key]=value
-        else:
-            default_variables = None
+        Parameters
+        ----------
+        extension_name : `str`
+            The extension's name to add.
+        entry_point : `None`, `str` or `callable`
+            Extension specific entry point, to use over the extension loader's default.
+        exit_point : `None`, `str` or `callable`
+            Extension specific exit point, to use over the extension loader's default.
+        extend_default_variables : `bool`
+            Whether the extension should use the loader's default variables or just it's own's.
+        locked : `bool`
+            Whether the given extension(s) should not be affected by `.{}_all` methods.
+        take_snapshot_difference : `bool`
+            Whether snapshot feature should be used.
+        default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
+            An optionally weak value dictionary to store objects for assigning them to modules before loading them.
+            If would be empty, is set as `None` instead.
+        """
+        extension = Extension(extension_name, entry_point, exit_point, extend_default_variables, locked,
+            take_snapshot_difference, default_variables)
         
-        extend_default_variables_type = extend_default_variables.__class__
-        if extend_default_variables_type is bool:
-            pass
-        elif issubclass(extend_default_variables_type, int):
-            extend_default_variables = bool(extend_default_variables)
-        else:
-            raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got: '
-                f'{extend_default_variables_type.__name__}.')
-        
-        locked_type = locked.__class__
-        if locked_type is bool:
-            pass
-        elif issubclass(locked_type, int):
-            locked = bool(locked)
-        else:
-            raise TypeError(f'`locked` should have been passed as `bool`, got: {locked_type.__name__}.')
-        
-        name_type = name.__class__
-        if name_type is str:
-            pass
-        
-        elif issubclass(name_type, str):
-            name = str(name)
-        
-        if hasattr(name_type, '__iter__'):
-            names = []
-            index = 1
-            for name_ in name:
-                name_type = name_.__class__
-                if name_type is str:
-                    pass
-                elif issubclass(name_type, str):
-                    name = str(name)
-                else:
-                    raise TypeError(f'`{self.__class__.__name__}.add` expected `str` or `iterable` of `str` as '
-                        f'`name`, got, `iterable`, but it\'s {index}. element is not `str` instance, got: '
-                        f'{name_type.__class__}')
-                
-                names.append(name)
-                index +=1
-            
-            for name in names:
-                self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
-            
-            return
-        else:
-            raise TypeError(f'`{self.__class__.__name__}.add` expected `str` or `iterable of str` as `name`, got '
-                f'`{name_type.__name__}`.')
-        
-        self.extensions[name] = Extension(name, entry_point, exit_point, extend_default_variables, locked, default_variables)
+        self._extensions_by_name[extension_name] = extension
+        self._extensions_by_name.setdefault(extension.short_name, extension)
+    
     
     def remove(self, name):
         """
@@ -1125,62 +558,25 @@ class ExtensionLoader(object):
         RuntimeError
             If a loaded extension would be removed.
         """
-        name_type = name.__clas__
-        if name_type is str:
-            pass
+        extension_names = set(_iter_extension_names(name))
         
-        elif issubclass(name_type, str):
-            name = str(name)
-        
-        elif hasattr(name_type, '__iter__'):
-            names = []
-            index = 1
-            for name in name:
-                name_type = name.__class__
-                if name_type is str:
-                    pass
-                elif issubclass(name_type, str):
-                    name = str(name)
-                else:
-                    raise TypeError(f'`{self.__class__.__name__}.remove` expected `str` or `iterable` of `str` as '
-                        f'`name`, got, `iterable`, but it\'s {index}. element is not `str` instance, got: '
-                        f'{name_type.__class__}')
-                
-                names.append(name)
-                index +=1
+        for extension_name in extension_names:
+            try:
+                extension = self._extensions_by_name[extension_name]
+            except KeyError:
+                continue
             
-            collected = []
-            extensions = self.extensions
-            for name in names:
-                try:
-                    extension = extensions[name]
-                except KeyError:
-                    continue
-                
-                if extension._state == EXTENSION_STATE_LOADED:
-                    raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
-                
-                collected.append(extension)
-                
-            for extension in collected:
-                extension._unlink()
+            if extension._state == EXTENSION_STATE_LOADED:
+                raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
+        
+        for extension_name in extension_names:
+            try:
+                extension = self._extensions_by_name[extension_name]
+            except KeyError:
+                continue
             
-            return
-        else:
-            #no more good case -> raise
-            raise TypeError(f'`{self.__class__.__name__}.remove` expected `str` or `iterable of str` as `name`, got '
-                f'{name_type.__name__}.')
-
-        try:
-            extension = self.extensions[name]
-        except KeyError:
-            return
-        
-        if extension._state == EXTENSION_STATE_LOADED:
-            raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
-        
-        extension._unlink()
-        return
+            extension._unlink()
+    
     
     def load_extension(self, name, *args, **kwargs):
         """
@@ -1188,61 +584,63 @@ class ExtensionLoader(object):
         
         Parameters
         ----------
-        name : `str`
-            The extension's name.
-        *args : Argument
-            Additional argument to create the extension with.
-        **kwargs : Keyword Arguments
-            Additional keyword arguments to create the extension with.
+        name : `str` or `iterable` of `str`
+            The extension's name to load.
+        *args : Parameters
+            Additional parameters to create the extension with.
+        **kwargs : Keyword parameters
+            Additional parameters to create the extension with.
         
         Other Parameters
         ----------------
-        entry_point : `None, `str` or `callable`, Optional
+        entry_point : `None`, `str` or `callable`, Optional
             Extension specific entry point, to use over the extension loader's default.
-        exit_point : `None, `str` or `callable`, Optional
+        exit_point : `None`, `str` or `callable`, Optional
             Extension specific exit point, to use over the extension loader's default.
-        locked : `bool`
+        locked : `bool`, Optional
             Whether the given extension(s) should not be affected by `.{}_all` methods.
-        **variables : Keyword arguments
-            Variables to asign to an extension(s)'s module before they are loaded.
-        
-        Returns
-        -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
-            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
-            loading is done. However if called from a sync thread, will block till the loading is done.
-        
+        take_snapshot_difference : `bool`, Optional
+            Whether snapshot feature should be used.
+        **variables : Keyword parameters
+            Variables to assign to an extension(s)'s module before they are loaded.
+            
         Raises
         ------
+        ImportError
+            If the given name do not refers to any loadable file.
         TypeError
-            - If `name` was not given as `str`.
             - If `entry_point` was not given as `None`, `str` or as `callable`.
-            - If `entry_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `exit_point` was not given as `None`, `str` or as `callable`.
-            - If `exit_point` was given as `callable`, but accepts less or more positional arguments, as would be
+            - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
                 given.
             - If `extend_default_variables` was not given as `bool`.
             - If `locked` was not given as `bool`.
+            - If `name` was not given as `str` or as `iterable` of `str`.
         ValueError
             If a variable name is would be used, what is `module` attribute.
         ExtensionError
             The extension failed to load correctly.
         """
-        name_type = name.__class__
-        if name_type is str:
-            pass
-        elif issubclass(name_type, str):
-            name = str(name)
-        else:
-            raise TypeError(f'`name` should have be given as `str` instance, got {name_type.__name__}.')
+        extension_names = set(_iter_extension_names(name))
+        entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
+            validate_extension_parameters(*args, **kwargs)
         
-        self.add(name, *args, **kwargs)
-        return self.load(name)
+        for extension_name in extension_names:
+            self._add(extension_name, entry_point, exit_point, extend_default_variables, locked,
+                take_snapshot_difference, default_variables)
+            
+            return self.load(extension_name)
     
     def load(self, name):
         """
         Loads the extension with the given name. If the extension is already loaded, will do nothing.
+        
+        Parameters
+        ----------
+        name : `str` or `iterable` of `str`
+            The extension's name.
         
         Returns
         -------
@@ -1256,21 +654,30 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        task = Task(self._load(name), KOKORO)
+        extensions = _get_extensions(name)
+        
+        task = Task(self._load(extensions), KOKORO)
         
         thread = current_thread()
         if thread is KOKORO:
             return task
         
         if isinstance(current_thread, EventThread):
-            return task.asyncwrap(current_thread)
+            return task.async_wrap(current_thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
     
-    async def _load(self, name):
+    async def _load(self, extensions):
         """
         Loads the extension with the given name.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        extensions : `set` of ``Extension``
+            The extension to load.
         
         Raises
         ------
@@ -1278,16 +685,29 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        try:
-            extension = self.extensions[name]
-        except KeyError:
-            raise ExtensionError(f'No extension was added with name: `{name}`.') from None
+        error_messages = None
         
-        await self._load_extension(extension)
+        for extension in extensions:
+            try:
+                await self._load_extension(extension)
+            except ExtensionError as err:
+                if error_messages is None:
+                    error_messages = []
+                
+                error_messages.append(err.message)
         
+        if (error_messages is not None):
+            raise ExtensionError(error_messages) from None
+    
+    
     def unload(self, name):
         """
         Unloads the extension with the given name.
+        
+        Parameters
+        ----------
+        name : `str` or `iterable` of `str`
+            The extension's name.
         
         Returns
         -------
@@ -1301,21 +721,30 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
-        task = Task(self._unload(name), KOKORO)
+        extensions = _get_extensions(name)
+        
+        task = Task(self._unload(extensions), KOKORO)
         
         thread = current_thread()
         if thread is KOKORO:
             return task
         
         if isinstance(current_thread, EventThread):
-            return task.asyncwrap(current_thread)
+            return task.async_wrap(current_thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
     
-    async def _unload(self, name):
+    async def _unload(self, extensions):
         """
         Unloads the extension with the given name.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        extensions : `set` of ``Extension``
+            The extension to load.
         
         Raises
         ------
@@ -1323,16 +752,28 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
-        try:
-            extension = self.extensions[name]
-        except KeyError:
-            raise ExtensionError(f'No extension was added with name: `{name}`.') from None
+        error_messages = None
         
-        await self._unload_extension(extension)
+        for extension in extensions:
+            try:
+                await self._unload_extension(extension)
+            except ExtensionError as err:
+                if error_messages is None:
+                    error_messages = []
+                
+                error_messages.append(err.message)
         
+        if (error_messages is not None):
+            raise ExtensionError(error_messages) from None
+    
     def reload(self, name):
         """
         Reloads the extension with the given name.
+        
+        Parameters
+        ----------
+        name : `str` or `iterable` of `str`
+            The extension's name.
         
         Returns
         -------
@@ -1346,21 +787,31 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
-        task = Task(self._reload(name),KOKORO)
+        extensions = _get_extensions(name)
+        
+        task = Task(self._reload(extensions),KOKORO)
         
         thread = current_thread()
         if thread is KOKORO:
             return task
         
         if isinstance(current_thread, EventThread):
-            return task.asyncwrap(current_thread)
+            return task.async_wrap(current_thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
     
-    async def _reload(self, name):
+    
+    async def _reload(self, extensions):
         """
         Reloads the extension with the given name.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        extensions : `set` of ``Extension``
+            The extension to load.
         
         Raises
         ------
@@ -1368,13 +819,20 @@ class ExtensionLoader(object):
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
-        try:
-            extension = self.extensions[name]
-        except KeyError:
-            raise ExtensionError(f'No extension was added with name: `{name}`.') from None
+        error_messages = None
         
-        await self._unload_extension(extension)
-        await self._load_extension(extension)
+        for extension in extensions:
+            try:
+                await self._unload_extension(extension)
+                await self._load_extension(extension)
+            except ExtensionError as err:
+                if error_messages is None:
+                    error_messages = []
+                
+                error_messages.append(err.message)
+        
+        if (error_messages is not None):
+            raise ExtensionError(error_messages) from None
     
     def load_all(self):
         """
@@ -1399,11 +857,12 @@ class ExtensionLoader(object):
             return task
         
         if isinstance(current_thread, EventThread):
-            return task.asyncwrap(current_thread)
+            return task.async_wrap(current_thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
-        
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
+    
+    
     async def _load_all(self):
         """
         Loads all the extensions of the extension loader.
@@ -1412,25 +871,30 @@ class ExtensionLoader(object):
         what will be raised only at the end. If any of the extensions raises, will still try to unload the leftover
         ones.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
             If any extension failed to load correctly.
         """
-        error_messages = []
+        error_messages = None
         
-        for extension in self.extensions.values():
+        for extension in self._extensions_by_name.values():
             if extension._locked:
                 continue
             
             try:
                 await self._load_extension(extension)
             except ExtensionError as err:
+                if error_messages is None:
+                    error_messages = []
+                
                 error_messages.append(err.message)
-            
-        if error_messages:
-            raise ExtensionError(error_messages) from None
         
+        if (error_messages is not None):
+            raise ExtensionError(error_messages) from None
+    
     def unload_all(self):
         """
         Unloads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
@@ -1454,10 +918,10 @@ class ExtensionLoader(object):
             return task
         
         if isinstance(current_thread, EventThread):
-            return task.asyncwrap(current_thread)
+            return task.async_wrap(current_thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
     
     async def _unload_all(self):
         """
@@ -1467,6 +931,8 @@ class ExtensionLoader(object):
         what will be raised only at the end. If any of the extensions raises, will still try to unload the leftover
         ones.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
@@ -1474,7 +940,7 @@ class ExtensionLoader(object):
         """
         error_messages = []
         
-        for extension in self.extensions.values():
+        for extension in self._extensions_by_name.values():
             if extension._locked:
                 continue
             
@@ -1509,10 +975,10 @@ class ExtensionLoader(object):
             return task
         
         if isinstance(current_thread, EventThread):
-            return task.asyncwrap(current_thread)
+            return task.async_wrap(current_thread)
         
-        KOKORO.wakeup()
-        task.syncwrap().wait()
+        KOKORO.wake_up()
+        task.sync_wrap().wait()
     
     async def _reload_all(self):
         """
@@ -1522,6 +988,8 @@ class ExtensionLoader(object):
         Reloads each extension one after the other. The raised exceptions' messages are collected into one exception,
         what will be raised at the end. If any of the extensions raises, will still try to reload the leftover ones.
         
+        This method is a coroutine.
+        
         Raises
         ------
         ExtensionError
@@ -1529,7 +997,7 @@ class ExtensionLoader(object):
         """
         error_messages = []
         
-        for extension in self.extensions.values():
+        for extension in self._extensions_by_name.values():
             if extension._locked:
                 continue
             
@@ -1553,13 +1021,15 @@ class ExtensionLoader(object):
         
         Loading an exception can be separated to 4 parts:
         
-        - Asign the default variables.
+        - Assign the default variables.
         - Load the module.
         - Find the entry point (if needed).
         - Ensure the entry point (if found).
         
         If any of these fails, an ``ExtensionError`` will be raised. If step 1 raises, then a traceback will be
         included as well.
+        
+        This method is a coroutine.
         
         Parameters
         ----------
@@ -1571,28 +1041,36 @@ class ExtensionLoader(object):
         ExtensionError
             Extension entry point raised.
         """
+        self._execute_counter += 1
         try:
-            # loading blocks, but unloading does not
-            lib = await KOKORO.run_in_executor(extension._load)
-        except BaseException as err:
-            message = self._render_exc(err,[
-                'Exception occured meanwhile loading an extension: `',extension.name,'`.\n\n',])
+            try:
+                # loading blocks, but unloading does not
+                lib = await KOKORO.run_in_executor(extension._load)
+            except BaseException as err:
+                message = await KOKORO.run_in_executor(alchemy_incendiary(
+                    self._render_exc, (err, [
+                    'Exception occurred meanwhile loading an extension: `', extension.name, '`.\n\n',],
+                        )))
+                
+                raise ExtensionError(message) from None
             
-            raise ExtensionError(message) from None
-        
-        if lib is None:
-            return # already loaded
-        
-        entry_point = extension._entry_point
-        if entry_point is None:
-            entry_point = self._default_entry_point
+            if lib is None:
+                return # already loaded
+            
+            entry_point = extension._entry_point
             if entry_point is None:
-                return
-        
-        if not isinstance(entry_point,str):
+                entry_point = self._default_entry_point
+                if entry_point is None:
+                    return
+            
+            if isinstance(entry_point, str):
+                entry_point = getattr(lib, entry_point, None)
+                if entry_point is None:
+                    return
+            
             try:
                 
-                if is_coro(entry_point):
+                if is_coroutine_function(entry_point):
                     await entry_point(lib)
                 else:
                     entry_point(lib)
@@ -1600,34 +1078,14 @@ class ExtensionLoader(object):
             except BaseException as err:
                 message = await KOKORO.run_in_executor(alchemy_incendiary(
                     self._render_exc, (err, [
-                    'Exception occured meanwhile entering an extension: `', extension.name,
+                    'Exception occurred meanwhile entering an extension: `', extension.name,
                     '`.\nAt entry_point:', repr(entry_point), '\n\n',],
                         )))
                 
                 raise ExtensionError(message) from None
-            
-            return
+        finally:
+            self._execute_counter -= 1
         
-        entry_point = getattr(lib, entry_point, None)
-        if entry_point is None:
-            return # None is OK
-        
-        try:
-            
-            if is_coro(entry_point):
-                await entry_point(lib)
-            else:
-                entry_point(lib)
-        
-        except BaseException as err:
-            message = await KOKORO.run_in_executor(alchemy_incendiary(
-                self._render_exc, (err,[
-                'Exception occured meanwhile entering an extension: `', extension.name,
-                '`.\nAt entry_point:', repr(entry_point), '\n\n',],
-                    )))
-            
-            raise ExtensionError(message) from None
-    
     async def _unload_extension(self, extension):
         """
         Unloads the extension. If the extension is not loaded, will do nothing.
@@ -1641,6 +1099,8 @@ class ExtensionLoader(object):
         If any of these fails, an ``ExtensionError`` will be raised. If step 2 raises, then a traceback will be
         included as well.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         extension : ``Extension``
@@ -1651,56 +1111,56 @@ class ExtensionLoader(object):
         ExtensionError
             Extension exit point raised.
         """
-        # loading blocks, but unloading does not
-        lib = extension._unload()
-        
-        if lib is None:
-            return # not loaded
-
-        exit_point = extension._exit_point
-        if exit_point is None:
-            exit_point = self._default_exit_point
-            if exit_point is None:
-                return
-        
-        if not isinstance(exit_point, str):
+        self._execute_counter += 1
+        try:
+            # loading blocks, but unloading does not
+            lib = extension._unload()
+            
+            if lib is None:
+                return # not loaded
+            
             try:
+                exit_point = extension._exit_point
+                if exit_point is None:
+                    exit_point = self._default_exit_point
+                    if exit_point is None:
+                        return
                 
-                if is_coro(exit_point):
-                    await exit_point(lib)
-                else:
-                    exit_point(lib)
-            
-            except BaseException as err:
-                message = await KOKORO.run_in_executor(alchemy_incendiary(
-                    self._render_exc, (err, [
-                    'Exception occured meanwhile exiting an extension: `',extension.name,
-                    '`.\nAt exit_point:', repr(exit_point), '\n\n',],
-                        )))
+                if isinstance(exit_point, str):
+                    exit_point = getattr(lib, exit_point, None)
+                    if exit_point is None:
+                        return
                 
-                raise ExtensionError(message) from None
-            
-        else:
-            exit_point = getattr(lib, exit_point, None)
-            if (exit_point is not None):
                 try:
                     
-                    if is_coro(exit_point):
+                    if is_coroutine_function(exit_point):
                         await exit_point(lib)
                     else:
                         exit_point(lib)
-                    
+                
                 except BaseException as err:
                     message = await KOKORO.run_in_executor(alchemy_incendiary(
                         self._render_exc, (err, [
-                        'Exception occured meanwhile exiting an extension: `', extension.name,
+                        'Exception occurred meanwhile unloading an extension: `', extension.name,
                         '`.\nAt exit_point:', repr(exit_point), '\n\n',],
                             )))
                     
                     raise ExtensionError(message) from None
-        
-        extension._unasign_variables()
-        
+            
+            finally:
+                extension._unassign_variables()
+                
+                keys = []
+                lib_globals = lib.__dict__
+                for key in lib_globals:
+                    if (not key.startswith('__')) and (not key.endswith('__')):
+                        keys.append(key)
+                
+                for key in keys:
+                    del lib_globals[key]
+        finally:
+            self._execute_counter -= 1
+    
     @staticmethod
     def _render_exc(exception, header):
         """
@@ -1731,33 +1191,78 @@ class ExtensionLoader(object):
     
     def __repr__(self):
         """Returns the extension loader's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' extension count=',
-            repr(len(self.extensions)),
-                ]
+            repr(len(EXTENSIONS)),
+        ]
         
         entry_point = self._default_entry_point
         if (entry_point is not None):
-            result.append(', defualt_entry_point=')
-            result.append(repr(entry_point))
+            repr_parts.append(', default_entry_point=')
+            repr_parts.append(repr(entry_point))
         
         exit_point = self._default_exit_point
         if (exit_point is not None):
-            result.append(', defualt_exit_point=')
-            result.append(repr(exit_point))
+            repr_parts.append(', default_exit_point=')
+            repr_parts.append(repr(exit_point))
         
         default_variables = self._default_variables
         if default_variables:
-            result.append(', default_variables=')
-            result.append(repr(default_variables))
+            repr_parts.append(', default_variables=')
+            repr_parts.append(repr(default_variables))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+    
+    def is_processing_extension(self):
+        """
+        Returns whether the extension loader is processing an extension.
+        
+        Returns
+        -------
+        is_processing_extension : `bool`
+        """
+        if self._execute_counter:
+            is_processing_extension = True
+        else:
+            is_processing_extension = False
+        
+        return is_processing_extension
+
+    @property
+    def extensions(self):
+        """
+        Deprecated, please use ``.get_extension`` instead. Will be removed in 2021 juli.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.extensions` is deprecated, and will be removed in 2021 juli. '
+            f'Please use `{self.__class__.__name__}.get_extension(name)` instead.',
+            FutureWarning)
+        
+        return self._extensions_by_name
+    
+    
+    def get_extension(self, name):
+        """
+        Returns the extension loader's extension with the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            An extension's name.
+        
+        Returns
+        -------
+        extension : ``Extension`` or `None`.
+            The matched extension if any.
+        """
+        return self._extensions_by_name.get(name, None)
+
 
 EXTENSION_LOADER = ExtensionLoader()
-
-del WeakValueDictionary
-del DOCS_ENABLED
+export(EXTENSION_LOADER, 'EXTENSION_LOADER')

@@ -1,40 +1,40 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('pretty_print', 'pchunkify', 'pconnect', )
+﻿__all__ = ('pretty_print', 'pchunkify', 'pconnect', )
 
 from datetime import datetime, timedelta
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
-    relativedelta=None
+    relativedelta = None
 
-from ...backend.dereaddons_local import multidict
+from ...backend.utils import multidict
 
-from ...discord.others import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from ...discord.utils import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 if (relativedelta is not None):
-    from ...discord.others import elapsed_time
+    from ...discord.utils import elapsed_time
 from ...discord.permission import Permission
 from ...discord.user import ZEROUSER
-from ...discord.message import MessageType
+from ...discord.message import MessageType, Message
 from ...discord.role import Role
 from ...discord.integration import IntegrationAccount
+from ...discord.channel import ChannelGuildMainBase
 
 #testerfile for events
 #later embeds will be added in plan
 
 PRETTY_PRINTERS = {}
 
-class PrettyEmpty(object):
+class PrettyEmpty:
     __slots__ = ()
     def __init__(self, text=None, back=None):
         pass
     def __str__(self):
         return ''
     def __repr__(self):
-        return f'<{self.__class__.__name__} back=0 textlen=0>'
+        return f'<{self.__class__.__name__} back=0 text_length=0>'
     def __len__(self):
         return None
     @property
-    def textform(self):
+    def text_form(self):
         return ''
 
     def get_text(self):
@@ -52,9 +52,9 @@ class PrettyEmpty(object):
     def __call__(self, amount):
         return self
     
-PrettyEmpty=PrettyEmpty()
+PrettyEmpty = PrettyEmpty()
 
-class Pretty_line(object):
+class Pretty_line:
     __slots__ = ('back', 'text')
     def __init__(self,text, back=0):
         self.text = text
@@ -62,29 +62,29 @@ class Pretty_line(object):
     def __str__(self):
         return self.text
     def __repr__(self):
-        return f'<{self.__class__.__name__} back=ignored textlen={len(self.text)}>'
+        return f'<{self.__class__.__name__} back=ignored text_length={len(self.text)}>'
     def __len__(self):
         return len(self.text)
     @property
-    def textform(self):
+    def text_form(self):
         return f'{" "*(self.back<<2)}{self.text}'
     def __call__(self, amount):
         self.back += amount
         return self
 
 
-class PrettyIgnorePush(object):
+class PrettyIgnorePush:
     __slots__ = ('text',)
     def __init__(self, text, back=None):
         self.text = text
     def __str__(self):
         return self.text
     def __repr__(self):
-        return f'<{self.__class__.__name__} back={self.back} textlen={len(self.text)}>'
+        return f'<{self.__class__.__name__} back={self.back} text_length={len(self.text)}>'
     def __len__(self):
         return (self.back<<2)+len(self.text)
     @property
-    def textform(self):
+    def text_form(self):
         return self.text
     def __call__(self, amount):
         pass
@@ -92,7 +92,7 @@ class PrettyIgnorePush(object):
     back = type(PrettyEmpty).back
 
 
-class PrettyBlock(object):
+class PrettyBlock:
     __slots__ = ('container', 'back',)
     def __init__(self, back=0):
         self.container = []
@@ -109,17 +109,17 @@ class PrettyBlock(object):
         self.container.append(value)
         
     def __repr__(self):
-        return f'<{self.__class__.__name__} linelen={len(self.container)}>'
+        return f'<{self.__class__.__name__} line_length={len(self.container)}>'
     def __call__(self, amount):
         self.back += amount
         for value in self.container:
             value(amount)
         return self
     @property
-    def textform(self):
+    def text_form(self):
         result = []
         for line in self.container:
-            content = line.textform
+            content = line.text_form
             if type(content) is list:
                 result.extend(content)
             else:
@@ -127,14 +127,14 @@ class PrettyBlock(object):
         return result
 
 def pretty_print(obj, **kwargs):
-    return PRETTY_PRINTERS[obj.__class__.__name__](obj, **kwargs).textform
-    
+    return PRETTY_PRINTERS[obj.__class__.__name__](obj, **kwargs).text_form
+
 def pchunkify(obj, **kwargs):
     return cchunkify(pretty_print(obj, **kwargs))
 
 def pconnect(obj, **kwargs):
     return '\n'.join(pretty_print(obj, **kwargs))
-    
+
 def str_message(message, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:
@@ -142,6 +142,9 @@ def str_message(message, index=None, **kwargs):
     else:
         start = f'{index}.: '
     result.append(f'{start}Message {message.id}:')
+    
+    if message.deleted:
+        result.append('- deleted', 1)
     result.append(f'- length: {len(message)}')
     
     author = message.author
@@ -151,14 +154,14 @@ def str_message(message, index=None, **kwargs):
     if message.type is not MessageType.default:
         result.append(f'--------------------\n{message.clean_content}\n--------------------', -1)
     elif message.content:
-        content=message.clean_content
-        content_ln=len(content)
-        result.append(f'- content: (len={content_ln})', 1)
-        if content_ln>500:
-            content=content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+        content = message.clean_content
+        content_length = len(content)
+        result.append(f'- content: (len={content_length})', 1)
+        if content_length > 500:
+            content = content[:500].replace('`', '\\`')
+            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
         else:
-            content=content.replace('`', '\\`')
+            content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
     
     channel = message.channel
@@ -170,9 +173,13 @@ def str_message(message, index=None, **kwargs):
     
     result.append(f'- created at: {message:c}', 1)
     
-    edited = message.edited
-    if (edited is not None):
-        result.append(f'- edited at: {edited:{DATETIME_FORMAT_CODE}}', 1)
+    edited_at = message.edited_at
+    if (edited_at is not None):
+        result.append(f'- edited at: {edited_at:{DATETIME_FORMAT_CODE}}', 1)
+    
+    application_id = message.application_id
+    if application_id:
+        result.append(f'- application_id: {application_id}', 1)
     
     reactions = message.reactions
     if reactions:
@@ -182,9 +189,13 @@ def str_message(message, index=None, **kwargs):
     if (application is not None):
         result.append(str_message_application(application, 1))
     
+    interaction = message.interaction
+    if (interaction is not None):
+        result.append(str_message_interaction(interaction, 1))
+    
     activity = message.activity
     if (activity is not None):
-        line=['- activity: ', activity.type.name]
+        line = ['- activity: ', activity.type.name]
         party_id=activity.party_id
         if party_id:
             line.append('(')
@@ -211,25 +222,25 @@ def str_message(message, index=None, **kwargs):
             index = 1
             if message.everyone_mention:
                 result.append(f'- {index}.: everyone', 2)
-                index +=1
+                index += 1
             
             user_mentions = message.user_mentions
             if (user_mentions is not None):
                 for user in user_mentions:
                     result.append(f'- {index}.: {user:f} ({user.id})', 2)
-                    index+=1
+                    index += 1
             
             role_mentions = message.role_mentions
             if (role_mentions is not None):
                 for role in role_mentions:
                     result.append(f'- {index}.: {role.name} ({role.id})', 2)
-                    index +=1
+                    index += 1
             
             channel_mentions = message.channel_mentions
             if (channel_mentions is not None):
                 for channel in channel_mentions:
                     result.append(f'- {index}.: {channel.name} ({channel.id})', 2)
-                    index +=1
+                    index += 1
         
         else:
             if message.everyone_mention:
@@ -263,12 +274,39 @@ def str_message(message, index=None, **kwargs):
         for index, embed in enumerate(embeds, 1):
             result.append(str_embed_core(embed, index), 1)
     
-    cross_reference = message.cross_reference
-    if (cross_reference is not None):
-        result.append('Cross reference:', 1)
-        result.append(f'- message id : {cross_reference.message_id}', 2)
-        result.append(f'- channel id : {cross_reference.channel_id}', 2)
-        result.append(f'- guild id : {cross_reference.guild_id}', 2)
+    referenced_message = message.referenced_message
+    if (referenced_message is not None):
+        if isinstance(referenced_message, Message):
+            referenced_message_message_id = referenced_message.id
+            referenced_message_channel = referenced_message.channel
+            referenced_message_channel_id = referenced_message_channel.id
+            referenced_message_guild = referenced_message_channel.guild
+            if referenced_message_guild is None:
+                referenced_message_guild_id = 0
+            else:
+                referenced_message_guild_id = referenced_message_guild.id
+        else:
+            referenced_message_message_id = referenced_message.message_id
+            referenced_message_channel_id = referenced_message.channel_id
+            referenced_message_guild_id = referenced_message.guild_id
+        
+        result.append('Referenced message:', 1)
+        result.append(f'- message id : {referenced_message_message_id}', 2)
+        result.append(f'- channel id : {referenced_message_channel_id}', 2)
+        if referenced_message_guild_id:
+            result.append(f'- guild id : {referenced_message_guild_id}', 2)
+    
+    stickers = message.stickers
+    if (stickers is not None):
+        result.append(f'Stickers: ({len(stickers)})', 1)
+        for index, sticker in enumerate(stickers, 1):
+            result.append(str_sticker(sticker, index), 1)
+    
+    thread = message.thread
+    if (thread is not None):
+        result.append('Thread:', 1)
+        result.append(f'- id: {thread.id}', 2)
+        result.append(f'- id: {thread.name}', 2)
     
     return result
 
@@ -280,13 +318,13 @@ def str_reaction_mapping(reactions, index=None, **kwargs): #ignore index, 1 mess
     reaction_ordering.sort(reverse=True,key=lambda x:x[0])
     for times, emoji in reaction_ordering:
         if emoji.is_unicode_emoji():
-            anim = ''
+            animated = ''
         else:
             if emoji.animated:
-                anim = ' (animated)'
+                animated = ' (animated)'
             else:
-                anim = ''
-        result.append(f'- {emoji} ({emoji.id}){anim} : {times} times', 1)
+                animated = ''
+        result.append(f'- {emoji} ({emoji.id}){animated} : {times} times', 1)
     #TODO: create a more accurate rendering for containers with small amount of emojis
     #    it will need to be able to handle unknown reactors too!
     return result
@@ -296,9 +334,9 @@ def str_reaction_mapping_line(users, **kwargs): #ignore index
     user_count = len(users)
     unknown = users.unknown
     if unknown:
-        result.append(f'Reacters: ({user_count}, unknown: {unknown})')
+        result.append(f'Reactors: ({user_count}, unknown: {unknown})')
     else:
-        result.append(f'Reacters: ({user_count})')
+        result.append(f'Reactors: ({user_count})')
     
     for index, user in enumerate(users):
         result.append(f'{index}.: {user.full_name} ({user.id})')
@@ -321,9 +359,9 @@ def str_message_application(application, index=None, **kwargs): #ignore index, 1
     
     description = application.description
     if len(description)>32:
-        result.append(f'- descr.: {description[:26]}...(+{len(description)-26})', 1)
+        result.append(f'- description: {description[:26]}...(+{len(description)-26})', 1)
     else:
-        result.append(f'- descr.: {description}', 1)
+        result.append(f'- description: {description}', 1)
     
     return result
     
@@ -333,17 +371,53 @@ def str_attachment(attachment, index=None, **kwargs):
         start = ''
     else:
         start = f'{index}.: '
-    result.append(f'{start}Attachment: ({attachment.id}):')
-    result.append(f'- name     : {attachment.name}', 1)
-    result.append(f'- url      : {attachment.url}', 1)
-    result.append(f'- proxy_url: {attachment.proxy_url}', 1)
-    result.append(f'- size     : {attachment.size}', 1)
-    if attachment.height:
-        result.append(f'- height   : {attachment.height}', 1)
-    if attachment.width:
-        result.append(f'- width    : {attachment.width}', 1)
-    return result
+    result.append(f'{start}Attachment:')
+    result.append(f'- id : {attachment.id}', 1)
+    result.append(f'- name : {attachment.name}', 1)
+    content_type = attachment.content_type
+    if (content_type is not None):
+        result.append(f'- content_type : {content_type}', )
+    result.append(f'- url : {attachment.url}', 1)
+    result.append(f'- proxy_url : {attachment.proxy_url}', 1)
+    result.append(f'- size : {attachment.size}', 1)
+    height = attachment.height
+    width = attachment.width
+    if (height and width):
+        result.append(f'- height : {height}', 1)
+        result.append(f'- width : {width}', 1)
     
+    return result
+
+def str_sticker(sticker, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    result.append(f'{start}Sticker:')
+    result.append(f'- id : {sticker.id}', 1)
+    type_ = sticker.type
+    result.append(f'- type: {type_.name} ({type_.value})', 1)
+    result.append(f'- name : {sticker.name}', 1)
+    result.append(f'- pack_id : {sticker.pack_id}', 1)
+    result.append(f'- description : {sticker.description!r}', 1)
+    
+    tags = sticker.tags
+    if tags is not None:
+        result.append(f'- tags: ({len(tags)})', 1)
+        for index, tag in enumerate(tags):
+            result.append(f'{index}.: {tag}', 2)
+    
+    asset = sticker.asset
+    if asset:
+        result.append(f'- asset : {asset.as_base16_hash}', 1)
+    
+    preview_asset = sticker.preview_asset
+    if preview_asset:
+        result.append(f'- preview_asset : {preview_asset.as_base16_hash}', 1)
+    
+    return result
+
 def str_embed_core(embed, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:
@@ -355,8 +429,8 @@ def str_embed_core(embed, index=None, **kwargs):
     title = embed.title
     if title is not None:
         content = title
-        content_ln = len(content)
-        result.append(f'- title    : {content_ln}', 1)
+        content_length = len(content)
+        result.append(f'- title    : {content_length}', 1)
         content = content.replace('`', '\\`')
         result.append(f'--------------------\n{content}\n--------------------', -1)
         
@@ -367,11 +441,11 @@ def str_embed_core(embed, index=None, **kwargs):
     description = embed.description
     if description:
         content = description
-        content_ln = len(content)
-        result.append(f'- descript.: (len={content_ln})', 1)
-        if content_ln > 500:
+        content_length = len(content)
+        result.append(f'- description: (len={content_length})', 1)
+        if content_length > 500:
             content = content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
         else:
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -393,11 +467,11 @@ def str_embed_core(embed, index=None, **kwargs):
         result.append(f'- footer    :', 1)
         
         content = footer.text
-        content_ln = len(content)
-        result.append(f'- text : {content_ln}', 2)
-        if content_ln > 500:
+        content_length = len(content)
+        result.append(f'- text : {content_length}', 2)
+        if content_length > 500:
             content=content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
         else:
             content=content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -504,18 +578,18 @@ def str_embed_core(embed, index=None, **kwargs):
             result.append(f'- field {index} :', 1)
 
             content = field.name
-            content_ln = len(content)
-            result.append(f'- name : {content_ln}', 2)
+            content_length = len(content)
+            result.append(f'- name : {content_length}', 2)
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
 
 
             content = field.value
-            content_ln = len(content)
-            result.append(f'- value : {content_ln}', 2)
-            if content_ln > 500:
+            content_length = len(content)
+            result.append(f'- value : {content_length}', 2)
+            if content_length > 500:
                 content = content[:500].replace('`', '\\`')
-                result.append(f'--------------------\n{content}\n... +{content_ln-500} more\n--------------------', -1)
+                result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
             else:
                 content = content.replace('`', '\\`')
                 result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -526,7 +600,7 @@ def str_embed_core(embed, index=None, **kwargs):
     return result
 
 
-def str_role(role, index=None,write_parents=True,detailed=True, **kwargs):
+def str_role(role, index=None, write_parents=True, detailed=True, **kwargs):
     result = PrettyBlock()
     if index is None:
         start = ''
@@ -551,8 +625,14 @@ def str_role(role, index=None,write_parents=True,detailed=True, **kwargs):
         result.append('- separated', 1)
     if role.mentionable:
         result.append('- mentionable', 1)
+    
     if role.managed:
-        result.append('- managed', 1)
+        result.append('- managed:', 1)
+        result.append(f'- manager type: {role.manager_type}', 2)
+        manager_id = role.manager_id
+        if manager_id:
+            result.append(f'- manager id: {manager_id}', 2)
+    
     if detailed:
         result.append('Permissions:', 1)
         for key, value in role.permissions.items():
@@ -565,20 +645,23 @@ def write_guild_channel_extras(channel, result, write_parents, write_overwrites,
     if write_parents:
         result.append(f'- guild : {guild.name!r} ({guild.id})', 1)
     
-    result.append(f'- position : {channel.position}', 1)
     
-    category = channel.category
-    if category is not guild:
-        result.append(f'- category : {category.name!r} ({category.id})', 1)
     
-    overwrites = channel.overwrites
-    if overwrites:
-        if write_overwrites:
-            result.append(f'Permission overwrites: ({len(overwrites)})', 1)
-            for index,overwrite in enumerate(overwrites, 1):
-                result.append(str_PermOW(overwrite, index=index, **kwargs), 2)
-        else:
-            result.append(f'- overwrites count: {len(overwrites)}', 1)
+    parent = channel.parent
+    if (parent is not None):
+        result.append(f'- parent : {parent.name!r} ({parent.id})', 1)
+    
+    if isinstance(channel, ChannelGuildMainBase):
+        result.append(f'- position : {channel.position}', 1)
+        
+        overwrites = channel.overwrites
+        if overwrites:
+            if write_overwrites:
+                result.append(f'Permission overwrites: ({len(overwrites)})', 1)
+                for index,overwrite in enumerate(overwrites, 1):
+                    result.append(str_PermissionOverwrite(overwrite, index=index, **kwargs), 2)
+            else:
+                result.append(f'- overwrites count: {len(overwrites)}', 1)
 
 def str_channel_text(channel, index=None, write_parents=True, overwrites=False, **kwargs):
     result = PrettyBlock()
@@ -641,6 +724,10 @@ def str_channel_voice(channel, index=None, write_parents=True, overwrites=False,
         result.append(f'- bitrate : {channel.bitrate}', 1)
     if channel.user_limit:
         result.append(f'- user limit : {channel.user_limit}', 1)
+    
+    region = channel.region
+    if (region is not None):
+        result.append(f'- region: {channel.value}', 1)
     
     write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
     
@@ -731,8 +818,6 @@ def str_channel_thread(channel, index=None, write_parents=True, overwrites=False
         result.append('- DELETED', 1)
         return result
     
-    result.append(f'- position : {channel.position}', 1)
-    
     write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
     
     return result
@@ -790,6 +875,7 @@ def str_guild(guild, index=None, **kwargs):
     result.append(f'- max presences : {guild.max_presences}', 1)
     result.append(f'- max video channel users : {guild.max_video_channel_users}', 1)
     result.append(f'- preferred locale : {guild.preferred_locale}', 1)
+    result.append(f'- region: {guild.region.value}', 1)
     
     description = guild.description
     if (description is not None):
@@ -854,7 +940,7 @@ def str_guild(guild, index=None, **kwargs):
             result.append(f'{index}.: {emoji.name} {emoji.id}{animated}', 2)
     return result
 
-def str_PermOW(overwrite, index=None, detailed=True, **kwargs):
+def str_PermissionOverwrite(overwrite, index=None, detailed=True, **kwargs):
     result = PrettyBlock()
     if index is None:
         start = ''
@@ -953,8 +1039,8 @@ def str_invite(invite, index=None,write_parents=True, **kwargs):
     if user_count:
         result.append(f'- user count : {user_count}', 1)
     
-    result.append(f'- {"temporary" if invite.temporary else "permament"}', 1)
-
+    result.append(f'- {"temporary" if invite.temporary else "permanent"}', 1)
+    
     return result
 
 def str_list(list_, index=None, mixed=True, name=None, **kwargs):
@@ -1037,9 +1123,9 @@ def str_webhook(webhook, index=None,write_parents=True, **kwargs):
         if guild is not None:
             result.append(f'- guild : {guild.name} ({guild.id})', 1)
     
-    applciation_id = webhook.application_id
-    if applciation_id:
-        result.append(f'- applciation id : {applciation_id}', 1)
+    application_id = webhook.application_id
+    if application_id:
+        result.append(f'- application id : {application_id}', 1)
     
     return result
 
@@ -1095,19 +1181,20 @@ def str_AuditLogEntry(entry, index=None, **kwargs):
                     if attr == 'role':
                         text=', '.join(f'{element.name} {element.id}' for element in value)
                     elif attr == 'overwrites':
-                        text = ', '.join(f'PermOW of {element.target.name} ({element.target.id})' for element in value)
+                        text = ', '.join(f'PermissionOverwrite of {element.target.name} ({element.target.id})' for element in value)
                     else:
                         raise ValueError(attr, value)
+                
                 elif type(value) is str:
                     text = value
                 elif type(value) is tuple:
                     text = f'animated {value[0]} value {value[1]}'
                 elif isinstance(value, int):
                     text = str(value)
-                elif hasattr(value,'id'):
+                elif hasattr(value, 'id'):
                     text = f'{value.name} {value.id}'
                 else:
-                    text = f'{value.name} {value.value}'
+                    text = repr(value)
                 
                 texts.append(text)
             
@@ -1272,7 +1359,7 @@ def str_integration_application(application, index=None, head_line=True, **kwarg
 def str_activity(activity, **kwargs):
     result = PrettyBlock()
     result.append('Activity:')
-    for key, value in activity.fulldict().items():
+    for key, value in activity.full_dict().items():
         if type(value) is dict:
             result.append(f'- {key} :', 1)
             for key, value in value.items():
@@ -1293,7 +1380,7 @@ def str_voice_state(state, index=None, **kwargs):
     result.append(f'{start}Voice state:')
     user = state.user
     if user.partial:
-        result.append(f'- user : Parital user {user.id}', 1)
+        result.append(f'- user : Partial user {user.id}', 1)
     else:
         result.append(f'- user : {user:f} ({user.id})', 1)
     channel = state.channel
@@ -1307,10 +1394,14 @@ def str_voice_state(state, index=None, **kwargs):
     result.append(f'- self_mute : {state.self_mute}', 1)
     result.append(f'- self_deaf : {state.self_deaf}', 1)
     result.append(f'- self_video : {state.self_video}', 1)
-
+    result.append(f'- is_speaker : {state.is_speaker!r}', 1)
+    requested_to_speak_at = state.requested_to_speak_at
+    if (requested_to_speak_at is not None):
+        result.append(f'- requested to speak at: {requested_to_speak_at:{DATETIME_FORMAT_CODE}}', 1)
+    
     return result
 
-def str_useroa2(user, index=None, **kwargs):
+def str_user_oa2(user, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:
         start = ''
@@ -1618,18 +1709,18 @@ def str_application(application, index=None, **kwargs):
     if (executables is not None):
         result.append(f'- executables: ({len(executables)})', 1)
         for index, executable in enumerate(executables, 1):
-            arguments = executable.arguments
-            if arguments is None:
-                arguments_r = ''
+            parameters = executable.parameters
+            if parameters is None:
+                parameters_r = ''
             else:
-                arguments_r = f', arguments={arguments!r}'
+                parameters_r = f', parameters={parameters!r}'
             
             if executable.is_launcher:
                 is_launcher_r = f', is_launcher=True'
             else:
                 is_launcher_r = ''
             
-            result.append(f'{index}.: name={executable.name!r}, os={executable.os!r}{arguments_r}{is_launcher_r}', 2)
+            result.append(f'{index}.: name={executable.name!r}, os={executable.os!r}{parameters_r}{is_launcher_r}', 2)
     
     third_party_skus = application.third_party_skus
     if (third_party_skus is not None):
@@ -1688,7 +1779,7 @@ def str_message_repr(message, index=None, **kwargs):
     else:
         start = f'{index}.: '
     
-    result.append(f'{start}MessagRepr {message.id}:')
+    result.append(f'{start}MessageRepr {message.id}:')
     channel = message.channel
     result.append(f'- channel {channel.id} ({channel.__class__.__name__}, {channel.type})', 1)
     
@@ -1711,6 +1802,24 @@ def str_user_guild_permission(user_guild_permission, index=None, **kwargs):
     
     return result
 
+def str_message_interaction(message_interaction, index=None, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    
+    result.append(f'{start}MessageInteraction:')
+    result.append(f'- id: {message_interaction.id}')
+    result.append(f'- name: {message_interaction.name}')
+    message_interaction_type = message_interaction.type
+    result.append(f'- type: {message_interaction_type.name} ({message_interaction_type.value})')
+    user = message_interaction.user
+    result.append(f'- user: {user.full_name} ({user.id})')
+    
+    return result
+
+
 PRETTY_PRINTERS['Message'] = str_message
 PRETTY_PRINTERS['reaction_mapping'] = str_reaction_mapping
 PRETTY_PRINTERS['reaction_mapping_line'] = str_reaction_mapping_line
@@ -1725,9 +1834,9 @@ PRETTY_PRINTERS['ChannelGroup'] = str_channel_group
 PRETTY_PRINTERS['ChannelCategory'] = str_channel_category
 PRETTY_PRINTERS['ChannelStore'] = str_channel_store
 PRETTY_PRINTERS['ChannelThread'] = str_channel_thread
-PRETTY_PRINTERS['ChannelGuildUndefnied'] = str_channel_guild_undefined
+PRETTY_PRINTERS['ChannelGuildUndefined'] = str_channel_guild_undefined
 PRETTY_PRINTERS['Guild'] = str_guild
-PRETTY_PRINTERS['PermOW'] = str_PermOW
+PRETTY_PRINTERS['PermissionOverwrite'] = str_PermissionOverwrite
 PRETTY_PRINTERS['Permission'] = str_permission
 PRETTY_PRINTERS['Invite'] = str_invite
 PRETTY_PRINTERS['list'] = str_list
@@ -1741,7 +1850,7 @@ PRETTY_PRINTERS['ActivityRich'] = str_activity
 PRETTY_PRINTERS['ActivityUnknown'] = str_activity
 PRETTY_PRINTERS['ActivityCustom'] = str_activity
 PRETTY_PRINTERS['VoiceState'] = str_voice_state
-PRETTY_PRINTERS['UserOA2'] = str_useroa2
+PRETTY_PRINTERS['UserOA2'] = str_user_oa2
 PRETTY_PRINTERS['GuildEmbed'] = str_GuildEmbed
 PRETTY_PRINTERS['User'] = str_user
 PRETTY_PRINTERS['Client'] = str_user
@@ -1759,3 +1868,4 @@ PRETTY_PRINTERS['MessageRepr'] = str_message_repr
 PRETTY_PRINTERS['IntegrationDetail'] = str_integration_detail
 PRETTY_PRINTERS['tuple'] = str_list
 PRETTY_PRINTERS['UserGuildPermission'] = str_user_guild_permission
+PRETTY_PRINTERS['MessageInteraction'] = str_message_interaction

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __all__ = ('show_warnings',)
-import sys
+import sys, re
 from ast import literal_eval
 
 GRAVE_TYPE_BUILTIN = 0
@@ -8,10 +8,13 @@ GRAVE_TYPE_EXPRESSION = 1
 GRAVE_TYPE_LOCAL_REFERENCE = 2
 GRAVE_TYPE_GLOBAL_REFERENCE = 3
 GRAVE_TYPE_QUOTE = 4
+GRAVE_TYPE_LINK = 5
 
 WARNINGS = []
 
-class DocWarning(object):
+GRAVE_URL_MATCHER = re.compile(f'(.*?):(https?://.*)')
+
+class DocWarning:
     """
     Represents a documentation warning.
     
@@ -25,7 +28,7 @@ class DocWarning(object):
     __slots__ = ('path', 'reason')
     def __new__(cls, path, reason):
         """
-        Creates a new ``DocWarning`` instance with the gvien parameters.
+        Creates a new ``DocWarning`` instance with the given parameters.
         
         Parameters
         ----------
@@ -46,13 +49,13 @@ class DocWarning(object):
         return self
     
     def __repr__(self):
-        """Returns the representation of the docwarning."""
+        """Returns the representation of the doc-warning."""
         return f'{self.__class__.__name__}(path={self.path!r}, reason={self.reason!r})'
     
     @property
     def message(self):
         """
-        A message representing the warning
+        A message representing the warning.
         
         Returns
         -------
@@ -68,7 +71,7 @@ def show_warnings(file=None):
     Parameters
     ----------
     file : `file-like`, Optional
-        File liek to write the warnings to. Defaults to `sys.stderr`.
+        File like to write the warnings to. Defaults to `sys.stderr`.
     """
     if file is None:
         file = sys.stderr
@@ -100,7 +103,7 @@ EXPECTED_BUILTIN_NAMES = {
     'method-like',
     'function-like',
     'Any',
-        }
+}
 
 GRAMMAR_CHARS = {
     '.',
@@ -114,14 +117,14 @@ GRAMMAR_CHARS = {
     ')',
     ']',
     '[',
-        }
+}
 
 DO_NOT_ADD_SPACE_AFTER = {
     '(',
     '[',
-        }
+}
 
-class Grave(object):
+class Grave:
     """
     Represents a string inside of '`' characters.
     
@@ -130,7 +133,7 @@ class Grave(object):
     content : `str`
         The string inside of the '`' characters.
     type : `int`
-        Type identificator for the grave. Possible values:
+        Type identifier for the grave. Possible values:
         
         +-------------------------------+-------+
         | Respective name               | Value |
@@ -149,14 +152,14 @@ class Grave(object):
     __slots__ = ('content', 'type', )
     def __init__(self, content, type_):
         """
-        Creates a new ``Grave`` from the gvien parameters.
+        Creates a new ``Grave`` from the given parameters.
         
         Parameters
         ----------
         content : `str`
             The string inside of the '`' characters.
         type_ : `int`
-            Type identificator for the grave.
+            Type identifier for the grave.
         """
         self.content = content
         self.type = type_
@@ -178,16 +181,16 @@ class Grave(object):
         
         return True
 
-def get_part_arround(content, index):
+def get_part_around(content, index):
     """
-    Gets the part of the given `content` arround the given `index`.
+    Gets the part of the given `content` around the given `index`.
     
     Parameters
     ----------
     content : `str`
-        The content, arround what the part will be cut out.
+        The content, around what the part will be cut out.
     index : `str`
-        The index of aaround where the part will be cut out.
+        The index of around where the part will be cut out.
     """
     result = []
     
@@ -243,12 +246,12 @@ def build_graves(text):
             break
         
         if grave_start == len(text):
-            warnings.append(f'Not ended grave character: {get_part_arround(text, grave_start)!r}')
+            warnings.append(f'Not ended grave character: {get_part_around(text, grave_start)!r}')
             break
         
         if grave_start == grave_end:
             if grave_end != 0:
-                warnings.append(f'Empty ungraved section: {get_part_arround(text, grave_end)!r}')
+                warnings.append(f'Empty ungraved section: {get_part_around(text, grave_end)!r}')
         else:
             section = text[grave_end:grave_start]
             if content:
@@ -275,7 +278,7 @@ def build_graves(text):
                     section = last+section
                     
             content.append(section)
-            warnings.append(f'Not ended grave section: {get_part_arround(text, len(section))!r}')
+            warnings.append(f'Not ended grave section: {get_part_around(text, len(section))!r}')
             break
         
         if double_grave:
@@ -288,10 +291,10 @@ def build_graves(text):
                         section = last+section
                 
                 content.append(section)
-                warnings.append(f'Not ended double grave section: {get_part_arround(text, len(section))!r}')
+                warnings.append(f'Not ended double grave section: {get_part_around(text, len(section))!r}')
             else:
                 if grave_start == grave_end:
-                    warnings.append(f'Empty double grave: {get_part_arround(text, grave_end)!r}')
+                    warnings.append(f'Empty double grave: {get_part_around(text, grave_end)!r}')
                 else:
                     reference = text[grave_start:grave_end]
                     content.append(Grave(reference, GRAVE_TYPE_GLOBAL_REFERENCE))
@@ -302,17 +305,20 @@ def build_graves(text):
             # single graves cannot be empty
             reference = text[grave_start:grave_end]
             if reference in EXPECTED_BUILTIN_NAMES:
-                content.append(Grave(reference, GRAVE_TYPE_BUILTIN))
+                grave_type = GRAVE_TYPE_BUILTIN
+            elif GRAVE_URL_MATCHER.fullmatch(reference) is not None:
+                grave_type = GRAVE_TYPE_LINK
             else:
                 try:
                     literal_eval(reference)
                 except SyntaxError as err:
                     # warnings.append(f'{err.__class__.__name__}({err}) at a single grave: {reference!r}')
-                    content.append(Grave(reference, GRAVE_TYPE_QUOTE))
+                    grave_type = GRAVE_TYPE_QUOTE
                 except ValueError:
-                    content.append(Grave(reference, GRAVE_TYPE_LOCAL_REFERENCE))
+                    grave_type = GRAVE_TYPE_LOCAL_REFERENCE
                 else:
-                    content.append(Grave(reference, GRAVE_TYPE_EXPRESSION))
+                    grave_type = GRAVE_TYPE_EXPRESSION
+            content.append(Grave(reference, grave_type))
         
         grave_end += 1
     
@@ -421,9 +427,9 @@ def graved_to_source_text(graved):
     return ''.join(result)
 
 
-class GravedDescription(object):
+class GravedDescription:
     """
-    Represnets a garved description part of a docstring.
+    Represents a graved description part of a docstring.
     
     Attributes
     ----------
@@ -461,9 +467,9 @@ class GravedDescription(object):
         """Returns the graved description's representation."""
         return f'<{self.__class__.__name__} content={graved_to_source_text(self.content)!r}>'
 
-class GravedAttributeDescription(object):
+class GravedAttributeDescription:
     """
-    Represnts an attribute's graved header part.
+    Represents an attribute's graved header part.
     
     Attributes
     ----------
@@ -477,7 +483,7 @@ class GravedAttributeDescription(object):
     __slots__ = ('name', 'separator', 'content')
     def __new__(cls, name, separator, content):
         """
-        Creates a ``GravedAttributeDescription`` instacne with the given parameters.
+        Creates a ``GravedAttributeDescription`` instance with the given parameters.
         
         Attributes
         ----------
@@ -500,19 +506,21 @@ class GravedAttributeDescription(object):
     
     def __repr__(self):
         """Returns the graved description's representation."""
-        return (f'<{self.__class__.__name__} name={self.name!r}, seprator={self.separator!r}, content='
+        return (f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
             f'{graved_to_source_text(self.content)!r}>')
 
-class GravedCodeBlock(object):
+class GravedCodeBlock:
     """
-    Represnets a garved code block part of a docstring.
+    Represents a graved code block part of a docstring.
     
     Attributes
     ----------
+    language : `None` or `str`
+        The language of the code if applicable.
     lines : `list` of `str`
-        The lines of the codeblock
+        The lines of the code-block
     """
-    __slots__ = ('lines', )
+    __slots__ = ('language', 'lines', )
     def __new__(cls, parent, path):
         """
         Creates a new graved code block..
@@ -536,14 +544,35 @@ class GravedCodeBlock(object):
             lines.append(line)
         
         self = object.__new__(cls)
+        self.language = parent._language
         self.lines = lines
         return self
     
     def __repr__(self):
         """Returns the graved code block's representation."""
-        return f'<{self.__class__.__name__} lines={self.lines!r}>'
+        result = ['<', self.__class__.__name__]
+        
+        language = self.language
+        if language is None:
+            result.append(' language=')
+            result.append(repr(language))
+            
+            add_comma = True
+        else:
+            add_comma = False
+        
+        if add_comma:
+            result.append(', ')
+        
+        result.append(' lines=')
+        result.append(repr(self.lines))
+        
+        result.append('>')
+        
+        return ''.join(result)
 
-class GravedTable(object):
+
+class GravedTable:
     """
     Represents a graved table.
     
@@ -614,6 +643,8 @@ class GravedTable(object):
         """
         Iterates over the table's lines.
         
+        This method is a generator.
+        
         Yields
         ------
         line : `list` of (`None`, (`list` of (`str`, ``Grave``) elements)
@@ -667,7 +698,7 @@ def apply_warnings_to_path(warnings, path):
         DocWarning(path, warning)
 
 
-class GravedListingElement(object):
+class GravedListingElement:
     """
     Represents a graved listing element.
     
@@ -712,7 +743,7 @@ class GravedListingElement(object):
                 head = None
         
         if None is head is content:
-            DocWarning(path, 'Empty isting element would have be created.')
+            DocWarning(path, 'Empty listing element would have be created.')
             return None
         
         self = object.__new__(cls)
@@ -739,7 +770,7 @@ class GravedListingElement(object):
         
         return ''.join(result)
 
-class GravedListing(object):
+class GravedListing:
     """
     Represents a graved listing.
     
@@ -784,3 +815,50 @@ class GravedListing(object):
     def __repr__(self):
         """Returns the graved listing's representation."""
         return f'<{self.__class__.__name__} elements={self.elements!r}>'
+
+
+class GravedBlockQuote:
+    """
+    Represents a graved block quote part of a docstring.
+    
+    Attributes
+    ----------
+    descriptions : `list` of `list` of (`str`, ``Grave``)
+        Graved description parts of the block quote.
+    """
+    __slots__ = ('descriptions', )
+    def __new__(cls, parent, path):
+        """
+        Creates a new graved block quote.
+        
+        Parameters
+        ----------
+        parent : ``TextBlockQuote``
+            The source block quote.
+        path : ``QualPath``
+            The path of the respective docstring.
+        
+        Returns
+        -------
+        self : `None` or ``GravedBlockQuote``
+            Returns `None`, if would have been creating an empty graved block quote,
+        """
+        graved_descriptions = []
+        for description in parent._descriptions:
+            graved_description = description.graved(path)
+            if graved_description is None:
+                continue
+            
+            graved_descriptions.append(graved_description)
+        
+        if not graved_descriptions:
+            DocWarning(path, 'Empty description would have been created.')
+            return None
+        
+        self = object.__new__(cls)
+        self.descriptions = graved_descriptions
+        return self
+    
+    def __repr__(self):
+        """Returns the graved block quote's representation."""
+        return f'<{self.__class__.__name__} descriptions={self.descriptions!r}>'

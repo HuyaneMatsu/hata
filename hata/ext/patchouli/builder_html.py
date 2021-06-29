@@ -4,7 +4,9 @@ from html import escape as html_escape
 from ...backend.quote import quote
 
 from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
-    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription
+    GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription, GravedBlockQuote, GRAVE_TYPE_LINK, \
+    GRAVE_URL_MATCHER
+from .highlight import HighlightContext, PYTHON_IDENTIFIERS
 
 def create_relative_link(source, target):
     """
@@ -70,9 +72,9 @@ def create_relative_link(source, target):
     return quote(url, safe=':@', protected='/')
 
 
-def graved_link(reference, object_, path, linker):
+def graved_global_link(reference, object_, path, linker):
     """
-    Converts the given graved link to it's html text form.
+    Converts the given graved global reference link to it's html text form.
     
     Parameters
     ----------
@@ -112,6 +114,35 @@ def graved_link(reference, object_, path, linker):
             '</code>'
         '</a>'
             )
+
+
+def graved_link(reference):
+    """
+    Converts the given graved link to it's html text form.
+    
+    Parameters
+    ----------
+    reference : `str`
+        A reference, what's link should be clickable.
+    
+    Returns
+    -------
+    html : `str`
+    """
+    name, url = GRAVE_URL_MATCHER.fullmatch(reference).groups()
+    name = html_escape(name)
+    url = quote(url, safe=':@', protected='/')
+    
+    return (
+        f'<a href="{url}">'
+            '<code>'
+                '<span>'
+                    f'{name}'
+                '</span>'
+            '</code>'
+        '</a>'
+            )
+
 
 def graved_text(text):
     """
@@ -180,8 +211,11 @@ def graved_to_escaped(graved, object_, path, linker):
         else:
             content = element.content
             
-            if element.type == GRAVE_TYPE_GLOBAL_REFERENCE:
-                local_word = graved_link(content, object_, path, linker)
+            element_type = element.type
+            if element_type == GRAVE_TYPE_GLOBAL_REFERENCE:
+                local_word = graved_global_link(content, object_, path, linker)
+            elif element_type == GRAVE_TYPE_LINK:
+                local_word = graved_link(content)
             else:
                 local_word = graved_text(content)
             
@@ -206,6 +240,8 @@ def description_serializer(description, object_, path, linker):
     """
     Serializes the given description.
     
+    This function is a generator.
+    
     Parameters
     ----------
     description : ``GravedDescription``
@@ -229,6 +265,8 @@ def description_serializer(description, object_, path, linker):
 def attribute_description_serializer(description, object_, path, linker):
     """
     Serializes the given attribute description.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -269,6 +307,8 @@ def code_block_serializer(code_block, object_, path, linker):
     """
     Serializes the given description.
     
+    This function is a generator.
+    
     Parameters
     ----------
     code_block : ``GravedCodeBlock``
@@ -286,21 +326,31 @@ def code_block_serializer(code_block, object_, path, linker):
     """
     yield '<div class="code_block"><pre>'
     lines = code_block.lines
-    index = 0
-    limit = len(lines)
-    while True:
-        line = lines[index]
-        yield html_escape(line)
-        index += 1
-        if index == limit:
-            break
-        yield '<br>'
+    
+    language = code_block.language
+    if (language is None) or (language not in PYTHON_IDENTIFIERS):
+        index = 0
+        limit = len(lines)
+        while True:
+            line = lines[index]
+            yield html_escape(line)
+            index += 1
+            if index == limit:
+                break
+            yield '<br>'
+    else:
+        context = HighlightContext(lines)
+        context.match()
+        yield from context.generate_highlighted()
+    
     yield '</pre></div>'
 
 
 def table_serializer(table, object_, path, linker):
     """
     Serializes the given table.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -354,10 +404,12 @@ def listing_element_serializer(listing_element, object_, path, linker):
     """
     Serializes the given listing element.
     
+    This function is a generator.
+    
     Parameters
     ----------
     listing_element : ``GravedListingElement``
-        The listing element to seralize.
+        The listing element to serialize.
     object_ : ``UnitBase``
         The respective unit.
     path : ``QualPath``
@@ -386,10 +438,12 @@ def listing_serializer(listing, object_, path, linker):
     """
     Serializes the given listing.
     
+    This function is a generator.
+    
     Parameters
     ----------
     listing : ``GravedListing``
-        The listing element to seralize.
+        The listing element to serialize.
     object_ : ``UnitBase``
         The respective unit.
     path : ``QualPath``
@@ -408,10 +462,38 @@ def listing_serializer(listing, object_, path, linker):
     
     yield '</ul>'
 
+def block_quote_serializer(block_quote, object_, path, linker):
+    """
+    Serializes the given block quote.
+    
+    This function is a generator.
+    
+    Parameters
+    ----------
+    block_quote : ``GravedBlockQuote``
+        The listing element to serialize.
+    object_ : ``UnitBase``
+        The respective unit.
+    path : ``QualPath``
+        Path of the respective object to avoid incorrect link generation in subclasses.
+    linker : `func`
+        Function, which creates relative link between two units.
+    
+    Yields
+    ------
+    html_part : `str`
+    """
+    yield '<blockquote>'
+    
+    for description in block_quote.descriptions:
+        yield from description_serializer(description, object_, path, linker)
+    yield '</blockquote>'
 
 def section_title_serializer(title):
     """
     Serializes the given section title.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -433,6 +515,8 @@ def section_serializer(section, object_):
     """
     Serializes the given section.
     
+    This function is a generator.
+    
     Parameters
     ----------
     section : `tuple` ((`str` or `None`), `list` of `Any`)
@@ -452,6 +536,8 @@ def section_serializer(section, object_):
 def sub_section_serializer(sub_section, object_, path, linker):
     """
     Deserializes the given sub-section to converters.
+    
+    This function is a generator.
     
     Parameters
     ----------
@@ -486,7 +572,8 @@ CONVERTER_TABLE = {
     GravedTable : table_serializer,
     GravedCodeBlock : code_block_serializer,
     GravedAttributeDescription : attribute_description_serializer,
-        }
+    GravedBlockQuote : block_quote_serializer,
+}
 
 
 def html_serialize_docs(docs, object_):
@@ -510,4 +597,3 @@ def html_serialize_docs(docs, object_):
         result.extend(section_serializer(section, object_))
     
     return ''.join(result)
-

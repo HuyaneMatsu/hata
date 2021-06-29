@@ -47,15 +47,15 @@ You can get one by registering your Bot with [Discord's application page](https:
 "Bot/Privileged Gateway Intents" section. Intents are too broad for basic example but you can read more here [Intents](#Intents).
 
 3.: We create our `Client` instance and name it `NekoBot`. 
-When creating it we need to pass at least a token but it accepts [other, optional, attributes too.](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/client.py#L607)
+When creating it we need to pass at least a token but it accepts [other, optional, attributes too.](https://huyanematsu.pythonanywhere.com/docs/hata/discord/client/Client)
 
 4.: We can use decorators on our client and here we use `@NekoBot.events` because our client is  named `NekoBot`.
 In this case our decorator will capture `ready` event and handle it in `async def ready(client):` function.
 
 The `ready` event will be activated after the client finished logging in to Discord.
-When it happens, in the example above, we print out the client's full name and it's ID.
+When it happens, in the example above, we print out the client's full name and its ID.
 
-Event function can take multiple arguments depending on the event, but all of them take `client` as the first one.
+Event function can take multiple parameters depending on the event, but all of them take `client` as the first one.
 The example we used is the most straightforward way but there are multiple ways of adding event handlers and there
 are multiple events that you can register. You can read about this [Event Examples](#Event-examples).
 
@@ -72,7 +72,7 @@ If your bot fails to login because of bad intents read point 2 again.
 ## Event examples
 
 There are multiple events you can register,
-you can take a look [here](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/parsers.py#L6011) to see all events.
+you can take a look [here](https://huyanematsu.pythonanywhere.com/docs/hata/discord/parsers/EventHandlerManager) to see all events.
 
 You can register a event,  if you wish, in multiple ways so here are some examples:
 
@@ -128,9 +128,9 @@ Examples for the above errors:
     ```
 
 - `ValueError: Invalid argcount, expected 2, got 1.`
-   Our function took to many/little arguments.
+   Our function took to many/little parameters.
     ```py
-    # emoji_create should take 2 arguments, client and emoji
+    # emoji_create should take 2 parameters, client and emoji
     @NekoBot.events
     async def emoji_create(client):
         pass
@@ -161,7 +161,7 @@ sending messages (and in that code we only need to send messages since it's a si
 By specifying specific intent like that we don't have to check intents in application page and it will save our
 resources as member lists, statuses etc will not be loaded.
 
-You can read more about IntentFlags and which values represent what [here](https://github.com/HuyaneMatsu/hata/blob/0695fd613d76390c8668851631accc473031cc5c/hata/discord/parsers.py#L204)
+You can read more about IntentFlags and which values represent what [here](https://huyanematsu.pythonanywhere.com/docs/hata/discord/parsers/IntentFlag)
 (note that not all of IntentFlags require permissions from Discord, some are managed internally by Hata).
 
 **If you are beginner** it is recommended to use default value of ALL intents and check all intents in Discord application

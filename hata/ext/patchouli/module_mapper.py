@@ -6,15 +6,18 @@ __all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionU
 import sys, re
 from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, \
     MemberDescriptorType
+from difflib import get_close_matches
 
-from ...backend.dereaddons_local import cached_property, MethodLike, module_property, basemethod, weakmethod
+from ...backend.utils import cached_property, MethodLike, module_property, basemethod, weakmethod
+from ...backend.export import include
 from ...discord.bases import IconSlot
+
 from .qualpath import QualPath
 from .parser import DocString
 from .builder_text import serialize_docs_embed_sized, serialize_docs, serialize_docs_source_text, generate_preview_for
 from .builder_html import html_serialize_docs
 
-html_serialize_docs_extended = NotImplemented
+html_serialize_docs_extended = include('html_serialize_docs_extended')
 
 WrapperDescriptorType = object.__eq__.__class__
 MethodDescriptorType = int.bit_length.__class__
@@ -29,23 +32,23 @@ METHOD_TYPES = {
     MethodLike,
     basemethod,
     weakmethod,
-        }
+}
 
 FUNCTION_TYPES = {
     *METHOD_TYPES,
     FunctionType,
     BuiltinFunctionType,
     BuiltinMethodType,
-        }
+}
 
 IGNORED_TYPES = {
     type,
     object,
-        }
+}
 
 IGNORED_CLASS_ATTRIBUTE_TYPES = {
     *METHOD_TYPES,
-        }
+}
 
 if (SlotWrapperType is not FunctionType) and (SlotWrapperType is not MethodType):
     IGNORED_CLASS_ATTRIBUTE_TYPES.add(SlotWrapperType)
@@ -121,11 +124,11 @@ PROPERTY_TYPES = {
     cached_property,
     module_property,
     IconSlot,
-        }
+}
 
 ATTRIBUTE_TYPES = {
     MemberDescriptorType,
-        }
+}
 
 IGNORED_CLASS_ATTRIBUTE_NAMES = {
     '__ne__',
@@ -190,7 +193,7 @@ IGNORED_CLASS_ATTRIBUTE_NAMES = {
     '__subclasses__',
     '__iter__',
     '__weakref__',
-        }
+}
 
 def map_types_and_functions(obj, references, path, from_type):
     """
@@ -227,10 +230,6 @@ def map_types_and_functions(obj, references, path, from_type):
             
             if attr_name in IGNORED_CLASS_ATTRIBUTE_NAMES:
                 continue
-            
-            
-            if attr_name == 'timestamp':
-                print(attr_value, attr_value_type)
             
             references[attr_name] = ClassAttributeUnit(attr_name, QualPath(path, attr_name))
             continue
@@ -327,18 +326,18 @@ def map_types_and_functions(obj, references, path, from_type):
 
 MAPPED_OBJECTS = {}
 
-class UnitBase(object):
+class UnitBase:
     """
-    Base class for represnetative units.
+    Base class for representative units.
     
     Attributes
     ----------
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the unit.
     path : ``QualPath``
@@ -347,7 +346,7 @@ class UnitBase(object):
     __slots__ = ('_cache', '_docs', '_docs_parsed', 'name', 'path',)
     
     def __repr__(self):
-        """Returns the unit's represnetation."""
+        """Returns the unit's representation."""
         return f'<{self.__class__.__name__} name={self.name}, path={self.path!s}>'
     
     @property
@@ -361,7 +360,7 @@ class UnitBase(object):
         """
         parent_path = self.path.parent
         if parent_path:
-            parent = MAPPED_OBJECTS.get(parent_path)
+            parent = MAPPED_OBJECTS.get(parent_path, None)
         else:
             parent = None
         
@@ -380,7 +379,7 @@ class UnitBase(object):
     @property
     def docs(self):
         """
-        Returns the docs of the represneted object.
+        Returns the docs of the represented object.
         
         Returns
         -------
@@ -517,7 +516,7 @@ class UnitBase(object):
         """
         Returns the closest unit to the given unit.
         
-        returns
+        Returns
         -------
         referred : `None` or ``UnitBase`` instance.
             The referenced unit.
@@ -539,7 +538,7 @@ class UnitBase(object):
                 if (object_ is not None):
                     return object_
             
-            parent = MAPPED_OBJECTS.get(self.path.parent)
+            parent = MAPPED_OBJECTS.get(self.path.parent, None)
             if parent is None:
                 return self
             else:
@@ -552,7 +551,7 @@ class UnitBase(object):
         
         path = self.path.parent
         while path:
-            parent = MAPPED_OBJECTS.get(path)
+            parent = MAPPED_OBJECTS.get(path, None)
             if parent is None:
                 break
             
@@ -564,7 +563,7 @@ class UnitBase(object):
 
 def direct_lookup_in(object_, reference_parts):
     """
-    Looks up the given refernce in a foldered unit directly.
+    Looks up the given reference in a foldered unit directly.
     
     Parameters
     ----------
@@ -575,7 +574,7 @@ def direct_lookup_in(object_, reference_parts):
         
         The given `reference_parts` should be reversed from their original state.
     
-    returns
+    Returns
     -------
     object_ : `None` or ``UnitBase``
         The found object if applicable.
@@ -584,13 +583,13 @@ def direct_lookup_in(object_, reference_parts):
     
     while reference_parts:
         if not isinstance(object_, FolderedUnit):
-            # Cannot move futher deep, the reference will not be found, leave.
+            # Cannot move further deep, the reference will not be found, leave.
             object_ = None
             break
         
         reference_part = reference_parts.pop()
         try:
-            object_ = object_.references.get(reference_part)
+            object_ = object_.references.get(reference_part, None)
         except KeyError:
             # Reference not be found, leave.
             object_ = None
@@ -601,7 +600,7 @@ def direct_lookup_in(object_, reference_parts):
 
 def lookup_from(folder, reference_parts):
     """
-    Looks up the given reference in the folder and in all of it's subfolders.
+    Looks up the given reference in the folder and in all of it's sub-folders.
     
     Parameters
     ----------
@@ -615,7 +614,7 @@ def lookup_from(folder, reference_parts):
     Returns
     -------
     object_ : ``UnitBase``
-        The unitbase if anything found matching the references.
+        The unit-base if anything found matching the references.
     """
     if not isinstance(folder, FolderedUnit):
         return None
@@ -645,9 +644,9 @@ class AttributeUnitBase(UnitBase):
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the unit.
     path : ``QualPath``
@@ -663,7 +662,7 @@ class AttributeUnitBase(UnitBase):
         -------
         docstring : `None` or ``DocString``
         """
-        parent = MAPPED_OBJECTS.get(self.path.parent)
+        parent = MAPPED_OBJECTS.get(self.path.parent, None)
         if parent is None:
             return None
         
@@ -683,9 +682,9 @@ class InstanceAttributeUnit(AttributeUnitBase):
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the attribute.
     path : ``QualPath``
@@ -751,16 +750,16 @@ class ClassAttributeUnit(AttributeUnitBase):
 
 class ObjectedUnitBase(UnitBase):
     """
-    Base class for dicstrings, which store their represneted object.
+    Base class for docstrings, which store their represented object.
 
     Attributes
     ----------
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the unit.
     path : ``QualPath``
@@ -797,9 +796,9 @@ class PropertyUnit(ObjectedUnitBase):
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the unit.
     path : ``QualPath``
@@ -836,16 +835,16 @@ class PropertyUnit(ObjectedUnitBase):
 
 class FunctionUnit(ObjectedUnitBase):
     """
-    Reprents a function or method.
+    Represents a function or method.
     
     Attributes
     ----------
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the function.
     path : ``QualPath``
@@ -867,9 +866,9 @@ class FunctionUnit(ObjectedUnitBase):
         obj : `property-like`
             The represented function.
         alternative_path : `None` or ``QualPath``
-            Alternatvie path to the function.
+            Alternative path to the function.
             
-            Methods might show up at multyple places, so more access path can be added to them.
+            Methods might show up at multiple places, so more access path can be added to them.
         """
         try:
             self = MAPPED_OBJECTS[path]
@@ -899,9 +898,9 @@ class FolderedUnit(ObjectedUnitBase):
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the unit.
     path : ``QualPath``
@@ -914,7 +913,7 @@ class FolderedUnit(ObjectedUnitBase):
     __slots__ = ('references',)
     
     def __repr__(self):
-        """Returns the foldered unit's represnetation."""
+        """Returns the foldered unit's representation."""
         return (f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, reference count='
             f'{len(self.references)!r}>')
 
@@ -928,9 +927,9 @@ class TypeUnit(FolderedUnit):
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the type.
     path : ``QualPath``
@@ -980,9 +979,9 @@ class ModuleUnit(FolderedUnit):
     _cache : `dict`
         Cache used by cached properties.
     _docs : `None` or ``DocString``
-        The processed dcostring of the represented unit.
+        The processed docstring of the represented unit.
     _docs_parsed : `bool`
-        Whether the represneted unit's docstring was already processed.
+        Whether the represented unit's docstring was already processed.
     name : `str`
         The name of the module.
     path : ``QualPath``
@@ -1035,7 +1034,7 @@ class ModuleUnit(FolderedUnit):
 
 def map_module(module_name):
     """
-    Maps the given module by it's name and reutnrs the root.
+    Maps the given module by it's name and returns the root.
     
     Attributes
     ----------
@@ -1061,6 +1060,9 @@ def map_module(module_name):
     except KeyError:
         raise LookupError(f'No loaded module is named as {module_name!r}') from None
     
+    # Invalidate search cache
+    CachedSearcher._cache_valid = False
+    
     module_name_pattern = re.compile(f'{re.escape(module_name)}(?:\..*)?')
     modules = []
     
@@ -1071,52 +1073,104 @@ def map_module(module_name):
     root = ModuleUnit(module_name, QualPath(module_name), main_module_object, modules)
     return root
 
-def search_paths(value):
+
+class CachedSearcher:
     """
-    Returns all the found units with the given value in their path. Case insensitive.
+    Cached unit path searcher.
     
-    Parameters
-    ----------
-    value : `str`
-        The query string.
-    
-    Returns
-    -------
-    paths : `set` of ``QualPath``
+    Class Attributes
+    ----------------
+    _cached_relations : `dict` of (``QualPath``, (``QualPath`` or `list` of ``QualPath``)) items
+        Path shortening, path relations used when translating found patches back.
+    _cached_possibilities : `list` of `str`
+        The cached possibilities.
+    _cache_valid : `bool`
+        Whether the searcher cache is valid.
     """
-    pattern = re.compile(re.escape(value), re.I)
-    paths = set()
-    for path in MAPPED_OBJECTS:
-        if pattern.search(str(path)) is None:
-            continue
-        
-        while True:
-            parent = path.parent
-            if not parent:
-                break
-            
-            if pattern.search(str(parent)) is None:
-                break
-            
-            if pattern.search(path.parts[-1]) is not None:
-                break
-            
-            path = parent
-            continue
-        
-        paths.add(path)
+    _cache_valid = True
+    _cached_relations = {}
+    _cached_possibilities = []
     
-    return paths
+    @classmethod
+    def _prepare(cls):
+        """
+        Prepares the cache of the searcher.
+        
+        Returns
+        -------
+        possibilities : `list` of `str`
+            The cached possibilities.
+        relations : `dict` of (``QualPath``, (``QualPath`` or `list` of ``QualPath``)) items
+            Path shortening, path relations used when translating found patches back.
+        """
+        cached_relations = cls._cached_relations
+        cached_possibilities = cls._cached_possibilities
+        if not cls._cache_valid:
+            cached_relations.clear()
+            cached_possibilities.clear()
+            for path in MAPPED_OBJECTS:
+                path_parts = path.parts
+                for starter in range(len(path_parts)):
+                    local_path = '.'.join(path_parts[starter:])
+                    
+                    try:
+                        collected_paths = cached_relations[local_path]
+                    except KeyError:
+                        cached_relations[local_path] = path
+                        cached_possibilities.append(local_path)
+                    else:
+                        if isinstance(collected_paths, QualPath):
+                            cached_relations[local_path] = [collected_paths, path]
+                        else:
+                            collected_paths.append(path)
+            
+            for value in cached_relations.values():
+                if isinstance(value, QualPath):
+                    continue
+                
+                value.sort(key=lambda path: str(path))
+        
+        return cached_possibilities, cached_relations
+    
+    def __call__(self, value, limit=100):
+        """
+        Returns all the found units with the given value in their path. Case insensitive.
+        
+        Parameters
+        ----------
+        value : `str`
+            The query string.
+        
+        Returns
+        -------
+        paths : `list` of ``QualPath``
+        """
+        possibilities, relations = self._prepare()
+        
+        matcheds = get_close_matches(value, possibilities, n=limit, cutoff=0.60)
+        
+        paths = []
+        collected = set()
+        
+        for matched in matcheds:
+            path = relations[matched]
+            if isinstance(path, QualPath):
+                if path in collected:
+                    continue
+                
+                collected.add(path)
+                paths.append(path)
+            else:
+                for path in path:
+                    if path in collected:
+                        continue
+                    
+                    collected.add(path)
+                    paths.append(path)
+        
+        del paths[limit:]
+        
+        return paths
 
 
-del IconSlot
-del cached_property
-del module_property
-del basemethod
-del weakmethod
-del FunctionType
-del BuiltinFunctionType
-del BuiltinMethodType
-del MethodType
-del GetSetDescriptorType
-del MemberDescriptorType
+search_paths = CachedSearcher()

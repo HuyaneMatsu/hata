@@ -33,7 +33,7 @@ start_clients()
 
 ```
 
-`setup_ext_commands` function accepts the following arguments:
+`setup_ext_commands` function accepts the following parameters:
 
 | name                  | type                                          | default   | description                                                                                           |
 |-----------------------|-----------------------------------------------|-----------|-------------------------------------------------------------------------------------------------------|
@@ -44,15 +44,16 @@ start_clients()
 | default_category_name | `None` or `str`                               | `None`    | The `CommandProcesser` default `Category` name.                                                       |
 | category_name_rule    | `None` or `function`                          | `None`    | Function to generate display names for categories.                                                    |
 | command_name_rule     | `None` or `function`                          | `None`    | Function to generate display names for commands.                                                      |
+| precheck              | `None` or `function`                          | `None`    | Decides whether a message should be processed.                                                        |
 
-## Command Arguments
+## Command Parameters
 
-Every command has to have at least `client` and `message` arguments, but you can add more arguments as well.
+Every command has to have at least `client` and `message` parameters, but you can add more parameters as well.
 
-#### Non-annotated arguments
+#### Non-annotated parameters
 
-If the command accepts more arguments than the default 2, and those arguments are not annotated nor do they have 
-a default value, then the message content will be split by words and passed to those arguments  (until newline).
+If the command accepts more parameters than the default 2, and those parameters are not annotated nor do they have 
+a default value, then the message content will be split by words and passed to those parameters  (until newline).
 
 Example for the above case:
 ```py
@@ -65,7 +66,7 @@ If we call command test with `n!test abc 123 zzz` this will print `third` which 
 However if we call it with newline `n!test abc 123 zzz\nnewline` the newline(s) will be ignored and `third` would still
 be a string with value `abc 123 zzz`
 
-If we had multiple arguments like this:
+If we had multiple parameters like this:
 ```py
 @NekoBot.commands
 async def test(client, message, third, fourth, fifth):
@@ -75,7 +76,7 @@ async def test(client, message, third, fourth, fifth):
 We would have these results:
 `n!test abc 123 zzz` would result in third="abc" fourth=123 fifth=zzz
 
-#### Parsing command arguments (annotated arguments)
+#### Parsing command parameters (annotated parameters)
 
 Sometimes we want to deal with certain types inside our command, for example let's say we want a command that hugs a user:
 
@@ -84,13 +85,13 @@ Sometimes we want to deal with certain types inside our command, for example let
 async def hug(client, message, user):
     ...
 ```
-Let's say we call the above command with `n!hug some_user#1234`, it would be easier for us if argument `user` was
+Let's say we call the above command with `n!hug some_user#1234`, it would be easier for us if parameter `user` was
 already a `User` object that we can use right away inside that function instead of string which we would then need to 
 additionally convert to user object inside our command.
 
 
-For example we'll annotate it as User and have it's default value of None:
-```
+For example we'll annotate it as User and have its default value of None:
+```py
 from hata import User
 
 @NekoBot.commands
@@ -100,7 +101,7 @@ async def hug(client, message, user: User = None):
     
     await client.message_create(message.channel, f'Hugs {user:m} !')
 ```
-- If the user was not found and the argument has default value given as well, then that will be passed instead.
+- If the user was not found and the parameter has default value given as well, then that will be passed instead.
 - If the user was not found (or not passed in command call aka just `n!hug`) then user will have default value, in this case `None`.
 
 The supported types are the following:
@@ -115,6 +116,7 @@ The supported types are the following:
 | Guild         | 'guild'               | N/A                                                                                                                                       |
 | Message       | 'message'             | N/A                                                                                                                                       |
 | Invite        | 'invite'              | N/A                                                                                                                                       |
+| Color         | 'color'               | N/A                                                                                                                                       |
 | str           | N/A                   | N/A                                                                                                                                       |
 | int           | N/A                   | N/A                                                                                                                                       |
 | timedelta     | 'tdelta'              | N/A                                                                                                                                       |
@@ -126,14 +128,14 @@ Notes:
     `User`, then it will still let trough the `Client`-s as well.
 - If `'channel'` is given as a specific channel type then every channel with different type will be ignored.
 - For using `'rdelta'` converter you must have `dateutil` installed.
-- `'rest'` converter returns the unused part of the message content, until the first linebreak.
+- `'rest'` converter returns the unused part of the message content.
 
 If you do not give annotations for the extra parameters then every one of them (except the last) will be interpreted as
 `str` parser while the last of them will be interpreted as a `rest` parser. 
 Although you can use `*args` to get as much object of the given as possible.
 If at the case of `*args` no annotation is given then instead of `rest` parser it will be picked up as `str`.
 
-```
+```py
 @NekoBot.commands
 async def separate(client, message, *args):
     if not args:
@@ -332,16 +334,16 @@ Or to make it cooler, we can make it pass it the message author (if the parser f
 
 The pre-created ones are:
 
-| Name                                      | Description                                                               |
-|-------------------------------------------|---------------------------------------------------------------------------|
-| `'message.author'`                        | Returns the message author.                                               |
-| `'message.channel'`                       | Returns the message channel.                                              |
-| `'message.guild'`                         | Returns the message guild (can be `None`).                                |
-| `'message.channel.guild'`                 | Same as the `'message.guild'` one.                                        |
-| `'client'`                                | Returns the client who received the message.                              |
-| `'rest'`                                  | Returns the unused content of the message (can be empty string)           |
-| `'message.guild.default_role'`            | Returns the message guild default role (can be `None`)                    |
-| `'message.channel.guild.default_role'`    | Same as the `''message.guild.default_role''` one.                         |
+| Name                                      | Description                                                           |
+|-------------------------------------------|-----------------------------------------------------------------------|
+| `'message.author'`                        | Returns the message author.                                           |
+| `'message.channel'`                       | Returns the message channel.                                          |
+| `'message.guild'`                         | Returns the message guild (can be `None`).                            |
+| `'message.channel.guild'`                 | Same as the `'message.guild'` one.                                    |
+| `'client'`                                | Returns the client who received the message.                          |
+| `'rest'`                                  | Returns the unused content of the message (can be empty string).      |
+| `'message.guild.default_role'`            | Returns the message guild default role (can be `None`).               |
+| `'message.channel.guild.default_role'`    | Same as the `''message.guild.default_role''` one.                     |
 
 Defining these might be difficult because first you need to get along with hata internals.
 One example for the `'message.author'` pre-created one equals to:
@@ -377,8 +379,8 @@ The following parameters are passed to a parser failure handler.
 | client                | `Client`          | The respective client.                                                |
 | message               | `Message`         | The respective message.                                               |
 | command               | `Command`         | The respective command.                                               |
-| content               | `str`             | The message content, from what the arguments would have be parsed.    |
-| args                  | `list` of `Any`   | The successfully parsed argument.                                     |
+| content               | `str`             | The message content, from what the parameters would have be parsed.   |
+| args                  | `list` of `Any`   | The successfully parsed parameter.                                    |
 
 Can be added to a command by passing it to the decorator:
 
@@ -417,12 +419,16 @@ async def owner(client, message):
     await client.message_create(message.channel, f'My masuta is {client.owner:f} !')
 ```
 
-Currently implemented checks are as follows:
+Currently implemented checks are the following:
 
 | Name                           | Extra parameter | Description                                                                                        |
 |--------------------------------|-----------------|----------------------------------------------------------------------------------------------------|
+| announcement_channel_only      | N/A             | Whether the message was sent to an announcement channel.                                           |
+| booster                        | N/A             | Whether the user boosts the respective guild.                                                      |
+| bot_account_only               | N/A             | Whether the message's author is a bot account.                                                     |
 | client_has_guild_permissions   | permissions     | Whether the client has the given permissions in the guild (fails in private channels).             |
 | client_has_permissions         | permissions     | Whether the client has the given permissions in the context channel.                               |
+| client_only                    | N/A             | Whether the message was sent by a `Client` instance.                                               |
 | custom                         | function        | Custom checks to wrap a given `function` (can be both sync and async).                             |
 | guild_only                     | N/A             | Whether the message was sent to a guild channel.                                                   |
 | guild_owner                    | N/A             | Whether the message author is the guild owner (fails in private channels).                         |
@@ -434,6 +440,9 @@ Currently implemented checks are as follows:
 | is_any_guild                   | guilds          | Whether the message was sent to any of the given guilds.                                           |
 | is_channel                     | channel         | Whether the message was sent in specific channel.                                                  |
 | is_guild                       | guild           | Whether the message was sent in specific guild.                                                    |
+| is_in_any_category             | categories      | Whether the message was sent into a channel, what's category is any of the specified ones.         |
+| is_in_category                 | category        | Whether the message was sent into a channel, what's category is the specified one.                 |
+| is_in_voice                    | N/A             | Whether the user is in a voice channel in the respective guild.                                    |
 | nsfw_channel_only              | N/A             | Whether the message was sent in NSFW channel.                                                      |
 | owner_only                     | N/A             | Whether the message author is the owner of the client.                                             |
 | owner_or_guild_owner           | N/A             | `owner_only` or `guild_owner` (fails in private channels).                                         |
@@ -442,12 +451,15 @@ Currently implemented checks are as follows:
 | owner_or_has_permissions       | permissions     | `owner_only` or `has_permissions`                                                                  |
 | owner_or_has_role              | role            | `owner_only` or `has_any_role`                                                                     |
 | private_only                   | N/A             | Whether the message was sent in a private channel.                                                 |
+| user_account_only              | N/A             | Whether the message was sent by a user account.                                                    |
+| user_account_or_client         | N/A             | Whether the message was sent by a user account or by a `Client` instance.                          |
+
 
 Every check also accepts an additional keyword parameter called `handler` which is called when the respective check
 fails (aka returns `False`).
 You can use check handlers to define additional specific functionality in case the check fails.
 
-The following arguments are passed to check handler:
+The following parameters are passed to check handler:
 
 | Respective name   | Type                    |
 |-------------------|-------------------------|
@@ -461,7 +473,7 @@ The thing is that checks can be added not only to commands and in such cases you
 In regular cases where check is added to a command then `command` will be instance of `Command`.
 
 Example of check handler with `owner_only` check:
-```
+```py
 async def owner_only_handler(client, message, command, check):
     await client.message_create(message.channel, f'You must be the owner of the bot to use the `{command}` command.')
 
@@ -516,14 +528,14 @@ Note that `invalid_command` and `command_error` also supports checks.
 
 Ensured when a command is referenced but it doesn't exist or check without handlers fails.
 
-The following arguments are passed to `invalid_command`:
+The following parameters are passed to `invalid_command`:
 
-| Respective name   | Type          | Description                                                        |
-|-------------------|---------------|--------------------------------------------------------------------|
-| client            | ``Client``    | The respective client.                                             |
-| message           | ``Message``   | The respective message.                                            |
-| command           | `str`         | The command name.                                                  |
-| content           | `str`         | The message content after the prefix, till the first linebreak.    |
+| Respective name   | Type          | Description                               |
+|-------------------|---------------|-------------------------------------------|
+| client            | ``Client``    | The respective client.                    |
+| message           | ``Message``   | The respective message.                   |
+| command           | `str`         | The command name.                         |
+| content           | `str`         | The message content after the prefix.     |
 
 Example of invalid_command definition:
 
@@ -537,15 +549,15 @@ async def invalid_command(client, message, command, content):
 
 Ensured when an exception occurs inside of a command.
 
-The following arguments are passed to `command_error`:
+The following parameters are passed to `command_error`:
 
-| Respective name   | Type              | Description                                                        |
-|-------------------|-------------------|--------------------------------------------------------------------|
-| client            | ``Client``        | The respective client.                                             |
-| message           | ``Message``       | The respective message.                                            |
-| command           | ``Command``       | The respective command.                                            |
-| content           | `str`             | The message content after the prefix, till the first linebreak.    |
-| err               | ``BaseException`` | The occurred exception.                                            |
+| Respective name   | Type              | Description                               |
+|-------------------|-------------------|-------------------------------------------|
+| client            | ``Client``        | The respective client.                    |
+| message           | ``Message``       | The respective message.                   |
+| command           | ``Command``       | The respective command.                   |
+| content           | `str`             | The message content after the prefix.     |
+| err               | ``BaseException`` | The occurred exception.                   |
 
 Example of command_error definition:
 
@@ -575,4 +587,4 @@ async def default_event(client, message):
 The advantage of using `default_event` over adding a new `message_create` event handler that at this point bot 
 authors/developers (as message authors) and channels where the bot cannot reply are already filtered out 
 (those messages will not trigger `default_event`).
-To see the actual flow of the command handler and when the default_event will trigger see [here](https://github.com/HuyaneMatsu/hata/blob/master/hata/ext/commands/command.py#L2951)
+To see the actual flow of the command handler and when the default_event will trigger see [here](https://huyanematsu.pythonanywhere.com/docs/hata/ext/commands/command/CommandProcesser#flow)

@@ -106,6 +106,10 @@ class Client(ClientUserPBase):
         The client's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The client's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
@@ -273,12 +277,37 @@ class Client(ClientUserPBase):
             The client's ``.name``.
         discriminator : `int` or `str` instance, Optional (Keyword only)
             The client's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
+        
         avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
-            The client's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
+            The client's avatar.
+            
+            > Mutually exclusive with `avatar_type` and `avatar_hash`.
+        
         avatar_type : ``IconType``, Optional (Keyword only)
-            The client's avatar's type. Mutually exclusive with `avatar_type`.
+            The client's avatar's type.
+            
+            > Mutually exclusive with `avatar_type`.
+            
         avatar_hash : `int`, Optional (Keyword only)
-            The client's avatar hash. Mutually exclusive with `avatar`.
+            The client's avatar hash.
+            
+            > Mutually exclusive with `avatar`.
+        
+        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+            The client's banner.
+            
+            > Mutually exclusive with `banner_type` and `banner_hash`.
+        
+        banner_type : ``IconType``, Optional (Keyword only)
+            The client's banner's type.
+            
+            > Mutually exclusive with `banner_type`.
+        
+        banner_hash : `int`, Optional (Keyword only)
+            The client's banner hash.
+            
+            > Mutually exclusive with `banner`.
+        
         flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
             The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         **kwargs : keyword parameters
@@ -417,6 +446,9 @@ class Client(ClientUserPBase):
             
             # kwargs.avatar & kwargs.avatar_type & kwargs.avatar_hash
             cls.avatar.preconvert(kwargs, processable)
+            
+            # kwargs.banner & kwargs.banner_type & kwargs.banner_hash
+            cls.banner.preconvert(kwargs, processable)
             
             # kwargs.flags
             try:
@@ -587,6 +619,7 @@ class Client(ClientUserPBase):
         self.name = data['username']
         self.discriminator = int(data['discriminator'])
         self._set_avatar(data)
+        self._set_banner(data)
         self.mfa = data.get('mfa_enabled', False)
         self.system = data.get('system', False)
         self.verified = data.get('verified', False)
@@ -907,16 +940,20 @@ class Client(ClientUserPBase):
             else:
                 self.token = token
     
+    
     async def client_edit_nick(self, guild, nick, *, reason=None):
         """
         Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra parameter
-        reason is accepted as well, what will show zp at the respective guild's audit logs.
+        reason is accepted as well, what will show up at the respective guild's audit logs.
+        
+        This method is deprecated and will be removed in 2021 September. Please use ``.client_guild_profile_edit``
+        instead.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        guild : `None`, `int` or ``Guild``instance
+        guild : `None`, `int` or ``Guild`` instance
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
         nick : `str` or `None`
@@ -927,7 +964,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - `guild` was not given neither as ``Guild`` or `int` instance.
+            `guild` was not given neither as ``Guild`` or `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -935,16 +972,43 @@ class Client(ClientUserPBase):
         AssertionError
             - If the nick's length is over `32`.
             - If the nick was not given neither as `None` or `str` instance.
+        
         Notes
         -----
         No request is done if the client's actual nickname at the guild is same as the method would change it too.
         """
-        if guild is None:
-            # Canned edit nick in private, ignore it
-            return
+        warnings.warn(
+            f'`{self.__class__.__name__}.client_edit_nick` is deprecated, and will be removed in 2021 September. '
+            f'Please use `.client_guild_profile_edit` instead.',
+            FutureWarning)
         
-        guild, guild_id = get_guild_and_id(guild)
+        return await self.client_guild_profile_edit(guild, nick=nick, reason=reason)
+    
+    
+    async def client_guild_profile_edit(self, guild, *, nick=..., avatar=..., reason=None):
+        """
+        Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.
         
+        An extra `reason` is accepted as well, which will show up at the respective guild's audit logs.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : `None`, `int` or ``Guild`` instance
+            The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
+            returns instantly.
+        nick : `str` or `None`, Optional (Keyword only)
+            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
+        avatar : `bytes-like` or `None`, Optional (Keyword only)
+            The client's new guild specific avatar.
+            
+            Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
+            `'gif'` as well. By passing `None` you can remove the client's current avatar.
+        
+        reason : `None` or `str`, Optional (Keyword only)
+            Will show up at the respective guild's audit logs.
+        """
         # Security debug checks.
         if __debug__:
             if (nick is not None):
@@ -978,8 +1042,36 @@ class Client(ClientUserPBase):
             else:
                 should_edit_nick = (guild_profile.nick != nick)
         
+        data = {}
+        
         if should_edit_nick:
-            await self.http.client_edit_nick(guild_id, {'nick': nick}, reason)
+            data['nick'] = nick
+        
+        if (avatar is not ...):
+            if avatar is None:
+                avatar_data = None
+            else:
+                if not isinstance(avatar, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
+                
+                if __debug__:
+                    extension = get_image_extension(avatar)
+                    
+                    if self.premium_type.value:
+                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                    else:
+                        valid_icon_types = VALID_ICON_FORMATS
+                    
+                    if extension not in valid_icon_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
+                
+                avatar_data = image_to_base64(avatar)
+            
+            data['avatar'] = avatar_data
+        
+        if data:
+            await self.http.client_guild_profile_edit(guild_id, data, reason)
+    
     
     async def client_connection_get_all(self):
         """
@@ -1002,6 +1094,7 @@ class Client(ClientUserPBase):
         """
         data = await self.http.client_connection_get_all()
         return [Connection(connection_data) for connection_data in data]
+    
     
     async def client_edit_presence(self, *, activity=..., status=None, afk=False):
         """
@@ -7397,10 +7490,24 @@ class Client(ClientUserPBase):
     
     # users
     
-    async def user_edit(self, guild, user, *, nick=..., deaf=None, mute=None, voice_channel=..., roles=...,
-            reason=None):
+    async def user_edit(self, *args, **kwargs):
         """
-        Edits the user at the given guild.
+        Deprecated, please use ``.user_guild_profile_edit`` instead. Will be removed in 2021 June.
+        
+        This method is a coroutine.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.user_edit` is deprecated, and will be removed in 2021 September. '
+            f'Please use `{self.__class__.__name__}.user_guild_profile_edit` instead.',
+            FutureWarning)
+        
+        return await self.user_guild_profile_edit(*args, **kwargs)
+    
+    
+    async def user_guild_profile_edit(self, guild, user, *, nick=..., deaf=None, mute=None, voice_channel=...,
+            roles=..., reason=None):
+        """
+        Edits the user's guild profile at the given guild.
         
         This method is a coroutine.
         
@@ -7476,7 +7583,7 @@ class Client(ClientUserPBase):
             
             if should_edit_nick:
                 if self.id == user_id:
-                    await self.http.client_edit_nick(guild_id, {'nick': nick}, reason)
+                    await self.http.client_guild_profile_edit(guild_id, {'nick': nick}, reason)
                 else:
                     data['nick'] = nick
                     
@@ -7528,7 +7635,7 @@ class Client(ClientUserPBase):
             
             data['roles'] = role_ids
         
-        await self.http.user_edit(guild_id, user_id, data, reason)
+        await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)
     
     
     async def user_role_add(self, user, role, *, reason=None):
@@ -7928,6 +8035,8 @@ class Client(ClientUserPBase):
         """
         Creates a new thread derived from the given message.
         
+        > For private thread channels the guild needs to have level 2 boost level.
+        
         This method is a coroutine.
         
         Parameters
@@ -7940,6 +8049,9 @@ class Client(ClientUserPBase):
             The created thread's name.
         auto_archive_after : `None` or `int`, Optional (Keyword only)
             The duration in seconds after the thread auto archives. Can be any of `3600`, `86400`, `259200`, `604800`.
+            
+            > For `259200` seconds (or 3 days) or `604800` seconds (or 7 days) auto archive duration the guild needs
+            > to be boosted.
         
         Returns
         -------
@@ -8015,11 +8127,6 @@ class Client(ClientUserPBase):
             if (name_length) < 2 or (name_length > 100):
                 raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
         
-        if __debug__:
-            if not isinstance(public, bool):
-                raise TypeError(f'`public can be given as `bool` instance, got {public.__class__.__name__}.')
-        
-        
         if auto_archive_after is None:
             if channel is None:
                 auto_archive_after = AUTO_ARCHIVE_DEFAULT
@@ -8037,7 +8144,7 @@ class Client(ClientUserPBase):
         
         data = {
             'name': name,
-            'auto_archive_duration': auto_archive_after,
+            'auto_archive_duration': auto_archive_after//60,
         }
         
         if message_id is None:
@@ -12986,11 +13093,11 @@ class Client(ClientUserPBase):
             If `sticker` was not given as ``Sticker``, nor as `int` instance.
         """
         sticker, sticker_id = get_sticker_and_id(sticker)
-        if not force_update:
+        if (not sticker.partial) and (not force_update):
             return sticker
         
         data = await self.http.sticker_get(sticker_id)
-        if sticker is None:
+        if (sticker is None):
             sticker = Sticker(data)
         else:
             sticker._update_no_return(data)
@@ -14383,6 +14490,8 @@ class Client(ClientUserPBase):
             +=======================+===================+
             | avatar                | ``Icon``          |
             +-----------------------+-------------------+
+            | banner                | ``Icon``          |
+            +-----------------------+-------------------+
             | discriminator         | `int`             |
             +-----------------------+-------------------+
             | email                 | `None` or `str`   |
@@ -14434,6 +14543,7 @@ class Client(ClientUserPBase):
         
         return old_attributes
     
+    
     def _update_no_return(self, data):
         """
         Updates the client by overwriting it's old attributes.
@@ -14456,6 +14566,7 @@ class Client(ClientUserPBase):
         self.mfa = data.get('mfa_enabled', False)
         
         self.locale = parse_locale(data)
+    
     
     def _update_profile_only(self, data, guild):
         """

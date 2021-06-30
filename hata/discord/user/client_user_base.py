@@ -28,8 +28,12 @@ class ClientUserBase(UserBase):
         The user's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The user's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
@@ -58,6 +62,7 @@ class ClientUserBase(UserBase):
         self.discriminator = int(data['discriminator'])
         
         self._set_avatar(data)
+        self._set_banner(data)
         
         self.flags = UserFlag(data.get('public_flags', 0))
         self.thread_profiles = None
@@ -85,6 +90,8 @@ class ClientUserBase(UserBase):
         +===============+===============+
         | avatar        | ``Icon``      |
         +---------------+---------------+
+        | banner        | ``Icon``      |
+        +---------------+---------------+
         | discriminator | `int          |
         +---------------+---------------+
         | flags         | ``UserFlag``  |
@@ -105,6 +112,7 @@ class ClientUserBase(UserBase):
             self.discriminator = discriminator
         
         self._update_avatar(data, old_attributes)
+        self._update_banner(data, old_attributes)
         
         flags = data.get('public_flags', 0)
         if self.flags != flags:
@@ -153,7 +161,7 @@ class ClientUserBase(UserBase):
             user = USERS[user_id]
         except KeyError:
             user = cls(data, guild)
-            return user,{}
+            return user, {}
         
         try:
             profile = user.guild_profiles[guild]
@@ -267,6 +275,12 @@ class ClientUserBase(UserBase):
         self.flags = client.flags
         self.partial = client.partial
         self.thread_profiles = client.thread_profiles.copy()
+        
+        self.avatar_hash = client.avatar_hash
+        self.avatar_type = client.avatar_type
+        
+        self.banner_hash = client.banner_hash
+        self.banner_type = client.banner_type
         
         return self
     
@@ -512,8 +526,12 @@ class ClientUserPBase(ClientUserBase):
         The user's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The user's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.

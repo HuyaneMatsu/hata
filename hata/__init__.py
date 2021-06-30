@@ -94,7 +94,7 @@ ahead and start python with `-i` option, then interact with the clients from you
 
 We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """
-__version__ = '1.1.86'
+__version__ = '1.1.87'
 
 from .env import BACKEND_ONLY
 

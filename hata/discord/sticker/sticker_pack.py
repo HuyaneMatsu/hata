@@ -1,6 +1,6 @@
 __all__ = ('StickerPack', )
 
-from ..core import STICKER_PACKS, STICKERS
+from ..core import STICKER_PACKS
 from ..bases import DiscordEntity
 
 from .sticker import Sticker
@@ -17,7 +17,7 @@ class StickerPack(DiscordEntity, immortal=True):
     banner_id : `int`
         The banner asset identifier of the sticker pack.
     cover_sticker_id : `int`
-        The sticker's identifier, which the pack uses as it's banner.
+        The sticker's identifier, which the pack uses as it's banner. Defaults to `0` if not applicable.
     description : `str`
         The pack's description.
     sku_id : `int`
@@ -57,16 +57,23 @@ class StickerPack(DiscordEntity, immortal=True):
     
     def _set_attributes(self, data):
         """
-        Sets the sticker's attributes.
+        Sets the sticker pack's attributes.
 
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            sticker-pack data.
+            Sticker-pack data.
         """
         self.name = data['name']
         self.sku_id = int(data['sku_id'])
-        self.cover_sticker_id = int(data['cover_sticker_id'])
+        
+        cover_sticker_id = data.get('cover_sticker_id', None)
+        if cover_sticker_id is None:
+            cover_sticker_id = 0
+        else:
+            cover_sticker_id = int(cover_sticker_id)
+        self.cover_sticker_id = cover_sticker_id
+        
         self.banner_id = int(data['banner_asset_id'])
         self.description = data['description']
         self.stickers = frozenset(Sticker(sticker_data) for sticker_data in data['stickers'])

@@ -69,8 +69,8 @@ class RateLimitGroup:
     """
     __slots__ = ('group_id', 'limiter', 'size', )
     
-    __auto_next_id = 105<<8
-    __unlimited = None
+    _auto_next_id = 105<<8
+    _unlimited = None
     
     @classmethod
     def generate_next_id(cls):
@@ -81,8 +81,8 @@ class RateLimitGroup:
         -------
         group_id : `int`
         """
-        group_id = cls.__auto_next_id
-        cls.__auto_next_id = group_id+(7<<8)
+        group_id = cls._auto_next_id
+        cls._auto_next_id = group_id+(7<<8)
         return group_id
     
     def __new__(cls, limiter=LIMITER_GLOBAL, optimistic=False):
@@ -125,13 +125,13 @@ class RateLimitGroup:
         """
         Creates a not limited rate limit group.
         
-        Uses ``.__unlimited`` to cache this instance, because it is enough to have only 1 unlimited one.
+        Uses ``._unlimited`` to cache this instance, because it is enough to have only 1 unlimited one.
         
         Returns
         -------
         self : ``RateLimitGroup``
         """
-        self = cls.__unlimited
+        self = cls._unlimited
         if (self is not None):
             return self
         
@@ -140,7 +140,7 @@ class RateLimitGroup:
         self.group_id = 0
         self.limiter = LIMITER_UNLIMITED
         
-        cls.__unlimited = self
+        cls._unlimited = self
         return self
     
     def __hash__(self):
@@ -1009,6 +1009,7 @@ class StaticRateLimitHandler:
         ctx : ``RateLimitHandlerCTX``
         """
         return RateLimitHandlerCTX(self)
+
 
 class StackedStaticRateLimitHandler:
     """

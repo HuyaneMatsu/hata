@@ -317,11 +317,11 @@ class Message(DiscordEntity, immortal=True):
             components = tuple(create_component(component_data) for component_data in component_datas)
         self.components = components
         
-        sticker_datas = data.get('stickers', None)
+        sticker_datas = data.get('sticker_items', None)
         if sticker_datas is None:
             stickers = None
         else:
-            stickers = tuple(Sticker(sticker_data) for sticker_data in sticker_datas)
+            stickers = tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas)
         self.stickers = stickers
         
         user_mention_datas = data.get('mentions', None)

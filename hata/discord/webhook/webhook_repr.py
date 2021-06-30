@@ -21,8 +21,12 @@ class WebhookRepr(WebhookBase):
         The webhook representation's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The webhook representation's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The webhook representation's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
     type : ``WebhookType``
@@ -53,6 +57,7 @@ class WebhookRepr(WebhookBase):
         self.discriminator = 0
         self.name = data['username']
         self._set_avatar(data)
+        self._set_banner(data)
         self.type = type_
         self.channel = channel
     

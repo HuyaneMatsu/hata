@@ -24,7 +24,7 @@ class Sticker(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the sticker.
-    description : `str`
+    description : `None` or `str`
         The sticker's description.
     format_type : ``StickerFormat``
         The sticker's formats type.
@@ -85,6 +85,8 @@ class Sticker(DiscordEntity, immortal=True):
                 
                 return self
         
+        self.format_type = StickerFormat.get(data.get('format_type', 0))
+        
         pack_id = data.get('pack_id', None)
         if pack_id is None:
             pack_id = 0
@@ -99,8 +101,49 @@ class Sticker(DiscordEntity, immortal=True):
             guild_id = int(guild_id)
         self.guild_id = guild_id
         
+        self.type = StickerType.get(data.get('type', 0))
+        
+        self._update_no_return(data)
+        
+        return self
+    
+    
+    @classmethod
+    def _create_partial(cls, data):
+        """
+        Creates a sticker from the given partial ``Sticker`` data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Sticker data.
+        
+        Returns
+        -------
+        self : ``Sticker``
+        """
+        sticker_id = int(data['id'])
+        
+        try:
+            self = STICKERS[sticker_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = sticker_id
+            STICKERS[sticker_id] = self
+            
+            self.description = None
+            self.guild_id = 0
+            self.pack_id = 0
+            self.sort_value = DEFAULT_SORT_VALUE
+            self.tags = None
+            self.type = StickerType.none
+            self.user = ZEROUSER
+        else:
+            if not self.partial:
+                return self
+        
         self.format_type = StickerFormat.get(data.get('format_type', 0))
-        self.type = StickerType.get(data['type'])
+        self.name = data['name']
         
         return self
     
@@ -114,15 +157,17 @@ class Sticker(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Sticker data.
         """
-        self.description = data['description']
+        self.description = data.get('description', None)
         self.name = data['name']
-        self.sort_value = data.get('sort_value', 100)
-    
-        tags = data.get('tags', None)
-        if (tags is not None):
-            tags = frozenset(tags.split(', '))
+        self.sort_value = data.get('sort_value', DEFAULT_SORT_VALUE)
         
+        tags = data.get('tags', None)
+        if (tags is None) or (not tags):
+            tags = None
+        else:
+            tags = frozenset(tags.split(', '))
         self.tags = tags
+    
     
     def _update(self, data):
         """
@@ -142,18 +187,18 @@ class Sticker(DiscordEntity, immortal=True):
             +-----------------------+-----------------------------------+
             | Keys                  | Values                            |
             +=======================+===================================+
-            | description           | ``str``                           |
+            | description           | `None` or `str`                   |
             +-----------------------+-----------------------------------+
             | name                  | `str`                             |
             +-----------------------+-----------------------------------+
             | sort_value            | `int`                             |
             +-----------------------+-----------------------------------+
-            | tags                  | `None`  or `frozenset` of `str`   |
+            | tags                  | `None` or `frozenset` of `str`    |
             +-----------------------+-----------------------------------+
         """
         old_attributes = {}
         
-        description = data['description']
+        description = data.get('description', None)
         if description != self.description:
             old_attributes['description'] = self.description
             self.description = description
@@ -163,13 +208,15 @@ class Sticker(DiscordEntity, immortal=True):
             old_attributes['name'] = self.name
             self.name = name
         
-        sort_value = data.get('sort_value', 100)
+        sort_value = data.get('sort_value', DEFAULT_SORT_VALUE)
         if sort_value != self.sort_value:
             old_attributes['sort_value'] = self.sort_value
             self.sort_value = sort_value
         
         tags = data.get('tags', None)
-        if (tags is not None):
+        if (tags is None) or (not tags):
+            tags = None
+        else:
             tags = frozenset(tags.split(', '))
         if tags != self.tags:
             old_attributes['tags'] = self.tags
@@ -308,7 +355,7 @@ class Sticker(DiscordEntity, immortal=True):
             The sticker's ``.pack_id``.
         sort_value : `int`, Optional (Keyword only)
             The sticker's ``.sort_value``.
-        tags : `iterable` of `str`
+        tags : `None` or `iterable` of `str`, Optional (Keyword only)
             The sticker's ``.tags``.
         type : ``StickerType``, Optional (Keyword only)
             The sticker's ``.type``.
@@ -335,7 +382,7 @@ class Sticker(DiscordEntity, immortal=True):
                         ('description', 0, 1024),
                         ('name', 2, 32),
                     ):
-            
+                
                 try:
                     attribute_value = kwargs.pop('attribute_name')
                 except KeyError:
@@ -378,8 +425,13 @@ class Sticker(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                tags = preconvert_iterable_of_str(tags, 'tags', 0, 256, 2, 32)
-                tags = frozenset(tags)
+                if (tags is not None):
+                    tags = preconvert_iterable_of_str(tags, 'tags', 0, 256, 2, 32)
+                    if tags:
+                        tags = frozenset(tags)
+                    else:
+                        tags = None
+                
                 processable.append(('tags', tags))
             
             try:
@@ -437,8 +489,7 @@ class Sticker(DiscordEntity, immortal=True):
         self.name = ''
         self.pack_id = 0
         self.sort_value = DEFAULT_SORT_VALUE
-        self.tags = frozenset()
+        self.tags = None
         self.type = StickerType.none
         self.user = ZEROUSER
         return self
-

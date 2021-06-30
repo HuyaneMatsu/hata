@@ -2402,11 +2402,13 @@ class Slasher(EventHandlerBase):
                 if (overwrite_string_custom_ids is not None):
                     would_overwrite_custom_ids.update(overwrite_string_custom_ids)
             
-                overwrite_regex_custom_ids = overwrite_command.regex_custom_ids
+                overwrite_regex_custom_ids = overwrite_command._regex_custom_ids
                 if (overwrite_regex_custom_ids is not None):
                     would_overwrite_custom_ids.update(overwrite_regex_custom_ids)
             
-            if not would_overwrite_custom_ids.issuperset(component_command.string_custom_ids):
+            component_command_string_custom_ids = component_command._string_custom_ids
+            if (component_command_string_custom_ids is not None) and \
+                    (not would_overwrite_custom_ids.issuperset(component_command_string_custom_ids)):
                 raise RuntimeError(f'Command: {component_command!r} would only partially overwrite the following '
                     f'commands: {", ".join(overwrite_commands)}.')
             
@@ -2442,7 +2444,7 @@ class Slasher(EventHandlerBase):
         else:
             string_custom_id_to_component_command = self.string_custom_id_to_component_command
             
-            string_custom_ids = component_command.string_custom_ids
+            string_custom_ids = component_command._string_custom_ids
             if (string_custom_ids is not None):
                 for string_custom_id in string_custom_ids:
                     if string_custom_id_to_component_command[string_custom_id] is component_command:

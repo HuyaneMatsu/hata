@@ -417,7 +417,7 @@ from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 async def idtotime(
         snowflake : ('int', 'Id please!'),
             ):
-    """Converts the given Discord snowflake id to time."""
+    """Converts the given Discord snowflake to time."""
     time = id_to_time(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
@@ -431,7 +431,7 @@ from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 async def id_to_time_(
         snowflake : ('int', 'Id please!'),
             ):
-    """Converts the given Discord snowflake id to time."""
+    """Converts the given Discord snowflake to time."""
     time = id_to_time(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```

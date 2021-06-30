@@ -35,8 +35,12 @@ class Webhook(WebhookBase):
         The webhook's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The webhook's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The webhook's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     channel : `None` or ``ChannelText``
         The channel, where the webhook is going to send it's messages.
     type : ``WebhookType``
@@ -157,6 +161,7 @@ class Webhook(WebhookBase):
         self.discriminator = 0
         
         self._set_avatar(data)
+        self._set_banner(data)
         
         try:
             user_data = data['user']
@@ -187,12 +192,37 @@ class Webhook(WebhookBase):
             The webhook's ``.name``.
         token : `str`, Optional (Keyword only)
             The webhook's ``.token``.
+        
         avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
-            The webhooks's avatar. Mutually exclusive with `avatar_type` and `avatar_hash`.
+            The webhook's avatar.
+            
+            > Mutually exclusive with `avatar_type` and `avatar_hash`.
+        
         avatar_type : ``IconType``, Optional (Keyword only)
-            The webhooks's avatar's type. Mutually exclusive with `avatar_type`.
+            The webhook's avatar's type.
+            
+            > Mutually exclusive with `avatar_type`.
+        
         avatar_hash : `int`, Optional (Keyword only)
-            The webhooks's avatar hash. Mutually exclusive with `avatar`.
+            The webhook's avatar's hash.
+            
+            > Mutually exclusive with `avatar`.
+        
+        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+            The webhook's banner.
+            
+            > Mutually exclusive with `banner_type` and `banner_hash`.
+        
+        banner_type : ``IconType``, Optional (Keyword only)
+            The webhook's banner's type.
+            
+            > Mutually exclusive with `banner_type`.
+        
+        banner_hash : `int`, Optional (Keyword only)
+            The webhook's banner hash.
+            
+            > Mutually exclusive with `banner`.
+        
         user : ``ClientUserBase``, Optional (Keyword only)
             The webhook's ``.user``.
         channel : ``ChannelText``, Optional (Keyword only)
@@ -223,6 +253,7 @@ class Webhook(WebhookBase):
                     processable.append((attribute_name, attribute_value))
             
             cls.avatar.precovert(kwargs, processable)
+            cls.banner.precovert(kwargs, processable)
             
             for attribute_name, attribute_type in (
                     ('user'   , (User, Client),),
@@ -330,8 +361,6 @@ class Webhook(WebhookBase):
                     name = ''
                     avatar_type = ICON_TYPE_NONE
                     avatar_hash = 0
-                    
-                    source_guild = None
                 else:
                     raise
             
@@ -341,7 +370,7 @@ class Webhook(WebhookBase):
                     name = ''
                 
                 avatar_type, avatar_hash = Icon.from_base16_hash(data.get('avatar', None))
-                
+            
             source_guild_data = data.get('source_guild', None)
             if source_guild_data is None:
                 source_guild = None
@@ -364,6 +393,8 @@ class Webhook(WebhookBase):
         self.discriminator = 0
         self.avatar_hash = avatar_hash
         self.avatar_type = avatar_type
+        self.banner_hash = 0
+        self.banner_type = ICON_TYPE_NONE
         self.name = name
         
         self.channel = target_channel

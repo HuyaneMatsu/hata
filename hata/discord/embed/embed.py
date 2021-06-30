@@ -43,6 +43,7 @@ class Embed(EmbedBase):
     second time.
     """
     __slots__ = ('_data',)
+    
     def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):
         """
         Creates an embed instance. Accepts the base parameters of the embed.

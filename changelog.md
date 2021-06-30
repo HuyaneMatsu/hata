@@ -54,6 +54,16 @@ Regroup many code parts.
 - Add `Webhook.source_channel`.
 - Add `Webhook.source_guild`.
 - Add `ComponentBase.copy_with` (and to sub classes).
+- `StickerPack.cover_sticker_id` is optional.
+- Add `RATE_LIMIT_GROUPS.client_guild_profile_edit`.
+- Add `DiscordHTTPClient.client_guild_profile_edit`.
+- Add `UserBase.banner` and related attributes, properties and methods.
+- Add `Client.client_guild_profile_edit`.
+- Add `banner` parameters to `Client`'s constructor.
+- Add `banner` parameters to `User.precreate`.
+- Add `banner` parameters to `Webhook.precreate`.
+- Add `Sticker._create_partial`.
+- Use `sticker_items` field instead of `sticker` in message data.
 
 #### Bug Fixes
 
@@ -64,14 +74,31 @@ Regroup many code parts.
 - `Emoji.__new__` could not set `.user` even if received.
 - `Sticker.user` is now set correctly.
 - `instance_or_id_to_instance`, `instance_or_id_to_snowflake` and `maybe_snowflake` had bad string max length check.
+- `ClientUserBase._from_client` was not setting `avatar`.
+- Fix a `NameError` in `Client.thread_create`.
+- Fix a conversion error in `Client.thread_create`. (Zeref Draganeel#3581)
 
 ##### hata.ext.slash
 - Component commands regex parsers could be generated with bad parameter index.
+- Fix an `AttributeError` in `Slasher._add_component_command`.
+- Fix an `AttributeError` in `Slasher._remove_component_command`.
+- Fif a `TypeError` in `Slasher._add_component_command`.
 
 #### Renames, Deprecation & Removals
 
 - Rename `ActivityTypes` to `ACTIVITY_TYPES`.
 - Deprecate `ActivityTypes`.
+- Rename `Permission.manage_emojis` to `.manage_emojis_and_stickers`.
+- Deprecate `Permission.can_manage_emojis`.
+- Deprecate `Permission.allow_manage_emojis`.
+- Deprecate `Permission.deny_manage_emojis`.
+- Rename `RATE_LIMIT_GROUPS.client_edit_nick` to `.client_guild_profile_nick_edit`.
+- Rename `DiscordHTTPClient.client_edit_nick` to `.client_guild_profile_nick_edit`.
+- Deprecate `Client.client_edit_nick`.
+- Rename `RATE_LIMIT_GROUPS.user_edit` to `.user_guild_profile_edit`.
+- Rename `DiscordHTTPClient.user_edit` to `.user_guild_profile_edit`.
+- Rename `Client.user_edit` to `.user_guild_profile_edit`.
+- Deprecate `Client.user_edit`.
 
 ## 1.1.86 *\[2021-06-20\]*
 
@@ -96,7 +123,7 @@ Add sticker related endpoints and such.
 - Stickers are now cached.
 - Add `Sticker._update_no_return`.
 - Add `Sticker._update`.
-- `Sticker.tags` are now use `frozsenset` + `None` (from `list` + `None`).
+- `Sticker.tags` use `frozsenset` + `None` (from `list` + `None`).
 - Add `RATE_LIMIT_GROUPS.sticker_guild_get_all`.
 - Add `DiscordHTTPClient.sticker_guild_get_all`.
 - Add `ERROR_CODES.unknown_sticker`.

@@ -29,8 +29,12 @@ class UserBase(DiscordEntity, immortal=True):
         The client's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The user's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     
     Notes
     -----
@@ -39,6 +43,7 @@ class UserBase(DiscordEntity, immortal=True):
     __slots__ = ('name', 'discriminator', )
     
     avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
+    banner = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
     
     def __str__(self):
         """Returns the user's name."""
@@ -527,3 +532,5 @@ class UserBase(DiscordEntity, immortal=True):
         self.discriminator = 0
         self.avatar_hash = 0
         self.avatar_type = ICON_TYPE_NONE
+        self.banner_hash = 0
+        self.banner_type = ICON_TYPE_NONE

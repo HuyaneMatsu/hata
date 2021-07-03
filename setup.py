@@ -28,6 +28,7 @@ setup(
         'hata.discord.bin',
         'hata.discord.channel',
         'hata.discord.client',
+        'hata.discord.embed',
         'hata.discord.emoji',
         'hata.discord.events',
         'hata.discord.exceptions',

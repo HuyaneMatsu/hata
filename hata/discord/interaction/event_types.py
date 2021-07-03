@@ -333,7 +333,7 @@ class ComponentInteraction:
         self.custom_id = data.get('custom_id', None)
         self.component_type = ComponentType.get(data['component_type'])
         
-        option_datas = data.get('options', None)
+        option_datas = data.get('values', None)
         if (option_datas is None) or (not option_datas):
             options = None
         else:

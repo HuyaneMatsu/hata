@@ -933,10 +933,11 @@ async def devil(client, event):
 ## Manual Responding
 
 Sometimes the auto-responding feature just cannot do it. For these cases there are the questionably long named
-`Client` interaction methods. This section just mentions these methods, please check their docs for more info.
+`Client` interaction methods. This section just mentions these methods, please check their docs for more information.
 
 The first response message can be sent only with `Client.interaction_response_message_create`. The `3` second
-acknowledge time still stands.
+acknowledge time still stands. You also may use `Client.interaction_application_command_acknowledge` to just
+acknowledge the event.
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
@@ -964,7 +965,7 @@ from hata import sleep
 @Nitori.interactions(guild=TEST_GUILD)
 async def kaboom(client, event):
     """Kabooom!!"""
-    await client.interaction_response_message_create(event)
+    await client.interaction_application_command_acknowledge(event)
     
     messages = []
     for x in reversed(range(1, 4)):

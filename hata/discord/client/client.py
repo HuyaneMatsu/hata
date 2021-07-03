@@ -2285,7 +2285,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If `name` was not given neither as `None` or `str` instance.
-            - If `name`'s length is out of range [2:100].
+            - If `name`'s length is out of range `[1:100]`.
         Notes
         -----
         No request is done if no optional parameter is provided.
@@ -2302,8 +2302,8 @@ class Client(ClientUserPBase):
                             f'{name.__class__.__name__}.')
                     
                     name_length = len(name)
-                    if name_length > 100 or name_length == 1:
-                        raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
+                    if (name_length < 1) or (name_length > 100):
+                        raise AssertionError(f'`name` length can be in range [1:100], got {name_length}; {name!r}.')
                     
                     # Translate empty nick to `None`
                     if name_length == 0:
@@ -2706,7 +2706,7 @@ class Client(ClientUserPBase):
             - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int` instance.
         AssertionError
             - If `name` was not given as `str` instance.
-            - If `name`'s length is under `2` or over `100`.
+            - If `name`'s length is out of range `[1:100]`.
             - If `topic` was not given as `str` instance.
             - If `topic`'s length is over `1024` or `120` depending on channel type.
             - If `topic` was given, but the given channel is not ``ChannelText`` nor ``ChannelStage`` instance.
@@ -2742,8 +2742,8 @@ class Client(ClientUserPBase):
                 
                 name_length = len(name)
                 
-                if name_length < 2 or name_length > 100:
-                    raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
+                if name_length < 1 or name_length > 100:
+                    raise AssertionError(f'`name` length can be in range [1:100], got {name_length}; {name!r}.')
             
             data['name'] = name
         
@@ -2962,7 +2962,7 @@ class Client(ClientUserPBase):
             - If `type_` was given as `int`, and is less than `0`.
             - If `type_` was given as `int` and exceeds the defined channel type limit.
             - If `name` was not given as `str` instance.
-            - If `name`'s length is under `2` or over `100`.
+            - If `name`'s length is out of range `[1:100]`.
             - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
             - If `topic` was not given as `str` instance.
             - If `topic`'s length is over `1024`.
@@ -9218,7 +9218,8 @@ class Client(ClientUserPBase):
             +===============+=======================+===============================================================+
             | 10003         | unknown_channel       | The channel not exists.                                       |
             +---------------+-----------------------+---------------------------------------------------------------+
-            | 50013         | missing_permissions   | You need `manage_webhooks` permission.                        |
+            | 50013         | missing_permissions   | You need `manage_webhooks` permission. (Or the client has no  |
+            |               |                       | access to the channel.)                                       |
             +---------------+-----------------------+---------------------------------------------------------------+
             | 60003         | MFA_required          | You need to have multi-factor authorization to do this        |
             |               |                       | operation (guild setting dependent). For bot accounts it      |
@@ -9226,7 +9227,7 @@ class Client(ClientUserPBase):
             +---------------+-----------------------+---------------------------------------------------------------+
             
             > Discord drops `Forbidden (403), code=50013: Missing Permissions` instead of
-            > `Forbidden (403), code=50001: Missing Access`. Reference: `discord-api-docs/issues/2709`.
+            > `Forbidden (403), code=50001: Missing Access`.
         
         AssertionError
             If `channel` was given as a channel's identifier but it detectably not refers to a ``ChannelText`` instance.
@@ -9244,7 +9245,30 @@ class Client(ClientUserPBase):
                     return [webhook for webhook in guild.webhooks.values() if webhook.channel is channel]
         
         data = await self.http.webhook_get_all_channel(channel_id)
-        return [Webhook(data) for data in data]
+        return [Webhook(webhook_data) for webhook_data in data]
+    
+    
+    async def webhook_get_own_channel(self, channel):
+        """
+        Requests the webhooks of the given channel and returns the first owned one.
+        
+        Parameters
+        ----------
+        channel : ``ChannelText`` or `int`
+            The channel, what's webhooks will be requested.
+        
+        Returns
+        -------
+        webhooks : `list` of ``Webhook` objects
+        """
+        webhooks = await self.webhook_get_all_channel(channel)
+        
+        application_id = self.application.id
+        for webhook in webhooks:
+            if webhook.application_id == application_id:
+                return webhook
+        
+        return None
     
     
     async def webhook_get_all_guild(self, guild):
@@ -12225,6 +12249,7 @@ class Client(ClientUserPBase):
         
         return ApplicationCommandPermission.from_data(permission_data)
     
+    
     async def application_command_permission_get_all_guild(self, guild):
         """
         Returns the permissions set for application commands in the given `guild`.
@@ -12262,6 +12287,54 @@ class Client(ClientUserPBase):
         permission_datas = await self.http.application_command_permission_get_all_guild(application_id, guild_id)
         
         return [ApplicationCommandPermission.from_data(permission_data) for permission_data in permission_datas]
+    
+    
+    async def interaction_application_command_acknowledge(self, interaction, *, show_for_invoking_user_only=False):
+        """
+        Acknowledges the given application command interaction.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent``
+            Interaction to acknowledge
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+            Whether the sent message should only be shown to the invoking user. Defaults to `False`.
+        
+        Raises
+        ------
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If `interaction` was not given an ``InteractionEvent`` instance.
+        
+        Notes
+        -----
+        If the interaction is already timed or out or was used, you will get:
+        
+        ```
+        DiscordException Not Found (404), code=10062: Unknown interaction
+        ```
+        """
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Do not ack twice
+        if not interaction.is_unanswered():
+            return
+        
+        data = {'type': InteractionResponseTypes.source}
+        
+        if show_for_invoking_user_only:
+            data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
+        
+        with InteractionResponseContext(interaction, True, show_for_invoking_user_only):
+            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
@@ -12308,8 +12381,6 @@ class Client(ClientUserPBase):
             Whether the message is text-to-speech.
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
-            
-            If given as `True` only the message's content, embeds and components will be processed by Discord.
         
         Raises
         ------
@@ -12469,6 +12540,7 @@ class Client(ClientUserPBase):
         
         with InteractionResponseContext(interaction, True, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+    
     
     async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=None,
             allowed_mentions=..., components=...):

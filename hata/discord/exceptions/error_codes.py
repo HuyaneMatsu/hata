@@ -83,6 +83,8 @@ These are the following:
 +---------------------------------------------------+-----------+-------+
 | unknown_stage                                     | 10067     | -     |
 +---------------------------------------------------+-----------+-------+
+| unknown_guild_member_verification_form            | 10068     | -     |
++---------------------------------------------------+-----------+-------+
 | bots_not_allowed                                  | 20001     | -     |
 +---------------------------------------------------+-----------+-------+
 | only_bots_allowed                                 | 20002     | -     |
@@ -108,6 +110,8 @@ These are the following:
 | rate_limit_channel_write                          | 20028     | -     |
 +---------------------------------------------------+-----------+-------+
 | name_contains_disallowed_word                     | 20031     | -     |
++---------------------------------------------------+-----------+-------+
+| guild_subscription_level_too_low                  | 20035     | -     |
 +---------------------------------------------------+-----------+-------+
 | max_guilds                                        | 30001     | 100   |
 +---------------------------------------------------+-----------+-------+
@@ -373,6 +377,7 @@ unknown_application_command = 10063
 unknown_voice_state = 10065
 unknown_application_command_permissions = 10066
 unknown_stage = 10067
+unknown_guild_member_verification_form = 10068
 
 bots_not_allowed = 20001
 only_bots_allowed = 20002
@@ -387,6 +392,7 @@ rate_limit_announcement_message_edit = 20022
 under_minimum_age = 20024
 rate_limit_channel_write = 20028
 name_contains_disallowed_word = 20031
+guild_subscription_level_too_low = 20035
 
 max_guilds = 30001 # 100
 max_friends = 30001 # 10000

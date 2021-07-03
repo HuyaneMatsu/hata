@@ -445,6 +445,8 @@ def get_client_from_message(message):
     """
     Tries the get the respective client instance form the message.
     
+    Raises
+    ------
     RuntimeError
         The message or interaction is bound to a 3rd party application.
     """
@@ -460,6 +462,34 @@ def get_client_from_message(message):
                 raise RuntimeError(f'The message is bound to a 3rd party application, got: {message!r}.') from err
         else:
             raise RuntimeError(f'The given message has no bound interaction, got {message!r}.')
+    
+    return client
+
+
+def get_client_from_interaction_event(interaction_event):
+    """
+    Gets the respective client of an interaction event.
+    
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        The interaction event.
+    
+    Returns
+    -------
+    client : ``Client``
+        The client who executed the interaction.
+    
+    Raises
+    ------
+    RuntimeError
+        - The interaction is bound to a 3rd party application.
+    """
+    try:
+        client = APPLICATION_ID_TO_CLIENT[interaction_event.application_id]
+    except KeyError as err:
+        raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
+            f'{interaction_event!r}.') from err
     
     return client
 
@@ -500,12 +530,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
     
     elif isinstance(event_or_message, InteractionEvent):
         message = await event_or_message.wait_for_response_message(timeout=timeout)
-        
-        try:
-            client = APPLICATION_ID_TO_CLIENT[event_or_message.application_id]
-        except KeyError as err:
-            raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
-                f'{event_or_message!r}.') from err
+        client = get_client_from_interaction_event(event_or_message)
     
     else:
         raise TypeError(f'`event_or_message` can be either `{Message.__name__}` or `{InteractionEvent.__name__}` '

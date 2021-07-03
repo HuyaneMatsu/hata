@@ -24,7 +24,7 @@ COMPONENT_LABEL_LENGTH_MAX = 80
 COMPONENT_CUSTOM_ID_LENGTH_MAX = 100
 COMPONENT_OPTION_LENGTH_MIN = 1
 COMPONENT_OPTION_LENGTH_MAX = 25
-COMPONENT_OPTION_MIN_VALUES_MIN = 1
+COMPONENT_OPTION_MIN_VALUES_MIN = 0
 COMPONENT_OPTION_MIN_VALUES_MAX = 15
 COMPONENT_OPTION_MAX_VALUES_MIN = 1
 COMPONENT_OPTION_MAX_VALUES_MAX = 25
@@ -316,7 +316,7 @@ def _debug_component_min_values(min_values):
     ------
     AssertionError
         - If `min_values` was not given as `int` instance.
-        - If `min_values`'s is out of range [1:15].
+        - If `min_values`'s is out of range [0:15].
     """
     if not isinstance(min_values, int):
         raise AssertionError(f'`min_values` can be given as `int` instance, got {min_values.__class__.__name__}.')
@@ -324,6 +324,7 @@ def _debug_component_min_values(min_values):
     if (min_values < COMPONENT_OPTION_MIN_VALUES_MIN) or (min_values > COMPONENT_OPTION_MIN_VALUES_MAX):
         raise AssertionError(f'`min_values` can be in range '
             f'[{COMPONENT_OPTION_MIN_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MIN}], got {min_values!r}.')
+
 
 def _debug_component_max_values(max_values):
     """
@@ -1341,6 +1342,8 @@ class ComponentSelect(ComponentBase):
     ----------
     custom_id : `str`
         Custom identifier to detect which component was used by the user.
+    enabled : `bool`
+        Whether the component is enabled.
     options : `list` of ``ComponentSelectOption``
         Options of the select.
     placeholder : `str`
@@ -1357,7 +1360,9 @@ class ComponentSelect(ComponentBase):
     """
     type = ComponentType.select
     
-    def __new__(cls, options, custom_id=None, *, placeholder=None, min_values=1, max_values=1):
+    __slots__ = ('custom_id', 'enabled', 'options', 'placeholder', 'min_values', 'max_values')
+    
+    def __new__(cls, options, custom_id=None, *, placeholder=None, min_values=1, max_values=1, enabled=True):
         """
         Creates a new ``ComponentSelect`` instance with the given parameters.
         
@@ -1373,6 +1378,8 @@ class ComponentSelect(ComponentBase):
             The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
         max_values : `int`, Optional (Keyword only)
             The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
         
         Raises
         ------
@@ -1385,6 +1392,7 @@ class ComponentSelect(ComponentBase):
             - If `min_values` is out of range [1:15].
             - If `max_values` is not `int` instance.
             - If `max_values` is out of range [1:25].
+            - If `enabled` was not given as `bool` instance.
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
@@ -1392,11 +1400,12 @@ class ComponentSelect(ComponentBase):
             _debug_component_placeholder(placeholder)
             _debug_component_min_values(min_values)
             _debug_component_max_values(max_values)
+            _debug_component_enabled(enabled)
         
         if (placeholder is not None) and (not placeholder):
             placeholder = None
         
-        if custom_id is None:
+        if (custom_id is not None) and (not custom_id):
             custom_id = create_auto_custom_id()
         
         options = list(options)
@@ -1407,6 +1416,7 @@ class ComponentSelect(ComponentBase):
         self.placeholder = placeholder
         self.min_values = min_values
         self.max_values = max_values
+        self.enabled = enabled
         return self
     
     
@@ -1422,6 +1432,7 @@ class ComponentSelect(ComponentBase):
         self.placeholder = data.get('placeholder', None)
         self.min_values = data.get('min_values', 1)
         self.max_values = data.get('max_values', 1)
+        self.enabled = not data.get('disabled', False)
         
         return self
     
@@ -1445,6 +1456,9 @@ class ComponentSelect(ComponentBase):
         max_values = self.max_values
         if max_values != 1:
             data['max_values'] = max_values
+        
+        if (not self.enabled):
+            data['disabled'] = True
         
         return data
     
@@ -1482,6 +1496,11 @@ class ComponentSelect(ComponentBase):
             repr_parts.append(', max_values=')
             repr_parts.append(repr(max_values))
         
+        enabled = self.enabled
+        if (not enabled):
+            repr_parts.append(', enabled=')
+            repr_parts.append(repr(enabled))
+        
         return ''.join(repr_parts)
     
     
@@ -1500,6 +1519,7 @@ class ComponentSelect(ComponentBase):
         new.placeholder = self.placeholder
         new.min_values = self.min_values
         new.max_values = self.max_values
+        new.enabled = self.enabled
         
         return new
     
@@ -1525,6 +1545,9 @@ class ComponentSelect(ComponentBase):
             The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
         max_values : `int`, Optional (Keyword only)
             The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
         
         Returns
         -------
@@ -1580,6 +1603,14 @@ class ComponentSelect(ComponentBase):
             if __debug__:
                 _debug_component_max_values(max_values)
         
+        try:
+            enabled = kwargs.pop('enabled')
+        except KeyError:
+            enabled = self.enabled
+        else:
+            if __debug__:
+                _debug_component_enabled(enabled)
+        
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
@@ -1589,6 +1620,7 @@ class ComponentSelect(ComponentBase):
         self.placeholder = placeholder
         self.min_values = min_values
         self.max_values = max_values
+        new.enabled = enabled
         return self
     
     
@@ -1612,6 +1644,9 @@ class ComponentSelect(ComponentBase):
         if self.max_values != other.max_values:
             return False
         
+        if self.enabled != other.enabled:
+            return False
+        
         return True
     
     
@@ -1631,6 +1666,9 @@ class ComponentSelect(ComponentBase):
         
         hash_value ^= self.min_values
         hash_value ^= self.max_values
+        
+        if self.enabled:
+            hash_value ^= 1<<8
         
         return hash_value
 

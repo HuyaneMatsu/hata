@@ -581,12 +581,12 @@ class UserMenuRunner(PaginationBase):
         check = self._factory.check
         if (check is not None):
             try:
-                should_continue = check(self._instance, event)
+                should_process = check(self._instance, event)
             except BaseException as err:
                 await client.events.error(client, f'{self!r}.__call__', err)
                 return
             
-            if not should_continue:
+            if not should_process:
                 return
         
         task_flag = self._task_flag

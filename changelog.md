@@ -1,4 +1,22 @@
-## 1.1.87 *\[2021-06-??\]*
+## 1.1.88 *\[2021-07-??\]*
+
+#### Improvements
+
+- Add `ERROR_CODES.unknown_guild_member_verification_form`.
+- Add `ERROR_CODES.guild_subscription_level_too_low`.
+- Select component min values is `0`.
+- Add `Client.webhook_get_own_channel`.
+- Channel names can be 1 character long as well.
+- Add `Client.interaction_application_command_acknowledge`.
+- Add `ComponentSelect.enabled`.
+
+#### Bug Fixes
+
+- Use `values` field instead of `options` when creating `ComponentInteraction` of a select.
+- `CHANNEL_PINS_UPDATE` was not listed under guild messages intent.
+- `'hata.discord.embed'` was not listed in `setup.py`. (Zeref Draganeel#3581)
+
+## 1.1.87 *\[2021-06-30\]*
 
 #### Summary
 

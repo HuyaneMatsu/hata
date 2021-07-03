@@ -511,6 +511,32 @@ class EventHandlerManager:
         | topic         | `str`                 |
         +---------------+-----------------------+
     
+    sticker_create(client: ``Client``, sticker: ``Sticker``):
+        Called when an sticker is created at a guild.
+    
+    sticker_delete(client: ``Client``, sticker: ``Sticker``, guild: ``Guild``):
+        Called when an sticker is deleted.
+    
+    sticker_edit(client : Client, sticker: ``Sticker``, old_attributes: `dict`):
+        Called when an sticker is edited. The passed `old_attributes` parameter contains the sticker's overwritten
+        attributes in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-----------------------+-----------------------------------+
+        | Keys                  | Values                            |
+        +=======================+===================================+
+        | available             | `bool`                            |
+        +-----------------------+-----------------------------------+
+        | description           | ``str``                           |
+        +-----------------------+-----------------------------------+
+        | name                  | `str`                             |
+        +-----------------------+-----------------------------------+
+        | sort_value            | `int`                             |
+        +-----------------------+-----------------------------------+
+        | tags                  | `None`  or `frozenset` of `str`   |
+        +-----------------------+-----------------------------------+
+    
     thread_user_add(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``):
         Called when a user is added or joined a thread channel.
     

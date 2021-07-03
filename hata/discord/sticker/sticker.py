@@ -7,14 +7,14 @@ from ..bases import DiscordEntity
 from ..user import ZEROUSER, User
 from ..http import urls as module_urls
 from ..preconverters import preconvert_str, preconvert_int, preconvert_snowflake, preconvert_preinstanced_type, \
-    preconvert_iterable_of_str
+    preconvert_iterable_of_str, preconvert_bool
 from ..bases import instance_or_id_to_instance
 
 from .preinstanced import StickerFormat, StickerType
 
 Client = include('Client')
 
-DEFAULT_SORT_VALUE = 100
+DEFAULT_SORT_VALUE = 0
 
 class Sticker(DiscordEntity, immortal=True):
     """
@@ -24,6 +24,8 @@ class Sticker(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the sticker.
+    available : `bool`
+        Whether the sticker is available.
     description : `None` or `str`
         The sticker's description.
     format_type : ``StickerFormat``
@@ -45,7 +47,8 @@ class Sticker(DiscordEntity, immortal=True):
     user : ``ClientUserBase``
         The user who uploaded the emoji. Defaults to ``ZEROUSER``.
     """
-    __slots__ = ('description', 'format_type', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags', 'type', 'user')
+    __slots__ = ('available', 'description', 'format_type', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags',
+        'type', 'user')
     
     def __new__(cls, data):
         """
@@ -131,6 +134,7 @@ class Sticker(DiscordEntity, immortal=True):
             self.id = sticker_id
             STICKERS[sticker_id] = self
             
+            self.available = True
             self.description = None
             self.guild_id = 0
             self.pack_id = 0
@@ -167,7 +171,8 @@ class Sticker(DiscordEntity, immortal=True):
         else:
             tags = frozenset(tags.split(', '))
         self.tags = tags
-    
+        
+        self.available = data.get('available', True)
     
     def _update(self, data):
         """
@@ -187,13 +192,15 @@ class Sticker(DiscordEntity, immortal=True):
             +-----------------------+-----------------------------------+
             | Keys                  | Values                            |
             +=======================+===================================+
-            | description           | `None` or `str`                   |
+            | available             | `bool`                            |
+            +-----------------------+-----------------------------------+
+            | description           | ``str``                           |
             +-----------------------+-----------------------------------+
             | name                  | `str`                             |
             +-----------------------+-----------------------------------+
             | sort_value            | `int`                             |
             +-----------------------+-----------------------------------+
-            | tags                  | `None` or `frozenset` of `str`    |
+            | tags                  | `None`  or `frozenset` of `str`   |
             +-----------------------+-----------------------------------+
         """
         old_attributes = {}
@@ -221,6 +228,11 @@ class Sticker(DiscordEntity, immortal=True):
         if tags != self.tags:
             old_attributes['tags'] = self.tags
             self.tags = tags
+        
+        available = data.get('available', True)
+        if self.available != available:
+            old_attributes['available'] = self.available
+            self.available = available
         
         return old_attributes
     
@@ -343,6 +355,8 @@ class Sticker(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
+        available : `bool`, Optional (Keyword only)
+             The sticker's ``.available``.
         description : `str`, Optional (Keyword only)
             The sticker's ``.name``. It's length can be in range [0:1024]
         format_type : ``StickerFormat``, Optional (Keyword only)
@@ -377,6 +391,15 @@ class Sticker(DiscordEntity, immortal=True):
         
         if kwargs:
             processable = []
+            # There might be new bool fields coming out.
+            for attribute_name in ('available',):
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    pass
+                else:
+                    animated = preconvert_bool(attribute_value, attribute_name)
+                    processable.append((attribute_name, animated))
             
             for attribute_name, lower_limit, upper_limit in (
                         ('description', 0, 1024),
@@ -483,6 +506,7 @@ class Sticker(DiscordEntity, immortal=True):
         """
         self = object.__new__(cls)
         self.id = sticker_id
+        self.available = True
         self.description = ''
         self.format_type = StickerFormat.none
         self.guild_id = 0
@@ -493,3 +517,23 @@ class Sticker(DiscordEntity, immortal=True):
         self.type = StickerType.none
         self.user = ZEROUSER
         return self
+
+    def _delete(self):
+        """
+        Removes the sticker's references.
+        
+        Called when a sticker is deleted.
+        """
+        self.available = False
+        
+        guild_id = self.guild_id
+        if guild_id:
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                pass
+            else:
+                try:
+                    del guild.stickers[self.id]
+                except KeyError:
+                    pass

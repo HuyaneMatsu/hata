@@ -1,4 +1,8 @@
-## 1.1.88 *\[2021-07-??\]*
+## 1.1.88 *\[2021-07-03\]*
+
+#### Summary
+
+Fix a few bugs.
 
 #### Improvements
 
@@ -9,12 +13,23 @@
 - Channel names can be 1 character long as well.
 - Add `Client.interaction_application_command_acknowledge`.
 - Add `ComponentSelect.enabled`.
+- Add `python3 -m hata i`.
+- Add `python3 -m hata v`.
+- `Sticker.sort_value` defaults to `0`.
+- Add `ERROR_CODES.sticker_maximum_dimensions_exceeded`.
+- Add `Client.events.sticker_create`.
+- Add `Client.events.sticker_delete`.
+- Add `Client.events.sticker_edit`.
+- Add `Sticker.available`.
+- Add `Sticker._delete`.
+- Add `available` parameter to `Sticker.precreate`.
 
 #### Bug Fixes
 
 - Use `values` field instead of `options` when creating `ComponentInteraction` of a select.
 - `CHANNEL_PINS_UPDATE` was not listed under guild messages intent.
 - `'hata.discord.embed'` was not listed in `setup.py`. (Zeref Draganeel#3581)
+- Fix a `TypeError` in `Client.sticker_get`.
 
 ## 1.1.87 *\[2021-06-30\]*
 

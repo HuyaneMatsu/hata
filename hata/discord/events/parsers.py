@@ -14,7 +14,7 @@ from ..user import User, create_partial_user_from_id, thread_user_create, thread
 from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
-    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild
+    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_NEW, STICKER_UPDATE_DELETE
 from ..role import Role
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
@@ -1764,6 +1764,7 @@ del CHANNEL_RECIPIENT_REMOVE__CAL_SC, \
     CHANNEL_RECIPIENT_REMOVE__CAL_MC, \
     CHANNEL_RECIPIENT_REMOVE__OPT
 
+
 def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
     try:
@@ -1879,6 +1880,124 @@ del GUILD_EMOJIS_UPDATE__CAL_SC, \
     GUILD_EMOJIS_UPDATE__CAL_MC, \
     GUILD_EMOJIS_UPDATE__OPT_SC, \
     GUILD_EMOJIS_UPDATE__OPT_MC
+
+
+def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+
+    changes = guild._update_stickers(data['stickers'])
+    
+    if not changes:
+        return
+    
+    for action, sticker, old_attributes in changes:
+        if action == STICKER_UPDATE_EDIT:
+            coro = client.events.sticker_edit
+            if coro is DEFAULT_EVENT_HANDLER:
+                continue
+            
+            Task(coro(client, sticker, old_attributes), KOKORO)
+            continue
+            
+        if action == STICKER_UPDATE_NEW:
+            coro = client.events.sticker_create
+            if coro is DEFAULT_EVENT_HANDLER:
+                continue
+            
+            Task(coro(client, sticker), KOKORO)
+            continue
+        
+        if action == STICKER_UPDATE_DELETE:
+            coro = client.events.sticker_delete
+            if coro is DEFAULT_EVENT_HANDLER:
+                continue
+            
+            Task(coro(client, sticker, guild), KOKORO)
+            continue
+        
+        # no more case
+
+def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    changes = guild._update_stickers(data['stickers'])
+    
+    if not changes:
+        clients.close()
+        return
+    
+    for client_ in clients:
+        for action, sticker, old_attributes in changes:
+            if action == STICKER_UPDATE_EDIT:
+                event_handler = client_.events.sticker_edit
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, sticker, old_attributes), KOKORO)
+                continue
+                
+            if action == STICKER_UPDATE_NEW:
+                event_handler = client_.events.sticker_create
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, guild, sticker), KOKORO)
+                continue
+            
+            if action == STICKER_UPDATE_DELETE:
+                event_handler = client_.events.sticker_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, guild, sticker), KOKORO)
+                continue
+            
+            continue
+            # no more case
+
+def GUILD_STICKERS_UPDATE__OPT_SC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    guild._sync_stickers(data['stickers'])
+
+def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        guild_sync(client, data, None)
+        return
+    
+    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS) is not client:
+        return
+    
+    guild._sync_stickers(data['stickers'])
+
+add_parser(
+    'GUILD_STICKERS_UPDATE',
+    GUILD_STICKERS_UPDATE__CAL_SC,
+    GUILD_STICKERS_UPDATE__CAL_MC,
+    GUILD_STICKERS_UPDATE__OPT_SC,
+    GUILD_STICKERS_UPDATE__OPT_MC)
+del GUILD_STICKERS_UPDATE__CAL_SC, \
+    GUILD_STICKERS_UPDATE__CAL_MC, \
+    GUILD_STICKERS_UPDATE__OPT_SC, \
+    GUILD_STICKERS_UPDATE__OPT_MC
+
 
 def GUILD_MEMBER_ADD__CAL_SC(client, data):
     guild_id = int(data['guild_id'])

@@ -72,6 +72,7 @@ INTENT_SHIFT_EVENTS = {
     ),
     INTENT_SHIFT_GUILD_EMOJIS: (
         'GUILD_EMOJIS_UPDATE',
+        'GUILD_STICKERS_UPDATE',
     ),
     INTENT_SHIFT_GUILD_INTEGRATIONS: (
         'INTEGRATION_CREATE',
@@ -220,6 +221,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                   |           |                       | GUILD_BAN_REMOVE                  |
     +-----------------------------------+-----------+-----------------------+-----------------------------------+
     | INTENT_SHIFT_GUILD_EMOJIS         | 3         | guild_emojis          | GUILD_EMOJIS_UPDATE               |
+    |                                   |           |                       | GUILD_STICKERS_UPDATE             |
     +-----------------------------------+-----------+-----------------------+-----------------------------------+
     | INTENT_SHIFT_GUILD_INTEGRATIONS   | 4         | guild_integrations    | INTEGRATION_CREATE,               |
     |                                   |           |                       | INTEGRATION_DELETE,               |

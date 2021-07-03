@@ -13165,7 +13165,7 @@ class Client(ClientUserPBase):
             If `sticker` was not given as ``Sticker``, nor as `int` instance.
         """
         sticker, sticker_id = get_sticker_and_id(sticker)
-        if (not sticker.partial) and (not force_update):
+        if (sticker is not None) and (not sticker.partial) and (not force_update):
             return sticker
         
         data = await self.http.sticker_get(sticker_id)

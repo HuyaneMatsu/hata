@@ -75,12 +75,13 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
             if interaction_event.is_unanswered():
                 yield client.interaction_response_message_create(interaction_event, response,
                     show_for_invoking_user_only=show_for_invoking_user_only)
-
+            
             elif interaction_event.is_deferred():
                 yield client.interaction_followup_message_create(interaction_event, response)
             elif interaction_event.is_responded():
                 yield client.interaction_followup_message_create(interaction_event, response,
                     show_for_invoking_user_only=show_for_invoking_user_only)
+        
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
             yield client.interaction_component_message_edit(interaction_event, response)
         
@@ -88,8 +89,10 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         return
     
     if is_coroutine_generator(response):
-        response = await process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only, response)
-        async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
+        response = await process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only,
+            response)
+        async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only,
+                response):
             yield request_coro
         
         return

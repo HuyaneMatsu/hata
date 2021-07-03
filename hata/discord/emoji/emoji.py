@@ -429,7 +429,11 @@ class Emoji(DiscordEntity, immortal=True):
         if guild is None:
             return
         
-        del guild.emojis[self.id]
+        try:
+            del guild.emojis[self.id]
+        except KeyError:
+            pass
+        
         self.roles = None
         self.guild = None
         self.available = False

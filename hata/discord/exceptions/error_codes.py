@@ -286,7 +286,7 @@ These are the following:
 | invalid_gift_redemption_subscription_managed      | 100021    | -     |
 +---------------------------------------------------+-----------+-------+
 | invalid_gift_redemption_subscription_incompatible | 100023    | -     |
-+--------------------------------pa-------------------+-----------+-------+
++---------------------------------------------------+-----------+-------+
 | invalid_gift_redemption_invoice_open              | 100024    | -     |
 +---------------------------------------------------+-----------+-------+
 | MFA_enabled                                       | 60001     | -     |
@@ -338,6 +338,8 @@ These are the following:
 | max_active_threads                                | 160006    | -     |
 +---------------------------------------------------+-----------+-------+
 | max_active_announcement_threads                   | 160007    | -     |
++---------------------------------------------------+-----------+-------+
+| sticker_maximum_dimensions_exceeded              | 170005    | -     |
 +---------------------------------------------------+-----------+-------+
 """
 unknown_account = 10001
@@ -518,3 +520,5 @@ message_has_thread = 160004
 thread_locked = 160005
 max_active_threads = 160006
 max_active_announcement_threads = 160007
+
+sticker_maximum_dimensions_exceeded = 170005

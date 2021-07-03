@@ -2,14 +2,14 @@
 
 ### Introduction
 
-Message components, mainly known as components are interactive gui elements, which might be included with a message.
-Your application or bot can send and interact with them. They are customizable, and easy to use.
+Message components, mainly known as components, are interactive gui elements which might get included with a message.
+Your application or bot can send and interact with them. They are customizable and easy to use.
 
-Hata supports components on native ways as well. This topic is a continuation of the [slash](slash.md) one, so if you
-did not read that yet, please go ahead.
+Hata supports components with native ways as well. This topic is a continuation of the [slash](slash.md) one, so if you
+did not read that yet please go ahead.
 
-Writing component based interactions are usually three times longer, than generic ones. So if writing some extra code
-is not your bread, I do not recommend using components. Although I never said, they are more complicated.
+Writing component based interactions is usually three times longer than generic ones. So if writing some extra code
+is not your bread I do not recommend using components, although I never said they are more complicated.
 
 ## Component Structures
 
@@ -25,13 +25,13 @@ Components can be passed to `InteractionResponse` and to many client methods as 
 - `.interaction_followup_message_edit`
 - `.interaction_component_message_edit`
 
-Three component types are supported, `Row`, `Button` and `Select`. However select is not yet released (not really
+Three component types are supported: `Row`, `Button` and `Select`. However select is not yet released (not really
 useful either), so we will ignore it for now.
 
 `components` parameters can be passed either as the component itself, list of components, or as a nested list of
 components. Some examples might clarify it more.
 
-First start with the 1 row, 3 buttons next to each other cases.
+Below are 3 examples on how to make 1 row have 3 buttons:
 
 ```py
 # The component itself
@@ -42,13 +42,13 @@ components = [
     Row(Button(...), Button(...), Button(...)),
 ]
 
-# Nexted list of components.
+# Nested list of components.
 components = [
     [Button(...), Button(...), Button(...)],
 ]
 ```
 
-Then, 3 row, 1 button in each example:
+Below are 3 examples on how to make 3 rows each having 1 button:
 
 ```py
 
@@ -91,13 +91,13 @@ components = [
 
 ## Component commands
 
-You may add component commands to a slashers, which are called, when a component with the specified `custom_id` is
+You may add component commands to a slashers which are called when a component with the specified `custom_id` is
 used.
 
-Familiarly to slash commands, they are registered with the `client.interactions` decorator. The difference is, that now
+Similarly to slash commands they are registered with the `client.interactions` decorator. The difference is that now
 you will use only the `custom_id` parameter.
 
-What is better, than starting the examples, with an another ping-pong command?
+Take a look at the following ping-pong command:
 
 ```py
 from random import random
@@ -133,8 +133,8 @@ async def ping_pong_pong():
     return InteractionResponse(components=BUTTON_PING)
 ```
 
-Usually you can separate component commands' implementation to 3 parts. Defining static variables, defining the
-command, defining the component interaction. If you keep this pattern, you cannot go wrong.
+Usually you can separate component commands implementation in 3 parts: defining static variables, defining the
+command and defining the component interaction. Stick to this pattern, and you can't go wrong.
 
 
 ```py
@@ -170,8 +170,8 @@ async def cat_fed(event):
 
 #### Using regex
 
-You shall pass regex `custom_id` for component commands to match. It may be used to store specific states, or button
-positions and then get the data back when clicked. Here is a short example for giving roles away on button click.
+You can pass regex as `custom_id` for component commands to match. It can be used to store specific states or button
+positions and then get the data back when clicked. Here is a short example for giving roles on button click.
 
 ```py
 import re
@@ -219,8 +219,8 @@ async def give_role(client, event, role_id):
 
 #### Using multiple custom id
 
-Using multiple string or regex `custom_id`-s work as well. Here is a simple poison chooser example for multiple string.
-This example, could have be done, with a regex as well, but an advantage of strings, that their lookup is `O(1)`,
+Using multiple strings or regex `custom_id`-s work as well. Here is a simple poison chooser example for multiple string.
+This example could have been done with regex as well, but an advantage of strings is that their lookup time is `O(1)`,
 meanwhile regex ones are `O(n)`.
 
 ```py
@@ -338,20 +338,20 @@ async def add_emoji(client, event,
     yield InteractionResponse(embed=embed, components=None, message=message, event=component_interaction)
 ```
 
-> By passing `event` to `InteractionResponse`, you can change the the interact event to respond to. When passing it
-> as a component's interaction event, it will acknowledge it and/or edit the source message.
+> By passing `event` to `InteractionResponse`, you can change the interact event to respond to. When passing it
+> as a component interaction event, it will acknowledge it and/or edit the source message.
 >
-> When passing the `event` parameter as `None`, it will default back to the default interaction event. Since the
+> When passing the `event` parameter as `None` it will default back to the default interaction event. Since the
 > default one is an application command event, it will create a new message by default, but we can make it edit a
-> message, by using the `message` parameter.
+> message by using the `message` parameter.
 >
 > Component interaction events always ignore the message parameter.
 
 
 ### Waiting for multiple component interaction
 
-On the same way, as `wait_for_component_interaction` returns on the first sufficient interaction,
-`iter_component_interactions` can be used to (async) iterate over multiple one.
+In the same way as `wait_for_component_interaction` returns on the first sufficient interaction,
+`iter_component_interactions` can be used to (async) iterate over multiple ones.
 
 ```py
 import functools

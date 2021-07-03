@@ -2,8 +2,8 @@
 
 ### Introduction
 
-User menu allows you to create `Pagination` like mini-apps, where you wait for reactions and then respond. The user
-menu's runner executes the middle layer, which deals with waiting, timeout and race conditions.
+User menu allows you to create `Pagination` like mini-apps, where you wait for reactions and then respond.
+The user menu-runner executes the middle layer which deals with waiting, timeouts and race conditions.
 
 > This is an experimental feature.
 
@@ -26,31 +26,30 @@ The emojis which are added on the respective message.
 
 ##### allow_third_party_emojis
 
-Whether third party emojis should trigger the menu as well. Note, that these emojis are not removed.
+Whether third party emojis should trigger the menu as well. Note that these emojis are not removed.
 
 > Defaults to `False`.
 
 ##### timeout
 
-The timeout after the menu will expire.
+The timeout after which the menu will expire.
 
-Defining timeout is optional, but recommended. When not defining or when defining it as negative, the menu will have no
-timeout applied.
+Defining timeout is optional, but recommended. If it's undefined or negative then no timeout will be applied.
 
 > Defaults to `0.0`.
 
 ##### check
 
-Check is an optional **non-async** function to check whether the reaction add or delete emoji should be further
+Check is an optional **non-async** function that check whether the reaction add or delete emoji should be further
 processed.
 
-The following parameters are passed to it:
+The following parameters will be passed to it:
 
 | Name      | Type                                              |
 |-----------|---------------------------------------------------|
 | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
 
-And should return the following values:
+It will return the following values:
 
 | Name              | Type      |
 |-------------------|-----------|
@@ -62,27 +61,27 @@ And should return the following values:
 
 A required **async** function to return the default content of the menu to display.
 
-No parameter is passed to it and should return the following values:
+Function takes no parameters and will return the following values:
 
 | Name      | Type                          |
 |-----------|-------------------------------|
 | content   | `str`, `EmbedBase`, `None`    |
 
-If returns `None`, the menu is instantly closed. Note, that `menu.close()` can also be called at this point to not add
-any reactions on the menu and leave.
+If it returns `None` then the menu will be instantly closed. Note that at this point `menu.close()` can also be called
+to not add any reactions on the menu and leave.
 
 ##### invoke
 
 A required **async** function called when the menu is invoked with a reaction. Not called if the emoji is
 `close_emoji`.
 
-The following parameters are passed to it:
+The following parameters will be passed to it:
 
 | Name      | Type                                              |
 |-----------|---------------------------------------------------|
 | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
 
-And should return the following values:
+It will return the following values:
 
 | Name      | Type                          |
 |-----------|-------------------------------|
@@ -92,29 +91,29 @@ If non-`None` value is returned the respective message will be edited and the ti
 
 ##### cancel
 
-Called when the menu is closed, timeouted, or when any exception occurs.
+Called when the menu is closed, timeouted or when any exception occurs.
 
-The following parameters are passed to iti:
+The following parameters will be passed to it:
 
 | Name      | Type                      |
 |-----------|---------------------------|
 | exception | `None` or `BaseException` |
 
-The exception's value depends how the menu was closed:
+The exceptions value depends on how the menu was closed:
 - `None` : The factorized class called `menu.close()` without passing any exception.
-- `TimeoutError` : The menu timed out.
+- `TimeoutError` : The menu timed-out.
 - `CancelledError` : The menu was closed with `close_emoji`.
-- `PermissionError` : The client has no permissions to add reactions on the menu. (Can be ignored)
-- `ConnectionError` : No internet connection. (Can be ignored)
-- `DiscordException` : Exception raised by Discord. (Can be ignored, if important, is ensured with
+- `PermissionError` : The client has no permissions to add reactions on the menu (can be ignored).
+- `ConnectionError` : No internet connection (can be ignored).
+- `DiscordException` : Exception raised by Discord (can be ignored but if important can be ensured with
     `client.events.error`)
 
-Other exception should not be triggered.
+Other exception will not trigger it.
 
 ## Parameters
 
-User menu has 3 parameters, from which 2 is required. Every extra positional and keyword parameter with the created
-menu runner instance is passed to the factorized class's constructor.
+User menu has 3 parameters from which 2 are required. Any extra positional and keyword parameters of the
+menu runner instance will be passed to the factorized class constructor.
 
 ##### client
 
@@ -124,12 +123,11 @@ The client who executes the menu.
 
 The channel to send the message to.
 
-Also can be given as `Message` to reply or as `InteractionEvent` as well.
-
+Can also be given as `Message` or as `InteractionEvent`.
 
 ##### message
 
-A message to reuse inside of the menu. Optional keyword only.
+A message to re-use inside the menu. Optional keyword only.
 
 ## Examples
 
@@ -209,7 +207,7 @@ async def cat_feeder(client, event):
 
 ##### Zeref's pagination
 
-There is a `Pagination` like subclassable class included just for this purpose.
+There is a `Pagination`-like class which you can subclass included just for this purpose.
 
 ```py
 from hata.emoji import BUILTIN_EMOJIS

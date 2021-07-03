@@ -38,8 +38,6 @@ body:
       label: Actual behaviour
       description: >
         What actually happened?
-    validations:
-      required: true
   - type: textarea
     attributes:
       label: System information

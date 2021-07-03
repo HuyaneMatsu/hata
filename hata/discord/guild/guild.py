@@ -2497,6 +2497,22 @@ class Guild(DiscordEntity, immortal=True):
         return (8388608, 8388608, 52428800, 104857600)[self.premium_tier]
     
     
+    @property
+    def sticker_limit(self):
+        """
+        The maximal amount of stickers, what the guild can have.
+        
+        Returns
+        -------
+        limit : `int`
+        """
+        limit = (0, 15, 30, 60)[self.premium_tier]
+        if limit < 30 and (GuildFeature.more_sticker in self.features):
+            limit = 30
+        
+        return limit
+    
+    
     widget_json_url = property(module_urls.guild_widget_json_url)
     
     

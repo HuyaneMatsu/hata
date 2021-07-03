@@ -23,6 +23,7 @@ Fix a few bugs.
 - Add `Sticker.available`.
 - Add `Sticker._delete`.
 - Add `available` parameter to `Sticker.precreate`.
+- Add `Guild.sticker_limit`.
 
 #### Bug Fixes
 

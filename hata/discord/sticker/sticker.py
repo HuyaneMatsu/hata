@@ -537,3 +537,16 @@ class Sticker(DiscordEntity, immortal=True):
                     del guild.stickers[self.id]
                 except KeyError:
                     pass
+
+    @property
+    def guild(self):
+        """
+        Returns the sticker's guild if cached.
+        
+        Returns
+        -------
+        guild : ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)

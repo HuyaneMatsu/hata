@@ -93,6 +93,7 @@ INTENT_SHIFT_EVENTS = {
         'PRESENCE_UPDATE',
     ),
     INTENT_SHIFT_GUILD_MESSAGES: (
+        'CHANNEL_PINS_UPDATE',
         'MESSAGE_CREATE',
         'MESSAGE_UPDATE',
         'MESSAGE_DELETE',
@@ -234,9 +235,9 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +-----------------------------------+-----------+-----------------------+-----------------------------------+
     | INTENT_SHIFT_GUILD_PRESENCES      | 8         | guild_presences       | PRESENCE_UPDATE                   |
     +-----------------------------------+-----------+-----------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_MESSAGES       | 9         | guild_messages        | MESSAGE_CREATE                    |
-    +-----------------------------------+-----------+-----------------------+-----------------------------------+
-    | N/A                               | N/A       | N/A                   | MESSAGE_UPDATE,                   |
+    | INTENT_SHIFT_GUILD_MESSAGES       | 9         | guild_messages        | CHANNEL_PINS_UPDATE,              |
+    |                                   |           |                       | MESSAGE_CREATE,                   |
+    |                                   |           |                       | MESSAGE_UPDATE,                   |
     |                                   |           |                       | MESSAGE_DELETE,                   |
     |                                   |           |                       | MESSAGE_DELETE_BULK               |
     +-----------------------------------+-----------+-----------------------+-----------------------------------+

@@ -55,6 +55,7 @@ class GuildProfile(metaclass=Slotted):
         
         return created_at
     
+    
     def __init__(self, data):
         """
         Creates a ``GuildProfile`` instance from the received guild profile data and from it's respective guild.
@@ -75,9 +76,11 @@ class GuildProfile(metaclass=Slotted):
         
         self._update_no_return(data)
     
+    
     def __repr__(self):
         """Returns the representation of the guild profile."""
         return f'<{self.__class__.__name__}>'
+    
     
     def _set_joined(self, data):
         """
@@ -97,6 +100,7 @@ class GuildProfile(metaclass=Slotted):
                 joined_at = parse_time(joined_at_data)
             
             self.joined_at = joined_at
+    
     
     def _update_no_return(self, data):
         """
@@ -136,6 +140,7 @@ class GuildProfile(metaclass=Slotted):
         self.pending = data.get('pending', None)
         
         self._set_avatar(data)
+    
     
     def _update(self, data):
         """
@@ -220,6 +225,7 @@ class GuildProfile(metaclass=Slotted):
         self._update_avatar(data, old_attributes)
         
         return old_attributes
+    
     
     def get_top_role(self, default=None):
         """

@@ -303,11 +303,21 @@ class DiscordHTTPClient(HTTPClient):
             data,
         )
     
-    async def client_edit_nick(self, guild_id, data, reason):
+    # `client_guild_profile_nick_edit` is deprecated, use `client_guild_profile_edit` instead.
+    async def client_guild_profile_nick_edit(self, guild_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.client_edit_nick, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.client_guild_profile_nick_edit, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/@me/nick',
+            data,
+            reason=reason,
+        )
+    
+    async def client_guild_profile_edit(self, guild_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.client_guild_profile_edit, guild_id),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guilds/{guild_id}/members/@me',
             data,
             reason=reason,
         )
@@ -754,9 +764,9 @@ class DiscordHTTPClient(HTTPClient):
             reason=reason,
         )
     
-    async def user_edit(self, guild_id, user_id, data, reason):
+    async def user_guild_profile_edit(self, guild_id, user_id, data, reason):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.user_edit, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.user_guild_profile_edit, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',
             data,

@@ -35,6 +35,7 @@ def is_only_embed(maybe_embeds):
     
     return True
 
+
 async def get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
     """
     Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
@@ -62,7 +63,7 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         if interaction_event.is_unanswered():
             
             if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
-                yield client.interaction_response_message_create(interaction_event,
+                yield client.interaction_application_command_acknowledge(interaction_event,
                     show_for_invoking_user_only=show_for_invoking_user_only)
             elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
                 yield client.interaction_component_acknowledge(interaction_event)

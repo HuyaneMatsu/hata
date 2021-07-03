@@ -417,7 +417,7 @@ from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 async def idtotime(
         snowflake : ('int', 'Id please!'),
             ):
-    """Converts the given Discord snowflake id to time."""
+    """Converts the given Discord snowflake to time."""
     time = id_to_time(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
@@ -431,7 +431,7 @@ from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
 async def id_to_time_(
         snowflake : ('int', 'Id please!'),
             ):
-    """Converts the given Discord snowflake id to time."""
+    """Converts the given Discord snowflake to time."""
     time = id_to_time(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
@@ -933,10 +933,11 @@ async def devil(client, event):
 ## Manual Responding
 
 Sometimes the auto-responding feature just cannot do it. For these cases there are the questionably long named
-`Client` interaction methods. This section just mentions these methods, please check their docs for more info.
+`Client` interaction methods. This section just mentions these methods, please check their docs for more information.
 
 The first response message can be sent only with `Client.interaction_response_message_create`. The `3` second
-acknowledge time still stands.
+acknowledge time still stands. You also may use `Client.interaction_application_command_acknowledge` to just
+acknowledge the event.
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
@@ -964,7 +965,7 @@ from hata import sleep
 @Nitori.interactions(guild=TEST_GUILD)
 async def kaboom(client, event):
     """Kabooom!!"""
-    await client.interaction_response_message_create(event)
+    await client.interaction_application_command_acknowledge(event)
     
     messages = []
     for x in reversed(range(1, 4)):

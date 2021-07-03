@@ -14,7 +14,7 @@ SPACE_CHAR_UNICODE = (b'\xe2\xa0\x80').decode()
 
 DEFAULT_LISTING_HEAD = '-'*(INDENT_SIZE_DEFAULT<<4)
 
-EMBED_DESCRIPTION_MAX_SIZE = 2048
+EMBED_DESCRIPTION_MAX_SIZE = 4096
 
 def sizify(words, max_length):
     """

@@ -109,7 +109,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     Parameters
     ----------
     name : `str`
-        The name of the channel. Can be between `2` and `100` characters.
+        The name of the channel. Can be between `1` and `100` characters.
     type_ : `int` or ``ChannelGuildBase`` subclass
         The channel's type.
     overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional (Keyword only)
@@ -164,7 +164,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `type_` was given as `int`, and is less than `0`.
         - If `type_` was given as `int` and exceeds the defined channel type limit.
         - If `name` was not given as `str` instance.
-        - If `name`'s length is under `2` or over `100`.
+        - If `name`'s length is under `1` or over `100`.
         - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
         - If `topic` was not given as `str` instance.
         - If `topic`'s length is over `1024` or `120` depending on channel type.
@@ -237,8 +237,8 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         
         name_length = len(name)
         
-        if name_length < 2 or name_length > 100:
-            raise AssertionError(f'`name` length can be in range [2:100], got {name_length}; {name!r}.')
+        if name_length < 1 or name_length > 100:
+            raise AssertionError(f'`name` length can be in range [1:100], got {name_length}; {name!r}.')
     
     channel_data = {
         'name': name,

@@ -22,6 +22,7 @@ if CACHE_PRESENCE:
 else:
     USER_BASE_CLASS = ClientUserBase
 
+
 class User(USER_BASE_CLASS):
     """
     Represents a Discord user.
@@ -36,8 +37,12 @@ class User(USER_BASE_CLASS):
         The user's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The user's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
@@ -220,18 +225,37 @@ class User(USER_BASE_CLASS):
             The user's ``.name``.
         discriminator : `int` or `str` instance, Optional (Keyword only)
             The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
+        
         avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The user's avatar.
             
             > Mutually exclusive with `avatar_type` and `avatar_hash`.
+        
         avatar_type : ``IconType``, Optional (Keyword only)
             The user's avatar's type.
             
             > Mutually exclusive with `avatar_type`.
+        
         avatar_hash : `int`, Optional (Keyword only)
             The user's avatar's hash.
             
             > Mutually exclusive with `avatar`.
+        
+        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+            The user's banner.
+            
+            > Mutually exclusive with `banner_type` and `banner_hash`.
+        
+        banner_type : ``IconType``, Optional (Keyword only)
+            The user's banner's type.
+            
+            > Mutually exclusive with `banner_type`.
+        
+        banner_hash : `int`, Optional (Keyword only)
+            The user's banner hash.
+            
+            > Mutually exclusive with `banner`.
+        
         flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
@@ -268,6 +292,7 @@ class User(USER_BASE_CLASS):
                 processable.append(('discriminator', discriminator))
             
             cls.avatar.preconvert(kwargs, processable)
+            cls.banner.preconvert(kwargs, processable)
             
             try:
                 is_bot = kwargs.pop('is_bot')

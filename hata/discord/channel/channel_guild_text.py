@@ -409,7 +409,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             except KeyError:
                 pass
             else:
-                name = preconvert_str(value, 'name', 2, 100)
+                name = preconvert_str(value, 'name', 1, 100)
                 processable.append(('name', name))
             
             try:

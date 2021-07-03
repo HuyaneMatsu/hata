@@ -20,8 +20,12 @@ class UserOA2(UserBase):
         The user's discriminator. Given to avoid overlapping names.
     avatar_hash : `int`
         The user's avatar's hash in `uint128`.
-    avatar_type : `bool`
+    avatar_type : ``IconType``
         The user's avatar's type.
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The user's banner's type.
     email : `None` or `str`
         The user's email. Defaults to empty string.
     flags : ``UserFlag``
@@ -46,6 +50,7 @@ class UserOA2(UserBase):
         self.discriminator = int(data['discriminator'])
         
         self._set_avatar(data)
+        self._set_banner(data)
         
         self.mfa = data.get('mfa_enabled', False)
         self.verified = data.get('verified', False)

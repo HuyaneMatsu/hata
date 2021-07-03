@@ -1,5 +1,7 @@
 __all__ = ('Permission', )
 
+import warnings
+
 from ..bases import FlagBase
 
 class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
@@ -8,79 +10,79 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     
     The implemented permissions are the following:
     
-    +---------------------------+-------------------+
-    | Respective name           | Bitwise position  |
-    +===========================+===================+
-    | create_instant_invite     |  0                |
-    +---------------------------+-------------------+
-    | kick_users                |  1                |
-    +---------------------------+-------------------+
-    | ban_users                 |  2                |
-    +---------------------------+-------------------+
-    | administrator             |  3                |
-    +---------------------------+-------------------+
-    | manage_channel            |  4                |
-    +---------------------------+-------------------+
-    | manage_guild              |  5                |
-    +---------------------------+-------------------+
-    | add_reactions             |  6                |
-    +---------------------------+-------------------+
-    | view_audit_logs           |  7                |
-    +---------------------------+-------------------+
-    | priority_speaker          |  8                |
-    +---------------------------+-------------------+
-    | stream                    |  9                |
-    +---------------------------+-------------------+
-    | view_channel              | 10                |
-    +---------------------------+-------------------+
-    | send_messages             | 11                |
-    +---------------------------+-------------------+
-    | send_tts_messages         | 12                |
-    +---------------------------+-------------------+
-    | manage_messages           | 13                |
-    +---------------------------+-------------------+
-    | embed_links               | 14                |
-    +---------------------------+-------------------+
-    | attach_files              | 15                |
-    +---------------------------+-------------------+
-    | read_message_history      | 16                |
-    +---------------------------+-------------------+
-    | mention_everyone          | 17                |
-    +---------------------------+-------------------+
-    | use_external_emojis       | 18                |
-    +---------------------------+-------------------+
-    | connect                   | 20                |
-    +---------------------------+-------------------+
-    | speak                     | 21                |
-    +---------------------------+-------------------+
-    | mute_users                | 22                |
-    +---------------------------+-------------------+
-    | deafen_users              | 23                |
-    +---------------------------+-------------------+
-    | move_users                | 24                |
-    +---------------------------+-------------------+
-    | use_voice_activation      | 25                |
-    +---------------------------+-------------------+
-    | change_nickname           | 26                |
-    +---------------------------+-------------------+
-    | manage_nicknames          | 27                |
-    +---------------------------+-------------------+
-    | manage_roles              | 28                |
-    +---------------------------+-------------------+
-    | manage_webhooks           | 29                |
-    +---------------------------+-------------------+
-    | manage_emojis             | 30                |
-    +---------------------------+-------------------+
-    | use_application_commands  | 31                |
-    +---------------------------+-------------------+
-    | request_to_speak          | 32                |
-    +---------------------------+-------------------+
-    | manage_threads            | 34                |
-    +---------------------------+-------------------+
-    | use_public_threads        | 35                |
-    +---------------------------+-------------------+
-    | use_private_threads       | 36                |
-    +---------------------------+-------------------+
+    +-------------------------------+-------------------+
+    | Respective name               | Bitwise position  |
+    +===============================+===================+
+    | create_instant_invite         |  0                |
+    +-------------------------------+-------------------+
+    | kick_users                    |  1                |
+    +-------------------------------+-------------------+
+    | ban_users                     |  2                |
+    +-------------------------------+-------------------+
+    | administrator                 |  3                |
+    +-------------------------------+-------------------+
+    | manage_channel                |  4                |
+    +-------------------------------+-------------------+
+    | manage_guild                  |  5                |
+    +-------------------------------+-------------------+
+    | add_reactions                 |  6                |
+    +-------------------------------+-------------------+
+    | view_audit_logs               |  7                |
+    +-------------------------------+-------------------+
+    | priority_speaker              |  8                |
+    +-------------------------------+-------------------+
+    | stream                        |  9                |
+    +-------------------------------+-------------------+
+    | view_channel                  | 10                |
+    +-------------------------------+-------------------+
+    | send_messages                 | 11                |
+    +-------------------------------+-------------------+
+    | send_tts_messages             | 12                |
+    +-------------------------------+-------------------+
+    | manage_messages               | 13                |
+    +-------------------------------+-------------------+
+    | embed_links                   | 14                |
+    +-------------------------------+-------------------+
+    | attach_files                  | 15                |
+    +-------------------------------+-------------------+
+    | read_message_history          | 16                |
+    +-------------------------------+-------------------+
+    | mention_everyone              | 17                |
+    +-------------------------------+-------------------+
+    | use_external_emojis           | 18                |
+    +-------------------------------+-------------------+
+    | connect                       | 20                |
+    +-------------------------------+-------------------+
+    | speak                         | 21                |
+    +-------------------------------+-------------------+
+    | mute_users                    | 22                |
+    +-------------------------------+-------------------+
+    | deafen_users                  | 23                |
+    +-------------------------------+-------------------+
+    | move_users                    | 24                |
+    +-------------------------------+-------------------+
+    | use_voice_activation          | 25                |
+    +-------------------------------+-------------------+
+    | change_nickname               | 26                |
+    +-------------------------------+-------------------+
+    | manage_nicknames              | 27                |
+    +-------------------------------+-------------------+
+    | manage_roles                  | 28                |
+    +-------------------------------+-------------------+
+    | manage_webhooks               | 29                |
+    +-------------------------------+-------------------+
+    | manage_emojis_and_stickers    | 30                |
+    +-------------------------------+-------------------+
+    | use_application_commands      | 31                |
+    +-------------------------------+-------------------+
+    | request_to_speak              | 32                |
+    +-------------------------------+-------------------+
+    | manage_threads                | 34                |
+    +-------------------------------+-------------------+
+    | use_public_threads            | 35                |
+    +-------------------------------+-------------------+
+    | use_private_threads           | 36                |
+    +-------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -116,7 +118,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_nicknames': 27,
         'manage_roles': 28,
         'manage_webhooks': 29,
-        'manage_emojis': 30,
+        'manage_emojis_and_stickers': 30,
         'use_application_commands': 31,
         'request_to_speak': 32,
         'manage_threads': 34,
@@ -141,6 +143,47 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         """
         # 1st denies permissions, then allows
         return type(self)((self&~deny)|allow)
+    
+    @property
+    def can_manage_emojis(self):
+        """
+        The `manage_emojis` permission is deprecated and will be removed in 2021 September.
+        Please use `manage_emojis_and_stickers`.
+        """
+        warnings.warn(
+            'The `manage_emojis` permission is deprecated and will be removed in 2021 September. '
+            'Please use `manage_emojis_and_stickers`.',
+            FutureWarning)
+        
+        return self.can_manage_emojis_and_stickers
+
+
+    @property
+    def allow_manage_emojis(self):
+        """
+        The `manage_emojis` permission is deprecated and will be removed in 2021 September.
+        Please use `manage_emojis_and_stickers`.
+        """
+        warnings.warn(
+            'The `manage_emojis` permission is deprecated and will be removed in 2021 September. '
+            'Please use `manage_emojis_and_stickers`.',
+            FutureWarning)
+        
+        return self.allow_manage_emojis_and_stickers
+
+
+    @property
+    def deny_manage_emojis(self):
+        """
+        The `manage_emojis` permission is deprecated and will be removed in 2021 September.
+        Please use `manage_emojis_and_stickers`.
+        """
+        warnings.warn(
+            'The `manage_emojis` permission is deprecated and will be removed in 2021 September. '
+            'Please use `manage_emojis_and_stickers`.',
+            FutureWarning)
+        
+        return self.deny_manage_emojis_and_stickers
 
 
 PERMISSION_ALL = Permission().update_by_keys(
@@ -174,7 +217,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     manage_nicknames = True,
     manage_roles = True,
     manage_webhooks = True,
-    manage_emojis = True,
+    manage_emojis_and_stickers = True,
     use_application_commands = True,
     request_to_speak = True,
     manage_threads = True,
@@ -215,7 +258,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis = False,
+    manage_emojis_and_stickers = False,
     manage_threads = False,
     use_application_commands = True,
     request_to_speak = False,
@@ -264,7 +307,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis = False,
+    manage_emojis_and_stickers = False,
     use_application_commands = True,
     request_to_speak = False,
     manage_threads = True,
@@ -309,7 +352,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis = False,
+    manage_emojis_and_stickers = False,
     use_application_commands = False,
     request_to_speak = True,
     manage_threads = False,
@@ -357,7 +400,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis = False,
+    manage_emojis_and_stickers = False,
     use_application_commands = False,
     request_to_speak = True,
     manage_threads = False,

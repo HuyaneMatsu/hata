@@ -91,22 +91,64 @@ components = [
 
 ## Component commands
 
-You may add components commands to a slashers, which are called, when a component with the specified `custom_id` is
+You may add component commands to a slashers, which are called, when a component with the specified `custom_id` is
 used.
 
 Familiarly to slash commands, they are registered with the `client.interactions` decorator. The difference is, that now
 you will use only the `custom_id` parameter.
+
+What is better, than starting the examples, with an another ping-pong command?
+
+```py
+from random import random
+from hata import BUILTIN_EMOJIS
+from hata.ext.slash import Button, ButtonStyle, InteractionResponse
+
+
+EMOJI_PING_PONG = BUILTIN_EMOJIS['ping_pong']
+
+CUSTOM_ID_PING = 'ping_pong.ping'
+CUSTOM_ID_PONG = 'ping_pong.pong'
+
+BUTTON_PING = Button('ping', EMOJI_PING_PONG, custom_id=CUSTOM_ID_PING, style=ButtonStyle.green)
+BUTTON_PONG = Button('pong', EMOJI_PING_PONG, custom_id=CUSTOM_ID_PONG, style=ButtonStyle.violet)
+
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def ping_pong():
+    if random() < 0.5:
+        button = BUTTON_PING
+    else:
+        button = BUTTON_PONG
+    
+    return InteractionResponse(f'**ping {EMOJI_PING_PONG:e} pong**', components=button)
+
+
+@Nitori.interactions(custom_id=CUSTOM_ID_PING)
+async def ping_pong_ping():
+    return InteractionResponse(components=BUTTON_PONG)
+
+@Nitori.interactions(custom_id=CUSTOM_ID_PONG)
+async def ping_pong_pong():
+    return InteractionResponse(components=BUTTON_PING)
+```
+
+Usually you can separate component commands' implementation to 3 parts. Defining static variables, defining the
+command, defining the component interaction. If you keep this pattern, you cannot go wrong.
+
 
 ```py
 from hata import BUILTIN_EMOJIS, Emoji
 from hata.ext.slash import Button, ButtonStyle, InteractionResponse
 
 
+# Static variables
 CAT_FEEDER_CAT_EMOJI = Emoji.precreate(853998730071638056)
 CAT_FEEDER_FOOD_EMOJI = BUILTIN_EMOJIS['fish']
 CAT_FEEDER_CUSTOM_ID = 'cat_feeder.click'
 
 
+# Command
 @Nitori.interactions(guild=TEST_GUILD)
 async def cat_feeder():
     """Hungry cat feeder!"""
@@ -116,6 +158,7 @@ async def cat_feeder():
     )
 
 
+# Component interaction
 @Nitori.interactions(custom_id=CAT_FEEDER_CUSTOM_ID)
 async def cat_fed(event):
     return (
@@ -125,14 +168,10 @@ async def cat_fed(event):
     )
 ```
 
-Usually you can separate component commands' implementation to 3 parts. Defining static variables, defining the
-command, defining the component interaction. If you keep this pattern, you cannot go bad.
-
-
 #### Using regex
 
-You shall use regex component `custom_id` matching with component commands. It can be used to store specific states,
-or button positions and then get them back. Here is a short example for giving roles away on button click.
+You shall pass regex `custom_id` for component commands to match. It may be used to store specific states, or button
+positions and then get the data back when clicked. Here is a short example for giving roles away on button click.
 
 ```py
 import re
@@ -180,15 +219,14 @@ async def give_role(client, event, role_id):
 
 #### Using multiple custom id
 
-Using multiple string or regex `custom_id`-s work as well.
-
-
-Here is a simple poison chooser example for multiple string. This example, could have be done, with a regex as well,
-but an advantage of strings, that their lookup is O(1), meanwhile regex ones are O(n).
+Using multiple string or regex `custom_id`-s work as well. Here is a simple poison chooser example for multiple string.
+This example, could have be done, with a regex as well, but an advantage of strings, that their lookup is `O(1)`,
+meanwhile regex ones are `O(n)`.
 
 ```py
 from hata import Embed, BUILTIN_EMOJIS
 from hata.ext.slash import InteractionResponse, Button, Row, ButtonStyle
+
 
 CUSTOM_ID_CAKE = 'choose_your_poison.cake'
 CUSTOM_ID_CAT = 'choose_your_poison.cat'
@@ -231,13 +269,13 @@ async def poison_edit_cake(event):
 
 ## Waiting for component interaction
 
-You can wait for component interaction on a message or on an interaction with a message by using the
-`wait_for_component_interaction` coroutine function.
+You can wait for component interaction on a message by using the `wait_for_component_interaction` coroutine function.
 
 ```py
 import functools
 from hata import parse_emoji, Embed
 from hata.ext.slash import abort, Button, Row, InteractionResponse, ButtonStyle, wait_for_component_interaction
+
 
 ADD_EMOJI_BUTTON_ADD = Button('Add!', style=ButtonStyle.green)
 ADD_EMOJI_BUTTON_CANCEL = Button('Nah.', style=ButtonStyle.red)
@@ -246,6 +284,7 @@ ADD_EMOJI_COMPONENTS = Row(ADD_EMOJI_BUTTON_ADD, ADD_EMOJI_BUTTON_CANCEL)
 
 def check_is_user_same(user, event):
     return (user is event.user)
+
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def add_emoji(client, event,
@@ -297,7 +336,6 @@ async def add_emoji(client, event,
         await client.emoji_create(event.guild, name, emoji_data)
     
     yield InteractionResponse(embed=embed, components=None, message=message, event=component_interaction)
-
 ```
 
 > By passing `event` to `InteractionResponse`, you can change the the interact event to respond to. When passing it
@@ -309,20 +347,21 @@ async def add_emoji(client, event,
 >
 > Component interaction events always ignore the message parameter.
 
+
 ### Waiting for multiple component interaction
 
 On the same way, as `wait_for_component_interaction` returns on the first sufficient interaction,
 `iter_component_interactions` can be used to (async) iterate over multiple one.
 
-````py
+```py
 import functools
 from hata.ext.slash import Button, InteractionResponse, iter_component_interactions
+
 
 BUTTON_ATTEND = Button('Attend', style=ButtonStyle.green)
 
 def check_is_user_unique(users, event):
     return (event.user not in users)
-
 
 def render_joined_users(users):
     content_parts = ['I will pick who I like the most from the attenders.\n\nAttenders:']
@@ -332,7 +371,6 @@ def render_joined_users(users):
     
     return ''.join(content_parts)
 
-
 def get_liking(client_id, user_id):
     if user_id > client_id:
         liking = user_id-client_id
@@ -340,7 +378,6 @@ def get_liking(client_id, user_id):
         liking = client_id-user_id
     
     return liking
-
 
 def pick_most_liked(client, users):
     client_id = client.id

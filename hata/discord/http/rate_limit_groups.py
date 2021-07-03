@@ -1026,7 +1026,15 @@ Group Details
     - Limit : `10`
     - Resets after : `10.0`
 
-- client_edit_nick
+- client_guild_profile_edit
+    - Endpoint : `/guilds/{guild_id}/members/@me`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1`
+    - Resets after : `1.0`
+
+- client_guild_profile_nick_edit
     - Endpoint : `/guilds/{guild_id}/members/@me/nick`
     - Method : `PATCH`
     - Required auth : `bot`
@@ -1050,7 +1058,7 @@ Group Details
     - Limit : `5`
     - Resets after : `1.0`
 
-- user_edit, user_move
+- user_guild_profile_edit, user_move
     - Endpoint : `/guilds/{guild_id}/members/{user_id}`
     - Method : `PATCH`
     - Required auth : `bot`
@@ -1821,10 +1829,11 @@ invite_get_all_guild = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 verification_screen_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 verification_screen_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
-client_edit_nick = RateLimitGroup()
+client_guild_profile_edit = RateLimitGroup()
+client_guild_profile_nick_edit = RateLimitGroup()
 guild_user_delete = RateLimitGroup(LIMITER_GUILD)
 guild_user_get = RateLimitGroup(LIMITER_GUILD)
-user_edit = GROUP_USER_MODIFY
+user_guild_profile_edit = GROUP_USER_MODIFY
 user_move = GROUP_USER_MODIFY
 guild_user_add = RateLimitGroup(LIMITER_GUILD)
 guild_user_search = RateLimitGroup(LIMITER_GUILD)

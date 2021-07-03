@@ -848,6 +848,33 @@ def user_avatar_url(user):
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
 
 
+def user_avatar_url(user):
+    """
+    Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
+    
+    Parameters
+    ----------
+    user : ``UserBase``
+        The respective user.
+    
+    Returns
+    -------
+    url : `str` or `None`
+    """
+    icon_type = user.avatar_type
+    if icon_type is ICON_TYPE_NONE:
+        return user.default_avatar.url
+    
+    if icon_type is ICON_TYPE_STATIC:
+        prefix = ''
+        ext = 'png'
+    else:
+        prefix = 'a_'
+        ext = 'gif'
+    
+    return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
+
+
 def user_avatar_url_as(user, ext=None, size=None):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
@@ -901,6 +928,88 @@ def user_avatar_url_as(user, ext=None, size=None):
             prefix = 'a_'
     
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}{end}'
+
+
+def user_banner_url(user):
+    """
+    Returns the user's banner's url. If the user has no banner, then returns `None`.
+    
+    Parameters
+    ----------
+    user : ``UserBase``
+        The respective user.
+    
+    Returns
+    -------
+    url : `str` or `None`
+    """
+    icon_type = user.banner_type
+    if icon_type is ICON_TYPE_NONE:
+        return None
+    
+    if icon_type is ICON_TYPE_STATIC:
+        prefix = ''
+        ext = 'png'
+    else:
+        prefix = 'a_'
+        ext = 'gif'
+    
+    return f'{CDN_ENDPOINT}/banners/{user.id}/{prefix}{user.banner_hash:0>32x}.{ext}'
+
+
+def user_banner_url_as(user, ext=None, size=None):
+    """
+    Returns the user's banner's url. If the user has no banner, then returns `None`.
+    
+    Parameters
+    ----------
+    user : ``UserBase``
+        The respective user.
+    ext : `str`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
+        animated banner, it can `'gif'` as well.
+    size : `int`, Optional
+        The preferred minimal size of the avatar's url.
+    
+    Returns
+    -------
+    url : `str` or `None`
+    
+    Raises
+    ------
+    ValueError
+        If `ext` or `size` was not passed as any of the expected values.
+    """
+    icon_type = user.banner_type
+    if icon_type is ICON_TYPE_NONE:
+        return None
+    
+    if size is None:
+        end = ''
+    elif size in VALID_ICON_SIZES:
+        end = f'?size={size}'
+    else:
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+    
+    if ext is None:
+        if icon_type is ICON_TYPE_STATIC:
+            prefix = ''
+            ext = 'png'
+        else:
+            prefix = 'a_'
+            ext = 'gif'
+    
+    else:
+        if icon_type is ICON_TYPE_STATIC:
+            if ext not in VALID_ICON_FORMATS:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+            prefix = ''
+        else:
+            if ext not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
+            prefix = 'a_'
+    
+    return f'{CDN_ENDPOINT}/banners/{user.id}/{prefix}{user.banner_hash:0>32x}.{ext}{end}'
 
 
 def user_avatar_url_for(user, guild):

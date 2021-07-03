@@ -69,8 +69,8 @@ class RateLimitGroup:
     """
     __slots__ = ('group_id', 'limiter', 'size', )
     
-    __auto_next_id = 105<<8
-    __unlimited = None
+    _auto_next_id = 105<<8
+    _unlimited = None
     
     @classmethod
     def generate_next_id(cls):
@@ -81,8 +81,8 @@ class RateLimitGroup:
         -------
         group_id : `int`
         """
-        group_id = cls.__auto_next_id
-        cls.__auto_next_id = group_id+(7<<8)
+        group_id = cls._auto_next_id
+        cls._auto_next_id = group_id+(7<<8)
         return group_id
     
     def __new__(cls, limiter=LIMITER_GLOBAL, optimistic=False):
@@ -125,13 +125,13 @@ class RateLimitGroup:
         """
         Creates a not limited rate limit group.
         
-        Uses ``.__unlimited`` to cache this instance, because it is enough to have only 1 unlimited one.
+        Uses ``._unlimited`` to cache this instance, because it is enough to have only 1 unlimited one.
         
         Returns
         -------
         self : ``RateLimitGroup``
         """
-        self = cls.__unlimited
+        self = cls._unlimited
         if (self is not None):
             return self
         
@@ -140,7 +140,7 @@ class RateLimitGroup:
         self.group_id = 0
         self.limiter = LIMITER_UNLIMITED
         
-        cls.__unlimited = self
+        cls._unlimited = self
         return self
     
     def __hash__(self):
@@ -331,9 +331,9 @@ class RateLimitHandler:
         Creates a new rate limit handler.
         
         New rate limit handlers have `.queue` set to `None` not because it does not need `.queue` attribute, like the
-        `.drops` or `.wake_upper` one, but because this rate limit handler might be used just to look up an already
-        existing one with the same `.limiter_id` and `.parent`, so creating an another `deque` and then collecting it
-        would be just waste of resources.
+        `.drops` or ``.wake_upper`` one, but because this rate limit handler might be used just to look up an already
+        existing one with the same ``.limiter_id`` and ``.parent``, so creating an another `deque` and then collecting
+        it would be just waste of resources.
         
         Parameters
         ----------
@@ -361,8 +361,8 @@ class RateLimitHandler:
     
     def copy(self):
         """
-        Copies the rate limit handler. Only the `.parent` and the `.limiter_id` attributes are copied, because those
-        are enough to describe it and will not cause misbehaviour.
+        Copies the rate limit handler. Only the ``.parent`` and the ``.limiter_id`` attributes are copied, because
+        those are enough to describe it and will not cause misbehaviour.
         
         Returns
         -------
@@ -438,7 +438,7 @@ class RateLimitHandler:
         return False
     
     def __eq__(self, other):
-        """Returns whether the two rate limit handler has the same `.limiter_id` and `.parent`."""
+        """Returns whether the two rate limit handler has the same ``.limiter_id`` and ``.parent``."""
         if self.limiter_id != other.limiter_id:
             return False
         
@@ -448,7 +448,7 @@ class RateLimitHandler:
         return True
     
     def __ne__(self, other):
-        """Returns whether the two rate limit handler has different `.limiter_id` or `.parent`."""
+        """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
         if self.limiter_id != other.limiter_id:
             return True
         
@@ -465,8 +465,9 @@ class RateLimitHandler:
         """
         Returns whether the rate limit handler is unlimited.
         
-        is_unlimited : `bool` = `False`
-            Stacked rate limit handlers are always limited.
+        Returns
+        -------
+        is_unlimited : `bool`
         """
         if self.parent.group_id:
             return False
@@ -521,8 +522,8 @@ class RateLimitHandler:
         """
         Called by the rate limit handler's context manager (``RateLimitHandlerCTX``) when a respective request is done.
         
-        Calculates the rate limits based on the given `headers`. Handles first request, optimistic rate limit handling
-        and changed rate limit sizes as well.
+        Calculates the rate limits based on the given ``headers``. Handles first request, optimistic rate limit
+        handling and changed rate limit sizes as well.
         
         Parameters
         ----------
@@ -626,7 +627,7 @@ class RateLimitHandler:
     
     def wake_up(self):
         """
-        Called by `.wake_upper` when the handler's rate limits are dropped.
+        Called by ``.wake_upper`` when the handler's rate limits are dropped.
         
         Checks whether there are waiting requests to start and starts the maximal amount what the rate limits allow.
         If there are still rate limits left, then sets an another wake_upper.
@@ -939,7 +940,7 @@ class StaticRateLimitHandler:
         return False
     
     def __eq__(self, other):
-        """Returns whether the two rate limit handler has the same `.limiter_id` and `.parent`."""
+        """Returns whether the two rate limit handler has the same ``.limiter_id`` and ``.parent``."""
         if self.limiter_id != other.limiter_id:
             return False
         
@@ -949,7 +950,7 @@ class StaticRateLimitHandler:
         return True
     
     def __ne__(self, other):
-        """Returns whether the two rate limit handler has different `.limiter_id` or `.parent`."""
+        """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
         if self.limiter_id != other.limiter_id:
             return True
         
@@ -1010,6 +1011,7 @@ class StaticRateLimitHandler:
         """
         return RateLimitHandlerCTX(self)
 
+
 class StackedStaticRateLimitHandler:
     """
     Stacked static rate limit handler to defend the wrapper from stacked stupidity.
@@ -1052,7 +1054,7 @@ class StackedStaticRateLimitHandler:
         return False
     
     def __eq__(self, other):
-        """Returns whether the two rate limit handler has the same `.limiter_id` and `.parent`."""
+        """Returns whether the two rate limit handler has the same ``.limiter_id`` and ``.parent``."""
         if isinstance(other, StackedStaticRateLimitHandler):
             other = other.stack[0]
         
@@ -1062,7 +1064,7 @@ class StackedStaticRateLimitHandler:
         return False
     
     def __ne__(self, other):
-        """Returns whether the two rate limit handler has different `.limiter_id` or `.parent`."""
+        """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
         if isinstance(other, StackedStaticRateLimitHandler):
             other = other.stack[0]
         

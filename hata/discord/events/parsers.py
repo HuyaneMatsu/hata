@@ -3712,7 +3712,7 @@ def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
             user_id = int(thread_user_data['user_id'])
             user = create_partial_user_from_id(user_id)
             
-            created = thread_user_create(thread_channel, user, thread_user_datas)
+            created = thread_user_create(thread_channel, user, thread_user_data)
             if created:
                 event_handler = client.events.thread_user_add
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3760,7 +3760,7 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
             user_id = int(thread_user_data['user_id'])
             user = create_partial_user_from_id(user_id)
             
-            created = thread_user_create(thread_channel, user, thread_user_datas)
+            created = thread_user_create(thread_channel, user, thread_user_data)
             if created or just_me:
                 if thread_user_additions is None:
                     thread_user_additions = []
@@ -3802,7 +3802,7 @@ def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):
             user_id = int(thread_user_data['user_id'])
             user = create_partial_user_from_id(user_id)
             
-            thread_user_create(thread_channel, user, thread_user_datas)
+            thread_user_create(thread_channel, user, thread_user_data)
 
 
 def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
@@ -3828,7 +3828,7 @@ def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
             user_id = int(thread_user_data['user_id'])
             user = create_partial_user_from_id(user_id)
             
-            thread_user_create(thread_channel, user, thread_user_datas)
+            thread_user_create(thread_channel, user, thread_user_data)
 
 add_parser(
     'THREAD_MEMBERS_UPDATE',

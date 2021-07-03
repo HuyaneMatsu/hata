@@ -640,6 +640,7 @@ class Relationship:
         """Returns the representation of the relationship."""
         return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name!r}>'
 
+
 class Unknown(DiscordEntity):
     """
     Represents a not found object when creating an ``AuditLog``.

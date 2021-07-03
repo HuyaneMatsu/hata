@@ -1,7 +1,11 @@
-import sys, warnings, readline
+import sys, warnings
 from code import InteractiveConsole
 from functools import partial as partial_func
 from types import FunctionType
+try:
+    import readline
+except ImportError:
+    pass
 from .. import Future, EventThread, is_awaitable, __package__ as PACKAGE_NAME
 
 PACKAGE = __import__(PACKAGE_NAME)

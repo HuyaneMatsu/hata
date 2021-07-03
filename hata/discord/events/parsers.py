@@ -25,7 +25,7 @@ from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji_
 
 from .core import ReadyState, maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
 from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
-from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS, \
+from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, \
     INTENT_MASK_GUILD_VOICE_STATES, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_MESSAGES, \
     INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS
 from .event_types import GuildUserChunkEvent
@@ -1813,7 +1813,7 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS)
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1865,7 +1865,7 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS) is not client:
+    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS) is not client:
         return
     
     guild._sync_emojis(data['emojis'])
@@ -1930,7 +1930,7 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS)
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS)
     if clients.send(None) is not client:
         clients.close()
         return
@@ -1982,7 +1982,7 @@ def GUILD_STICKERS_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS) is not client:
+    if first_client(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS) is not client:
         return
     
     guild._sync_stickers(data['stickers'])

@@ -31,6 +31,10 @@ Fix a few bugs.
 - `'hata.discord.embed'` was not listed in `setup.py`. (Zeref Draganeel#3581)
 - Fix a `TypeError` in `Client.sticker_get`.
 
+#### Renames, Deprecation & Removals
+
+- Rename `IntentFlag.guild_emojis` to `.guild_emojis_and_stickers`.
+
 ## 1.1.87 *\[2021-06-30\]*
 
 #### Summary

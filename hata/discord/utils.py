@@ -1,7 +1,8 @@
-﻿__all__ = ('DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'Gift', 'Relationship', 'Unknown', 'cchunkify', 'chunkify',
-    'elapsed_time', 'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention',
-    'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id',
-    'sanitize_content', 'sanitize_mentions', 'time_to_id',)
+﻿__all__ = ('CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
+    'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'USER_MENTION_RP', 'Unknown', 'cchunkify',
+    'chunkify', 'elapsed_time', 'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention',
+    'is_role_mention', 'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta',
+    'random_id', 'sanitize_content', 'sanitize_mentions', 'time_to_id')
 
 import random, sys
 from re import compile as re_compile
@@ -50,7 +51,7 @@ def endswith_xFFxD9(data):
         index -= 1
         continue
 
-def get_image_extension(data):
+def get_image_media_type(data):
     """
     Gets the given raw image data's extension and returns it.
     
@@ -61,18 +62,29 @@ def get_image_extension(data):
     
     Returns
     -------
-    extension_name : `str`
+    media_type : `str`
     """
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
-        extension_name = 'png'
+        media_type = 'image/png'
     elif data.startswith(b'\xFF\xD8') and endswith_xFFxD9(data):
-        extension_name = 'jpeg'
+        media_type = 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
-        extension_name = 'gif'
+        media_type = 'image/gif'
+    elif data.startswith(b'{') and data.endswith(b'}'):
+        media_type = 'application/json'
     else:
-        extension_name = ''
+        media_type = ''
     
-    return extension_name
+    return media_type
+
+
+MEDIA_TYPE_TO_EXTENSION = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/gif': 'gif',
+    'application/json': 'json',
+}
+
 
 def image_to_base64(data):
     """
@@ -93,15 +105,16 @@ def image_to_base64(data):
         If `ext` was not given and the given `data`'s image format is not any of the expected ones.
     """
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
-        extension_value = 'image/png'
+        media_type = 'image/png'
     elif data.startswith(b'\xFF\xD8') and endswith_xFFxD9(data):
-        extension_value = 'image/jpeg'
+        media_type = 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
-        extension_value = 'image/gif'
+        media_type = 'image/gif'
     else:
         raise ValueError('Unsupported image type given.')
     
-    return ''.join(['data:', extension_value, ';base64,', b64encode(data).decode('ascii')])
+    return ''.join(['data:', media_type, ';base64,', b64encode(data).decode('ascii')])
+
 
 DISCORD_EPOCH = 1420070400000
 # example dates:

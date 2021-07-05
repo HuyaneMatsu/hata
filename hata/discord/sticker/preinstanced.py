@@ -64,7 +64,7 @@ class StickerFormat(PreinstancedBase):
         
         Returns
         -------
-        sticker_format_type : ``StickerFormat``
+        sticker_format : ``StickerFormat``
         """
         self = object.__new__(cls)
         self.name = cls.DEFAULT_NAME

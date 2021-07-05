@@ -1,7 +1,10 @@
 __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'GuildFeature', 'MFA', 'MessageNotificationLevel', 'NsfwLevel',
     'VerificationLevel', 'VerificationScreenStepType', 'VoiceRegion', )
 
+import warnings
+
 from ...backend.export import export
+from ...backend.utils import class_property
 from ..bases import PreinstancedBase, Preinstance as P
 
 
@@ -72,7 +75,7 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------+---------------------------+-------+
     | invite_update             | invite_update             | 41    |
     +---------------------------+---------------------------+-------+
-    | INVITE_delete             | INVITE_delete             | 42    |
+    | invite_delete             | invite_delete             | 42    |
     +---------------------------+---------------------------+-------+
     | webhook_create            | webhook_create            | 50    |
     +---------------------------+---------------------------+-------+
@@ -99,6 +102,12 @@ class AuditLogEvent(PreinstancedBase):
     | integration_update        | integration_update        | 81    |
     +---------------------------+---------------------------+-------+
     | integration_delete        | integration_delete        | 82    |
+    +---------------------------+---------------------------+-------+
+    | sticker_create            | sticker_create            | 90    |
+    +---------------------------+---------------------------+-------+
+    | sticker_update            | sticker_update            | 91    |
+    +---------------------------+---------------------------+-------+
+    | sticker_delete            | sticker_delete            | 92    |
     +---------------------------+---------------------------+-------+
     """
     INSTANCES = {}
@@ -133,7 +142,7 @@ class AuditLogEvent(PreinstancedBase):
     
     invite_create = P(40, 'invite_create')
     invite_update = P(41, 'invite_update')
-    invite_delete = P(42, 'INVITE_delete')
+    invite_delete = P(42, 'invite_delete')
     
     webhook_create = P(50, 'webhook_create')
     webhook_update = P(51, 'webhook_update')
@@ -151,6 +160,11 @@ class AuditLogEvent(PreinstancedBase):
     integration_create = P(80, 'integration_create')
     integration_update = P(81, 'integration_update')
     integration_delete = P(82, 'integration_delete')
+
+    
+    sticker_create = P(90, 'sticker_create')
+    sticker_update = P(91, 'sticker_update')
+    sticker_delete = P(92, 'sticker_delete')
 
 
 class VerificationLevel(PreinstancedBase):
@@ -506,7 +520,7 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | invite_splash                 | INVITE_SPLASH                     |
     +-------------------------------+-----------------------------------+
-    | vanity                        | VANITY_URL                        |
+    | vanity_invite                 | VANITY_URL                        |
     +-------------------------------+-----------------------------------+
     | verified                      | VERIFIED                          |
     +-------------------------------+-----------------------------------+
@@ -576,7 +590,7 @@ class GuildFeature(PreinstancedBase):
     public_disabled = P('PUBLIC_DISABLED', 'public_disabled')
     relay_enabled = P('RELAY_ENABLED', 'relay_enabled')
     invite_splash = P('INVITE_SPLASH', 'invite_splash')
-    vanity = P('VANITY_URL', 'vanity')
+    vanity_invite = P('VANITY_URL', 'vanity_invite')
     verified = P('VERIFIED', 'verified')
     vip = P('VIP_REGIONS', 'vip')
     welcome_screen = P('WELCOME_SCREEN_ENABLED', 'welcome_screen')
@@ -588,6 +602,20 @@ class GuildFeature(PreinstancedBase):
     thread_archive_3_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread_archive_3_day')
     thread_archive_7_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread_archive_7_day')
     private_threads = P('PRIVATE_THREADS', 'private_threads')
+    
+    
+    @class_property
+    def vanity(cls):
+        """
+        ``.vanity`` is deprecated, please use ``.vanity_invite`` instead. Will be removed in 2021 September.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.vanity` is deprecated, and will be removed in 2021 September. '
+            f'Please use `{cls.__name__}.vanity_invite` instead.',
+            FutureWarning)
+        
+        return cls.vanity_invite
+
 
 
 class NsfwLevel(PreinstancedBase):

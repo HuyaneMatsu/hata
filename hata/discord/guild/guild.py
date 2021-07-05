@@ -23,7 +23,7 @@ from ..oauth2.helpers import parse_preferred_locale, DEFAULT_LOCALE
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .preinstanced import GuildFeature, VoiceRegion, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, NsfwLevel
-from ..sticker import Sticker
+from ..sticker import Sticker, StickerFormat
 from ..http import urls as module_urls
 
 from .flags import SystemChannelFlag
@@ -51,6 +51,10 @@ VOICE_STATE_JOIN = 1
 VOICE_STATE_LEAVE = 2
 VOICE_STATE_UPDATE = 3
 
+
+STICKER_FORMAT_STATIC = StickerFormat.png
+STICKER_FORMAT_ANIMATED = StickerFormat.apng
+STICKER_FORMAT_LOTTIE = StickerFormat.lottie
 
 COMMUNITY_FEATURES = {GuildFeature.community, GuildFeature.discoverable, GuildFeature.public}
 
@@ -173,12 +177,6 @@ class Guild(DiscordEntity, immortal=True):
     voice_states : `dict` of (`int`, ``VoiceState``) items
         Each user at a voice channel is represented by a ``VoiceState`` object. voice state are stored in
         `respective user's id` - `voice state` relation.
-    webhooks : `dict` of (`int`, ``Webhook``) items
-        The guild's webhooks if requested in `webhook_id` - `webhook` relation. This container is updated when a new
-        request is done.
-    webhooks_up_to_date : `bool`
-        Whether the guild's `.webhooks` contains is up-to-date. If it is, then instead of requesting new webhooks, that
-        container is accessed.
     widget_channel : `None` or ``ChannelText``
         The channel for the guild's widget.
     widget_enabled : `bool`
@@ -199,7 +197,7 @@ class Guild(DiscordEntity, immortal=True):
         'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
         'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'stages', 'stickers', 'system_channel',
         'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states',
-        'webhooks', 'webhooks_up_to_date', 'widget_channel', 'widget_enabled')
+        'widget_channel', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner',
         module_urls.guild_banner_url,
@@ -252,10 +250,8 @@ class Guild(DiscordEntity, immortal=True):
             self.roles = {}
             self.channels = {}
             self.features = []
-            self.webhooks = {}
             self.threads = {}
             self.stickers = {}
-            self.webhooks_up_to_date = False
             self._cache_perm = None
             self._boosters = None
             self.user_count = 1
@@ -594,8 +590,6 @@ class Guild(DiscordEntity, immortal=True):
         self.vanity_code = None
         self.verification_level = VerificationLevel.none
         self.voice_states = {}
-        self.webhooks = {}
-        self.webhooks_up_to_date = False
         self.widget_channel = None
         self.widget_enabled = False
         self.user_count = 0
@@ -707,8 +701,6 @@ class Guild(DiscordEntity, immortal=True):
         for role in self.role_list:
             role._delete()
         
-        self.webhooks.clear()
-        self.webhooks_up_to_date = False
         self._boosters = None
     
     
@@ -2582,6 +2574,41 @@ class Guild(DiscordEntity, immortal=True):
                     normal_static += 1
         
         return normal_static, normal_animated, managed_static, manged_animated
+    
+    
+    @property
+    def sticker_count(self):
+        """
+        Returns the sticker counts of the guild for each type.
+        
+        Returns
+        -------
+        static : `int`
+            The amount of static (``StickerFormat.png``) stickers of the guild.
+        animated : `int`
+            The amount of animated (``StickerFormat.apng``) stickers of the guild.
+        lottie : `int`
+            The amount of lottie (``StickerFormat.lottie``) stickers of the guild.
+        """
+        static_count = 0
+        animated_count = 0
+        lottie_count = 0
+        
+        for sticker in self.stickers.values():
+            sticker_format = sticker.format
+            if sticker_format is STICKER_FORMAT_STATIC:
+                static_count += 1
+                continue
+            
+            if sticker_format is STICKER_FORMAT_ANIMATED:
+                animated_count += 1
+                continue
+            
+            if sticker_format is STICKER_FORMAT_LOTTIE:
+                lottie_count += 1
+                continue
+        
+        return static_count, animated_count, lottie_count
     
     
     @property

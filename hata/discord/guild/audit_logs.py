@@ -298,7 +298,7 @@ class AuditLogIterator:
         
         log_data = await self.client.http.audit_log_get_chunk(self.guild.id, data)
         self._process_data(log_data)
-        self._index +=1
+        self._index += 1
         return self.entries[index]
 
     def __repr__(self):
@@ -479,7 +479,7 @@ def convert_invite(entry, parent, target_id):
         if change.attr!='code':
             continue
         
-        if entry.type is AuditLogEvent.INVITE_DELETE:
+        if entry.type is AuditLogEvent.invite_delete:
             code = change.before
         else:
             code = change.after
@@ -538,17 +538,30 @@ def convert_integration(entry, parent,target_id):
     
     return target
 
-CONVERSIONS = (
-    convert_guild,
-    convert_channel,
-    convert_user,
-    convert_role,
-    convert_invite,
-    convert_webhook,
-    convert_emoji,
-    convert_message,
-    convert_integration,
-)
+def convert_sticker(entry, parent, target_id):
+    if target_id is None:
+        target = None
+    else:
+        target_id = int(target_id)
+        try:
+            target = parent.guild.stickers[target_id]
+        except KeyError:
+            target = Unknown('Sticker', target_id)
+    
+    return target
+
+CONVERSIONS = {
+    0: convert_guild,
+    1: convert_channel,
+    2: convert_user,
+    3: convert_role,
+    4: convert_invite,
+    5: convert_webhook,
+    6: convert_emoji,
+    7: convert_message,
+    8: convert_integration,
+    9: convert_sticker,
+}
 
 del convert_guild
 del convert_channel
@@ -559,7 +572,7 @@ del convert_webhook
 del convert_emoji
 del convert_message
 del convert_integration
-
+del convert_sticker
 
 class AuditLogEntry:
     """
@@ -576,7 +589,7 @@ class AuditLogEntry:
     reason : `None` or `str`
         The reason provided with the logged action.
     target : `None`, ``Guild``,  ``ChannelGuildBase`` instance, ``ClientUserBase``, ``Role``, ``Webhook``,
-            ``Emoji``, ``Message``, ``Integration``, ``Unknown``
+            ``Emoji``, ``Message``, ``Integration``, ``Sticker``, ``Unknown``
         The target entity of the logged action. If the entity is not found, it will be set as an ``Unknown`` instance.
         It can also happen, that target entity is not provided, then target will be set as `None`.
     type : ``AuditLogEvent``
@@ -585,6 +598,7 @@ class AuditLogEntry:
         The user, who executed the logged action. If no user is provided then can be `None` as well.
     """
     __slots__ = ('changes', 'details', 'id', 'reason', 'target', 'type', 'user',)
+    
     def __init__(self, data, parent):
         """
         Creates an audit log entry, from entry data sent inside of an ``AuditLog``'s data and from the audit itself.
@@ -647,7 +661,13 @@ class AuditLogEntry:
         
         self.changes = changes
         
-        self.target = CONVERSIONS[self.type.value//10](self, parent, data.get('target_id', None))
+        try:
+            conversion = CONVERSIONS[self.type.value//10]
+        except KeyError:
+            target = None
+        else:
+            target = conversion(self, parent, data.get('target_id', None))
+        self.target = target
     
     @property
     def created_at(self):
@@ -662,45 +682,45 @@ class AuditLogEntry:
     
     def __repr__(self):
         """Returns the representation of the audit log entry."""
-        result = [
-            '<',self.__class__.__name__,
-            ' id=',repr(self.id),
-            ', type=',self.type.name,
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' id=', repr(self.id),
+            ', type=', self.type.name,
         ]
         
-        result.append(', user=')
+        repr_parts.append(', user=')
         user = self.user
         if user is None:
             user_repr = 'None'
         else:
             user_repr = user.full_name
-        result.append(user_repr)
+        repr_parts.append(user_repr)
         
-        result.append(', target=')
-        result.append(repr(self.target))
+        repr_parts.append(', target=')
+        repr_parts.append(repr(self.target))
         
-        result.append(', change count=')
+        repr_parts.append(', change count=')
         changes = self.changes
         if changes is None:
             change_amount_repr = '0'
         else:
             change_amount_repr = repr(len(self.changes))
-        result.append(change_amount_repr)
+        repr_parts.append(change_amount_repr)
         
         reason = self.reason
         if reason is not None:
-            result.append(', reason=')
+            repr_parts.append(', reason=')
             # use repr to escape special inserted characters
-            result.append(repr(reason))
+            repr_parts.append(repr(reason))
         
         details = self.details
         if details is not None:
-            result.append(', details=')
-            result.append(repr(details))
+            repr_parts.append(', details=')
+            repr_parts.append(repr(details))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 
 def transform_nothing(name, data):
@@ -740,7 +760,7 @@ def transform_channel(name, data):
     
     value = data.get('old_value', None)
     if value is None:
-        change.before=None
+        change.before = None
     else:
         value = int(value)
         try:
@@ -953,6 +973,16 @@ def transform_verification_level(name, data):
     change.after = None if value is None else VerificationLevel.value[value]
     return change
 
+def transform_tags(name, data):
+    change = AuditLogChange()
+    change.attr = name
+    value = data.get('old_value', None)
+    change.before = None if value is None else frozenset(value.split(', '))
+    value = data.get('new_value', None)
+    change.after = None if value is None else frozenset(value.split(', '))
+    return change
+
+
 TRANSFORMERS = {
     '$add': transform_role,
     '$remove': transform_role,
@@ -1002,6 +1032,7 @@ TRANSFORMERS = {
     'splash_hash': transform_icon,
     'system_channel_id': transform_channel,
     'system_channel_flags': transform_system_channel_flags,
+    'tags': transform_tags,
     # temporary (bool)
     # topic (str)
     'type': transform_type,
@@ -1034,6 +1065,7 @@ del transform_type
 del transform_user
 del transform_verification_level
 del transform_video_quality_mode
+del transform_tags
 
 class AuditLogChange:
     """
@@ -1142,6 +1174,8 @@ class AuditLogChange:
     | system_channel            | `None` or ``ChannelText``                     |
     +---------------------------+-----------------------------------------------+
     | system_channel_flags      | `None` or ``SystemChannelFlag``               |
+    +---------------------------+-----------------------------------------------+
+    | tags                      | `None` ot `frozenset` of `str`                |
     +---------------------------+-----------------------------------------------+
     | temporary                 | `None` or `bool`                              |
     +---------------------------+-----------------------------------------------+

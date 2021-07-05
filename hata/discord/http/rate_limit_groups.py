@@ -908,7 +908,7 @@ Group Details
     - Resets after : `N/A`
     - Notes : Deprecated. Works on v6, v7.
 
-- guild_emoji_get_all
+- emoji_guild_get_all
     - Endpoint : `/guilds/{guild_id}/emojis`
     - Method : `GET`
     - Required auth : `bot`
@@ -1174,37 +1174,41 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/stickers`
     - Method : `GET`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Forbidden (403), code=50001: Missing Access
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - sticker_guild_create
     - Endpoint : `/guilds/{guild_id}/stickers`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Forbidden (403), code=50001: Missing Access
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `3600.0`
+
+- sticker_guild_edit
+    - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : `GLOBAL`
+    - Limit : `1`
+    - Resets after : `2.0`
 
 - sticker_guild_delete
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Forbidden (403), code=50001: Missing Access
+    - Limiter : `GLOBAL`
+    - Limit : `1`
+    - Resets after : `2.0`
 
 - sticker_guild_get
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
     - Method : `GET`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Forbidden (403), code=50001: Missing Access
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
 - vanity_invite_get
     - Endpoint : `/guilds/{guild_id}/vanity-url`
@@ -1815,7 +1819,7 @@ guild_discovery_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_discovery_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_embed_get = RateLimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
 guild_embed_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
-guild_emoji_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+emoji_guild_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 emoji_create = RateLimitGroup()
 emoji_delete = RateLimitGroup()
 emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1848,10 +1852,11 @@ role_move = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 role_create = RateLimitGroup(LIMITER_GUILD)
 role_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 role_edit = RateLimitGroup(LIMITER_GUILD)
-sticker_guild_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
-sticker_guild_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
-sticker_guild_get = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
-sticker_guild_create = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
+sticker_guild_get_all = RateLimitGroup.unlimited()
+sticker_guild_edit = RateLimitGroup()
+sticker_guild_delete = RateLimitGroup()
+sticker_guild_get = RateLimitGroup.unlimited()
+sticker_guild_create = RateLimitGroup()
 sticker_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
 vanity_invite_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 vanity_invite_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True) # untested
@@ -1874,7 +1879,7 @@ stage_get = RateLimitGroup()
 stage_delete = RateLimitGroup()
 stage_edit = RateLimitGroup()
 sticker_pack_get_all = RateLimitGroup.unlimited()
-sticker_get = RateLimitGroup.unlimited()
+sticker_get = RateLimitGroup()
 eula_get = RateLimitGroup(optimistic=True)
 user_info_get = RateLimitGroup(optimistic=True)
 client_user_get = RateLimitGroup(optimistic=True)

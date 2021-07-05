@@ -1,3 +1,45 @@
+## 1.1.89 *\[2021-07-??\]*
+
+#### Summary
+
+Add guild sticker methods.
+
+#### Improvements
+
+- Update sticker related rate limits.
+- Add `DiscordHTTPClient.sticker_guild_edit`.
+- Add `RATE_LIMIT_GROUPS.sticker_guild_edit`.
+- Add `Sticker._update_from_partial`.
+- Add `Client.sticker_guild_get`.
+- Add `Client.sticker_guild_create`.
+- Add `Client.sticker_guild_edit`.
+- Add `Client.sticker_guild_delete`.
+- Add `Client.guild_sync_stickers`.
+- Add `Guild.sticker_count`.
+- Add `AuditLogEvent.sticker_create`
+- Add `AuditLogEvent.sticker_update`
+- Add `AuditLogEvent.sticker_delete`
+- `AuditLogEntry.target` now supports stickers.
+- `AuditLogChange` now handles `tags` attribute accordingly.
+
+##### hata.ext.commands_v2
+- Add sticker converter.
+
+#### Bug Fixes
+
+- `Client.sticker_get` was not updating the given sticker objects accordingly.
+- `AuditLogEntry` do not raises `IndexError` if new type audit log event is received.
+- Remove webhook caching per guild, since Discord API returns different data for each bot.
+
+#### Renames, Deprecation & Removals
+
+- Rename `GuilFeatures.vanity` to `.vanity_invite`.
+- Deprecate `GuilFeatures.vanity`.
+- Rename `RATE_LIMIT_GROUPS.guild_emoji_get_all` to `.guild_emoji_get_all` (Now matches sticker endpoints).
+- Rename `DiscordHTTPClient.guild_emoji_get_all` to `.guild_emoji_get_all` (Now matches sticker endpoints).
+- Rename `Sticker.format_type` to `.format`.
+- Deprecate `Sticker.format_type`.
+
 ## 1.1.88 *\[2021-07-03\]*
 
 #### Summary

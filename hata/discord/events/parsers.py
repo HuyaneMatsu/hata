@@ -2982,8 +2982,6 @@ def WEBHOOKS_UPDATE__CAL(client, data):
         guild_sync(client, data, 'WEBHOOKS_UPDATE')
         return
     
-    guild.webhooks_up_to_date = False
-    
     channel_id = int(data['channel_id'])
     channel = CHANNELS.get(channel_id, None)
     
@@ -2991,14 +2989,7 @@ def WEBHOOKS_UPDATE__CAL(client, data):
     Task(client.events.webhook_update(client, channel,), KOKORO)
 
 def WEBHOOKS_UPDATE__OPT(client, data):
-    guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'WEBHOOKS_UPDATE')
-        return
-    
-    guild.webhooks_up_to_date = False
+    pass
 
 add_parser(
     'WEBHOOKS_UPDATE',

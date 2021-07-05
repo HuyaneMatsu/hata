@@ -1,5 +1,7 @@
 __all__ = ('Sticker', )
 
+import warnings
+
 from ...backend.export import include
 
 from ..core import STICKERS, GUILDS, STICKER_PACKS
@@ -28,8 +30,8 @@ class Sticker(DiscordEntity, immortal=True):
         Whether the sticker is available.
     description : `None` or `str`
         The sticker's description.
-    format_type : ``StickerFormat``
-        The sticker's formats type.
+    format : ``StickerFormat``
+        The sticker's format.
     guild_id : `int`
         The guild's identifier to what the sticker is bound to. Defaults to `0` if the sticker is not bound to any
         guild.
@@ -47,7 +49,7 @@ class Sticker(DiscordEntity, immortal=True):
     user : ``ClientUserBase``
         The user who uploaded the emoji. Defaults to ``ZEROUSER``.
     """
-    __slots__ = ('available', 'description', 'format_type', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags',
+    __slots__ = ('available', 'description', 'format', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags',
         'type', 'user')
     
     def __new__(cls, data):
@@ -88,25 +90,7 @@ class Sticker(DiscordEntity, immortal=True):
                 
                 return self
         
-        self.format_type = StickerFormat.get(data.get('format_type', 0))
-        
-        pack_id = data.get('pack_id', None)
-        if pack_id is None:
-            pack_id = 0
-        else:
-            pack_id = int(pack_id)
-        self.pack_id = pack_id
-        
-        guild_id = data.get('guild_id', None)
-        if guild_id is None:
-            guild_id = 0
-        else:
-            guild_id = int(guild_id)
-        self.guild_id = guild_id
-        
-        self.type = StickerType.get(data.get('type', 0))
-        
-        self._update_no_return(data)
+        self._update_from_partial(data)
         
         return self
     
@@ -146,10 +130,39 @@ class Sticker(DiscordEntity, immortal=True):
             if not self.partial:
                 return self
         
-        self.format_type = StickerFormat.get(data.get('format_type', 0))
+        self.format = StickerFormat.get(data.get('format_type', 0))
         self.name = data['name']
         
         return self
+    
+    def _update_from_partial(self, data):
+        """
+        Updates a partial sticker with to not partial from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Sticker data.
+        """
+        self.format = StickerFormat.get(data.get('format_type', 0))
+        
+        pack_id = data.get('pack_id', None)
+        if pack_id is None:
+            pack_id = 0
+        else:
+            pack_id = int(pack_id)
+        self.pack_id = pack_id
+        
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        self.guild_id = guild_id
+        
+        self.type = StickerType.get(data.get('type', 0))
+        
+        self._update_no_return(data)
     
     
     def _update_no_return(self, data):
@@ -359,8 +372,8 @@ class Sticker(DiscordEntity, immortal=True):
              The sticker's ``.available``.
         description : `str`, Optional (Keyword only)
             The sticker's ``.name``. It's length can be in range [0:1024]
-        format_type : ``StickerFormat``, Optional (Keyword only)
-            The sticker's ``.format_type``.
+        format : ``StickerFormat``, Optional (Keyword only)
+            The sticker's ``.format``.
         guild_id : `int`, Optional (Keyword only)
             The sticker's ``.guild_id``.
         name : `str`, Optional (Keyword only)
@@ -508,7 +521,7 @@ class Sticker(DiscordEntity, immortal=True):
         self.id = sticker_id
         self.available = True
         self.description = ''
-        self.format_type = StickerFormat.none
+        self.format = StickerFormat.none
         self.guild_id = 0
         self.name = ''
         self.pack_id = 0
@@ -550,3 +563,16 @@ class Sticker(DiscordEntity, immortal=True):
         guild_id = self.guild_id
         if guild_id:
             return GUILDS.get(guild_id, None)
+    
+    
+    @property
+    def format_type(self):
+        """
+        Deprecated, please use `.format` instead. Will be removed in 2021 September.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.format_type` is deprecated, and will be removed in 2021 September. '
+            f'Please use `{self.__class__.__name__}.format` instead.',
+            FutureWarning)
+        
+        return self.format

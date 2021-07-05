@@ -22,6 +22,7 @@ from ...discord.role import Role, parse_role_mention
 from ...discord.color import Color, parse_color
 from ...discord.http import MESSAGE_JUMP_URL_RP, INVITE_URL_RP
 from ...discord.message import Message
+from ...discord.sticker import Sticker
 
 from .exceptions import CommandParameterParsingError
 from .context import CommandContext
@@ -517,6 +518,10 @@ class ConverterFlag(FlagBase):
     +-------------------+-------------------------------------------+
     | invite_all        | url, id                                   |
     +-------------------+-------------------------------------------+
+    | sticker_default   | name, id                                  |
+    +-------------------+-------------------------------------------+
+    | sticker_all       | name, id, everywhere                      |
+    +-------------------+-------------------------------------------+
     
     Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
     will ignore everything else, than `user_all`.
@@ -548,6 +553,8 @@ class ConverterFlag(FlagBase):
     message_all = NotImplemented
     invite_default = NotImplemented
     invite_all = NotImplemented
+    sticker_default = NotImplemented
+    sticker_all = NotImplemented
 
 ConverterFlag.user_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
 ConverterFlag.user_all = ConverterFlag.user_default.update_by_keys(everywhere=True, profile=True)
@@ -565,6 +572,8 @@ ConverterFlag.message_default = ConverterFlag().update_by_keys(url=True, id=True
 ConverterFlag.message_all = ConverterFlag.message_default.update_by_keys(everywhere=True)
 ConverterFlag.invite_default = ConverterFlag().update_by_keys(url=True, id=True)
 ConverterFlag.invite_all = ConverterFlag.invite_default
+ConverterFlag.sticker_default = ConverterFlag().update_by_keys(name=True, id=True)
+ConverterFlag.sticker_all = ConverterFlag.sticker_default.update_by_keys(everywhere=True)
 
 
 CONVERTER_FLAG_URL = 1 << ConverterFlag.__keys__['url']
@@ -1296,6 +1305,61 @@ CONVERTER_EMOJI = ConverterSetting(
     alternative_types = None,
     requires_part = True,
 )
+
+
+async def sticker_converter(command_context, content_parser_parameter_detail, part):
+    flags = content_parser_parameter_detail.flags
+    
+    message = command_context.message
+    if flags&CONVERTER_FLAG_ID:
+        parsed = ID_RP.fullmatch(part)
+        if (parsed is not None):
+            id_ = int(parsed.group(1))
+            
+            if flags&CONVERTER_FLAG_EVERYWHERE:
+                try:
+                    sticker = await command_context.client.sticker_get(id_)
+                except BaseException as err:
+                    if not (isinstance(err, ConnectionError) or
+                        isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_sticker)
+                                ):
+                            raise
+                else:
+                    return sticker
+            
+            else:
+                guild = message.channel.guild
+                if (guild is not None):
+                    try:
+                        sticker = await command_context.client.sticker_get(id_)
+                    except BaseException as err:
+                        if not (isinstance(err, ConnectionError) or
+                            isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_sticker)
+                                    ):
+                                raise
+                    else:
+                        return sticker
+    
+    if flags&CONVERTER_FLAG_NAME:
+        guild = message.channel.guild
+        if (guild is not None):
+            sticker = guild.get_sticker_like(part)
+            if (sticker is not None):
+                return sticker
+    
+    return None
+
+STICKER_EMOJI = ConverterSetting(
+    converter = sticker_converter,
+    uses_flags = True,
+    default_flags = ConverterFlag.sticker_default,
+    all_flags = ConverterFlag.sticker_all,
+    alternative_type_name = 'sticker',
+    default_type = Sticker,
+    alternative_types = None,
+    requires_part = True,
+)
+
 
 async def guild_converter(command_context, part, content_parser_parameter_detail):
     parsed = ID_RP.fullmatch(part)

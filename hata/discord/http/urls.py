@@ -1,5 +1,6 @@
 __all__ = ('API_ENDPOINT', 'CDN_ENDPOINT', 'DIS_ENDPOINT', 'INVITE_URL_RP', 'MESSAGE_JUMP_URL_RP',
-    'VALID_ICON_FORMATS', 'VALID_ICON_FORMATS_EXTENDED', 'is_media_url')
+    'VALID_ICON_FORMATS', 'VALID_ICON_FORMATS_EXTENDED', 'VALID_ICON_MEDIA_TYPES', 'VALID_ICON_MEDIA_TYPES_EXTENDED',
+    'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url')
 
 import re
 
@@ -24,8 +25,13 @@ VALID_ICON_SIZES = frozenset((
     *((1<<x)*5 for x in range(2,  9)),
 ))
 
-VALID_ICON_FORMATS = ('jpg', 'jpeg', 'png', 'webp')
-VALID_ICON_FORMATS_EXTENDED = (*VALID_ICON_FORMATS, 'gif',)
+VALID_ICON_FORMATS = frozenset(('jpg', 'jpeg', 'png', 'webp'))
+VALID_ICON_FORMATS_EXTENDED = frozenset((*VALID_ICON_FORMATS, 'gif',))
+
+VALID_ICON_MEDIA_TYPES = frozenset(('image/jpeg', 'image/png', 'image/webp'))
+VALID_ICON_MEDIA_TYPES_EXTENDED = frozenset(('image/gif', *VALID_ICON_MEDIA_TYPES))
+
+VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/png', 'application/json'))
 
 STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
 
@@ -1524,11 +1530,11 @@ def sticker_url(sticker):
     -------
     url : `None` or `str`
     """
-    format_type = sticker.format_type
-    if format_type is StickerFormat.none:
+    format = sticker.format
+    if format is StickerFormat.none:
         return None
     
-    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format_type.extension}'
+    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format.extension}'
 
 
 def sticker_url_as(sticker, size=None, preview=False):
@@ -1553,15 +1559,15 @@ def sticker_url_as(sticker, size=None, preview=False):
     ValueError
         If `size` was not passed as any of the expected values.
     """
-    format_type = sticker.format_type
-    if format_type is StickerFormat.none:
+    format = sticker.format
+    if format is StickerFormat.none:
         return None
     
     # Resolve size
     if size is None:
         end = ''
     else:
-        if format_type is StickerFormat.lottie:
+        if format is StickerFormat.lottie:
             end = ''
         else:
             if size in VALID_ICON_SIZES:
@@ -1571,10 +1577,10 @@ def sticker_url_as(sticker, size=None, preview=False):
     
     # Resolve preview
     if preview:
-        if format_type is StickerFormat.apng:
+        if format is StickerFormat.apng:
             end = f'{end}{"&" if end else "?"}passthrough=false'
     
-    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format_type.extension}{end}'
+    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format.extension}{end}'
 
 
 def sticker_pack_banner(sticker_pack):

@@ -1873,6 +1873,7 @@ class Message(DiscordEntity, immortal=True):
         if (stickers is not None):
             return stickers[0]
     
+    
     @property
     def guild(self):
         """
@@ -1883,7 +1884,8 @@ class Message(DiscordEntity, immortal=True):
         guild : `None` or ``Guild``
         """
         return self.channel.guild
-
+    
+    
     @property
     def clean_content(self):
         """
@@ -1899,6 +1901,7 @@ class Message(DiscordEntity, immortal=True):
         The converting can not display join messages, call messages and private channel names correctly.
         """
         return self.type.convert(self)
+    
     
     @property
     def contents(self):

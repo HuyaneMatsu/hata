@@ -145,8 +145,6 @@ class Webhook(WebhookBase):
             Received webhook data.
         """
         self.channel = channel = create_partial_channel_from_id(int(data['channel_id']), 0)
-        if channel.clients:
-            channel.guild.webhooks[self.id] = self
         
         token = data.get('token', None)
         if (token is not None):
@@ -313,13 +311,6 @@ class Webhook(WebhookBase):
         if channel is None:
             return
         
-        guild = channel.guild
-        if (guild is not None):
-            try:
-                del guild.webhooks[self.id]
-            except KeyError:
-                pass
-        
         self.channel = None
         self.user = ZEROUSER
     
@@ -407,8 +398,6 @@ class Webhook(WebhookBase):
         self.user = client
         
         guild = target_channel.guild
-        if (guild is not None):
-            guild.webhooks[webhook_id] = self
         
         USERS[webhook_id] = self
         

@@ -17,8 +17,10 @@ from ...backend.headers import AUTHORIZATION
 from ...backend.helpers import BasicAuth
 from ...backend.url import URL
 from ...backend.export import export
+from ...backend.formdata import Formdata
 
-from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_extension, Relationship
+from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_media_type, Relationship, \
+    MEDIA_TYPE_TO_EXTENSION
 from ..user import User, GuildProfile, UserBase, UserFlag, create_partial_user_from_id, thread_user_create, \
     ClientUserBase, ClientUserPBase, Status, PremiumType, HypesquadHouse, RelationshipType
 from ..emoji import Emoji
@@ -30,8 +32,8 @@ from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFea
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
     ContentFilterLevel, VerificationLevel, MessageNotificationLevel
-from ..http import DiscordHTTPClient, RateLimitProxy, rate_limit_groups, VALID_ICON_FORMATS, \
-    VALID_ICON_FORMATS_EXTENDED, is_media_url
+from ..http import DiscordHTTPClient, RateLimitProxy, rate_limit_groups, VALID_ICON_MEDIA_TYPES, \
+    VALID_ICON_MEDIA_TYPES_EXTENDED, is_media_url, VALID_STICKER_IMAGE_MEDIA_TYPES
 from ..role import Role
 from ..webhook import Webhook, create_partial_webhook_from_id
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
@@ -876,15 +878,15 @@ class Client(ClientUserPBase):
                     raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(avatar)
+                    media_type = get_image_media_type(avatar)
                     
                     if self.premium_type.value:
-                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
                     else:
-                        valid_icon_types = VALID_ICON_FORMATS
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES
                     
-                    if extension not in valid_icon_types:
-                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
+                    if media_type not in valid_icon_media_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{media_type}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
@@ -1008,6 +1010,20 @@ class Client(ClientUserPBase):
         
         reason : `None` or `str`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            - `guild` was not given neither as ``Guild`` or `int` instance.
+            - If `avatar` is neither `None` nor `bytes-like`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If the nick's length is out of range [1:32].
+            - If the nick was not given neither as `None` or `str` instance.
+            - If `avatar`'s type is incorrect.
         """
         # Security debug checks.
         if __debug__:
@@ -1055,15 +1071,15 @@ class Client(ClientUserPBase):
                     raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(avatar)
+                    media_type = get_image_media_type(avatar)
                     
                     if self.premium_type.value:
-                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
                     else:
-                        valid_icon_types = VALID_ICON_FORMATS
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES
                     
-                    if extension not in valid_icon_types:
-                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
+                    if media_type not in valid_icon_media_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{media_type}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
@@ -1087,6 +1103,8 @@ class Client(ClientUserPBase):
         ------
         ConnectionError
             No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
         
         Notes
         -----
@@ -1761,9 +1779,9 @@ class Client(ClientUserPBase):
             raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon.__class__.__name__}.')
         
         if __debug__:
-            extension = get_image_extension(icon)
-            if extension not in VALID_ICON_FORMATS_EXTENDED:
-                raise AssertionError(f'Invalid icon type for achievement: `{extension}`.')
+            media_type = get_image_media_type(icon)
+            if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                raise AssertionError(f'Invalid icon type for achievement: `{media_type}`.')
         
         icon_data = image_to_base64(icon)
         
@@ -1874,9 +1892,9 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
             
             if __debug__:
-                extension = get_image_extension(icon)
-                if extension not in VALID_ICON_FORMATS_EXTENDED:
-                    raise ValueError(f'Invalid icon type for achievement: `{extension}`.')
+                media_type = get_image_media_type(icon)
+                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                    raise ValueError(f'Invalid icon type for achievement: `{media_type}`.')
             
             data['icon'] = image_to_base64(icon)
         
@@ -2323,9 +2341,9 @@ class Client(ClientUserPBase):
                 if not issubclass(icon_type, (bytes, bytearray, memoryview)):
                     raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
             
-                extension = get_image_extension(icon)
-                if extension not in VALID_ICON_FORMATS:
-                    raise ValueError(f'Invalid icon type: `{extension}`.')
+                media_type = get_image_media_type(icon)
+                if media_type not in VALID_ICON_MEDIA_TYPES:
+                    raise ValueError(f'Invalid icon type: `{media_type}`.')
                 
                 icon_data = image_to_base64(icon)
             
@@ -6045,9 +6063,9 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
             
             if __debug__:
-                extension = get_image_extension(icon)
-                if extension not in VALID_ICON_FORMATS:
-                    raise AssertionError(f'Invalid icon type: `{extension}`.')
+                media_type = get_image_media_type(icon)
+                if media_type not in VALID_ICON_MEDIA_TYPES:
+                    raise AssertionError(f'Invalid icon type: `{media_type}`.')
             
             icon_data = image_to_base64(icon)
         
@@ -6417,18 +6435,18 @@ class Client(ClientUserPBase):
                     raise TypeError(f'`icon` can be passed as `None` or `bytes-like`, got {icon.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(icon)
+                    media_type = get_image_media_type(icon)
                     
                     if guild is None:
-                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
                     else:
                         if GuildFeature.animated_icon in guild.features:
-                            valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                            valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
                         else:
-                            valid_icon_types = VALID_ICON_FORMATS
+                            valid_icon_media_types = VALID_ICON_MEDIA_TYPES
                     
-                    if extension not in valid_icon_types:
-                        raise AssertionError(f'Invalid icon type for the guild: `{extension}`.')
+                    if media_type not in valid_icon_media_types:
+                        raise AssertionError(f'Invalid icon type for the guild: `{media_type}`.')
                 
                 icon_data = image_to_base64(icon)
             
@@ -6448,9 +6466,9 @@ class Client(ClientUserPBase):
                         f'{banner.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(banner)
-                    if extension not in VALID_ICON_FORMATS:
-                        raise AssertionError(f'Invalid banner type: `{extension}`.')
+                    media_type = get_image_media_type(banner)
+                    if media_type not in VALID_ICON_MEDIA_TYPES:
+                        raise AssertionError(f'Invalid banner type: `{media_type}`.')
                 
                 banner_data = image_to_base64(banner)
             
@@ -6471,9 +6489,9 @@ class Client(ClientUserPBase):
                         f'{invite_splash.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(invite_splash)
-                    if extension not in VALID_ICON_FORMATS:
-                        raise AssertionError(f'Invalid invite splash type: `{extension}`.')
+                    media_type = get_image_media_type(invite_splash)
+                    if media_type not in VALID_ICON_MEDIA_TYPES:
+                        raise AssertionError(f'Invalid invite splash type: `{media_type}`.')
                 
                 invite_splash_data = image_to_base64(invite_splash)
             
@@ -6493,9 +6511,9 @@ class Client(ClientUserPBase):
                         f'{discovery_splash.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(discovery_splash)
-                    if extension not in VALID_ICON_FORMATS:
-                        raise AssertionError(f'Invalid discovery_splash type: `{extension}`.')
+                    media_type = get_image_media_type(discovery_splash)
+                    if media_type not in VALID_ICON_MEDIA_TYPES:
+                        raise AssertionError(f'Invalid discovery_splash type: `{media_type}`.')
                 
                 discovery_splash_data = image_to_base64(discovery_splash)
             
@@ -9084,9 +9102,9 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`avatar` can be passed as `bytes-like`, got {avatar_type.__name__}.')
             
             if __debug__:
-                extension = get_image_extension(avatar)
-                if extension not in VALID_ICON_FORMATS_EXTENDED:
-                    raise AssertionError(f'Invalid avatar type: `{extension}`.')
+                media_type = get_image_media_type(avatar)
+                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                    raise AssertionError(f'Invalid avatar type: `{media_type}`.')
             
             data['avatar'] = image_to_base64(avatar)
         
@@ -9126,13 +9144,6 @@ class Client(ClientUserPBase):
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
         webhook, webhook_id = get_webhook_and_id(webhook)
-        
-        if (webhook is not None):
-            channel = webhook.channel
-            if (channel is not None):
-                guild = channel.guild
-                if (guild is not None) and guild.webhooks_up_to_date:
-                    return webhook
         
         data = await self.http.webhook_get(webhook_id)
         if webhook is None:
@@ -9175,12 +9186,6 @@ class Client(ClientUserPBase):
         
         if (webhook is None):
             webhook = create_partial_webhook_from_id(webhook_id, webhook_token)
-        else:
-            channel = webhook.channel
-            if (channel is not None):
-                guild = channel.guild
-                if (guild is not None) and guild.webhooks_up_to_date:
-                    return webhook
         
         data = await self.http.webhook_get_token(webhook_id, webhook_token)
         webhook._update_no_return(data)
@@ -9238,12 +9243,6 @@ class Client(ClientUserPBase):
         """
         channel, channel_id = get_channel_and_id(channel, ChannelText)
         
-        if (channel is not None):
-            guild = channel.guild
-            if (guild is not None):
-                if guild.webhooks_up_to_date:
-                    return [webhook for webhook in guild.webhooks.values() if webhook.channel is channel]
-        
         data = await self.http.webhook_get_all_channel(channel_id)
         return [Webhook(webhook_data) for webhook_data in data]
     
@@ -9299,33 +9298,11 @@ class Client(ClientUserPBase):
         -----
         No request is done, if the guild's webhooks are up to date.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
-        if guild is None:
-            webhook_datas = await self.http.webhook_get_all_guild(guild_id)
-            return [Webhook(webhook_data) for webhook_data in webhook_datas]
-        
-        
-        if guild.webhooks_up_to_date:
-            return list(guild.webhooks.values())
-        
-        old_webhook_ids = set(guild.webhooks)
-        
-        webhooks = []
-        
-        webhook_datas = await self.http.webhook_get_all_guild(guild.id)
-        for webhook_data in webhook_datas:
-            webhook = Webhook(webhook_data)
-            webhooks.append(webhook)
-            old_webhook_ids.discard(webhook.id)
-        
-        if old_webhook_ids:
-            for old_webhook_id in old_webhook_ids:
-                guild.webhooks[old_webhook_id]._delete()
-        
-        guild.webhooks_up_to_date = True
-        
-        return webhooks
+        webhook_datas = await self.http.webhook_get_all_guild(guild_id)
+        return [Webhook(webhook_data) for webhook_data in webhook_datas]
+    
     
     async def webhook_delete(self, webhook):
         """
@@ -9446,15 +9423,15 @@ class Client(ClientUserPBase):
                     raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(avatar)
+                    media_type = get_image_media_type(avatar)
                     
                     if self.premium_type.value:
-                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
                     else:
-                        valid_icon_types = VALID_ICON_FORMATS
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES
                     
-                    if extension not in valid_icon_types:
-                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
+                    if media_type not in valid_icon_media_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{media_type}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
@@ -9540,15 +9517,15 @@ class Client(ClientUserPBase):
                     raise TypeError(f'`avatar` can be passed as `bytes-like` or None, got {avatar.__class__.__name__}.')
                 
                 if __debug__:
-                    extension = get_image_extension(avatar)
+                    media_type = get_image_media_type(avatar)
                     
                     if self.premium_type.value:
-                        valid_icon_types = VALID_ICON_FORMATS_EXTENDED
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
                     else:
-                        valid_icon_types = VALID_ICON_FORMATS
+                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES
                     
-                    if extension not in valid_icon_types:
-                        raise AssertionError(f'Invalid avatar type for the client: `{extension}`.')
+                    if media_type not in valid_icon_media_types:
+                        raise AssertionError(f'Invalid avatar type for the client: `{media_type}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
@@ -10069,7 +10046,7 @@ class Client(ClientUserPBase):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        data = await self.http.guild_emoji_get_all(guild_id)
+        data = await self.http.emoji_guild_get_all(guild_id)
         
         if guild is None:
             guild = create_partial_guild_from_id(guild_id)
@@ -10122,7 +10099,7 @@ class Client(ClientUserPBase):
         
         if __debug__:
             if not isinstance(name, str):
-                raise AssertionError(f'`name` can be given as `st` instance, got {name.__class__.__name__}.')
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
         
         name = ''.join(_VALID_NAME_CHARS.findall(name))
         
@@ -12948,6 +12925,7 @@ class Client(ClientUserPBase):
         try_resolve_interaction_message(message, interaction)
         return message
     
+    
     async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=None,
             allowed_mentions=..., components=...):
         """
@@ -13133,7 +13111,7 @@ class Client(ClientUserPBase):
     
     # Sticker
     
-    async def sticker_get(self, sticker, force_update=False):
+    async def sticker_get(self, sticker, *, force_update=False):
         """
         Gets an sticker by it's id. If the sticker is already loaded updates it.
         
@@ -13143,7 +13121,7 @@ class Client(ClientUserPBase):
         ----------
         sticker : ``Sticker`` or `int`
             The sticker, who will be requested.
-        force_update : `bool`
+        force_update : `bool`, Optional (Keyword only)
             Whether the sticker should be requested even if it supposed to be up to date.
         
         Returns
@@ -13158,9 +13136,6 @@ class Client(ClientUserPBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
-        Raises
-        ------
         TypeError
             If `sticker` was not given as ``Sticker``, nor as `int` instance.
         """
@@ -13213,6 +13188,312 @@ class Client(ClientUserPBase):
             sticker_packs = STICKER_PACK_CACHE.value
         
         return sticker_packs
+    
+    
+    async def sticker_guild_get(self, guild, sticker, *, force_update=False):
+        """
+        Gets the specified sticker from the respective guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The respective guild.
+        sticker : ``Sticker``, `int`
+            The sticker to get.
+        force_update : `bool`, Optional (Keyword only)
+            Whether the sticker should be requested even if it supposed to be up to date.
+        
+        Raises
+        ------
+        TypeError
+            If `sticker` was not given neither as ``Sticker``, neither as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        TypeError
+            - If `sticker` was not given as ``Sticker``, nor as `int` instance.
+            - If `guild` was not given as ``Guild``, nor as `int` instance.
+        """
+        sticker, sticker_id = get_sticker_and_id(sticker)
+        if (sticker is not None) and (not sticker.partial) and (not force_update):
+            return sticker
+        
+        guild_id = get_guild_id(guild)
+        
+        data = await self.http.sticker_guild_get(guild_id, sticker_id)
+        if (sticker is None):
+            sticker = Sticker(data)
+        else:
+            sticker._update_no_return(data)
+        
+        return sticker
+    
+    
+    async def sticker_guild_create(self, guild, name, image, emoji_representation, description=None, *, reason=None):
+        """
+        Creates a sticker in the guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to create the sticker in.
+        name : `str`
+            The sticker's name. It's length can be in range [2:32]
+        emoji_representation : ``Emoji``, `str`
+            The emoji representation of the sticker. Used as a tag for the sticker.
+        image : `bytes-like`
+            The sticker's image in bytes.
+        description : `None` or `str`, Optional
+            The sticker's representation. It's length can be in range [0:100]
+        reason : `None` or `str`, Optional (Keyword only)
+            Will show up at the respective guild's audit logs.
+        
+        Returns
+        -------
+        sticker : ``Sticker``
+            The created sticker.
+        
+        Raises
+        ------
+        TypeError
+            - If `emoji_representation` is neither `str` nor ``Emoji`` instance.
+            - If `guild` is neither ``Guild`` nor `int` instance.
+        ValueError
+            - If `image`s media type is neither `image/png` nor `application/json`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `name` is not `str` instance.
+            - If `name`'s length is out of range [2:32].
+            - If `description` is neither `None` or `str` instance.
+            - If `description`'s length is out of range [0:100].
+            - If `emoji_representation` is a custom ``Emoji``.
+        """
+        guild_id = get_guild_id(guild)
+        
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+        
+            name_length = len(name)
+            if (name_length < 2) or (name_length > 32):
+                raise AssertionError(f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.')
+        
+        if __debug__:
+            if (description is not None):
+                if (not isinstance(description, str)):
+                    raise AssertionError(f'`description` can be given as `str` instance, got '
+                        f'{description.__class__.__name__}.')
+                
+                description_length = len(description)
+                if (description_length > 100):
+                    raise AssertionError(f'`description` length can be in range [0:100], got {description_length!r}; '
+                        f'{description!r}.')
+        
+        if (description is not None) and (not description):
+            description = None
+        
+        if isinstance(emoji_representation, str):
+            tag = emoji_representation
+        elif isinstance(emoji_representation, Emoji):
+            if __debug__:
+                if emoji_representation.is_custom_emoji():
+                    raise AssertionError(f'Only unicode (builtin) emojis can be used as tags, got '
+                        f'{emoji_representation!r}')
+            
+            tag = emoji.name
+        else:
+            raise TypeError(f'`emoji_representation` can be either `str` or `{Emoji.__name__}` instance, got '
+                f'{tag.__class__.__name__}.')
+        
+        if __debug__:
+            if not isinstance(image, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`image` can be passed as `bytes-like` or None, got {image.__class__.__name__}.')
+        
+        media_type = get_image_media_type(image)
+        if media_type not in VALID_STICKER_IMAGE_MEDIA_TYPES:
+            raise ValueError(f'Invalid image type: `{media_type}`.')
+        
+        extension = MEDIA_TYPE_TO_EXTENSION[media_type]
+        
+        form_data = Formdata()
+        form_data.add_field('name', name)
+        
+        if (description is not None):
+            form_data.add_field('description', description)
+        
+        form_data.add_field('tags', tag)
+        
+        form_data.add_field('file', image, filename=f'file.{extension}', content_type=media_type)
+        
+        sticker_data = await self.http.sticker_guild_create(guild_id, form_data, reason)
+        
+        return Sticker(sticker_data)
+    
+    
+    async def sticker_guild_edit(self, sticker, *, name=..., emoji_representation=..., description=..., reason=None):
+        """
+        Edits the given guild bound sticker,
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        sticker : ``Sticker`` or `int`
+            The respective sticker.
+        name : `str`, Optional (keyword only)
+            New name of the sticker. It's length can be in range [2:32].
+        emoji_representation : ``Emoji``, `str`, Optional (keyword Only)
+            The new emoji representation of the sticker. Used as a tag for the sticker.
+        description : `None`, `str`, Optional (Keyword only)
+            New description for the sticker. It's length can be in range [0:100].
+        reason : `None` or `str`, Optional (Keyword only)
+            Will show up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            - If `sticker` is neither ``Sticker``, nor `int` instance.
+            - If `emoji_representation` is neither `str` nor ``Emoji`` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - Non guild bound sticker cannot be edited.
+            - If `name` is not `str` instance.
+            - If `name`'s length is out of range [2:32].
+            - If `description` is neither `None` or `str` instance.
+            - If `description`'s length is out of range [0:100].
+            - If `emoji_representation` is a custom ``Emoji``.
+        """
+        sticker = await self.sticker_get(sticker)
+        
+        if __debug__:
+            if not sticker.guild_id:
+                raise AssertionError(f'Non guild bound sticker cannot be edited, got {sticker!r}.')
+        
+        if (name is ...):
+            name = sticker.name
+        else:
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+            
+                name_length = len(name)
+                if (name_length < 2) or (name_length > 32):
+                    raise AssertionError(f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.')
+        
+        if (emoji_representation is ...):
+            tag = ', '.join(sticker.tags)
+        else:
+            if isinstance(emoji_representation, str):
+                tag = emoji_representation
+            elif isinstance(emoji_representation, Emoji):
+                if __debug__:
+                    if emoji_representation.is_custom_emoji():
+                        raise AssertionError(f'Only unicode (builtin) emojis can be used as tags, got '
+                            f'{emoji_representation!r}')
+                
+                tag = emoji.name
+            else:
+                raise TypeError(f'`emoji_representation` can be either `str` or `{Emoji.__name__}` instance, got '
+                    f'{tag.__class__.__name__}.')
+        
+        if (description is ...):
+            description = stciker.description
+        else:
+            if __debug__:
+                if (description is not None):
+                    if (not isinstance(description, str)):
+                        raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
+                            f'{description.__class__.__name__}.')
+            
+                    description_length = len(description)
+                    if (description_length > 100):
+                        raise AssertionError(f'`description` length can be in range [0:100], got {description_length!r}; '
+                            f'{description!r}.')
+            
+            if (description is None):
+                description = ''
+        
+        data = {
+            'name': name,
+            'tags': tag,
+            'description': description,
+        }
+        
+        await self.http.sticker_guild_edit(sticker.guild_id, sticker.id, data, reason)
+    
+    
+    async def sticker_guild_delete(self, sticker, *, reason=None):
+        """
+        Deletes the sticker.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        sticker : ``Sticker`` or `int`
+            The sticker to delete.
+        reason : `None` or `str`, Optional (Keyword only)
+            Will show up at the respective guild's audit logs.
+        
+        Raises
+        ------
+        TypeError
+            If `sticker` is neither ``Sticker``, nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            Non guild bound sticker cannot be edited.
+        """
+        sticker = await self.sticker_get(sticker)
+        
+        if __debug__:
+            if not sticker.guild_id:
+                raise AssertionError(f'Non guild bound sticker cannot be edited, got {sticker!r}.')
+        
+        await self.http.sticker_guild_delete(sticker.guild_id, sticker.id, reason)
+    
+    
+    async def guild_sync_stickers(self, guild):
+        """
+        Syncs the given guild's stickers with the wrapper.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, what's stickers will be synced.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, guild_id = get_guild_and_id(guild)
+        
+        data = await self.http.sticker_guild_get_all(guild_id)
+        
+        if guild is None:
+            guild = create_partial_guild_from_id(guild_id)
+        
+        guild._sync_stickers(data)
     
     
     # Relationship related

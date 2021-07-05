@@ -83,6 +83,17 @@ class ComponentAttributeDescriptor:
     def __new__(cls, name, supported_types, debugger, is_collection):
         """
         Creates a new ``ComponentAttributeDescriptor`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`
+            The attribute's name.
+        supported_types : `tuple` of `type`
+            The supported component types.
+        debugger : `None`, `Function`
+            Debugger function to check the passed values in debug mode.
+        is_collection : `bool`
+            Whether the component is collection of components.
         """
         self = object.__new__(cls)
         self._debugger = debugger
@@ -92,7 +103,21 @@ class ComponentAttributeDescriptor:
         return self
     
     def __get__(self, instance, type_):
-        """Returns the component's attribute's value."""
+        """
+        Returns the component's attribute's value.
+        
+        Parameters
+        ----------
+        instance : ``ComponentProxy``
+            The parent component proxy.
+        type_ : `type` = ``ComponentProxy``
+            The component proxy type.
+        
+        Returns
+        -------
+        self / attribute_value : ``ComponentAttributeDescriptor`` / `Any`
+            Self called from class, or the represented component's attribute's value.
+        """
         if instance is None:
             return self
         
@@ -115,7 +140,16 @@ class ComponentAttributeDescriptor:
     
     
     def __set__(self, instance, value):
-        """Sets the value to the component."""
+        """
+        Sets the value to the component.
+        
+        Parameters
+        ----------
+        instance : ``ComponentProxy``
+            The parent component proxy.
+        value : `Any`
+            The value to set as attribute.
+        """
         if __debug__:
             self._debugger(value)
         
@@ -126,7 +160,7 @@ class ComponentAttributeDescriptor:
                 raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
         
         setattr(component, self._name, value)
-
+        
 
 class ComponentDescriptorState:
     """
@@ -141,7 +175,7 @@ class ComponentDescriptorState:
     _sub_components : `None` or `list` of ``ComponentDescriptor``
         Sub components applicable to the component.
     """
-    __slots__ = ('_component', '_source_component', '_sub_components')
+    __slots__ = ('_component', '_source_component', '_sub_components',)
     
     def __new__(cls, source, sub_components):
         """
@@ -181,6 +215,7 @@ class ComponentDescriptorState:
 
 class ComponentDescriptor(ComponentDescriptorState):
     """
+    Descriptor to proxy class attribute component access for each instance.
     
     Attributes
     ----------
@@ -221,7 +256,21 @@ class ComponentDescriptor(ComponentDescriptorState):
         return self
     
     def __get__(self, instance, type_):
-        """Gets the descriptor itself if called from class or a component proxy."""
+        """
+        Gets the descriptor itself if called from class or a component proxy.
+        
+        Parameters
+        ----------
+        instance : ``Menu``
+            The menu instance.
+        type_ : ``MenuType``
+            The menu's type.
+        
+        Returns
+        -------
+        self / component_proxy : ``ComponentDescriptor`` / ``ComponentProxy``
+            Self if called from class, or the a component proxy for the represented component.
+        """
         if instance is None:
             return self
         
@@ -354,7 +403,7 @@ class ComponentProxy(ComponentBase):
 
     enabled = ComponentAttributeDescriptor(
         'enabled',
-        (ComponentButton,),
+        (ComponentButton, ComponentSelect),
         _debug_component_enabled,
         False,
     )
@@ -652,6 +701,14 @@ class MenuStructure:
         +-----------+-----------------------+
         | event     | ``InteractionEvent``  |
         +-----------+-----------------------+
+        
+        Should return the following parameter:
+        
+        +---------------+-----------+
+        | Name          | Type      |
+        +===============+===========+
+        | should_edit   | `bool`    |
+        +---------------+-----------+
         
     timeout : `float`
         The time after the menu should be closed.
@@ -1231,18 +1288,20 @@ class Menu(metaclass=MenuType):
                 await client.interaction_component_acknowledge(interaction_event)
                 return
         
+        self._gui_state = GUI_STATE_EDITING
+        
         invoke = self._menu_structure.invoke
         try:
-            await invoke(self, interaction_event)
+            should_edit = await invoke(self, interaction_event)
         except BaseException as err:
             self.cancel(err)
             return
         
-        tracked_changes = self._tracked_changes
-        if (not tracked_changes):
-            await client.interaction_component_acknowledge(interaction_event)
+        if not should_edit:
+            self._gui_state = GUI_STATE_READY
             return
         
+        tracked_changes = self._tracked_changes
         kwargs = tracked_changes.copy()
         tracked_changes.clear()
         
@@ -1250,13 +1309,19 @@ class Menu(metaclass=MenuType):
         if (allowed_mentions is not None):
             kwargs['allowed_mentions'] = allowed_mentions
         
-        await client.interaction_component_message_edit(interaction_event, **kwargs, components=self._components)
+        try:
+            await client.interaction_component_message_edit(interaction_event, **kwargs, components=self._components)
+        except BaseException as err:
+            self.cancel(err)
+            return
         
         timeouter = self._timeouter
         if (timeouter is not None):
             timeout = self._menu_structure.timeout
             if (timeout > 0.0):
                 timeouter.set_timeout(timeout)
+        
+        self._gui_state = GUI_STATE_READY
     
     
     def cancel(self, exception=None):

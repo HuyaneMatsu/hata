@@ -1,7 +1,8 @@
 ﻿__all__ = ('BaseMethodDescriptor', 'KeepType', 'KeyedReferer', 'RemovedDescriptor', 'WeakCallable',
     'WeakKeyDictionary', 'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any',
-    'cached_property', 'from_json', 'has_docs', 'imultidict', 'is_weakreferable', 'istr', 'list_difference',
-    'methodize', 'module_property', 'modulize', 'multidict', 'name_property', 'to_json', 'weakmethod',)
+    'cached_property', 'class_property', 'from_json', 'has_docs', 'imultidict', 'is_weakreferable', 'istr',
+    'list_difference', 'methodize', 'module_property', 'modulize', 'multidict', 'name_property', 'to_json',
+    'weakmethod',)
 
 from functools import partial as partial_func
 from types import MethodType, FunctionType, MappingProxyType, GetSetDescriptorType, ModuleType
@@ -5304,3 +5305,116 @@ class un_map_pack:
     def __getitem__(self, key):
         """Gets the next value of the un-map-packer."""
         return self.next_value
+
+
+class class_property:
+    __doc__ = doc_property()
+    
+    __class_doc__ = ("""
+    Class level property.
+    
+    Attributes
+    ----------
+    fget : `callable`
+        getter method.
+    fset : `callable`
+        Setter method.
+    fdel : `callable`
+        Deleter method.
+    __instance_doc__ : `Any`
+        Documentation for the property.
+    """)
+    
+    def __new__(cls, fget=None, fset=None, fdel=None, doc=None):
+        """
+        Creates a new ``class_property`` instance from the given parameters.
+        
+        If `doc` is not given or given as `None`, it will default to `fget`'s if applicable.
+        
+        Parameters
+        ----------
+        fget : `None` or `callable`, Optional
+            getter method.
+        fset : `None` or `callable`, Optional
+            Setter method.
+        fdel : `None` or `callable`, Optional
+            Deleter method.
+        doc : `None` or `Any`, Optional
+            Documentation for the property.
+        """
+        if (doc is None) and (fget is not None):
+            doc = fget.__doc__
+        
+        self = object.__new__(cls)
+        self.fget = fget
+        self.fset = fset
+        self.fdel = fdel
+        self.__instance_doc__ = doc
+        return self
+    
+    def __get__(self, obj, type_):
+        getter = self.fget
+        
+        if getter is None:
+            raise AttributeError('unreadable attribute')
+        
+        return getter(type_)
+    
+    def __set__(self, obj, value):
+        setter = self.fset
+        if setter is None:
+            raise AttributeError('can\'t set attribute')
+        
+        return setter(type(obj), value)
+    
+    def __delete__(self, obj):
+        deleter = self.fdel
+        if deleter is None:
+            raise AttributeError('can\'t delete attribute')
+        
+        return deleter(type(obj))
+    
+    def getter(self, fget):
+        """
+        Returns a new property with getter set.
+        
+        Parameters
+        ----------
+        fget : `callable`
+            Getter method.
+        
+        Returns
+        -------
+        new : ``class_property``
+        """
+        return type(self)(fget, self.fset, self.fdel, self.__instance_doc__)
+    
+    def setter(self, fset):
+        """
+        Returns a new property with setter set.
+        
+        Parameters
+        ----------
+        fset : `callable`
+            Setter method.
+        
+        Returns
+        -------
+        new : ``class_property``
+        """
+        return type(self)(self.fget, fset, self.fdel, self.__instance_doc__)
+    
+    def deleter(self, fdel):
+        """
+        Returns a new property with deleter set.
+        
+        Parameters
+        ----------
+        fdel : `callable`
+            Deleter method.
+        
+        Returns
+        -------
+        new : ``class_property``
+        """
+        return type(self)(self.fget, self.fset, fdel, self.__instance_doc__)

@@ -8,7 +8,7 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report!
 
-        You may get real time by joining out Discord server http://discord.gg/3cH2r5d .
+        You may get real time by joining out Discord server https://discord.gg/3cH2r5d .
   - type: textarea
     attributes:
       label: Description

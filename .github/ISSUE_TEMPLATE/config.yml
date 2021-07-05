@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discuss a question
+    url: https://github.com/HuyaneMatsu/hata/discussions
+    about: Ask questions and discuss with other users.
+  - name: Discord server
+    url: https://discord.gg/3cH2r5d
+    about: Please visit our Discord server for questions and support requests.

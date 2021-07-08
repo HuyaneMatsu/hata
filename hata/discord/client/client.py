@@ -13402,13 +13402,13 @@ class Client(ClientUserPBase):
                         raise AssertionError(f'Only unicode (builtin) emojis can be used as tags, got '
                             f'{emoji_representation!r}')
                 
-                tag = emoji.name
+                tag = emoji_representation.name
             else:
                 raise TypeError(f'`emoji_representation` can be either `str` or `{Emoji.__name__}` instance, got '
                     f'{tag.__class__.__name__}.')
         
         if (description is ...):
-            description = stciker.description
+            description = sticker.description
         else:
             if __debug__:
                 if (description is not None):

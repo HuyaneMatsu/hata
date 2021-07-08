@@ -339,7 +339,9 @@ These are the following:
 +---------------------------------------------------+-----------+-------+
 | max_active_announcement_threads                   | 160007    | -     |
 +---------------------------------------------------+-----------+-------+
-| sticker_maximum_dimensions_exceeded              | 170005    | -     |
+| sticker_maximum_dimensions_exceeded               | 170005    | -     |
++---------------------------------------------------+-----------+-------+
+| sticker_frame_rate_out_of_expected_range          | 170006    | -     |
 +---------------------------------------------------+-----------+-------+
 """
 unknown_account = 10001
@@ -522,3 +524,4 @@ max_active_threads = 160006
 max_active_announcement_threads = 160007
 
 sticker_maximum_dimensions_exceeded = 170005
+sticker_frame_rate_out_of_expected_range = 170006

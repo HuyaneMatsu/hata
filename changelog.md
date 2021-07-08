@@ -1,4 +1,6 @@
-## 1.1.89 *\[2021-07-??\]*
+## 1.1.90 *\[2021-07-??\]*
+
+## 1.1.89 *\[2021-07-08\]*
 
 #### Summary
 
@@ -21,6 +23,7 @@ Add guild sticker methods.
 - Add `AuditLogEvent.sticker_delete`
 - `AuditLogEntry.target` now supports stickers.
 - `AuditLogChange` now handles `tags` attribute accordingly.
+- Add `ERROR_CODES.sticker_frame_rate_out_of_expected_range`.
 
 ##### hata.ext.commands_v2
 - Add sticker converter.

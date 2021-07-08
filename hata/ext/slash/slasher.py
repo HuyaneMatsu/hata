@@ -1778,7 +1778,7 @@ class Slasher(EventHandlerBase):
             for permission_guild_id in command._get_sync_permission_ids():
                 task = Task(self._register_command_task(client, command, permission_guild_id, application_command),
                     KOKORO)
-                task.append(task)
+                tasks.append(task)
             
             if tasks:
                 await WaitTillAll(tasks, KOKORO)

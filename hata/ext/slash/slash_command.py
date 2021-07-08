@@ -1183,7 +1183,7 @@ class SlashCommand:
         if (guild_ids is None):
             overwrites = self._overwrites
             if (overwrites is not None):
-                permission_sync_ids.update(guild_ids)
+                permission_sync_ids.update(overwrites)
         else:
             permission_sync_ids.update(guild_ids)
         

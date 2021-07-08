@@ -90,7 +90,7 @@ already a `User` object that we can use right away inside that function instead 
 additionally convert to user object inside our command.
 
 
-For example we'll annotate it as User and have its default value of None:
+For example we'll annotate it as user and have its default value of None:
 ```py
 from hata import User
 
@@ -587,4 +587,4 @@ async def default_event(client, message):
 The advantage of using `default_event` over adding a new `message_create` event handler that at this point bot 
 authors/developers (as message authors) and channels where the bot cannot reply are already filtered out 
 (those messages will not trigger `default_event`).
-To see the actual flow of the command handler and when the default_event will trigger see [here](https://huyanematsu.pythonanywhere.com/docs/hata/ext/commands/command/CommandProcesser#flow)
+To see the actual flow of the command handler and when the default_event will trigger see [here](https://www.astil.dev/project/hata/docs/hata/ext/commands/command/CommandProcesser#flow)

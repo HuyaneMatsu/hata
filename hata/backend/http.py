@@ -91,20 +91,22 @@ class HTTPClient:
             - Too many redirects.
             - Would be redirected to not `http or `https`.
             - Connector closed.
-        TypeError
-            - `proxy_auth`'s type is incorrect.
-            - ˙Cannot serialize a field of the given `data`.
         ValueError
             - Host could not be detected from `url`.
             - The `proxy_url`'s scheme is not `http`.
             - `compression` and `Content-Encoding` would be set at the same time.
             - `chunked` cannot be set, because `Transfer-Encoding: chunked` is already set.
             - `chunked` cannot be set, because `Content-Length` header is already present.
+        OSError
+            If a system function returns a system-related error.
         RuntimeError
             - If one of `data`'s field's content has unknown content-encoding.
             - If one of `data`'s field's content has unknown content-transfer-encoding.
         TimeoutError
-            - Did not receive answer in time.
+            Did not receive answer in time.
+        TypeError
+            - `proxy_auth`'s type is incorrect.
+            - ˙Cannot serialize a field of the given `data`.
         
         See Also
         --------

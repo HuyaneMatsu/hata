@@ -2981,7 +2981,7 @@ class CommandProcesser(EventWaitforBase):
             - If `func` was given as ``Router`` instance, but it contains not only ``Command`` instances.
         ValueError
             - If `func` was given as type ``Command`` and `name` was not given as `None`, neither as 1 of it's aliases.
-            _ If `func` was given as type ``Command`` there is no command added with the given `name`.
+            - If `func` was given as type ``Command`` there is no command added with the given `name`.
             - If `func` was given as type ``Command``, but the added command with the given `name` is different.
             - If `func` was not given type ``Command`` and the given `name` is not a name of a command of the command
                 processer.

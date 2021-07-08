@@ -3445,7 +3445,7 @@ class Client(ClientUserPBase):
         else:
             sticker_ids = []
             if isinstance(sticker, Sticker):
-                sticker_id = Sticker.id
+                sticker_id = sticker.id
                 sticker_ids.append(sticker_id)
             else:
                 sticker_id = maybe_snowflake(sticker)
@@ -3453,7 +3453,7 @@ class Client(ClientUserPBase):
                     if isinstance(sticker, (list, tuple)):
                         for sticker in sticker:
                             if isinstance(sticker, Sticker):
-                                sticker_id = Sticker.id
+                                sticker_id = sticker.id
                             else:
                                 sticker_id = maybe_snowflake(sticker)
                                 if sticker_id is None:
@@ -13264,7 +13264,7 @@ class Client(ClientUserPBase):
             - If `emoji_representation` is neither `str` nor ``Emoji`` instance.
             - If `guild` is neither ``Guild`` nor `int` instance.
         ValueError
-            - If `image`s media type is neither `image/png` nor `application/json`.
+            If `image`s media type is neither `image/png` nor `application/json`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -13308,7 +13308,7 @@ class Client(ClientUserPBase):
                     raise AssertionError(f'Only unicode (builtin) emojis can be used as tags, got '
                         f'{emoji_representation!r}')
             
-            tag = emoji.name
+            tag = emoji_representation.name
         else:
             raise TypeError(f'`emoji_representation` can be either `str` or `{Emoji.__name__}` instance, got '
                 f'{tag.__class__.__name__}.')

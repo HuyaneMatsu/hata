@@ -1,0 +1,358 @@
+# Commands (v2)
+
+> commands_v2 is in Beta testing right now.
+
+Hata commands_v2 extension lets you easily assign python functions as commands. The user then can call the commands
+from the chat using a prefix, familiarly as a you would call the python function.
+
+> The [slash](slash.md) command and old style command share different extensions.
+
+For example this is a command definition:
+
+```py
+@client.commands
+async def ping():
+    return 'pong'
+```
+
+If you set the prefix for example to `!`, you could call the command as `!ping`.
+
+You can setup the commands extension by passing `extensions='commands_v2'` to the client constructor. The extension
+also required a `prefix`, so pass that as well.
+
+> Naming your bots might be important when using multiple ones, so in the examples it will be called `NekoBot` from
+> now.
+
+```py
+from hata import Client
+
+TOKEN = ''
+NekoBot = Client(TOKEN, extensions='commands_v2', prefix='!')
+
+@client.commands
+async def NekoBot():
+    return 'pong'
+```
+
+The other way to add the extension is to use the `setup_ext_commands` function on the same way
+
+```py
+from hata import Client
+from hata.ext.commands import setup_ext_commands
+
+TOKEN = ''
+NekoBot = Client(TOKEN)
+setup_ext_commands(NekoBot, prefix='!')
+```
+
+## Command Parameters
+
+You may use internal parameters to get context about command invocation, or outer ones, which are required to be
+passed by the user invoking the user. Parameter types are detected based on annotation, name and position.
+
+### Internal parameters
+
+##### No parameters
+
+You may use no internal parameters in command definition, since every `return`-ed and `yield`-ed value will be
+forwarded as a response to the client.
+
+##### Old style
+
+You may use the old style (from commands v1) `client` and `message` parameter combination as the first 2 parameters
+of the command.
+
+##### Context
+
+You can define any parameter annotated as ``CommandContext``, or named as `context` (`ctx` works as well of course).
+This parameter gives you access to information about the command's invocation and implements many related functions,
+like `.send(...)`, `.message`, `.channel`, `.client`, `.prefix` to make your life easier.
+
+### Outer / Discord parameters
+
+Outer or Discord parameters can be required or optionally passable by the caller user on Discord.
+
+You can define them as any other parameter with annotation added. String annotations representing a type
+(or a converter) are accepted as well. They may be defined as any of the following:
+
+
+- `ChannelBase`
+    - `ChannelCategory`
+    - `ChannelGroup`
+    - `ChannelPrivate`
+    - `ChannelGuildBase`
+    - `ChannelStage`
+    - `ChannelStore`
+    - `ChannelText`
+    - `ChannelTextBase`
+    - `ChannelVoice`
+    - `ChannelVoiceBase`
+- `Client`
+- `Color`
+- `Emoji`
+- `Guild`
+- `Invite`
+- `Message`
+- `Role`
+- `Sticker`
+- `User` *(`UserBase`)*
+- `bool`
+- `int`
+- `relativedelta` *(requires `dateutil` package)*
+- `str`
+- `timedelta`
+
+```py
+@NekoBot.commands
+async def repeat(ctx, to_repeat: str):
+    await ctx.reply(to_repeat, allowed_mentions=None)
+```
+
+The command will accept one word as parameter, and then reply it back. You may use `"..."` to pass multiple words.
+
+> `.reply` replies on the invoking message, meanwhile `allowed_mentions=None` blocks all the outgoing mentions.
+> Using these is a great way with dealing random user inputs.
+
+#### Default values
+
+
+By using default values you can make parameters optional, like as in python.
+
+```py
+@NekoBot.commands
+async def repeat(ctx, to_repeat: str=None):
+    if to_repeat is None:
+        to_repeat = '*nothing to repeat*'
+    
+    await ctx.reply(to_repeat, allowed_mentions=None)
+```
+
+#### Keyword only parameters
+
+You may use keyword only parameters inside of commands.
+
+```py
+@NekoBot.commands
+async def repeat(ctx, to_repeat: str=None, *, upper=False):
+    if to_repeat is None:
+        to_repeat = '*nothing to repeat*'
+    elif upper:
+        to_repeat = to_repeat.upper()
+    
+    await ctx.reply(to_repeat, allowed_mentions=None)
+```
+
+Keyword only parameter can be passed using the parameter's name followed my a colon, a space character and then the
+parameter's value.
+
+#### Multi variable parameters
+
+You can use `*args` to allowing the user to pass multiple variables, on the same way as you do it in python.
+
+```py
+@NekoBot.commands
+async def separate(*args: str):
+    if args:
+        return ', '. join(args)
+    
+    return 'Nothing to separate'
+```
+
+#### Dynamic keyword parameters
+
+When using `**kwargs`, you allow the user to pass any keyword parameters
+
+```py
+@NekoBot.commands
+async def keywords(**kwargs):
+    if kwargs:
+        return ', '.join(f'{key!r}: {value!r}' for key, value in kwargs)
+    
+    return 'No keyword received.'
+```
+
+A downside of using `kwargs` may be, that you cannot annotate it, so no auto-conversion will take place, like at the
+case of `*args`.
+
+#### Multi-type parameters
+
+You can use a set to define multi-type parameters.
+
+```py
+@NekoBot.commands
+async def keywords(user: {'User', 'str'}):
+    if isinstance(user, str):
+        return f'I have no clue who {user} is'
+    
+    return 'Oh, my old friend {user:f}!'
+```
+
+#### Not annotated parameters
+
+Each not annotated parameter is auto annotated to `str`. However if a command's last not annotated parameter is
+positional, it will capture the rest of the respective message's content instead.
+
+```py
+from hata import Embed
+
+@NekoBot.commands
+async def pat(ctx, user, message):
+    embed = Embed(f'{ctx.author} pats {user:f}')
+    
+    if message:
+        embed.add_field('Message:', message)
+    
+    return embed
+```
+
+You can also use default values for the cases if no additional content is given.
+
+```py
+from hata import Embed
+
+@NekoBot.commands
+async def pat(ctx, user, message=None):
+    embed = Embed(f'{ctx.author} pats {user:f}')
+    
+    if (message is not None):
+        embed.add_field('Message:', message)
+    
+    return embed
+```
+
+### Parameter separators & assigner
+
+You can overwrite the default parameter separator `('"', '"')` and assigner `':'` by passing as keyword parameters to
+the `.commands` decorator. Overwriting these can be a great tool to make your bot unique.
+
+#### Parameter separators
+
+Separators might be defined as encapsulators, where you define where a group starts and ends, or as a standalone
+separator to break up the input text.
+
+```py
+@NekoBot.commands(separator=',')
+async def separate(*args):
+    if not args:
+        return 'Nothing to separate'
+    
+    return ', '. join(args)
+```
+
+| Input	                                            | Output                                                                |
+|---------------------------------------------------|-----------------------------------------------------------------------|
+| `'Reach for the Moon, Immortal Smoke'`	        | `'Reach for the Moon'`,`'Immortal Smoke'`                             |
+
+```py
+@NekoBot.commands(separator=('[', ']'))
+async def separate(*args):
+    if not args:
+        return 'Nothing to separate'
+    
+    return ', '. join(args)
+```
+
+| Input	                                            | Output                                                                |
+|---------------------------------------------------|-----------------------------------------------------------------------|
+| `'[Touhou vocal] Lost Emotion'`                   | `'[Touhou vocal]'`, `'Lost'`, `'Emotion'`                             |
+
+
+```py
+@NekoBot.commands(separator=('*', '*'))
+async def separate(*args):
+    if not args:
+        return 'Nothing to separate'
+    
+    return ', '. join(args)
+```
+
+| Input	                                            | Output                                                                |
+|---------------------------------------------------|-----------------------------------------------------------------------|
+| `'Legacy of Lunatic Kingdom *Pandemonic Planet*'` | `'Legacy'`, `'of'`, `'Lunatic'`, `'Kingdom'`, `'Pandemonic Planet'`   |
+
+#### Assigner
+
+Assigners modify the assigner used at keyword parameters.
+
+```py
+@NekoBot.commands(assigner='=')
+async def keywords(**kwargs):
+    if kwargs:
+        return ', '.join(f'{key!r}: {value!r}' for key, value in kwargs.items())
+    
+    return 'No keyword received.'
+```
+
+### Configure parameters
+
+Each entity parameter converter has converter flags., which define the was how the converter tries to convert a field.
+Like by default `User` converter wont allow you to access out-of-guild users. But by using `configure_converter
+you can modify this behaviour.
+
+```py
+@NekoBot.commands
+@configure_converter('user', everywhere=True)
+async def avatar(ctx, user: 'User'=None):
+    if user is None:
+        user = ctx.author
+    
+    return user.avatar_url_as(size=4096)
+```
+
+The default flags are the following:
+
+| Entity    | Included flags                            |
++-----------+-------------------------------------------+
+| user      | mention, name, id                         |
+| client    | mention, name, id                         |
+| role      | mention, name, id                         |
+| channel   | mention, name, id                         |
+| emoji     | mention, name, id                         |
+| guild     | id                                        |
+| message   | url, id                                   |
+| invite    | url, id                                   |
+| default   | name, id                                  |
+
+Meanwhile these are all the applicable ones:
+
+| Entity    | Included flags                            |
++-----------+-------------------------------------------+
+| user      | mention, name, id, everywhere, profile    |
+| client    | mention, name, id, everywhere             |
+| role      | mention, name, id, everywhere             |
+| channel   | mention, name, id, everywhere             |
+| emoji     | mention, name, id, everywhere             |
+| guild     | id, everywhere                            |
+| message   | url, id, everywhere                       |
+| invite    | url, id                                   |
+| sticker   | name, id, everywhere                      |
+
+## Categories
+
+Categories can be used to group up commands. Can be used for help commands, checks and for error handling.
+
+\# TODO
+
+#### Default category
+
+\# TODO
+
+## Checks
+
+\# TODO
+
+#### Precheck
+
+\# TODO
+
+## Error handling
+
+\# TODO
+
+## Cooldowns
+
+\# TODO
+
+## Sub commands
+
+#\ TODO

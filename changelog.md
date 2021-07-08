@@ -30,6 +30,11 @@ Add guild sticker methods.
 - `Client.sticker_get` was not updating the given sticker objects accordingly.
 - `AuditLogEntry` do not raises `IndexError` if new type audit log event is received.
 - Remove webhook caching per guild, since Discord API returns different data for each bot.
+- `Client.message_create`'s `sticker` parameter passed as `Sticker` raised `TypeError`.
+
+##### hata.ext.slash
+- Fix a `TypeError` in `SlashComamnd._get_sync_permission_ids`.
+- Fix an `AttributeError` in `Slasher._register_command`.
 
 #### Renames, Deprecation & Removals
 

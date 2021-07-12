@@ -14011,6 +14011,12 @@ class Client(ClientUserPBase):
         """
         try:
             while True:
+                ready_state = self.ready_state
+                if (ready_state is not None):
+                    self.ready_state = None
+                    ready_state.cancel()
+                    ready_state = None
+                
                 try:
                     await self.gateway.run()
                 except (GeneratorExit, CancelledError) as err:
@@ -14112,10 +14118,15 @@ class Client(ClientUserPBase):
                     for guild in to_remove:
                         del self.guild_profiles[guild]
                 
-                #needs to delete the references for cleanup
+                # need to delete the references for cleanup
                 guild = None
                 to_remove = None
-    
+                
+                ready_state = self.ready_state
+                if (ready_state is not None):
+                    self.ready_state = None
+                    ready_state.cancel()
+                    ready_state = None
     
     async def join_voice_channel(self, *args, **kwargs):
         """

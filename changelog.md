@@ -7,6 +7,7 @@
 - Add `skip_ready_cycle`.
 - `ClientUserbase.partial` is not a property (reduces ram usage).
 - Do not request users if the client cannot.
+- Cancel ready state on reconnect.
 
 ## 1.1.89 *\[2021-07-08\]*
 

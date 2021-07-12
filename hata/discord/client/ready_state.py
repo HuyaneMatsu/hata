@@ -15,68 +15,6 @@ READY_STATE_TO_DO_GUILD_IDS = set()
 GUILD_RECEIVE_TIMEOUT = 5.0
 SHARD_CONNECT_TIMEOUT = 12.0
 
-
-async def _request_members_task(client):
-    """
-    Requests the members of the guild. Only used meanwhile ready state is active
-    
-    Parameters
-    ----------
-    client : ``Client``
-        The respective client instance.
-    """
-    event_handler = client.events.guild_user_chunk
-    
-    shard_count = client.shard_count
-    
-    guild_ids_per_shard = client.ready_state.shard_guilds(shard_count)
-    
-    
-    if shard_count:
-        gateways = [client.gateway.gateways]
-    else:
-        gateways = [client.gateway]
-    
-    
-    sub_data = {
-        'guild_id': 0,
-        'query': '',
-        'limit': 0,
-        'presences': CACHE_PRESENCE,
-    }
-    
-    data = {
-        'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
-        'd': sub_data
-    }
-    
-    while True:
-        tasks = []
-        
-        for gateway, guild_ids, in zip(gateways, guild_ids_per_shard):
-            if not guild_ids:
-                continue
-            
-            guild_id = guild_ids.pop()
-            
-            try:
-                READY_STATE_TO_DO_GUILD_IDS.remove(guild_id)
-            except KeyError:
-                continue
-            
-            sub_data['guild_id'] = guild_id
-            tasks.append(gateway.send_as_json(data))
-        
-        if tasks:
-            sleeper = sleep(0.6, KOKORO)
-            await WaitTillAll(tasks, KOKORO)
-            
-            # Silence exceptions
-            for task in tasks:
-                task.cancel()
-            
-            await sleeper
-
 USER_REQUEST_STATE_NONE = 0
 USER_REQUEST_STATE_TIMEOUT = 1
 USER_REQUEST_STATE_DONE = 2

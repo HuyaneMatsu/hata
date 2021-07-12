@@ -1,4 +1,6 @@
-﻿import json, re, codecs
+﻿__all__ = ()
+
+import json, re, codecs
 from http.cookies import SimpleCookie, CookieError, Morsel
 from hashlib import md5, sha1, sha256
 

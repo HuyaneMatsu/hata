@@ -41,13 +41,11 @@ class ClientUserBase(UserBase):
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
-    partial : `bool`
-        Partial users have only their `.id` set and every other field might not reflect the reality.
     thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     """
-    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'partial', 'thread_profiles')
+    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'thread_profiles')
     
     def _update_no_return(self, data):
         """
@@ -273,7 +271,6 @@ class ClientUserBase(UserBase):
         self.guild_profiles = guild_profiles
         self.is_bot = client.is_bot
         self.flags = client.flags
-        self.partial = client.partial
         self.thread_profiles = client.thread_profiles.copy()
         
         self.avatar_hash = client.avatar_hash
@@ -293,7 +290,6 @@ class ClientUserBase(UserBase):
         self.flags = UserFlag()
         
         self.guild_profiles = {}
-        self.partial = True
         self.thread_profiles = None
     
     # if CACHE_PRESENCE is False, this should be never called from this class
@@ -509,7 +505,15 @@ class ClientUserBase(UserBase):
             return True
         
         return False
-
+    
+    @property
+    @copy_docs(UserBase.partial)
+    def partial(self):
+        for guild in self.guild_profiles:
+            if not guild.partial:
+                return False
+            
+            return True
 
 class ClientUserPBase(ClientUserBase):
     """
@@ -539,8 +543,6 @@ class ClientUserPBase(ClientUserBase):
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
-    partial : `bool`
-        Partial users have only their `.id` set and every other field might not reflect the reality.
     thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.

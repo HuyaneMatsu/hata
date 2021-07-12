@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 import socket as module_socket
 from http.cookies import SimpleCookie
 

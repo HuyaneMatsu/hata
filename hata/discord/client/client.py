@@ -10,7 +10,7 @@ from datetime import datetime
 from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ...ext import get_and_validate_setup_functions, run_setup_functions
 from ...backend.utils import imultidict, methodize, change_on_switch
-from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, WaitTillExc, \
+from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, skip_ready_cycle, \
     future_or_timeout
 from ...backend.event_loop import EventThread, LOOP_TIME
 from ...backend.headers import AUTHORIZATION
@@ -72,8 +72,7 @@ from ..bases import maybe_snowflake, maybe_snowflake_pair
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
-    _request_members_loop, _message_delete_multiple_private_task, _message_delete_multiple_task, \
-    request_thread_channels, ForceUpdateCache
+    _message_delete_multiple_private_task, _message_delete_multiple_task, request_thread_channels, ForceUpdateCache
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -81,7 +80,7 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
     get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id
 from .utils import UserGuildPermission, Typer, BanEntry
-
+from .ready_state import ReadyState
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -164,8 +163,8 @@ class Client(ClientUserPBase):
         requested.
         
         When receiving a `READY` dispatch event, the client's ``.ready_state`` is set as a ``ReadyState`` instance and
-        a ``._delay_ready`` task is started, what delays the handle-able `ready` event, till every user from the received
-        guilds is cached up. When done, ``.ready_state`` is set back to `None`.
+        a ``._delay_ready`` task is started, what delays the handle-able `ready` event, till every user from the
+        received guilds is cached up. When done, ``.ready_state`` is set back to `None`.
     
     relationships : `dict` of (`int`, ``Relationship``) items
         Stores the relationships of the client. The relationships' users' ids are the keys and the relationships
@@ -513,7 +512,6 @@ class Client(ClientUserPBase):
         self.private_channels = {}
         self.voice_clients = {}
         self.id = client_id
-        self.partial = True
         self.ready_state = None
         self.application = application
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
@@ -629,8 +627,6 @@ class Client(ClientUserPBase):
         self.flags = UserFlag(data.get('flags', 0))
         self.premium_type = PremiumType.get(data.get('premium_type', 0))
         self.locale = parse_locale(data)
-        
-        self.partial = False
     
     
     @property
@@ -13709,6 +13705,16 @@ class Client(ClientUserPBase):
                 gateway_max_concurrency = 1
             else:
                 gateway_max_concurrency = session_start_limit_data.get('max_concurrency', 1)
+                
+                try:
+                    remaining = session_start_limit_data['remaining']
+                except KeyError:
+                    pass
+                else:
+                    if remaining < 100:
+                        warnings.warn(
+                            f'`Remaining session start limit reached low amount: {remaining!r}.',
+                            RuntimeWarning)
             
             self._gateway_max_concurrency = gateway_max_concurrency
         except BaseException as err:
@@ -14348,82 +14354,25 @@ class Client(ClientUserPBase):
             if not waiters:
                 self.events.remove(wait_for_handler, name=event_name)
     
-    async def _delay_ready(self):
+    
+    def _delay_ready(self, guild_datas, shard_id):
         """
         Delays the client's "ready" till it receives all of it guild's data. If caching is allowed (so by default),
         then it waits additional time till it requests all the members of it's guilds.
         
-        This method is a coroutine.
-        """
-        ready_state = self.ready_state
-        try:
-            if self.is_bot:
-                await ready_state
-            
-            if ready_state.guilds and CACHE_USER:
-                await self._request_members2(ready_state.guilds)
-                
-            self.ready_state = None
-        
-        except CancelledError:
-            pass
-        else:
-            Task(_with_error(self, self.events.ready(self)), KOKORO)
-    
-    async def _request_members2(self, guilds):
-        """
-        Requests the members of the client's guilds. Called after the client is started up and user caching is
-        enabled (so by default).
-        
-        This method is a coroutine.
-        
         Parameters
         ----------
-        guilds : `list` of ``Guild`` objects
-            The guilds, which users should be requested.
+        guild_datas : `list` of `dict` (`str`, `Any`) items
+            Partial data for all the guilds to request the users of.
+        shard_id : `int`
+            The received shard's identifier.
         """
-        event_handler = self.events.guild_user_chunk
+        ready_state = self.ready_state
+        if (ready_state is None):
+            self.ready_state = ready_state = ReadyState(self)
         
-        try:
-            waiter = event_handler.waiters.pop('0000000000000000')
-        except KeyError:
-            pass
-        else:
-            waiter.cancel()
-        
-        event_handler.waiters['0000000000000000'] = waiter = MassUserChunker(len(guilds))
-        
-        shard_count = self.shard_count
-        if shard_count:
-            guilds_by_shards = [[] for x in range(shard_count)]
-            for guild in guilds:
-                shard_index = (guild.id>>22)%shard_count
-                guilds_by_shards[shard_index].append(guild)
-            
-            tasks = []
-            gateways = self.gateway.gateways
-            for index in range(shard_count):
-                task = Task(_request_members_loop(gateways[index], guilds_by_shards[index]), KOKORO)
-                tasks.append(task)
-            
-            done, pending = await WaitTillExc(tasks, KOKORO)
-            for task in pending:
-                task.cancel()
-            
-            for task in done:
-                task.result()
-            
-        else:
-            await _request_members_loop(self.gateway, guilds)
-
-        
-        try:
-            await waiter
-        except CancelledError:
-            try:
-                del event_handler.waiters['0000000000000000']
-            except KeyError:
-                pass
+        ready_state.shard_ready(self, guild_datas, shard_id)
+    
     
     async def _request_members(self, guild_id):
         """
@@ -14465,6 +14414,7 @@ class Client(ClientUserPBase):
                 del event_handler.waiters[nonce]
             except KeyError:
                 pass
+    
     
     async def request_members(self, guild, name, limit=1):
         """
@@ -15024,6 +14974,7 @@ class Client(ClientUserPBase):
         """
         type_ = RelationshipType.pending_outgoing
         return [rs for rs in self.relationships.values() if rs.type is type_]
+    
     
     def _gateway_for(self, guild_id):
         """

@@ -1,5 +1,6 @@
 __all__ = ('Command', )
 
+from ...backend.export import export
 from ...backend.utils import WeakReferer
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
     create_event_from_class
@@ -396,7 +397,7 @@ def _merge_checks(checks_1, checks_2):
     
     return tuple(_iter_merge_checks(checks_1, checks_2))
 
-
+@export
 class Command:
     """
     Represents a command.
@@ -581,7 +582,7 @@ class Command:
         category = self.get_category()
         self._category_reference = None
         if (category is not None):
-            category.commands.discard(self)
+            category.command_instances.discard(self)
     
     
     def set_category(self, category):
@@ -601,7 +602,7 @@ class Command:
         """
         self.unlink_category()
         
-        category.commands.add(self)
+        category.command_instances.add(self)
         self._category_hint = category.name
         self._category_reference = category._self_reference
         

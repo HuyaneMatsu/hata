@@ -27,7 +27,10 @@ also required a `prefix`, so pass that as well.
 from hata import Client
 
 TOKEN = ''
-NekoBot = Client(TOKEN, extensions='commands_v2', prefix='!')
+NekoBot = Client(TOKEN,
+    extensions = 'commands_v2',
+    prefix = '!',
+)
 
 @client.commands
 async def NekoBot():
@@ -290,6 +293,8 @@ Like by default `User` converter wont allow you to access out-of-guild users. Bu
 you can modify this behaviour.
 
 ```py
+from hata.ext.commands_v2 import configure_converter
+
 @NekoBot.commands
 @configure_converter('user', everywhere=True)
 async def avatar(ctx, user: 'User'=None):
@@ -331,17 +336,140 @@ Meanwhile these are all the applicable ones:
 
 Categories can be used to group up commands. Can be used for help commands, checks and for error handling.
 
-\# TODO
+### Creating categories
+
+Categories can be created on the fly, by using the `category` keyword inside of the `.commands` decorator.
+
+```py
+from hata.ext.commands_v2 import configure_converter
+
+@NekoBot.commands(category='utility')
+@configure_converter('user', everywhere=True)
+async def avatar(ctx, user: 'User'=None):
+    if user is None:
+        user = ctx.author
+    
+    return user.avatar_url_as(size=4096)
+```
+
+Although usually you want to create the category first to apply [checks](#checks) or description to it. If you have a
+created category, you can pass it directly to the `.commands` decorator instead of the category's name.
+
+```py
+from hata.ext.commands_v2 import configure_converter
+
+UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility')
+
+@NekoBot.commands(category=UTILITY_CATEGORY)
+@configure_converter('user', everywhere=True)
+async def avatar(ctx, user: 'User'=None):
+    if user is None:
+        user = ctx.author
+    
+    return user.avatar_url_as(size=4096)
+```
+
+As on command processor, `.commands` works on categories as well.
+
+
+```py
+from hata.ext.commands_v2 import configure_converter
+
+UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility')
+
+@UTILITY_CATEGORY.commands
+@configure_converter('user', everywhere=True)
+async def avatar(ctx, user: 'User'=None):
+    if user is None:
+        user = ctx.author
+    
+    return user.avatar_url_as(size=4096)
+```
 
 #### Default category
 
-\# TODO
+When no category is passed to a command, they will be added to the command processor's default category. Default 
+category name can be set when initializing the extension on the client, with the `default_category_name` parameter.
+
+```py
+from hata import Client
+
+TOKEN = ''
+NekoBot = Client(TOKEN,
+    extensions = 'commands_v2',
+    prefix = '!',
+    default_category_name = 'generic commands',
+)
+```
+
+Default category can be get by using the `client.command_processor.get_default_category()` method later.
 
 ## Checks
 
-\# TODO
+Checks can be applied to commands and to categories to check whether the user has permission to invoke the user.
 
-#### Precheck
+```py
+import os
+from hata.ext.commands_v2 import checks
+
+@NekoBot.commands
+@checks.owner_only()
+async def shutdown():
+    yield 'shutting down'
+    os._exit()
+```
+
+An other way to apply checks it to pass them to `.commands` decorator.
+
+```py
+import os
+from hata.ext.commands_v2 import checks
+
+@NekoBot.commands(checks=checks.owner_only())
+async def shutdown():
+    yield 'shutting down'
+    os._exit()
+```
+
+The following checks are implemented:
+
+| Name                           | Extra parameter          | Description                                                                                       |
+|--------------------------------|--------------------------|---------------------------------------------------------------------------------------------------|
+| announcement_channel_only      | N/A                      | Whether the message's channel is an announcement channel.                                         |
+| booster_only                   | N/A                      | Whether the user boosts the respective guild.                                                     |
+| bot_account_only               | N/A                      | Whether the message's author is a bot account.                                                    |
+| client_only                    | N/A                      | Whether the message was sent by a ``Client``.                                                     |
+| custom                         | function                 | Custom checks, to wrap a given `function`. (Can be async.)                                        |
+| guild_only                     | N/A                      | Whether the message was sent to a guild channel.                                                  |
+| guild_owner_only               | N/A                      | Whether the message's author is the guild's owner. (Fails in private channels.)                   |
+| has_any_role                   | *roles                   | Whether the message's author has any of the given roles.                                          |
+| has_client_guild_permissions   | permissions, **kwargs    | Whether the client has the given permissions at the guild. (Fails in private channels.)           |
+| has_client_permissions         | permissions, **kwargs    | Whether the client has the given permissions at the channel.                                      |
+| has_guild_permissions          | permissions, **kwargs    | Whether the message's author has the given permissions at the guild. (Fails in private channels.) |
+| has_permissions                | permissions, **kwargs    | Whether the message's author has the given permissions at the channel.                            |
+| has_role                       | role                     | Whether the message's author has the given role.                                                  |
+| is_any_category                | *categories              | Whether the message was sent into a channel, what's category is any of the specified ones.        |
+| is_any_channel                 | *channels                | Whether the message was sent to any of the given channels.                                        |
+| is_any_guild                   | *guilds                  | Whether the message was sent to any of the given guilds.                                          |
+| is_category                    | category                 | Whether the message was sent into a channel, what's category is the specified one.                |
+| is_channel                     | channel                  | Whether the message's channel is the given one.                                                   |
+| is_guild                       | guild                    | Whether the message guild is the given one.                                                       |
+| is_in_voice                    | N/A                      | Whether the user is in a voice channel in the respective guild.                                   |
+| nsfw_channel_only              | N/A                      | Whether the message's channel is nsfw.                                                            |
+| owner_only                     | N/A                      | Whether the message's author is an owner of the client.                                           |
+| owner_or_guild_owner_only      | N/A                      | `owner_only` or `guild_owner` (Fails in private channels.)                                        |
+| owner_or_has_any_role          | *roles                   | `owner_only` or `has_any_role`                                                                    |
+| owner_or_has_guild_permissions | permissions, **kwargs    | `owner_only` or `has_guild_permissions` (Fails in private channels.)                              |
+| owner_or_has_permissions       | permissions, **kwargs    | `owner_only` or `has_permissions`                                                                 |
+| owner_or_has_role              | role                     | `owner_only` or `has_role`                                                                        |
+| private_only                   | N/A                      | Whether the message's channel is a private channel.                                               |
+| user_account_only              | N/A                      | Whether the message's author is a user account.                                                   |
+| user_account_or_client_only    | N/A                      | Whether the message's author is a user account or a ``Client`` instance.                          |
+
+
+### Category checks
+
+## Precheck
 
 \# TODO
 

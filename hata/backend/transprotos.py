@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 import ssl, selectors
 from collections import deque
 import socket as module_socket
@@ -48,7 +49,8 @@ class _SSLPipe:
         | handshake_exception   | `None` or `BaseException` |
         +-----------------------+---------------------------+
         
-        If the handshake is successful, then the `handshake_exception` is given as `None`, else as an exception instance.
+        If the handshake is successful, then the `handshake_exception` is given as `None`, else as an exception
+        instance.
     _incoming : `ssl.MemoryBIO`
         Does the incoming data encryption/decryption.
     _outgoing : `ssl.MemoryBIO`

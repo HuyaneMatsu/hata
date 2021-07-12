@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 import base64, binascii, json, os, re, mimetypes as mime_types, uuid, zlib
 from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedReader
 from urllib.parse import urlencode as url_encode

@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('Cycler', 'EventThread', 'LOOP_TIME', 'LOOP_TIME_RESOLUTION', 'ThreadSyncerCTX', )
+﻿__all__ = ('Cycler', 'EventThread', 'LOOP_TIME', 'LOOP_TIME_RESOLUTION', 'ThreadSyncerCTX', )
 
 import sys, errno, weakref, subprocess, os
 import socket as module_socket
@@ -14,7 +13,7 @@ from stat import S_ISSOCK
 from .export import export
 from .utils import alchemy_incendiary, WeakReferer, weakmethod, MethodType, WeakCallable, doc_property, DOCS_ENABLED
 from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
-    CancelledError
+    CancelledError, skip_ready_cycle
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
@@ -1444,9 +1443,8 @@ class Server:
             loop._start_serving(protocol_factory, socket, ssl_context, self, backlog)
         
         # Skip one event loop cycle, so all the callbacks added up ^ will run before returning.
-        future = Future(loop)
-        future.set_result(None)
-        await future
+        await skip_ready_cycle()
+    
 
     async def wait_closed(self):
         """

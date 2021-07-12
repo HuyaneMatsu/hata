@@ -853,7 +853,7 @@ class InteractionResponseContext:
         """
         Creates a new ``InteractionResponseContext`` instance with the given parameters.
         
-        parameters
+        Parameters
         ----------
         is_deferring : `bool`
             Whether the request just deferring the interaction.

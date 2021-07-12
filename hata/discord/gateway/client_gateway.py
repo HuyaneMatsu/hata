@@ -287,7 +287,7 @@ class DiscordGateway:
                 else:
                     buffer.extend(message)
         except ConnectionClosed as err:
-            if err.code in (1000, 1006, 4004, 4010, 4011, 4013, 4014, ):
+            if err.code in (1000, 1006, 4004, 4010, 4011, 4013, 4014):
                 raise err
             return True
         except zlib.error as err:
@@ -698,6 +698,7 @@ class DiscordGatewaySharder:
         InvalidToken
             When the client's token is invalid.
         DiscordException
+            Any exception raised by the discord API when connecting.
         """
         max_concurrency = self.client._gateway_max_concurrency
         gateways = self.gateways
@@ -751,7 +752,11 @@ class DiscordGatewaySharder:
                 
                 waiter.cancel()
                 result.result()
-                
+            
+            # We could time gateway connect rate limit more precisely, but this is already fine. We don't need to rush
+            # it, there is many gateway to connect and sync with.
+            await sleep(5.0, KOKORO)
+            
             continue
         
         try:

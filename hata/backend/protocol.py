@@ -1,11 +1,12 @@
-# -*- coding: utf-8 -*-
+__all__ = ()
+
 import re, zlib, binascii, base64
 from random import getrandbits
 from struct import Struct
 from collections import deque
 
 from .utils import imultidict, DOCS_ENABLED
-from .futures import Future, CancelledError, Task, future_or_timeout
+from .futures import Future, CancelledError, Task, future_or_timeout, skip_ready_cycle
 from .export import include
 
 from .headers import CONNECTION, CONTENT_ENCODING, CONTENT_LENGTH, TRANSFER_ENCODING, METHOD_CONNECT, CONTENT_TYPE, \
@@ -3012,8 +3013,6 @@ class ProtocolBase(ReadProtocolBase):
         if (transport is not None):
             if transport.is_closing():
                 # skip 1 loop, so connection_lost() will be called
-                future = Future(self.loop)
-                future.set_result(None)
-                await future
+                await skip_ready_cycle()
         
         await self._drain_helper()

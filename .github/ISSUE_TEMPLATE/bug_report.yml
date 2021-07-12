@@ -1,0 +1,50 @@
+name: Bug Report
+description: Bug or unexpected behaviour
+title: "[Bug] "
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+        You may get real time by joining out Discord server https://discord.gg/3cH2r5d .
+  - type: textarea
+    attributes:
+      label: Description
+      description: A summary about what your problem is
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      description: >
+         Please provide clear steps to reproduce this issue.
+  - type: textarea
+    attributes:
+      label: Reproduction Code
+      description: >
+        A short code snippet to reproduce the bug.
+      render: python
+  - type: textarea
+    attributes:
+      label: Expected behaviour
+      description: >
+        What did you expect to happen, or not to happen?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual behaviour
+      description: >
+        What actually happened?
+  - type: textarea
+    attributes:
+      label: System information
+      description: >
+        Please run `python -m hata v` and paste the information below. This commands prints out your system information.
+
+        Note, if you are using specific python, replace `python` with it. (For example if you are using pypy, do
+        `pypy3 -m hata v`.)
+    validations:
+      required: true

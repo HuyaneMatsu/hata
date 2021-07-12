@@ -1,9 +1,11 @@
-﻿import os, sys, errno
+﻿__all__ = ()
+
+import os, sys, errno
 from stat import S_ISCHR, S_ISFIFO, S_ISSOCK
 from subprocess import TimeoutExpired, PIPE, Popen
 from socket import socketpair as create_socket_pair
 
-from .futures import Task, Future, WaitTillAll, future_or_timeout
+from .futures import Task, Future, WaitTillAll, future_or_timeout, skip_ready_cycle
 from .protocol import ReadProtocolBase
 
 IS_AIX = sys.platform.startswith('aix')
@@ -82,10 +84,8 @@ class UnixReadPipeTransport:
         
         try:
             os.set_blocking(fileno, False)
-            # skip 1 callback loop
-            future = Future(loop)
-            loop.call_soon(Future.set_result_if_pending, future, None)
-            await future
+            # skip 1 loop
+            await skip_ready_cycle()
             
             protocol.connection_made(self)
             loop.add_reader(fileno, self._read_ready)
@@ -369,10 +369,8 @@ class UnixWritePipeTransport:
         
         try:
             os.set_blocking(fileno, False)
-            # skip 1 callback loop
-            future = Future(loop)
-            loop.call_soon(Future.set_result_if_pending, future, None)
-            await future
+            # skip 1 loop
+            await skip_ready_cycle()
             
             protocol.connection_made(self)
             
@@ -898,10 +896,8 @@ class SubprocessStreamWriter:
             Connection lost exception if applicable.
         """
         if self.transport.is_closing():
-            loop = self.loop
-            future = Future(loop)
-            loop.call_soon(Future.set_result_if_pending, future, None)
-            await future
+            # skip 1 loop
+            await skip_ready_cycle()
         
         await self.protocol._drain_helper()
 

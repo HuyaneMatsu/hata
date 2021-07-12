@@ -3,16 +3,16 @@ __all__ = ('AsyncLifoQueue', 'AsyncQueue', 'CancelledError', 'Event', 'Future', 
     'FutureSyncWrapper', 'FutureWM', 'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task',
     'WaitContinuously', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout',
     'is_awaitable', 'is_coroutine', 'is_coroutine_function', 'is_coroutine_generator',
-    'is_coroutine_generator_function', 'shield', 'sleep', )
+    'is_coroutine_generator_function', 'shield', 'skip_ready_cycle', 'sleep', )
 
 import sys, reprlib, linecache
-from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType, FunctionType, coroutine
+from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType, FunctionType
 
 from collections import deque
 from threading import current_thread, Lock as SyncLock, Event as SyncEvent
 
-from .utils import alchemy_incendiary, DOCS_ENABLED, copy_func, copy_docs, set_docs
-from .analyzer import CO_ASYNC_GENERATOR, CO_COROUTINE_ALL
+from .utils import alchemy_incendiary, copy_func, copy_docs, set_docs
+from .analyzer import CO_ASYNC_GENERATOR, CO_COROUTINE_ALL, CO_GENERATOR, CO_ITERABLE_COROUTINE
 from .export import export, include
 
 EventThread = include('EventThread')
@@ -181,6 +181,97 @@ def is_coroutine_generator(obj):
         return True
     
     return False
+
+
+if sys.version_info >= (3, 8, 0):
+    def to_coroutine(function):
+        if not isinstance(function, FunctionType):
+            raise TypeError(f'`function` can only be `{FunctionType.__name__}`, got {function.__class__.__name__}; '
+                f'{function!r}.')
+        
+        code_object = function.__code__
+        code_flags = code_object.co_flags
+        if code_flags&CO_COROUTINE_ALL:
+            return function
+        
+        if not code_flags&CO_GENERATOR:
+            raise TypeError(f'`function` can only be given as generator or as coroutine type, got {function!r}, '
+                f'co_flags={code_flags!r}.')
+        
+        function.__code__ = type(code_object)(
+            code_object.co_argcount,
+            code_object.co_posonlyargcount,
+            code_object.co_kwonlyargcount,
+            code_object.co_nlocals,
+            code_object.co_stacksize,
+            code_flags | CO_ITERABLE_COROUTINE,
+            code_object.co_code,
+            code_object.co_consts,
+            code_object.co_names,
+            code_object.co_varnames,
+            code_object.co_filename,
+            code_object.co_name,
+            code_object.co_firstlineno,
+            code_object.co_lnotab,
+            code_object.co_freevars,
+            code_object.co_cellvars,
+        )
+        
+        return function
+else:
+    def to_coroutine(function):
+        if not isinstance(function, FunctionType):
+            raise TypeError(f'`function` can only be `{FunctionType.__name__}`, got {function.__class__.__name__}; '
+                f'{function!r}.')
+        
+        code_object = function.__code__
+        code_flags = code_object.co_flags
+        if code_flags&CO_COROUTINE_ALL:
+            return function
+        
+        if not code_flags&CO_GENERATOR:
+            raise TypeError(f'`function` can only be given as generator or as coroutine type, got {function!r}, '
+                f'co_flags={code_flags!r}.')
+        
+        function.__code__ = type(code_object)(
+            code_object.co_argcount,
+            code_object.co_kwonlyargcount,
+            code_object.co_nlocals,
+            code_object.co_stacksize,
+            code_flags | CO_ITERABLE_COROUTINE,
+            code_object.co_code,
+            code_object.co_consts,
+            code_object.co_names,
+            code_object.co_varnames,
+            code_object.co_filename,
+            code_object.co_name,
+            code_object.co_firstlineno,
+            code_object.co_lnotab,
+            code_object.co_freevars,
+            code_object.co_cellvars,
+        )
+        
+        return function
+
+set_docs(to_coroutine,
+    """
+    Transforms the given generator function to coroutine function.
+    
+    Parameters
+    ----------
+    function : ``FunctionType``
+        The generator function.
+    
+    Returns
+    -------
+    function : ``FunctionType``
+    
+    Raises
+    ------
+    TypeError
+        - `function`'s type is incorrect.
+        - `Function` cannot be turned to coroutine.
+    """)
 
 # future states
 
@@ -3286,7 +3377,7 @@ class AsyncQueue:
         
         return (yield from waiter)
     
-    result = coroutine(copy_func(__await__))
+    result = to_coroutine(copy_func(__await__))
     
     def result_no_wait(self):
         """
@@ -3917,6 +4008,7 @@ class _SleepHandleCanceller(_HandleCancellerBase):
         handler.cancel()
         future.set_result_if_pending(None)
 
+
 def sleep(delay, loop=None):
     """
     Suspends the current task, allowing other tasks to run.
@@ -3958,6 +4050,17 @@ def sleep(delay, loop=None):
     future._callbacks.append(callback)
     callback.handler = handler
     return future
+
+
+@to_coroutine
+def skip_ready_cycle():
+    """
+    Skips a ready cycle.
+    
+    This function is a coroutine.
+    """
+    yield
+
 
 class _TimeoutHandleCanceller(_HandleCancellerBase):
     """
@@ -5131,25 +5234,25 @@ class Event:
     
     __await__ = __iter__
     
-    wait = coroutine(copy_func(__iter__))
+    wait = to_coroutine(copy_func(__iter__))
     
     def __repr__(self):
         """Returns the event's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' ',
-                ]
+        ]
         
         if self._value:
             state = 'set'
         else:
             state = 'unset'
-        result.append(state)
+        repr_parts.append(state)
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 
 class enter_executor:

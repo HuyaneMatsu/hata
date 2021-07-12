@@ -1,9 +1,15 @@
 __all__ = ('Category',)
 
+from ...backend.export import include
 from ...backend.utils import WeakReferer
 
 from .command_helpers import validate_checks, test_error_handler
+from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
+    create_event_from_class
+
 from .utils import normalize_description, raw_name_to_display
+
+Command = include('Command')
 
 class Category:
     """
@@ -19,7 +25,7 @@ class Category:
         Error handlers bind to the category.
     _self_reference : `None` or ``WeakReferer`` to ``Category``
         Reference to the command processor itself.
-    commands : `set` of ``Command``
+    command_instances : `set` of ``Command``
         The registered commands to the category.
     display_name : `str`
         The category's display name.
@@ -37,7 +43,7 @@ class Category:
     ``Category`` supports weakreferencing.
     """
     __slots__ = ('__weakref__', '_checks', '_command_processor_reference', '_error_handlers', '_self_reference',
-        'commands', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail', 'name')
+        'command_instances', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail', 'name')
     
     def __new__(cls, name, *, checks=None, description=None, hidden=False, hidden_if_checks_fail=True):
         """
@@ -91,7 +97,7 @@ class Category:
         self._command_processor_reference = None
         self._error_handlers = None
         self._self_reference = None
-        self.commands = set()
+        self.command_instances = set()
         self.display_name = name
         self.description = description
         self.name = name
@@ -144,7 +150,7 @@ class Category:
         if (command_name_rule is not None):
             self.display_name = command_name_rule(self.name)
         
-        for command in self.commands:
+        for command in self.command_instances:
             command.set_command_processor(command_processor)
     
     
@@ -156,7 +162,7 @@ class Category:
         self._command_processor_reference = None
         
         if (command_processor is not None):
-            commands = list(self.commands)
+            commands = list(self.command_instances)
             for command in commands:
                 command.unlink_category()
         
@@ -248,3 +254,123 @@ class Category:
     @checks.deleter
     def checks(self):
         self._checks = None
+    
+    
+    @property
+    def commands(self):
+        """
+        Enables you to add sub-commands or sub-categories to the command.
+        
+        Returns
+        -------
+        handler : ``_EventHandlerManager``
+        """
+        return _EventHandlerManager(self)
+
+
+    def create_event(self, command, name=None, description=None, aliases=None, category=None, checks=None,
+            error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+        """
+        Adds a command to the command processor.
+        
+        Parameters
+        ----------
+        command : ``Command``, ``Router``, `None`, `async-callable`
+            Async callable to add as a command.
+        name : `None` or `str`
+            The command's name.
+        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+            The name to be used instead of the passed `command`'s.
+        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+            Description added to the command. If no description is provided, then it will check the commands's
+            `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
+            ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
+            description.
+        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+            The aliases of the command.
+        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+            The category of the command. Can be given as the category itself, or as a category's name. If given as
+            `None`, then the command will go under the command processer's default category.
+        checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                ``CommandCheckWrapper``, ``CheckBase``), Optional
+            Checks to decide in which circumstances the command should be called.
+        error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
+                `list` of `async-callable`), Optional
+            Error handlers for the command.
+        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+            The parameter separator of the command's parser.
+        assigner : `None`, `str`, Optional
+            Parameter assigner sign of the command's parser.
+        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands.
+        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+            Whether the command should be hidden from the help commands if any check fails.
+        
+        Returns
+        -------
+        command : ``Command``
+            The added command instance.
+        """
+        if isinstance(command, Command):
+            pass
+        elif isinstance(command, Router):
+            command = command[0]
+        else:
+            command = Command(command, name, description, aliases, category, checks, error_handlers, separator,
+                assigner, hidden, hidden_if_checks_fail)
+        
+        command._category_hint = self.name
+        
+        self._add_command(command)
+        return command
+    
+    
+    def create_event_from_class(self, klass):
+        """
+        Breaks down the given class to it's class attributes and tries to add it as a command.
+    
+        Parameters
+        ----------
+        klass : `type`
+            The class, from what's attributes the command will be created.
+        
+        Returns
+        -------
+        command : ``Command``
+            The added command instance.
+        """
+        command = Command.from_class(klass)
+        if isinstance(command, Router):
+            command = command[0]
+        
+        command._category_hint = self.name
+        
+        self._add_command(command)
+        return command
+    
+    
+    def _add_command(self, command):
+        """
+        Adds the command to the category.
+        
+        Parameters
+        ----------
+        command : ``Command``
+            The command to add to the category.
+        
+        Raises
+        ------
+        RuntimeError
+            - The category is not linked to a command processor.
+            - The command is bound to an other command processor.
+            - The command would only partially overwrite
+        """
+        command_processor_reference = self._command_processor_reference
+        if (command_processor_reference is not None):
+            command_processor = command_processor_reference()
+            if (command_processor is not None):
+                command_processor._add_command(command)
+                return
+        
+        raise RuntimeError(f'The category: {self!r} is linked to a command processor.')

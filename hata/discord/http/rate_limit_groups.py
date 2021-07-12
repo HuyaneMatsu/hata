@@ -1214,18 +1214,17 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/vanity-url`
     - Method : `GET`
     - Required auth : `bot`
-    - Limiter : `guild_id`
-    - Limit : `OPT`
-    - Resets after : `OPT`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
 
-- vanity_invite_get
+- vanity_invite_edit
     - Endpoint : `/guilds/{guild_id}/vanity-url`
     - Method : `PATCH`
     - Required auth : `bot`
-    - Limiter : `guild_id`
-    - Limit : `OPT`
-    - Resets after : `OPT`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `60.0`
 
 - voice_state_client_edit
     - Endpoint : `/guilds/{guild_id}/voice-states/@me`
@@ -1857,9 +1856,8 @@ sticker_guild_edit = RateLimitGroup()
 sticker_guild_delete = RateLimitGroup()
 sticker_guild_get = RateLimitGroup.unlimited()
 sticker_guild_create = RateLimitGroup()
-sticker_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True) # Untested
-vanity_invite_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-vanity_invite_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True) # untested
+vanity_invite_get = RateLimitGroup.unlimited()
+vanity_invite_edit = RateLimitGroup()
 voice_state_client_edit = RateLimitGroup()
 voice_state_user_edit = RateLimitGroup.unlimited() # untested
 welcome_screen_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)

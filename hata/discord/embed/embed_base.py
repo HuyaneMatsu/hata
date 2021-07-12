@@ -645,7 +645,7 @@ class EmbedFooter:
         
         return ''.join(repr_parts)
     
-    def __eq__(self,other):
+    def __eq__(self, other):
         """Returns whether the two embed footers are equal."""
         if type(self) is not type(other):
             return NotImplemented

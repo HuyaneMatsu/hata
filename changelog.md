@@ -1,5 +1,13 @@
 ## 1.1.90 *\[2021-07-??\]*
 
+- Add 5 second gateway connect rate limit per batch.
+- Add notification when session start limit reaches low amount.
+- Improve startup time of more clients by synchronizing guild member requests.
+- If a client is removed from a guild meanwhile connecting, it's members wont be requested.
+- Add `skip_ready_cycle`.
+- `ClientUserbase.partial` is not a property (reduces ram usage).
+- Do not request users if the client cannot.
+
 ## 1.1.89 *\[2021-07-08\]*
 
 #### Summary

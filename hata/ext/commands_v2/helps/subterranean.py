@@ -170,7 +170,7 @@ async def is_category_command_shown(command_context, category):
     should_show : `bool`
         Whether any command would be shown.
     """
-    for command in category.commands:
+    for command in category.command_instances:
         if await run_command_checks(command_context, command):
             return True
     
@@ -194,7 +194,7 @@ async def list_category_commands(command_context, category):
         The commands to show.
     """
     commands = []
-    for command in category.commands:
+    for command in category.command_instances:
         if await run_command_checks(command_context, command):
             commands.append(command)
     

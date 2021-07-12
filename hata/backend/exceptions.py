@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 class PayloadError(Exception):
     """
     Raised when http payload processing fails.

@@ -2,7 +2,7 @@ __all__ = ()
 
 from time import perf_counter
 
-from ...backend.futures import sleep, Task, future_or_timeout, Future, CancelledError
+from ...backend.futures import sleep, Task, future_or_timeout, Future, CancelledError, skip_ready_cycle
 
 from ..core import KOKORO
 
@@ -86,9 +86,7 @@ class Kokoro:
         self.task = Task(self._start(), KOKORO)
         
         #skip 1 loop
-        future = Future(KOKORO)
-        future.set_result(None)
-        await future
+        await skip_ready_cycle()
         
         return self
     
@@ -100,11 +98,11 @@ class Kokoro:
         This method is a coroutine.
         """
         self.cancel()
-        future = Future(KOKORO)
-        future.set_result(None)
-        await future #skip 1 loop
+        # skip 1 loop
+        await skip_ready_cycle()
         self.task = Task(self._start(), KOKORO)
-        await future #skip 1 loop
+        # skip 1 loop
+        await skip_ready_cycle()
     
     
     async def _start(self):
@@ -245,9 +243,7 @@ class Kokoro:
         #starts kokoro, then beating
         self.task = Task(self._start(), KOKORO)
         #skip 1 loop
-        future = Future(KOKORO)
-        future.set_result(None)
-        await future
+        await skip_ready_cycle()
         
         waiter = self.ws_waiter
         if waiter is not None:
@@ -361,9 +357,9 @@ class Kokoro:
                 break
             
             # case 4 : we already beat
-##            task=self.beat_task
+##            task = self.beat_task
 ##            if task is not None:
-##                should_beat_now=False
+##                should_beat_now = False
 ##                break
             
             should_beat_now = False

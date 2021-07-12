@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 from string import ascii_letters, ascii_lowercase, digits
 
 BIN_ASCII_LOWERCASE = ascii_lowercase.encode('ascii')

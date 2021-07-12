@@ -23,11 +23,11 @@ from ..integration import Integration
 from ..stage import Stage
 from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji_from_data
 
-from .core import ReadyState, maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
+from .core import maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
 from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
 from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, \
     INTENT_MASK_GUILD_VOICE_STATES, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_MESSAGES, \
-    INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS
+    INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS, INTENT_SHIFT_GUILD_USERS
 from .event_types import GuildUserChunkEvent
 from .guild_sync import guild_sync, check_channel
 
@@ -36,16 +36,17 @@ Client = include('Client')
 
 # we don't call ready from this function directly
 def READY(client, data):
+    try:
+        shard_info = data['shard']
+    except KeyError:
+        shard_id = 0
+    else:
+        shard_id = shard_info[0]
+    
     ready_state = client.ready_state
     guild_datas = data['guilds']
     
-    if ready_state is None:
-        ready_state = ReadyState(client, guild_datas)
-        client.ready_state = ready_state
-        Task(client._delay_ready(), KOKORO)
-    else:
-        ready_state.shard_ready(data)
-    
+    client._delay_ready(guild_datas, shard_id)
     client._init_on_ready(data['user'])
     
     # if the client is bot, we get only partial guilds,
@@ -53,7 +54,7 @@ def READY(client, data):
     if not client.is_bot:
         for guild_data in guild_datas:
             guild = Guild(guild_data, client)
-            ready_state.feed(guild)
+            ready_state.feed_guild(guild)
     
     try:
         relationship_datas = data['relationships']
@@ -2301,13 +2302,12 @@ if CACHE_PRESENCE:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if ready_state is None:
-            if guild.is_large:
+        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+            if (client.intents&INTENT_SHIFT_GUILD_USERS) and guild.is_large:
                 Task(client._request_members(guild.id), KOKORO)
+            
             Task(client.events.guild_create(client, guild), KOKORO)
-            return
-        
-        ready_state.feed(guild)
+
 
     def GUILD_CREATE__OPT(client, data):
         guild_state = data.get('unavailable', False)
@@ -2317,12 +2317,9 @@ if CACHE_PRESENCE:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if ready_state is None:
-            if guild.is_large:
+        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+            if (client.intents&INTENT_SHIFT_GUILD_USERS) and guild.is_large:
                 Task(client._request_members(guild.id), KOKORO)
-            return
-        
-        ready_state.feed(guild)
 
 elif CACHE_USER:
     def GUILD_CREATE__CAL(client, data):
@@ -2333,12 +2330,11 @@ elif CACHE_USER:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if ready_state is None:
-            Task(client._request_members(guild.id), KOKORO)
+        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+            if (client.intents&INTENT_SHIFT_GUILD_USERS):
+                Task(client._request_members(guild.id), KOKORO)
+            
             Task(client.events.guild_create(client, guild), KOKORO)
-            return
-        
-        ready_state.feed(guild)
 
     def GUILD_CREATE__OPT(client, data):
         guild_state = data.get('unavailable', False)
@@ -2348,11 +2344,8 @@ elif CACHE_USER:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if ready_state is None:
+        if (ready_state is None) or (not ready_state.feed_guild(guild)) and (client.intents&INTENT_SHIFT_GUILD_USERS):
             Task(client._request_members(guild.id), KOKORO)
-            return
-        
-        ready_state.feed(guild)
 
 else:
     def GUILD_CREATE__CAL(client, data):
@@ -2363,11 +2356,8 @@ else:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if ready_state is None:
+        if (ready_state is None) or (not ready_state.feed_guild(guild)):
             Task(client.events.guild_create(client, guild), KOKORO)
-            return
-        
-        ready_state.feed(guild)
     
     def GUILD_CREATE__OPT(client, data):
         guild_state = data.get('unavailable', False)
@@ -2377,10 +2367,9 @@ else:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if ready_state is None:
-            return
-        
-        ready_state.feed(guild)
+        if (ready_state is not None):
+            ready_state.feed_guild(guild)
+
 
 add_parser(
     'GUILD_CREATE',
@@ -2476,6 +2465,10 @@ def GUILD_DELETE__CAL(client, data):
     
     guild._delete(client)
     
+    ready_state = client.ready_state
+    if (ready_state is not None):
+        ready_state.discard_guild(guild)
+    
     Task(client.events.guild_delete(client, guild,profile), KOKORO)
 
 def GUILD_DELETE__OPT(client, data):
@@ -2491,6 +2484,10 @@ def GUILD_DELETE__OPT(client, data):
     client.guild_profiles.pop(guild, None)
     
     guild._delete(client)
+
+    ready_state = client.ready_state
+    if (ready_state is not None):
+        ready_state.discard_guild(guild)
 
 add_parser(
     'GUILD_DELETE',

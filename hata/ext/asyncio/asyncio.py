@@ -25,7 +25,7 @@ from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyD
 from ...backend.event_loop import EventThread
 from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, \
     WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, \
-    Event as HataEvent, AsyncLifoQueue, is_coroutine
+    Event as HataEvent, AsyncLifoQueue, is_coroutine, skip_ready_cycle
 from ...backend.executor import Executor
 from ...backend.subprocess import AsyncProcess
 
@@ -1217,9 +1217,7 @@ class StreamWriter:
                 raise exception
         
         if self._transport.is_closing():
-            future = self._loop.create_future()
-            future.set_result(None)
-            await future
+            await skip_ready_cycle()
         
         await self._protocol._drain_helper()
 
@@ -1765,9 +1763,7 @@ async def sleep(delay, result=None, *, loop=None):
                       DeprecationWarning, stacklevel=2)
     
     if delay <= 0.0:
-        future = HataFuture(loop)
-        future.set_result(None)
-        await future
+        await skip_ready_cycle()
         return result
     
     await hata_sleep(delay, loop)

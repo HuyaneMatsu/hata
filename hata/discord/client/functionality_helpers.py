@@ -3,15 +3,12 @@ __all__ = ()
 from math import inf
 from datetime import datetime
 
-from ...env import CACHE_PRESENCE
-
 from ...backend.utils import basemethod
 from ...backend.event_loop import LOOP_TIME
-from ...backend.futures import Future, sleep, Task, WaitTillFirst
+from ...backend.futures import Future, Task, WaitTillFirst
 
 from ..core import KOKORO, CLIENTS, CHANNELS
 from ..http import RateLimitProxy
-from ..gateway.client_gateway import REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
 from ..utils import time_now, DISCORD_EPOCH
 from ..exceptions import DiscordException
 from ..channel import ChannelThread
@@ -101,6 +98,7 @@ class SingleUserChunker:
             If timeout occurred.
         """
         return self.waiter.__await__()
+
 
 class MassUserChunker:
     """
@@ -227,6 +225,7 @@ class DiscoveryCategoryRequestCacher:
         The time interval between what the requests should be done.
     """
     __slots__ = ('_active_request', '_last_update', '_waiter', 'cached', 'func', 'timeout',)
+    
     def __init__(self, func, timeout, cached=...):
         """
         Creates a ``DiscoveryCategoryRequestCacher`` instance.
@@ -890,39 +889,6 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             continue
 
 
-async def _request_members_loop(gateway, guilds):
-    """
-    Called by ``Client._request_members2`` parallelly with other ``request_members_loop``-s for each shard.
-    
-    The function requests all the members of given guilds without putting too much pressure on the respective
-    gateway's rate limits.
-    
-    This function is a coroutine.
-    
-    Parameters
-    ----------
-    gateway : ``DiscordGateway``
-        The gateway to use for requests.
-    guilds : `list` of ``Guild``
-        The guilds, what's members should be requested.
-    """
-    sub_data = {
-        'guild_id': 0,
-        'query': '',
-        'limit': 0,
-        'presences': CACHE_PRESENCE,
-        'nonce': '0000000000000000',
-    }
-    
-    data = {
-        'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
-        'd': sub_data
-    }
-    
-    for guild in guilds:
-        sub_data['guild_id'] = guild.id
-        await gateway.send_as_json(data)
-        await sleep(0.6, KOKORO)
 
 
 async def request_thread_channels(client, guild, channel_id, request_function):

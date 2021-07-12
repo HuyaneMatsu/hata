@@ -102,7 +102,6 @@ class User(USER_BASE_CLASS):
                 update = self.partial
             
             if update:
-                self.partial = False
                 self.is_bot = user_data.get('bot', False)
                 self._update_no_return(user_data)
             
@@ -141,7 +140,6 @@ class User(USER_BASE_CLASS):
                 update = self.partial
             
             if update:
-                self.partial = False
                 self.is_bot = user_data.get('bot', False)
                 self._update_no_return(user_data)
             
@@ -176,7 +174,6 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.partial = False
             self.is_bot = user_data.get('bot', False)
             self._update_no_return(user_data)
             
@@ -340,32 +337,31 @@ class User(USER_BASE_CLASS):
             user_id = int(user_data['id'])
             
             try:
-                user = USERS[user_id]
+                self = USERS[user_id]
             except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = {}
-                user.status = Status.offline
-                user.statuses = {}
-                user.activities = None
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
+                self.status = Status.offline
+                self.statuses = {}
+                self.activities = None
                 
-                USERS[user_id] = user
+                USERS[user_id] = self
             
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = user.guild_profiles[guild]
+                    profile = self.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    guild.users[user_id] = self
+                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
                     profile._update_no_return(guild_profile_data)
             
-            return user
+            return self
         
     elif CACHE_USER:
         @classmethod
@@ -380,29 +376,28 @@ class User(USER_BASE_CLASS):
             user_id = int(user_data['id'])
             
             try:
-                user = USERS[user_id]
+                self = USERS[user_id]
             except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = {}
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
                 
-                USERS[user_id] = user
+                USERS[user_id] = self
             
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = user.guild_profiles[guild]
+                    profile = self.guild_profiles[guild]
                 except KeyError:
-                    guild.users[user_id] = user
-                    user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    guild.users[user_id] = self
+                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
                     profile._update_no_return(guild_profile_data)
             
-            return user
+            return self
         
     else:
         @classmethod
@@ -418,22 +413,21 @@ class User(USER_BASE_CLASS):
             user_id = int(user_data['id'])
             
             try:
-                user = USERS[user_id]
+                self = USERS[user_id]
             except KeyError:
-                user = object.__new__(cls)
-                user.id = user_id
-                user.guild_profiles = {}
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
                 
-                USERS[user_id] = user
+                USERS[user_id] = self
             
-            user.partial = False
-            user.is_bot = user_data.get('bot', False)
-            user._update_no_return(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_no_return(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild] = GuildProfile(guild_profile_data)
             
-            return user
+            return self
     
     set_docs(_create_and_update,
         """

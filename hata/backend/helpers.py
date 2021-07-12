@@ -1,4 +1,5 @@
-﻿# -*- coding: utf-8 -*-
+﻿__all__ = ()
+
 import base64, binascii, re
 from collections import namedtuple
 from urllib.parse import quote

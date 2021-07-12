@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from html import escape as html_escape
 
 from ...backend.quote import quote

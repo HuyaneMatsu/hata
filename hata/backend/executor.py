@@ -554,7 +554,7 @@ class _claim_ended_cb:
             parent = self.parent
             loop.call_soon_thread_safe(parent.__class__._claim_ended, parent, executor)
     
-    def __eq__(self,other):
+    def __eq__(self, other):
         """Returns whether the two claim ended callbacks are the same."""
         if type(self) is not type(other):
             return NotImplemented

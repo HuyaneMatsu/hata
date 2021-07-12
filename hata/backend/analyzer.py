@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('CallableAnalyzer', )
 
 import sys
@@ -31,11 +30,11 @@ INSTANCE_TO_ASYNC_CANNOT = 2
 INSTANCE_TO_ASYNC_GENERATOR_FALSE = 3
 INSTANCE_TO_ASYNC_GENERATOR_TRUE = 4
 
-ARGUMENT_POSITIONAL_ONLY = 0
-ARGUMENT_POSITIONAL_AND_KEYWORD = 1
-ARGUMENT_KEYWORD_ONLY = 2
-ARGUMENT_ARGS = 3
-ARGUMENT_KWARGS = 4
+PARAMETER_POSITIONAL_ONLY = 0
+PARAMETER_POSITIONAL_AND_KEYWORD = 1
+PARAMETER_KEYWORD_ONLY = 2
+PARAMETER_ARGS = 3
+PARAMETER_KWARGS = 4
 
 class Parameter:
     """
@@ -60,15 +59,15 @@ class Parameter:
         +-----------------------------------+-----------+
         | Respective Name                   | Value     |
         +===================================+===========+
-        | ARGUMENT_POSITIONAL_ONLY          | 0         |
+        | PARAMETER_POSITIONAL_ONLY         | 0         |
         +-----------------------------------+-----------+
-        | ARGUMENT_POSITIONAL_AND_KEYWORD   | 1         |
+        | PARAMETER_POSITIONAL_AND_KEYWORD  | 1         |
         +-----------------------------------+-----------+
-        | ARGUMENT_KEYWORD_ONLY             | 2         |
+        | PARAMETER_KEYWORD_ONLY            | 2         |
         +-----------------------------------+-----------+
-        | ARGUMENT_ARGS                     | 3         |
+        | PARAMETER_ARGS                    | 3         |
         +-----------------------------------+-----------+
-        | ARGUMENT_KWARGS                   | 4         |
+        | PARAMETER_KWARGS                  | 4         |
         +-----------------------------------+-----------+
     reserved : `bool`
         Whether the parameter is reserved.
@@ -111,7 +110,7 @@ class Parameter:
         is_positional_only : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMENT_POSITIONAL_ONLY:
+        if positionality == PARAMETER_POSITIONAL_ONLY:
             return True
         
         return False
@@ -125,10 +124,10 @@ class Parameter:
         is_positional : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMENT_POSITIONAL_ONLY:
+        if positionality == PARAMETER_POSITIONAL_ONLY:
             return True
         
-        if positionality == ARGUMENT_POSITIONAL_AND_KEYWORD:
+        if positionality == PARAMETER_POSITIONAL_AND_KEYWORD:
             return True
         
         return False
@@ -142,10 +141,10 @@ class Parameter:
         is_keyword : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMENT_POSITIONAL_AND_KEYWORD:
+        if positionality == PARAMETER_POSITIONAL_AND_KEYWORD:
             return True
         
-        if positionality == ARGUMENT_KEYWORD_ONLY:
+        if positionality == PARAMETER_KEYWORD_ONLY:
             return True
         
         return False
@@ -159,7 +158,7 @@ class Parameter:
         is_keyword_only : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMENT_KEYWORD_ONLY:
+        if positionality == PARAMETER_KEYWORD_ONLY:
             return True
         
         return False
@@ -173,7 +172,7 @@ class Parameter:
         is_args : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMENT_ARGS:
+        if positionality == PARAMETER_ARGS:
             return True
         
         return False
@@ -187,7 +186,7 @@ class Parameter:
         is_kwargs : `bool`
         """
         positionality = self.positionality
-        if positionality == ARGUMENT_KWARGS:
+        if positionality == PARAMETER_KWARGS:
             return True
         
         return False
@@ -526,9 +525,9 @@ class CallableAnalyzer:
                     parameter.default = default
                 
                 if index<positional_only_argcount:
-                    parameter.positionality = ARGUMENT_POSITIONAL_ONLY
+                    parameter.positionality = PARAMETER_POSITIONAL_ONLY
                 else:
-                    parameter.positionality = ARGUMENT_POSITIONAL_AND_KEYWORD
+                    parameter.positionality = PARAMETER_POSITIONAL_AND_KEYWORD
                 
                 parameter.reserved = (index<method_allocation)
                 parameters.append(parameter)
@@ -551,7 +550,7 @@ class CallableAnalyzer:
 
                 args_parameter.has_default = False
                 args_parameter.default = None
-                args_parameter.positionality = ARGUMENT_ARGS
+                args_parameter.positionality = PARAMETER_ARGS
                 
                 if method_allocation > parameter_count:
                     args_parameter.reserved = True
@@ -583,7 +582,7 @@ class CallableAnalyzer:
                     parameter.has_default = True
                     parameter.default = default
                 
-                parameter.positionality = ARGUMENT_KEYWORD_ONLY
+                parameter.positionality = PARAMETER_KEYWORD_ONLY
                 parameter.reserved = False
                 parameters.append(parameter)
                 index = index+1
@@ -604,7 +603,7 @@ class CallableAnalyzer:
                 
                 kwargs_parameter.has_default = False
                 kwargs_parameter.default = None
-                kwargs_parameter.positionality = ARGUMENT_KWARGS
+                kwargs_parameter.positionality = PARAMETER_KWARGS
                 kwargs_parameter.reserved = False
                 parameters.append(kwargs_parameter)
         

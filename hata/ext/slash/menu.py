@@ -251,7 +251,7 @@ class ComponentDescriptor(ComponentDescriptorState):
         identifier = cls._identifier_counter+1
         cls._identifier_counter = identifier
         
-        self = ComponentDescriptorState.__new__(ComponentDescriptorState, source, sub_components)
+        self = ComponentDescriptorState.__new__(cls, source, sub_components)
         self._identifier = identifier
         return self
     
@@ -475,7 +475,7 @@ def validate_check(check):
     if check is None:
         return
     
-    analyzer = CallableAnalyzer(check, as_method=True)
+    analyzer = CallableAnalyzer(check)
     if analyzer.is_async():
         raise TypeError('`check` should have NOT be be `async` function.')
     
@@ -508,11 +508,12 @@ def validate_invoke(invoke):
     if invoke is None:
         return
     
-    analyzer = CallableAnalyzer(invoke, as_method=True)
+    analyzer = CallableAnalyzer(invoke)
     if not analyzer.is_async():
         raise TypeError('`invoke` should have be `async` function.')
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
+    
     if min_ > 2:
         raise TypeError(f'`invoke` should accept `2` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{invoke!r}`.')
@@ -541,7 +542,7 @@ def validate_initial_invoke(initial_invoke):
     if initial_invoke is None:
         return
     
-    analyzer = CallableAnalyzer(initial_invoke, as_method=True)
+    analyzer = CallableAnalyzer(initial_invoke)
     if not analyzer.is_async():
         raise TypeError('`initial_invoke` should have be `async` function.')
     
@@ -574,7 +575,7 @@ def validate_close(close):
     if close is None:
         return
     
-    analyzer = CallableAnalyzer(close, as_method=True)
+    analyzer = CallableAnalyzer(close)
     if not analyzer.is_async():
         raise TypeError('`close` should have be `async` function.')
     
@@ -607,7 +608,7 @@ def validate_init(init):
     if (init is None) or (init is object.__init__):
         return
     
-    analyzer = CallableAnalyzer(init, as_method=True)
+    analyzer = CallableAnalyzer(init)
     if analyzer.is_async():
         raise TypeError('`close` should have be `async` function.')
     
@@ -967,6 +968,8 @@ DISALLOWED_MENU_ATTRIBUTE_NAMES = (
     'components',
 )
 
+Menu = None
+
 class MenuType(type):
     """
     Meta type for ``Menu`` instances.
@@ -1010,9 +1013,6 @@ class MenuType(type):
         new_menu_structure = MenuStructure(class_attributes)
         if (old_menu_structure is not None):
             new_menu_structure = new_menu_structure.merge(old_menu_structure)
-        
-        if (Menu is not None):
-            new_menu_structure.validate()
         
         class_attributes['_menu_structure'] = new_menu_structure
         
@@ -1092,6 +1092,9 @@ class MenuType(type):
         for attribute_name, attribute_value in component_descriptors.items():
             class_attributes[attribute_name] = attribute_value
         
+        if '__slots__' not in class_attributes:
+            class_attributes['__slots__'] = ('__dict__', )
+        
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
@@ -1132,17 +1135,20 @@ class Menu(metaclass=MenuType):
         Executes the timeout feature on the menu.
     _tracked_changes : `dict` of (`str`, `Any`) items
         The tracked changes by parameter name.
-    _tracked_proxies : `None` or `list` of ``ComponentProxy``
-        TODO
     channel : ``ChannelTextBase`` instance
         The channel where the menu is executed.
     client : ``Client``
         The executor client instance.
     message : `None` or ``Message``
         The message which executes the menu.
+    
+    Class Attributes
+    ----------------
+    _menu_structure : ``MenuStructure``
+        Factorized methods added by the user used by the menu itself.
     """
     __slots__ = ('_allowed_mentions', '_canceller', '_component_proxy_cache', '_gui_state', '_timeouter',
-        '_tracked_changes', 'channel', 'client', 'message', '_components', '_tracked_proxies' )
+        '_tracked_changes', 'channel', 'client', 'message', '_components',)
     
     async def __new__(cls, interaction_event, *args, **kwargs):
         """
@@ -1192,8 +1198,8 @@ class Menu(metaclass=MenuType):
                     break
             
             raise TypeError(f'`interaction_event` can be given as `{InteractionEvent.__name__}`, '
-                f'`{Message.__name__}` or as `{ChannelTextBase.__name__}` instance, got '
-                f'{interaction_event.__class__.__name__}.')
+                f'`{Message.__name__}` or as `tuple` of (`{Client.__name__}`, `{ChannelTextBase.__name__}`) '
+                f'instance, got {interaction_event.__class__.__name__}.')
         
         
         self = object.__new__(cls)
@@ -1207,11 +1213,11 @@ class Menu(metaclass=MenuType):
         self._allowed_mentions = None
         self._component_proxy_cache = {}
         self._components = None
-        self._tracked_proxies = {}
         
         # TODO
         
-        init = menu_structure.__init__
+        init = menu_structure.init
+        print('calling init?', init)
         if (init is not None):
             init(self, interaction_event, *args, **kwargs)
         
@@ -1565,7 +1571,6 @@ class Menu(metaclass=MenuType):
     
     @components.setter
     def components(self, raw_components):
-        component_proxies = set()
         components = []
         all_component_descriptor = None
         
@@ -1573,9 +1578,6 @@ class Menu(metaclass=MenuType):
             pass
         
         elif isinstance(raw_components, ComponentProxy):
-            for component_proxy in raw_components._iter_component_proxies():
-                component_proxies.add(component_proxy)
-            
             if raw_components.type is ComponentType.row:
                 components.append(raw_components)
             else:
@@ -1586,7 +1588,6 @@ class Menu(metaclass=MenuType):
                 )
                 component_proxy = component_descriptor.get_component_proxy(self)
                 
-                component_proxies.add(component_proxy)
                 components.append(component_proxy)
         
         elif isinstance(raw_components, ComponentBase):
@@ -1616,16 +1617,12 @@ class Menu(metaclass=MenuType):
             
             component_proxy = component_descriptor.get_component_proxy(self)
             
-            component_proxies.add(component_proxy)
             components.append(component_proxy)
         
         elif isinstance(raw_components, (tuple, list)):
             
             for raw_sub_component in raw_components:
                 if isinstance(raw_sub_component, ComponentProxy):
-                    for component_proxy in raw_sub_component._iter_component_proxies():
-                        component_proxies.add(component_proxy)
-                    
                     if raw_sub_component.type is ComponentType.row:
                         components.append(raw_sub_component)
                     else:
@@ -1636,37 +1633,46 @@ class Menu(metaclass=MenuType):
                         )
                         component_proxy = component_descriptor.get_component_proxy(self)
                         
-                        component_proxies.add(component_proxy)
                         components.append(component_proxy)
                     
                 elif isinstance(raw_sub_component, ComponentBase):
-                    if raw_sub_component.type is ComponentType.row:
-                        # detect dupe components
-                        sub_component_descriptors = []
-                        for sub_component in _iter_sub_components(raw_sub_component):
-                            sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
-                            
-                            if all_component_descriptor is None:
-                                all_component_descriptor = {}
-                            
-                            try:
-                                sub_component_descriptor = all_component_descriptor[sub_component_hasher]
-                            except KeyError:
-                                sub_component_descriptor = ComponentDescriptor(sub_component, None)
-                                all_component_descriptor[sub_component_hasher] = sub_component_descriptor
-                            
-                            sub_component_descriptors.append(sub_component_descriptor)
-                    else:
-                        sub_component_descriptors = None
+                    component_hasher = ComponentSourceIdentityHasher(raw_sub_component)
                     
-                    component_descriptor = ComponentDescriptorState(
-                        ComponentRow(raw_sub_component),
-                        sub_component_descriptors,
-                    )
+                    if all_component_descriptor is None:
+                        all_component_descriptor = {}
                     
+                    try:
+                        component_descriptor = all_component_descriptor[component_hasher]
+                    except KeyError:
+                        if raw_sub_component.type is ComponentType.row:
+                            # detect dupe components
+                            sub_component_descriptors = []
+                            for sub_component in _iter_sub_components(raw_sub_component):
+                                sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
+                                
+                                if all_component_descriptor is None:
+                                    all_component_descriptor = {}
+                                
+                                try:
+                                    sub_component_descriptor = all_component_descriptor[sub_component_hasher]
+                                except KeyError:
+                                    sub_component_descriptor = ComponentDescriptor(sub_component, None)
+                                    all_component_descriptor[sub_component_hasher] = sub_component_descriptor
+                                
+                                sub_component_descriptors.append(sub_component_descriptor)
+                        else:
+                            sub_component_descriptors = None
+                            
+                        
+                        component_descriptor = ComponentDescriptorState(
+                            raw_sub_component,
+                            sub_component_descriptors,
+                        )
+                        
+                        all_component_descriptor[component_hasher] = component_descriptor
+                    
+
                     component_proxy = component_descriptor.get_component_proxy(self)
-                    
-                    component_proxies.add(component_proxy)
                     components.append(component_proxy)
                 
                 elif isinstance(raw_sub_component, (tuple, list)):
@@ -1698,66 +1704,25 @@ class Menu(metaclass=MenuType):
                         else:
                             raise TypeError(f'Nested-sub components can be either `{ComponentProxy.__name__}` or  '
                                 f'`{ComponentBase.__name__}`, got {raw_nested_sub_component.__class__.__name__}.')
-                        
-                        component_descriptor = ComponentDescriptorState(
-                            ComponentRow(raw_components),
-                            sub_component_descriptors,
-                        )
-                        
-                        component_proxy = component_descriptor.get_component_proxy(self)
-                        
-                        component_proxies.add(component_proxy)
-                        components.append(component_proxy)
+                    
+                    component_descriptor = ComponentDescriptorState(
+                        ComponentRow(*raw_components),
+                        sub_component_descriptors,
+                    )
+                    
+                    component_proxy = component_descriptor.get_component_proxy(self)
+                    
+                    components.append(component_proxy)
         
         else:
             raise TypeError(f'`raw_components` can be `None`, `{ComponentProxy.__name__}`, `{ComponentBase.__name__}`, '
                 f'(`list`, `tuple`) of repeat, no triple nesting, got {raw_components.__class__.__name__}.')
         
-        old_component_proxies = self._tracked_proxies
-        component_proxy_difference = old_component_proxies-component_proxies
-        self._tracked_proxies = component_proxies
-        
-        tracked_identifiers = set()
-        for component_proxy in component_proxies:
-            descriptor = component_proxy._descriptor
-            if isinstance(descriptor, ComponentDescriptor):
-                tracked_identifiers.add(descriptor._identifier)
-            
-            sub_components = descriptor._sub_components
-            if (sub_components is not None):
-                for sub_component_descriptor in sub_components:
-                    if isinstance(sub_component_descriptor, ComponentDescriptor):
-                        tracked_identifiers.add(descriptor._identifier)
-        
-        component_proxy_cache = self._component_proxy_cache
-        
-        for component_proxy in component_proxy_difference:
-            descriptor = component_proxy._descriptor
-            if isinstance(descriptor, ComponentDescriptor):
-                identifier = descriptor._identifier
-                if identifier not in identifier:
-                    try:
-                        del component_proxy_cache[identifier]
-                    except KeyError:
-                        pass
-            
-            sub_components = descriptor._sub_components
-            if (sub_components is not None):
-                for sub_component_descriptor in sub_components:
-                    if isinstance(sub_component_descriptor, ComponentDescriptor):
-                        identifier = sub_component_descriptor._identifier
-                        if identifier not in identifier:
-                            try:
-                                del component_proxy_cache[identifier]
-                            except KeyError:
-                                pass
-        
         if not components:
             components = None
         
         self._components = components
-        
+    
     @components.deleter
     def components(self):
         self._components = None
-

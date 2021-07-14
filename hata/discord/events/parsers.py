@@ -1801,7 +1801,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
             if coro is DEFAULT_EVENT_HANDLER:
                 continue
             
-            Task(coro(client, emoji, guild), KOKORO)
+            Task(coro(client, emoji), KOKORO)
             continue
         
         # no more case
@@ -1836,13 +1836,13 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
             if action == EMOJI_UPDATE_NEW:
                 event_handler = client_.events.emoji_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, guild, emoji), KOKORO)
+                    Task(event_handler(client, emoji), KOKORO)
                 continue
             
             if action == EMOJI_UPDATE_DELETE:
                 event_handler = client_.events.emoji_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, guild, emoji), KOKORO)
+                    Task(event_handler(client, emoji), KOKORO)
                 continue
             
             continue
@@ -1918,7 +1918,7 @@ def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
             if coro is DEFAULT_EVENT_HANDLER:
                 continue
             
-            Task(coro(client, sticker, guild), KOKORO)
+            Task(coro(client, sticker), KOKORO)
             continue
         
         # no more case
@@ -1953,13 +1953,13 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
             if action == STICKER_UPDATE_NEW:
                 event_handler = client_.events.sticker_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, guild, sticker), KOKORO)
+                    Task(event_handler(client, sticker), KOKORO)
                 continue
             
             if action == STICKER_UPDATE_DELETE:
                 event_handler = client_.events.sticker_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, guild, sticker), KOKORO)
+                    Task(event_handler(client, sticker), KOKORO)
                 continue
             
             continue

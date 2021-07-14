@@ -7,7 +7,7 @@ from ...discord.utils import USER_MENTION_RP
 from ...discord.events.handling_helpers import Router, compare_converted
 
 from .command_helpers import default_precheck, test_precheck, test_error_handler, test_name_rule, \
-    validate_category_or_command_name, get_prefix_parser, COMMAND_NAME_RP
+    validate_category_or_command_name, get_prefix_parser, COMMAND_NAME_RP, test_unknown_command
 from .utils import raw_name_to_display
 from .context import CommandContext
 from .category import Category
@@ -155,6 +155,21 @@ class CommandProcessor(EventWaitforBase):
     _self_reference : `None` or ``WeakReferer`` to ``CommandProcessor``
         Reference to the command processor itself.
     
+    _unknown_command : `None` or `FunctionType`
+        Called when a command would be called, but not found.
+        
+        Accepts the following parameters:
+        
+        +---------------+---------------+
+        | Name          | Type          |
+        +===============+===============+
+        | client        | ``Client``    |
+        +---------------+---------------+
+        | message       | ``Message``   |
+        +---------------+---------------+
+        | command_name  | `str`         |
+        +---------------+---------------+
+    
     category_name_to_category : `dict` of (`str`, ``Category``) items
         Category name to category relation.
     
@@ -174,8 +189,8 @@ class CommandProcessor(EventWaitforBase):
     
     __slots__ = ('__weakref__', '_category_name_rule', '_command_name_rule', '_default_category',
         '_error_handlers', '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case',
-        '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category', 'categories',
-        'command_name_to_command', 'commands')
+        '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category', '_unknown_command',
+        'categories', 'command_name_to_command', 'commands')
     
     __event_name__ = 'message_create'
     SUPPORTED_TYPES = (Command, )
@@ -284,6 +299,7 @@ class CommandProcessor(EventWaitforBase):
         self.category_name_to_category = {}
         self.commands = set()
         self.categories = set()
+        self._unknown_command = None
         
         self._self_reference = WeakReferer(self)
         
@@ -339,7 +355,13 @@ class CommandProcessor(EventWaitforBase):
         try:
             command = self.command_name_to_command[command_name]
         except KeyError:
-            # do later, character lazy
+            unknown_command = self._unknown_command
+            if (unknown_command is not None):
+                try:
+                    await unknown_command(client, message, command_name)
+                except BaseException as err:
+                    await client.events.error(client, f'{self!r}.__call__', err)
+            
             return
         
         content = message.content[end:]
@@ -956,3 +978,39 @@ class CommandProcessor(EventWaitforBase):
             return
         
         self._remove_command(command)
+    
+    
+    def unknown_command(self, unknown_command):
+        """
+        Registers a function to ba called, when no prefix is found, but no command could be detected.
+        
+        Parameters
+        ----------
+        unknown_command : `None` of `FunctionType``
+            The function to call.
+            
+            Should the following parameters:
+            
+            +---------------+---------------+
+            | Name          | Type          |
+            +===============+===============+
+            | client        | ``Client``    |
+            +---------------+---------------+
+            | message       | ``Message``   |
+            +---------------+---------------+
+            | command_name  | `str`         |
+            +---------------+---------------+
+        
+        Returns
+        -------
+        unknown_command : `None` of `FunctionType``
+        
+        Raises
+        ------
+        TypeError
+            - If `unknown_command` accepts bad amount of parameters.
+            - If `unknown_command` is not async.
+        """
+        test_unknown_command(unknown_command)
+        self._unknown_command = unknown_command
+        return unknown_command

@@ -92,7 +92,7 @@ class DiscordException(Exception):
         if messages is None:
             messages = self._cr_messages()
         return messages
-
+    
     def _cr_messages(self):
         """
         Generates the exception's messages from the causer response's headers. If the response's data contains `code`

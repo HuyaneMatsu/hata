@@ -50,7 +50,7 @@ def create_partial_emoji_from_data(data):
         emoji.animated = emoji_animated
         EMOJIS[emoji_id] = emoji
         emoji.unicode = None
-        emoji.guild = None
+        emoji.guild_id = 0
     
     # name can change
     if name is None:

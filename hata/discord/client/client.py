@@ -2823,7 +2823,7 @@ class Client(ClientUserPBase):
                     if not isinstance(channel, ChannelText):
                         raise AssertionError(f'`slowmode` is a valid parameter only for `{ChannelText.__name__}` '
                             f'instances, but got {channel.__class__.__name__}.')
-                    
+                
                 if not isinstance(slowmode, int):
                     raise AssertionError('`slowmode` can be given as `int` instance, got '
                         f'{slowmode.__class__.__name__}.')

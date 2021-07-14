@@ -148,9 +148,10 @@ def iterable_of_instance_or_id_to_instances(iterable_obj, type_, name):
             
             if type(type_) is tuple:
                 type_ = type_[0]
-            
+        
             instance = type_.precreate(snowflake)
-            instances.add(instance)
+        
+        instances.add(instance)
     
     return instances
 

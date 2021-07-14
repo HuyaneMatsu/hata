@@ -173,7 +173,7 @@ class EventHandlerManager:
     emoji_create(client: ``Client``, emoji: ``Emoji``):
         Called when an emoji is created at a guild.
     
-    emoji_delete(client: ``Client``, emoji: ``Emoji``, guild: ``Guild``):
+    emoji_delete(client: ``Client``, emoji: ``Emoji``):
         Called when an emoji is deleted.
         
         Deleted emoji's `.guild` attribute is set to `None`.
@@ -514,7 +514,7 @@ class EventHandlerManager:
     sticker_create(client: ``Client``, sticker: ``Sticker``):
         Called when an sticker is created at a guild.
     
-    sticker_delete(client: ``Client``, sticker: ``Sticker``, guild: ``Guild``):
+    sticker_delete(client: ``Client``, sticker: ``Sticker``):
         Called when an sticker is deleted.
     
     sticker_edit(client : Client, sticker: ``Sticker``, old_attributes: `dict`):

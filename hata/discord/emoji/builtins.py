@@ -3564,7 +3564,7 @@ def generate_builtin_emojis():
         emoji.id = emoji_id
         emoji.name = name
         emoji.unicode = value
-        emoji.guild = None
+        emoji.guild_id = 0
         emoji.roles = None
         emoji.managed = False
         emoji.require_colons = True

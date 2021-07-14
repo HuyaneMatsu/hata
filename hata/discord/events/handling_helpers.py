@@ -1857,10 +1857,13 @@ class EventWaitforMeta(type):
     _call_waitfors['emoji_edit'] = _call_emoji_edit
     del _call_emoji_edit
 
-    async def _call_emoji_delete(self, client, emoji, guild):
-        args = (client, emoji, guild)
+    async def _call_emoji_delete(self, client, emoji):
+        args = (client, emoji)
         self._run_waitfors_for(emoji, args)
-        self._run_waitfors_for(guild, args)
+        
+        guild = emoji.guild
+        if (guild is not None):
+            self._run_waitfors_for(guild, args)
     
     _call_waitfors['emoji_delete'] = _call_emoji_delete
     del _call_emoji_delete

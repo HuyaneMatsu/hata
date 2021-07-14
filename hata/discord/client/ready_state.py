@@ -297,6 +297,7 @@ class ReadyState:
         """
         client = self.client_reference()
         if (client is not None):
+            client.ready_state = None
             Task(client.events.ready(client), KOKORO)
     
     
@@ -384,7 +385,7 @@ class ReadyState:
             self.task = None
             self.call_ready()
     
-    async def cancel(self):
+    def cancel(self):
         """
         Cancels the ready state.
         """

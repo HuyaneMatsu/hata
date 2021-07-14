@@ -8,6 +8,10 @@
 - `ClientUserbase.partial` is not a property (reduces ram usage).
 - Do not request users if the client cannot.
 - Cancel ready state on reconnect.
+- `Client.events.sticker_delete` now accepts only 2 parameters (client, sticker) from 3 (client, sticker, guild).
+- `Emoji.guild` is now a property, `Emoji.guild_id` is now an attribute.
+- `Emoji.precreate` now accepts `guild_id` parameter instead of `guild`.
+- `Client.events.emoji_delete` now accepts only 2 parameters (client, emoji) from 3 (client, emoji, guild).
 
 ## 1.1.89 *\[2021-07-08\]*
 

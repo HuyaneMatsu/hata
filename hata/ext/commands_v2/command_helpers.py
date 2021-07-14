@@ -9,6 +9,7 @@ from ...backend.analyzer import CallableAnalyzer
 from ...backend.export import include
 
 from .exceptions import CommandProcessingError
+from .utils import raw_name_to_display
 CheckBase = include('CheckBase')
 CommandCheckWrapper = include('CommandCheckWrapper')
 
@@ -579,7 +580,7 @@ async def prefix_wrapper_regex(re_pattern, message):
     parsed = re_pattern.match(content)
     if parsed is None:
         prefix = None
-        end = -1
+        end = - 1
     else:
         prefix = parsed.group(0)
         end = parsed.end()
@@ -793,3 +794,46 @@ def validate_checks(checks):
         checks = (check, )
     
     return checks
+
+
+def test_unknown_command(unknown_command):
+    """
+    Tests whether the given unknown command handler accepts the expected amount of parameters.
+    
+    Parameters
+    ----------
+    unknown_command : `callable`
+        A function, which is called when no command is found.
+        
+        The following parameters are passed to it:
+        
+        +---------------+---------------+
+        | Name          | Type          |
+        +===============+===============+
+        | client        | ``Client``    |
+        +---------------+---------------+
+        | message       | ``Message``   |
+        +---------------+---------------+
+        | command_name  | `str`         |
+        +---------------+---------------+
+    
+    Raises
+    ------
+    TypeError
+        - If `unknown_command` accepts bad amount of parameters.
+        - If `unknown_command` is not async.
+    """
+    analyzer = CallableAnalyzer(unknown_command)
+    if not analyzer.is_async():
+        raise TypeError('`unknown_command` should be given as `async` function.')
+    
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
+    if min_ > 3:
+        raise TypeError(f'`unknown_command` should accept `2` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got `{unknown_command!r}`.')
+    
+    if min_ != 3:
+        if max_ < 3:
+            if not analyzer.accepts_args():
+                raise TypeError(f'`unknown_command` should accept `2` parameters, meanwhile the given callable expects '
+                    f'up to `{max_!r}`, got `{unknown_command!r}`.')

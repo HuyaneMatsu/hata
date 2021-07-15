@@ -31,6 +31,8 @@ class UserBase(DiscordEntity, immortal=True):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -40,7 +42,7 @@ class UserBase(DiscordEntity, immortal=True):
     -----
     Instances of this class are weakreferable.
     """
-    __slots__ = ('name', 'discriminator', )
+    __slots__ = ('banner_color', 'name', 'discriminator', )
     
     avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
     banner = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
@@ -218,6 +220,7 @@ class UserBase(DiscordEntity, immortal=True):
             return self.id < other.id
         return NotImplemented
     
+    
     @property
     def activities(self):
         """
@@ -228,6 +231,7 @@ class UserBase(DiscordEntity, immortal=True):
         activities : `None`
         """
         return None
+    
     
     @property
     def status(self):
@@ -240,6 +244,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return Status.offline
     
+    
     @property
     def statuses(self):
         """
@@ -250,6 +255,7 @@ class UserBase(DiscordEntity, immortal=True):
         statuses : `dict` of (`str`, `str`) items
         """
         return {}
+    
     
     @property
     def guild_profiles(self):
@@ -263,6 +269,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return {}
     
+    
     @property
     def thread_profiles(self):
         """
@@ -275,6 +282,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return None
     
+    
     @property
     def is_bot(self):
         """
@@ -286,6 +294,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return False
     
+    
     @property
     def flags(self):
         """
@@ -296,6 +305,7 @@ class UserBase(DiscordEntity, immortal=True):
         flags : ``UserFlag``
         """
         return UserFlag()
+    
     
     @property
     def partial(self):
@@ -309,6 +319,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return True
     
+    
     @property
     def activity(self):
         """
@@ -320,6 +331,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return None
     
+    
     @property
     def custom_activity(self):
         """
@@ -330,6 +342,7 @@ class UserBase(DiscordEntity, immortal=True):
         activity : ``ActivityCustom`` or `None`
         """
         return None
+    
     
     @property
     def platform(self):
@@ -532,5 +545,6 @@ class UserBase(DiscordEntity, immortal=True):
         self.discriminator = 0
         self.avatar_hash = 0
         self.avatar_type = ICON_TYPE_NONE
+        self.banner_color = None
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE

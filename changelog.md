@@ -12,6 +12,14 @@
 - `Emoji.guild` is now a property, `Emoji.guild_id` is now an attribute.
 - `Emoji.precreate` now accepts `guild_id` parameter instead of `guild`.
 - `Client.events.emoji_delete` now accepts only 2 parameters (client, emoji) from 3 (client, emoji, guild).
+- Add `UserBase.banner_color`.
+- Add `banner_color` parameter to `User.precretae`.
+- Add `banner_color` parameter to `Client.__new__`.
+
+#### Bug Fixes
+
+- Some attributes were not set by `Client.__new__`.
+- Fix race conditions in `KOKORO`.
 
 ## 1.1.89 *\[2021-07-08\]*
 

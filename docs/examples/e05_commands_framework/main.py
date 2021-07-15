@@ -13,11 +13,11 @@ Sakuya = Client(TOKEN,
     prefix = '!',
 )
 
-
-# Commands can be registered with the `.commands` decorator.
+# If the client is using the commands extension, you can use register commands to it by using the `.commands`
+# decorator.
 @Sakuya.commands
 async def about():
-    """About me"""
+    """About me."""
     return 'This is a small test-bot! : )'
 
 
@@ -41,7 +41,7 @@ async def say(ctx, content):
 # If an error handler returns return `True`, no other error handlers wont be called.
 @Sakuya.command_processor.error
 async def handle_owner_only_error(ctx, exception):
-    if isinstance(exception.check, checks.CheckIsOwner):
+    if isinstance(exception, CommandCheckError) and (type(exception.check) is checks.CheckIsOwner):
         await ctx.send('Lacked owner permission')
         return True
     

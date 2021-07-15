@@ -23,6 +23,8 @@ class WebhookRepr(WebhookBase):
         The webhook representation's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The webhook representation's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -60,7 +62,7 @@ class WebhookRepr(WebhookBase):
         self._set_banner(data)
         self.type = type_
         self.channel = channel
-    
+        self.banner_color = None
     
     @property
     def webhook(self):

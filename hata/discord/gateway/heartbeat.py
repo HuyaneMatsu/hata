@@ -118,39 +118,41 @@ class Kokoro:
         
         This method is a coroutine.
         """
-        self.running = True
-        while True:
-            #wait for start
-            try:
-                waiter = Future(KOKORO)
-                self.ws_waiter = waiter
-                await waiter
-            except CancelledError:
-                #kokoro cancelled, client shuts down
+        try:
+            self.running = True
+            while True:
+                #wait for start
+                try:
+                    waiter = Future(KOKORO)
+                    self.ws_waiter = waiter
+                    await waiter
+                except CancelledError:
+                    #kokoro cancelled, client shuts down
+                    break
+                finally:
+                    self.ws_waiter = None
+                
+                #keep beating
+                try:
+                    beater = Task(self._keep_beating(), KOKORO)
+                    self.beater = beater
+                    await beater
+                except CancelledError:
+                    #connection cancelled, lets wait for it
+                    pass
+                finally:
+                    #make sure
+                    self.beater = None
+                
+                if self.running:
+                    continue
+                
                 break
-            finally:
-                self.ws_waiter = None
-            
-            #keep beating
-            try:
-                beater = Task(self._keep_beating(), KOKORO)
-                self.beater = beater
-                await beater
-            except CancelledError:
-                #connection cancelled, lets wait for it
-                pass
-            finally:
-                #make sure
-                self.beater = None
-            
-            if self.running:
-                continue
-            
-            break
-        
-        self.task = None
-     
-     
+        finally:
+            if self.task is KOKORO.current_task:
+                self.task = None
+    
+    
     async def _keep_beating(self):
         """
         The beater task of kokoro.
@@ -181,8 +183,8 @@ class Kokoro:
             except CancelledError:
                 self.last_send = perf_counter()
                 continue
-            
-            self.beat_waiter = None
+            finally:
+                self.beat_waiter = None
             
             if (self.last_answer+self.interval+HEARTBEAT_TIMEOUT)-perf_counter() <= 0.0:
                 self.should_beat = False
@@ -217,19 +219,22 @@ class Kokoro:
         
         #case 2 : we wait for ws
         waiter = self.ws_waiter
-        if waiter is not None:
+        if (waiter is not None):
+            self.ws_waiter = None
             waiter.set_result(None)
             return
         
         #case 3 : we wait for beat response
         waiter = self.beat_waiter
-        if waiter is not None:
+        if (waiter is not None):
+            self.beat_waiter = None
             waiter.cancel()
             return
         
         #case 4 : we are beating
         task = self.beat_task
-        if task is not None:
+        if (task is not None):
+            self.beat_waiter = None
             task.cancel()
             return
     
@@ -240,13 +245,14 @@ class Kokoro:
         
         This method is a coroutine.
         """
-        #starts kokoro, then beating
+        # starts kokoro, then beating
         self.task = Task(self._start(), KOKORO)
-        #skip 1 loop
+        # skip 1 loop
         await skip_ready_cycle()
         
         waiter = self.ws_waiter
-        if waiter is not None:
+        if (waiter is not None):
+            self.ws_waiter = None
             waiter.set_result(None)
     
     
@@ -272,24 +278,26 @@ class Kokoro:
         
         #case 2 : we are waiting for ws
         waiter = self.ws_waiter
-        if waiter is not None:
-            #it is fine, that is what we should do
+        if (waiter is not None):
+            # it is fine, it is what we should do
             return
         
         #case 2 : we are beating
         beater = self.beater
-        if beater is not None:
+        if (beater is not None):
             self.should_beat = False
             
             #case 3.1 : we wait to beat
             waiter = self.beat_waiter
-            if waiter is not None:
+            if (waiter is not None):
+                self.beat_waiter = None
                 waiter.cancel()
                 return
             
             #case 3.2: we are beating
             task = self.beat_task
-            if task is not None:
+            if (task is not None):
+                self.beat_task = None
                 task.cancel()
                 return
     
@@ -306,6 +314,7 @@ class Kokoro:
         #case 2 : we are waiting for ws
         waiter = self.ws_waiter
         if (waiter is not None):
+            self.ws_waiter = None
             waiter.cancel()
             return
         
@@ -316,13 +325,15 @@ class Kokoro:
             
             #case 3.1 : we wait to beat
             waiter = self.beat_waiter
-            if waiter is not None:
+            if (waiter is not None):
+                self.beat_waiter = None
                 waiter.cancel()
                 return
             
             #case 3.2: we are beating
             task = self.beat_task
-            if task is not None:
+            if (task is not None):
+                self.beat_task = None
                 task.cancel()
                 return
     
@@ -343,24 +354,26 @@ class Kokoro:
             
             # case 2 : we wait for ws
             waiter = self.ws_waiter
-            if waiter is not None:
+            if (waiter is not None):
+                self.ws_waiter = None
                 waiter.set_result(None)
                 should_beat_now = True # True = send beat data
                 break
             
             # case 3 : we wait to beat
             waiter = self.beat_waiter
-            if waiter is not None:
+            if (waiter is not None):
                 # better skip a beat
+                self.beat_waiter = None
                 waiter.cancel()
                 should_beat_now = True # True = send beat data
                 break
             
             # case 4 : we already beat
-##            task = self.beat_task
-##            if task is not None:
-##                should_beat_now = False
-##                break
+#            task = self.beat_task
+#            if (task is not None):
+#                should_beat_now = False
+#                break
             
             should_beat_now = False
             break
@@ -370,18 +383,20 @@ class Kokoro:
         else:
             self.answered()
     
+    # Fixed?
+    """
     if __debug__:
         def __del__(self):
             # bug?
             waiter = self.ws_waiter
-            if waiter is not None:
+            if (waiter is not None):
                 waiter.__silence__()
             
             # despair?
             waiter = self.beat_waiter
-            if waiter is not None:
+            if (waiter is not None):
                 waiter.__silence__()
-    
+    """
     
     def __repr__(self):
         """Returns kokoro's representation."""

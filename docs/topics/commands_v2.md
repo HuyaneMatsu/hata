@@ -469,18 +469,110 @@ The following checks are implemented:
 
 ### Category checks
 
+Checks can be applied to categories at creation or later as well.
+
+```py
+# At creation
+UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility', checks=checks.owner_only())
+
+# Apply checks later
+NekoBot.command_processor.get_default_category().checks = checks.owner_only()
+```
+
 ## Precheck
 
-\# TODO
+Command processor's precheck runs when a message is received. It decides, whether the received message should be
+processed as a command.
+
+The default precheck filters out bot message authors, and the channels, where the client cannot create a message.
+
+To change the command processor's precheck, use the `.command_processor.precheck` decorator.
+
+```py
+@NekoBot.command_processor.precheck
+def filter_only_bots(client, message):
+    return (not message.author.is_bot)
+```
+
+>  Pre-checks cannot be async. `client` and `message` parameters are always passed to them.
 
 ## Error handling
 
-\# TODO
+Exception handlers can be registered to the command processor, to categories and to commands as well. The first
+exception handler, returning `True` will stop the rest of being called, marking the exception as handled.
+
+Use the `.error` decorator to register exception handlers.
+
+```py
+from hata.ext.commands_v2 import checks, CommandCheckError
+
+# Will catch every failed `checks.owner_only()` check.
+
+@NekoBot.command_processor.error
+async def handle_owner_only_error(ctx, exception):
+    if isinstance(exception, CommandCheckError) and (type(exception.check) is checks.CheckIsOwner):
+        await ctx.send('Lacked owner permission')
+        return True
+    
+    return False
+```
+
+```py
+from hata.ext.commands_v2 import checks, CommandParameterParsingError
+
+# Returns a role's identifier. If the role cannot be identified, an error message will be dropped to the user.
+
+@NekoBot.commands
+async def about_role(role: 'Role'):
+    """Returns the role's identifier."""
+    return role.id
+
+@about_role.error
+async def about_role_error_handler(ctx, exception):
+    if isinstance(exception, CommandParameterParsingError):
+        await ctx.send(f'{exception.content_parser_parameter.name} is required.')
+        return True
+    
+    return False
+```
+
 
 ## Cooldowns
 
-\# TODO
+Cooldowns can be applied to commands by using the `cooldown` decorator. They can be either per `'user'`, `'channel'`
+or `'guild'`.
+
+```py
+from hata.ext.commands_v2 import CommandCooldownError, cooldown
+
+EMOJI_CAKE = BUILTIN_EMOJIS['cake']
+
+@NekoBot.commands
+@cooldown('user', 30.0)
+async def cake():
+    return emoji.as_emoji
+
+@cake.error
+async def handle_cooldown_error(command_context, exception):
+    if isinstance(exception, CommandCooldownError):
+        await command_context.send(f'You are on cooldown. Try again after {exception.expires_after:.2f} seconds.')
+        return True
+    
+    return False
+```
 
 ## Sub commands
 
-#\ TODO
+Sub commands can be registered under other commands on the same way as they are registered to the client.
+
+```py
+@NekoBot.commands
+async def upper():
+    """Upper command."""
+    return 'I am an upper command.'
+
+@upper.commands
+async def sub():
+    """Sub command."""
+    return 'This is a sub command.'
+```

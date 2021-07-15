@@ -864,7 +864,7 @@ class VoiceClient:
                     tries += 1
                     continue
                 except:
-                    await self.disconnect(force=True)
+                    await self._disconnect(force=True)
                     raise
                 
                 try:
@@ -892,7 +892,7 @@ class VoiceClient:
                         # user nor us, so reconnect.
                         if not self._maybe_change_voice_region():
                             self._reconnecting = False
-                            await self.disconnect(force=False)
+                            await self._disconnect(force=False)
                             return
                     
                     if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
@@ -905,7 +905,7 @@ class VoiceClient:
                     continue
                 
                 except:
-                    await self.disconnect(force=True)
+                    await self._disconnect(force=True)
                     raise
                 
                 if (waiter is not None):
@@ -930,7 +930,7 @@ class VoiceClient:
                                      (not self._maybe_change_voice_region())
                                         ):
                                 self._reconnecting = False
-                                await self.disconnect(force=False)
+                                await self._disconnect(force=False)
                                 return
                         
                         self.connected.clear()
@@ -945,7 +945,7 @@ class VoiceClient:
                     
                     except:
                         self._reconnecting = False
-                        await self.disconnect(force=True)
+                        await self._disconnect(force=True)
                         raise
         finally:
             self._reconnecting = False
@@ -955,9 +955,22 @@ class VoiceClient:
             except KeyError:
                 pass
     
-    async def disconnect(self, force=False, terminate=True):
+    
+    async def disconnect(self):
         """
         Disconnects the voice client.
+        
+        This method is a coroutine.
+        """
+        await self._diconnect()
+    
+    
+    async def _disconnect(self, force=False, terminate=True):
+        """
+        Disconnects the voice client.
+        
+        If you want to disconnect a voice client, then you should use ``.disconnect``. Passing bad parameters to this
+        method the can cause misbehaviour.
         
         This method is a coroutine.
         
@@ -968,13 +981,7 @@ class VoiceClient:
         terminate : `bool`, Optional
            Whether it is an internal disconnect. If the Disconnect comes from Discord's side, then `terminate` is
            `False`, what means, we do not need to terminate the gateway handshake.
-        
-        Notes
-        -----
-        If you want to disconnect a voice client, then you should let the method to use it's default parameters. Passing
-        bad parameters can cause misbehaviour.
         """
-        
         if not (force or self.connected.is_set()):
             return
         
@@ -1025,7 +1032,7 @@ class VoiceClient:
         except (RuntimeError, TimeoutError):
             return
         
-        await voice_client.disconnect(force=True)
+        await voice_client._disconnect(force=True)
     
     async def play_next(self):
         """

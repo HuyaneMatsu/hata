@@ -129,6 +129,23 @@ class CommandContext(object):
     
     
     @property
+    def voice_state(self):
+        """
+        Returns the context' user's voice state in the respective guild.
+        
+        Returns
+        -------
+        voice_state : `None` or ``VoiceState``
+        """
+        message = self.message
+        guild = message.channel.guild
+        if guild is None:
+            return None
+        
+        return guild.voice_states.get(message.author.id, None)
+    
+    
+    @property
     def voice_client(self):
         """
         Returns the voice client in the message's guild if there is any.

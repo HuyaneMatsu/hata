@@ -3034,7 +3034,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 voice_client.channel = voice_state.channel
             elif action == VOICE_STATE_LEAVE:
                 # If the user is client, then disconnect it.
-                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
+                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
     
     if action == VOICE_STATE_JOIN:
         event = client.events.user_voice_join
@@ -3093,7 +3093,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
                 voice_client.channel = voice_state.channel
             elif action == VOICE_STATE_LEAVE:
                 # If the user is client, then disconnect it.
-                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
+                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
     
     for client_ in clients:
         if action == VOICE_STATE_JOIN:
@@ -3151,7 +3151,7 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
                 voice_client.channel = voice_state.channel
             elif action == VOICE_STATE_LEAVE:
                 # If the user is client, then disconnect it.
-                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
+                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
 
 
 def VOICE_STATE_UPDATE__OPT_MC(client, data):
@@ -3194,7 +3194,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
                 voice_client.channel = voice_state.channel
             elif action == VOICE_STATE_LEAVE:
                 # If the user is client, then disconnect it.
-                Task(voice_client.disconnect(force=True, terminate=False), KOKORO)
+                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
 
 add_parser(
     'VOICE_STATE_UPDATE',

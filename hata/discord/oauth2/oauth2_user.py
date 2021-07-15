@@ -1,6 +1,7 @@
 __all__ = ('UserOA2',)
 
 from ..user import UserFlag, UserBase, PremiumType
+from ..color import Color
 
 from .helpers import parse_locale
 
@@ -22,6 +23,8 @@ class UserOA2(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -51,6 +54,11 @@ class UserOA2(UserBase):
         
         self._set_avatar(data)
         self._set_banner(data)
+        
+        banner_color = data.get('banner_color', None)
+        if (banner_color is not None):
+            banner_color = Color(banner_color[1:])
+        self.banner_color = banner_color
         
         self.mfa = data.get('mfa_enabled', False)
         self.verified = data.get('verified', False)

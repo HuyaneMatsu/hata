@@ -10,6 +10,7 @@ from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_pre
 from ..bases import ICON_TYPE_NONE, Icon, instance_or_id_to_instance
 from ..http.urls import WEBHOOK_URL_PATTERN
 from ..http import urls as module_urls
+from ..color import Color
 
 from .webhook_base import WebhookBase
 from .preinstanced import WebhookType
@@ -19,6 +20,7 @@ create_partial_webhook_from_id = include('create_partial_webhook_from_id')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 ChannelText = include('ChannelText')
 Client = include('Client')
+
 
 @export
 class Webhook(WebhookBase):
@@ -37,6 +39,8 @@ class Webhook(WebhookBase):
         The webhook's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The webhook's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -168,7 +172,11 @@ class Webhook(WebhookBase):
         else:
             user = User(user_data)
         self.user = user
-    
+        
+        banner_color = data.get('banner_color', None)
+        if (banner_color is not None):
+            banner_color = Color(banner_color[1:])
+        self.banner_color = banner_color
     
     @classmethod
     def precreate(cls, webhook_id, **kwargs):
@@ -384,6 +392,7 @@ class Webhook(WebhookBase):
         self.discriminator = 0
         self.avatar_hash = avatar_hash
         self.avatar_type = avatar_type
+        self.banner_color = None
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
         self.name = name
@@ -396,8 +405,6 @@ class Webhook(WebhookBase):
         self.source_guild = source_guild
         self.token = ''
         self.user = client
-        
-        guild = target_channel.guild
         
         USERS[webhook_id] = self
         

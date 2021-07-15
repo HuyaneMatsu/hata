@@ -87,7 +87,7 @@ def preconvert_discriminator(discriminator):
     return discriminator
 
 
-def preconvert_color(color):
+def preconvert_color(color, name, nullable):
     """
     Converts the given `color` to an acceptable value by the wrapper.
     
@@ -95,6 +95,10 @@ def preconvert_color(color):
     ----------
     color : `int`
         The color to convert.
+    name : `str`
+        The name of the value.
+    nullable : `bool`
+        Whether the value is nullable.
     
     Returns
     -------
@@ -107,15 +111,17 @@ def preconvert_color(color):
     ValueError
         If the `color`'s value is less than `0` or is over than `0xffffff`.
     """
-    if type(color) is Color:
-        pass
-    elif isinstance(color, int):
-        color = Color(color)
-    else:
-        raise TypeError(f'`color` can be `{Color.__name__}` or `int` instance, got {color.__class__.__name__}.')
-    
-    if color < 0 or color > 0xffffff:
-        raise ValueError(f'`color` can be between 0 and 0xffffff, got {color!r}.')
+    if not (nullable and (color is None)):
+        if type(color) is Color:
+            pass
+        elif isinstance(color, int):
+            color = Color(color)
+        else:
+            raise TypeError(f'`{name}` can be {"`None`, " if nullable else ""}`{Color.__name__}` or `int` instance, '
+                f'got {color.__class__.__name__}.')
+            
+            if color < 0 or color > 0xffffff:
+                raise ValueError(f'`{name}` can be between 0 and 0xffffff, got {color!r}.')
     
     return color
 

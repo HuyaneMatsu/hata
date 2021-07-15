@@ -139,7 +139,7 @@ class ColorGetter:
             getter = color
             type_ = COLOR_GETTER_TYPE_CALLABLE
         else:
-            getter = preconvert_color(color)
+            getter = preconvert_color(color, 'color', False)
             type_ = COLOR_GETTER_TYPE_STATIC
         
         self = object.__new__(cls)

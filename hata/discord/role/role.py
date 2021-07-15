@@ -196,7 +196,7 @@ class Role(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                color = preconvert_color(color)
+                color = preconvert_color(color, 'color', False)
                 processable.append(('color', color))
             
             try:

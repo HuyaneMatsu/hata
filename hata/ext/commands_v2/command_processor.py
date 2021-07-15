@@ -810,46 +810,43 @@ class CommandProcessor(EventWaitforBase):
             command.display_name = command.name
     
     
-    @property
-    def precheck(self):
-        """
-        A get-set-del property to modify the command processor's precheck.
-        
-        Can be either `None` or `non-async` function accepting following parameters are passed to it:
-        
-        +-----------+---------------+
-        | Name      | Type          |
-        +===========+===============+
-        | client    | ``Client``    |
-        +-----------+---------------+
-        | message   | ``Message``   |
-        +-----------+---------------+
-        
-        Should return the following parameters:
-        
-        +-------------------+-----------+
-        | Name              | Type      |
-        +===================+===========+
-        | should_process    | `bool`    |
-        +-------------------+-----------+
-        """
-        return self._precheck
-    
-    @precheck.setter
     def precheck(self, precheck):
-        if self._precheck is precheck:
-            return
+        """
+        Changes the command processor's precheck.
         
+        Parameters
+        ----------
+        precheck : `None` or `callable`
+            Can be either `None` or `non-async` function accepting following parameters are passed to it:
+            
+            +-----------+---------------+
+            | Name      | Type          |
+            +===========+===============+
+            | client    | ``Client``    |
+            +-----------+---------------+
+            | message   | ``Message``   |
+            +-----------+---------------+
+            
+            Should return the following parameters:
+            
+            +-------------------+-----------+
+            | Name              | Type      |
+            +===================+===========+
+            | should_process    | `bool`    |
+            +-------------------+-----------+
+        
+        Returns
+        -------
+        precheck : `None` or `callable`
+        """
         if precheck is None:
-            precheck = default_precheck
+            precheck_to_set = default_precheck
         else:
             test_precheck(precheck)
+            precheck_to_set = precheck
         
-        self.precheck = precheck
-    
-    @precheck.deleter
-    def precheck(self):
-        self.precheck = default_precheck
+        self._precheck = precheck_to_set
+        return precheck
     
     def create_event(self, command, name=None, description=None, aliases=None, category=None, checks=None,
             error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):

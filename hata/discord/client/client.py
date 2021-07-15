@@ -10,8 +10,7 @@ from datetime import datetime
 from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ...ext import get_and_validate_setup_functions, run_setup_functions
 from ...backend.utils import imultidict, methodize, change_on_switch
-from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, skip_ready_cycle, \
-    future_or_timeout
+from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, future_or_timeout
 from ...backend.event_loop import EventThread, LOOP_TIME
 from ...backend.headers import AUTHORIZATION
 from ...backend.helpers import BasicAuth
@@ -38,7 +37,6 @@ from ..role import Role
 from ..webhook import Webhook, create_partial_webhook_from_id
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
     PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
-from ..events.handling_helpers import _with_error
 from ..events.event_handler_manager import EventHandlerManager
 from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
@@ -57,7 +55,7 @@ from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
 from ..integration import Integration
 from ..application import Application, Team, EULA
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
-    preconvert_flag, preconvert_preinstanced_type
+    preconvert_flag, preconvert_preinstanced_type, preconvert_color
 from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
 from ..bases import ICON_TYPE_NONE
 from ..embed import EmbedImage
@@ -107,6 +105,8 @@ class Client(ClientUserPBase):
         The client's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The client's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -299,6 +299,9 @@ class Client(ClientUserPBase):
             
             > Mutually exclusive with `banner_type` and `banner_hash`.
         
+        banner_color : `None` or ``Color``
+            The user's banner color.
+        
         banner_type : ``IconType``, Optional (Keyword only)
             The client's banner's type.
             
@@ -400,7 +403,7 @@ class Client(ClientUserPBase):
                 additional_owner_ids.add(additional_owners.id)
             elif type(additional_owners) is int:
                 additional_owner_ids.add(additional_owners)
-            elif isinstance(additional_owner_ids, int):
+            elif isinstance(additional_owners, int):
                 additional_owner_ids.add(int(additional_owners))
             else:
                 iter_ = getattr(type(additional_owners), '__iter__', None)
@@ -459,6 +462,14 @@ class Client(ClientUserPBase):
             else:
                 flags = preconvert_flag(flags, 'flags', UserFlag)
                 processable.append(('flags', flags))
+            
+            try:
+                banner_color = kwargs.pop('banner_color')
+            except KeyError:
+                pass
+            else:
+                banner_color = preconvert_color(banner_color, 'banner_color', True)
+                processable.append(('banner_color', banner_color))
         
         else:
             processable = None
@@ -477,11 +488,8 @@ class Client(ClientUserPBase):
         
         self = object.__new__(cls)
         
-        self.name = ''
-        self.discriminator = 0
-        self.avatar_type = ICON_TYPE_NONE
-        self.avatar_hash = 0
-        self.flags = UserFlag()
+        ClientUserPBase._set_default_attributes(self)
+        
         self.mfa = False
         self.system = False
         self.verified = False
@@ -495,12 +503,8 @@ class Client(ClientUserPBase):
         self.intents = intents
         self.running = False
         self.relationships = {}
-        self.guild_profiles = {}
         self._status = _status
-        self.status = Status.offline
-        self.statuses = {}
         self._activity = activity
-        self.activities = None
         self._additional_owner_ids = additional_owner_ids
         self._gateway_url = ''
         self._gateway_time = -inf
@@ -517,7 +521,6 @@ class Client(ClientUserPBase):
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.http = DiscordHTTPClient(self)
         self.events = EventHandlerManager(self)
-        self.thread_profiles = {}
         
         if (processable is not None):
             for item in processable:
@@ -14537,7 +14540,7 @@ class Client(ClientUserPBase):
         if voice_clients:
             tasks = []
             for voice_client in self.voice_clients.values():
-                tasks.append(Task(voice_client.disconnect(), KOKORO))
+                tasks.append(Task(voice_client._disconnect(), KOKORO))
             
             future = WaitTillAll(tasks, KOKORO)
             tasks = None # clear references
@@ -14799,29 +14802,31 @@ class Client(ClientUserPBase):
         old_attributes : `dict` of (`str`, `Any`) items
             All item in the returned dictionary is optional.
             
-            +-----------------------+-------------------+
-            | Keys                  | Values            |
-            +=======================+===================+
-            | avatar                | ``Icon``          |
-            +-----------------------+-------------------+
-            | banner                | ``Icon``          |
-            +-----------------------+-------------------+
-            | discriminator         | `int`             |
-            +-----------------------+-------------------+
-            | email                 | `None` or `str`   |
-            +-----------------------+-------------------+
-            | flags                 | ``UserFlag``      |
-            +-----------------------+-------------------+
-            | locale                | `str              |
-            +-----------------------+-------------------+
-            | mfa                   | `bool`            |
-            +-----------------------+-------------------+
-            | name                  | `str              |
-            +-----------------------+-------------------+
-            | premium_type          | ``PremiumType``   |
-            +-----------------------+-------------------+
-            | verified              | `bool`            |
-            +-----------------------+-------------------+
+            +-----------------------+-----------------------+
+            | Keys                  | Values                |
+            +=======================+=======================+
+            | avatar                | ``Icon``              |
+            +-----------------------+-----------------------+
+            | banner                | ``Icon``              |
+            +-----------------------+-----------------------+
+            | banner_color          | `None` or ``Color``   |
+            +-----------------------+-----------------------+
+            | discriminator         | `int`                 |
+            +-----------------------+-----------------------+
+            | email                 | `None` or `str`       |
+            +-----------------------+-----------------------+
+            | flags                 | ``UserFlag``          |
+            +-----------------------+-----------------------+
+            | locale                | `str                  |
+            +-----------------------+-----------------------+
+            | mfa                   | `bool`                |
+            +-----------------------+-----------------------+
+            | name                  | `str                  |
+            +-----------------------+-----------------------+
+            | premium_type          | ``PremiumType``       |
+            +-----------------------+-----------------------+
+            | verified              | `bool`                |
+            +-----------------------+-----------------------+
         """
         old_attributes = ClientUserPBase._update(self, data)
         
@@ -14901,15 +14906,19 @@ class Client(ClientUserPBase):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------------------+
-        | Keys          | Values                |
-        +===============+=======================+
-        | nick          | `str` / `None`        |
-        +---------------+-----------------------+
-        | roles         | `list` of ``Role``    |
-        +---------------+-----------------------+
-        | boosts_since  | `datetime` / `None`   |
-        +---------------+-----------------------+
+        +-------------------+-------------------------------+
+        | Keys              | Values                        |
+        +===================+===============================+
+        | avatar            | ``Icon``                      |
+        +-------------------+-------------------------------+
+        | boosts_since      | `None` or `datetime`          |
+        +-------------------+-------------------------------+
+        | nick              | `None` or `str`               |
+        +-------------------+-------------------------------+
+        | pending           | `bool`                        |
+        +-------------------+-------------------------------+
+        | roles             | `None` or `list` of ``Role``  |
+        +-------------------+-------------------------------+
         """
         try:
             profile = self.guild_profiles[guild]

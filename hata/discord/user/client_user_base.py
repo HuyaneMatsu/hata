@@ -30,6 +30,8 @@ class ClientUserBase(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -64,6 +66,11 @@ class ClientUserBase(UserBase):
         
         self.flags = UserFlag(data.get('public_flags', 0))
         self.thread_profiles = None
+        
+        banner_color = data.get('banner_color', None)
+        if (banner_color is not None):
+            banner_color = Color(banner_color[1:])
+        self.banner_color = banner_color
     
     def _update(self, data):
         """
@@ -83,19 +90,21 @@ class ClientUserBase(UserBase):
         Returned Data Structure
         -----------------------
         
-        +---------------+---------------+
-        | Keys          | Values        |
-        +===============+===============+
-        | avatar        | ``Icon``      |
-        +---------------+---------------+
-        | banner        | ``Icon``      |
-        +---------------+---------------+
-        | discriminator | `int          |
-        +---------------+---------------+
-        | flags         | ``UserFlag``  |
-        +---------------+---------------+
-        | name          | `str`         |
-        +---------------+---------------+
+        +---------------+-----------------------+
+        | Keys          | Values                |
+        +===============+=======================+
+        | avatar        | ``Icon``              |
+        +---------------+-----------------------+
+        | banner        | ``Icon``              |
+        +---------------+-----------------------+
+        | banner_color  | `None` or ``Color``   |
+        +---------------+-----------------------+
+        | discriminator | `int`                 |
+        +---------------+-----------------------+
+        | flags         | ``UserFlag``          |
+        +---------------+-----------------------+
+        | name          | `str`                 |
+        +---------------+-----------------------+
         """
         old_attributes = {}
         
@@ -116,6 +125,15 @@ class ClientUserBase(UserBase):
         if self.flags != flags:
             old_attributes['flags'] = self.flags
             self.flags = UserFlag(flags)
+        
+
+        banner_color = data.get('banner_color', None)
+        if (banner_color is not None):
+            banner_color = Color(banner_color[1:])
+        if self.banner_color != flags:
+            old_attributes['banner_color'] = self.banner_color
+            self.banner_color = banner_color
+        
         
         return old_attributes
     
@@ -143,15 +161,19 @@ class ClientUserBase(UserBase):
             relation.
             
             The possible keys and values within `old_attributes` are all optional and they can be any of the following:
-            +-------------------+-----------------------+
-            | Keys              | Values                |
-            +===================+=======================+
-            | boosts_since      | `None` or `datetime`  |
-            +-------------------+-----------------------+
-            | nick              | `None` or `str`       |
-            +-------------------+-----------------------+
-            | roles             | `list` of ``Role``    |
-            +-------------------+-----------------------+
+            +-------------------+-------------------------------+
+            | Keys              | Values                        |
+            +===================+===============================+
+            | avatar            | ``Icon``                      |
+            +-------------------+-------------------------------+
+            | boosts_since      | `None` or `datetime`          |
+            +-------------------+-------------------------------+
+            | nick              | `None` or `str`               |
+            +-------------------+-------------------------------+
+            | pending           | `bool`                        |
+            +-------------------+-------------------------------+
+            | roles             | `None` or `list` of ``Role``  |
+            +-------------------+-------------------------------+
         """
         user_id = int(data['user']['id'])
         
@@ -532,6 +554,8 @@ class ClientUserPBase(ClientUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``

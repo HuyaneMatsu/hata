@@ -8,7 +8,7 @@ from ...backend.export import include
 from ..core import USERS
 
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
-    preconvert_flag
+    preconvert_flag, preconvert_color
 from .preinstanced import Status
 from .guild_profile import GuildProfile
 from .client_user_base import ClientUserPBase, ClientUserBase
@@ -39,6 +39,8 @@ class User(USER_BASE_CLASS):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    banner_color : `None` or ``Color``
+        The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -243,6 +245,9 @@ class User(USER_BASE_CLASS):
             
             > Mutually exclusive with `banner_type` and `banner_hash`.
         
+        banner_color : `None` or ``Color``
+            The user's banner color.
+        
         banner_type : ``IconType``, Optional (Keyword only)
             The user's banner's type.
             
@@ -306,6 +311,14 @@ class User(USER_BASE_CLASS):
             else:
                 flags = preconvert_flag(flags, 'flags', UserFlag)
                 processable.append(('flags', flags))
+            
+            try:
+                banner_color = kwargs.pop('banner_color')
+            except KeyError:
+                pass
+            else:
+                banner_color = preconvert_color(banner_color, 'banner_color', True)
+                processable.append(('banner_color', banner_color))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}.')

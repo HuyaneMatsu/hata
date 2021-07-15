@@ -57,7 +57,7 @@ class UserOA2(UserBase):
         
         banner_color = data.get('banner_color', None)
         if (banner_color is not None):
-            banner_color = Color(banner_color[1:])
+            banner_color = Color(banner_color[1:], 16)
         self.banner_color = banner_color
         
         self.mfa = data.get('mfa_enabled', False)

@@ -235,8 +235,9 @@ class Client(ClientUserPBase):
     loop = KOKORO
     _next_auto_id = 1
     
-    def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ACTIVITY_UNKNOWN, status=None,
-            is_bot=True, shard_count=0, intents=-1, additional_owners=None, extensions=None, **kwargs):
+    def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ACTIVITY_UNKNOWN,
+            status=None, is_bot=True, shard_count=0, intents=-1, additional_owners=None, extensions=None,
+            http_debug_options=None, **kwargs):
         """
         Creates a new ``Client`` instance with the given parameters.
         
@@ -269,6 +270,8 @@ class Client(ClientUserPBase):
             Additional users to return `True` if ``is_owner` is called.
         extensions : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             The extension's name to setup on the client.
+        http_debug_options: `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+            Http client debug options for the client.
         **kwargs : keyword parameters
             Additional predefined attributes for the client.
         
@@ -383,7 +386,7 @@ class Client(ClientUserPBase):
             raise TypeError(f'`shard_count` should have been passed as `int` instance, got '
                 f'{shard_count.__class__.__name__}.')
         
-        if shard_count<0:
+        if shard_count < 0:
             raise ValueError(f'`shard_count` can be passed only as non negative `int`, got {shard_count!r}.')
         
         # Default to `0`
@@ -426,6 +429,42 @@ class Client(ClientUserPBase):
                 
                 if (not additional_owner_ids):
                     additional_owner_ids = None
+        
+        # http_debug_options
+        processed_http_debug_options = None
+        
+        if (http_debug_options is not None):
+            if isinstance(http_debug_options, str):
+                if type(http_debug_options) is not str:
+                    http_debug_options = str(http_debug_options)
+                
+                if not http_debug_options.islower():
+                    http_debug_options = http_debug_options.lower()
+                
+                processed_http_debug_options = {http_debug_options}
+            else:
+                iterator = getattr(type(http_debug_options), '__iter__', None)
+                if (iterator is None):
+                    raise TypeError(f'`http_debug_options` can be given either as `str` or as `iterable` of `str`, '
+                        f'got {http_debug_options.__class__.__name__}.')
+                
+                for http_debug_option in iterator(http_debug_options):
+                    
+                    if type(http_debug_option) is str:
+                        pass
+                    elif isinstance(http_debug_option, str):
+                        http_debug_option = str(http_debug_option)
+                    else:
+                        raise TypeError(f'{http_debug_options} contains a non `str` instance, got '
+                            f'{http_debug_options.__class__.__name__}; {http_debug_options!r}.')
+                    
+                    if not http_debug_option.islower():
+                        http_debug_option = http_debug_option.lower()
+                    
+                    if processed_http_debug_options is None:
+                        processed_http_debug_options = set()
+                    
+                    processed_http_debug_options.add(http_debug_option)
         
         # kwargs
         if kwargs:
@@ -519,7 +558,7 @@ class Client(ClientUserPBase):
         self.ready_state = None
         self.application = application
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
-        self.http = DiscordHTTPClient(self)
+        self.http = DiscordHTTPClient(self, debug_options=processed_http_debug_options)
         self.events = EventHandlerManager(self)
         
         if (processable is not None):

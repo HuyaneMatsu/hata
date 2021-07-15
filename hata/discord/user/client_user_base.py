@@ -69,7 +69,7 @@ class ClientUserBase(UserBase):
         
         banner_color = data.get('banner_color', None)
         if (banner_color is not None):
-            banner_color = Color(banner_color[1:])
+            banner_color = Color(banner_color[1:], 16)
         self.banner_color = banner_color
     
     def _update(self, data):
@@ -129,7 +129,7 @@ class ClientUserBase(UserBase):
 
         banner_color = data.get('banner_color', None)
         if (banner_color is not None):
-            banner_color = Color(banner_color[1:])
+            banner_color = Color(banner_color[1:], 16)
         if self.banner_color != flags:
             old_attributes['banner_color'] = self.banner_color
             self.banner_color = banner_color

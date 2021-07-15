@@ -11,3 +11,4 @@ RATE_LIMIT_LIMIT = istr('X-RateLimit-Limit')
 
 # to send
 RATE_LIMIT_PRECISION = istr('X-RateLimit-Precision')
+DEBUG_OPTIONS = istr('X-Debug-Options')

@@ -2263,7 +2263,13 @@ class Token:
         
         repr_parts.append(', ')
         repr_parts.append('id=')
-        repr_parts.append(repr(self.id))
+        token_id = self.id
+        repr_parts.append(repr(token_id))
+        repr_parts.append(' (')
+        
+        token_name = TOKEN_NAMES.get(token_id, 'unknown token')
+        repr_parts.append(token_name)
+        repr_parts.append(')')
         
         value = self.value
         if (value is not None):
@@ -2736,7 +2742,7 @@ def evaluate_two_sided_operations(tokens):
             limit -= 2
             continue
         
-        if limit < 3:
+        if limit < 2:
             break
 
 

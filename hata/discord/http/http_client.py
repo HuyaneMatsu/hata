@@ -16,7 +16,7 @@ from ..exceptions import DiscordException
 from ..core import KOKORO
 from .urls import API_ENDPOINT, DIS_ENDPOINT
 
-from .headers import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION
+from .headers import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION, DEBUG_OPTIONS
 from .rate_limit import RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
 from . import rate_limit_groups as RATE_LIMIT_GROUPS
 
@@ -110,7 +110,7 @@ class DiscordHTTPClient(HTTPClient):
     
     CONNECTOR_REFERENCE_COUNTS = WeakKeyDictionary()
     
-    def __init__(self, client, proxy_url=None, proxy_auth=None):
+    def __init__(self, client, *, proxy_url=None, proxy_auth=None, debug_options=None):
         """
         Creates a new Discord http client.
         
@@ -118,10 +118,12 @@ class DiscordHTTPClient(HTTPClient):
         ----------
         client : ``Client``
             The owner client of the session.
-        proxy_auth :  `str`, Optional
+        proxy_auth :  `str`, Optional (Keyword only)
             Proxy authorization for the session's requests.
-        proxy_url : `str`, Optional
+        proxy_url : `str`, Optional (Keyword only)
             Proxy url for the session's requests.
+        debug_options: `None` or `set` of `str`, Optional (Keyword only)
+            Http debug options, like `'canary'` (I don't know more either).
         """
         loop = client.loop
         
@@ -143,6 +145,10 @@ class DiscordHTTPClient(HTTPClient):
         
         if API_VERSION in (6, 7):
             headers[RATE_LIMIT_PRECISION] = 'millisecond'
+        
+        if (debug_options is not None):
+            for debug_option in debug_options:
+                headers[DEBUG_OPTIONS] = debug_option
         
         self.headers = headers
         self.global_rate_limit_expires_at = 0.0

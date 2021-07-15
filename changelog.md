@@ -15,11 +15,16 @@
 - Add `UserBase.banner_color`.
 - Add `banner_color` parameter to `User.precretae`.
 - Add `banner_color` parameter to `Client.__new__`.
+- Add `debug_options` parameters to `DiscordHTTPClient.__new__`.
+- Add `http_debug_options` parameters to `Client.__new__`.
 
 #### Bug Fixes
 
 - Some attributes were not set by `Client.__new__`.
 - Fix race conditions in `KOKORO`.
+
+##### hata.ext.slash
+- `evaluate_two_sided_operations` returned 1 token too early.
 
 ## 1.1.89 *\[2021-07-08\]*
 

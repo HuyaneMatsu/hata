@@ -63,8 +63,7 @@ async def send_response(command_context, response):
         response = response[:2000]
     
     if response:
-        response = await command_context.client.message_create(command_context.channel, response)
-        return await send_response(command_context, response)
+        return await command_context.client.message_create(command_context.channel, response)
     
     # No more cases
     return

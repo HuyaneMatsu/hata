@@ -1220,7 +1220,22 @@ class Command:
             wrappers = self._wrappers = []
         
         wrappers.append(command_wrapper)
-
+    
+    def add_check(self, check):
+        """
+        Adds a check to the command.
+        
+        Parameters
+        ----------
+        check : ``CheckBase``
+        """
+        checks = self._checks
+        if checks is None:
+            checks = (check,)
+        else:
+            checks = (*checks, check)
+        
+        self._checks = checks
 
 class CommandFunction:
     """

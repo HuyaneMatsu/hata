@@ -116,7 +116,7 @@ def get_command_category_trace(command, content, index):
             
             trace.append((end, command_category))
             
-            sub_commands = command_category._sub_commands
+            sub_commands = command_category._command_categories
             if sub_commands is None:
                 break
             

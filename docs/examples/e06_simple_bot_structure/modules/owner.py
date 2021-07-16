@@ -10,4 +10,4 @@ async def quit_(ctx):
     """Shuts the bot down."""
     await ctx.reply('Shutting down!')
     # A little bit brute force, but works on windows as well :')
-    os._exit()
+    os._exit(0)

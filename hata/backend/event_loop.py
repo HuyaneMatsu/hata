@@ -70,17 +70,17 @@ class Handle:
     
     def __repr__(self):
         """Returns the handle's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
         ]
         
         if self.cancelled:
-            result.append(' cancelled')
+            repr_parts.append(' cancelled')
         else:
-            result.append(' func=')
-            result.append(repr(self.func))
-            result.append('(')
+            repr_parts.append(' func=')
+            repr_parts.append(repr(self.func))
+            repr_parts.append('(')
             
             args = self.args
             limit = len(args)
@@ -88,20 +88,20 @@ class Handle:
                 index = 0
                 while True:
                     arg = args[index]
-                    result.append(repr(arg))
+                    repr_parts.append(repr(arg))
                     
                     index += 1
                     if index == limit:
                         break
                     
-                    result.append(', ')
+                    repr_parts.append(', ')
                     continue
             
-            result.append(')')
+            repr_parts.append(')')
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     def cancel(self):
         """Cancels the handle if not yet cancelled."""
@@ -170,17 +170,17 @@ class TimerHandle(Handle):
     
     def __repr__(self):
         """Returns the timer handle's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
-                ]
+        ]
         
         if self.cancelled:
-            result.append(' cancelled')
+            repr_parts.append(' cancelled')
         else:
-            result.append(' func=')
-            result.append(repr(self.func))
-            result.append('(')
+            repr_parts.append(' func=')
+            repr_parts.append(repr(self.func))
+            repr_parts.append('(')
             
             args = self.args
             limit = len(args)
@@ -188,22 +188,22 @@ class TimerHandle(Handle):
                 index = 0
                 while True:
                     arg = args[index]
-                    result.append(repr(arg))
+                    repr_parts.append(repr(arg))
                     
                     index += 1
                     if index == limit:
                         break
                     
-                    result.append(', ')
+                    repr_parts.append(', ')
                     continue
             
-            result.append(')')
-            result.append(', when=')
-            result.append(repr(self.when))
+            repr_parts.append(')')
+            repr_parts.append(', when=')
+            repr_parts.append(repr(self.when))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     def __hash__(self):
         """Returns the hash of the time, when the handle will be called."""

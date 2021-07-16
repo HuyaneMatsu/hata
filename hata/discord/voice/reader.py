@@ -266,6 +266,9 @@ class AudioReader:
                         else:
                             audio_stream.feed(voice_packet)
                 
+                except GeneratorExit:
+                    raise
+                
                 except BaseException as err:
                     if isinstance(err, CancelledError) and self.done:
                         return
@@ -275,6 +278,10 @@ class AudioReader:
                         repr(self),
                         '\n',
                     ])
+        
+        except GeneratorExit:
+            self.stop()
+            raise
         
         except BaseException as err:
             if isinstance(err, CancelledError) and self.done:

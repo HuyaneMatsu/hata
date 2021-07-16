@@ -136,6 +136,7 @@ class AudioPlayer:
                 if delay < 0.0:
                     continue
                 await sleep(delay, KOKORO)
+        
         except BaseException as err:
             if voice_client.player is self:
                 voice_client.player = None
@@ -146,6 +147,9 @@ class AudioPlayer:
             if (source is not None):
                 await source.cleanup()
                 source = None
+            
+            if isinstance(err, GeneratorExit):
+                raise
             
             if isinstance(err, CancelledError):
                 return

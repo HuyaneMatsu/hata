@@ -1,6 +1,6 @@
 from hata import Client, BUILTIN_EMOJIS, DiscordException
 
-from hata.ext.commands import checks, CommandCheckError, CommandParameterParsingError
+from hata.ext.commands_v2 import checks, CommandCheckError, CommandParameterParsingError
 from hata.ext.commands_v2.helps.subterranean import SubterraneanHelpCommand
 
 TOKEN = ''
@@ -9,9 +9,16 @@ TOKEN = ''
 #
 # Each extension has required and optional parameters. Do not forget to pass sufficient parameters for your needs.
 Sakuya = Client(TOKEN,
-    extension = 'commands_v2',
+    extensions = 'commands_v2',
     prefix = '!',
 )
+
+
+@Sakuya.events
+async def ready(client):
+    print(f'{client:f} is connected!')
+
+
 
 # If the client is using the commands extension, you can use register commands to it by using the `.commands`
 # decorator.
@@ -64,7 +71,7 @@ async def about_role(role: 'Role'):
 @about_role.error
 async def about_role_error_handler(ctx, exception):
     if isinstance(exception, CommandParameterParsingError):
-        await ctx.send(f'{exception.content_parser_parameter.name} is required.')
+        await ctx.send(f'{exception.content_parser_parameter.name!r} parameter is required.')
         return True
     
     return False
@@ -101,7 +108,7 @@ EMOJI_BIRD = BUILTIN_EMOJIS['bird']
 
 @Sakuya.commands
 async def bird(animal:str=None):
-    """Bird finds animals"""
+    """Bird finds animals."""
     if animal is None:
         # `{emoji:e}` is a shortcut for `.emoji`.
         content = f'{EMOJI_BIRD:e} finds animals for you.'
@@ -129,13 +136,14 @@ async def slowmode(ctx, slowmode_rate:int=None):
     if slowmode_rate is None:
         return f'The channel\'s current slowmode is: `{ctx.channel.slowmode}` seconds.'
     
-    if slowmode < 0 or slowmode > 21600:
+    if slowmode_rate < 0 or slowmode_rate > 21600:
         return f'Slowmode can be min 0 and max 21600, got `{slowmode_rate}` seconds..'
     
     try:
         await ctx.client.channel_edit(ctx.channel, slowmode=slowmode_rate)
     except DiscordException as err:
-        return f'Error setting channel\'s slowmode to `{slowmode_rate}` seconds:\n{"\n".join(err.messages)}'
+        # Raw error message helps with developing, tho the user should see an already processed one.
+        return f'Error setting channel\'s slowmode to `{slowmode_rate}` seconds:\n{err!r}'
     
     return f'Successfully set slow mode rate to `{slowmode_rate}` seconds.'
 

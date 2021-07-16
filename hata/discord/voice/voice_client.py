@@ -962,7 +962,7 @@ class VoiceClient:
         
         This method is a coroutine.
         """
-        await self._diconnect()
+        await self._disconnect()
     
     
     async def _disconnect(self, force=False, terminate=True):

@@ -508,8 +508,8 @@ class SubterraneanHelpCommand:
     from hata.ext.commands.helps.subterranean import SubterraneanHelpCommand
     
     Orin = Client('TOKEN',
-        extensions='commands_v2',
-        prefix='o|',
+        extensions = ('commands_v2', 'command_utils'),
+        prefix = 'o|',
     )
     
     Orin.commands(SubterraneanHelpCommand(), 'help')
@@ -538,8 +538,8 @@ class SubterraneanHelpCommand:
     from hata.ext.commands.helps.subterranean import SubterraneanHelpCommand
     
     Orin = Client('TOKEN',
-        extensions='commands_v2',
-        prefix='o|',
+        extensions = ('commands_v2', 'command_utils'),
+        prefix = 'o|',
     )
     
     def embed_postprocessor(command_context, command_or_category, embed):
@@ -802,16 +802,24 @@ class SubterraneanHelpCommand:
         """
         categories = command_context.client.command_processor.categories
         
-        category_names = []
+        displayable_categories = []
+        
         for category in categories:
             if await should_show_category(command_context, category):
-                category_names.append(category.display_name)
+                displayable_categories.append(category)
         
-        category_names.sort()
         
+        
+        displayable_categories_length = len(displayable_categories)
+        if displayable_categories_length == 1:
+            await self.list_category(command_context, displayable_categories[0], display_category_name=False)
+            return
+        
+        category_names = sorted(category.display_name for category in displayable_categories)
         pages = []
-        if len(category_names) == 0:
-            pages.append('*[No available category]*')
+        
+        if displayable_categories_length == 0:
+            pages.append('*[No available category or command]*')
         else:
             page = []
             page_line_count = 0
@@ -853,7 +861,7 @@ class SubterraneanHelpCommand:
     
     async def list_category(self, command_context, category, display_category_name=True):
         """
-        Lists the given commands.
+        Lists the given category's commands.
         
         This command only collects the displayable commands' names, then calls ``.list_commands``.
         

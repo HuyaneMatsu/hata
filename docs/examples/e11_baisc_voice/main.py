@@ -1,4 +1,16 @@
-from hata import Client, Guild, YTAudio, DownloadError
+# This example shows basic interaction with a voice channels. We can join `VoiceClient`-s to them and play or capture
+# audio.
+#
+# Using `commands_v2` extension, since it provides easy api to access a user's voice state or the local
+# voice client.
+#
+# The example will showcase the following actions:
+# => Connecting to voice channel.
+# => Changing volume.
+# => Playing audio from youtube.
+# => Disconnecting.
+
+from hata import Client, YTAudio, DownloadError
 from hata.ext.commands_v2 import checks
 
 TOKEN = ''
@@ -89,7 +101,7 @@ async def volume_(ctx, volume:int=None):
         volume /= 100.0
     
     voice_client.volume = volume
-    return f'Volume set to {volume}%'
+    return f'Volume set to {volume*100.:.0f}%'
 
 
 @Sakuya.commands

@@ -22,6 +22,8 @@
 
 - Some attributes were not set by `Client.__new__`.
 - Fix race conditions in `KOKORO`.
+- Fix occasional `RuntimeWarning` in `AudioReader.run`.
+- Fix occasional `RuntimeWarning` in `AudioPlayer.run`.
 
 ##### hata.ext.slash
 - `evaluate_two_sided_operations` returned 1 token too early.

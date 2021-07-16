@@ -5,7 +5,7 @@ TOKEN = ''
 # Intents are a bit flags, bitwise operations can be used to dictate which intents to use
 # By default all gateway intent is used.
 Sakuya = Client(TOKEN,
-    intents = IntentFlag().update_by_keys(guilds=True, guild_messages=True)
+    intents = IntentFlag(0).update_by_keys(guilds=True, guild_messages=True)
 )
 
 
@@ -15,8 +15,8 @@ async def ready(client):
 
 
 # This event will be dispatched only for guilds, but not for private channels.
-@Sakuya.clients
-async def message(client, message):
+@Sakuya.events
+async def message_create(client, message):
     print(f'Received message: {message.content!r}')
 
 

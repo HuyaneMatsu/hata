@@ -13,7 +13,7 @@ async def message_create(client, message):
             'This is a title',
             'This is a description',
         ).add_image(
-            'attachment://ferris_eyes.png'
+            'attachment://flan.png'
         ).add_field(
             'This is the first field name',
             'This is a field value',
@@ -21,10 +21,11 @@ async def message_create(client, message):
         ).add_field(
             'This is the second field name',
             'Both of these fields are inline',
+            inline = True,
         ).add_field(
             'This is the third field',
             'This is not an inline field',
-        ).footer(
+        ).add_footer(
             'This is a footer',
         )
         

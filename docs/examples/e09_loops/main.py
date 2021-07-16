@@ -18,11 +18,11 @@ async def message_create(client, message):
 
 # Coroutine, which changes the client's presence to the current utc time.
 async def change_presence(cycler):
-    activity = ActivityRich(format(datetime.utcnow()), DATETIME_FORMAT_CODE)
+    activity = ActivityRich(format(datetime.utcnow(), DATETIME_FORMAT_CODE))
     await Sakuya.client_edit_presence(activity=activity)
 
-# Cycles the given function (can be async) asynchronously. Passes itself to the function in each cycle, if it wanna
-# Interact with the cycler.
+# Cycles the given function (can be async) asynchronously. Passes itself to the function in each cycle, if it want to
+# interact with the cycler.
 Sakuya.loop.cycle(60.0, change_presence)
 
 

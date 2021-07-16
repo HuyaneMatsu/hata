@@ -154,7 +154,7 @@ class CommandContext(object):
         -------
         voice_client : `None` or ``VoiceClient``
         """
-        guild = self.message.chanenl.guild
+        guild = self.message.channel.guild
         if guild is None:
             voice_client = None
         else:

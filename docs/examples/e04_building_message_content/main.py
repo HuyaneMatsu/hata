@@ -12,7 +12,7 @@ async def message_create(client, message):
         
         # Discord messages support markdown formatting.
         
-        content = f'User **{message.author.name}** used the \'ping\' command in the {message.channel.mention} channel'
+        content = f'User **{message.author.name}** used the \'ping\' command in the {message.channel.mention} channel.'
         
         # In format strings you can use format codes for entities as well.
         # `{user.name}` can be replaced just by `{user}`, or `{channel.mention}` by `{channel:m}`.

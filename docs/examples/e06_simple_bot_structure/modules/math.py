@@ -1,6 +1,6 @@
 from hata import Client
 
-# Annotating `Sakuya` might helps your IDE to not derp out completely.
+# Annotating `Sakuya` might help your IDE to not derp out completely.
 Sakuya: Client
 
 @Sakuya.commands(aliases='*')

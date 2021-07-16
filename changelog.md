@@ -1,4 +1,4 @@
-## 1.1.90 *\[2021-07-??\]*
+## 1.1.90 *\[2021-07-16\]*
 
 - Add 5 second gateway connect rate limit per batch.
 - Add notification when session start limit reaches low amount.
@@ -17,6 +17,9 @@
 - Add `banner_color` parameter to `Client.__new__`.
 - Add `debug_options` parameters to `DiscordHTTPClient.__new__`.
 - Add `http_debug_options` parameters to `Client.__new__`.
+- Add `banner_color` parameter to `Client.client_edit`.
+- Add `bio` parameter to `Client.client_edit`.
+- Add `banner` parameter to `Client.client_edit`.
 
 #### Bug Fixes
 

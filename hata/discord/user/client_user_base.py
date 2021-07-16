@@ -13,6 +13,8 @@ from .user_base import UserBase
 from .flags import UserFlag
 from .guild_profile import GuildProfile
 from .activity_change import ActivityChange, ActivityUpdate
+from .helpers import get_banner_color_from_data
+
 
 class ClientUserBase(UserBase):
     """
@@ -67,10 +69,7 @@ class ClientUserBase(UserBase):
         self.flags = UserFlag(data.get('public_flags', 0))
         self.thread_profiles = None
         
-        banner_color = data.get('banner_color', None)
-        if (banner_color is not None):
-            banner_color = Color(banner_color[1:], 16)
-        self.banner_color = banner_color
+        self.banner_color = get_banner_color_from_data(data)
     
     def _update(self, data):
         """
@@ -127,9 +126,7 @@ class ClientUserBase(UserBase):
             self.flags = UserFlag(flags)
         
 
-        banner_color = data.get('banner_color', None)
-        if (banner_color is not None):
-            banner_color = Color(banner_color[1:], 16)
+        banner_color = get_banner_color_from_data(data)
         if self.banner_color != flags:
             old_attributes['banner_color'] = self.banner_color
             self.banner_color = banner_color

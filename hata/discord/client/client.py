@@ -846,7 +846,9 @@ class Client(ClientUserPBase):
             return (await response.read())
     
     
-    async def client_edit(self, *, name=None, avatar=..., password=None, new_password=None, email=None, house=...):
+    async def client_edit(self, *, name=None, avatar=..., bio=..., banner_color=..., banner=..., # Generic
+            password=None, new_password=None, email=None, house=... # User account only
+                ):
         """
         Edits the client. Only the provided parameters will be changed. Every parameter what refers to a user
         account is not tested.
@@ -857,15 +859,30 @@ class Client(ClientUserPBase):
         ----------
         name : `str`, Optional (Keyword only)
             The client's new name.
-        avatar : `bytes-like` or `None`, Optional (Keyword only)
+        
+        avatar : `None` or `bytes-like`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
+        
+        bio : `None` or `str`, Optional (Keyword only)
+            The new bio of the client. By passing it as `None`, you can remove the client's current one.
+        
+        banner_color : `None`, ``Color`` or `int`, Optional (Keyword only)
+            The new banner color of the client. By passing it as `None` you can remove the client's current one.
+        
+        banner : `None` or `bytes-like`, Optional (Keyword only)
+            An `'jpg'`, `'png'`, `'webp'`, 'gif'` image's raw data. By passing `None` you can remove the client's
+            current avatar.
+        
         password : `str`, Optional (Keyword only)
             The actual password of the client.
+        
         new_password : `str`, Optional (Keyword only)
             The client's new password.
+        
         email : `str`, Optional (Keyword only)
             The client's new email.
+        
         house : `int`, ``HypesquadHouse`` or `None`, Optional (Keyword only)
             Remove or change the client's hypesquad house.
         
@@ -874,6 +891,7 @@ class Client(ClientUserPBase):
         TypeError
             - If `avatar` was not given as `None`, neither as `bytes-like`.
             - If `house` was not given as `int`  neither as ``HypesquadHouse`` instance.
+            - If `banner` was not given as `None`, neither as `bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -886,6 +904,9 @@ class Client(ClientUserPBase):
             - If `password` was not given as `str` instance.
             - If `email` was given, but not as `str` instance.
             - If `new_password` was given, but not as `str` instance.
+            - If `bio` is neither `None` nor `str` instance.
+            - If `bio`'s length is out of range [0:190].
+            - if `banner_color` is neither `None` nor `int` instance.
         
         Notes
         -----
@@ -924,11 +945,55 @@ class Client(ClientUserPBase):
                         valid_icon_media_types = VALID_ICON_MEDIA_TYPES
                     
                     if media_type not in valid_icon_media_types:
-                        raise AssertionError(f'Invalid avatar type for the client: `{media_type}`.')
+                        raise AssertionError(f'Invalid `avatar` type for the client: `{media_type}`.')
                 
                 avatar_data = image_to_base64(avatar)
             
             data['avatar'] = avatar_data
+        
+        
+        if (bio is not ...):
+            if bio is None:
+                bio = ''
+            else:
+                if __debug__:
+                    if not isinstance(bio, str):
+                        raise AssertionError(f'`bio` can be given either as `None` or `str` instance, got '
+                            f'{bio.__class__.__name__}.')
+                    
+                    bio_length = len(bio)
+                    if bio_length > 190:
+                        raise AssertionError(f'`bio` length can be in range [0:190], got {bio_length!r}; {bio!r}.')
+            
+            data['bio'] = bio
+        
+        
+        if (banner_color is not ...):
+            if __debug__:
+                if (banner_color is not None) and (not isinstance(banner_color, int)):
+                    raise AssertionError(f'`banner_color` can be either `None`, `{Color.__name__}` or `int` '
+                        f'instance, got {banner_color.__name__}.')
+            
+            data['banner_color'] = banner_color
+        
+        
+        if (banner is not ...):
+            if banner is None:
+                banner_data = None
+            else:
+                if not isinstance(banner, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`banner` can be passed as `bytes-like` or None, got '
+                        f'{banner.__class__.__name__}.')
+                
+                if __debug__:
+                    media_type = get_image_media_type(banner)
+                    
+                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                        raise AssertionError(f'Invalid `banner` type for the client: `{media_type}`.')
+                
+                banner_data = image_to_base64(banner)
+            
+            data['banner'] = banner_data
         
         
         if not self.is_bot:
@@ -996,7 +1061,7 @@ class Client(ClientUserPBase):
         guild : `None`, `int` or ``Guild`` instance
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
-        nick : `str` or `None`
+        nick : `None` or `str`
             The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
         reason : `None` or `str`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
@@ -1038,9 +1103,9 @@ class Client(ClientUserPBase):
         guild : `None`, `int` or ``Guild`` instance
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
-        nick : `str` or `None`, Optional (Keyword only)
+        nick : `None` or `str`, Optional (Keyword only)
             The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
-        avatar : `bytes-like` or `None`, Optional (Keyword only)
+        avatar : `None` or `bytes-like`, Optional (Keyword only)
             The client's new guild specific avatar.
             
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
@@ -7911,7 +7976,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelStage`` or `int`
             The channel to edit.
-        topic : `str` or `None`
+        topic : `None` or `str`
             The new topic of the stage.
         privacy_level : ``StagePrivacyLevel``, `int`, Optional (Keyword only)
             The new privacy level of the stage. Defaults to guild only.

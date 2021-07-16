@@ -5,6 +5,7 @@ from ...backend.utils import copy_docs
 
 from ..core import USERS
 from ..user import User, ZEROUSER, ClientUserBase, UserBase
+from ..user.helpers import get_banner_color_from_data
 from ..exceptions import DiscordException, ERROR_CODES
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from ..bases import ICON_TYPE_NONE, Icon, instance_or_id_to_instance
@@ -173,10 +174,7 @@ class Webhook(WebhookBase):
             user = User(user_data)
         self.user = user
         
-        banner_color = data.get('banner_color', None)
-        if (banner_color is not None):
-            banner_color = Color(banner_color[1:], 16)
-        self.banner_color = banner_color
+        self.banner_color = get_banner_color_from_data(data)
     
     @classmethod
     def precreate(cls, webhook_id, **kwargs):

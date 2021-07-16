@@ -1,6 +1,7 @@
 __all__ = ('UserOA2',)
 
 from ..user import UserFlag, UserBase, PremiumType
+from ..user.helpers import get_banner_color_from_data
 from ..color import Color
 
 from .helpers import parse_locale
@@ -55,10 +56,7 @@ class UserOA2(UserBase):
         self._set_avatar(data)
         self._set_banner(data)
         
-        banner_color = data.get('banner_color', None)
-        if (banner_color is not None):
-            banner_color = Color(banner_color[1:], 16)
-        self.banner_color = banner_color
+        self.banner_color = get_banner_color_from_data(data)
         
         self.mfa = data.get('mfa_enabled', False)
         self.verified = data.get('verified', False)

@@ -74,7 +74,7 @@ class GuildProfile(metaclass=Slotted):
         
         self.joined_at = joined_at
         
-        self._update_no_return(data)
+        self._update_attributes(data)
     
     
     def __repr__(self):
@@ -102,7 +102,7 @@ class GuildProfile(metaclass=Slotted):
             self.joined_at = joined_at
     
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the guild profile with overwriting it's old attributes.
         
@@ -142,7 +142,7 @@ class GuildProfile(metaclass=Slotted):
         self._set_avatar(data)
     
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the guild profile and returns it's changed attributes in a `dict` within `attribute-name` - `old-value`
         relation.

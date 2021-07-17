@@ -13,7 +13,6 @@ from .user_base import UserBase
 from .flags import UserFlag
 from .guild_profile import GuildProfile
 from .activity_change import ActivityChange, ActivityUpdate
-from .helpers import get_banner_color_from_data
 
 
 class ClientUserBase(UserBase):
@@ -51,7 +50,8 @@ class ClientUserBase(UserBase):
     """
     __slots__ = ('guild_profiles', 'is_bot', 'flags', 'thread_profiles')
     
-    def _update_no_return(self, data):
+    @copy_docs(UserBase._update_attributes)
+    def _update_attributes(self, data):
         """
         Updates the user with the given data by overwriting it's old attributes.
         
@@ -60,18 +60,12 @@ class ClientUserBase(UserBase):
         data : `dict` of (`str`, `Any`) items
             User data received from Discord.
         """
-        self.name = data['username']
-        self.discriminator = int(data['discriminator'])
-        
-        self._set_avatar(data)
-        self._set_banner(data)
+        UserBase._update_attributes(self, data)
         
         self.flags = UserFlag(data.get('public_flags', 0))
-        self.thread_profiles = None
-        
-        self.banner_color = get_banner_color_from_data(data)
     
-    def _update(self, data):
+    
+    def _difference_update_attributes(self, data):
         """
         Updates the user and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.
@@ -105,38 +99,18 @@ class ClientUserBase(UserBase):
         | name          | `str`                 |
         +---------------+-----------------------+
         """
-        old_attributes = {}
-        
-        name = data['username']
-        if self.name != name:
-            old_attributes['name'] = self.name
-            self.name = name
-        
-        discriminator = int(data['discriminator'])
-        if self.discriminator != discriminator:
-            old_attributes['discriminator'] = self.discriminator
-            self.discriminator = discriminator
-        
-        self._update_avatar(data, old_attributes)
-        self._update_banner(data, old_attributes)
+        old_attributes = UserBase._difference_update_attributes(self, data)
         
         flags = data.get('public_flags', 0)
         if self.flags != flags:
             old_attributes['flags'] = self.flags
             self.flags = UserFlag(flags)
         
-
-        banner_color = get_banner_color_from_data(data)
-        if self.banner_color != flags:
-            old_attributes['banner_color'] = self.banner_color
-            self.banner_color = banner_color
-        
-        
         return old_attributes
     
     
     @classmethod
-    def _update_profile(cls, data, guild):
+    def _difference_update_profile(cls, data, guild):
         """
         First tries to find the user, then it's respective guild profile for the given guild to update it.
         
@@ -188,17 +162,17 @@ class ClientUserBase(UserBase):
             return user, {}
 
         profile._set_joined(data)
-        return user, profile._update(data)
+        return user, profile._difference_update_attributes(data)
     
     
     @classmethod
-    def _update_profile_no_return(cls, data, guild):
+    def _update_profile(cls, data, guild):
         """
         First tries to find the user, then it's respective guild profile for the given guild to update it.
         
         If the method cannot find the user, or the respective guild profile, then creates them.
         
-        Not like ``._update_profile``, this method not calculates changes.
+        Not like ``._difference_update_profile``, this method not calculates changes.
         
         Parameters
         ----------
@@ -224,7 +198,7 @@ class ClientUserBase(UserBase):
             except KeyError:
                 user.guild_profiles[guild] = GuildProfile(data)
             else:
-                profile._update_no_return(data)
+                profile._update_attributes(data)
         
         return user
     
@@ -261,7 +235,7 @@ class ClientUserBase(UserBase):
             user.guild_profiles[guild] = GuildProfile(guild_profile_data)
         else:
             profile._set_joined(guild_profile_data)
-            profile._update_no_return(guild_profile_data)
+            profile._update_attributes(guild_profile_data)
 
     
     @classmethod
@@ -312,7 +286,7 @@ class ClientUserBase(UserBase):
         self.thread_profiles = None
     
     # if CACHE_PRESENCE is False, this should be never called from this class
-    def _update_presence(self, data):
+    def _difference_update_presence(self, data):
         """
         Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
         `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange`` instance
@@ -343,7 +317,7 @@ class ClientUserBase(UserBase):
         return {}
     
     
-    def _update_presence_no_return(self, data):
+    def _update_presence(self, data):
         """
         Updates the user's presences with the given data.
         
@@ -592,7 +566,8 @@ class ClientUserPBase(ClientUserBase):
         self.statuses = statuses
         
         return self
-
+    
+    
     @copy_docs(ClientUserBase._set_default_attributes)
     def _set_default_attributes(self):
         ClientUserBase._set_default_attributes(self)
@@ -601,8 +576,9 @@ class ClientUserPBase(ClientUserBase):
         self.statuses = {}
         self.activities = None
     
-    @copy_docs(ClientUserBase._update_presence)
-    def _update_presence(self, data):
+    
+    @copy_docs(ClientUserBase._difference_update_presence)
+    def _difference_update_presence(self, data):
         old_attributes = {}
         
         statuses = data['client_status']
@@ -650,7 +626,7 @@ class ClientUserPBase(ClientUserBase):
                         
                         del removed_activities[index]
                         
-                        activity_old_attributes = activity._update(activity_data)
+                        activity_old_attributes = activity._difference_update_attributes(activity_data)
                         if activity_old_attributes:
                             activity_update = ActivityUpdate(activity, activity_old_attributes)
                             
@@ -698,8 +674,9 @@ class ClientUserPBase(ClientUserBase):
         
         return old_attributes
     
-    @copy_docs(ClientUserBase._update_presence_no_return)
-    def _update_presence_no_return(self, data):
+    
+    @copy_docs(ClientUserBase._update_presence)
+    def _update_presence(self, data):
         self.status = Status.get(data['status'])
         
         try:

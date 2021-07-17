@@ -227,13 +227,13 @@ class EULA(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = eula_id
-            self._update_no_return(data)
+            self._update_attributes(data)
             
             EULAS[eula_id] = self
         
         return self
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the eula with the received data from Discord.
         

@@ -40,9 +40,9 @@ class GuildDiscovery:
         """
         self.guild = guild
         
-        self._update_no_return(data)
+        self._update_attributes(data)
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the guild discovery object from the given data by overwriting it's old attributes.
         

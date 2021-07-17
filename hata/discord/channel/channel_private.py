@@ -398,8 +398,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         del client.group_channels[self.id]
     
     
-    @copy_docs(ChannelBase._update_no_return)
-    def _update_no_return(self, data):
+    @copy_docs(ChannelBase._update_attributes)
+    def _update_attributes(self, data):
         name = data.get('name', None)
         self.name = '' if name is None else name
         
@@ -408,7 +408,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         self.owner_id = int(data['owner_id'])
     
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
         `old-value` relation.

@@ -44,7 +44,7 @@ class Achievement(DiscordEntity):
         self.application_id = int(data['application_id'])
         self.id = int(data['id'])
         
-        self._update_no_return(data)
+        self._update_attributes(data)
     
     def __repr__(self):
         """Returns the achievement's representation."""
@@ -63,7 +63,7 @@ class Achievement(DiscordEntity):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the achievement and returns it's overwritten attributes as a `dict` with a `attribute-name` -
         `old-value` relation.
@@ -120,7 +120,7 @@ class Achievement(DiscordEntity):
         
         return old_attributes
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the achievement with overwriting it's old attributes.
         

@@ -83,6 +83,8 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-------------------------------+-------------------+
     | use_private_threads           | 36                |
     +-------------------------------+-------------------+
+    | use_external_stickers         | 37                |
+    +-------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -124,6 +126,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_threads': 34,
         'use_public_threads': 35,
         'use_private_threads': 36,
+        'use_external_stickers': 37,
     }
     
     def handle_overwrite(self, allow, deny):
@@ -223,6 +226,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     manage_threads = True,
     use_public_threads = True,
     use_private_threads = True,
+    use_external_stickers = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -262,6 +266,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     manage_threads = False,
     use_application_commands = True,
     request_to_speak = False,
+    use_external_stickers = True,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -313,6 +318,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     manage_threads = True,
     use_public_threads = True,
     use_private_threads = True,
+    use_external_stickers = True,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -358,6 +364,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     manage_threads = False,
     use_public_threads = False,
     use_private_threads = False,
+    use_external_stickers = False,
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)
@@ -406,4 +413,5 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     manage_threads = False,
     use_public_threads = False,
     use_private_threads = False,
+    use_external_stickers = False,
 )

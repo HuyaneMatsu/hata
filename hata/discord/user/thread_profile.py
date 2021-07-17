@@ -44,7 +44,7 @@ def thread_user_create(thread_channel, user, thread_user_data):
         thread_profiles[thread_channel] = ThreadProfile(thread_user_data)
         created = True
     else:
-        thread_profile._update_no_return(thread_user_data)
+        thread_profile._update_attributes(thread_user_data)
         created = False
     
     return created
@@ -82,7 +82,7 @@ def thread_user_update(thread_channel, user, thread_user_data):
         thread_profiles[thread_channel] = ThreadProfile(thread_user_data)
         return None
     
-    old_attributes = thread_profile._update_no_return(thread_user_data)
+    old_attributes = thread_profile._update_attributes(thread_user_data)
     if not old_attributes:
         old_attributes = None
     
@@ -201,13 +201,13 @@ class ThreadProfile:
         """
         self.joined_at = parse_time(data['join_timestamp'])
         
-        self._update_no_return(data)
+        self._update_attributes(data)
     
     def __repr__(self):
         """Returns the thread profile's representation."""
         return f'<{self.__class__.__name__}>'
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the thread profile with overwriting it's old attributes.
         
@@ -218,7 +218,7 @@ class ThreadProfile:
         """
         self.flags = ThreadProfileFlag(data['flags'])
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the thread profile and returns it's changed attributes in a `dict` within `attribute-name` - `old-value`
         relation.

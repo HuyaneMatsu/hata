@@ -54,6 +54,8 @@ class ApplicationCommandOptionType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | mentionable           | mentionable       | 9     |
     +-----------------------+-------------------+-------+
+    | float                 | float             | 10    |
+    +-----------------------+-------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -71,6 +73,8 @@ class ApplicationCommandOptionType(PreinstancedBase):
     channel = P(7, 'channel',)
     role = P(8, 'role',)
     mentionable = P(9, 'mentionable',)
+    float = P(10, 'float',)
+
 
 @export
 class InteractionType(PreinstancedBase):

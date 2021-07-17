@@ -105,7 +105,7 @@ class User(USER_BASE_CLASS):
             
             if update:
                 self.is_bot = user_data.get('bot', False)
-                self._update_no_return(user_data)
+                self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
@@ -143,7 +143,7 @@ class User(USER_BASE_CLASS):
             
             if update:
                 self.is_bot = user_data.get('bot', False)
-                self._update_no_return(user_data)
+                self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
@@ -177,7 +177,7 @@ class User(USER_BASE_CLASS):
                 USERS[user_id] = self
             
             self.is_bot = user_data.get('bot', False)
-            self._update_no_return(user_data)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 self.guild_profiles[guild] = GuildProfile(guild_profile_data)
@@ -362,7 +362,7 @@ class User(USER_BASE_CLASS):
                 USERS[user_id] = self
             
             self.is_bot = user_data.get('bot', False)
-            self._update_no_return(user_data)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
@@ -372,7 +372,7 @@ class User(USER_BASE_CLASS):
                     self.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
-                    profile._update_no_return(guild_profile_data)
+                    profile._update_attributes(guild_profile_data)
             
             return self
         
@@ -398,7 +398,7 @@ class User(USER_BASE_CLASS):
                 USERS[user_id] = self
             
             self.is_bot = user_data.get('bot', False)
-            self._update_no_return(user_data)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
@@ -408,7 +408,7 @@ class User(USER_BASE_CLASS):
                     self.guild_profiles[guild] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
-                    profile._update_no_return(guild_profile_data)
+                    profile._update_attributes(guild_profile_data)
             
             return self
         
@@ -435,7 +435,7 @@ class User(USER_BASE_CLASS):
                 USERS[user_id] = self
             
             self.is_bot = user_data.get('bot', False)
-            self._update_no_return(user_data)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 self.guild_profiles[guild] = GuildProfile(guild_profile_data)

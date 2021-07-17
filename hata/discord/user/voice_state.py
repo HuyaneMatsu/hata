@@ -86,7 +86,7 @@ class VoiceState:
         """
         return self.channel.guild
     
-    def _update(self, data, channel):
+    def _difference_update_attributes(self, data, channel):
         """
         Updates the voice state and returns it's overwritten attributes as a `dict` with a `attribute-name` -
         `old-value` relation.
@@ -178,7 +178,7 @@ class VoiceState:
         
         return old_attributes
     
-    def _update_no_return(self, data, channel):
+    def _update_attributes(self, data, channel):
         """
         Updates the voice state with overwriting it's old attributes.
         

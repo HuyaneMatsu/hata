@@ -178,8 +178,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         return self.name.lower()
     
     
-    @copy_docs(ChannelBase._update_no_return)
-    def _update_no_return(self, data):
+    @copy_docs(ChannelBase._update_attributes)
+    def _update_attributes(self, data):
         self._cache_perm = None
         self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
@@ -201,7 +201,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             default_auto_archive_after *= 60
         self.default_auto_archive_after = default_auto_archive_after
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.

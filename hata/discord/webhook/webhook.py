@@ -90,7 +90,7 @@ class Webhook(WebhookBase):
             self.id = webhook_id
             self.token = ''
         
-        self._update_no_return(data)
+        self._set_attributes(data)
         self.type = WebhookType.get(data['type'])
         
         application_id = data.get('application_id', None)
@@ -116,6 +116,7 @@ class Webhook(WebhookBase):
         
         return self
     
+    
     @classmethod
     def from_url(cls, url):
         """
@@ -140,31 +141,15 @@ class Webhook(WebhookBase):
         
         return create_partial_webhook_from_id(webhook_id, webhook_token)
     
-    def _update_no_return(self, data):
-        """
-        Updates the webhook with the given data.
+    
+    def _set_attributes(self, data):
+        self._update_attributes(data)
         
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Received webhook data.
-        """
-        self.channel = channel = create_partial_channel_from_id(int(data['channel_id']), 0)
+        self.channel = create_partial_channel_from_id(int(data['channel_id']), 0)
         
         token = data.get('token', None)
         if (token is not None):
             self.token = token
-        
-        name = data['name']
-        if name is None:
-            name = ''
-        
-        self.name = name
-        
-        self.discriminator = 0
-        
-        self._set_avatar(data)
-        self._set_banner(data)
         
         try:
             user_data = data['user']
@@ -173,8 +158,7 @@ class Webhook(WebhookBase):
         else:
             user = User(user_data)
         self.user = user
-        
-        self.banner_color = get_banner_color_from_data(data)
+    
     
     @classmethod
     def precreate(cls, webhook_id, **kwargs):
@@ -320,7 +304,9 @@ class Webhook(WebhookBase):
         self.channel = None
         self.user = ZEROUSER
     
+    
     url = property(module_urls.webhook_url)
+    
     
     @classmethod
     async def _from_follow_data(cls, data, source_channel, target_channel, client):

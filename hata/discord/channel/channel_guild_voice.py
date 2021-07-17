@@ -224,8 +224,8 @@ class ChannelVoice(ChannelVoiceBase):
         self.overwrites.clear()
         self._cache_perm = None
     
-    @copy_docs(ChannelBase._update_no_return)
-    def _update_no_return(self, data):
+    @copy_docs(ChannelBase._update_attributes)
+    def _update_attributes(self, data):
         self._cache_perm = None
         self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
@@ -241,7 +241,7 @@ class ChannelVoice(ChannelVoiceBase):
         
         self.video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
         `old-value` relation.
@@ -574,8 +574,8 @@ class ChannelStage(ChannelVoiceBase):
         self.overwrites.clear()
         self._cache_perm = None
     
-    @copy_docs(ChannelBase._update_no_return)
-    def _update_no_return(self, data):
+    @copy_docs(ChannelBase._update_attributes)
+    def _update_attributes(self, data):
         self._cache_perm = None
         self._set_parent_and_position(data)
         self.overwrites = self._parse_overwrites(data)
@@ -591,7 +591,7 @@ class ChannelStage(ChannelVoiceBase):
         
         self.topic = None
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten old attributes as a `dict` with a `attribute-name` -
         `old-value` relation.

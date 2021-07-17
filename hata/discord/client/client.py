@@ -137,8 +137,6 @@ class Client(ClientUserPBase):
         Whether the client has two factor authorization enabled on the account.
     premium_type : ``PremiumType``
         The Nitro subscription type of the client.
-    system : `bool`
-        Whether the client is an Official Discord System user (part of the urgent message system).
     verified : `bool`
         Whether the email of the client is verified.
     application : ``Application``
@@ -226,7 +224,7 @@ class Client(ClientUserPBase):
     Client supports weakreferencing and dynamic attribute names as well for extension support.
     """
     __slots__ = (
-        'email', 'locale', 'mfa', 'premium_type', 'system', 'verified', # OAUTH 2
+        'email', 'locale', 'mfa', 'premium_type', 'verified', # OAUTH 2
         '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
         '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
         'gateway', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships', 'running',
@@ -530,7 +528,6 @@ class Client(ClientUserPBase):
         ClientUserPBase._set_default_attributes(self)
         
         self.mfa = False
-        self.system = False
         self.verified = False
         self.email = None
         self.premium_type = PremiumType.none
@@ -663,7 +660,6 @@ class Client(ClientUserPBase):
         self._set_avatar(data)
         self._set_banner(data)
         self.mfa = data.get('mfa_enabled', False)
-        self.system = data.get('system', False)
         self.verified = data.get('verified', False)
         self.email = data.get('email', None)
         self.flags = UserFlag(data.get('flags', 0))
@@ -726,7 +722,7 @@ class Client(ClientUserPBase):
         if CLIENTS.get(client_id, None) is self:
             del CLIENTS[client_id]
         
-        application_id = self.application_id
+        application_id = self.application.id
         if APPLICATION_ID_TO_CLIENT.get(application_id, None) is self:
             del APPLICATION_ID_TO_CLIENT[application_id]
         
@@ -1033,7 +1029,7 @@ class Client(ClientUserPBase):
         
         
         data = await self.http.client_edit(data)
-        self._update_no_return(data)
+        self._set_attributes(data)
         
         
         if not self.is_bot:
@@ -2005,7 +2001,7 @@ class Client(ClientUserPBase):
         if achievement is None:
             achievement = Achievement(data)
         else:
-            achievement._update_no_return(data)
+            achievement._set_attributes(data)
         return achievement
     
     async def achievement_delete(self, achievement):
@@ -2176,7 +2172,7 @@ class Client(ClientUserPBase):
         if application is None:
             application = Application(application_data)
         else:
-            application._update_no_return(application_data)
+            application._set_attributes(application_data)
         
         return application
     
@@ -2218,7 +2214,7 @@ class Client(ClientUserPBase):
         if eula is None:
             eula = EULA(eula_data)
         else:
-            eula._update_no_return(eula_data)
+            eula._set_attributes(eula_data)
         
         return eula
     
@@ -5140,6 +5136,7 @@ class Client(ClientUserPBase):
         
         await self.http.reaction_add(channel_id, message_id, emoji_as_reaction)
     
+    
     async def reaction_delete(self, message, emoji, user):
         """
         Removes the specified reaction of the user from the given message.
@@ -5176,6 +5173,7 @@ class Client(ClientUserPBase):
         else:
             await self.http.reaction_delete(channel_id, message_id, emoji_as_reaction, user_id)
     
+    
     async def reaction_delete_emoji(self, message, emoji):
         """
         Removes all the reaction of the specified emoji from the given message.
@@ -5205,6 +5203,7 @@ class Client(ClientUserPBase):
         
         await self.http.reaction_delete_emoji(channel_id, message_id, as_reaction)
     
+    
     async def reaction_delete_own(self, message, emoji):
         """
         Removes the specified reaction of the client from the given message.
@@ -5232,6 +5231,7 @@ class Client(ClientUserPBase):
         channel_id, message_id = get_channel_id_and_message_id(message)
         as_reaction = get_reaction(emoji)
         await self.http.reaction_delete_own(channel_id, message_id, as_reaction)
+    
     
     async def reaction_clear(self, message):
         """
@@ -5594,6 +5594,7 @@ class Client(ClientUserPBase):
         
         return welcome_screen
     
+    
     async def welcome_screen_edit(self, guild, *, enabled=..., description=..., welcome_channels=...):
         """
         Edits the given guild's welcome screen.
@@ -5847,6 +5848,7 @@ class Client(ClientUserPBase):
         
         return verification_screen
     
+    
     async def guild_ban_add(self, guild, user, *, delete_message_days=0, reason=None):
         """
         Bans the given user from the guild.
@@ -5897,7 +5899,8 @@ class Client(ClientUserPBase):
         if (reason is not None) and reason:
             data['reason'] = reason
         
-        await self.http.guild_ban_add(guild_id, user_id, data, None)
+        await self.http.guild_ban_add(guild_id, user_id, data, reason)
+    
     
     async def guild_ban_delete(self, guild, user, *, reason=None):
         """
@@ -5978,7 +5981,7 @@ class Client(ClientUserPBase):
                 if guild not in guild.clients:
                     guild.clients.append(self)
             else:
-                profile._update_no_return(user_data)
+                profile._set_attributes(user_data)
         
         return guild
 
@@ -5996,7 +5999,7 @@ class Client(ClientUserPBase):
 ##                if client not in guild.clients:
 ##                    guild.clients.append(client)
 ##            else:
-##                profile._update_no_return(user_data)
+##                profile._set_attributes(user_data)
 ##
 ##        if not CACHE_USER:
 ##            return
@@ -6139,14 +6142,17 @@ class Client(ClientUserPBase):
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
         """
         if __debug__:
-            if len(self.guild_profiles) > (9 if self.is_bot else 199 if self.flags.staff else 99):
-                if self.is_bot:
-                    message = 'Guild create limit for bot accounts is `10`.'
-                elif self.flags.staff:
-                    message = 'Guild create limit for staff is `200`.'
-                else:
-                    message = 'Guild create limit for generic user accounts is `100`.'
-                raise AssertionError(message)
+            if self.is_bot:
+                guild_create_limit = 10
+            elif self.flags.staff:
+                guild_create_limit = 200
+            elif (self.premium_type is PremiumType.nitro):
+                guild_create_limit = 200
+            else:
+                guild_create_limit = 100
+            
+            if len(self.guild_profiles) >= guild_create_limit:
+                raise AssertionError(f'Guild create limit: `{guild_create_limit}`.')
         
         
         if __debug__:
@@ -7133,7 +7139,7 @@ class Client(ClientUserPBase):
             guild_discovery = GuildDiscovery(guild_discovery_data, guild)
         else:
             guild_discovery = guild
-            guild_discovery._update_no_return(guild_discovery_data)
+            guild_discovery._set_attributes(guild_discovery_data)
         
         return guild_discovery
     
@@ -9252,7 +9258,7 @@ class Client(ClientUserPBase):
         if webhook is None:
             webhook = Webhook(data)
         else:
-            webhook._update_no_return(data)
+            webhook._set_attributes(data)
         
         return webhook
     
@@ -9291,7 +9297,7 @@ class Client(ClientUserPBase):
             webhook = create_partial_webhook_from_id(webhook_id, webhook_token)
         
         data = await self.http.webhook_get_token(webhook_id, webhook_token)
-        webhook._update_no_return(data)
+        webhook._set_attributes(data)
         return webhook
     
     
@@ -9555,7 +9561,7 @@ class Client(ClientUserPBase):
             return # Save 1 request
         
         data = await self.http.webhook_edit(webhook_id, data)
-        webhook._update_no_return(data)
+        webhook._set_attributes(data)
     
     
     async def webhook_edit_token(self, webhook, *, name=None, avatar=...):
@@ -9642,7 +9648,7 @@ class Client(ClientUserPBase):
         if webhook is None:
             webhook = Webhook(data)
         else:
-            webhook._update_no_return(data)
+            webhook._set_attributes(data)
         
         return webhook
     
@@ -10122,7 +10128,7 @@ class Client(ClientUserPBase):
         
             emoji = Emoji(emoji_data, guild)
         else:
-            emoji._update_no_return(emoji_data)
+            emoji._set_attributes(emoji_data)
         
         return emoji
     
@@ -11608,7 +11614,7 @@ class Client(ClientUserPBase):
         if application_command is None:
             application_command = ApplicationCommand.from_data(application_command_data)
         else:
-            application_command._update_no_return(application_command_data)
+            application_command._set_attributes(application_command_data)
         
         return application_command
     
@@ -11916,7 +11922,7 @@ class Client(ClientUserPBase):
         if application_command is None:
             application_command = ApplicationCommand.from_data(application_command_data)
         else:
-            application_command._update_no_return(application_command_data)
+            application_command._set_attributes(application_command_data)
         
         return application_command
     
@@ -13250,7 +13256,7 @@ class Client(ClientUserPBase):
         if (sticker is None):
             sticker = Sticker(data)
         else:
-            sticker._update_no_return(data)
+            sticker._set_attributes(data)
         
         return sticker
     
@@ -13330,7 +13336,7 @@ class Client(ClientUserPBase):
         if (sticker is None):
             sticker = Sticker(data)
         else:
-            sticker._update_no_return(data)
+            sticker._set_attributes(data)
         
         return sticker
     
@@ -14509,7 +14515,7 @@ class Client(ClientUserPBase):
         self._user_chunker_nonce = nonce = self._user_chunker_nonce+1
         nonce = nonce.__format__('0>16x')
         
-        event_handler.waiters[nonce] = waiter = MassUserChunker(1)
+        event_handler.waiters[nonce] = waiter = MassUserChunker()
         
         data = {
             'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
@@ -14892,7 +14898,7 @@ class Client(ClientUserPBase):
         
         return owners
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the client and returns it's old attributes in a `dict` with `attribute-name`, `old-value` relation.
         
@@ -14932,42 +14938,42 @@ class Client(ClientUserPBase):
             | verified              | `bool`                |
             +-----------------------+-----------------------+
         """
-        old_attributes = ClientUserPBase._update(self, data)
+        old_attributes = ClientUserPBase._difference_update_attributes(self, data)
         
         email = data.get('email', None)
         if self.email != email:
             old_attributes['email'] = self.email
             self.email = email
         
+        
         premium_type = PremiumType.get(data.get('premium_type', 0))
         if self.premium_type is not premium_type:
             old_attributes['premium_type'] = premium_type
             self.premium_type = premium_type
         
-        system = data.get('system', False)
-        if self.system != system:
-            old_attributes['system'] = self.system
-            self.system = system
         
         verified = data.get('verified', False)
         if self.verified != verified:
             old_attributes['verified'] = self.verified
             self.verified = verified
         
+        
         mfa = data.get('mfa_enabled', False)
         if self.mfa != mfa:
             old_attributes['mfa'] = self.mfa
             self.mfa = mfa
+        
         
         locale = parse_locale(data)
         if self.locale != locale:
             old_attributes['locale'] = self.locale
             self.locale = locale
         
+        
         return old_attributes
     
     
-    def _update_no_return(self, data):
+    def _set_attributes(self, data):
         """
         Updates the client by overwriting it's old attributes.
         
@@ -14976,9 +14982,7 @@ class Client(ClientUserPBase):
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         """
-        ClientUserPBase._update_no_return(self, data)
-        
-        self.system = data.get('system', False)
+        ClientUserPBase._set_attributes(self, data)
         
         self.verified = data.get('verified', False)
         
@@ -14991,7 +14995,7 @@ class Client(ClientUserPBase):
         self.locale = parse_locale(data)
     
     
-    def _update_profile_only(self, data, guild):
+    def _difference_update_profile_only(self, data, guild):
         """
         Used only when user caching is disabled. Updates the client's guild profile for the given guild and returns
         the changed old attributes in a `dict` with `attribute-name`, `old-value` relation.
@@ -15030,9 +15034,9 @@ class Client(ClientUserPBase):
             self.guild_profiles[guild] = GuildProfile(data)
             guild.users[self.id] = self
             return {}
-        return profile._update(data)
+        return profile._difference_update_attributes(data)
     
-    def _update_profile_only_no_return(self, data, guild):
+    def _update_profile_only(self, data, guild):
         """
         Used only when user caching is disabled. Updates the client's guild profile for the given guild.
         
@@ -15049,7 +15053,7 @@ class Client(ClientUserPBase):
             self.guild_profiles[guild] = GuildProfile(data)
             guild.users[self.id] = self
         else:
-            profile._update_no_return(data)
+            profile._set_attributes(data)
     
     @property
     def friends(self):

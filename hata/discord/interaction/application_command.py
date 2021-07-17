@@ -228,10 +228,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.options = None
             self.allow_by_default = True
         
-        self._update_no_return(data)
+        self._update_attributes(data)
         return self
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the application command with the given data.
         
@@ -266,7 +266,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         except KeyError:
             pass
         
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the application command with the given data and returns the updated attributes in a dictionary with the
         attribute names as the keys and their old value as the values.
@@ -467,7 +467,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.name = ''
             self.options = None
         
-        self._update_no_return(data)
+        self._update_attributes(data)
         
         return self
     
@@ -801,9 +801,11 @@ class ApplicationCommandOption:
                 expected_choice_type = str
             elif type_ is ApplicationCommandOptionType.integer:
                 expected_choice_type = int
+            elif type_ is ApplicationCommandOptionType.float:
+                expected_choice_type = float
             else:
-                raise TypeError(f'`choices` is bound to string and integer option type, got choices={choices!r}, '
-                    f'type={type_!r}.')
+                raise TypeError(f'`choices` is bound to string, integer and float option type, got '
+                    f'choices={choices!r}, type={type_!r}.')
             
             for index, choice in enumerate(choices):
                 if not isinstance(choice.value, expected_choice_type):
@@ -875,7 +877,7 @@ class ApplicationCommandOption:
         
         Parameters
         ----------
-        choice : ``ApplicationCommandOptionChoice`` or `tuple` (`str`, `str` or `int`)
+        choice : ``ApplicationCommandOptionChoice`` or `tuple` (`str`, (`str`, `int`, `float`))
             The choice to add.
         
         Returns
@@ -885,7 +887,7 @@ class ApplicationCommandOption:
         Raises
         ------
         TypeError
-            - If the source application command's type is not a string nor int group type.
+            - If the source application command's type is not a string, int nor float group type.
             - If the `choice`'s value's type is not the expected one by the command option's type.
             - If `choice`'s type is neither ``ApplicationCommandOptionChoice`` nor a `tuple` representing it's `.name`
                 nad `.value`.
@@ -910,8 +912,10 @@ class ApplicationCommandOption:
             expected_choice_type = str
         elif type_ is ApplicationCommandOptionType.integer:
             expected_choice_type = int
+        elif type_ is ApplicationCommandOptionType.float:
+            expected_choice_type = float
         else:
-            raise TypeError(f'`choice` is bound to string and integer choice type, got choice={choice!r}, '
+            raise TypeError(f'`choice` is bound to string, integer and float choice type, got choice={choice!r}, '
                 f'self={self!r}.')
         
         if not isinstance(choice.value, expected_choice_type):
@@ -981,7 +985,7 @@ class ApplicationCommandOption:
             'description' : self.description,
             'name' : self.name,
             'type' : self.type.value,
-                }
+        }
         
         choices = self.choices
         if (choices is not None):
@@ -1007,7 +1011,7 @@ class ApplicationCommandOption:
             ', name=', repr(self.name),
             ', description=', repr(self.description),
             ', type=',
-                ]
+        ]
         
         type_ = self.type
         repr_parts.append(repr(type_.value))
@@ -1144,7 +1148,7 @@ class ApplicationCommandOptionChoice:
     ----------
     name : `str`
         The choice's name. It's length can be in range [1:100].
-    value : `str` or `int`
+    value : `str`, `int` or `float`
         The choice's value.
     """
     __slots__ = ('name', 'value')
@@ -1157,7 +1161,7 @@ class ApplicationCommandOptionChoice:
         ----------
         name : `str`
             The choice's name. It's length can be in range [1:100].
-        value : `str` or `int`
+        value : `str`, `int` or `float`
             The choice's value.
         
         Raises
@@ -1165,7 +1169,7 @@ class ApplicationCommandOptionChoice:
         AssertionError
             - If `name` is not `str` instance.
             - If `name`'s length is out of range [1:100].
-            - If `value` is neither `str` nor `int` instance.
+            - If `value` is neither `str`, `int` nor `float` instance.
             - If `value` is `str` and it's length is out of range [0:100].
         """
         if __debug__:
@@ -1188,8 +1192,11 @@ class ApplicationCommandOptionChoice:
                     raise AssertionError(f'`value` length` can be in range '
                         f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
                         f'got {value_length!r}; {value!r}.')
+            elif isinstance(value, float):
+                pass
             else:
-                raise AssertionError(f'`value` type can be either `str` or `int`, got {value.__class__.__name__}.')
+                raise AssertionError(f'`value` type can be either `str`, `int` or `float`, '
+                    f'got {value.__class__.__name__}.')
         
         self = object.__new__(cls)
         self.name = name

@@ -162,10 +162,10 @@ class Sticker(DiscordEntity, immortal=True):
         
         self.type = StickerType.get(data.get('type', 0))
         
-        self._update_no_return(data)
+        self._update_attributes(data)
     
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the stickers with the given data.
         
@@ -187,7 +187,7 @@ class Sticker(DiscordEntity, immortal=True):
         
         self.available = data.get('available', True)
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the sticker with the given data and returns the changed attributes in `attribute-name` - `old-value`
         relation.

@@ -121,7 +121,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         if update:
             self.type = data['type']
             self._init_parent(data, guild)
-            self._update_no_return(data)
+            self._update_attributes(data)
         
         if (client is not None):
             try:
@@ -274,8 +274,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             yield from thread_users.values()
     
     
-    @copy_docs(ChannelBase._update_no_return)
-    def _update_no_return(self, data):
+    @copy_docs(ChannelBase._update_attributes)
+    def _update_attributes(self, data):
         self.name = data['name']
         slowmode = data.get('rate_limit_per_user', None)
         if slowmode is None:
@@ -299,7 +299,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         self.open = not data.get('locked', True)
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.

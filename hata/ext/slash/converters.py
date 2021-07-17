@@ -88,6 +88,34 @@ async def converter_int(client, interaction_event, value):
     return value
 
 
+async def converter_float(client, interaction_event, value):
+    """
+    Converter for ``ApplicationCommandInteractionOption`` value to `float`.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    value : `str`
+        ``ApplicationCommandInteractionOption.value``.
+    
+    Returns
+    -------
+    value : `None` or `float`
+        If conversion fails, then returns `None`.
+    """
+    try:
+        value = float(value)
+    except ValueError:
+        value = None
+    
+    return value
+
+
 async def converter_str(client, interaction_event, value):
     """
     Converter for ``ApplicationCommandInteractionOption`` value to `str`.
@@ -381,6 +409,7 @@ ANNOTATION_TYPE_MENTIONABLE_ID = 12
 ANNOTATION_TYPE_SELF_CLIENT = 13
 ANNOTATION_TYPE_SELF_INTERACTION_EVENT = 14
 ANNOTATION_TYPE_EXPRESSION = 15
+ANNOTATION_TYPE_FLOAT = 16
 
 CLIENT_ANNOTATION_NAMES = frozenset((
     'c',
@@ -407,6 +436,7 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'mentionable': ANNOTATION_TYPE_MENTIONABLE,
     'mentionable_id': ANNOTATION_TYPE_MENTIONABLE_ID,
     'expression': ANNOTATION_TYPE_EXPRESSION,
+    'float': ANNOTATION_TYPE_FLOAT,
     
     **un_map_pack((name, ANNOTATION_TYPE_SELF_CLIENT) for name in CLIENT_ANNOTATION_NAMES),
     **un_map_pack((name, ANNOTATION_TYPE_SELF_INTERACTION_EVENT) for name in CLIENT_ANNOTATION_NAMES),
@@ -427,6 +457,7 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
     ANNOTATION_TYPE_MENTIONABLE: 'mentionable',
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable_id',
     ANNOTATION_TYPE_EXPRESSION: 'expression',
+    ANNOTATION_TYPE_FLOAT: 'float',
     
     ANNOTATION_TYPE_SELF_CLIENT: 'client',
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: 'interaction_event',
@@ -440,6 +471,7 @@ TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
     User: ANNOTATION_TYPE_USER,
     Role: ANNOTATION_TYPE_ROLE,
     ChannelBase: ANNOTATION_TYPE_CHANNEL,
+    float: ANNOTATION_TYPE_FLOAT,
     
     Client: ANNOTATION_TYPE_SELF_CLIENT,
     InteractionEvent: ANNOTATION_TYPE_SELF_INTERACTION_EVENT,
@@ -459,6 +491,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_MENTIONABLE: (converter_mentionable, False),
     ANNOTATION_TYPE_MENTIONABLE_ID: (converter_snowflake, False),
     ANNOTATION_TYPE_EXPRESSION: (converter_expression, False),
+    ANNOTATION_TYPE_FLOAT: (converter_float, False),
     
     ANNOTATION_TYPE_SELF_CLIENT: (converter_self_client, True),
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: (converter_self_interaction_event, True),
@@ -485,6 +518,7 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_MENTIONABLE: ApplicationCommandOptionType.mentionable,
     ANNOTATION_TYPE_MENTIONABLE_ID: ApplicationCommandOptionType.mentionable,
     ANNOTATION_TYPE_EXPRESSION: ApplicationCommandOptionType.string,
+    ANNOTATION_TYPE_FLOAT: ApplicationCommandOptionType.float,
     
     ANNOTATION_TYPE_SELF_CLIENT: ApplicationCommandOptionType.none,
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: ApplicationCommandOptionType.none,
@@ -504,6 +538,7 @@ ANNOTATION_TYPE_TO_REPRESENTATION = {
     ANNOTATION_TYPE_MENTIONABLE: 'mentionable',
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable',
     ANNOTATION_TYPE_EXPRESSION: 'expression',
+    ANNOTATION_TYPE_FLOAT: 'float',
 }
 
 
@@ -731,7 +766,24 @@ def create_annotation_choice_from_int(value):
     
     Returns
     -------
-    choice : `tuple` (`str`, `str` or `int`)
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
+        The validated annotation choice.
+    """
+    return (str(value), value)
+
+
+def create_annotation_choice_from_float(value):
+    """
+    Creates an annotation choice form an int.
+    
+    Parameters
+    -------
+    value : `int`
+        The validated annotation choice.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
         The validated annotation choice.
     """
     return (str(value), value)
@@ -748,7 +800,7 @@ def create_annotation_choice_from_str(value):
     
     Returns
     -------
-    choice : `tuple` (`str`, `str` or `int`)
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
         The validated annotation choice.
     """
     # make sure
@@ -766,7 +818,7 @@ def parse_annotation_choice_from_tuple(annotation):
     
     Returns
     -------
-    choice : `tuple` (`str`, `str` or `int`)
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
         The validated annotation choice.
     
     Raises
@@ -789,7 +841,10 @@ def parse_annotation_choice_from_tuple(annotation):
         if isinstance(value, int):
             return create_annotation_choice_from_int(value)
         
-        raise TypeError(f'`annotation-value` can be either `str` or `int`, got {value.__class__.__name__}.')
+        if isinstance(value, float):
+            return create_annotation_choice_from_float(value)
+        
+        raise TypeError(f'`annotation-value` can be either `str`, `int` or `float`, got {value.__class__.__name__}.')
     
     # if annotation_length == 2:
     
@@ -797,8 +852,8 @@ def parse_annotation_choice_from_tuple(annotation):
     if not isinstance(name, str):
         raise TypeError(f'`annotation-name` can be `str` instance, got {name.__class__.__name__}.')
     
-    if not isinstance(value, (str, int)):
-        raise TypeError(f'`annotation-value` can be either `str` or `int`, got {value.__class__.__name__}.')
+    if not isinstance(value, (str, int, float)):
+        raise TypeError(f'`annotation-value` can be either `str`, `int` or `float`, got {value.__class__.__name__}.')
     
     return (name, value)
 
@@ -809,12 +864,12 @@ def parse_annotation_choice(annotation_choice):
     
     Parameters
     ----------
-    annotation_choice : `tuple`, `str`, `int`
+    annotation_choice : `tuple`, `str`, `int`, `float`
         A choice.
     
     Returns
     -------
-    choice : `tuple` (`str`, `str` or `int`)
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
         The validated annotation choice.
     
     Raises
@@ -834,7 +889,10 @@ def parse_annotation_choice(annotation_choice):
     if isinstance(annotation_choice, int):
         return create_annotation_choice_from_int(annotation_choice)
     
-    raise TypeError(f'`annotation-choice` can be either given as `tuple`, `str` or `int` instance, got '
+    if isinstance(annotation_choice, float):
+        return create_annotation_choice_from_float(annotation_choice)
+    
+    raise TypeError(f'`annotation-choice` can be either given as `tuple`, `str`, `int`  or `float` instance, got '
         f'{annotation_choice.__class__.__name__}.')
 
 
@@ -857,9 +915,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         Choices if applicable.
     
     TypeError
-        - If `annotation_value` is `list` instance, but it's elements do not match the `tuple` (`str`, `str` or `int`)
-            pattern.
-        - If `annotation_value` is `dict` instance, but it's items do not match the (`str`, `str` or `int`) pattern.
+        - If `annotation_value` is `list` instance, but it's elements do not match the `tuple`
+            (`str`, `str`, `int` or `float`) pattern.
+        - If `annotation_value` is `dict` instance, but it's items do not match the
+            (`str`, `str`, `int` or `float`) pattern.
         - If `annotation_value` is unexpected.
     ValueError
         - If `annotation_value` is `str` instance, but not any of the expected ones.
@@ -929,8 +988,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         for name, value in choice_elements:
             if isinstance(value, str):
                 type_ = str
-            else:
+            elif isinstance(value, int):
                 type_ = int
+            else:
+                type_ = float
             
             if expected_type is None:
                 expected_type = type_
@@ -941,8 +1002,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         
         if expected_type is str:
             annotation_type = ANNOTATION_TYPE_STR
-        else:
+        elif expected_type is int:
             annotation_type = ANNOTATION_TYPE_INT
+        else:
+            annotation_type = ANNOTATION_TYPE_FLOAT
         
         choices = {value:name for name, value in choice_elements}
     

@@ -166,11 +166,11 @@ async def sub_command():
 Sakuya.commands(SubterraneanHelpCommand(), 'help')
 
 
-# If command prefix and command name is found, but the command's name cannot be identifier,
+# If command prefix and command name is found, but the command's name do not refers to any command,
 # `.command_processor.unknown_command` is called.
 #
-# Not like generic commands, to `unknown_command` always set parameters are passed. `return`-ed and `yield`-ed, nor
-# command error handlers are not applied either.
+# Not like as generic commands, to `unknown_command` always set parameters are passed. `return`-ed and `yield`-ed
+# values are not forwarded, and if exception occurs, error handlers are not called either.
 @Sakuya.command_processor.unknown_command
 async def command_processor(client, message, command_name):
     await client.message_create(message.channel, f'Could not find command named : {command_name!r}')

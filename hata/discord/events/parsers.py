@@ -110,14 +110,14 @@ add_parser(
 del RESUMED
 
 def USER_UPDATE__CAL(client, data):
-    old_attributes = client._update(data)
+    old_attributes = client._difference_update_attributes(data)
     if not old_attributes:
         return
     
     Task(client.events.client_edit(client, old_attributes), KOKORO)
 
 def USER_UPDATE__OPT(client, data):
-    client._update_no_return(data)
+    client._update_attributes(data)
 
 add_parser(
     'USER_UPDATE',
@@ -458,7 +458,7 @@ if ALLOW_DEAD_EVENTS:
                 message = Message._create_unlinked(message_id, data, channel)
                 old_attributes = None
             else:
-                old_attributes = message._update(data)
+                old_attributes = message._difference_update_attributes(data)
                 if not old_attributes:
                     return
             
@@ -466,7 +466,7 @@ if ALLOW_DEAD_EVENTS:
             return
         
         if 'edited_timestamp' in data:
-            old_attributes = message._update(data)
+            old_attributes = message._difference_update_attributes(data)
             if not old_attributes:
                 return
             
@@ -518,7 +518,7 @@ if ALLOW_DEAD_EVENTS:
                 message = Message._create_unlinked(message_id, data, channel)
                 old_attributes = None
             else:
-                old_attributes = message._update(data)
+                old_attributes = message._difference_update_attributes(data)
                 if not old_attributes:
                     clients.close()
                     return
@@ -531,7 +531,7 @@ if ALLOW_DEAD_EVENTS:
             return
         
         if 'edited_timestamp' in data:
-            old_attributes = message._update(data)
+            old_attributes = message._difference_update_attributes(data)
             if not old_attributes:
                 clients.close()
                 return
@@ -559,7 +559,7 @@ else:
             return
         
         if 'edited_timestamp' in data:
-            old_attributes = message._update(data)
+            old_attributes = message._difference_update_attributes(data)
             if not old_attributes:
                 return
             
@@ -586,7 +586,7 @@ else:
             return
         
         if 'edited_timestamp' in data:
-            old_attributes = message._update(data)
+            old_attributes = message._difference_update_attributes(data)
             if not old_attributes:
                 clients.close()
                 return
@@ -613,7 +613,7 @@ def MESSAGE_UPDATE__OPT_SC(client, data):
         return
     
     if 'edited_timestamp' in data:
-        message._update_no_return(data)
+        message._update_attributes(data)
     else:
         message._update_embed_no_return(data)
 
@@ -631,7 +631,7 @@ def MESSAGE_UPDATE__OPT_MC(client, data):
         return
     
     if 'edited_timestamp' in data:
-        message._update_no_return(data)
+        message._update_attributes(data)
     else:
         message._update_embed_no_return(data)
 
@@ -1254,12 +1254,12 @@ if CACHE_PRESENCE:
         
         while True:
             if user_data:
-                old_attributes = user._update(user_data)
+                old_attributes = user._difference_update_attributes(user_data)
                 if old_attributes:
                     presence = False
                     break
             
-            old_attributes = user._update_presence(data)
+            old_attributes = user._difference_update_presence(data)
             if old_attributes:
                 presence = True
                 break
@@ -1283,12 +1283,12 @@ if CACHE_PRESENCE:
         
         while True:
             if user_data:
-                old_attributes = user._update(user_data)
+                old_attributes = user._difference_update_attributes(user_data)
                 if old_attributes:
                     presence = False
                     break
             
-            old_attributes = user._update_presence(data)
+            old_attributes = user._difference_update_presence(data)
             if old_attributes:
                 presence = True
                 break
@@ -1315,9 +1315,9 @@ if CACHE_PRESENCE:
             return # pretty much we don't care
         
         if user_data:
-            user._update_no_return(user_data)
+            user._update_attributes(user_data)
         
-        user._update_presence_no_return(data)
+        user._update_presence(data)
 
 else:
     def PRESENCE_UPDATE__CAL_SC(client, data):
@@ -1345,7 +1345,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        user, old_attributes = User._update_profile(data, guild)
+        user, old_attributes = User._difference_update_profile(data, guild)
         
         if not old_attributes:
             return
@@ -1368,7 +1368,7 @@ if CACHE_USER:
             clients.close()
             return
         
-        user, old_attributes = User._update_profile(data, guild)
+        user, old_attributes = User._difference_update_profile(data, guild)
         
         if not old_attributes:
             clients.close()
@@ -1391,7 +1391,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        user = User._update_profile_no_return(data, guild)
+        user = User._update_profile(data, guild)
 
         if isinstance(user, Client):
             guild._invalidate_perm_cache()
@@ -1407,7 +1407,7 @@ if CACHE_USER:
         if first_client_or_me(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
-        user = User._update_profile_no_return(data, guild)
+        user = User._update_profile(data, guild)
         
         if isinstance(user, Client):
             guild._invalidate_perm_cache()
@@ -1425,7 +1425,7 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        old_attributes = client._update_profile_only(data, guild)
+        old_attributes = client._difference_update_profile_only(data, guild)
         
         if not old_attributes:
             return
@@ -1448,7 +1448,7 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_UPDATE')
             return
         
-        client._update_profile_only_no_return(data, guild)
+        client._update_profile_only(data, guild)
         
         guild._invalidate_perm_cache()
     
@@ -1540,7 +1540,7 @@ def CHANNEL_UPDATE__CAL_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    old_attributes = channel._update(data)
+    old_attributes = channel._difference_update_attributes(data)
     if not old_attributes:
         return
     
@@ -1559,7 +1559,7 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    old_attributes = channel._update(data)
+    old_attributes = channel._difference_update_attributes(data)
     if not old_attributes:
         clients.close()
         return
@@ -1577,7 +1577,7 @@ def CHANNEL_UPDATE__OPT_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    channel._update_no_return(data)
+    channel._update_attributes(data)
 
 def CHANNEL_UPDATE__OPT_MC(client, data):
     channel_id = int(data['id'])
@@ -1590,7 +1590,7 @@ def CHANNEL_UPDATE__OPT_MC(client, data):
     if first_client(channel.clients, INTENT_MASK_GUILDS) is not client:
         return
     
-    channel._update_no_return(data)
+    channel._update_attributes(data)
 
 add_parser(
     ('CHANNEL_UPDATE', 'THREAD_UPDATE'),
@@ -2388,7 +2388,7 @@ def GUILD_UPDATE__CAL_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    old_attributes = guild._update(data)
+    old_attributes = guild._difference_update_attributes(data)
     if not old_attributes:
         return
     
@@ -2407,7 +2407,7 @@ def GUILD_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    old_attributes = guild._update(data)
+    old_attributes = guild._difference_update_attributes(data)
     if not old_attributes:
         clients.close()
         return
@@ -2425,7 +2425,7 @@ def GUILD_UPDATE__OPT_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    guild._update_no_return(data)
+    guild._update_attributes(data)
 
 def GUILD_UPDATE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2438,7 +2438,7 @@ def GUILD_UPDATE__OPT_MC(client, data):
     if first_client(guild.clients, INTENT_MASK_GUILDS) is not client:
         return
     
-    guild._update_no_return(data)
+    guild._update_attributes(data)
 
 add_parser(
     'GUILD_UPDATE',
@@ -2883,7 +2883,7 @@ def GUILD_ROLE_UPDATE__CAL_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    old_attributes = role._update(data['role'])
+    old_attributes = role._difference_update_attributes(data['role'])
     if not old_attributes:
         return
     
@@ -2911,7 +2911,7 @@ def GUILD_ROLE_UPDATE__CAL_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    old_attributes = role._update(data['role'])
+    old_attributes = role._difference_update_attributes(data['role'])
     if not old_attributes:
         clients.close()
         return
@@ -2937,7 +2937,7 @@ def GUILD_ROLE_UPDATE__OPT_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    role._update_no_return(data['role'])
+    role._update_attributes(data['role'])
 
 def GUILD_ROLE_UPDATE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2958,7 +2958,7 @@ def GUILD_ROLE_UPDATE__OPT_MC(client, data):
         guild_sync(client, data, None)
         return
     
-    role._update_no_return(data['role'])
+    role._update_attributes(data['role'])
 
 add_parser(
     'GUILD_ROLE_UPDATE',
@@ -3514,7 +3514,7 @@ def APPLICATION_COMMAND_UPDATE__CAL(client, data):
         application_command = ApplicationCommand.from_data(data)
         old_attributes = None
     else:
-        old_attributes = application_command._update(data)
+        old_attributes = application_command._difference_update_attributes(data)
         if not old_attributes:
             return
     
@@ -3527,7 +3527,7 @@ def APPLICATION_COMMAND_UPDATE__OPT(client, data):
     except KeyError:
         pass
     else:
-        application_command._update_no_return(data)
+        application_command._update_attributes(data)
 
 add_parser(
     'APPLICATION_COMMAND_UPDATE',
@@ -3601,7 +3601,7 @@ def STAGE_INSTANCE_UPDATE__CAL_SC(client, data):
     except KeyError:
         return
     
-    old_attributes = stage._update(data)
+    old_attributes = stage._difference_update_attributes(data)
     if not old_attributes:
         return
     
@@ -3619,7 +3619,7 @@ def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    old_attributes = stage._update(data)
+    old_attributes = stage._difference_update_attributes(data)
     if not old_attributes:
         return
     
@@ -3636,7 +3636,7 @@ def STAGE_INSTANCE_UPDATE__OPT(client, data):
     except KeyError:
         return
     
-    stage._update_no_return(data)
+    stage._update_attributes(data)
 
 
 add_parser(

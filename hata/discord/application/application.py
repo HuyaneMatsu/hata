@@ -188,7 +188,7 @@ class Application(DiscordEntity, immortal=True):
                 flags = ApplicationFlag(flags)
             self.flags = flags
         else:
-            self._update_no_return(data, set_owner=True)
+            self._update_attributes(data, set_owner=True)
         
         return self
     
@@ -213,9 +213,9 @@ class Application(DiscordEntity, immortal=True):
             self = object.__new__(cls)
             self.id = application_id
             self.flags = ApplicationFlag()
-            self._update_no_return(data, set_owner=True)
+            self._update_attributes(data, set_owner=True)
         else:
-            self._update_no_return(data)
+            self._update_attributes(data)
         
         return self
     
@@ -263,7 +263,7 @@ class Application(DiscordEntity, immortal=True):
         """Returns the application's name."""
         return self.name
     
-    def _update_no_return(self, data, set_owner=False):
+    def _update_attributes(self, data, set_owner=False):
         """
         Updates the application with the data received from Discord.
         

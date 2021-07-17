@@ -40,6 +40,7 @@ The parameter types can be the following:
 | channel           | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
 | channel_id        | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
 | expression        | No            | string        | `'expression'`        | N/A                   | `int` / `float`           |
+| float             | No            | float         | `'float'`             | `float`               | `float`                   |
 | integer           | No            | string        | `'int'`               | `int`                 | `int`                     |
 | role              | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
 | role_id           | No            | role          | `'role_id'`           | N/A                   | `int`                     |

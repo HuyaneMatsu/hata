@@ -1,4 +1,48 @@
+## 1.1.91 *\[2021-07-??\]*
+
+- Add `ApplicationCommandOptionType.float`.
+- Add `ERROR_CODES.sticker_animation_duration_exceeds_5_second`.
+- Add `UserBase._update`.
+- Add `UserBase._update_no_return`.
+- Add `ERROR_CODES.asset_size_too_large`.
+- Add `ERROR_CODES.invalid_lottie_json`.
+- Add `Permission.use_external_stickers`.
+- Add `IntegrationExpireBehavior`.
+- `IntegrationDetail.expire_behavior` is now `IntegrationExpireBehavior` type (from int).
+- `Client.guild_create` limit increased 200 for nitro users.
+
+##### hata.ext.slash
+- Add `float` converter.
+
+#### Bug Fixes
+
+- Fix an `AttributeError` in `Client._delete`.
+- `ClientUserBase._update` always dropped back `banner_color` as edited.
+- `ClientUserBase._update_no_return` reset the user's guild profiles.
+
+#### Renames, Deprecation & Removals
+
+- Remove `UserOA2.system`.
+- Remove `Client.system`.
+- Rename `Webhook._update` to `._set_attributes`.
+- Rename `._update` to `._difference_update_attributes`.
+- Rename `._update_no_return` to `._update_attributes`.
+- Remove `MassUserChunker.left` (We only chunk 1 guild with it for now.)
+- Rename `._update_presence` to `._difference_update_presence`.
+- Rename `._update_presence_no_return` to `._difference_update`.
+- Rename `._update_sizes_no_return` to `._set_sizes`.
+- Rename `._update_profile_only` to `._difference_update_profile_only`.
+- rename `._update_profile_only_no_return` to `._update_profile_only`.
+- Rename `._update_profile` to `._difference_update_profile`.
+- rename `._update_profile_no_return` to `._update_profile`.
+
 ## 1.1.90 *\[2021-07-16\]*
+
+### Summary
+
+Redo guild user syncing.
+
+#### Improvements
 
 - Add 5 second gateway connect rate limit per batch.
 - Add notification when session start limit reaches low amount.

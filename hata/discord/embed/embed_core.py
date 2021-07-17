@@ -333,7 +333,7 @@ class EmbedCore(EmbedBase):
             if thumbnail is None:
                 self.thumbnail = EmbedThumbnail.from_data(thumbnail_data)
             else:
-                thumbnail.height= thumbnail_data.get('height', 0)
+                thumbnail.height = thumbnail_data.get('height', 0)
                 thumbnail.width = thumbnail_data.get('width', 0)
             changed = 1
 
@@ -349,13 +349,13 @@ class EmbedCore(EmbedBase):
                 video.height = video_data.get('height', 0)
                 video.width = video_data.get('width', 0)
             changed = 1
-
+        
         return changed
     
-    def _update_sizes_no_return(self, data):
+    def _set_sizes(self, data):
         """
         Updates the size information of the embed.
-
+        
         Familiar to ``._update_sizes`` but it not checks whether the embed's images change, just updates them.
         
         Parameters

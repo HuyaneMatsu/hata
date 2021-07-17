@@ -13,7 +13,7 @@ class MessageActivityType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The default name of the message activity type.
+        The name of the message activity type.
     value : `int`
         The Discord side identifier value of the message activity type.
     
@@ -24,7 +24,7 @@ class MessageActivityType(PreinstancedBase):
     VALUE_TYPE : `type` = `int`
         The message activity types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the verification levels.
+        The default name of the message activity types.
     
     Every predefined message activity type can be accessed as class attribute as well:
     

@@ -441,7 +441,7 @@ class Emoji(DiscordEntity, immortal=True):
                 except KeyError:
                     pass
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the emoji with overwriting it's old attributes.
         
@@ -478,7 +478,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         self.available = data.get('available', True)
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the emoji and returns it's overwritten old attributes as a `dict` with a `attribute-name` - `old-value`
         relation.

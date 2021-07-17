@@ -324,7 +324,7 @@ class Guild(DiscordEntity, immortal=True):
                 for channel_type, channel_data in later:
                     channel_type(channel_data, client, self)
             
-            self._update_no_return(data)
+            self._update_attributes(data)
             
             if CACHE_PRESENCE:
                 try:
@@ -799,7 +799,7 @@ class Guild(DiscordEntity, immortal=True):
                     old_attributes = None
                     action = VOICE_STATE_JOIN
                 else:
-                    old_attributes = voice_state._update(data,channel)
+                    old_attributes = voice_state._difference_update_attributes(data,channel)
                     if old_attributes:
                         action = VOICE_STATE_UPDATE
                     else:
@@ -881,7 +881,7 @@ class Guild(DiscordEntity, immortal=True):
                     action = VOICE_STATE_JOIN
                 else:
                     action = VOICE_STATE_UPDATE
-                    voice_state._update_no_return(data, channel)
+                    voice_state._update_attributes(data, channel)
         
         return action, voice_state
     
@@ -1037,7 +1037,7 @@ class Guild(DiscordEntity, immortal=True):
             is_large = (self.approximate_user_count >= LARGE_GUILD_LIMIT)
         self.is_large = is_large
         
-        self._update_no_return(data)
+        self._update_attributes(data)
         
         try:
             role_datas = data['roles']
@@ -1076,7 +1076,7 @@ class Guild(DiscordEntity, immortal=True):
 ##                    new_voice_states[user.id]=VoiceState(voice_state_data,channel)
 ##                    continue
 ##
-##                voice_state._update_no_return(voice_state_data,channel)
+##                voice_state._update_attributes(voice_state_data,channel)
 ##                new_voice_states[user.id]=voice_state
     
     def _apply_presences(self, data):
@@ -1097,7 +1097,7 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                user._update_presence_no_return(presence_data)
+                user._update_presence(presence_data)
     
     
     def _sync_channels(self, data):
@@ -1125,7 +1125,7 @@ class Guild(DiscordEntity, immortal=True):
                     pass
                 else:
                     #old channel -> update
-                    channel._update_no_return(channel_data)
+                    channel._update_attributes(channel_data)
             else:
                 later.append((channel_type, channel_data),)
         
@@ -1139,7 +1139,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 #old channel -> update
-                channel._update_no_return(channel_data)
+                channel._update_attributes(channel_data)
         #deleting
         for channel_id in old_ids:
             channels[channel_id]._delete()
@@ -1161,7 +1161,7 @@ class Guild(DiscordEntity, immortal=True):
             role = Role(role_data, self)
             try:
                 old_ids.remove(role.id)
-                role._update_no_return(role_data)
+                role._update_attributes(role_data)
             except KeyError:
                 pass
         
@@ -1758,7 +1758,7 @@ class Guild(DiscordEntity, immortal=True):
         return Permission(base)
     
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the guild and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.
@@ -2042,7 +2042,7 @@ class Guild(DiscordEntity, immortal=True):
         return old_attributes
     
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the guild and with overwriting it's old attributes.
         
@@ -2268,7 +2268,7 @@ class Guild(DiscordEntity, immortal=True):
                 emojis[emoji_id] = emoji
                 changes.append((EMOJI_UPDATE_NEW, emoji, None),)
             else:
-                old_attributes = emoji._update(emoji_data)
+                old_attributes = emoji._difference_update_attributes(emoji_data)
                 if old_attributes:
                     changes.append((EMOJI_UPDATE_EDIT, emoji, old_attributes),)
                 old_ids.remove(emoji_id)
@@ -2301,7 +2301,7 @@ class Guild(DiscordEntity, immortal=True):
                 emoji = Emoji(emoji_data, self)
                 emojis[emoji_id] = emoji
             else:
-                emoji._update_no_return(emoji_data)
+                emoji._update_attributes(emoji_data)
                 old_ids.remove(emoji_id)
         
         for emoji_id in old_ids:
@@ -2377,7 +2377,7 @@ class Guild(DiscordEntity, immortal=True):
                 stickers[sticker_id] = sticker
                 changes.append((STICKER_UPDATE_NEW, sticker, None),)
             else:
-                old_attributes = sticker._update(sticker_data)
+                old_attributes = sticker._difference_update_attributes(sticker_data)
                 if old_attributes:
                     changes.append((STICKER_UPDATE_EDIT, sticker, old_attributes),)
                 old_ids.remove(sticker_id)
@@ -2410,7 +2410,7 @@ class Guild(DiscordEntity, immortal=True):
                 sticker = Sticker(sticker_data)
                 stickers[sticker_id] = sticker
             else:
-                sticker._update_no_return(sticker_data)
+                sticker._update_attributes(sticker_data)
                 old_ids.remove(sticker_id)
         
         for sticker_id in old_ids:

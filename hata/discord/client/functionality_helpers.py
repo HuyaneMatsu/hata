@@ -109,14 +109,12 @@ class MassUserChunker:
     ----------
     last : `float`
         The timestamp of the last received chunk.
-    left : `int`
-        The amount of guilds, which's chunks are not yet requested
     timer : `Handle` or `None`
         The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
         The waiter future what will yield, when we receive the response, or when the timeout occurs.
     """
-    __slots__ = ('last', 'left', 'timer', 'waiter',)
+    __slots__ = ('last', 'timer', 'waiter',)
     
     def __init__(self, left):
         """
@@ -125,7 +123,6 @@ class MassUserChunker:
         left : `int`
             How much guild's chunks are left to be received.
         """
-        self.left = left
         self.waiter = Future(KOKORO)
         self.last = now = LOOP_TIME()
         self.timer = KOKORO.call_at(now+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
@@ -148,10 +145,6 @@ class MassUserChunker:
         """
         self.last = LOOP_TIME()
         if event.index+1 != event.count:
-            return False
-        
-        self.left = left = self.left-1
-        if left > 0:
             return False
         
         self.waiter.set_result_if_pending(None)
@@ -185,7 +178,6 @@ class MassUserChunker:
         This method should be called when when the chunker is canceller from outside. Before this method is called,
         it's references should be removed as well from the event handler.
         """
-        self.left = 0
         self.waiter.set_result_if_pending(None)
         
         timer = self.timer

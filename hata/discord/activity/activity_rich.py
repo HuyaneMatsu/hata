@@ -217,10 +217,10 @@ class ActivityRich(ActivityBase):
             id_ = int(activity_data['id'], base=16)
         self.id = id_
         
-        self._update_no_return(activity_data)
+        self._update_attributes(activity_data)
         return self
     
-    def _update_no_return(self, activity_data):
+    def _update_attributes(self, activity_data):
         """
         Updates the activity by overwriting it's old attributes.
         
@@ -286,7 +286,7 @@ class ActivityRich(ActivityBase):
         self.url = activity_data.get('url', None)
     
     
-    def _update(self, activity_data):
+    def _difference_update_attributes(self, activity_data):
         """
         Updates the activity and returns the changes in a `dict` of (`attribute-name`, `old-value`) items.
         

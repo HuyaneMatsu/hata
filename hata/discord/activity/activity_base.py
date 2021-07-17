@@ -565,7 +565,7 @@ class ActivityBase:
         """
         return None
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the activity and returns the changes in a `dict` of (`attribute-name`, `old-value`) items.
         
@@ -583,7 +583,7 @@ class ActivityBase:
         """
         return {}
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the activity by overwriting it's old attributes.
         

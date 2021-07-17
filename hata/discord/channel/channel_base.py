@@ -485,7 +485,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         return None
     
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the channel with overwriting it's old attributes.
         
@@ -496,7 +496,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         pass
 
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.

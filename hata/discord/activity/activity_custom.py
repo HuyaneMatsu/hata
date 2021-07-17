@@ -45,7 +45,7 @@ class ActivityCustom(ActivityBase):
         self : ``ActivityCustom``
         """
         self = object.__new__(cls)
-        self._update_no_return(activity_data)
+        self._update_attributes(activity_data)
         return self
     
     def __hash__(self):
@@ -88,7 +88,7 @@ class ActivityCustom(ActivityBase):
         
         return name
     
-    def _update_no_return(self, activity_data):
+    def _update_attributes(self, activity_data):
         """
         Updates the activity by overwriting it's old attributes.
         
@@ -108,7 +108,7 @@ class ActivityCustom(ActivityBase):
         
         self.created = activity_data.get('created_at', 0)
     
-    def _update(self, activity_data):
+    def _difference_update_attributes(self, activity_data):
         """
         Updates the activity and returns the changes in a `dict` of (`attribute-name`, `old-value`) items.
         

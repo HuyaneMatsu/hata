@@ -65,7 +65,7 @@ class Stage(DiscordEntity):
                 scheduled_event_id = int(scheduled_event_id)
             self.scheduled_event_id = scheduled_event_id
             
-            self._update_no_return(data)
+            self._update_attributes(data)
             
             stages = guild.stages
             if stages is None:
@@ -93,7 +93,7 @@ class Stage(DiscordEntity):
         return ''.join(repr_parts)
     
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the stage from the given data.
         
@@ -108,7 +108,7 @@ class Stage(DiscordEntity):
         self.privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
     
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the stage from the given data and returns the changed attributes in `attribute-name` - `old-value`
         relation.

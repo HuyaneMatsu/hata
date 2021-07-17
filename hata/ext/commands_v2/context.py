@@ -348,6 +348,13 @@ class CommandContext(object):
         Invokes the command.
         
         This method is a coroutine.
+        
+        Returns
+        -------
+        invoked : `bool`
+            Whether the command was successfully invoked.
+            
+            If unexpected exception occurs, still returns `True`.
         """
         try:
             command_category_trace, command_function, index = get_command_category_trace(self.command, self.content, 0)
@@ -375,5 +382,6 @@ class CommandContext(object):
             )
             
         except BaseException as err:
-            await handle_exception(self, err)
-
+            return await handle_exception(self, err)
+        
+        return True

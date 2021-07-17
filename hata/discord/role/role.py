@@ -292,7 +292,7 @@ class Role(DiscordEntity, immortal=True):
         self.manager_id = manager_id
         self.manager_type = manager_type
         
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the role with the given `data` with overwriting it's old attributes.
         
@@ -341,7 +341,7 @@ class Role(DiscordEntity, immortal=True):
         """Returns the role's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the role with the given `data` and returns it's overwritten attributes as a `dict` with a
         `attribute-name` - `old-value` relation.

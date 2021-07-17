@@ -3,13 +3,16 @@ __all__ = ('IntegrationDetail', )
 from ..utils import parse_time, DISCORD_EPOCH_START
 from ..role import create_partial_role_from_id
 
+from .preinstanced import IntegrationExpireBehavior
+
 class IntegrationDetail:
     """
     Details about a non discord integration.
     
-    expire_behaviour : `int`
-        The behavior of expiring subscription. `0` for kick or `1` for remove role. Might be set as `-1`, if not
-        applicable.
+    Attributes
+    ----------
+    expire_behavior : ``IntegrationExpireBehavior``
+        The behavior of expiring subscription.
     expire_grace_period : `int`
         The grace period in days for expiring subscribers. Can be `1`, `3`, `7`, `14` or `30`. If the integration is
         partial, or is not applicable for it, then is set as `-1`.
@@ -35,15 +38,14 @@ class IntegrationDetail:
         """
         self.syncing = data.get('syncing', False)
         
-        try:
-            role_id = data['role_id']
-        except KeyError:
+        role_id = data.get('role_id', None)
+        if role_id is None:
             role = None
         else:
             role = create_partial_role_from_id(int(role_id))
         self.role = role
         
-        self.expire_behavior = data.get('expire_behavior', -1)
+        self.expire_behavior = IntegrationExpireBehavior.get(data.get('expire_behavior', 0))
         
         self.expire_grace_period = data.get('expire_grace_period', -1)
         
@@ -75,7 +77,7 @@ class IntegrationDetail:
         self = object.__new__(cls)
         self.syncing = False
         self.role = role
-        self.expire_behavior = -1
+        self.expire_behavior = IntegrationExpireBehavior.remove_role
         self.expire_grace_period = -1
         self.synced_at = DISCORD_EPOCH_START
         self.subscriber_count = 0

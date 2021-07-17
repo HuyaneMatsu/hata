@@ -10,6 +10,7 @@ from ..http import urls as module_urls
 
 from .preinstanced import Status, DefaultAvatar
 from .flags import UserFlag
+from .helpers import get_banner_color_from_data
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')
@@ -47,9 +48,101 @@ class UserBase(DiscordEntity, immortal=True):
     avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
     banner = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
     
+    
+    def _update_attributes(self, data):
+        """
+        Updates the user with the given data by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data received from Discord.
+        """
+        try:
+            name = data['username']
+        except KeyError:
+            # Webhook?
+            name = data.get('name', None)
+            if (name is None):
+                name = ''
+        
+        self.name = name
+        self.discriminator = int(data['discriminator'])
+        
+        self._set_avatar(data)
+        self._set_banner(data)
+        
+        self.banner_color = get_banner_color_from_data(data)
+    
+    
+    def _difference_update_attributes(self, data):
+        """
+        Updates the user and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
+        relation.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data received from Discord.
+        
+        Returns
+        -------
+        old_attributes : `dict` of (`str`, `Any`) items
+            All item in the returned dict is optional.
+        
+        Returned Data Structure
+        -----------------------
+        
+        +---------------+-----------------------+
+        | Keys          | Values                |
+        +===============+=======================+
+        | avatar        | ``Icon``              |
+        +---------------+-----------------------+
+        | banner        | ``Icon``              |
+        +---------------+-----------------------+
+        | banner_color  | `None` or ``Color``   |
+        +---------------+-----------------------+
+        | discriminator | `int`                 |
+        +---------------+-----------------------+
+        | name          | `str`                 |
+        +---------------+-----------------------+
+        """
+        old_attributes = {}
+        
+        try:
+            name = data['username']
+        except KeyError:
+            # Webhook?
+            name = data.get('name', None)
+            if (name is None):
+                name = ''
+        if self.name != name:
+            old_attributes['name'] = self.name
+            self.name = name
+        
+        
+        discriminator = int(data['discriminator'])
+        if self.discriminator != discriminator:
+            old_attributes['discriminator'] = self.discriminator
+            self.discriminator = discriminator
+        
+        
+        self._update_avatar(data, old_attributes)
+        self._update_banner(data, old_attributes)
+        
+        
+        banner_color = get_banner_color_from_data(data)
+        if self.banner_color != banner_color:
+            old_attributes['banner_color'] = self.banner_color
+            self.banner_color = banner_color
+        
+        return old_attributes
+    
+    
     def __str__(self):
         """Returns the user's name."""
         return self.name
+    
     
     def __repr__(self):
         """Returns the user's representation."""
@@ -70,6 +163,7 @@ class UserBase(DiscordEntity, immortal=True):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
     
     def __format__(self, code):
         """
@@ -124,6 +218,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
+    
     @property
     def full_name(self):
         """
@@ -135,6 +230,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return f'{self.name}#{self.discriminator:0>4}'
     
+    
     @property
     def mention(self):
         """
@@ -145,6 +241,7 @@ class UserBase(DiscordEntity, immortal=True):
         mention : `str`
         """
         return f'<@{self.id}>'
+    
     
     @property
     def mention_nick(self):
@@ -161,6 +258,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return f'<@!{self.id}>'
     
+    
     @property
     def default_avatar_url(self):
         """
@@ -171,6 +269,7 @@ class UserBase(DiscordEntity, immortal=True):
         default_avatar_url : `str`
         """
         return DefaultAvatar.for_(self).url
+    
     
     @property
     def default_avatar(self):
@@ -183,6 +282,7 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return DefaultAvatar.for_(self)
     
+    
     # for sorting users
     def __gt__(self, other):
         """Returns whether the user's id is greater than the other's."""
@@ -190,11 +290,13 @@ class UserBase(DiscordEntity, immortal=True):
             return self.id > other.id
         return NotImplemented
     
+    
     def __ge__(self, other):
         """Returns whether the user's id is greater or equal to the other."""
         if isinstance(other, UserBase):
             return self.id >= other.id
         return NotImplemented
+    
     
     def __eq__(self, other):
         """Return whether the user's id is equal to the other."""
@@ -202,17 +304,20 @@ class UserBase(DiscordEntity, immortal=True):
             return self.id == other.id
         return NotImplemented
     
+    
     def __ne__(self, other):
         """Returns whether the user's id is different as the other's."""
         if isinstance(other, UserBase):
             return self.id != other.id
         return NotImplemented
     
+    
     def __le__(self, other):
         """Returns whether the user's id is less or equal to the other."""
         if isinstance(other,UserBase):
             return self.id <= other.id
         return NotImplemented
+    
     
     def __lt__(self, other):
         """Returns whether the user's id is less than the other's."""

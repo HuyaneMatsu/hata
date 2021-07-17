@@ -1254,7 +1254,7 @@ class Message(DiscordEntity, immortal=True):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
-    def _update(self, data):
+    def _difference_update_attributes(self, data):
         """
         Updates the message and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.
@@ -1507,7 +1507,7 @@ class Message(DiscordEntity, immortal=True):
         
         return old_attributes
     
-    def _update_no_return(self, data):
+    def _update_attributes(self, data):
         """
         Updates the message with the given data by overwriting it's old attributes.
         
@@ -1819,7 +1819,7 @@ class Message(DiscordEntity, immortal=True):
         if embeds_length_actual != 0:
             for index in range(embeds_length_actual):
                 embed_data = embed_datas[index]
-                embeds[index]._update_sizes_no_return(embed_data)
+                embeds[index]._set_sizes(embed_data)
 
             if embeds_length_actual == embeds_length_new:
                 return

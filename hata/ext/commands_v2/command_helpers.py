@@ -8,7 +8,7 @@ from ...backend.utils import FunctionType
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.export import include
 
-from .exceptions import CommandProcessingError
+from .exceptions import CommandProcessingError, CommandCheckError
 from .utils import raw_name_to_display
 CheckBase = include('CheckBase')
 CommandCheckWrapper = include('CommandCheckWrapper')
@@ -57,19 +57,30 @@ async def handle_exception(command_context, exception):
         The respective command context.
     exception : ``BaseException``
         The occurred exception.
+    
+    Returns
+    -------
+    invoked : `bool`
+        Whether the command was successfully invoked.
+        
+        If unexpected exception occurs, still returns `True`.
     """
     command_function = command_context.command_function
     if (command_function is not None):
         for error_handler in command_function._iter_error_handlers():
             result = await error_handler(command_context, exception)
             if isinstance(result, int) and result:
-                return
+                return True
     
     # We can ignore command processing exceptions.
-    if not isinstance(exception, CommandProcessingError):
+    if isinstance(exception, CommandProcessingError):
+        if isinstance(exception, CommandCheckError):
+            return command_context.command.hidden_if_checks_fail
+    else:
         client = command_context.client
         await client.events.error(client, 'handle_exception', exception)
-
+    
+    return True
 
 def get_command_category_trace(command, content, index):
     """

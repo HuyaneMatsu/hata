@@ -355,22 +355,24 @@ class CommandProcessor(EventWaitforBase):
         try:
             command = self.command_name_to_command[command_name]
         except KeyError:
-            unknown_command = self._unknown_command
-            if (unknown_command is not None):
-                try:
-                    await unknown_command(client, message, command_name)
-                except BaseException as err:
-                    await client.events.error(client, f'{self!r}.__call__', err)
+            pass
+        else:
+            content = message.content[end:]
             
-            return
+            if prefix is None:
+                prefix = await self._prefix_getter(message)
+            
+            context = CommandContext(client, message, prefix, content, command)
+            if await context.invoke():
+                return
         
-        content = message.content[end:]
         
-        if prefix is None:
-            prefix = await self._prefix_getter(message)
-        
-        context = CommandContext(client, message, prefix, content, command)
-        await context.invoke()
+        unknown_command = self._unknown_command
+        if (unknown_command is not None):
+            try:
+                await unknown_command(client, message, command_name)
+            except BaseException as err:
+                await client.events.error(client, f'{self!r}.__call__', err)
     
     
     def error(self, error_handler):

@@ -1008,8 +1008,8 @@ def detect_listing(lines, index, limit):
         line = lines[index]
         
         if line.startswith('-'):
-            dash_count +=1
-            index +=1
+            dash_count += 1
+            index += 1
             continue
         
         if dash_count == 0:
@@ -1017,11 +1017,11 @@ def detect_listing(lines, index, limit):
             return get_back_index
         
         if not line:
-            index +=1
+            index += 1
             continue
         
         if line[0] in (' ', '\t'):
-            index +=1
+            index += 1
             continue
         
         if dash_count == 1:
@@ -1118,30 +1118,30 @@ class TextListingElement:
     
     def __repr__(self):
         """Returns the listing element's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__
-                ]
+        ]
         
         head = self._head
         if head is None:
             add_comma = False
         else:
-            result.append(' head=')
-            result.append(repr(head))
+            repr_parts.append(' head=')
+            repr_parts.append(repr(head))
             add_comma = True
         
         content = self._content
         if (content is not None):
             if add_comma:
-                result.append(',')
+                repr_parts.append(',')
             
-            result.append(' content=')
-            result.append(repr(content))
+            repr_parts.append(' content=')
+            repr_parts.append(repr(content))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     def graved(self, path):
         """
@@ -1198,7 +1198,7 @@ class TextListing:
                 break
             
             line = lines[start]
-            start +=1
+            start += 1
             
             if line.startswith('-'):
                 # If the line starts with `-`, then save the currently created part if any.

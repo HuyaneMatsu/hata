@@ -1,47 +1,20 @@
 __all__ = ('ChannelTextBase', 'message_relative_index',)
 
 from collections import deque
+from time import time as current_time
+from datetime import datetime
 try:
     from _weakref import WeakSet
 except ImportError:
     from weakref import WeakSet
 
+from ...backend.utils import WeakReferer
 from ...backend.event_loop import LOOP_TIME
 from ...backend.export import export
 
-from ..core import MESSAGES
+from ..core import MESSAGES, KOKORO
 from ..message import Message
-from ..core import GC_CYCLER
-
-TURN_MESSAGE_LIMITING_ON = WeakSet()
-
-
-def turn_message_limiting_on(cycler):
-    """
-    Goes through all the channels inside of `Q_on_GC` and switches their message history to limited if their
-    time is over.
-    
-    Parameters
-    ----------
-    cycler : `Cycler`
-        The cycler what calls this function every X seconds.
-    """
-    now = LOOP_TIME()
-    collected = []
-    for channel in TURN_MESSAGE_LIMITING_ON:
-        if channel._turn_message_keep_limit_on_at<now:
-            collected.append(channel)
-    
-    while collected:
-        channel = collected.pop()
-        TURN_MESSAGE_LIMITING_ON.remove(channel)
-        channel._switch_to_limited()
-
-GC_CYCLER.append(turn_message_limiting_on)
-
-del turn_message_limiting_on, GC_CYCLER
-
-
+from ..utils import DATETIME_FORMAT_CODE
 
 # searches the relative index of a message in a list
 def message_relative_index(messages, message_id):
@@ -76,6 +49,87 @@ def message_relative_index(messages, message_id):
     return bot
 
 
+class MessageHistoryCollector:
+    """
+    Attributes
+    ----------
+    channel_reference : ``WeakReferer`` to ``ChannelTextBase`` instance
+        Reference to the parent channel.
+    delay : `float`
+        Additional message collection delay.
+    handle : `None` or ``TimerHandle``
+        Handle calling the history collector.
+    """
+    __slots__ = ('channel_reference', 'delay', 'handle', )
+    
+    def __new__(cls, channel, when):
+        """
+        Creates a new ``MessageHistoryCollector
+        """
+        self = object.__new__(cls)
+        self.channel_reference = WeakReferer(channel)
+        self.delay = 0.0
+        self.handle = KOKORO.call_at(when, self)
+        return self
+    
+    
+    def __call__(self):
+        """
+        Calls the collector, removing the respective channel's extra messages.
+        
+        If there is extra delay, moves collection time.
+        """
+        channel = self.channel_reference()
+        if (channel is None):
+            self.handle = None
+        else:
+            delay = self.delay
+            if delay:
+                self.delay = 0.0
+                self.handle = KOKORO.call_at(delay, self)
+            else:
+                self.handle = None
+                channel._message_history_collector = None
+                channel._switch_to_limited()
+    
+    
+    def cancel(self):
+        """Stops the handler of the collector."""
+        handle = self.handle
+        if (handle is not None):
+            self.handle = None
+            handle.cancel()
+    
+    __del__ = cancel
+    
+    def add_delay(self, delay):
+        """
+        Adds delay to the channel history collector.
+        
+        Parameters
+        ----------
+        delay : `bool`
+            Delay to add.
+        """
+        self.delay += delay
+    
+    def __repr__(self):
+        """Returns the message history collector's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        handle = self.handle
+        if handle is None:
+            repr_parts.append(' cancelled')
+        else:
+            repr_parts.append(' scheduled: ')
+            timestamp = datetime.fromtimestamp(current_time()+handle.when+self.delay-LOOP_TIME())
+            repr_parts.append(timestamp.__format__(DATETIME_FORMAT_CODE))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+
+
 # Do not call any functions from this if you dunno anything about them!
 # The message history is basically sorted by message_id, what can be translated to real time.
 # The newer messages are at the start, meanwhile the older ones at the end.
@@ -91,8 +145,8 @@ class ChannelTextBase:
     ----------
     _message_keep_limit : `int`
         The channel's own limit of how much messages it should keep before removing their reference.
-    _turn_message_keep_limit_on_at : `float`
-        The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
+    _message_history_collector :  `None` or ``MessageHistoryCollector``
+        Collector for the channel's message history.
     message_history_reached_end : `bool`
         Whether the channel's message's are loaded till their end. If the channel's message history reach it's end
         no requests will be requested to get older messages.
@@ -106,7 +160,7 @@ class ChannelTextBase:
     """
     MESSAGE_KEEP_LIMIT = 10
     __slots__ = ()
-    __slots = ('_message_keep_limit', '_turn_message_keep_limit_on_at', 'message_history_reached_end', 'messages', )
+    __slots = ('_message_keep_limit', '_message_history_collector', 'message_history_reached_end', 'messages', )
     
     def _messageable_init(self):
         """
@@ -114,7 +168,7 @@ class ChannelTextBase:
         """
         #discord side bug: we cant check last message
         self.message_history_reached_end = False
-        self._turn_message_keep_limit_on_at = 0.0
+        self._message_history_collector = None
         limit = self.MESSAGE_KEEP_LIMIT
         self._message_keep_limit = limit
         self.messages = None
@@ -312,6 +366,31 @@ class ChannelTextBase:
         
         return message
     
+    
+    def _add_message_collection_delay(self, delay):
+        """
+        Sets message collection timeout to the exact given time.
+        
+        Parameters
+        ----------
+        delay : `float`
+            The time to delay the message collection with.
+        """
+        message_history_collector = self._message_history_collector
+        if (message_history_collector is None):
+            self._message_history_collector = MessageHistoryCollector(self, LOOP_TIME() + delay)
+        else:
+            message_history_collector.set_delay(delay)
+    
+    def _cancel_message_collection(self):
+        """
+        Cancels the message collector of the channel.
+        """
+        message_history_collector = self._message_history_collector
+        if (message_history_collector is not None):
+            self._message_history_collector = None
+            message_history_collector.cancel()
+    
     def _maybe_increase_queue_size(self):
         """
         Increases the queue size of the channel's message history if needed and returns it.
@@ -324,19 +403,17 @@ class ChannelTextBase:
         if messages is None:
             # Create unlimited size.
             self.messages = messages = deque()
-            self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
-            TURN_MESSAGE_LIMITING_ON.add(self)
+            self._add_message_collection_delay(110.0)
         else:
             max_length = messages.maxlen
             if (max_length is None):
                 # The size is already unlimited
-                self._turn_message_keep_limit_on_at += 10.0
+                self._add_message_collection_delay(10.0)
             else:
                 # Switch to unlimited if we hit our current limit.
                 if len(messages) == max_length:
                     self.messages = messages = deque(messages)
-                    self._turn_message_keep_limit_on_at = LOOP_TIME() + 110.0
-                    TURN_MESSAGE_LIMITING_ON.add(self)
+                    self._add_message_collection_delay(110.0)
         
         return messages
     
@@ -352,24 +429,24 @@ class ChannelTextBase:
         if messages is None:
             message_keep_limit = self._message_keep_limit
             if message_keep_limit == 0:
-                if self._turn_message_keep_limit_on_at:
-                    self.messages = messages = deque(maxlen=None)
+                if self._message_history_collector is None:
+                    messages = None
                 else:
-                    messages =None
+                    self.messages = messages = deque(maxlen=None)
             else:
                 self.messages = messages = deque(maxlen=message_keep_limit)
         else:
             
             max_length = messages.maxlen
             if (max_length is not None) and (len(messages) == max_length):
-                if self._turn_message_keep_limit_on_at:
-                    self.messages = messages = deque(messages, maxlen=None)
-                else:
+                if self._message_history_collector is None:
                     self.message_history_reached_end = False
+                else:
+                    self.messages = messages = deque(messages, maxlen=None)
         
         return messages
     
-    def _switch_to_limited(channel):
+    def _switch_to_limited(self):
         """
         Switches a channel's `.messages` to limited from unlimited.
         
@@ -378,19 +455,22 @@ class ChannelTextBase:
         channel : ``ChannelTextBase`` instance.
             The channel, what's `.messages` will be limited.
         """
-        old_messages = channel.messages
+        old_messages = self.messages
         if old_messages is None:
             new_messages = None
         else:
-            limit = channel._message_keep_limit
+            limit = self._message_keep_limit
             if limit == 0:
                 new_messages = None
             else:
-                new_messages = deque((old_messages[i] for i in range(min(limit, len(old_messages)))), maxlen=limit)
+                new_messages = deque(
+                    (old_messages[index] for index in range(min(limit, len(old_messages)))),
+                    maxlen=limit,
+                )
         
-        channel.messages = new_messages
-        channel._turn_message_keep_limit_on_at = 0.0
-        channel.message_history_reached_end = False
+        self.messages = new_messages
+        self._cancel_message_collection()
+        self.message_history_reached_end = False
     
     def _pop_message(self, delete_id):
         """
@@ -412,10 +492,8 @@ class ChannelTextBase:
                 message = messages[index]
                 if message.id == delete_id:
                     del messages[index]
-                    if self._turn_message_keep_limit_on_at:
+                    if (self._message_history_collector is not None):
                         if len(messages) < self._message_keep_limit:
-                            TURN_MESSAGE_LIMITING_ON.discard(self)
-                            self._turn_message_keep_limit_on_at = 0.0
                             self._switch_to_limited()
                     
                     try:
@@ -526,13 +604,14 @@ class ChannelTextBase:
             
             continue
         
-        if (messages is not None) and self._turn_message_keep_limit_on_at:
-            if len(messages) < self._message_keep_limit:
-                TURN_MESSAGE_LIMITING_ON.discard(self)
-                self._turn_message_keep_limit_on_at = 0.0
-                self._switch_to_limited()
+        if (        (messages is not None) and
+                    (self._message_history_collector is not None) and
+                    (len(messages) < self._message_keep_limit)
+                ):
+            self._switch_to_limited()
         
         return found, missed
+    
     
     def _process_message_chunk(self, data):
         """

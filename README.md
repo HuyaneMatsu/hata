@@ -2,23 +2,32 @@
 
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
-If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some
-real stuff:
+#### Why hata?
 
-- Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for
-    embedding into a threaded system.
-- Running more clients from the same instance.
-- Shared entity cache between shards and clients.
-- Feature rich API for common use cases.
-- Fast rate limit handling.
-- No member objects associated with guilds. Hata uses guild -> user -> guild relation enabling implementing
-    cross-guild features more easily.
-- Optimized dispatch event parsers depending on intents, client count and on handled events as well.
-- Option to disable user presences or even user caching, although disabling user cache is not recommended.
-- Many builtin extension. Including a slash command one as well.
-- Audio sending and receiving.
-- Can interact with the Discord API without gateway connection.
-- Switching between api version with environmental variable.
+- Multiple simultaneous clients
+
+    Hata can run multiple clients from the same instance without sacrificing performance, all while being easy to code.
+
+- Performant
+    
+    Fast concurrent code using async/await syntax, cache control, PyPy support and more!
+
+- Newest API features
+    
+    Whatever Discord decides to release/update/break Hata will support it natively in no time!
+
+- 100% Python
+
+    Completely relies on Python! Easy to read, easy to understand, easy to code.
+
+
+#### Why not hata?
+
+- Small community
+    
+    Hata has a small and slowly increasing community. The chance of getting help outside of our
+    [cosy discord server](https://discord.gg/3cH2r5d) equals to zero.
+
 
 ## Usage
 
@@ -107,18 +116,20 @@ $ python -m pip install hata
 
 Hata has native pypy support as well if you need some more speed!
 
+### Dependencies
+
 #### Requirements
 
 - Python >= 3.6
 - [chardet](https://pypi.python.org/pypi/chardet) / [cchardet](https://pypi.org/project/cchardet/)
 
-#### Optional requirements
+#### Optional
 
 - [dateutil](https://pypi.org/project/python-dateutil/)
 - [PyNaCl](https://pypi.org/project/PyNaCl/) (for voice support)
 - [brotli](https://pypi.org/project/Brotli/) / [brotlipy](https://pypi.org/project/brotlipy/)
 
-## Join our server
+## Get in touch
 
 If you have issues, suggestions, want to contribute, or just want to send cute neko pictures, join our discord server.
 

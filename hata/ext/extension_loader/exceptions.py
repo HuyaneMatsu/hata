@@ -35,7 +35,7 @@ class ExtensionError(Exception):
         message : ``Message``
         """
         message = self._message
-        if type(message) is str:
+        if isinstance(message, str):
             return message
         
         return '\n\n'.join(message)
@@ -50,7 +50,7 @@ class ExtensionError(Exception):
         messages : `list` of `str`
         """
         message = self._message
-        if type(message) is str:
+        if isinstance(message, str):
            return [message]
         
         return message
@@ -58,7 +58,7 @@ class ExtensionError(Exception):
     def __len__(self):
         """Returns the amount of messages, what the extension error contains."""
         message = self._message
-        if type(message) is str:
+        if isinstance(message, str):
             return 1
         
         return len(message)

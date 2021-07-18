@@ -10,6 +10,8 @@
 - Add `IntegrationExpireBehavior`.
 - `IntegrationDetail.expire_behavior` is now `IntegrationExpireBehavior` type (from int).
 - `Client.guild_create` limit increased 200 for nitro users.
+- Rework channel message collection.
+
 
 ##### hata.ext.slash
 - Add `float` converter.
@@ -19,6 +21,9 @@
 - Fix an `AttributeError` in `Client._delete`.
 - `ClientUserBase._update` always dropped back `banner_color` as edited.
 - `ClientUserBase._update_no_return` reset the user's guild profiles.
+
+##### hata.ext.slash
+- Slash snapshot could be built badly yielding not empty difference wrongly. (bad indention)
 
 #### Renames, Deprecation & Removals
 

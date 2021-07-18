@@ -1,22 +1,32 @@
 ﻿"""
 Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
 
-If naming a Discord API wrapper after a Touhou character is not enough to convince you to try it, it has got some real
-stuff:
+Why hata
+--------
 
-- Fast and simple asynchronous framework to write concurrent code using async/await syntax, but also great for
-    embedding into a threaded system.
-- Usage of Privileged Intents
-- Running more clients from the same instance.
-- Shared entity cache between shards and clients.
-- Feature rich API for common use cases.
-- Fast rate limit handling.
-- No more member objects associated with guilds, if there is a user in more guilds, then there is only ONE user.
-- Optimized dispatch event events depending on intents, client count and on handled events as well.
-- Option to disable user presences or even user caching, although disabling user cache is not recommended.
-- Many builtin extension. Including a slash command one as well.
-- Audio sending and receiving.
-- Can interact with the Discord API without gateway connection.
+- Multiple simultaneous clients
+
+    Hata can run multiple clients from the same instance without sacrificing performance, all while being easy to code.
+
+- Performant
+    
+    Fast concurrent code using async/await syntax, cache control, PyPy support and more!
+
+- Newest API features
+    
+    Whatever Discord decides to release/update/break Hata will support it natively in no time!
+
+- 100% Python
+
+    Completely relies on Python! Easy to read, easy to understand, easy to code.
+
+
+Why not hata
+------------
+- Small community
+    
+    Hata has a small and slowly increasing community. The chance of getting help outside of our
+    `cosy discord server:https://discord.gg/3cH2r5d` equals to zero.
 
 Usage
 -----

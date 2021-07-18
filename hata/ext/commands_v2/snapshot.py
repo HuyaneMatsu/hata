@@ -120,7 +120,12 @@ def calculate_command_processor_snapshot_difference(client, snapshot_old, snapsh
     else:
         category_difference = (old_categories, new_categories)
     
-    return command_difference, category_difference
+    if (command_difference is None) and (category_difference is None):
+        snapshot_difference = None
+    else:
+        snapshot_difference = (command_difference, category_difference)
+    
+    return snapshot_difference
 
 
 def revert_command_processor_snapshot(client, snapshot_difference):

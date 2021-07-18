@@ -38,10 +38,10 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         The text channel from where the thread is created from.
     name : `str`
         The channel's name.
+    _message_history_collector :  `None` or ``MessageHistoryCollector``
+        Collector for the channel's message history.
     _message_keep_limit : `int`
         The channel's own limit of how much messages it should keep before removing their reference.
-    _turn_message_keep_limit_on_at : `float`
-        The LOOP_TIME time, when the channel's message history should be turned back to limited. Defaults `0.0`.
     message_history_reached_end : `bool`
         Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
         no requests will be requested to get older messages.

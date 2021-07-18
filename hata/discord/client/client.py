@@ -3287,7 +3287,7 @@ class Client(ClientUserPBase):
             if not isinstance(limit, int):
                 raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
             
-            if limit < 1 or limit > 100:
+            if (limit < 1) or (limit > 100):
                 raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
         
         data = {'limit': limit}
@@ -3301,8 +3301,8 @@ class Client(ClientUserPBase):
         if (before is not None):
             data['before'] = log_time_converter(before)
         
-        if not channel._turn_message_keep_limit_on_at:
-            channel._turn_message_keep_limit_on_at = LOOP_TIME()
+        # Set some collection delay.
+        channel._add_message_collection_delay(60.0)
         
         data = await self.http.message_get_chunk(channel_id, data)
         
@@ -3351,11 +3351,11 @@ class Client(ClientUserPBase):
             if not isinstance(limit, int):
                 raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
             
-            if limit < 1 or limit > 100:
+            if (limit < 1) or (limit > 100):
                 raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
         
-        if not channel._turn_message_keep_limit_on_at:
-            channel._turn_message_keep_limit_on_at = LOOP_TIME()
+        # Set some collection delay.
+        channel._add_message_collection_delay(60.0)
         
         data = {'limit': limit, 'before': 9223372036854775807}
         data = await self.http.message_get_chunk(channel_id, data)
@@ -4854,7 +4854,9 @@ class Client(ClientUserPBase):
                 result_state = 1
                 break
         
-        channel._turn_message_keep_limit_on_at += index
+        # Set some collection delay.
+        channel._add_message_collection_delay(float(index))
+        
         return result_state
     
     

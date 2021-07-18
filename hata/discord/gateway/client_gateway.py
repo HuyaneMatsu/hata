@@ -534,10 +534,10 @@ class DiscordGateway:
                     '$referrer': '',
                     '$referring_domain': '',
                 },
-                'compress': True,                       # if we support compression, default : False
-                'large_threshold': LARGE_GUILD_LIMIT,         # between 50 and 250, default is 50
-                'guild_subscriptions': CACHE_PRESENCE,  # optional, default is `False`
-                'intents': client.intents,              # Grip & Break down
+                'compress': True,                       # Whether we support compression | Discord default: False
+                'large_threshold': LARGE_GUILD_LIMIT,   # between 50 and 250             | Discord default: 50
+                'guild_subscriptions': CACHE_PRESENCE,  # optional                       | Discord default: False
+                'intents': client.intents,              # Grip & Break down              | Discord Default: all-p-gu
                 'v': 3,
                 'presence': {
                     'status': status,

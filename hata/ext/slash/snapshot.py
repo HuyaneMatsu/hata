@@ -160,8 +160,8 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
                 slasher = getattr(client, 'slasher', None)
                 if (slasher is not None):
                     slasher.sync()
-    
-        slash_command_difference = added_slash_commands, removed_slash_commands
+            
+            slash_command_difference = added_slash_commands, removed_slash_commands
     else:
         slash_command_difference = None
     

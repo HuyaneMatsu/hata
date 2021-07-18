@@ -66,3 +66,11 @@ Select a guild to add the bot into and click `Authorize`.
 > Your account needs `Manage Server` permission in order to add a bot to it.
 
 Now that you have your bot, you can start writing your bot.
+
+## Writing your bot
+
+There are many libraries interacting with the Discord API. Most bot developers stick with the same library for their
+whole career, so checking out multiple ones and making a choice, which satisfies needs is highly recommended.
+
+Or if you are enough hardcore to make your own, or you are just curious, check out
+[Discord's official documentation](https://discord.com/developers/docs/intro).

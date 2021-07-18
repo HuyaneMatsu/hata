@@ -29,13 +29,3 @@ STICKERS = WeakValueDictionary()
 STICKER_PACKS = WeakValueDictionary()
 
 KOKORO = EventThread(daemon=False, name='KOKORO')
-
-GC_CYCLER = KOKORO.cycle(1200.)
-
-if sys.implementation.name == 'pypy':
-    def manual_gc_call(cycler):
-        gc.collect()
-    
-    GC_CYCLER.append(manual_gc_call, (1<<31)-1)
-    
-    del manual_gc_call

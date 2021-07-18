@@ -853,7 +853,7 @@ class Cycler:
         """
         handle = self.handle
         if handle is None:
-            return -1. #w ont be be called
+            return -1. # wont be be called
         
         at = handle.when-LOOP_TIME()
         
@@ -1317,6 +1317,7 @@ if sys.platform == 'win32':
                 result_w.extend(result_x)
                 return result_r, result_w, EMPTY
 
+
 class Server:
     """
     Server returned by ``EventThread.create_server``.
@@ -1462,6 +1463,7 @@ class Server:
         close_waiter = Future(self.loop)
         close_waiters.append(close_waiter)
         await close_waiter
+
 
 class EventThreadCTXManager:
     """
@@ -1683,8 +1685,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         Socket, which can be used to wake up the thread by writing into it.
     _ready : `deque` of ``Handle`` instances
         Ready to run handles of the event loop.
-    _scheduled : `list` of ``TimerHandle`` instances.
-        Scheduled timer handles, which will be moved to `_ready` when their `when` becomes lower or equal to the
+    _scheduled : `list` of ``TimerHandle`` instances
+        Scheduled timer handles, which will be moved to ``._ready`` when their `when` becomes lower or equal to the
         respective loop time.
     _self_read_socket : `socket.socket`
         Socket, which reads from ``._self_write_socket``.
@@ -1794,7 +1796,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
     
     def __repr__(self):
         """Returns the event thread's representation."""
-        result = ['<', self.__class__.__name__, '(', self._name]
+        repr_parts = ['<', self.__class__.__name__, '(', self._name]
         self.is_alive() # easy way to get ._is_stopped set when appropriate
         if not self.started:
             state = ' created'
@@ -1802,25 +1804,25 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             state = ' stopped'
         else:
             state = ' started'
-        result.append(state)
+        repr_parts.append(state)
         
         if self._daemonic:
-            result.append(' daemon')
+            repr_parts.append(' daemon')
         
         ident = self._ident
-        if ident is not None:
-            result.append(' ident=')
-            result.append(str(ident))
+        if (ident is not None):
+            repr_parts.append(' ident=')
+            repr_parts.append(str(ident))
         
-        result.append(' executor info: free=')
-        result.append(str(self.free_executor_count))
-        result.append(', used=')
-        result.append(str(self.used_executor_count))
-        result.append(', keep=')
-        result.append(str(self.keep_executor_count))
-        result.append(')>')
+        repr_parts.append(' executor info: free=')
+        repr_parts.append(str(self.free_executor_count))
+        repr_parts.append(', used=')
+        repr_parts.append(str(self.used_executor_count))
+        repr_parts.append(', keep=')
+        repr_parts.append(str(self.keep_executor_count))
+        repr_parts.append(')>')
 
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     
     def call_later(self, delay, callback, *args):

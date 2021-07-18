@@ -83,7 +83,7 @@ async def yt(ctx, url=None):
 # Tailing `_` are removed from command names.
 @Sakuya.commands
 @checks.guild_only()
-async def volume_(ctx, volume: int = None):
+async def volume_(ctx, volume:int=None):
     """Changes the player\'s volume."""
     voice_client = ctx.voice_client
     if voice_client is None:

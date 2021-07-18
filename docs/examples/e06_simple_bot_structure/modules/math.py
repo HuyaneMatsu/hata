@@ -5,6 +5,6 @@ Sakuya: Client
 
 
 @Sakuya.commands(aliases='*')
-async def multiply(first: int, second: int):
+async def multiply(first:int, second:int):
     """Multiplies the two numbers."""
     return first*second

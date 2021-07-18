@@ -18,11 +18,11 @@ async def message_create(client, message):
         ).add_field(
             'This is the first field name',
             'This is a field value',
-            inline=True,
+            inline = True,
         ).add_field(
             'This is the second field name',
             'Both of these fields are inline',
-            inline=True,
+            inline = True,
         ).add_field(
             'This is the third field',
             'This is not an inline field',

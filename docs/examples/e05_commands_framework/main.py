@@ -88,7 +88,7 @@ async def about_role_error_handler(ctx, exception):
 # We can set specific command name aside from the default function name (we can also pass list/tuples for aliases).
 # Here this function will be called with '!* int int'
 @Sakuya.commands(aliases='*')
-async def multiply(first: int, second: int):
+async def multiply(first:int, second:int):
     """Multiplies the two numbers."""
     return first*second
 
@@ -117,7 +117,7 @@ EMOJI_BIRD = BUILTIN_EMOJIS['bird']
 
 
 @Sakuya.commands
-async def bird(animal: str = None):
+async def bird(animal:str=None):
     """Bird finds animals."""
     if animal is None:
         # `{emoji:e}` is a shortcut for `.emoji`.

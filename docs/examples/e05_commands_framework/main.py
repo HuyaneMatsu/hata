@@ -8,10 +8,9 @@ TOKEN = ''
 # To setup an extension for the client, just pass its name to the `Client` constructor.
 #
 # Each extension has required and optional parameters. Do not forget to pass sufficient parameters for your needs.
-Sakuya = Client(
-    TOKEN,
-    extensions='commands_v2',
-    prefix='!',
+Sakuya = Client(TOKEN,
+    extensions = 'commands_v2',
+    prefix = '!',
 )
 
 
@@ -62,24 +61,18 @@ async def handle_owner_only_error(ctx, exception):
 
 # Annotated parameters are parsed if there is a converter for the type.
 #
-# You can send response message by returning or yielding any value from a command. These 3 commands do the same thing
-# (but are not identical!):
+# You can send response message by returning or yielding any value from a command.
 @Sakuya.commands
-async def about_role_return(role: 'Role'):
+async def about_role(role: 'Role'):
     """Sends the passed role id message to the context channel."""
     return role.id
+    # Here you could have also used 'yield role.id' or manually sending the message using .send method
 
 
 @Sakuya.commands
 async def about_role_yield(role: 'Role'):
     """Sends the passed role id message to the context channel."""
     yield role.id
-
-
-@Sakuya.commands
-async def about_role_send(ctx, role: 'Role'):
-    """Sends the passed role id message to the context channel."""
-    await ctx.send(role.id)
 
 
 # Command specific error handlers can be defined by `command.error` decorator.
@@ -167,7 +160,7 @@ async def slowmode(ctx, slowmode_rate:int=None):
 
 
 # A command can have sub-commands, just like in command-line tools.
-# Example `!upper` and `!upper subcommand`
+# Example `!upper` and `!upper sub`
 @Sakuya.commands(name='upper')
 async def upper_command():
     """This is main command."""

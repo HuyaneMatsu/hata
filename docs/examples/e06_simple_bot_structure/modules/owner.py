@@ -4,6 +4,7 @@ from hata.ext.commands_v2 import checks
 
 Sakuya: Client
 
+
 @Sakuya.commands
 @checks.owner_only()
 async def quit_(ctx):

@@ -4,10 +4,12 @@ from hata.ext.extension_loader import EXTENSION_LOADER
 
 config = dotenv_values('.env')
 
-Sakuya = Client(config['TOKEN'],
-    extensions = 'commands_v2',
-    prefix = '!',
+Sakuya = Client(
+    config['TOKEN'],
+    extensions='commands_v2',
+    prefix='!',
 )
+
 
 @Sakuya.events
 async def ready(client):

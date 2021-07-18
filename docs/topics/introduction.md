@@ -50,29 +50,28 @@ If you are keen, you might want to checkout the [example section](../examples).
     Hata has a small and slowly increasing community. The chance of getting help outside of our
     [cosy discord server](https://discord.gg/3cH2r5d) equals to zero.
 
-### Contributing
+## Contributing
 
 Issues and feature requests are always welcome. 
 
 If you also want to contribute by pull requests, documentation improvements, bug fixes and other smaller changes
 are welcome. For bigger changes please visit our Discord server and let's discuss it.
 
-### Get in touch
+## Get in touch
 
 If you have issues, suggestions, want to contribute, or just want to send cute neko pictures, join our discord server.
 
 [![](https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner1)](https://discord.gg/3cH2r5d)
 
-### Dependencies
+## Dependencies
 
-#### Requirements
+### Requirements
 
 - Python >= 3.6
 - [chardet](https://pypi.python.org/pypi/chardet) / [cchardet](https://pypi.org/project/cchardet/)
 
-#### Optional
+### Optional
 
 - [dateutil](https://pypi.org/project/python-dateutil/)
 - [PyNaCl](https://pypi.org/project/PyNaCl/) (for voice support)
 - [brotli](https://pypi.org/project/Brotli/) / [brotlipy](https://pypi.org/project/brotlipy/)
-

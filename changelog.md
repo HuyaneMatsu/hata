@@ -11,7 +11,12 @@
 - `IntegrationDetail.expire_behavior` is now `IntegrationExpireBehavior` type (from int).
 - `Client.guild_create` limit increased 200 for nitro users.
 - Rework channel message collection.
-
+- `ActivityTimestamp.start` is now `datetime` (from int).
+- `ActivityTimestamp.end` is now `datetime` (from int).
+- Add `ActivityTimestamp.__new__`.
+- Add `ActivityAssets.__new__`.
+- Add `ActivityParty.__new__`.
+- Add `ActivitySecrets.__new__`.
 
 ##### hata.ext.slash
 - Add `float` converter.
@@ -39,7 +44,11 @@
 - Rename `._update_profile_only` to `._difference_update_profile_only`.
 - rename `._update_profile_only_no_return` to `._update_profile_only`.
 - Rename `._update_profile` to `._difference_update_profile`.
-- rename `._update_profile_no_return` to `._update_profile`.
+- Rename `._update_profile_no_return` to `._update_profile`.
+- Rename `DIS_ENDPOINT` to `DISCORD_ENDPOINT`
+- Rename `ActivityTimestamp.__init__` -> `.from_data`.
+- Rename `ActivityAssets.__init__` -> `.from_data`.
+- Rename `ActivityParty.__init__` -> `.from_data`
 
 ## 1.1.90 *\[2021-07-16\]*
 

@@ -2,8 +2,9 @@ __all__ = ('ActivityAssets', 'ActivityBase', 'ActivityParty', 'ActivitySecrets',
     'ACTIVITY_TYPES',)
 
 from datetime import datetime
+from math import floor
 
-from ..utils import DISCORD_EPOCH_START
+from ..utils import DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..color import Color
 
 from . import activity_types as ACTIVITY_TYPES
@@ -31,14 +32,45 @@ class ActivityTimestamps:
     
     Attributes
     ----------
-    end : `int`
-        The time when the activity ends as Unix time in milliseconds. Defaults to `0`.
-    start : `int`
-        The time when the activity starts as Unix time in milliseconds. Defaults to `0`.
+    end : `None` or `datetime`
+        When the activity. Defaults to `None`.
+    start : `None` or `datetime`
+       When the activity starts. Defaults to `None`.
     """
     __slots__ = ('end', 'start',)
     
-    def __init__(self, timestamps_data):
+    def __new__(cls, *, start=None, end=None):
+        """
+        Creates a new activity timestamp with the given parameters.
+        
+        Parameters
+        ----------
+        end : `None` or `datetime`, Optional (Keyword only)
+            When the activity. Defaults to `None`.
+        start : `None` or `datetime`, Optional (Keyword only)
+           When the activity starts. Defaults to `None`.
+        
+        Raises
+        ------
+        AssertionError
+            - If `start` is nether `None` nor `datetime`.
+            - If `end` is neither `None` nor `datetime`.
+        """
+        if __debug__:
+            if (start is not None) and (not isinstance(start, datetime)):
+                raise AssertionError(f'`start` can be either `None` or `datetime`, got {start.__class__.__name__}.')
+
+            if (end is not None) and (not isinstance(end, datetime)):
+                raise AssertionError(f'`end` can be either `None` or `datetime`, got {end.__class__.__name__}.')
+        
+        self = object.__new__(cls)
+        self.start = start
+        self.end = end
+        return self
+    
+    
+    @classmethod
+    def from_data(cls, timestamps_data):
         """
         Creates a new activity timestamp object from the given data.
         
@@ -47,8 +79,18 @@ class ActivityTimestamps:
         timestamps_data : `dict` of (`str`, `Any`) items
             Activity timestamp data.
         """
-        self.start = timestamps_data.get('start', 0)
-        self.end = timestamps_data.get('end', 0)
+        start = timestamps_data.get('start', None)
+        if (start is not None):
+            start = datetime.utcfromtimestamp(start/1000.0)
+        
+        end = timestamps_data.get('end', None)
+        if (end is not None):
+            end = datetime.utcfromtimestamp(end/1000.0)
+        
+        self = object.__new__(cls)
+        self.start = start
+        self.end = end
+        return self
     
     
     def __repr__(self):
@@ -59,20 +101,20 @@ class ActivityTimestamps:
         ]
         
         start = self.start
-        if start:
+        if (start is not None):
             repr_parts.append(' start=')
-            repr_parts.append(repr(start))
+            repr_parts.append(start.__format__(DATETIME_FORMAT_CODE))
             field_added = True
         else:
             field_added = False
         
         end = self.end
-        if end:
+        if (end is not None):
             if field_added:
                 repr_parts.append(',')
             
             repr_parts.append(' end=')
-            repr_parts.append(repr(start))
+            repr_parts.append(start.__format__(DATETIME_FORMAT_CODE))
         
         repr_parts.append('>')
         
@@ -104,12 +146,12 @@ class ActivityTimestamps:
         timestamps_data = {}
         
         start = self.start
-        if start:
-            timestamps_data['start'] = start
+        if (start is not None):
+            timestamps_data['start'] = floor(start.timestamp()*1000.0)
         
         end = self.end
-        if end:
-            timestamps_data['end'] = end
+        if (end is not None):
+            timestamps_data['end'] = floor(end.timestamp()*1000.0)
         
         return timestamps_data
 
@@ -130,7 +172,77 @@ class ActivityAssets:
         The hover text of the small asset. Defaults to `None`.
     """
     __slots__ = ('image_large', 'image_small', 'text_large', 'text_small',)
-    def __init__(self, assets_data):
+    
+    def __new__(cls, *, image_large=None, image_small=None, text_large=None, text_small=None):
+        """
+        Creates a new ``ActivityAssets`` instance from the given parameters.
+        
+        Parameters
+        ----------
+        image_large : `None` or `str`, Optional (Keyword only)
+            The id of the activity's large asset to display. Defaults to `None`.
+        image_small : `None` or `str`, Optional (Keyword only)
+            The id of the activity's small asset to display. Defaults to `None`.
+        text_large : `None` or `str`, Optional (Keyword only)
+            The hover text of the large asset. Defaults to `None`.
+        text_small : `None` or `str`, Optional (Keyword only)
+            The hover text of the small asset. Defaults to `None`.
+        
+        Raises
+        ------
+        AssertionError
+            - If `image_large` is neither `None` nor `str`.
+            - If `image_small` is neither `None` nor `str`.
+            - If `text_large` is neither `None` nor `str`.
+            - If `text_small` is neither `None` nor `str`.
+        """
+        if (image_large is not None):
+            if __debug__:
+                if (not isinstance(image_large, str)):
+                    raise AssertionError(f'`image_large` can be either `None` or `str`, got '
+                        f'{image_large.__class__.__name__}.')
+            
+            if (not image_large):
+                image_large = None
+            
+            
+        if (image_small is not None):
+            if __debug__:
+                if (not isinstance(image_small, str)):
+                    raise AssertionError(f'`image_small` can be either `None` or `str`, got '
+                        f'{image_small.__class__.__name__}.')
+            
+            if (not image_small):
+                image_small = None
+            
+        
+        if (text_large is not None):
+            if __debug__:
+                if (not isinstance(text_large, str)):
+                    raise AssertionError(f'`text_large` can be either `None` or `str`, got '
+                        f'{text_large.__class__.__name__}.')
+            
+            if (not text_large):
+                text_large = None
+        
+        if (text_small is not None):
+            if __debug__:
+                if (not isinstance(text_small, str)):
+                    raise AssertionError(f'`image_large` can be either `None` or `str`, got '
+                        f'{text_small.__class__.__name__}.')
+            
+            if (not text_small):
+                text_small = None
+        
+        self = object.__new__(cls)
+        self.image_large = image_large
+        self.image_small = image_small
+        self.text_large = text_large
+        self.text_small = text_small
+        return self
+    
+    @classmethod
+    def from_data(cls, assets_data):
         """
         Creates a new activity asset object from the given data.
         
@@ -139,11 +251,12 @@ class ActivityAssets:
         assets_data : `dict` of (`str`, `Any`) items
             Activity asset data.
         """
+        self = object.__new__(cls)
         self.image_large = assets_data.get('large_image', None)
         self.image_small = assets_data.get('small_image', None)
         self.text_large = assets_data.get('large_text', None)
         self.text_small = assets_data.get('small_text', None)
-    
+        return self
     
     def __repr__(self):
         """Returns the activity asset's representation."""
@@ -253,7 +366,59 @@ class ActivityParty:
         The party's actual size, which in the player is. Defaults to `0`.
     """
     __slots__ = ('id', 'size', 'max',)
-    def __init__(self, party_data):
+    
+    def __new__(cls, *, id_=None, size=0, max_=0):
+        """
+        Creates a new activity party instance form the given parameters.
+        
+        Parameters
+        ----------
+        id_ : `None` or `str`, Optional (Keyword only)
+            The party's id, which in the player is. Defaults to `None`.
+        size : `int`, Optional (Keyword only)
+            The party's maximal size, which in the player is. Defaults to `0`.
+        max_ : `int`, Optional (Keyword only)
+            The party's actual size, which in the player is. Defaults to `0`.
+        
+        Raises
+        ------
+        AssertionError
+            - If `id_` is neither `None` nor `str` instance.
+            - if `size` is not `int` instance.
+            - If `max_` is not `int` instance.
+            - If `size` is negative`.
+            - If `max_` is negative.
+        """
+        if (id_ is not None):
+            if __debug__:
+                if (not isinstance(id_, int)):
+                    raise AssertionError(f'`id_` can be either `None` or `str`, got {id_.__class__.__name__}.')
+            
+            if (not id_):
+                id_ = None
+        
+        if __debug__:
+            if (not isinstance(size, int)):
+                raise AssertionError(f'`size` can be `int` instance, got {size.__class__.__name__}.')
+            
+            if (not isinstance(max_, int)):
+                raise AssertionError(f'`max_` can be `int` instance, got {max_.__class__.__name__}.')
+            
+            if (size < 0):
+                raise AssertionError(f'`size` cannot be negative, got {size!r}.')
+            
+            if (max_ < 0):
+                raise AssertionError(f'`max_` cannot be negative, got {max_!r}.')
+        
+        self = object.__new__(cls)
+        self.id = id_
+        self.size = size
+        self.max = max_
+        return self
+    
+    
+    @classmethod
+    def from_data(cls, party_data):
         """
         Creates a new activity party object from the given data.
         
@@ -262,6 +427,8 @@ class ActivityParty:
         party_data : `dict` of (`str`, `Any`) items
             Activity party data.
         """
+        
+        self = object.__new__(cls)
         self.id = party_data.get('id', None)
         
         try:
@@ -272,6 +439,7 @@ class ActivityParty:
         
         self.size = size
         self.max = max_
+        return self
     
     def __repr__(self):
         """Returns the activity party's representation."""
@@ -281,7 +449,7 @@ class ActivityParty:
         ]
         
         id_ = self.id
-        if (id is not None):
+        if (id_ is not None):
             repr_parts.append(' id_=')
             repr_parts.append(repr(id_))
             field_added = True
@@ -354,7 +522,54 @@ class ActivitySecrets:
         Unique hash for chat invites and ask to join. Defaults to `None`.
     """
     __slots__ = ('join', 'match', 'spectate', )
-    def __init__(self, secrets_data):
+    
+    def __new__(cls, *, join=None, match=None, spectate=None):
+        """
+        Creates a new activity secret from teh given parameters.
+        
+        Parameters
+        ----------
+        join : `None` or `str`, Optional (Keyword only)
+            Unique hash given for the match context. Defaults to `None`.
+        match : `None` or `str`, Optional (Keyword only)
+            Unique hash for spectate button. Defaults to `None`.
+        spectate : `None` or `str`, Optional (Keyword only)
+            Unique hash for chat invites and ask to join. Defaults to `None`.
+        """
+        if (join is not None):
+            if __debug__:
+                if (not isinstance(join, str)):
+                    raise AssertionError(f'`join` can be either `None` or `str`, got {join.__class__.__name__}.')
+            
+            if (not join):
+                join = None
+            
+            
+        if (match is not None):
+            if __debug__:
+                if (not isinstance(match, str)):
+                    raise AssertionError(f'`match` can be either `None` or `str`, got {match.__class__.__name__}.')
+            
+            if (not match):
+                match = None
+            
+        
+        if (spectate is not None):
+            if __debug__:
+                if (not isinstance(spectate, str)):
+                    raise AssertionError(f'`spectate` can be either `None` or `str`, got {spectate.__class__.__name__}.')
+            
+            if (not spectate):
+                spectate = None
+        
+        self = object.__new__(cls)
+        self.join = join
+        self.match = match
+        self.spectate = spectate
+        return self
+    
+    @classmethod
+    def from_data(cls, secrets_data):
         """
         Creates a new activity secret object from the given data.
         
@@ -363,9 +578,11 @@ class ActivitySecrets:
         secrets_data : `dict` of (`str`, `Any`) items
             Activity secret data.
         """
+        self = object.__new__(cls)
         self.join = secrets_data.get('join', None)
         self.spectate = secrets_data.get('spectate', None)
         self.match = secrets_data.get('match', None)
+        return self
     
     def __repr__(self):
         """Returns the activity secret's representation."""

@@ -30,8 +30,11 @@ HATA_API_ENDPOINT : `None`, `str` = `None`
 HATA_CDN_ENDPOINT : `None`, `str` = `None`
     The cdn (content delivery network) endpoint to use instead of the Discord's default.
 
-HATA_DIS_ENDPOINT : `None`, `str` = `None`
+HATA_DISCORD_ENDPOINT : `None`, `str` = `None`
     The endpoint of Discord, to use instead of it's own.
+
+HATA_STATUS_ENDPOINT : `None`, `str` = `None`
+    Discord status endpoint.
 
 HATA_API_VERSION : `int` = `8`
     The Discord api version used by hata. The accepted values are `6`, `7`, `8` and `9`.
@@ -42,7 +45,9 @@ HATA_API_VERSION : `int` = `8`
 HATA_DOCS_ENABLED : `bool` = `True`
     Whether hata should be loaded with docstrings.
     
-    If python is run with `-OO`, then this always defaults to `False`.I
+    > Experimental, not the full wrappers supports it yet.
+    
+    If python is run with `-OO`, then this always defaults to `False`.
 """
 import os, warnings
 
@@ -154,7 +159,8 @@ ALLOW_DEAD_EVENTS = get_bool_env('HATA_ALLOW_DEAD_EVENTS', False)
 
 CUSTOM_API_ENDPOINT = get_str_env('HATA_API_ENDPOINT')
 CUSTOM_CDN_ENDPOINT = get_str_env('HATA_CDN_ENDPOINT')
-CUSTOM_DIS_ENDPOINT = get_str_env('HATA_DIS_ENDPOINT')
+CUSTOM_DISCORD_ENDPOINT = get_str_env('HATA_DISCORD_ENDPOINT')
+CUSTOM_STATUS_ENDPOINT = get_str_env('HATA_STATUS_ENDPOINT')
 
 API_VERSION = get_int_env('HATA_API_VERSION', 9)
 

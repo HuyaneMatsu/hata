@@ -1,10 +1,11 @@
-__all__ = ('API_ENDPOINT', 'CDN_ENDPOINT', 'DIS_ENDPOINT', 'INVITE_URL_RP', 'MESSAGE_JUMP_URL_RP',
-    'VALID_ICON_FORMATS', 'VALID_ICON_FORMATS_EXTENDED', 'VALID_ICON_MEDIA_TYPES', 'VALID_ICON_MEDIA_TYPES_EXTENDED',
-    'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url')
+__all__ = ('API_ENDPOINT', 'CDN_ENDPOINT', 'DISCORD_ENDPOINT', 'INVITE_URL_RP', 'MESSAGE_JUMP_URL_RP',
+    'STATUS_ENDPOINT', 'VALID_ICON_FORMATS', 'VALID_ICON_FORMATS_EXTENDED', 'VALID_ICON_MEDIA_TYPES',
+    'VALID_ICON_MEDIA_TYPES_EXTENDED', 'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url')
 
 import re
 
-from ...env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
+from ...env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, \
+    API_VERSION
 
 from ...backend.export import export, include
 
@@ -15,9 +16,10 @@ StickerFormat = include('StickerFormat')
 
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
 CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
-DIS_ENDPOINT = 'https://discord.com' if (CUSTOM_DIS_ENDPOINT is None) else CUSTOM_DIS_ENDPOINT
+DISCORD_ENDPOINT = 'https://discord.com' if (CUSTOM_DISCORD_ENDPOINT is None) else CUSTOM_DISCORD_ENDPOINT
+STATUS_ENDPOINT = 'https://status.discord.com/api/v2' if (CUSTOM_STATUS_ENDPOINT is None) else CUSTOM_STATUS_ENDPOINT
 
-del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DIS_ENDPOINT, API_VERSION
+del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, API_VERSION
 
 VALID_ICON_SIZES = frozenset((
     *( 1<<x    for x in range(4, 13)),
@@ -62,7 +64,7 @@ def message_jump_url(message):
     else:
         guild_id = '@me'
     
-    return f'{DIS_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
+    return f'{DISCORD_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
 
 CDN_RP = re.compile(
     'https://(?:'

@@ -160,14 +160,9 @@ class ActivityRich(ActivityBase):
         start : `None` or `datetime`
         """
         timestamps = self.timestamps
-        if timestamps is None:
-            return None
-        
-        start = timestamps.start
-        if start == 0:
-            return None
-        
-        return datetime.utcfromtimestamp(start/1000.)
+        if (timestamps is not None):
+            return timestamps.start
+    
     
     @property
     def end(self):
@@ -179,14 +174,9 @@ class ActivityRich(ActivityBase):
         start : `None` or `datetime`
         """
         timestamps = self.timestamps
-        if timestamps is None:
-            return None
-        
-        end = timestamps.end
-        if end == 0:
-            return None
-        
-        return datetime.utcfromtimestamp(end/1000.)
+        if (timestamps is not None):
+            return timestamps.end
+    
     
     image_large_url = property(module_urls.activity_asset_image_large_url)
     image_large_url_as = module_urls.activity_asset_image_large_url_as
@@ -242,7 +232,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             assets = None
         else:
-            assets = ActivityAssets(assets_data)
+            assets = ActivityAssets.from_data(assets_data)
         self.assets = assets
         
         self.created = activity_data.get('created_at', 0)
@@ -258,7 +248,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             party = None
         else:
-            party = ActivityParty(party_data)
+            party = ActivityParty.from_data(party_data)
         self.party = party
         
         try:
@@ -266,7 +256,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             secrets = None
         else:
-            secrets = ActivitySecrets(secrets_data)
+            secrets = ActivitySecrets.from_data(secrets_data)
         self.secrets = secrets
         
         self.session_id = activity_data.get('session_id', None)
@@ -280,7 +270,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             timestamps = None
         else:
-            timestamps = ActivityTimestamps(timestamps_data)
+            timestamps = ActivityTimestamps.from_data(timestamps_data)
         self.timestamps = timestamps
         
         self.url = activity_data.get('url', None)
@@ -350,7 +340,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             assets = None
         else:
-            assets = ActivityAssets(assets_data)
+            assets = ActivityAssets.from_data(assets_data)
         
         if self.assets != assets:
             old_attributes['assets'] = self.assets
@@ -381,7 +371,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             party = None
         else:
-            party = ActivityParty(party_data)
+            party = ActivityParty.from_data(party_data)
         
         if self.party != party:
             old_attributes['party'] = self.party
@@ -392,7 +382,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             secrets = None
         else:
-            secrets = ActivitySecrets(secrets_data)
+            secrets = ActivitySecrets.from_data(secrets_data)
         
         if self.secrets != secrets:
             old_attributes['secrets'] = self.secrets
@@ -418,7 +408,7 @@ class ActivityRich(ActivityBase):
         except KeyError:
             timestamps = None
         else:
-            timestamps = ActivityTimestamps(timestamps_data)
+            timestamps = ActivityTimestamps.from_data(timestamps_data)
         
         if self.timestamps != timestamps:
             old_attributes['timestamps'] = self.timestamps

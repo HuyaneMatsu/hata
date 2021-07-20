@@ -14,7 +14,7 @@ from ...env import API_VERSION
 
 from ..exceptions import DiscordException
 from ..core import KOKORO
-from .urls import API_ENDPOINT, DIS_ENDPOINT
+from .urls import API_ENDPOINT, DISCORD_ENDPOINT, STATUS_ENDPOINT
 
 from .headers import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION, DEBUG_OPTIONS
 from .rate_limit import RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
@@ -316,7 +316,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/@me/nick',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def client_guild_profile_edit(self, guild_id, data, reason):
@@ -325,7 +325,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/@me',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def client_user_get(self):
@@ -365,7 +365,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/users/@me/guilds',
-            params=data,
+            params = data,
         )
     
     async def channel_private_get_all(self):
@@ -413,7 +413,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.oauth2_token, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
-            f'{DIS_ENDPOINT}/api/oauth2/token',
+            f'{DISCORD_ENDPOINT}/api/oauth2/token',
             data,
             headers=headers,
         )
@@ -509,7 +509,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/channels',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def channel_edit(self, channel_id, data, reason):
@@ -518,7 +518,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/channels/{channel_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def channel_create(self, guild_id, data, reason):
@@ -527,7 +527,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/channels',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def channel_delete(self, channel_id, reason):
@@ -535,7 +535,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_delete, channel_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/channels/{channel_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def channel_follow(self, channel_id, data):
@@ -552,7 +552,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PUT,
             f'{API_ENDPOINT}/channels/{channel_id}/permissions/{overwrite_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def permission_overwrite_delete(self, channel_id, overwrite_id, reason):
@@ -560,7 +560,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.permission_overwrite_delete, channel_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/channels/{channel_id}/permissions/{overwrite_id}',
-            reason=reason,
+            reason = reason,
         )
     
     # messages
@@ -586,7 +586,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.message_get_chunk, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/messages',
-            params=data,
+            params = data,
         )
     
     async def message_create(self, channel_id, data):
@@ -602,7 +602,7 @@ class DiscordHTTPClient(HTTPClient):
             StackedStaticRateLimitHandler(RATE_LIMIT_GROUPS.static_message_delete, channel_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',
-            reason=reason,
+            reason = reason,
         )
     
     # after 2 week else & not own
@@ -611,7 +611,7 @@ class DiscordHTTPClient(HTTPClient):
             StackedStaticRateLimitHandler(RATE_LIMIT_GROUPS.static_message_delete_b2wo, channel_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def message_delete_multiple(self, channel_id, data, reason):
@@ -620,7 +620,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/bulk-delete',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def message_edit(self, channel_id, message_id, data):
@@ -726,7 +726,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.reaction_user_get_chunk, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/reactions/{reaction}',
-            params=data,
+            params = data,
         )
     
     # guild
@@ -750,7 +750,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def guild_ban_add(self, guild_id, user_id, data, reason):
@@ -759,7 +759,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PUT,
             f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def guild_ban_delete(self, guild_id, user_id, reason):
@@ -767,7 +767,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/bans/{user_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def user_guild_profile_edit(self, guild_id, user_id, data, reason):
@@ -776,7 +776,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def guild_discovery_get(self, guild_id):
@@ -843,8 +843,8 @@ class DiscordHTTPClient(HTTPClient):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_prune, guild_id),
             METHOD_POST,
-            f'{API_ENDPOINT}/guilds/{guild_id}/prune', params=data,
-            reason=reason,
+            f'{API_ENDPOINT}/guilds/{guild_id}/prune', params = data,
+            reason = reason,
         )
     
     async def guild_prune_estimate(self, guild_id, data):
@@ -852,7 +852,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_prune_estimate, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/prune',
-            params=data,
+            params = data,
         )
     
     async def guild_edit(self, guild_id, data, reason):
@@ -861,7 +861,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def guild_ban_get_all(self, guild_id):
@@ -891,7 +891,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/vanity-url',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def audit_log_get_chunk(self, guild_id, data):
@@ -899,7 +899,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.audit_log_get_chunk, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/audit-logs',
-            params=data,
+            params = data,
         )
     
     async def user_role_add(self, guild_id, user_id, role_id, reason):
@@ -907,7 +907,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_role_add, guild_id),
             METHOD_PUT,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def user_role_delete(self, guild_id, user_id, role_id, reason):
@@ -915,7 +915,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_role_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/{user_id}/roles/{role_id}',
-            reason=reason
+            reason = reason,
         )
     
     async def user_move(self, guild_id, user_id, data):
@@ -931,7 +931,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.integration_get_all, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/integrations',
-            params=data,
+            params = data,
         )
     
     async def integration_create(self, guild_id, data):
@@ -984,7 +984,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_widget_get, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/widget.json',
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     async def guild_user_get_chunk(self, guild_id, data):
@@ -992,7 +992,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_get_chunk, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/members',
-            params=data,
+            params = data,
         )
     
     async def guild_voice_region_get_all(self, guild_id):
@@ -1077,7 +1077,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.invite_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/invites/{invite_code}',
-            params=data,
+            params = data,
         )
     
     async def invite_get_all_guild(self, guild_id):
@@ -1099,7 +1099,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.invite_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/invites/{invite_code}',
-            reason=reason,
+            reason = reason,
         )
     
     
@@ -1111,7 +1111,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/roles/{role_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def role_delete(self, guild_id, role_id, reason):
@@ -1119,7 +1119,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.role_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/roles/{role_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def role_create(self, guild_id, data, reason):
@@ -1128,7 +1128,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/roles',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def role_move(self, guild_id, data, reason):
@@ -1137,7 +1137,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/roles',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     # emoji
@@ -1162,7 +1162,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def emoji_create(self, guild_id, data, reason):
@@ -1171,7 +1171,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def emoji_delete(self, guild_id, emoji_id, reason):
@@ -1179,7 +1179,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.emoji_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/emojis/{emoji_id}',
-            reason=reason,
+            reason = reason,
         )
     
     # relations
@@ -1243,7 +1243,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_token, webhook_id),
             METHOD_GET,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     async def webhook_delete_token(self, webhook_id, webhook_token):
@@ -1251,7 +1251,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_delete_token, webhook_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     async def webhook_delete(self, webhook_id):
@@ -1267,7 +1267,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
             data,
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     async def webhook_edit(self, webhook_id, data):
@@ -1282,7 +1282,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_create, webhook_id),
             METHOD_POST,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            data, headers=imultidict(),
+            data, headers = imultidict(),
             params=query_parameters,
         )
     
@@ -1292,7 +1292,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
             data,
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     async def webhook_message_delete(self, webhook_id, webhook_token, message_id):
@@ -1300,7 +1300,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     async def webhook_message_get(self, webhook_id, webhook_token, message_id):
@@ -1308,7 +1308,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_get, webhook_id),
             METHOD_GET,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
-            headers=imultidict(),
+            headers = imultidict(),
         )
     
     # user
@@ -1332,7 +1332,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_user_search, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/members/search',
-            params=data,
+            params = data,
         )
     
     # hooman only
@@ -1451,7 +1451,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.discovery_validate_term, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/discovery/valid-term',
-            params=data,
+            params = data,
         )
     
     async def discovery_stage_get_all(self):
@@ -1589,7 +1589,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_active, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/active',
-            params=data,
+            params = data,
         )
     
     async def thread_get_chunk_archived_private(self, channel_id):
@@ -1820,7 +1820,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers',
             data,
-            reason=reason,
+            reason = reason,
         )
     
     async def sticker_guild_delete(self, guild_id, sticker_id, reason):
@@ -1828,7 +1828,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.sticker_guild_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers/{sticker_id}',
-            reason=reason,
+            reason = reason,
         )
     
     async def sticker_get(self, sticker_id):
@@ -1844,5 +1844,32 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers/{sticker_id}',
             data,
-            reason=reason,
+            reason = reason,
         )
+    
+    # status
+    
+    async def status_incident_unresolved(self):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.status_incident_unresolved, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{STATUS_ENDPOINT}/incidents/unresolved.json',
+            headers = imultidict(),
+        )
+    
+    async def status_maintenance_active(self):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.status_maintenance_active, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{STATUS_ENDPOINT}/scheduled-maintenances/active.json',
+            headers = imultidict(),
+        )
+    
+    async def status_maintenance_upcoming(self):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.status_maintenance_upcoming, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{STATUS_ENDPOINT}/scheduled-maintenances/upcoming.json',
+            headers = imultidict(),
+        )
+    

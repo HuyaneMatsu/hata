@@ -122,7 +122,7 @@ class MessageHistoryCollector:
             repr_parts.append(' cancelled')
         else:
             repr_parts.append(' scheduled: ')
-            timestamp = datetime.fromtimestamp(current_time()+handle.when+self.delay-LOOP_TIME())
+            timestamp = datetime.utcfromtimestamp(current_time()+handle.when+self.delay-LOOP_TIME())
             repr_parts.append(timestamp.__format__(DATETIME_FORMAT_CODE))
         
         repr_parts.append('>')

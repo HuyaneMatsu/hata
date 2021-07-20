@@ -50,6 +50,20 @@ Content Delivery Network Endpoint
 - Limit : `N/A`
 - Resets after : `N/A`
 
+
+Status Endpoints
+----------------
+- Endpoint base: `https://status.discord.com/api/v2`
+- endpoints:
+    - `/incidents/unresolved.json`
+    - `/scheduled-maintenances/active.json`
+    - `/scheduled-maintenances/upcoming.json`
+- Method : `GET`
+- Required auth : `N/A`
+- Limiter : `UNLIMITED`
+- Limit : `N/A`
+- Resets after : `N/A`
+
 Shared Groups
 -------------
 - GROUP_REACTION_MODIFY
@@ -1921,3 +1935,9 @@ webhook_message_delete = GROUP_WEBHOOK_EXECUTE
 STATIC_MESSAGE_DELETE_SUB = StaticRateLimitGroup(5, 5.0, LIMITER_CHANNEL)
 static_message_delete = (STATIC_MESSAGE_DELETE_SUB, StaticRateLimitGroup(3, 1.0, LIMITER_CHANNEL))
 static_message_delete_b2wo = (STATIC_MESSAGE_DELETE_SUB, StaticRateLimitGroup(30, 120.0, LIMITER_CHANNEL))
+
+
+# Status
+status_incident_unresolved = RateLimitGroup.unlimited()
+status_maintenance_active = RateLimitGroup.unlimited()
+status_maintenance_upcoming = RateLimitGroup.unlimited()

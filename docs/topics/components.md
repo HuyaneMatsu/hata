@@ -25,8 +25,7 @@ Components can be passed to `InteractionResponse` and to many client methods as 
 - `.interaction_followup_message_edit`
 - `.interaction_component_message_edit`
 
-Three component types are supported: `Row`, `Button` and `Select`. However select is not yet released (not really
-useful either), so we will ignore it for now.
+Three component types are supported: `Row`, `Button` and `Select`.
 
 `components` parameters can be passed either as the component itself, list of components, or as a nested list of
 components. Some examples might clarify it more.
@@ -76,10 +75,13 @@ components = [
 
 ## Limitations
 
-- Row limit is `5`.
+- A message can have up to `5` rows.
+- `custom_id` can be `100` character long.
+
+###### Button limitations
+
 - Up to `5` buttons can be in a row.
 - Component `label` can be `80` characters long.
-- `custom_id` can be `100` character long.
 
 ###### Select limitations
 
@@ -430,4 +432,202 @@ async def pick(client, event):
     
     yield InteractionResponse(content, allowed_mentions=most_liked, components=None, message=message,
         event=component_interaction)
+```
+
+## Using select
+
+Selects are not as useful as buttons in practice, since lacking form functionality means, they are just a dynamic
+slash command choice parameter.
+
+```py
+from import Embed
+from hata.ext.slash import Select, Option, InteractionResponse
+
+
+WAIFU_API_BASE_URL = 'https://api.waifu.pics'
+
+WAIFU_API_HEADERS = {
+    'Content-Type': 'application/json',
+}
+WAIFU_API_REQUEST_DATA = b'{}'
+
+
+WAIFU_CUSTOM_ID = 'waifu_api'
+
+WAIFU_TYPES = [
+    'waifu',
+    'neko',
+    'shinobu',
+    'megumin',
+]
+
+# We will cache responses
+WAIFU_CACHE_BY_KEY = {waifu_type: [] for waifu_type in WAIFU_TYPES}
+
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def waifu():
+    """Ships waifus!"""
+    embed = Embed('Please select a waifu type to ship.')
+    select = Select(
+        [Option(waifu_type, waifu_type) for waifu_type in WAIFU_TYPES],
+        custom_id = WAIFU_CUSTOM_ID,
+    )
+    
+    return InteractionResponse(embed=embed, components=select)
+
+
+@Nitori.interactions(custom_id=WAIFU_CUSTOM_ID)
+async def handle_waifu_select(client, event):
+    # We filter out 3rd party users based on original and current invoking user.
+    if event.message.interaction.user is not event.user:
+        return
+    
+    # Second we filter out incorrect selected values.
+    # You can change the command over time and the can return bad option as well.
+    selected_waifu_types = event.interaction.options
+    if (selected_waifu_types is None):
+        return
+    
+    selected_waifu_type = selected_waifu_types[0]
+    if (selected_waifu_type not in WAIFU_TYPES):
+        return
+    
+    # Try to get url from cache
+    cache = WAIFU_CACHE_BY_KEY[selected_waifu_type]
+    if cache:
+        url = cache.pop()
+    else:
+        # We could not get url from cache
+        
+        # Do 1 yield to acknowledge the event.
+        yield
+        
+        # We could use a Lock to avoid parallel requests, but that would expose us to other edge cases.
+        async with client.http.post(
+            f'{WAIFU_API_BASE_URL}/many/sfw/{selected_waifu_type}',
+            headers = WAIFU_API_HEADERS,
+            data = WAIFU_API_REQUEST_DATA,
+        ) as response:
+            
+            if response.status == 200:
+                data = await response.json()
+            else:
+                data = None
+        
+        url = None
+        
+        if (data is not None):
+            try:
+                files = data['files']
+            except KeyError:
+                pass
+            else:
+                cache.extend(files)
+                
+                if cache:
+                    url = cache.pop()
+    
+    # Url defaults to `None`, so passing it to `url` field is fine.
+    embed = Embed('Please select a waifu type to ship.', url=url)
+    
+    if url is None:
+        embed.description = (
+            f'*Could not find any free {selected_waifu_type} now.\n'
+            f'Please try again later.*'
+        )
+    else:
+        embed.add_image(url)
+    
+    # We re-build the select again with one difference, we mark the used one as default.
+    select = Select(
+        [Option(waifu_type, waifu_type, default=(waifu_type == selected_waifu_type)) for waifu_type in WAIFU_TYPES],
+        custom_id = WAIFU_CUSTOM_ID,
+    )
+    
+    yield InteractionResponse(embed=embed, components=select)
+```
+
+And advantage of select over generic choices might be, that you cna allow the user to select non, or multiple options.
+
+```py
+import functools
+from hata import BUILTIN_EMOJIS
+from hata.ext.slash import InteractionResponse, Select, Option, wait_for_component_interaction
+
+EMOJI_ELEPHANT = BUILTIN_EMOJIS['elephant']
+LABEL_ELEPHANT = 'elephant'
+DESCRIPTION_ELEPHANT = (
+    f'Visiting big elephants.\n'
+    f'{EMOJI_ELEPHANT:e} sugoi {EMOJI_ELEPHANT:e}'
+)
+
+EMOJI_LION = BUILTIN_EMOJIS['lion']
+LABEL_LION = 'lion'
+DESCRIPTION_LION = (
+    f'Peeking at scary lions.\n'
+    f'(I love cats {EMOJI_LION:e})'
+)
+
+EMOJI_ZEBRA = BUILTIN_EMOJIS['zebra']
+LABEL_ZEBRA = 'zebra'
+DESCRIPTION_ZEBRA = (
+    f'Watching prison horses be like.\n'
+    f'{EMOJI_ZEBRA:e} are cute!'
+)
+
+
+ANIMAL_IDENTIFIER_TO_DESCRIPTION = {
+    LABEL_ELEPHANT: DESCRIPTION_ELEPHANT,
+    LABEL_LION: DESCRIPTION_LION,
+    LABEL_ZEBRA: DESCRIPTION_ZEBRA,
+}
+
+ZOO_SELECT = Select(
+    [
+        Option(LABEL_ELEPHANT, LABEL_ELEPHANT, emoji=EMOJI_ELEPHANT),
+        Option(LABEL_LION, LABEL_LION, emoji=EMOJI_LION),
+        Option(LABEL_ZEBRA, LABEL_ZEBRA, emoji=EMOJI_ZEBRA),
+        
+    ],
+    placeholder = 'Select animals!',
+    min_values = 0,
+    max_values = 3,
+)
+
+def check_is_user_same(user, event):
+    return (user is event.user)
+
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def zoo(event):
+    """Visiting zoo!"""
+    
+    message = yield InteractionResponse('Please select animals to visit!', components=ZOO_SELECT)
+
+    try:
+        component_interaction = await wait_for_component_interaction(message, timeout=300.0,
+            check=functools.partial(check_is_user_same, event.user))
+    
+    except TimeoutError:
+        content = 'You didn\'t decide which animals to visit and the zoo closed, see ya tomorrow!'
+        component_interaction = None
+    else:
+        selected_animals = component_interaction.interaction.values
+        if selected_animals is None:
+            content = 'Going to zoo only to buy icecream?'
+        else:
+            content_parts = ['Visiting animals in the zoo!']
+            
+            for selected_animal in selected_animals:
+                try:
+                    description = ANIMAL_IDENTIFIER_TO_DESCRIPTION[selected_animal]
+                except KeyError:
+                    continue
+                
+                content_parts.append(description)
+            
+            content = '\n\n'.join(content_parts)
+    
+    yield InteractionResponse(content, components=None, message=message, event=component_interaction)
 ```

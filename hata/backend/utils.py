@@ -2,7 +2,7 @@
     'WeakKeyDictionary', 'WeakMap', 'WeakReferer', 'WeakValueDictionary', 'alchemy_incendiary', 'any_to_any',
     'cached_property', 'class_property', 'from_json', 'has_docs', 'imultidict', 'is_weakreferable', 'istr',
     'list_difference', 'methodize', 'module_property', 'modulize', 'multidict', 'name_property', 'to_json',
-    'weakmethod',)
+    'un_map_pack', 'weakmethod',)
 
 from functools import partial as partial_func
 from types import MethodType, FunctionType, MappingProxyType, GetSetDescriptorType, ModuleType

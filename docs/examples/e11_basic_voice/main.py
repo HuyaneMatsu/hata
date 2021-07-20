@@ -1,8 +1,7 @@
-# This example shows basic interaction with a voice channels. We can join `VoiceClient`-s to them and play or capture
-# audio.
+# This example shows basic interaction with voice channels.
+# We can join `VoiceClient`-s to them and play or capture audio.
 #
-# Using `commands_v2` extension, since it provides easy api to access a user's voice state or the local
-# voice client.
+# We're using `commands_v2` extension since it provides an easy API to access user voice state or the local voice client
 #
 # The example will showcase the following actions:
 # => Connecting to voice channel.
@@ -20,6 +19,7 @@ Sakuya = Client(TOKEN,
     prefix = '!',
 )
 
+
 @Sakuya.events
 async def ready(client):
     print(f'{client:f} is connected!')
@@ -29,7 +29,7 @@ async def ready(client):
 @checks.guild_only()
 async def join(ctx):
     """Joins to voice channel."""
-    # Getting the author's voice state
+    # Getting the author voice state
     voice_state = ctx.voice_state
     if voice_state is None:
         return 'You are not at a voice channel!'
@@ -42,7 +42,7 @@ async def join(ctx):
         return 'Timed out meanwhile tried to connect.'
     
     except RuntimeError:
-        # Not every library is installed.
+        # Not every required library is installed.
         return 'The client cannot play voice, some libraries are not loaded.'
     
     # Great success.
@@ -70,8 +70,8 @@ async def yt(ctx, url=None):
         # Raised by `youtube_dl` if downloading failed.
         return 'Error meanwhile downloading'
     
-    # Appending a voice client's queue either returns `True`, if the audio just started to play, or `False`, if the
-    # voice client has anything on it's queue.
+    # Appending to the voice clients queue either returns `True` (if the audio just started to play) or `False` (if the
+    # voice client has anything in its queue).
     if voice_client.append(source):
         content = 'Now playing'
     else:

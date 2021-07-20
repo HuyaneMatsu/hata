@@ -5,7 +5,7 @@ from hata.ext.commands_v2.helps.subterranean import SubterraneanHelpCommand
 
 TOKEN = ''
 
-# To setup an extension on the client, just pass it's name to the `Client` constructor.
+# To setup an extension for the client, just pass its name to the `Client` constructor.
 #
 # Each extension has required and optional parameters. Do not forget to pass sufficient parameters for your needs.
 Sakuya = Client(TOKEN,
@@ -19,23 +19,27 @@ async def ready(client):
     print(f'{client:f} is connected!')
 
 
-
-# If the client is using the commands extension, you can use register commands to it by using the `.commands`
-# decorator.
+# If the client is using the commands extension, you can register commands to it by using the `.commands` decorator.
 @Sakuya.commands
 async def about():
     """About me."""
     return 'This is a small test-bot! : )'
 
+# The above about command will be triggered when someone sends '!about' in the chat (prefix ! is because we used that
+# when we constructed the client above).
 
-# Command context parameter is passed to the command if required.
+
+# Command context will be passed to the command if you:
+# - annotated one of the arguments (either positional or keyword) as context
+# - defined one of the arguments (either positional or keyword) with the name: 'ctx', 'context' or 'command_context'
+# To get more information read commands topic
 @Sakuya.commands
 async def latency(ctx):
     """Returns my gateway latency."""
     return f'{ctx.client.gateway.latency*1000.:.0f} ms'
 
 
-# If the last parameter is positional and not annotated, the message's unused content will be passed as it.
+# If the last parameter is positional and not annotated, the messages unused content will be passed to it.
 @Sakuya.commands
 async def say(ctx, content):
     """Repeats what the user passes as parameter. Ensures that users and roles are not pinged."""
@@ -45,7 +49,7 @@ async def say(ctx, content):
 # The command processor can be accessed with the `.command_processor` instance attribute
 #
 # Error handlers to all the commands can be registered with the `.command_processor.error` decorator.
-# If an error handler returns return `True`, no other error handlers wont be called.
+# If an error handler returns `True` no other error handlers will be called.
 @Sakuya.command_processor.error
 async def handle_owner_only_error(ctx, exception):
     if isinstance(exception, CommandCheckError) and (type(exception.check) is checks.CheckIsOwner):
@@ -55,20 +59,25 @@ async def handle_owner_only_error(ctx, exception):
     return False
 
 
-# Annotated parameters are parsed if there is a converter for the type. The most common entities and generic types
-# have converters added.
+# Annotated parameters are parsed if there is a converter for the type.
 #
 # You can send response message by returning or yielding any value from a command.
 @Sakuya.commands
 async def about_role(role: 'Role'):
-    """Returns the role's identifier."""
+    """Sends the passed role's id to the context channel."""
     return role.id
+    # Here you could have also used 'yield role.id' or manually sending the message using .send method
+
+
+@Sakuya.commands
+async def about_channel(channel: 'Channel'):
+    """Sends the passed channel's id to the context channel."""
+    yield channel.id
 
 
 # Command specific error handlers can be defined by `command.error` decorator.
-#
-# Same rules apply for command specific error handlers as for
 @about_role.error
+@about_channel.error
 async def about_role_error_handler(ctx, exception):
     if isinstance(exception, CommandParameterParsingError):
         await ctx.send(f'{exception.content_parser_parameter.name!r} parameter is required.')
@@ -77,7 +86,8 @@ async def about_role_error_handler(ctx, exception):
     return False
 
 
-# Let us also use `*` instead of `multiply`.
+# We can set specific command name aside from the default function name (we can also pass list/tuples for aliases).
+# Here this function will be called with '!* int int'
 @Sakuya.commands(aliases='*')
 async def multiply(first:int, second:int):
     """Multiplies the two numbers."""
@@ -93,8 +103,8 @@ async def ping():
 
 
 # You can get unicode (builtin) emojis by name by using the `BUILTIN_EMOJIS` dictionary.
-
 EMOJI_CAT = BUILTIN_EMOJIS['cat']
+
 
 # Limit the command to administrators only
 @Sakuya.commands(aliases=['kitty', 'neko'])
@@ -105,6 +115,7 @@ async def cat():
 
 
 EMOJI_BIRD = BUILTIN_EMOJIS['bird']
+
 
 @Sakuya.commands
 async def bird(animal:str=None):
@@ -118,7 +129,9 @@ async def bird(animal:str=None):
     return content
 
 
-# We could use `@checks.has_permissions(administrator=True)`, but that would not reply by default
+# Example for explicit permission check.
+# We could have used `@checks.has_permissions(administrator=True)` here but that would not reply by default
+# (would have to define error handler and reply there).
 @Sakuya.commands
 async def am_i_admin(ctx):
     """Are you admin?"""
@@ -142,14 +155,13 @@ async def slowmode(ctx, slowmode_rate:int=None):
     try:
         await ctx.client.channel_edit(ctx.channel, slowmode=slowmode_rate)
     except DiscordException as err:
-        # Raw error message helps with developing, tho the user should see an already processed one.
-        return f'Error setting channel\'s slowmode to `{slowmode_rate}` seconds:\n{err!r}'
+        return f'Error setting channel\'s slowmode to `{slowmode_rate}` seconds:\n{err}'
     
     return f'Successfully set slow mode rate to `{slowmode_rate}` seconds.'
 
 
-# A command can have sub-commands, just like in command lines tools.
-# Like: `!upper` and `!upper sub`.
+# A command can have sub-commands, just like in command-line tools.
+# Example `!upper` and `!upper sub`
 @Sakuya.commands(name='upper')
 async def upper_command():
     """This is main command."""
@@ -162,15 +174,14 @@ async def sub_command():
     return 'This is the sub-command.'
 
 
-# Hata defined a predefined help command, which might be great help at the start
+# Hata has a predefined help command, which might be a great help for the start.
 Sakuya.commands(SubterraneanHelpCommand(), 'help')
 
 
-# If command prefix and command name is found, but the command's name do not refers to any command,
-# `.command_processor.unknown_command` is called.
+# If command that doesn't exist is called `.command_processor.unknown_command` is triggered.
 #
-# Not like as generic commands, to `unknown_command` always set parameters are passed. `return`-ed and `yield`-ed
-# values are not forwarded, and if exception occurs, error handlers are not called either.
+# unknown_command is unlike generic command, it always has set parameters that are passed to it.
+# Also `return`-ed and `yield`-ed values are not forwarded, and if exception occurs error handlers are not called.
 @Sakuya.command_processor.unknown_command
 async def command_processor(client, message, command_name):
     await client.message_create(message.channel, f'Could not find command named : {command_name!r}')

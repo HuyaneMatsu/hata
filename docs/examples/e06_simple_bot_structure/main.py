@@ -9,6 +9,7 @@ Sakuya = Client(config['TOKEN'],
     prefix = '!',
 )
 
+
 @Sakuya.events
 async def ready(client):
     print(f'{client:f} is connected!')

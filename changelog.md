@@ -1,4 +1,4 @@
-## 1.1.91 *\[2021-07-??\]*
+## 1.1.91 *\[2021-07-20\]*
 
 - Add `ApplicationCommandOptionType.float`.
 - Add `ERROR_CODES.sticker_animation_duration_exceeds_5_second`.
@@ -17,6 +17,12 @@
 - Add `ActivityAssets.__new__`.
 - Add `ActivityParty.__new__`.
 - Add `ActivitySecrets.__new__`.
+- Add `DiscordHTTPClient.status_incident_unresolved`.
+- Add `DiscordHTTPClient.status_maintenance_active`.
+- Add `DiscordHTTPClient.status_maintenance_upcoming`.
+- Add `RATE_LIMIT_GROUPS.status_incident_unresolved`.
+- Add `RATE_LIMIT_GROUPS.status_maintenance_active`.
+- Add `RATE_LIMIT_GROUPS.status_maintenance_upcoming`.
 
 ##### hata.ext.slash
 - Add `float` converter.

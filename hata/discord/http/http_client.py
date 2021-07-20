@@ -227,7 +227,7 @@ class DiscordHTTPClient(HTTPClient):
             #normal request
             headers = self.headers.copy()
             
-            if type(data) in (dict, list):
+            if isinstance(data, (dict, list)):
                 headers[CONTENT_TYPE] = 'application/json'
                 data = to_json(data)
             
@@ -235,7 +235,7 @@ class DiscordHTTPClient(HTTPClient):
                 headers[AUDIT_LOG_REASON] = quote(reason, safe='\ ')
         else:
             #bearer or webhook request
-            if type(data) in (dict, list) and CONTENT_TYPE not in headers:
+            if isinstance(data, (dict, list)) and (CONTENT_TYPE not in headers):
                 headers[CONTENT_TYPE] = 'application/json'
                 data = to_json(data)
         
@@ -1872,4 +1872,3 @@ class DiscordHTTPClient(HTTPClient):
             f'{STATUS_ENDPOINT}/scheduled-maintenances/upcoming.json',
             headers = imultidict(),
         )
-    

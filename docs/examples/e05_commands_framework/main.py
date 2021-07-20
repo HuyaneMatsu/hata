@@ -64,19 +64,20 @@ async def handle_owner_only_error(ctx, exception):
 # You can send response message by returning or yielding any value from a command.
 @Sakuya.commands
 async def about_role(role: 'Role'):
-    """Sends the passed role id message to the context channel."""
+    """Sends the passed role's id to the context channel."""
     return role.id
     # Here you could have also used 'yield role.id' or manually sending the message using .send method
 
 
 @Sakuya.commands
-async def about_role_yield(role: 'Role'):
-    """Sends the passed role id message to the context channel."""
-    yield role.id
+async def about_channel(channel: 'Channel'):
+    """Sends the passed channel's id to the context channel."""
+    yield channel.id
 
 
 # Command specific error handlers can be defined by `command.error` decorator.
 @about_role.error
+@about_channel.error
 async def about_role_error_handler(ctx, exception):
     if isinstance(exception, CommandParameterParsingError):
         await ctx.send(f'{exception.content_parser_parameter.name!r} parameter is required.')

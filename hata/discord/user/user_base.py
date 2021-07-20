@@ -70,7 +70,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         try:
             discriminator = data['discriminator']
-        except KeyErorr:
+        except KeyError:
             discriminator = 0
         else:
             discriminator = int(discriminator)

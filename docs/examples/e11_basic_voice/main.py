@@ -15,8 +15,8 @@ from hata.ext.commands_v2 import checks
 TOKEN = ''
 
 Sakuya = Client(TOKEN,
-    extensions='commands_v2',
-    prefix='!',
+    extensions = 'commands_v2',
+    prefix = '!',
 )
 
 

@@ -26,6 +26,7 @@
 - Fix an `AttributeError` in `Client._delete`.
 - `ClientUserBase._update` always dropped back `banner_color` as edited.
 - `ClientUserBase._update_no_return` reset the user's guild profiles.
+- `ComponentSelect`'s `custom_id` parameter was incorrectly auto generated.
 
 ##### hata.ext.slash
 - Slash snapshot could be built badly yielding not empty difference wrongly. (bad indention)

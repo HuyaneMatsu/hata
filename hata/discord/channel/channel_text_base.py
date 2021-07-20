@@ -380,7 +380,7 @@ class ChannelTextBase:
         if (message_history_collector is None):
             self._message_history_collector = MessageHistoryCollector(self, LOOP_TIME() + delay)
         else:
-            message_history_collector.set_delay(delay)
+            message_history_collector.add_delay(delay)
     
     def _cancel_message_collection(self):
         """
@@ -604,10 +604,11 @@ class ChannelTextBase:
             
             continue
         
-        if (        (messages is not None) and
-                    (self._message_history_collector is not None) and
-                    (len(messages) < self._message_keep_limit)
-                ):
+        if (
+            (messages is not None) and
+            (self._message_history_collector is not None) and
+            (len(messages) < self._message_keep_limit)
+        ):
             self._switch_to_limited()
         
         return found, missed

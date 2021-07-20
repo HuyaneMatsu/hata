@@ -88,7 +88,7 @@ components = [
 - Up to `1` select can be in a row.
 - A select can have `25` choices.
 - A select can have choices in range `[1:25]`.
-- Select `min_values` can be in range `[1:15]`.
+- Select `min_values` can be in range `[0:15]`.
 - Select `max_values` can be in range `[1:25]`.
 
 ## Component commands
@@ -613,7 +613,7 @@ async def zoo(event):
         content = 'You didn\'t decide which animals to visit and the zoo closed, see ya tomorrow!'
         component_interaction = None
     else:
-        selected_animals = component_interaction.interaction.values
+        selected_animals = component_interaction.interaction.options
         if selected_animals is None:
             content = 'Going to zoo only to buy icecream?'
         else:

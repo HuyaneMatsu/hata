@@ -1405,7 +1405,7 @@ class ComponentSelect(ComponentBase):
         if (placeholder is not None) and (not placeholder):
             placeholder = None
         
-        if (custom_id is not None) and (not custom_id):
+        if (custom_id is None) or (not custom_id):
             custom_id = create_auto_custom_id()
         
         options = list(options)

@@ -77,6 +77,7 @@ async def welcome(event,
         user: ('user', 'The user to welcome'),
         message: (WELCOME_MESSAGES, 'The message to send'),
             ):
+    """Welcome a user."""
     return f'{event.user:m} welcomes {user:m} to the guild.\n{message}'
 
 

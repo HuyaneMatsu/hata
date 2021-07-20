@@ -145,8 +145,8 @@ async def repeat(ctx, to_repeat: str=None, *, upper=False):
     await ctx.reply(to_repeat, allowed_mentions=None)
 ```
 
-Keyword only parameter can be passed using the parameter's name followed my a colon, a space character and then the
-parameter's value.
+Keyword only parameter can be passed using the parameter's name followed by a colon, a space character and then the
+parameter's value, as: `!repeat cakes upper: true`.
 
 #### Multi variable parameters
 

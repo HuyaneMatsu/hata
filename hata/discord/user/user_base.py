@@ -67,7 +67,14 @@ class UserBase(DiscordEntity, immortal=True):
                 name = ''
         
         self.name = name
-        self.discriminator = int(data['discriminator'])
+        
+        try:
+            discriminator = data['discriminator']
+        except KeyErorr:
+            discriminator = 0
+        else:
+            discriminator = int(discriminator)
+        self.discriminator = discriminator
         
         self._set_avatar(data)
         self._set_banner(data)

@@ -95,7 +95,7 @@ class Icon:
         
         Returns
         -------
-        icon : `str` or `None`
+        icon : `None` or `str`
         """
         icon_type = self.type
         if icon_type is ICON_TYPE_NONE:

@@ -269,7 +269,7 @@ class Command:
         The command's name. Always lower case.
     _alters : `set` of `str`
         Alternative name, with what the command can be called.
-    _category_hint : `str` or `None`
+    _category_hint : `None` or `str`
         Hint for the command processer under which category should the give command go. If set as `None`, means that
         the command will go under the default category of the command processer.
     _checks : `None` or `list` of ``_check_base`` instances
@@ -2719,7 +2719,7 @@ class CommandProcesser(EventWaitforBase):
             The class, from what's attributes the command will be created.
             
             The expected attributes of the given `klass` are the following:
-            - name : `str` or `None`
+            - name : `None` or `str`
                 If was not defined, or was defined as `None`, the class's name will be used.
             - command : `async-callable`
                 If no `command` attribute was defined, then a attribute of the `name`'s value be checked as well.

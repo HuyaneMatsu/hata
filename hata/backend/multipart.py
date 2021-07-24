@@ -914,7 +914,7 @@ def parse_content_disposition(header):
 
     Returns
     -------
-    disposition_type : `str` or `None`
+    disposition_type : `None` or `str`
         The dispoisition's type if anything found.
     parameters : `dict` of (`str`, `str`) items
         The parsed out parameters.
@@ -999,7 +999,7 @@ def content_disposition_filename(parameters, name='filename'):
 
     Returns
     -------
-    filename : `str` or `None`
+    filename : `None` or `str`
         The file's name if any.
     """
     if not parameters:

@@ -53,7 +53,7 @@ def message_jump_url(message):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     channel = message.channel
     if isinstance(channel, ChannelGuildBase):
@@ -128,7 +128,7 @@ def guild_icon_url(guild):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = guild.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -160,7 +160,7 @@ def guild_icon_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -210,7 +210,7 @@ def guild_invite_splash_url(guild):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = guild.invite_splash_type
     if icon_type is ICON_TYPE_NONE:
@@ -241,7 +241,7 @@ def guild_invite_splash_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -291,7 +291,7 @@ def guild_discovery_splash_url(guild):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = guild.discovery_splash_type
     if icon_type is ICON_TYPE_NONE:
@@ -322,7 +322,7 @@ def guild_discovery_splash_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -372,7 +372,7 @@ def guild_banner_url(guild):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = guild.banner_type
     if icon_type is ICON_TYPE_NONE:
@@ -403,7 +403,7 @@ def guild_banner_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -495,7 +495,7 @@ def channel_group_icon_url(channel):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = channel.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -526,7 +526,7 @@ def channel_group_icon_url_as(channel, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -576,7 +576,7 @@ def emoji_url(emoji):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     if emoji.is_unicode_emoji():
         return None
@@ -605,7 +605,7 @@ def emoji_url_as(emoji, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -689,7 +689,7 @@ def activity_asset_image_large_url(activity):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     application_id = activity.application_id
     if not application_id:
@@ -722,7 +722,7 @@ def activity_asset_image_large_url_as(activity, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -765,7 +765,7 @@ def activity_asset_image_small_url(activity):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     application_id = activity.application_id
     if not application_id:
@@ -797,7 +797,7 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -840,7 +840,7 @@ def user_avatar_url(user):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = user.avatar_type
     if icon_type is ICON_TYPE_NONE:
@@ -867,7 +867,7 @@ def user_avatar_url(user):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = user.avatar_type
     if icon_type is ICON_TYPE_NONE:
@@ -899,7 +899,7 @@ def user_avatar_url_as(user, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -949,7 +949,7 @@ def user_banner_url(user):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = user.banner_type
     if icon_type is ICON_TYPE_NONE:
@@ -981,7 +981,7 @@ def user_banner_url_as(user, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1033,7 +1033,7 @@ def user_avatar_url_for(user, guild):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     if guild is None:
         return None
@@ -1075,7 +1075,7 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1136,7 +1136,7 @@ def user_avatar_url_at(user, guild):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     avatar_url = user_avatar_url_for(user, guild)
     if avatar_url is None:
@@ -1163,7 +1163,7 @@ def user_avatar_url_at_as(user, guild, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1204,7 +1204,7 @@ def application_icon_url(application):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = application.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1235,7 +1235,7 @@ def application_icon_url_as(application, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1285,7 +1285,7 @@ def application_cover_url(application):
         
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = application.cover_type
     if icon_type is ICON_TYPE_NONE:
@@ -1316,7 +1316,7 @@ def application_cover_url_as(application, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1366,7 +1366,7 @@ def team_icon_url(team):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = team.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1397,7 +1397,7 @@ def team_icon_url_as(team, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1447,7 +1447,7 @@ def achievement_icon_url(achievement):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     """
     icon_type = achievement.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1479,7 +1479,7 @@ def achievement_icon_url_as(achievement, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------
@@ -1616,7 +1616,7 @@ def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
     
     Returns
     -------
-    url : `str` or `None`
+    url : `None` or `str`
     
     Raises
     ------

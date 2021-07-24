@@ -205,7 +205,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
         The slash command or other wrapper to wrap.
     _choices : `None` or `dict` of (`str` or `int`, `str`) items
         Parameter's choices.
-    _description : `str` or `None`
+    _description : `None` or `str`
         Parameter's description.
     _name : `str`
         The parameter's name.

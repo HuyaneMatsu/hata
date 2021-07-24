@@ -73,7 +73,7 @@ class RemovedDescriptor:
     
     Attributes
     ----------
-    name : `str` or `None`
+    name : `None` or `str`
         The name of the attribute. Set when the class is finalizing.
     """
     __slots__ = ('name',)

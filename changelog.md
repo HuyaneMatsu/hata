@@ -1,4 +1,43 @@
+## 1.1.92 *\[2021-07-??\]*
+
+#### Improvements
+
+- Add `is_url`.
+- Add `application_id` parameter to `ActivityRich`.
+- Add `assets` parameter to `ActivityRich`.
+- Add `created_at` parameter to `ActivityRich`.
+- Add `details` parameter to `ActivityRich`.
+- Add `flags` parameter to `ActivityRich`.
+- Add `id_` parameter to `ActivityRich`.
+- Add `party` parameter to `ActivityRich`.
+- Add `secrets` parameter to `ActivityRich`.
+- Add `session_id` parameter to `ActivityRich`.
+- Add `state` parameter to `ActivityRich`.
+- Add `sync_id` parameter to `ActivityRich`.
+- Add `timestamps` parameter to `ActivityRich`.
+- Add `EventThread.create_unix_connection`.
+- Add `EventThread.create_unix_server`.
+- Add `ComponentBase._replace_direct_sub_components`.
+- Add `ComponentBase._iter_direct_sub_components`.
+
+#### Bug Fixes
+
+- Add missing `ComponentSelect.iter_components`.
+- Handle correctly the cases, when `ComponentSelect.options` is `None`.
+- `ComponentRow.components` is now `tuple`, `None` (from `list`, `tuple`, `None`).
+- `ComponentSelect.options` is now `tuple`, `None` (from `list`, `None`).
+
+#### Renames, Deprecation & Removals
+
+- Remove `Activitbase.created`.
+
 ## 1.1.91 *\[2021-07-20\]*
+
+### Summary
+
+Add float type to slash commands.
+
+#### Improvements
 
 - Add `ApplicationCommandOptionType.float`.
 - Add `ERROR_CODES.sticker_animation_duration_exceeds_5_second`.
@@ -11,9 +50,9 @@
 - `IntegrationDetail.expire_behavior` is now `IntegrationExpireBehavior` type (from int).
 - `Client.guild_create` limit increased 200 for nitro users.
 - Rework channel message collection.
-- `ActivityTimestamp.start` is now `datetime` (from int).
-- `ActivityTimestamp.end` is now `datetime` (from int).
-- Add `ActivityTimestamp.__new__`.
+- `ActivityTimestamps.start` is now `datetime` (from int).
+- `ActivityTimestamps.end` is now `datetime` (from int).
+- Add `ActivityTimestamps.__new__`.
 - Add `ActivityAssets.__new__`.
 - Add `ActivityParty.__new__`.
 - Add `ActivitySecrets.__new__`.
@@ -24,7 +63,7 @@
 - Add `RATE_LIMIT_GROUPS.status_maintenance_active`.
 - Add `RATE_LIMIT_GROUPS.status_maintenance_upcoming`.
 
-##### hata.ext.slash
+##### ext.slash
 - Add `float` converter.
 
 #### Bug Fixes
@@ -34,7 +73,7 @@
 - `ClientUserBase._update_no_return` reset the user's guild profiles.
 - `ComponentSelect`'s `custom_id` parameter was incorrectly auto generated.
 
-##### hata.ext.slash
+##### ext.slash
 - Slash snapshot could be built badly yielding not empty difference wrongly. (bad indention)
 
 #### Renames, Deprecation & Removals
@@ -53,7 +92,7 @@
 - Rename `._update_profile` to `._difference_update_profile`.
 - Rename `._update_profile_no_return` to `._update_profile`.
 - Rename `DIS_ENDPOINT` to `DISCORD_ENDPOINT`
-- Rename `ActivityTimestamp.__init__` -> `.from_data`.
+- Rename `ActivityTimestamps.__init__` -> `.from_data`.
 - Rename `ActivityAssets.__init__` -> `.from_data`.
 - Rename `ActivityParty.__init__` -> `.from_data`
 
@@ -93,7 +132,7 @@ Redo guild user syncing.
 - Fix occasional `RuntimeWarning` in `AudioReader.run`.
 - Fix occasional `RuntimeWarning` in `AudioPlayer.run`.
 
-##### hata.ext.slash
+##### ext.slash
 - `evaluate_two_sided_operations` returned 1 token too early.
 
 ## 1.1.89 *\[2021-07-08\]*
@@ -121,7 +160,7 @@ Add guild sticker methods.
 - `AuditLogChange` now handles `tags` attribute accordingly.
 - Add `ERROR_CODES.sticker_frame_rate_out_of_expected_range`.
 
-##### hata.ext.commands_v2
+##### ext.commands_v2
 - Add sticker converter.
 
 #### Bug Fixes
@@ -131,7 +170,7 @@ Add guild sticker methods.
 - Remove webhook caching per guild, since Discord API returns different data for each bot.
 - `Client.message_create`'s `sticker` parameter passed as `Sticker` raised `TypeError`.
 
-##### hata.ext.slash
+##### ext.slash
 - Fix a `TypeError` in `SlashComamnd._get_sync_permission_ids`.
 - Fix an `AttributeError` in `Slasher._register_command`.
 
@@ -262,7 +301,7 @@ Regroup many code parts.
 - Fix a `NameError` in `Client.thread_create`.
 - Fix a conversion error in `Client.thread_create`. (Zeref Draganeel#3581)
 
-##### hata.ext.slash
+##### ext.slash
 - Component commands regex parsers could be generated with bad parameter index.
 - Fix an `AttributeError` in `Slasher._add_component_command`.
 - Fix an `AttributeError` in `Slasher._remove_component_command`.
@@ -328,7 +367,7 @@ Add sticker related endpoints and such.
 - `ChannelThread.auto_archive_duration` is now in seconds to match everything else.
 - Add `ERROR_CODES.max_guild_members`.
 
-##### hata.ext.slash
+##### ext.slash
 - Add regex based matching for `ComponentCommand`-s.
 
 #### Bug Fixes
@@ -336,7 +375,7 @@ Add sticker related endpoints and such.
 - `Client.interaction_component_message_edit` was not sending embeds.
 - `Emoji._create_partial` always set `animated` as `True`.
 
-##### hata.ext.slash
+##### ext.slash
 - Parentheses evaluated by `evaluate_text` had wrong start and end index set.
 - Prefix operations had higher priority than power in `evaluate_text`.
 
@@ -352,7 +391,7 @@ Bug fixes.
 
 #### Bug Fixes
 
-##### hata.ext.slash
+##### ext.slash
 - `default_slasher_exception_handler` could raise `TypeError`.
 - `handle_command_exception` rendered `SlashCommandError`-s by default as well.
 - Prefix operations were not executed on floats.
@@ -368,7 +407,7 @@ Add component commands and expression parser for slash commands.
 - `Guild.nsfw` is now a property.
 - Include date, method and url in ``DiscordException`` error message.
 
-##### hata.ext.slash
+##### ext.slash
 - Add `ComponentCommand`.
 - Add `expression` converter for slash commands.
 - Add `use_default_exception_handler` parameter to slasher.
@@ -379,10 +418,10 @@ Add component commands and expression parser for slash commands.
 - Routed wrapped command's name were detected incorrectly.
 - Fix a `TypeError` in `Client.webhook_get_all_channel`. (Pichu#0357)
 
-##### hata.ext.kokoro_sqlalchemy
+##### ext.kokoro_sqlalchemy
 - `AsyncResultProxy.fetchone` returned an awaitable returning the result instead of the result.
 
-##### hata.ext.commands_v2
+##### ext.commands_v2
 - Converters without type could not be registered correctly.
 
 ## 1.1.83 *\[2021-06-02\]*
@@ -398,7 +437,7 @@ Fix up components in slash.
 - Add `componnets` parameter to `Client.interaction_response_message_edit`.
 - Add `componnets` parameter to `Client.interaction_followup_message_edit`.
 
-##### hata.ext.slash
+##### ext.slash
 - Add `event` parameter to `InteractionResponse`.
 - `Slasher` now do not auto-acknowledges every potentially handled component interaction in favor of using
     `Client.interaction_component_message_edit` and `InteractionResponse` with `event` parameter.
@@ -412,7 +451,7 @@ Fix up components in slash.
 - `InteractionResponseContext` was not marking the event responding correctly.
 - Handle component remove correctly.
 
-##### hata.ext.slash
+##### ext.slash
 - Message edition with `InteractionResponse` was not working as intended.
 
 #### Renames, Deprecation & Removals
@@ -420,7 +459,7 @@ Fix up components in slash.
 - Remove `ChannelThread.archiver_id`.
 - Remove `ChannelThread.archiver`.
 
-##### hata.ext.slash
+##### ext.slash
 - Deprecate `InteractionResponse`'s `force_new_message` parameter.
 
 ## 1.1.82 *\[2021-05-29\]*
@@ -489,12 +528,12 @@ Add the rest of the thread endpoints to client.
 - Add `Client.thread_get_all_self_archived`.
 
 
-##### hata.ext.extension_loader
+##### ext.extension_loader
 
 - Load all sub files from an extension. (Pichu#0357)
 - `ExtensionLoader.load_extension`, `.load`, `.unload`, `.reload` now accepts iterable and folders as well.
 
-##### hata.ext.slash
+##### ext.slash
 
 - Commands were not getting their display name as their description by default (but their raw name).
 - Routing slash commands dropped `TypeError`.
@@ -544,7 +583,7 @@ Rework `role.py` and `permission.py`.
 
 - Fix a `NameError` in `Client.webhook_message_create`.
 
-##### hata.ext.slash
+##### ext.slash
 - `InteractionResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
 - When passing `allowed_mentions` or `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
 
@@ -606,7 +645,7 @@ Update stages.
 - Fix `KeyError` in `create_component`.
 - `Client.interaction_response_message_create` ignored `show_for_invoking_user_only` if other fields were not present.
 
-##### hata.ext.slash
+##### ext.slash
 - `name` could have higher priority when setting slash command description than `description` itself.
     (Zeref Draganeel#3581)
 
@@ -628,7 +667,7 @@ Fix some bugs and improve slash command creation.
 - Add `Interaction.is_unanswered`.
 - Add `UserFlag.certified_moderator`.
 
-##### hata.ext.slash
+##### ext.slash
 - `abort` now supports `components` parameter in `show_for_invoking_user_only` mode. (Zeref Draganeel#3581)
 - Slash command description defaults to it's name instead of raising an exception. (Zeref Draganeel#3581)
 - Slash choices now can be any iterable object. (Zeref Draganeel#3581)
@@ -663,7 +702,7 @@ Start supporting anyio (all bugs included). (Mina Ashido]|[💻⭐#3506)
 
 #### Improvements
 
-##### hata.ext.asyncio
+##### ext.asyncio
 - Add `asyncio.futures.Task.get_coro`.
 - Add `asyncio.base_events._run_until_complete_cb`.
 - Add `asyncio.process.Process`.
@@ -1022,7 +1061,7 @@ Improve component usage.
 - `is_coroutine_function` returned non-bool. (ToxicKidz#6969)
 - `is_coroutine_generator_function` returned non-bool. 
 - Handle python3.10 things correctly. (Zeref Draganeel#3581)
-- Add a missing return to `hata.ext.async.asyncio.LifoQueue`. (ᓚᘏᗢ | NeKo Mancer#1477)
+- Add a missing return to `ext.async.asyncio.LifoQueue`. (ᓚᘏᗢ | NeKo Mancer#1477)
 
 #### Renames, Deprecation & Removals
 

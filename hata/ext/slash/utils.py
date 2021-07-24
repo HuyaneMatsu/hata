@@ -36,12 +36,12 @@ def normalize_description(description):
     
     Parameters
     ----------
-    description : `str` or `None`
+    description : `None` or `str`
         The docstring to clear.
     
     Returns
     -------
-    cleared : `str` or `None`
+    cleared : `None` or `str`
         The cleared docstring. If `docstring` was given as `None` or is detected as empty, will return `None`.
     """
     if description is None:

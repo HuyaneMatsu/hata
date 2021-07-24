@@ -64,13 +64,13 @@ class Application(DiscordEntity, immortal=True):
     primary_sku_id : `int`
         If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
         Defaults to `0`.
-    privacy_policy_url : `str` or `None`
+    privacy_policy_url : `None` or `str`
         The url of the application's privacy policy. Defaults to `None`.
     publishers : `None` or `list` of ``ApplicationSubEntity``
         A list of the application's games' publishers. Defaults to `None`.
     rpc_origins : `None` or `list` of `str`
         A list of `rpc` origin urls, if `rpc` is enabled. Set as `None` if would be an empty list.
-    slug : `str` or `None`
+    slug : `None` or `str`
         If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         Defaults to `None`.
     splash_hash : `int`
@@ -80,7 +80,7 @@ class Application(DiscordEntity, immortal=True):
     summary : `str`
         If this application is a game sold on Discord, this field will be the summary field for the store page of its
         primary sku. Defaults to empty string.
-    terms_of_service_url : `str` or `None`
+    terms_of_service_url : `None` or `str`
         The url of the application's terms of service. Defaults to `None`.
     third_party_skus : `None` or `list` of ``ThirdPartySKU``
          A list of the application's third party stock keeping units. Defaults to `None`.
@@ -435,7 +435,7 @@ class Application(DiscordEntity, immortal=True):
             ``Team``-s as well.
         privacy_policy_url : `None` or `str`, Optional (Keyword only)
             The url of the application's privacy policy.
-        slug : `str` or `None`
+        slug : `None` or `str`
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The application's splash.
@@ -453,7 +453,7 @@ class Application(DiscordEntity, immortal=True):
         summary : `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the summary field for the store page of
             its primary sku.
-        terms_of_service_url : `str` or `None`, Optional (Keyword only)
+        terms_of_service_url : `None` or `str`, Optional (Keyword only)
             The url of the application's terms of service.
         
         Returns

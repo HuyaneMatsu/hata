@@ -11,12 +11,14 @@ from ssl import SSLContext, create_default_context
 from stat import S_ISSOCK
 
 from .export import export
-from .utils import alchemy_incendiary, WeakReferer, weakmethod, MethodType, WeakCallable, doc_property, DOCS_ENABLED
+from .utils import alchemy_incendiary, WeakReferer, weakmethod, MethodType, WeakCallable, doc_property, DOCS_ENABLED, \
+    set_docs
 from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError, skip_ready_cycle
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
+from .protocol import ProtocolBase
 
 IS_UNIX = (sys.platform != 'win32')
 
@@ -2925,8 +2927,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             `local_port` are looked up by ``.get_address_info``.
         server_hostname : `None` or `str`, Optional (Keyword only)
             Overwrites the hostname that the target server’s certificate will be matched against.
-            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If host is
-            empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
+            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If host
+            is empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
             empty string, hostname matching is disabled (which is a serious security risk, allowing for potential
             man-in-the-middle attacks).
         
@@ -3032,11 +3034,10 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 else:
                     # If they all have the same str(), raise one.
                     model = repr(exceptions[0])
-                    all_exception=[repr(exception) for exception in exceptions]
+                    all_exception = [repr(exception) for exception in exceptions]
                     if all(element == model for element in all_exception):
                         raise exceptions[0]
-                    # Raise a combined exception so the user can see all
-                    # the various error messages.
+                    # Raise a combined exception so the user can see all the various error messages.
                     raise OSError(f'Multiple exceptions: {", ".join(all_exception)}')
         
         else:
@@ -3047,8 +3048,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 raise ValueError(f'A stream socket was expected, got {socket!r}.')
         
         return await self._create_connection_transport(socket, protocol_factory, ssl, server_hostname, False)
-
-
+    
+    
     async def _create_connection_transport(self, socket, protocol_factory, ssl, server_hostname, server_side):
         """
         Open a streaming transport connection to a given address specified by `host` and `port`.
@@ -3065,8 +3066,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             The socket to what the created transport should be connected to.
         server_hostname : `None` or `str`
             Overwrites the hostname that the target server’s certificate will be matched against.
-            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If host is
-            empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
+            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If host
+            is empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
             empty string, hostname matching is disabled (which is a serious security risk, allowing for potential
             man-in-the-middle attacks).
         server_side : `bool`
@@ -3098,7 +3099,239 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             raise
         
         return transport, protocol
-
+    
+    if IS_UNIX:
+        async def create_unix_connection(self, protocol_factory, path=None, *, socket=None, ssl=None,
+                server_hostname=None):
+            if (ssl is None):
+                if server_hostname is not None:
+                    raise ValueError('`server_hostname` is only meaningful with `ssl`.')
+            else:
+                if server_hostname is None:
+                    raise ValueError('`server_hostname` parameter is required with `ssl`.')
+            
+            if path is not None:
+                if socket is not None:
+                    raise ValueError('`path` and `socket` parameters are mutually exclusive.')
+                
+                path = os.fspath(path)
+                socket = module_socket.socket(module_socket.AF_UNIX, module_socket.SOCK_STREAM, 0)
+                
+                try:
+                    socket.setblocking(False)
+                    await self.socket_connect(socket, path)
+                except:
+                    socket.close()
+                    raise
+            
+            else:
+                if socket is None:
+                    raise ValueError('Either `socket` or `path` parameters are required.')
+                
+                if socket.family not in (module_socket.AF_UNIX, module_socket.SOCK_STREAM):
+                    raise ValueError(f'A UNIX Domain Stream Socket was expected, got {socket!r}.')
+                
+                socket.setblocking(False)
+            
+            return await self._create_connection_transport(socket, protocol_factory, ssl, server_hostname)
+        
+        
+        async def open_unix_connection(self, path=None, **kwargs):
+            protocol = ProtocolBase(self)
+            await loop.create_unix_connection(protocol, path, **kwargs)
+            return protocol
+        
+        
+        async def create_unix_server(self, protocol_factory, path=None, *, socket=None, backlog=100, ssl=None,):
+            if (ssl is not None) and (not isinstance(ssl, ssl.SSlContext)):
+                raise TypeError(f'`ssl` can be given as `None` or as ``SSLContext``, got {ssl.__class__.__name__}.')
+            
+            if path is not None:
+                if socket is not None:
+                    raise ValueError('`path` and `socket` parameters are mutually exclusive.')
+                
+                path = os.fspath(path)
+                socket = module_socket.socket(module_socket.AF_UNIX, module_socket.SOCK_STREAM)
+                
+                # Check for abstract socket.
+                if not path.startswith('\x00'):
+                    try:
+                        if S_ISSOCK(os.stat(path).st_mode):
+                            os.remove(path)
+                    except FileNotFoundError:
+                        pass
+                
+                try:
+                    socket.bind(path)
+                except OSError as exc:
+                    socket.close()
+                    if exc.errno == errno.EADDRINUSE:
+                        # Let's improve the error message by adding  with what exact address it occurs.
+                        raise OSError(errno.EADDRINUSE, f'Address {path!r} is already in use.') from None
+                    else:
+                        raise
+                except:
+                    socket.close()
+                    raise
+            else:
+                if socket is None:
+                    raise ValueError('Either `path` or `socket` parameter is required.')
+                
+                if socket.family not in (module_socket.AF_UNIX, module_socket.SOCK_STREAM):
+                    raise ValueError(f'A UNIX Domain Stream Socket was expected, got {socket!r}.')
+            
+            socket.setblocking(False)
+            
+            return Server(self, [socket], protocol_factory, ssl, backlog)
+        
+    else:
+        async def create_unix_connection(self, protocol_factory, path=None, *, socket=None, ssl=None,
+                server_hostname=None):
+            raise NotImplementedError
+        
+        
+        async def open_unix_connection(self, path=None, **kwargs):
+            raise NotImplementedError
+    
+    
+        async def create_unix_server(self, protocol_factory, path=None, *, socket=None, backlog=100, ssl=None,):
+            raise NotImplementedError
+    
+    
+    set_docs(create_unix_connection,
+        """
+        Establish a unix socket connection.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        protocol_factory : `callable`.
+            Callable returning an asynchronous protocol implementation.
+        path : `None` or `str`, Optional
+            The path to open connection to.
+        socket : `socket.socket`, Optional (Keyword only)
+            A preexisting socket object to use up.
+            
+            Mutually exclusive with the `path` parameter.
+        ssl : `None` or `ssl.SSLContext`, Optional (Keyword only)
+            Whether ssl should be enabled.
+        server_hostname : `None` or `str`
+            Overwrites the hostname that the target server’s certificate will be matched against.
+            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If hos
+            is empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
+            empty string, hostname matching is disabled (which is a serious security risk, allowing for potential
+            man-in-the-middle attacks).
+        
+        Returns
+        -------
+        transport : ``_SSLProtocolTransport`` or ``_SelectorSocketTransport``
+            The created transport. If `ssl` is enabled, creates ``_SSLProtocolTransport``, else
+            ``_SelectorSocketTransport``.
+        protocol : `Any`
+            The protocol returned by `protocol_factory`.
+        
+        Raises
+        ------
+        ValueError
+            - If `server_hostname` parameter is given, but `ssl` isn't.
+            - If `ssl` parameter is given, but `server_hostname` is not.
+            - If `path` parameter is given, when `socket` is defined as well.
+            - If neither `path` and `socket` parameters are given.
+            - If `socket`'s is not an unix domain stream socket.
+        NotImplementedError
+            Not supported on windows by the library.
+        """)
+    
+    set_docs(open_unix_connection,
+        """
+        Creates an unix connection.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        path : `None` or `str`, Optional
+            The path to open connection to.
+        **kwargs : Keyword parameters
+            Additional keyword parameters to pass to ``.create_unix_connection``.
+        
+        Other Parameters
+        ----------------
+        socket : `socket.socket`, Optional (Keyword only)
+            A preexisting socket object to use up.
+            
+            Mutually exclusive with the `path` parameter.
+        ssl : `None` or `ssl.SSLContext`, Optional (Keyword only)
+            Whether ssl should be enabled.
+        server_hostname : `None` or `str`
+            Overwrites the hostname that the target server’s certificate will be matched against.
+            Should only be passed if `ssl` is not `None`. By default the value of the host parameter is used. If hos
+            is empty, there is no default and you must pass a value for `server_hostname`. If `server_hostname` is an
+            empty string, hostname matching is disabled (which is a serious security risk, allowing for potential
+            man-in-the-middle attacks).
+        
+        Returns
+        -------
+        protocol : ``BaseProtocol``
+            The connected read and write protocol.
+        
+        Raises
+        ------
+        ValueError
+            - If `server_hostname` parameter is given, but `ssl` isn't.
+            - If `ssl` parameter is given, but `server_hostname` is not.
+            - If `path` parameter is given, when `socket` is defined as well.
+            - If neither `path` and `socket` parameters are given.
+            - If `socket`'s is not an unix domain stream socket.
+        NotImplementedError
+            Not supported on windows by the library.
+        """)
+    
+    set_docs(create_unix_server,
+        """
+        Creates an unix server (socket type AF_UNIX) listening on the given path.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        protocol_factory : `callable`
+            Factory function for creating a protocols.
+        path : `None` or `str`
+            The path to open connection to.
+        socket : `None` or `socket.socket`, Optional (Keyword only)
+            Can be specified in order to use a preexisting socket object.
+            
+            Mutually exclusive with the `path` parameter.
+        backlog : `int`, Optional (Keyword only)
+            The maximum number of queued connections passed to `listen()` (defaults to 100).
+        ssl : `None` or ``SSLContext``, Optional (Keyword only)
+            Whether and what ssl is enabled for the connections.
+        
+        Returns
+        -------
+        server : ``Server``
+            The created server instance.
+        
+        Raises
+        ------
+        TypeError
+            - If `ssl` is not given neither as `None` nor as `ssl.SSLContext` instance.
+        ValueError
+            - If both `path` and `socket` parameters are given.ó
+            - If neither `path` nor `socket` were given.
+            - If `socket` is given, but it's type is not `module_socket.SOCK_STREAM`.
+        FileNotFoundError:
+            The given `path` do not exists.
+        OsError
+            - Path already in use.
+            - Error while attempting to connect to `path`.
+        NotImplementedError
+            Not supported on windows by the library.
+        """)
+    
+    
     # await it
     def get_address_info(self, host, port, *, family=0, type=0, protocol=0, flags=0):
         """
@@ -3770,7 +4003,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             Can be specified in order to use a preexisting socket object.
             
             Mutually exclusive with `host` and `port` parameters.
-        backlog : `int`
+        backlog : `int`, Optional (Keyword only)
             The maximum number of queued connections passed to `listen()` (defaults to 100).
         ssl : `None` or ``SSLContext``, Optional (Keyword only)
             Whether and what ssl is enabled for the connections.
@@ -3795,11 +4028,11 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             - If `reuse_port` is given as non `bool`.
             - If `reuse_address` is given as non `bool`.
             - If `reuse_port` is given as non `bool`.
-            - If `host` is not given as `None`, `str` and neither as `iterable` of `str` or `None`.
+            - If `host` is not given as `None`, `str` and neither as `iterable` of `None` or `str`.
         ValueError
             - If `host` or `port` parameter is given, when `socket` is defined as well.
             - If `reuse_port` is given as `True`, but not supported.
-            - If neither `host`, `port nor `socket` were given.
+            - If neither `host`, `port` nor `socket` were given.
             - If `socket` is given, but it's type is not `module_socket.SOCK_STREAM`.
         OsError
             Error while attempting to binding to address.
@@ -3972,8 +4205,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
             raise NotImplementedError
     
-    if DOCS_ENABLED:
-        connect_read_pipe.__doc__ = (
+    set_docs(connect_read_pipe,
         """
         Register the read end of the given pipe in the event loop.
         
@@ -4000,7 +4232,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         NotImplementedError
             Not supported on windows by the library.
         """)
-        connect_write_pipe.__doc__ = (
+    
+    set_docs(connect_write_pipe,
         """
         Register the write end of the given pipe in the event loop.
         
@@ -4027,7 +4260,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         NotImplementedError
             Not supported on windows by the library.
         """)
-        subprocess_shell.__doc__ = (
+        
+    set_docs(subprocess_shell,
         """
         Create a subprocess from cmd.
         
@@ -4100,7 +4334,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         NotImplementedError
             Not supported on windows by the library.
         """)
-        subprocess_exec.__doc__ = (
+    
+    set_docs(subprocess_exec,
         """
         Create a subprocess from one or more string parameters specified by args.
         

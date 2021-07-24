@@ -404,7 +404,7 @@ class Command:
     
     Attributes
     ----------
-    _category_hint : `str` or `None`
+    _category_hint : `None` or `str`
         Hint for the command processor to detect under which category the command should go.
     _category_reference : `None` or ``WeakReferer`` to ``Category``.
         Weak reference to the command's category.

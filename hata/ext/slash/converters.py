@@ -1156,7 +1156,7 @@ def parse_annotation_internal(annotation):
     
     Returns
     -------
-    annotation_type : `int` or `None`
+    annotation_type : `None` or `int`
         The parsed annotation type. Returns `None` if the annotation type not refers to an internal type.
     """
     if isinstance(annotation, type):
@@ -1191,7 +1191,7 @@ def parse_annotation(parameter):
     -------
     choices : `None` or `dict` of (`str` or `int`, `str`) items
         Parameter's choices.
-    description : `str` or `None`
+    description : `None` or `str`
         Parameter's description.
         
         > Returned as `None` for internal parameters or if `description` could nto be detected.

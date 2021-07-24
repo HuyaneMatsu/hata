@@ -107,7 +107,7 @@ class Guild(DiscordEntity, immortal=True):
         The loaded clients, who are the member of the guild. If no clients are member of a guild, it is partial.
     content_filter : ``ContentFilterLevel``
         The explicit content filter level of the guild.
-    description : `str` or `None`
+    description : `None` or `str`
         Description of the guild. The guild must be a Community guild.
     discovery_splash_hash : `int`
         The guild's discovery splash's hash in `uint128`. The guild must be a discoverable.

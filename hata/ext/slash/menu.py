@@ -3,6 +3,7 @@ __all__ = ()
 # Work in progress
 
 from collections import OrderedDict
+from types import MemberDescriptorType
 
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.utils import copy_docs
@@ -131,10 +132,12 @@ class ComponentAttributeDescriptor:
             if (not isinstance(component, self._supported_types)):
                 raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
         
-        attribute_value = gettattr(component, self._name)
+        attribute_value = getattr(component, self._name)
         if is_collection and (attribute_value is not None):
-            attribute_value = tuple(components_descriptor.get_component_proxy(instance) \
-                for components_descriptor in components_descriptors)
+            menu_instance = instance._instance
+            
+            attribute_value = tuple(components_descriptor.get_component_proxy(menu_instance) \
+                for components_descriptor in attribute_value)
         
         return attribute_value
     
@@ -159,10 +162,29 @@ class ComponentAttributeDescriptor:
             if (not isinstance(component, self._supported_types)):
                 raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
         
-        setattr(component, self._name, value)
         
+        setattr(component, self._name, value)
+    
+    def __repr__(self):
+        """Returns the component descriptor attribute's representation."""
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ' name=',
+            repr(self._name),
+            ', supported_types=',
+            repr(self._supported_types)
+        ]
+        
+        if self._is_collection:
+            repr_parts.append(' (collection)')
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
 
-class ComponentDescriptorState:
+
+class ComponentDescriptorState(ComponentBase):
     """
     Stateless component descriptor.
     
@@ -174,6 +196,11 @@ class ComponentDescriptorState:
         The source component from which the descriptor is created from.
     _sub_components : `None` or `list` of ``ComponentDescriptor``
         Sub components applicable to the component.
+    
+    Class Attributes
+    ----------------
+    custom_id : `NoneType` = `None`
+        Placeholder for sub-classes without `custom_id` attribute.
     """
     __slots__ = ('_component', '_source_component', '_sub_components',)
     
@@ -185,7 +212,7 @@ class ComponentDescriptorState:
         ----------
         source : ``ComponentBase`` instance
             The source component to create the descriptor from.
-        sub_components : `list` of ``ComponentDescriptor``
+        sub_components : `None` or `list` of ``ComponentDescriptor``
             A list of sub components added
         """
         component = source.copy()
@@ -211,6 +238,80 @@ class ComponentDescriptorState:
         component_proxy : ``ComponentProxy``
         """
         return ComponentProxy(self, instance)
+
+    def __repr__(self):
+        """Returns the component descriptor state's representation."""
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ', component=', repr(self._component),
+        ]
+        
+        sub_components = self._sub_components
+        if (sub_components is not None):
+            repr_parts.append(' sub_components=')
+            repr_parts.append(repr(sub_components))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+    
+    
+    @property
+    def type(self):
+        return self._component.type
+    
+    
+    def __getattr__(self, attribute_name):
+        """Tries to find the attributes of the respective component."""
+        component = self._component
+        try:
+            getter = type(component).__dict__[attribute_name]
+        except KeyError:
+            pass
+        else:
+            if isinstance(getter, MemberDescriptorType):
+                return MemberDescriptorType.__get__(getter, component)
+        
+        raise AttributeError(attribute_name)
+    
+    
+    @copy_docs(ComponentBase.to_data)
+    def to_data(self):
+        return self._component.to_data()
+    
+    
+    @copy_docs(ComponentBase.__eq__)
+    def __eq__(self, other):
+        if type(other) is not type(self):
+            return NotImplemented
+        
+        if self._source_component is other._source_component:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(ComponentBase.__hash__)
+    def __hash__(self):
+        return hash(self._component)
+    
+    
+    @copy_docs(ComponentBase._iter_components)
+    def _iter_components(self):
+        yield self
+        
+        sub_components = self._sub_components
+        if (sub_components is not None):
+            for sub_component in sub_components:
+                yield from sub_component._iter_components()
+    
+    
+    @copy_docs(ComponentBase._iter_direct_sub_components)
+    def _iter_direct_sub_components(self):
+        sub_components = self._sub_components
+        if (sub_components is not None):
+            yield from sub_components
 
 
 class ComponentDescriptor(ComponentDescriptorState):
@@ -285,6 +386,24 @@ class ComponentDescriptor(ComponentDescriptorState):
             component_proxy = component_proxy_cache[self._identifier] = ComponentProxy(self, instance)
         
         return component_proxy
+    
+    def __repr__(self):
+        """Returns the component descriptor's representation."""
+        repr_parts = [
+            '<',
+            self.__class__.__name__,
+            ' identifier=', repr(self._identifier),
+            ', component=', repr(self._component),
+        ]
+        
+        sub_components = self._sub_components
+        if (sub_components is not None):
+            repr_parts.append(' sub_components=')
+            repr_parts.append(repr(sub_components))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
 
 
 class ComponentProxy(ComponentBase):
@@ -335,7 +454,7 @@ class ComponentProxy(ComponentBase):
         if (sub_components is not None):
             instance = self._instance
             for sub_component in sub_components:
-                yield  sub_component.get_component_proxy(instance)
+                yield sub_component.get_component_proxy(instance)
     
     
     def _get_component(self):
@@ -372,6 +491,85 @@ class ComponentProxy(ComponentBase):
     def type(self):
         """Returns the component's type."""
         return self._descriptor._component.type
+    
+    
+    def __repr__(self):
+        """Returns the component proxy's representation."""
+        component = self._component_overwrite
+        if (component is None):
+            component = self._descriptor._component
+        
+        return f'<{self.__class__.__name__} component={component!r}>'
+    
+    
+    @copy_docs(ComponentBase.__hash__)
+    def __hash__(self):
+        component = self._component_overwrite
+        if (component is None):
+            component = self._descriptor._component
+        
+        return hash(component)
+    
+    
+    @copy_docs(ComponentBase.to_data)
+    def to_data(self):
+        # We will brute force some things. It ain't pretty.
+        component_type = type(self._descriptor._component)
+        
+        if issubclass(component_type, ComponentRow):
+            data = {
+                'type': ComponentType.row.value,
+            }
+            
+            attribute_value = self.components
+            if attribute_value is None:
+                field_value = []
+            else:
+                field_value = [sub_component.to_data() for sub_component in attribute_value]
+            data['components'] = field_value
+        
+        elif issubclass(component_type, ComponentButton):
+            data = self._get_component().to_data()
+        
+        elif issubclass(component_type,  ComponentSelectOption):
+            data = self._get_component().to_data()
+        
+        elif issubclass(component_type,  ComponentSelect):
+            data = {
+                'type': ComponentType.select.value,
+            }
+            
+            attribute_value = self.options
+            if attribute_value is None:
+                field_value = []
+            else:
+                field_value = [sub_component.to_data() for sub_component in attribute_value]
+            data['options'] = field_value
+            
+            component = self._get_component()
+            
+            data['custom_id'] = component.custom_id
+            
+            placeholder = component.placeholder
+            if (placeholder is not None):
+                data['placeholder'] = placeholder
+            
+            min_values = component.min_values
+            if min_values != 1:
+                data['min_values'] = min_values
+            
+            max_values = component.max_values
+            if max_values != 1:
+                data['max_values'] = max_values
+            
+            if (not component.enabled):
+                data['disabled'] = True
+                
+        else:
+            data = {}
+        
+        return data
+    
     
     components = ComponentAttributeDescriptor(
         'components',
@@ -930,32 +1128,6 @@ def _iter_attributes(class_parents, class_attributes):
     yield from class_attributes.items()
 
 
-def _iter_sub_components(component):
-    """
-    Iterates the give component's sub-components.
-    
-    Parameters
-    ----------
-    component : ``ComponentBase``
-        The component to iterate over.
-    
-    Yields
-    ------
-    sub_component : ``ComponentBase``
-        The  sub components.
-    """
-    if isinstance(component, ComponentRow):
-        sub_components = component.components
-        if (sub_components is not None):
-            yield from sub_components
-        return
-    
-    if isinstance(component, ComponentSelect):
-        sub_components = component.options
-        if (sub_components is not None):
-            yield from sub_components
-        return
-
 DISALLOWED_MENU_ATTRIBUTE_NAMES = (
     '__new__',
     '__call__',
@@ -1047,7 +1219,7 @@ class MenuType(type):
         component_standalone = []
         
         for attribute_name, attribute_value in tracked_components.items():
-            if attribute_value.type in (ComponentRow, ComponentSelect):
+            if attribute_value.type in (ComponentType.row, ComponentType.select):
                 container = component_groups
             else:
                 container = component_standalone
@@ -1073,8 +1245,9 @@ class MenuType(type):
             try:
                 component_descriptor = all_component_descriptor[component_hasher]
             except KeyError:
-                sub_component_descriptors = []
-                for sub_component in _iter_sub_components(component_value):
+                sub_component_relations = None
+                sub_component_descriptors = None
+                for sub_component in component_value._iter_direct_sub_components():
                     sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
                     try:
                         sub_component_descriptor = all_component_descriptor[sub_component_hasher]
@@ -1082,7 +1255,16 @@ class MenuType(type):
                         sub_component_descriptor = ComponentDescriptor(sub_component, None)
                         all_component_descriptor[sub_component_hasher] = sub_component_descriptor
                     
+                    if (sub_component_descriptors is None):
+                        sub_component_descriptors = []
                     sub_component_descriptors.append(sub_component_descriptor)
+                    
+                    if (sub_component_relations is None):
+                        sub_component_relations = {}
+                    sub_component_relations[sub_component] = sub_component_descriptor
+                
+                if (sub_component_relations is not None):
+                    component_value._replace_direct_sub_components(sub_component_relations)
                 
                 component_descriptor = ComponentDescriptor(component_value, sub_component_descriptors)
                 all_component_descriptor[component_hasher] = component_descriptor
@@ -1214,10 +1396,7 @@ class Menu(metaclass=MenuType):
         self._component_proxy_cache = {}
         self._components = None
         
-        # TODO
-        
         init = menu_structure.init
-        print('calling init?', init)
         if (init is not None):
             init(self, interaction_event, *args, **kwargs)
         
@@ -1258,7 +1437,7 @@ class Menu(metaclass=MenuType):
         self._gui_state = GUI_STATE_READY
         self._canceller = cls._canceller_function
         
-        target_client.slasher.remove_component_interaction_waiter(message, self)
+        target_client.slasher.add_component_interaction_waiter(message, self)
         
         return self
     
@@ -1279,7 +1458,7 @@ class Menu(metaclass=MenuType):
         if (gui_state == GUI_STATE_EDITING) or (GUI_STATE_EDITING == GUI_STATE_CANCELLING):
             await client.interaction_component_acknowledge(interaction_event)
         
-        if (gui_state != GUI_STATE_EDITING):
+        if (gui_state != GUI_STATE_READY):
             return
         
         check = self._menu_structure.check
@@ -1303,31 +1482,35 @@ class Menu(metaclass=MenuType):
             self.cancel(err)
             return
         
-        if not should_edit:
+        if should_edit:
+            tracked_changes = self._tracked_changes
+            kwargs = tracked_changes.copy()
+            tracked_changes.clear()
+            
+            allowed_mentions = self._allowed_mentions
+            if (allowed_mentions is not None):
+                kwargs['allowed_mentions'] = allowed_mentions
+            
+            try:
+                await client.interaction_component_message_edit(interaction_event, **kwargs, components=self._components)
+            except BaseException as err:
+                self.cancel(err)
+                return
+            
+            timeouter = self._timeouter
+            if (timeouter is not None):
+                timeout = self._menu_structure.timeout
+                if (timeout > 0.0):
+                    timeouter.set_timeout(timeout)
+        else:
+            try:
+                await client.interaction_component_acknowledge(interaction_event)
+            except BaseException as err:
+                self.cancel(err)
+                return
+        
+        if self._gui_state == GUI_STATE_EDITING:
             self._gui_state = GUI_STATE_READY
-            return
-        
-        tracked_changes = self._tracked_changes
-        kwargs = tracked_changes.copy()
-        tracked_changes.clear()
-        
-        allowed_mentions = self._allowed_mentions
-        if (allowed_mentions is not None):
-            kwargs['allowed_mentions'] = allowed_mentions
-        
-        try:
-            await client.interaction_component_message_edit(interaction_event, **kwargs, components=self._components)
-        except BaseException as err:
-            self.cancel(err)
-            return
-        
-        timeouter = self._timeouter
-        if (timeouter is not None):
-            timeout = self._menu_structure.timeout
-            if (timeout > 0.0):
-                timeouter.set_timeout(timeout)
-        
-        self._gui_state = GUI_STATE_READY
     
     
     def cancel(self, exception=None):
@@ -1591,27 +1774,34 @@ class Menu(metaclass=MenuType):
                 components.append(component_proxy)
         
         elif isinstance(raw_components, ComponentBase):
-            if raw_components.type is ComponentType.row:
-                # detect dupe components
-                sub_component_descriptors = []
-                for sub_component in _iter_sub_components(raw_components):
-                    sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
-                    
-                    if all_component_descriptor is None:
-                        all_component_descriptor = {}
-                    
-                    try:
-                        sub_component_descriptor = all_component_descriptor[sub_component_hasher]
-                    except KeyError:
-                        sub_component_descriptor = ComponentDescriptor(sub_component, None)
-                        all_component_descriptor[sub_component_hasher] = sub_component_descriptor
-                    
-                    sub_component_descriptors.append(sub_component_descriptor)
-            else:
-                sub_component_descriptors = None
+            raw_component = raw_components
+            sub_component_descriptors = None
+            sub_component_relations = None
+            for sub_component in raw_component._iter_direct_sub_components():
+                sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
+                
+                if all_component_descriptor is None:
+                    all_component_descriptor = {}
+                
+                try:
+                    sub_component_descriptor = all_component_descriptor[sub_component_hasher]
+                except KeyError:
+                    sub_component_descriptor = ComponentDescriptor(sub_component, None)
+                    all_component_descriptor[sub_component_hasher] = sub_component_descriptor
+                
+                if sub_component_descriptors is None:
+                    sub_component_descriptors = []
+                sub_component_descriptors.append(sub_component_descriptor)
+                
+                if sub_component_relations is None:
+                    sub_component_relations = {}
+                sub_component_relations[sub_component] = sub_component_descriptor
+            
+            if (sub_component_relations is not None):
+                raw_component._replace_direct_sub_components(sub_component_relations)
             
             component_descriptor = ComponentDescriptorState(
-                ComponentRow(raw_components),
+                ComponentRow(raw_component),
                 sub_component_descriptors,
             )
             
@@ -1644,25 +1834,30 @@ class Menu(metaclass=MenuType):
                     try:
                         component_descriptor = all_component_descriptor[component_hasher]
                     except KeyError:
-                        if raw_sub_component.type is ComponentType.row:
-                            # detect dupe components
-                            sub_component_descriptors = []
-                            for sub_component in _iter_sub_components(raw_sub_component):
-                                sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
-                                
-                                if all_component_descriptor is None:
-                                    all_component_descriptor = {}
-                                
-                                try:
-                                    sub_component_descriptor = all_component_descriptor[sub_component_hasher]
-                                except KeyError:
-                                    sub_component_descriptor = ComponentDescriptor(sub_component, None)
-                                    all_component_descriptor[sub_component_hasher] = sub_component_descriptor
-                                
-                                sub_component_descriptors.append(sub_component_descriptor)
-                        else:
-                            sub_component_descriptors = None
+                        sub_component_relations = None
+                        sub_component_descriptors = None
+                        for sub_component in raw_sub_component._iter_direct_sub_components():
+                            sub_component_hasher = ComponentSourceIdentityHasher(sub_component)
                             
+                            if all_component_descriptor is None:
+                                all_component_descriptor = {}
+                            
+                            try:
+                                sub_component_descriptor = all_component_descriptor[sub_component_hasher]
+                            except KeyError:
+                                sub_component_descriptor = ComponentDescriptor(sub_component, None)
+                                all_component_descriptor[sub_component_hasher] = sub_component_descriptor
+                            
+                            if sub_component_descriptors is None:
+                                sub_component_descriptors = []
+                                sub_component_descriptors.append(sub_component_descriptor)
+                            if sub_component_relations is None:
+                                sub_component_relations = {}
+                            sub_component_relations[sub_component] = sub_component_descriptor
+                        
+                        if (sub_component_relations is not None):
+                            raw_sub_component._replace_direct_sub_components(sub_component_relations)
+                        
                         
                         component_descriptor = ComponentDescriptorState(
                             raw_sub_component,

@@ -1,6 +1,11 @@
 __all__ = ('ActivityCustom',)
 
+from datetime import datetime
+from math import floor
+
 from ...backend.export import include
+from ..utils import DISCORD_EPOCH_START
+
 from .activity_base import ActivityBase
 from . import activity_types as ACTIVITY_TYPES
 
@@ -16,7 +21,7 @@ class ActivityCustom(ActivityBase):
         When the status was created as Unix time in milliseconds. Defaults to `0`.
     emoji : `None` or ``Emoji``
         The emoji of the activity. If it has no emoji, then set as `None`.
-    state : `str` or `None`
+    state : `None` or `str`
         The activity's text under it's emoji. Defaults to `None`.
     
     Class Attributes
@@ -26,7 +31,7 @@ class ActivityCustom(ActivityBase):
     type : `int` = `4`
         The activity's type value.
     """
-    __slots__ = ('created', 'emoji', 'state', )
+    __slots__ = ('created_at', 'emoji', 'state', )
     
     type = ACTIVITY_TYPES.custom
     
@@ -106,7 +111,12 @@ class ActivityCustom(ActivityBase):
             emoji = create_partial_emoji_from_data(emoji_data)
         self.emoji = emoji
         
-        self.created = activity_data.get('created_at', 0)
+        created_at = activity_data.get('created_at', None)
+        if created_at is None:
+            created_at = DISCORD_EPOCH_START
+        else:
+            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+        self.created_at = created_at
     
     def _difference_update_attributes(self, activity_data):
         """
@@ -122,17 +132,17 @@ class ActivityCustom(ActivityBase):
         changes : `dict` of (`str`, `Any`) items
             All item in the returned dict is optional.
         
-        Returned Data Structure
-        -----------------------
-        +-----------+-----------------------+
-        | key       | value                 |
-        +===========+=======================+
-        | created   | `int`                 |
-        +-----------+-----------------------+
-        | emoji     | `None` or ``Emoji``   |
-        +-----------+-----------------------+
-        | state     | `str` or `None`       |
-        +-----------+-----------------------+
+            The returned items might be the following:
+            
+            +---------------+-----------------------+
+            | key           | value                 |
+            +===============+=======================+
+            | created_at    | `datetime`            |
+            +---------------+-----------------------+
+            | emoji         | `None` or ``Emoji``   |
+            +---------------+-----------------------+
+            | state         | `None` or `str`       |
+            +---------------+-----------------------+
         """
         old_attributes = {}
         
@@ -151,10 +161,14 @@ class ActivityCustom(ActivityBase):
             old_attributes['emoji'] = self.emoji
             self.emoji = emoji
         
-        created = activity_data.get('created_at', 0)
-        if self.created != created:
-            old_attributes['created'] = self.created
-            self.created = created
+        created_at = activity_data.get('created_at', None)
+        if created_at is None:
+            created_at = DISCORD_EPOCH_START
+        else:
+            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+        if self.created_at != created_at:
+            old_attributes['created_at'] = self.created_at
+            self.created_at = created_at
         
         return old_attributes
     
@@ -167,8 +181,8 @@ class ActivityCustom(ActivityBase):
         activity_data : `dict` of (`str`, `Any`) items
         """
         activity_data = {
-            'name' : 'Custom Status',
-            'id' : 'custom',
+            'name': 'Custom Status',
+            'id': 'custom',
         }
         
         emoji = self.emoji
@@ -188,8 +202,8 @@ class ActivityCustom(ActivityBase):
         if (state is not None):
             activity_data['state'] = state
         
-        created = self.created
-        if created:
-            activity_data['created_at'] = created
+        created_at = self.created_at
+        if created_at != DISCORD_EPOCH_START:
+            activity_data['created_at'] = floor(created_at.timestamp()*1000.0)
         
         return activity_data

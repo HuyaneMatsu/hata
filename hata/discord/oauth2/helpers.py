@@ -68,7 +68,7 @@ def parse_locale_optional(data):
     
     Returns
     -------
-    locale : `str` or `None`
+    locale : `None` or `str`
     """
     try:
         locale = data['locale']

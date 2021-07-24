@@ -424,7 +424,7 @@ class ComponentBase:
         -------
         new : ``ComponentBase``
         """
-        return None
+        return self
     
     
     def copy_with(self, **kwargs):
@@ -439,7 +439,7 @@ class ComponentBase:
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
-        return None
+        return self
     
     
     def __eq__(self, other):
@@ -457,7 +457,7 @@ class ComponentBase:
     
     def _iter_components(self):
         """
-        Iterates over the sub components of the component.
+        Iterates over the sub-components recursively of the component including itself.
         
         This method is a generator.
         
@@ -467,7 +467,32 @@ class ComponentBase:
         """
         yield self
         return
-
+    
+    
+    def _replace_direct_sub_components(self, relation):
+        """
+        Replaces the sub components of the component with the given relation.
+        
+        Parameters
+        ----------
+        relation : `dict` of (``ComponentBase``, ``ComponentBase``) items
+            Relation to replace each component with.
+        """
+        pass
+    
+    
+    def _iter_direct_sub_components(self):
+        """
+        Iterates over the sub-components of the component.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        component : ``ComponentBase``
+        """
+        return
+        yield
 
 @export
 class ComponentRow(ComponentBase):
@@ -476,7 +501,7 @@ class ComponentRow(ComponentBase):
     
     Attributes
     ----------
-    components : `None` or `list` of ``ComponentBase`` instances
+    components : `None` or `tuple` of ``ComponentBase`` instances
         Stored components.
     
     Class Attributes
@@ -562,7 +587,24 @@ class ComponentRow(ComponentBase):
         if (components is None):
             repr_parts.append('[]')
         else:
-            repr_parts.append(repr(components))
+            repr_parts.append('[')
+            
+            index = 0
+            limit = len(components)
+            
+            while True:
+                component = components[index]
+                index += 1
+                
+                repr_parts.append(repr(component))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
         
         repr_parts.append('>')
         
@@ -575,7 +617,7 @@ class ComponentRow(ComponentBase):
         
         components = self.components
         if (components is not None):
-            components = [component.copy() for component in self.components]
+            components = tuple(component.copy() for component in self.components)
         
         new.components = components
         
@@ -642,22 +684,27 @@ class ComponentRow(ComponentBase):
         return hash_value
     
     
+    @copy_docs(ComponentBase._iter_components)
     def _iter_components(self):
-        """
-        Iterates over the sub components of the component.
-        
-        This method is a generator.
-        
-        Yields
-        ------
-        component : ``ComponentBase``
-        """
         yield self
         components = self.components
         if (components is not None):
             for component in components:
                 yield from component._iter_components()
-
+    
+    
+    @copy_docs(ComponentBase._replace_direct_sub_components)
+    def _replace_direct_sub_components(self, relation):
+        components = self.components
+        if (components is not None):
+            self.components = tuple(relation.get(component, component) for component in components)
+    
+    
+    @copy_docs(ComponentBase._iter_direct_sub_components)
+    def _iter_direct_sub_components(self):
+        components = self.components
+        if (components is not None):
+            yield from components
 
 
 class ComponentButton(ComponentBase):
@@ -1344,7 +1391,7 @@ class ComponentSelect(ComponentBase):
         Custom identifier to detect which component was used by the user.
     enabled : `bool`
         Whether the component is enabled.
-    options : `list` of ``ComponentSelectOption``
+    options : `None` or `tuple` of ``ComponentSelectOption``
         Options of the select.
     placeholder : `str`
         Placeholder text of the select.
@@ -1370,7 +1417,7 @@ class ComponentSelect(ComponentBase):
         ----------
         options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``
             Options of the select.
-        custom_id : `str` or `None`, Optional
+        custom_id : `None` or `str`, Optional
             Custom identifier to detect which component was used by the user.
         placeholder : `str`, Optional (Keyword only)
             Placeholder text of the select.
@@ -1408,7 +1455,10 @@ class ComponentSelect(ComponentBase):
         if (custom_id is None) or (not custom_id):
             custom_id = create_auto_custom_id()
         
-        options = list(options)
+        if (options is not None):
+            options = tuple(options)
+            if (not options):
+                options = None
         
         self = object.__new__(cls)
         self.custom_id = custom_id
@@ -1426,7 +1476,11 @@ class ComponentSelect(ComponentBase):
         self = object.__new__(cls)
         
         option_datas = data['options']
-        self.options = [ComponentSelectOption.from_data(option_data) for option_data in option_datas]
+        if option_datas:
+            options = tuple(ComponentSelectOption.from_data(option_data) for option_data in option_datas)
+        else:
+            options = None
+        self.options = options
         
         self.custom_id = data['custom_id']
         self.placeholder = data.get('placeholder', None)
@@ -1442,8 +1496,14 @@ class ComponentSelect(ComponentBase):
         data = {
             'type': self.type.value,
             'custom_id': self.custom_id,
-            'options': [option.to_data() for option in self.options],
         }
+        
+        options = self.options
+        if options is None:
+            options_value = []
+        else:
+            options_value = [option.to_data() for option in options]
+        data['options'] = options_value
         
         placeholder = self.placeholder
         if (placeholder is not None):
@@ -1476,10 +1536,31 @@ class ComponentSelect(ComponentBase):
         repr_parts.append(', custom_id=')
         repr_parts.append(reprlib.repr(self.custom_id))
         
+        repr_parts.append(', options=')
         options = self.options
-        if (options is not None):
-            repr_parts.append(', options=')
-            repr_parts.append(repr(options))
+        if (options is None):
+            repr_parts.append('[]')
+        else:
+            repr_parts.append('[')
+            
+            index = 0
+            limit = len(options)
+            
+            while True:
+                option = options[index]
+                index += 1
+                
+                repr_parts.append(repr(option))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        repr_parts.append('>')
         
         placeholder = self.placeholder
         if (placeholder is not None):
@@ -1512,7 +1593,7 @@ class ComponentSelect(ComponentBase):
         
         options = self.options
         if (options is not None):
-            options = [option.copy() for option in options]
+            options = tuple(option.copy() for option in options)
         
         new.options = options
         
@@ -1537,7 +1618,7 @@ class ComponentSelect(ComponentBase):
         ----------------
         options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``, Optional (Keyword only)
             Options of the select.
-        custom_id : `str` or `None`, Optional (Keyword only)
+        custom_id : `None` or `str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         placeholder : `str`, Optional (Keyword only)
             Placeholder text of the select.
@@ -1558,12 +1639,15 @@ class ComponentSelect(ComponentBase):
         except KeyError:
             options = self.options
             if (options is not None):
-                options = [option.copy() for option in options]
+                options = tuple(option.copy() for option in options)
         else:
             if __debug__:
                 _debug_component_options(options)
             
-            options = list(options)
+            if (options is not None):
+                options = tuple(options)
+                if (not options):
+                    options = None
         
         try:
             custom_id = kwargs.pop('custom_id')
@@ -1671,17 +1755,39 @@ class ComponentSelect(ComponentBase):
             hash_value ^= 1<<8
         
         return hash_value
-
     
+    
+    @copy_docs(ComponentBase._iter_components)
+    def _iter_components(self):
+        yield self
+        options = self.options
+        if (options is not None):
+            for option in options:
+                yield from option._iter_components()
+    
+    
+    @copy_docs(ComponentBase._replace_direct_sub_components)
+    def _replace_direct_sub_components(self, relation):
+        options = self.options
+        if (options is not None):
+            self.options = tuple(relation.get(option, option) for option in options)
+    
+    
+    @copy_docs(ComponentBase._iter_direct_sub_components)
+    def _iter_direct_sub_components(self):
+        options = self.options
+        if (options is not None):
+            yield from options
+
 
 COMPONENT_DYNAMIC_SERIALIZERS = {
-    'emoji' : create_partial_emoji_data,
-    'style' : lambda style: style.value if isinstance(style, PreinstancedBase) else style,
+    'emoji': create_partial_emoji_data,
+    'style': lambda style: style.value if isinstance(style, PreinstancedBase) else style,
 }
 
 
 COMPONENT_DYNAMIC_DESERIALIZERS = {
-    'emoji' : create_partial_emoji_from_data,
+    'emoji': create_partial_emoji_from_data,
 }
 
 

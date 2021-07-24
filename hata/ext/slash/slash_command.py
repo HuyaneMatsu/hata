@@ -293,7 +293,7 @@ def _generate_description_from(command, name, description):
     ----------
     command : `None` or `callable`
         The command's function.
-    name : `str` or `None`
+    name : `None` or `str`
         The command's name, if name defaulting should be applied.
     description : `Any`
         The command's description.

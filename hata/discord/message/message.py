@@ -101,7 +101,7 @@ class Message(DiscordEntity, immortal=True):
         The message's flags.
     interaction : `None` or ``MessageInteraction``
         Present if the message is a response to an ``InteractionEvent``.
-    nonce : `str` or `None`
+    nonce : `None` or `str`
         A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
         be shown up at the message's received payload as well.
     pinned : `bool`

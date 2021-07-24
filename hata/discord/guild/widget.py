@@ -18,7 +18,7 @@ class GuildWidgetUser(DiscordEntity):
         The unique identifier number of the guild widget user. Can be between `0` and `99`.
     activity_name : `None` or `str`
         The guild widget user's activity's name if applicable.
-    avatar_url : `str` or `None`
+    avatar_url : `None` or `str`
         The guild widget user's avatar url if applicable.
     discriminator : `int`
         The guild widget user's discriminator.
@@ -270,7 +270,7 @@ class GuildWidget(DiscordEntity):
         
         Returns
         -------
-        invite_url : `str` or `None`
+        invite_url : `None` or `str`
         """
         return self._data.get('instant_invite', None)
     

@@ -875,7 +875,7 @@ class URL:
         
         Parameters
         ----------
-        port : `int` or `None`
+        port : `None` or `int`
             Port part of the new url.
 
         Returns
@@ -961,7 +961,7 @@ class URL:
         
         Parameters
         ----------
-        fragment : `str` or `None`
+        fragment : `None` or `str`
             Fragment part of the new url.
 
         Returns

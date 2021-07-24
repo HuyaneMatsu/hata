@@ -518,7 +518,7 @@ def section_serializer(section, object_):
     
     Parameters
     ----------
-    section : `tuple` ((`str` or `None`), `list` of `Any`)
+    section : `tuple` ((`None` or `str`), `list` of `Any`)
         The title to serialize.
     object_ : ``UnitBase``
         The respective unit.

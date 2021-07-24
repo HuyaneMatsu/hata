@@ -15,7 +15,7 @@ class GuildPreview(DiscordEntity):
     
     Attributes
     ----------
-    description : `str` or `None`
+    description : `None` or `str`
         Description of the guild. The guild must have `PUBLIC` feature.
     discovery_splash_hash : `int`
         The guild's discovery splash's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have

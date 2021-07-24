@@ -14,7 +14,7 @@ class InviteStage:
         The users inside of the stage.
     speaker_count : int`
         The number of speakers in the stage.
-    topic : `str` or `None`
+    topic : `None` or `str`
         The stage's topic if any.
     """
     __slots__ = ('participant_count', 'participants', 'speaker_count', 'topic',)

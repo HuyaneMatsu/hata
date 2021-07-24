@@ -38,11 +38,11 @@ class SlashCommandParameterConversionError(SlashCommandError):
         generated pretty representation of the exception.
     _repr : `None` or `str`
         The generated error message.
-    parameter_name : `str` or `None`
+    parameter_name : `None` or `str`
         The parameter's name, which failed to be parsed.
-    received_value : `str` or `None`
+    received_value : `None` or `str`
         The parameter's received value.
-    excepted_type : `str` or `None`
+    excepted_type : `None` or `str`
         The parameter's expected type's name.
     expected_values : `None` or `list` of `Any`
         Expected values.
@@ -53,11 +53,11 @@ class SlashCommandParameterConversionError(SlashCommandError):
         
         Parameters
         ----------
-        parameter_name : `str` or `None`
+        parameter_name : `None` or `str`
             The parameter's name, which failed to be parsed.
-        received_value : `str` or `None`
+        received_value : `None` or `str`
             The parameter's received value.
-        excepted_type : `str` or `None`
+        excepted_type : `None` or `str`
             The parameter's expected type's name.
         expected_values : `None` or `list` of `Any`
             Expected values.

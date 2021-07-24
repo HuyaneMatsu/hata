@@ -442,7 +442,7 @@ async def prefix_wrapper_async_callable(prefix_factory, re_flags, message):
     
     Returns
     -------
-    prefix : `str` or `None`
+    prefix : `None` or `str`
         The prefix used by the user. Returned as `None` of parsing failed.
     end : `int`
         The start of the content after the prefix. Returned as `-1` if parsing failed.
@@ -482,7 +482,7 @@ async def prefix_getter_async_callable(prefix_factory, message):
     
     Returns
     -------
-    prefix : `str` or `None`
+    prefix : `None` or `str`
         The respective prefix for the message. Returns `None` of non could be identified.
     """
     prefix = await prefix_factory(message)
@@ -513,7 +513,7 @@ async def prefix_wrapper_sync_callable(prefix_factory, re_flags, message):
     
     Returns
     -------
-    prefix : `str` or `None`
+    prefix : `None` or `str`
         The prefix used by the user. Returned as `None` of parsing failed.
     end : `int`
         The start of the content after the prefix. Returned as `-1` if parsing failed.
@@ -553,7 +553,7 @@ async def prefix_getter_sync_callable(prefix_factory, message):
     
     Returns
     -------
-    prefix : `str` or `None`
+    prefix : `None` or `str`
         The respective prefix for the message. Returns `None` of non could be identified.
     """
     prefix = prefix_factory(message)
@@ -582,7 +582,7 @@ async def prefix_wrapper_regex(re_pattern, message):
     
     Returns
     -------
-    prefix : `str` or `None`
+    prefix : `None` or `str`
         The prefix used by the user. Returned as `None` of parsing failed.
     end : `int`
         The start of the content after the prefix. Returned as `-1` if parsing failed.

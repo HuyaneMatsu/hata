@@ -122,7 +122,7 @@ class LocalAudio(AudioSource):
         Parameters and the stdin used to open the postprocess when postprocess happens.
     _stdout : `_io.BufferedReader`
         Stdout of `.process`.
-    path : `str` or `None`
+    path : `None` or `str`
         The audio source's path if applicable. Defaults to `None`.
     process : `subprocess.Popen`
         The ffmpeg or the avconv subprocess.
@@ -390,7 +390,7 @@ else:
             Parameters and the stdin used to open the postprocess when postprocess happens.
         _stdout : `_io.BufferedReader`
             Stdout of `.process`.
-        path : `str` or `None`
+        path : `None` or `str`
             The audio source's path if applicable. Defaults to `None`.
         process : `subprocess.Popen`
             The ffmpeg or the avconv subprocess.

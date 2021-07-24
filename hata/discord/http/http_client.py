@@ -94,9 +94,9 @@ class DiscordHTTPClient(HTTPClient):
         Headers used by every every Discord request.
     loop : ``EventThread``
         The event loop of the http session.
-    proxy_auth :  `str` or `None`
+    proxy_auth :  `None` or `str`
         Proxy authorization.
-    proxy_url : `str` or `None`
+    proxy_url : `None` or `str`
         Proxy url.
     
     Class Attributes

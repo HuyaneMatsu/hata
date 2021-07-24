@@ -699,7 +699,9 @@ class ClientResponse:
         """
         Returns the server response reason.
         
-        reason : `str` or `None`
+        Returns
+        -------
+        reason : `None` or `str`
         """
         message = self.raw_message
         if (message is not None):

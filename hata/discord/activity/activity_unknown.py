@@ -10,8 +10,8 @@ class ActivityUnknown(ActivityBase):
     
     Class Attributes
     ----------------
-    created : `int` = `0`
-        When the activity was created as Unix time in milliseconds.
+    created_at : `datetime`
+        When the activity was created. Defaults to Discord epoch.
     color : ``Color`` = `Color(0)
         The color of the activity.
     name : `str` = `'Unknown'`

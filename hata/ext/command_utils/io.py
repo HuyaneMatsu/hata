@@ -194,7 +194,7 @@ class ChannelOutputStream:
         
         Returns
         -------
-        data : `str` or `None`
+        data : `None` or `str`
             The data to send if any.
         """
         chunks = self._chunks

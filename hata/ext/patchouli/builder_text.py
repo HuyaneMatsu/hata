@@ -1767,7 +1767,7 @@ class SectionConverter:
         
         Parameters
         ----------
-        section : `tuple` ((`str` or `None`), `list` of `Any`)
+        section : `tuple` ((`None` or `str`), `list` of `Any`)
             The section to represent.
         builder_context : ``BuilderContext``
             Context to define some building details.

@@ -333,7 +333,7 @@ class WordNode:
         
         Returns
         -------
-        matched : `str` or `None`
+        matched : `None` or `str`
             The matched string, if any.
         """
         if len(string) > index:
@@ -464,7 +464,7 @@ class TokenTypeNode:
         
         Parameters
         ----------
-        html_class : `str` or `None`
+        html_class : `None` or `str`
             the html class to set or `None` to remove.
         """
         self.html_class = html_class
@@ -481,7 +481,7 @@ class TokenTypeNode:
         
         Parameters
         ----------
-        html_class : `str` or `None`
+        html_class : `None` or `str`
             the html class to set or `None` to remove.
         """
         if html_class is None:

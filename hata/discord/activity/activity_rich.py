@@ -1,10 +1,12 @@
 __all__ = ('ActivityRich',)
 
 from datetime import datetime
+from math import floor
 
 from ..color import Color
-from ..preconverters import preconvert_str, preconvert_int
+from ..preconverters import preconvert_str, preconvert_int, preconvert_snowflake, preconvert_flag
 from ..http import urls as module_urls
+from ..utils import is_url, DISCORD_EPOCH_START
 
 from . import activity_types as ACTIVITY_TYPES
 from .activity_base import ActivityBase, ACTIVITY_TYPE_NAMES, ActivityAssets, ActivityParty, ActivitySecrets, \
@@ -13,6 +15,13 @@ from .flags import ActivityFlag
 
 ACTIVITY_TYPE_NAME_UNKNOWN = 'unknown'
 
+VALID_RICH_ACTIVITY_TYPES = frozenset((
+    ACTIVITY_TYPES.game,
+    ACTIVITY_TYPES.stream,
+    ACTIVITY_TYPES.spotify,
+    ACTIVITY_TYPES.watching,
+    ACTIVITY_TYPES.competing,
+))
 
 class ActivityRich(ActivityBase):
     """
@@ -24,8 +33,8 @@ class ActivityRich(ActivityBase):
         The id of the activity's application. Defaults to `0`.
     assets : `None` or ``ActivityAssets``
         The activity's assets. Defaults to `None`.
-    created : `int`
-        When the status was created as Unix time in milliseconds. Defaults to `0`.
+    created_at : `datetime`
+        When the activity was created. Defaults to Discord epoch.
     details : `None` or `str`
         What the player is currently doing. Defaults to `None`.
     flags : ``ActivityFlag``
@@ -35,26 +44,27 @@ class ActivityRich(ActivityBase):
     name : `str`
         The activity's name.
     party : `None` or ``ActivityParty``
-        The party's party.
+        The activity's party.
     secrets : `None` or ``ActivitySecrets``
         The activity's secrets. Defaults to `None`.
     session_id : `None` or `str`
-        The ``ActivitySpotify``'s session's id. Defaults to `None`.
-    state : `str` or `None`
+        Spotify activity's session's id. Defaults to `None`.
+    state : `None` or `str`
         The player's current party status. Defaults to `None`.
     sync_id : `None` or `str`
-        The ID of the currently playing track. Defaults to `None`.
-    timestamps : `None` or ``ActivityTimestamp``
+        The ID of the currently playing track of a spotify activity. Defaults to `None`.
+    timestamps : `None` or ``ActivityTimestamps``
         The activity's timestamps.
     type : `int`
         An integer, what represent the activity's type for Discord. Can be one of: `0`, `1`, `2`, `3`, `4`.
     url : `None` or `str`
         The url of the stream (Twitch or Youtube only). Defaults to `None`.
     """
-    __slots__ = ('application_id', 'assets', 'created', 'details', 'flags', 'id', 'name', 'party', 'secrets',
+    __slots__ = ('application_id', 'assets', 'created_at', 'details', 'flags', 'id', 'name', 'party', 'secrets',
         'session_id', 'state', 'sync_id', 'timestamps', 'type', 'url', )
     
-    def __new__(cls, name, url=None, type_=ACTIVITY_TYPES.game):
+    def __new__(cls, name, *, application_id=..., assets=None, created_at=..., details=None, flags=..., id_=...,
+            party=None, secrets=None, session_id=None, state=None, sync_id=None, timestamps=None, type_=..., url=None):
         """
         Creates a new activity with the given parameters.
         
@@ -62,10 +72,32 @@ class ActivityRich(ActivityBase):
         ----------
         name : `str`
             The name of the activity.
-        url : `None`, `str`, Optional
-            The url of the activity. Only twitch and youtube urls are supported.
-        type_ : `int`, Optional
+        application_id : `None` or `int`, Optional (Keyword only)
+            The id of the activity's application. Defaults to `0`.
+        assets : `None` or ``ActivityAssets``, Optional (Keyword only)
+             The activity's assets. Defaults to `None`.
+        details : `None` or `str`, Optional (Keyword only)
+            What the player is currently doing. Defaults to `None`.
+        flags : ``ActivityFlag``, `int`, Optional (Keyword only)
+            The flags of the activity. Defaults to `ActivityFlag(0)`
+        id_ : `int`, Optional (Keyword only)
+            The id of the activity. Defaults to `0`.
+        party : `None` or ``ActivityParty``, Optional (Keyword only)
+            The activity's party.
+        secrets : `None` or ``ActivitySecret``, Optional (Keyword only)
+            The activity's secrets. Defaults to `None`.
+        session_id : `None` or `str`, Optional (Keyword only)
+            Spotify activity's session's id. Defaults to `None`.
+        state : `None` or `str`, Optional (Keyword only)
+            The player's current party status. Defaults to `None`.
+        sync_id : `None` or `str`, Optional (Keyword only)
+            The ID of the currently playing track of a spotify activity. Defaults to `None`.
+        timestamps : `None` or ``ActivityTimestamps``, Optional (Keyword only)
+            The activity's timestamps.
+        type_ : `int`, Optional (Keyword only)
             The type value of the activity.
+        url : `None`, `str`, Optional (Keyword only)
+            The url of the activity. Only twitch and youtube urls are supported.
         
         Returns
         -------
@@ -74,37 +106,136 @@ class ActivityRich(ActivityBase):
         Raises
         ------
         TypeError
-            If any parameter's type is bad or if unexpected parameter is passed.
+            - If `name` was not given as `str` instance.
+            - If `url`'s type is neither `None` sor `str`.
+            - If `type_` is not `int` instance.
+            - If `application_id` is not `int` instance.
+            - If `details` is neither `None` nor `str` instance.
+            - If `assets` is neither `None` nor ``ActivityAssets`` instance.
+            - If `party` is neither `None` nor ``ActivityParty`` instance.
+            - If `id_` is not `int` instance.
+            - If `created_at` is not `int` instance.
+            - If `session_id` is neither `None` sor `str`
+            - If `state` is neither `None` sor `str` instance.
+            - if `timestamps` is neither `None` nor ``ActivityTimestamps`` instance.
+            - If `sync_id` is neither `None` nor `str` instance.
         ValueError
-            If an parameter's type is good, but it's value is unacceptable.
+            - If `name`'s length is out of range [1:2048].
+            - If `url`'s length is out of range [0:2048].
+            - If `type_` is not any of the expected values.
+            - If `details`'s length is out of range [0:2048].
+            - If `state`'s length is out of range [0:2048].
+            - If `sync_id`'s length is out of range [0:2048].
+            - If `session_id`'s length is out of range [0:2048].
+        AssertionError
+            - If `url` is nto a valid url.
         """
-        name = preconvert_str(name, 'name', 0, 2048)
+        name = preconvert_str(name, 'name', 1, 2048)
+        
+        if application_id is ...:
+            application_id = 0
+        else:
+            application_id = preconvert_snowflake(application_id, 'application_id')
+        
+        
+        if (assets is not None) and (not isinstance(assets, ActivityAssets)):
+            raise TypeError(f'`assets` can be either `None` or `{ActivityAssets.__name__}` instance, got '
+                f'{assets.__class__.__name__}')
+        
+        
+        if created_at is ...:
+            created_at = DISCORD_EPOCH_START
+        else:
+            if not isinstance(created_at, datetime):
+                raise TypeError(f'`created_at` can be `datetime` instance, got {created_at.__class__.__name__}.')
+        
+        
+        if (details is not None):
+            details = preconvert_str(details, 'details', 0, 2048)
+            if (not details):
+                details = None
+        
+        
+        if (flags is ...):
+            flags = ActivityFlag(0)
+        else:
+            flags = preconvert_flag(flags, 'flags', ActivityFlag)
+        
+        
+        
+        if id_ is ...:
+            id_ = 0
+        else:
+            id_ = preconvert_snowflake(id_, 'id_')
+        
+        
+        if (party is not None) and (not isinstance(party, ActivityParty)):
+            raise TypeError(f'`party` can be either `None` or `{ActivityParty.__name__}` instance, got '
+                f'{party.__class__.__name__}.')
+        
+        
+        if (secrets is not None) and (not isinstance(secrets, ActivitySecrets)):
+            raise TypeError(f'`secrets` can be either `None` or `{ActivitySecrets.__name__}` instance, got '
+                f'{secrets.__class__.__name__}.')
+        
+        
+        if (session_id is not None):
+            session_id = preconvert_str(session_id, 'session_id', 0, 2048)
+            if (not session_id):
+                session_id = None
+        
+        
+        if (state is not None):
+            state = preconvert_str(state, 'state', 0, 2048)
+            if (not state):
+                state = None
+        
+        
+        if (timestamps is not None) and (not isinstance(timestamps, ActivityTimestamps)):
+            raise TypeError(f'`timestamps` can be either `None` or `{ActivityTimestamps.__name__}` instance, got '
+                f'{timestamps.__class__.__name__}')
+        
+        
+        if (sync_id is not None):
+            sync_id = preconvert_str(sync_id, 'sync_id', 0, 2048)
+            if (not sync_id):
+                sync_id = None
+        
         
         if (url is not None):
             url = preconvert_str(url, 'url', 0, 2048)
+            if url:
+                if __debug__:
+                    if not is_url(url):
+                        raise AssertionError(f'`url` was not given as a valid url, got {url!r}.')
+            
+            else:
+                url = None
         
-        type_ = preconvert_int(type_, 'type_', 0, 5)
+        if type_ is ...:
+            type_ = ACTIVITY_TYPES.game
+        else:
+            type_ = preconvert_int_options(type_, 'type_', VALID_RICH_ACTIVITY_TYPES)
         
-        if type_ == ACTIVITY_TYPES.custom:
-            raise RuntimeError(f'Custom activity cannot be created with `{cls.__name__}.__new__`.')
+        
         
         self = object.__new__(cls)
         self.name = name
-        self.url = url
-        self.type = type_
         
-        self.application_id = 0
-        self.timestamps = None
-        self.details = None
-        self.state = None
-        self.party = None
-        self.assets = None
-        self.secrets = None
-        self.sync_id = None
-        self.session_id = None
-        self.flags = ActivityFlag()
-        self.created = 0
-        self.id = 0
+        self.application_id = application_id
+        self.details = details
+        self.flags = flags
+        self.state = state
+        self.party = party
+        self.assets = assets
+        self.secrets = secrets
+        self.sync_id = sync_id
+        self.session_id = session_id
+        self.created_at = created_at
+        self.id = id_
+        self.timestamps = timestamps
+        self.type = type_
+        self.url = url
         
         return self
     
@@ -235,7 +366,12 @@ class ActivityRich(ActivityBase):
             assets = ActivityAssets.from_data(assets_data)
         self.assets = assets
         
-        self.created = activity_data.get('created_at', 0)
+        created_at = activity_data.get('created_at', None)
+        if created_at is None:
+            created_at = DISCORD_EPOCH_START
+        else:
+            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+        self.created_at = created_at
         
         self.details = activity_data.get('details', None)
         
@@ -299,7 +435,7 @@ class ActivityRich(ActivityBase):
         +-------------------+-----------------------------------+
         | assets            | `None` or ``ActivityAssets``      |
         +-------------------+-----------------------------------+
-        | created           | `int`                             |
+        | created_at        | `datetime`                        |
         +-------------------+-----------------------------------+
         | details           | `None` or `str`                   |
         +-------------------+-----------------------------------+
@@ -346,10 +482,14 @@ class ActivityRich(ActivityBase):
             old_attributes['assets'] = self.assets
             self.assets = assets
         
-        created = activity_data.get('created_at', 0)
-        if self.created != created:
-            old_attributes['created'] = self.created
-            self.created = created
+        created_at = activity_data.get('created_at', None)
+        if created_at is None:
+            created_at = DISCORD_EPOCH_START
+        else:
+            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+        if self.created_at != created_at:
+            old_attributes['created_at'] = self.created_at
+            self.created_at = created_at
         
         details = activity_data.get('details', None)
         if self.details != details:
@@ -513,13 +653,13 @@ class ActivityRich(ActivityBase):
         """
         activity_data = self.user_dict()
 
-        #receive only?
+        # receive only?
         activity_data['id'] = self.discord_side_id
         
-        #receive only?
-        created = self.created
-        if created:
-            activity_data['created_at'] = created
+        # receive only?
+        created_at = self.created_at
+        if created_at != DISCORD_EPOCH_START:
+            activity_data['created_at'] = floor(created_at.timestamp()*1000.0)
         
         return activity_data
     

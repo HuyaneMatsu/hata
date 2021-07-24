@@ -340,7 +340,7 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
         The type to work with.
     parameter_names : `tuple` of `str`
         The parameters names to pass to the constructor.
-    name_name : `str` or `None`
+    name_name : `None` or `str`
         The event's name's name.
     event_name : `str`
         The event's name. If event is nto found, then defaults to `name_name`'s found value if any.
@@ -802,7 +802,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         ----------
         func : ``Router``, `callable`
             The event to be removed to the respective event handlers.
-        *args : `str` or `None`
+        *args : `None` or `str`
             Additional positional parameters.
         **kwargs : Keyword parameters
             Additional keyword parameters.

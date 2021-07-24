@@ -1034,7 +1034,7 @@ class TCPConnector(ConnectorBase):
                     flags = host_info.flags,
                     local_address = self.local_address,
                     server_hostname = (host_info.hostname if ssl_context else None),
-                        )
+                )
             except ssl_errors as err:
                 err.key = request.connection_key
                 raise

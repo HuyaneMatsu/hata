@@ -301,7 +301,7 @@ class ComponentInteraction:
     ----------
     component_type : ``ComponentType``
         The component's type.
-    custom_id : `str` or `None`
+    custom_id : `None` or `str`
         The component's custom identifier.
     options : `None` or `tuple` of `str`
         Option values selected of the respective interaction.
@@ -348,7 +348,6 @@ class ComponentInteraction:
         """Returns the component interaction's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' custom_id=', repr(self.custom_id),
             ', component_type=',
         ]
         component_type = self.component_type

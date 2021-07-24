@@ -209,7 +209,7 @@ class Formdata:
                 payload_kwargs = {
                     'headers': headers,
                     'encoding': encoding,
-                        }
+                }
                 
                 try:
                     content_type = headers[CONTENT_TYPE]

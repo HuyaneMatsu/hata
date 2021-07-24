@@ -229,7 +229,7 @@ class CommandProcessor(EventWaitforBase):
             Function to generate category display names. Defaults to `None`.
         command_name_rule : `None` or `function`, Optional (Keyword only)
             Function to generate command display names. Defaults to `None`.
-        default_category_name : `str` or `None`, Optional (Keyword only)
+        default_category_name : `None` or `str`, Optional (Keyword only)
             The command processor's default category's name. Defaults to `None`.
         prefix_ignore_case : `bool`
             Whether the prefix's case should be ignored.
@@ -490,7 +490,7 @@ class CommandProcessor(EventWaitforBase):
         
         Returns
         -------
-        prefix : `str` or `None`
+        prefix : `None` or `str`
         """
         return await self._prefix_getter(message)
     
@@ -504,7 +504,7 @@ class CommandProcessor(EventWaitforBase):
         
         Parameters
         ---------
-        category_name : `str` or `None`
+        category_name : `None` or `str`
             The category's name.
         
         Returns

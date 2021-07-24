@@ -17,9 +17,9 @@ class EmbedThumbnail:
     ----------
     height : `int`
         The height of the thumbnail. Defaults to `0`.
-    proxy_url : `str` or `None`
+    proxy_url : `None` or `str`
         A proxied url of the thumbnail.
-    url : `str` or `None`
+    url : `None` or `str`
         The url of the thumbnail.
     width : `int`
         The width of the thumbnail. Defaults to `0`.
@@ -125,9 +125,9 @@ class EmbedVideo:
     ----------
     height : `int`
         The height of the video. Defaults to `0`.
-    proxy_url : `str` or `None`
+    proxy_url : `None` or `str`
         A proxied url of the video.
-    url : `str` or `None`
+    url : `None` or `str`
         The url of the video.
     width : `int`
         The width of the video. Defaults to `0`.
@@ -228,9 +228,9 @@ class EmbedImage:
     ----------
     height : `int`
         The height of the image. Defaults to `0`.
-    proxy_url : `str` or `None`
+    proxy_url : `None` or `str`
         A proxied url of the image.
-    url : `str` or `None`
+    url : `None` or `str`
         The url of the image.
     width : `int`
         The width of the image. Defaults to `0`.
@@ -335,9 +335,9 @@ class EmbedProvider:
     
     Attributes
     ----------
-    name : `str` or `None`
+    name : `None` or `str`
         The name of the provider.
-    url : `str` or `None`
+    url : `None` or `str`
         The url of the provider.
     """
     __slots__ = ('name', 'url',)
@@ -432,13 +432,13 @@ class EmbedAuthor:
     
     Attributes
     ----------
-    icon_url : `str` or `None`
+    icon_url : `None` or `str`
         Url of the author's icon.
-    name : `str` or `None`
+    name : `None` or `str`
         The name of the author.
-    proxy_icon_url : `str` or `None`
+    proxy_icon_url : `None` or `str`
         A proxied url to the url of the author's icon.
-    url : `str` or `None`
+    url : `None` or `str`
         The url of the author.
     """
     __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url',)
@@ -584,9 +584,9 @@ class EmbedFooter:
     
     Attributes
     ----------
-    icon_url :`str` or `None`
+    icon_url :`None` or `str`
         Url of the embed footer's icon.
-    proxy_icon_url : `str` or `None`
+    proxy_icon_url : `None` or `str`
         A proxied url of the embed footer's icon.
     text : `str`
         The embed footer's text.

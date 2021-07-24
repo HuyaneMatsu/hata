@@ -1982,7 +1982,7 @@ class WSServer:
             - If `reuse_port` is given as non `bool`.
             - If `reuse_address` is given as non `bool`.
             - If `reuse_port` is given as non `bool`.
-            - If `host` is not given as `None`, `str` and neither as `iterable` of `str` or `None`.
+            - If `host` is not given as `None`, `str` and neither as `iterable` of `None` or `str`.
         ValueError
             - If `host` or `port` parameter is given, when `socket` is defined as well.
             - If `reuse_port` is given as `True`, but not supported.

@@ -525,7 +525,7 @@ class ActivitySecrets:
     
     def __new__(cls, *, join=None, match=None, spectate=None):
         """
-        Creates a new activity secret from teh given parameters.
+        Creates a new activity secret from the given parameters.
         
         Parameters
         ----------
@@ -666,8 +666,8 @@ class ActivityBase:
     
     Class Attributes
     ----------------
-    created : `int` = `0`
-        When the activity was created as Unix time in milliseconds.
+    created_at : `datetime`
+        When the activity was created. Defaults to Discord epoch.
     name : `str` = `'Unknown'`
         The activity's name. Subclasses might overwrite it as member descriptor.
     id : `int` = `0`
@@ -678,7 +678,7 @@ class ActivityBase:
     name = 'Unknown'
     id = 0
     type = 127
-    created = 0
+    created_at = DISCORD_EPOCH_START
     
     __slots__ = ()
     def __new__(cls, data):
@@ -758,9 +758,7 @@ class ActivityBase:
         -------
         created_at : `datetime`
         """
-        created = self.created
-        if created == 0:
-            return DISCORD_EPOCH_START
+        return DISCORD_EPOCH_START
         
         return datetime.utcfromtimestamp(created/1000.)
     

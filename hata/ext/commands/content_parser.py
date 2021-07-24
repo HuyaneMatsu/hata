@@ -472,7 +472,7 @@ class ContentParserContext:
         A message's content after it's prefix.
     index : `int`
         The index, of the last character's end.
-    last_part : `str` or `None`
+    last_part : `None` or `str`
         The last parsed part.
     last_start : `bool`
         When the last returned string started
@@ -518,7 +518,7 @@ class ContentParserContext:
         
         Returns
         -------
-        next_ : `str` or `None`
+        next_ : `None` or `str`
             Returns `None` if the message has no more parts left.
         """
         index = self.index

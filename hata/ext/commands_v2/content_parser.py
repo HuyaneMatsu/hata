@@ -1965,7 +1965,7 @@ class ContentParserParameter:
         ----------
         command_context : ``CommandContext``
             The respective command's context.
-        part : `str` or `None`
+        part : `None` or `str`
             The received content's part to check.
         
         Returns

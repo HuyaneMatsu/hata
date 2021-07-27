@@ -4,7 +4,7 @@ from datetime import datetime
 from math import floor
 
 from ..color import Color
-from ..preconverters import preconvert_str, preconvert_int, preconvert_snowflake, preconvert_flag
+from ..preconverters import preconvert_str, preconvert_int_options, preconvert_snowflake, preconvert_flag
 from ..http import urls as module_urls
 from ..utils import is_url, DISCORD_EPOCH_START
 
@@ -591,11 +591,7 @@ class ActivityRich(ActivityBase):
         -------
         activity_data : `dict` of (`str`, `Any`) items
         """
-        activity_data = self.bot_dict()
-        
-        application_id = self.application_id
-        if application_id:
-            activity_data['application_id'] = application_id
+        activity_data = {}
         
         assets = self.assets
         if (assets is not None):
@@ -606,10 +602,6 @@ class ActivityRich(ActivityBase):
         details = self.details
         if (details is not None):
             activity_data['details'] = details
-        
-        flags = self.flags
-        if flags:
-            activity_data['flags'] = flags
         
         party = self.party
         if (party is not None):
@@ -622,23 +614,16 @@ class ActivityRich(ActivityBase):
             secrets_data = secrets.to_data()
             activity_data['secrets'] = secrets_data
         
-        session_id = self.session_id
-        if (session_id is not None):
-            activity_data['session_id'] = session_id
-        
         state = self.state
         if (state is not None):
             activity_data['state'] = state
-        
-        sync_id = self.sync_id
-        if (sync_id is not None):
-            activity_data['sync_id'] = sync_id
         
         timestamps = self.timestamps
         if (timestamps is not None):
             timestamps_data = timestamps.to_data()
             if timestamps_data:
                 activity_data['timestamps'] = timestamps_data
+        
         
         return activity_data
     
@@ -652,7 +637,28 @@ class ActivityRich(ActivityBase):
         activity_data : `dict` of (`str`, `Any`) items
         """
         activity_data = self.user_dict()
-
+        activity_data.update(self.bot_dict())
+        
+        # spotify only
+        flags = self.flags
+        if flags:
+            activity_data['flags'] = flags
+        
+        # spotify only
+        session_id = self.session_id
+        if (session_id is not None):
+            activity_data['session_id'] = session_id
+        
+        # spotify only
+        sync_id = self.sync_id
+        if (sync_id is not None):
+            activity_data['sync_id'] = sync_id
+        
+        # receive only?
+        application_id = self.application_id
+        if application_id:
+            activity_data['application_id'] = application_id
+        
         # receive only?
         activity_data['id'] = self.discord_side_id
         

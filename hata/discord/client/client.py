@@ -970,7 +970,7 @@ class Client(ClientUserPBase):
                     raise AssertionError(f'`banner_color` can be either `None`, `{Color.__name__}` or `int` '
                         f'instance, got {banner_color.__name__}.')
             
-            data['banner_color'] = banner_color
+            data['accent_color'] = banner_color
         
         
         if (banner is not ...):
@@ -10037,7 +10037,7 @@ class Client(ClientUserPBase):
         ----------
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
-        message_id
+        message_id : `int`
             The webhook's message's identifier to get.
         
         Returns
@@ -12397,7 +12397,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `interaction` was not given an ``InteractionEvent`` instance.
+            If `interaction` was not given an ``InteractionEvent``.
         
         Notes
         -----
@@ -12444,7 +12444,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction to respond to.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The interaction response's content if given. If given as `str` or empty string, then no content will be
@@ -12484,7 +12484,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given an ``InteractionEvent`` instance.
+            - If `interaction` was not given an ``InteractionEvent``.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
             - If `embed` contains a non ``EmbedBase`` element.
@@ -12605,7 +12605,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `interaction` was not given an ``InteractionEvent`` instance.
+            If `interaction` was not given an ``InteractionEvent``.
         
         Notes
         -----
@@ -12643,7 +12643,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction, what's source response message will be edited.
         content : `str`, ``EmbedBase`` or `Any`, Optional
             The new content of the message.
@@ -12678,7 +12678,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
@@ -12750,7 +12750,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction, what's source response message will be edited.
         content : `str`, ``EmbedBase`` or `Any`, Optional
             The new content of the message.
@@ -12778,7 +12778,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
@@ -12828,7 +12828,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction, what's source response message will be deleted.
         
         Raises
@@ -12838,7 +12838,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
         """
         application_id = self.application.id
@@ -12862,7 +12862,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction, what's source response message will be deleted.
         
         Returns
@@ -12877,7 +12877,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
         """
         application_id = self.application.id
@@ -12908,7 +12908,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction to create followup message with.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
@@ -12959,7 +12959,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
             - If `tts` was not given as `bool` instance.
             - If `show_for_invoking_user_only` was not given as `bool` instance.
@@ -13046,7 +13046,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction with what the followup message was sent with.
         message : ``Message`` or ``MessageRepr``, `int` instance
             The interaction followup's message to edit.
@@ -13089,7 +13089,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
@@ -13171,7 +13171,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent`` instance
+        interaction : ``InteractionEvent``
             Interaction with what the followup message was sent with.
         message : ``Message`` or ``MessageRepr``, `int` instance
             The interaction followup's message to edit.
@@ -13185,7 +13185,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` was not given as ``InteractionEvent`` instance.
+            - If `interaction` was not given as ``InteractionEvent``.
             - If the client's application is not yet synced.
         """
         application_id = self.application.id
@@ -13217,8 +13217,57 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`message` can be given as `{Message.__name__}`, `{MessageRepr.__name__}` or as '
                     f'`int` instance, got {message.__class__.__name__}`.')
         
-        await self.http.interaction_followup_message_delete(application_id, interaction.id, interaction.token, message_id)
+        await self.http.interaction_followup_message_delete(application_id, interaction.id, interaction.token,
+            message_id)
     
+    
+    async def interaction_followup_message_get(self, interaction, message_id):
+        """
+        Gets a previously sent message with an interaction.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent``
+            Interaction with what the followup message was sent with.
+        message_id : `int`
+            The webhook's message's identifier to get.
+        
+        Returns
+        -------
+        message : ``Message``
+        
+        Raises
+        ------
+        TypeError
+            - If `message_id` was not given as `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` was not given as ``InteractionEvent``.
+            - If the client's application is not yet synced.
+        """
+        application_id = self.application.id
+        if __debug__:
+            if application_id == 0:
+                raise AssertionError('The client\'s application is not yet synced.')
+        
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        message_id_value = maybe_snowflake(message_id)
+        if message_id_value is None:
+            raise TypeError(f'`message_id` can be given as `int` instance, got {message_id.__class__.__name__}.')
+        
+        message_data = await self.http.interaction_followup_message_get(application_id, interaction.id,
+            interaction.token, message_id)
+        
+        return interaction.channel._create_unknown_message(message_data)
     
     # Sticker
     
@@ -13258,7 +13307,7 @@ class Client(ClientUserPBase):
         if (sticker is None):
             sticker = Sticker(data)
         else:
-            sticker._set_attributes(data)
+            sticker._update_from_partial(data)
         
         return sticker
     
@@ -13338,7 +13387,7 @@ class Client(ClientUserPBase):
         if (sticker is None):
             sticker = Sticker(data)
         else:
-            sticker._set_attributes(data)
+            sticker._update_from_partial(data)
         
         return sticker
     

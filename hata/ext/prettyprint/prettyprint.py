@@ -1031,13 +1031,13 @@ def str_invite(invite, index=None,write_parents=True, **kwargs):
     if target_type.value:
         result.append(f'- target_type : {target_type.name}', 1)
     
-    online_count = invite.online_count
-    if online_count:
-        result.append(f'- online count : {online_count}', 1)
+    approximate_online_count = invite.approximate_online_count
+    if approximate_online_count:
+        result.append(f'- approximate online count : {approximate_online_count}', 1)
         
-    user_count = invite.user_count
-    if user_count:
-        result.append(f'- user count : {user_count}', 1)
+    approximate_user_count = invite.approximate_user_count
+    if approximate_user_count:
+        result.append(f'- approximate user count : {approximate_user_count}', 1)
     
     result.append(f'- {"temporary" if invite.temporary else "permanent"}', 1)
     
@@ -1366,7 +1366,7 @@ def str_activity(activity, **kwargs):
                 result.append(f'- {key} : {value!r}', 2)
         else:
             result.append(f'- {key} : {value!r}', 1)
-
+    
     return result
 
 def str_voice_state(state, index=None, **kwargs):
@@ -1493,7 +1493,7 @@ def str_GuildWidget(widget, **kwargs):
     if (invite_url is None):
         invite_url = '*Not included*'
     result.append(f'- invite_url : {invite_url}', 1)
-    result.append(f'- online_count : {widget.online_count}', 1)
+    result.append(f'- approximate online_count : {widget.approximate_online_count}', 1)
     
     result.append(str_list(widget.users, name='user', **kwargs), 1)
     result.append(str_list(widget.channels, name='channels', **kwargs), 1)
@@ -1620,8 +1620,8 @@ def str_guild_preview(guild_preview, index=None, **kwargs):
         result.append(f'- splash : {guild_preview.splash_url}', 1)
     if guild_preview.discovery_splash:
         result.append(f'- discovery splash : {guild_preview.discovery_splash_url}', 1)
-    result.append(f'- user count : {guild_preview.user_count}', 1)
-    result.append(f'- online count : {guild_preview.online_count}', 1)
+    result.append(f'- approximate user count : {guild_preview.approximate_user_count}', 1)
+    result.append(f'- approximate online count : {guild_preview.approximate_online_count}', 1)
     
     description = guild_preview.description
     if (description is not None):

@@ -1,5 +1,5 @@
-__all__ = ( 'ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
-    'create_component')
+__all__ = ('ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
+    'create_auto_custom_id', 'create_component')
 
 from os import urandom as random_bytes
 from base64 import b85encode as to_base85

@@ -99,7 +99,7 @@ Shared Groups
 - GROUP_INTERACTION_EXECUTE
     - Used by: `interaction_followup_message_create`, `interaction_response_message_delete`,
         `interaction_response_message_edit`, `interaction_followup_message_delete`,
-        `interaction_response_message_get`, `interaction_followup_message_edit`
+        `interaction_response_message_get`, `interaction_followup_message_edit`, `interaction_followup_message_get`
     - Limiter : `interaction_id`
     - Limit : `5`
     - Resets after : `2.0`
@@ -1636,6 +1636,14 @@ Group Details
     - Limit : `5`
     - Resets after : `2.0`
 
+- interaction_followup_message_get
+    - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/{message_id}`
+    - Method : `GET`
+    - Required auth : `N/A`
+    - Limiter : `interaction_id`
+    - Limit : `5`
+    - Resets after : `2.0`
+
 - interaction_followup_message_edit
     - Endpoint : `webhooks/{application_id}/{interaction_token}/messages/{message_id}`
     - Method : `PATCH`
@@ -1919,6 +1927,7 @@ interaction_response_message_delete = GROUP_INTERACTION_EXECUTE
 interaction_response_message_get = GROUP_INTERACTION_EXECUTE
 interaction_response_message_edit = GROUP_INTERACTION_EXECUTE
 interaction_followup_message_delete = GROUP_INTERACTION_EXECUTE
+interaction_followup_message_get = GROUP_INTERACTION_EXECUTE
 interaction_followup_message_edit = GROUP_INTERACTION_EXECUTE
 webhook_delete = RateLimitGroup.unlimited()
 webhook_get = RateLimitGroup.unlimited()

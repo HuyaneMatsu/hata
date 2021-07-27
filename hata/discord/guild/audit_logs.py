@@ -754,6 +754,7 @@ def transform_bool__separated(name, data):
     change.after = data.get('new_value', None)
     return change
 
+
 def transform_channel(name, data):
     change = AuditLogChange()
     change.attr = name[:-3]
@@ -982,6 +983,32 @@ def transform_tags(name, data):
     change.after = None if value is None else frozenset(value.split(', '))
     return change
 
+def transform_int__auto_archive_after(name, data):
+    change = AuditLogChange()
+    change.attr = 'auto_archive_after'
+    before = data.get('old_value', None)
+    if (before is not None):
+        before *= 60
+    change.before = before
+    after = data.get('new_value', None)
+    if (after is not None):
+        after *= 60
+    change.after = after
+    return change
+
+def transform_int__default_auto_archive_after(name, data):
+    change = AuditLogChange()
+    change.attr = 'default_auto_archive_after'
+    before = data.get('old_value', None)
+    if (before is not None):
+        before *= 60
+    change.before = before
+    after = data.get('new_value', None)
+    if (after is not None):
+        after *= 60
+    change.after = after
+    return change
+
 
 TRANSFORMERS = {
     '$add': transform_role,
@@ -991,6 +1018,7 @@ TRANSFORMERS = {
     'allow': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'allow_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'application_id': transform_snowflake,
+    'auto_archive_duration': transform_int__auto_archive_after,
     'avatar_hash': transform_icon,
     'banner_hash': transform_icon,
     # bitrate (int)
@@ -999,7 +1027,8 @@ TRANSFORMERS = {
     'color': transform_color,
     # deaf (bool)
     # description (None or str)
-    'default_message_notifications':transform_message_notification,
+    'default_message_notifications': transform_message_notification,
+    'default_auto_archive_duration': transform_int__default_auto_archive_after,
     'deny': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'deny_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'discovery_splash_hash' : transform_icon,
@@ -1066,6 +1095,9 @@ del transform_user
 del transform_verification_level
 del transform_video_quality_mode
 del transform_tags
+del transform_int__auto_archive_after
+del transform_int__default_auto_archive_after
+
 
 class AuditLogChange:
     """

@@ -29,7 +29,7 @@ class ApplicationCommandOptionType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the application command option types.
     
-    Every predefined application command option type. can be accessed as class attribute as well:
+    Every predefined application command option type can be accessed as class attribute as well:
     
     +-----------------------+-------------------+-------+
     | Class attribute name  | Name              | Value |
@@ -98,7 +98,7 @@ class InteractionType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the interaction types.
     
-    Every predefined interaction type. can be accessed as class attribute as well:
+    Every predefined interaction type can be accessed as class attribute as well:
     
     +-----------------------+-----------------------+-------+
     | Class attribute name  | Name                  | Value |

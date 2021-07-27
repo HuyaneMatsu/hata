@@ -59,6 +59,7 @@ setup(
         'hata.ext.patchouli',
         'hata.ext.prettyprint',
         'hata.ext.slash',
+        'hata.ext.slash.menus',
         'hata.main',
     ],
     url = 'https://github.com/HuyaneMatsu/hata',

@@ -109,6 +109,12 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------+---------------------------+-------+
     | sticker_delete            | sticker_delete            | 92    |
     +---------------------------+---------------------------+-------+
+    | thread_create             | thread_create             | 110   |
+    +---------------------------+---------------------------+-------+
+    | thread_update             | thread_update             | 111   |
+    +---------------------------+---------------------------+-------+
+    | thread_delete             | thread_delete             | 112   |
+    +---------------------------+---------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -165,7 +171,10 @@ class AuditLogEvent(PreinstancedBase):
     sticker_create = P(90, 'sticker_create')
     sticker_update = P(91, 'sticker_update')
     sticker_delete = P(92, 'sticker_delete')
-
+    
+    thread_create = P(110, 'thread_create')
+    thread_update = P(111, 'thread_update')
+    thread_delete = P(112, 'thread_delete')
 
 class VerificationLevel(PreinstancedBase):
     """
@@ -538,9 +547,9 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | more_sticker                  | MORE_STICKERS                     |
     +-------------------------------+-----------------------------------+
-    | thread_archive_3_day          | THREE_DAY_THREAD_ARCHIVE          |
+    | thread_archive_three_day          | THREE_DAY_THREAD_ARCHIVE          |
     +-------------------------------+-----------------------------------+
-    | thread_archive_7_day          | SEVEN_DAY_THREAD_ARCHIVE          |
+    | thread_archive_seven_day          | SEVEN_DAY_THREAD_ARCHIVE          |
     +-------------------------------+-----------------------------------+
     | private_threads               | PRIVATE_THREADS                   |
     +-------------------------------+-----------------------------------+
@@ -599,8 +608,8 @@ class GuildFeature(PreinstancedBase):
     ticket_events_enabled = P('TICKETED_EVENTS_ENABLED', 'ticket_events_enabled')
     monetization_enabled = P('MONETIZATION_ENABLED', 'monetization_enabled')
     more_sticker = P('MORE_STICKERS', 'more_sticker')
-    thread_archive_3_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread_archive_3_day')
-    thread_archive_7_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread_archive_7_day')
+    thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread_archive_three_day')
+    thread_archive_seven_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread_archive_seven_day')
     private_threads = P('PRIVATE_THREADS', 'private_threads')
     
     

@@ -15,7 +15,7 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | group_dm_create                   | 4                 |
     +-----------------------------------+-------------------+
-    | rpc_hash_connected                | 11                |
+    | rpc_has_connected                 | 11                |
     +-----------------------------------+-------------------+
     | gateway_presence                  | 12                |
     +-----------------------------------+-------------------+
@@ -33,7 +33,7 @@ class ApplicationFlag(FlagBase):
     __keys__ = {
         'managed_emoji':  2,
         'group_dm_create':  4,
-        'rpc_hash_connected': 11,
+        'rpc_has_connected': 11,
         'gateway_presence': 12,
         'gateway_presence_limited': 13,
         'gateway_guild_members': 14,

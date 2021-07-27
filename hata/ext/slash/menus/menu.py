@@ -1,29 +1,29 @@
-__all__ = ()
+__all__ = ('Menu',)
 
 # Work in progress
 
 from collections import OrderedDict
 from types import MemberDescriptorType
 
-from ...backend.analyzer import CallableAnalyzer
-from ...backend.utils import copy_docs
-from ...backend.futures import Task, CancelledError
+from ....backend.analyzer import CallableAnalyzer
+from ....backend.utils import copy_docs
+from ....backend.futures import Task, CancelledError
 
-from ...discord.core import KOKORO
-from ...discord.interaction.components import _debug_component_components, _debug_component_custom_id, \
+from ....discord.core import KOKORO
+from ....discord.interaction.components import _debug_component_components, _debug_component_custom_id, \
     _debug_component_emoji, _debug_component_label, _debug_component_enabled, _debug_component_url, \
     _debug_component_description, _debug_component_default, _debug_component_options, _debug_component_placeholder, \
     _debug_component_min_values, _debug_component_max_values
-from ...discord.interaction import ComponentBase, ComponentRow, ComponentButton, ComponentSelect, InteractionEvent, \
+from ....discord.interaction import ComponentBase, ComponentRow, ComponentButton, ComponentSelect, InteractionEvent, \
     ComponentSelectOption, ComponentType
-from ...discord.message import Message
-from ...discord.channel import ChannelTextBase
-from ...discord.embed import EmbedBase
-from ...discord.allowed_mentions import AllowedMentionProxy
-from ...discord.client import Client
-from ...discord.exceptions import DiscordException, ERROR_CODES
+from ....discord.message import Message
+from ....discord.channel import ChannelTextBase
+from ....discord.embed import EmbedBase
+from ....discord.allowed_mentions import AllowedMentionProxy
+from ....discord.client import Client
+from ....discord.exceptions import DiscordException, ERROR_CODES
 
-from .waiters import get_client_from_message, get_client_from_interaction_event, Timeouter
+from ..waiters import get_client_from_message, get_client_from_interaction_event, Timeouter
 
 GUI_STATE_NONE = 0
 GUI_STATE_READY = 1
@@ -701,7 +701,7 @@ def validate_invoke(invoke):
     Raises
     ------
     TypeError
-        If `invoke` is not `None` nor `async-callable` accepting 1 parameter.
+        If `invoke` is not `None` nor `async-callable` accepting `2` parameter.
     """
     if invoke is None:
         return
@@ -735,7 +735,7 @@ def validate_initial_invoke(initial_invoke):
     Raises
     ------
     TypeError
-        If `initial_invoke` is not `None` nor `async-callable` accepting `0` parameters.
+        If `initial_invoke` is not `None` nor `async-callable` accepting `1` parameters.
     """
     if initial_invoke is None:
         return
@@ -754,6 +754,39 @@ def validate_initial_invoke(initial_invoke):
             if not analyzer.accepts_args():
                 raise TypeError(f'`initial_invoke` should accept `1` parameters, meanwhile the given callable '
                     f'expects up to `{max_!r}`, got `{initial_invoke!r}`.')
+
+
+def validate_get_timeout(get_timeout):
+    """
+    Validates the given timeout getter.
+    
+    Parameters
+    ----------
+    get_timeout : `None` or `callable`
+        Timeout getter.
+    
+    Raises
+    ------
+    TypeError
+        If `get_timeout` is not `None` nor `callable` accepting `1` parameters.
+    """
+    if get_timeout is None:
+        return
+    
+    analyzer = CallableAnalyzer(get_timeout)
+    if analyzer.is_async():
+        raise TypeError('`get_timeout` should have be not be async function.')
+    
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
+    if min_ > 1:
+        raise TypeError(f'`get_timeout` should accept `1` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got `{get_timeout!r}`.')
+    
+    if min_ != 1:
+        if max_ < 1:
+            if not analyzer.accepts_args():
+                raise TypeError(f'`get_timeout` should accept `1` parameters, meanwhile the given callable '
+                    f'expects up to `{max_!r}`, got `{get_timeout!r}`.')
 
 
 def validate_close(close):
@@ -801,7 +834,7 @@ def validate_init(init):
     Raises
     ------
     TypeError
-        If `init` is not `None` or is `async-callable` or accepts less than 1 parameters.
+        If `init` is not `None` or is `async-callable` or accepts less than `3` parameters.
     """
     if (init is None) or (init is object.__init__):
         return
@@ -811,8 +844,8 @@ def validate_init(init):
         raise TypeError('`close` should have be `async` function.')
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
-    if min_ < 2:
-        raise TypeError(f'`close` should accept `2` parameters, meanwhile the given callable expects at '
+    if min_ < 3:
+        raise TypeError(f'`close` should accept `3` parameters, meanwhile the given callable expects at '
             f'least `{min_!r}`, got `{init!r}`.')
 
 
@@ -843,6 +876,28 @@ class MenuStructure:
         +===================+===========+
         | should_process    | `bool`    |
         +-------------------+-----------+
+    
+    get_timeout : `None` or `Function`
+        Return the time after the menu should be closed.
+        
+        > Define it as non-positive to never timeout. Not recommended.
+        
+        Should accept the following parameters:
+        
+        +-----------+-----------+
+        | Name      | Type      |
+        +===========+===========+
+        | self      | ``Menu``  |
+        +-----------+-----------+
+        
+        
+        Should return the following parameter:
+        
+        +---------------+-----------+
+        | Name          | Type      |
+        +===============+===========+
+        | timeout       | `int`     |
+        +---------------+-----------+
     
     close : `None` or `CoroutineFunction`
         Function to call when the menu is closed.
@@ -908,13 +963,8 @@ class MenuStructure:
         +===============+===========+
         | should_edit   | `bool`    |
         +---------------+-----------+
-        
-    timeout : `float`
-        The time after the menu should be closed.
-        
-        > Define it as non-positive to never timeout. Not recommended.
     """
-    __slots__ = ('check', 'close', 'init', 'is_final', 'initial_invoke', 'invoke', 'timeout')
+    __slots__ = ('check', 'close', 'get_timeout', 'init', 'is_final', 'initial_invoke', 'invoke')
     
     def __new__(cls, class_attributes):
         """
@@ -928,12 +978,18 @@ class MenuStructure:
         Raises
         ------
         TypeError
-            - If `check` is not `None` neither a non-async function accepting 2 parameter.
-            - If `invoke` is not `None` nor an `async-callable` or accepting 2 parameter.
-            - If `initial_invoke` is not `None`, nor an `async-callable`, or accepts any parameters.
-            - If `timeout` is not convertable to float.
-            - If `close` is neither `None` nor `async-callable` accepting 2 parameters.
-            - If `init` is not `None` or is `async-callable` or accepts less than 1 parameters.
+            - If `check` is not `None` neither a non-async function.
+            - If `check` accepts less or more than `2` parameters.
+            - If `invoke` is not `None` nor an `async-callable`.
+            - If `invoke` accepts less or more than `2` parameters.
+            - If `initial_invoke` is not `None`, nor an `async-callable`.
+            - If `initial_invoke` accepts less or more than `1` parameter.
+            - If `get_timeout` is not a non-async callable.
+            - If `get_timeout` accepts less or more than `1` parameter.
+            - If `close` is neither `None` nor `async-callable`.
+            - If `close` accepts more or less than `2` parameters.
+            - If `init` is not `None` or is `async-callable`.
+            - If `init` accepts less than `3` parameters.
         """
         self = class_attributes.get('_menu_structure', None)
         if (self is not None) and (type(self) is cls):
@@ -948,15 +1004,8 @@ class MenuStructure:
         initial_invoke = class_attributes.get('initial_invoke', None)
         validate_initial_invoke(initial_invoke)
         
-        timeout = class_attributes.get('timeout', None)
-        if timeout is None:
-            timeout = -1.0
-        else:
-            try:
-                timeout = float(timeout)
-            except (TypeError, ValueError) as err:
-                raise TypeError(f'`timeout` cannot be converted to `float`, got {timeout.__class__.__name__}; '
-                    f'{timeout!r}') from err
+        get_timeout = class_attributes.get('get_timeout', None)
+        validate_get_timeout(get_timeout)
         
         close = class_attributes.get('close', None)
         validate_close(close)
@@ -976,7 +1025,7 @@ class MenuStructure:
         self.init = init
         self.initial_invoke = initial_invoke
         self.invoke = invoke
-        self.timeout = timeout
+        self.get_timeout = get_timeout
         
         return self
     
@@ -1037,13 +1086,13 @@ class MenuStructure:
             repr_parts.append(' invoke=')
             repr_parts.append(repr(invoke))
         
-        timeout = self.timeout
-        if timeout > 0.0:
+        get_timeout = self.get_timeout
+        if (get_timeout is not None):
             if field_added:
                 repr_parts.append(', ')
             
-            repr_parts.append(' timeout=')
-            repr_parts.append(repr(timeout))
+            repr_parts.append(' get_timeout=')
+            repr_parts.append(repr(get_timeout))
         
         repr_parts.append('>')
         
@@ -1083,9 +1132,9 @@ class MenuStructure:
         if invoke is None:
             invoke = other.invoke
         
-        timeout = self.timeout
-        if timeout <= 0.0:
-            timeout = other.timeout
+        get_timeout = self.get_timeout
+        if get_timeout is None:
+            get_timeout = other.get_timeout
         
         if (invoke is None) or (initial_invoke is None):
             is_final = False
@@ -1098,7 +1147,7 @@ class MenuStructure:
         new.init = init
         new.initial_invoke = initial_invoke
         new.invoke = invoke
-        new.timeout = timeout
+        new.get_timeout = get_timeout
         new.is_final = is_final
         
         return new
@@ -1282,6 +1331,7 @@ class MenuType(type):
 
 class Menu(metaclass=MenuType):
     """
+    Base class for custom component based menus.
     
     Attributes
     ----------
@@ -1332,14 +1382,20 @@ class Menu(metaclass=MenuType):
     __slots__ = ('_allowed_mentions', '_canceller', '_component_proxy_cache', '_gui_state', '_timeouter',
         '_tracked_changes', 'channel', 'client', 'message', '_components',)
     
-    async def __new__(cls, interaction_event, *args, **kwargs):
+    async def __new__(cls, client, interaction_event, *args, **kwargs):
         """
         Creates a new menu instance.
         
         Parameters
         ----------
-        interaction_event : ``InteractionEvent``, ``Message``, `tuple` (``Client``, ``ChannelTextBase``)
+        client : ``Client``
+            The client instance whi will execute the action.
+        interaction_event : ``InteractionEvent``, ``Message``, ``ChannelTextBase``
             The event to respond to, or the channel to send the message at, or the message to edit.
+        *args : Positional parameters
+            Additional positional parameters.
+        **kwargs : Keyword parameters
+            Additional keyword parameters.
         
         Raises
         ------
@@ -1359,8 +1415,6 @@ class Menu(metaclass=MenuType):
             if isinstance(interaction_event, InteractionEvent):
                 target_channel = interaction_event.channel
                 target_message = interaction_event.message # Should be `None`
-            
-                target_client = get_client_from_interaction_event(interaction_event)
                 
                 is_interaction = True
                 break
@@ -1368,27 +1422,25 @@ class Menu(metaclass=MenuType):
             if isinstance(interaction_event, Message):
                 target_channel = interaction_event.channel
                 target_message = interaction_event
-                target_client = get_client_from_message(interaction_event)
                 is_interaction = False
                 break
             
-            if isinstance(interaction_event, tuple) and (len(interaction_event) == 2):
-                target_client, target_channel = interaction_event
-                if isinstance(target_client, Client) and isinstance(target_channel, ChannelTextBase):
-                    target_message = None
-                    is_interaction = False
-                    break
+            if isinstance(interaction_event, ChannelTextBase):
+                target_channel = interaction_event
+                target_message = None
+                is_interaction = False
+                break
             
             raise TypeError(f'`interaction_event` can be given as `{InteractionEvent.__name__}`, '
-                f'`{Message.__name__}` or as `tuple` of (`{Client.__name__}`, `{ChannelTextBase.__name__}`) '
-                f'instance, got {interaction_event.__class__.__name__}.')
+                f'`{Message.__name__}` or as `{ChannelTextBase.__name__}` instance, got '
+                f'{interaction_event.__class__.__name__}.')
         
         
         self = object.__new__(cls)
         self._canceller = None
         self.channel = target_channel
         self.message = target_message
-        self.client = target_client
+        self.client = client
         self._gui_state = GUI_STATE_NONE
         self._timeouter = None
         self._tracked_changes = {}
@@ -1398,10 +1450,10 @@ class Menu(metaclass=MenuType):
         
         init = menu_structure.init
         if (init is not None):
-            init(self, interaction_event, *args, **kwargs)
+            init(self, client, interaction_event, *args, **kwargs)
         
         if is_interaction and interaction_event.is_unanswered():
-            await target_client.interaction_application_command_acknowledge(interaction_event)
+            await client.interaction_application_command_acknowledge(interaction_event)
         
         await menu_structure.initial_invoke(self)
         
@@ -1420,24 +1472,29 @@ class Menu(metaclass=MenuType):
         kwargs['components'] = self._components
         
         if is_interaction:
-            message = await target_client.interaction_folloup_message_create(interaction_event, **kwargs)
+            message = await client.interaction_followup_message_create(interaction_event, **kwargs)
         else:
             if target_message is None:
-                message = await target_client.message_create(target_channel, **kwargs)
+                message = await client.message_create(target_channel, **kwargs)
             else:
-                await target_client.message_edit(target_message, **kwargs)
+                await client.message_edit(target_message, **kwargs)
                 message = target_message
         
         self.message = message
         
-        timeout = menu_structure.timeout
+        get_timeout = menu_structure.get_timeout
+        if (get_timeout is None):
+            timeout = -1.0
+        else:
+            timeout = get_timeout(self)
+        
         if (timeout > 0.0):
             self._timeouter = Timeouter(self, timeout)
         
         self._gui_state = GUI_STATE_READY
         self._canceller = cls._canceller_function
         
-        target_client.slasher.add_component_interaction_waiter(message, self)
+        client.slasher.add_component_interaction_waiter(message, self)
         
         return self
     
@@ -1497,11 +1554,24 @@ class Menu(metaclass=MenuType):
                 self.cancel(err)
                 return
             
+            
+            get_timeout = self._menu_structure.get_timeout
+            if (get_timeout is None):
+                timeout = -1.0
+            else:
+                timeout = get_timeout(self)
+            
             timeouter = self._timeouter
-            if (timeouter is not None):
-                timeout = self._menu_structure.timeout
-                if (timeout > 0.0):
+            if (timeout > 0.0):
+                if timeouter is None:
+                    self._timeouter = Timeouter(self, timeout)
+                else:
                     timeouter.set_timeout(timeout)
+            else:
+                if (timeouter is not None):
+                    self._timeouter = None
+                    timeouter.cancel()
+        
         else:
             try:
                 await client.interaction_component_acknowledge(interaction_event)
@@ -1732,7 +1802,9 @@ class Menu(metaclass=MenuType):
     
     @allowed_mentions.setter
     def allowed_mentions(self, allowed_mentions_input):
-        if isinstance(allowed_mentions_input, AllowedMentionProxy):
+        if allowed_mentions_input is None:
+            allowed_mentions = AllowedMentionProxy()
+        elif isinstance(allowed_mentions_input, AllowedMentionProxy):
             allowed_mentions = allowed_mentions_input.copy()
         else:
             allowed_mentions = AllowedMentionProxy(allowed_mentions_input)

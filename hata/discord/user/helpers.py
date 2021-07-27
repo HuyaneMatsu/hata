@@ -16,22 +16,9 @@ def get_banner_color_from_data(data):
     -------
     banner_color : `None` or `str`
     """
-    banner_color = data.get('banner_color', None)
+    banner_color = data.get('accent_color', None)
     
-    # No banner color.
-    if banner_color is None:
-        pass
-    
-    # Old style string format
-    elif isinstance(banner_color, str):
-        banner_color = Color(banner_color[1:], 16)
-    
-    # New style int format
-    elif isinstance(banner_color, int):
+    if (banner_color is not None):
         banner_color = Color(banner_color)
-    
-    # No more cases
-    else:
-        banner_color = None
     
     return banner_color

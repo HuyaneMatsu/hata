@@ -291,7 +291,7 @@ class DiscordHTTPClient(HTTPClient):
                         await sleep(retry_after, self.loop)
                     continue
                 
-                if status in (500, 502, 503) and try_again:
+                if try_again and (status in (500, 502, 503)):
                     await sleep(10.0/try_again, self.loop)
                     try_again -= 1
                     continue
@@ -423,7 +423,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_info_get, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/users/@me',
-            headers=headers,
+            headers = headers,
         )
     
     async def user_connection_get_all(self, headers):
@@ -431,7 +431,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_connection_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/users/@me/connections',
-            headers=headers,
+            headers = headers,
         )
     
     async def guild_user_add(self, guild_id, user_id, data):
@@ -447,7 +447,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_guild_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/users/@me/guilds',
-            headers=headers,
+            headers = headers,
         )
     
     #channel
@@ -1275,7 +1275,8 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_edit, webhook_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/webhooks/{webhook_id}',
-            data)
+            data,
+        )
     
     async def webhook_message_create(self, webhook_id, webhook_token, data, query_parameters):
         return await self.discord_request(
@@ -1283,7 +1284,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
             data, headers = imultidict(),
-            params=query_parameters,
+            params = query_parameters,
         )
     
     async def webhook_message_edit(self, webhook_id, webhook_token, message_id, data):
@@ -1781,6 +1782,13 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.interaction_followup_message_delete, interaction_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/{message_id}',
+        )
+    
+    async def interaction_followup_message_get(self, application_id, interaction_id, interaction_token, message_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.interaction_followup_message_get, interaction_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/webhooks/{application_id}/{interaction_token}/messages/{message_id}'
         )
     
     # User account only

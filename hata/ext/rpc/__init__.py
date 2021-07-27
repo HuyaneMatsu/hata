@@ -9,9 +9,14 @@ from threading import current_thread
 
 from ...backend.utils import set_docs, to_json, from_json
 from ...backend.event_loop import EventThread
-from ...backend.futures import Task, Future
+from ...backend.futures import Task, Future, future_or_timeout
 from ...discord.core import KOKORO
 from ...discord.preconverters import preconvert_snowflake
+from ...discord.client.request_helpers import get_user_id, get_guild_id
+
+from .certified_device import CertifiedDevice
+
+REQUEST_TIMEOUT = 15.0
 
 IPC_VERSION = 1
 
@@ -52,6 +57,8 @@ PAYLOAD_COMMAND_ACTIVITY_SET = 'SET_ACTIVITY'
 PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT = 'SEND_ACTIVITY_JOIN_INVITE'
 PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT = 'CLOSE_ACTIVITY_REQUEST'
 
+
+
 PAYLOAD_KEY_COMMAND = 'cmd'
 PAYLOAD_KEY_NONCE = 'nonce'
 PAYLOAD_KEY_EVENT = 'evt'
@@ -61,10 +68,9 @@ PAYLOAD_KEY_PARAMETERS = 'args'
 EVENT_ERROR = 'ERROR'
 
 
-COMMAND_HANDLERS = {}
 DISPATCH_EVENT_HANDLERS = {}
 
-def handle_command_dispatch(self, data):
+def handle_command_DISPATCH(self, data):
     dispatch_event_name = data[PAYLOAD_KEY_EVENT]
     try:
         dispatch_event_handler = DISPATCH_EVENT_HANDLERS[dispatch_event_name]
@@ -77,8 +83,27 @@ def handle_command_dispatch(self, data):
     
     dispatch_event_handler(self, data)
 
-COMMAND_HANDLERS[PAYLOAD_COMMAND_DISPATCH] = handle_command_dispatch
-del handle_command_dispatch
+def handle_command_CERTIFIED_DEVICES_SET(self, data):
+    try:
+        nonce = data[PAYLOAD_KEY_NONCE]
+    except KeyError:
+        pass
+    else:
+        try:
+            waiter = self._response_waiters[nonce]
+        except KeyError:
+            pass
+        else:
+            waiter.set_result_if_pending(None)
+
+
+COMMAND_HANDLERS = {
+    PAYLOAD_COMMAND_DISPATCH: handle_command_DISPATCH,
+    PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET: handle_command_CERTIFIED_DEVICES_SET
+}
+
+del handle_command_DISPATCH
+del handle_command_CERTIFIED_DEVICES_SET
 
 
 if PLATFORM in ('linux', 'darwin'):
@@ -207,6 +232,10 @@ class IPCClient:
     """
     Attributes
     ----------
+    _auto_nonce : `int`
+        Auto nonce generation index for the next request.
+    _response_waiters : `dict` of (`str`, ``Future``) items
+        Waiters for each request response.
     application_id : `int`
         The respective application's identifier.
     protocol : `None` or ``BaseProtocol``
@@ -214,7 +243,7 @@ class IPCClient:
     running : `bool`
         Whether the client is connected and running.
     """
-    __slots__ = ('application_id', 'protocol', 'running')
+    __slots__ = ('_auto_nonce', '_response_waiters', 'application_id', 'protocol', 'running')
     
     def __new__(cls, application_id):
         """
@@ -238,6 +267,8 @@ class IPCClient:
         self.application_id = application_id
         self.running = False
         self.protocol = None
+        self._response_waiters = {}
+        self._auto_nonce = 0
         return self
     
     def start(self):
@@ -297,12 +328,12 @@ class IPCClient:
         while True:
             await self._open_pipe(ipc_path)
     
-    async def _send_data(self, operation, data):
+    async def _send_data(self, operation, payload):
         protocol = self.protocol
         if (protocol is None):
             return
         
-        data = to_json(data).encode()
+        data = to_json(payload).encode()
         data_length = len(data)
         
         header = operation.to_bytes(4, 'little') + data_length.to_bytes(4, 'little')
@@ -359,3 +390,188 @@ class IPCClient:
         else:
             raise RuntimeError(f'Received unexpected operation in handshake, got '
                 f'{OPERATION_VALUE_TO_NAME.get(operation, DEFAULT_OPERATION_NAME)}, ({operation}).')
+    
+    
+    def _get_nonce(self):
+        """
+        Generates auto nonce for the next request.
+        
+        Returns
+        -------
+        nonce : `str`
+        """
+        self._auto_nonce = nonce = self._auto_nonce+1
+        return nonce.__format__('0>16x')
+    
+    
+    async def _send_request(self, payload, nonce):
+        """
+        This method is a coroutine.
+        """
+        waiter = Future(KOKORO)
+        self._response_waiters[nonce] = waiter
+        
+        future_or_timeout(waiter, REQUEST_TIMEOUT)
+        try:
+            await self._send_data(OPERATION_FRAME, payload)
+            return await waiter
+        finally:
+            try:
+                del self._response_waiters[nonce]
+            except KeyError:
+                pass
+    
+    
+    
+    async def unsubscribe(self, event, guild):
+        """
+        Unsubscribes from an event.
+        
+        Parameters
+        ----------
+        event : `str`
+            The event's name to unsubscribe from.
+        guild : ``Guild`` or `int`
+            The guild where to subscribe for the event.
+        
+        Raises
+        ------
+        TypeError
+            If `guild` is neither ``Guild``, nor `int` instance.
+        """
+        
+        guild_id = get_guild_id(guild)
+        
+        nonce = self._get_nonce()
+        
+        payload = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET,
+            PAYLOAD_KEY_NONCE: nonce,
+            PAYLOAD_KEY_PARAMETERS: {
+                'guild_id': guild_id,
+            },
+        }
+        
+        
+        await self._send_request(payload, nonce)
+    
+    
+    async def set_certified_devices(self, *devices):
+        """
+        Sends information about the current state of hardware certified devices that are connected to Discord.
+        
+        This method is a coroutine.
+        
+        Attributes
+        ----------
+        *devices : ``CertifiedDevice``
+            Certified devices.
+        """
+        if __debug__:
+            for device in devices:
+                if not isinstance(device, CertifiedDevice):
+                    raise AssertionError(f'Devices can be `{CertifiedDevice.__name__}` instances, got '
+                        f'{device.__class__.__name__}.')
+        
+        device_datas = [device.to_data() for device in devices]
+        
+        
+        nonce = self._get_nonce()
+        
+        payload = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET,
+            PAYLOAD_KEY_NONCE: nonce,
+            PAYLOAD_KEY_PARAMETERS: {
+                'devices': device_datas,
+            },
+        }
+        
+        await self._send_request(payload, nonce)
+    
+    
+    async def activity_set(self, activity):
+        """
+        Sets activity to the client.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        activity : ``ActivityRich``
+            The activity to set.
+        """
+        nonce = self._get_nonce()
+        
+        activity_data = activity.user_dict()
+        activity_data['instance'] = True
+        
+        payload = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_ACTIVITY_SET,
+            PAYLOAD_KEY_NONCE: nonce,
+            PAYLOAD_KEY_PARAMETERS: {
+                'activity': activity_data,
+                'pid': PROCESS_IDENTIFIER,
+            },
+        }
+        
+        await self._send_data(OPERATION_FRAME, payload)
+    
+    
+    async def activity_join_accept(self, user):
+        """
+        Accepts activity join invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        user : ``ClientUserBase`` or `int` instance
+            The user, who's achievement will be updated.
+        
+        Raises
+        ------
+        TypeError
+            - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
+            - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+        """
+        user_id = get_user_id(user)
+        nonce = self._get_nonce()
+        payload = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT,
+            PAYLOAD_KEY_NONCE: nonce,
+            PAYLOAD_KEY_PARAMETERS: {
+                'user_id': user_id,
+            },
+        }
+        
+        await self._send_data(OPERATION_FRAME, payload)
+    
+    
+    async def activity_join_reject(self, user):
+        """
+        Rejects activity join invite.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        user : ``ClientUserBase`` or `int` instance
+            The user, who's achievement will be updated.
+        
+        Raises
+        ------
+        TypeError
+            - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
+            - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+        """
+        user_id = get_user_id(user)
+        nonce = self._get_nonce()
+        payload = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT,
+            PAYLOAD_KEY_NONCE: nonce,
+            PAYLOAD_KEY_PARAMETERS: {
+                'user_id': user_id,
+            },
+        }
+        
+        await self._send_data(OPERATION_FRAME, payload)

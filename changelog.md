@@ -19,6 +19,14 @@
 - Add `EventThread.create_unix_server`.
 - Add `ComponentBase._replace_direct_sub_components`.
 - Add `ComponentBase._iter_direct_sub_components`.
+- Add `AuditLogEvent.thread_create`.
+- Add `AuditLogEvent.thread_update`.
+- Add `AuditLogEvent.thread_delete`.
+- Add `auto_archive_after` transformer to audit logs.
+- Add `default_auto_archive_after` transformer to audit logs.
+- Add `Client.interaction_followup_message_get`.
+- Add `DiscordHTTPClient.interaction_followup_message_get`.
+- Add `RATE_LIMIT_GROUPS.interaction_followup_message_get`.
 
 #### Bug Fixes
 
@@ -30,6 +38,9 @@
 #### Renames, Deprecation & Removals
 
 - Remove `Activitbase.created`.
+- Rename `GuildFeature.thread_archive_3_day` to `thread_archive_three_day`.
+- Rename `GuildFeature.thread_archive_7_day` to `thread_archive_seven_day`.
+
 
 ## 1.1.91 *\[2021-07-20\]*
 

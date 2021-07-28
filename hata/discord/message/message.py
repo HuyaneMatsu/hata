@@ -185,10 +185,16 @@ class Message(DiscordEntity, immortal=True):
         self.deleted = False
         self.channel = channel
         guild = channel.guild
-        webhook_id = data.get('webhook_id', None)
         author_data = data.get('author', None)
+        webhook_id = data.get('webhook_id', None)
+        application_id = data.get('application_id', None)
         
-        if webhook_id is None:
+        if (application_id is None):
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        
+        if application_id or (webhook_id is None):
             cross_mentions = None
             if author_data is None:
                 author = ZEROUSER
@@ -207,7 +213,7 @@ class Message(DiscordEntity, immortal=True):
                 else:
                     cross_mentions = tuple(sorted(
                         (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                        key=id_sort_key,
+                        key = id_sort_key,
                     ))
                 
                 webhook_type = WebhookType.server
@@ -221,6 +227,7 @@ class Message(DiscordEntity, immortal=True):
                 author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
         
         self.author = author
+        self.application_id = application_id
         self.cross_mentions = cross_mentions
         
         self.reactions = reaction_mapping(data.get('reactions', None))
@@ -364,16 +371,6 @@ class Message(DiscordEntity, immortal=True):
                 role_mentions = tuple(role_mentions)
         
         self.role_mentions = role_mentions
-        
-        
-        try:
-            application_id = data['application_id']
-        except KeyError:
-            application_id = 0
-        else:
-            application_id = int(application_id)
-        
-        self.application_id = application_id
         
         try:
             thread_data = data['thread']

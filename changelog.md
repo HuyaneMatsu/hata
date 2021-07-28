@@ -1,4 +1,10 @@
-## 1.1.92 *\[2021-07-??\]*
+## 1.1.93 *\[2021-??-??\]*
+
+## 1.1.92 *\[2021-07-28\]*
+
+### Summary
+
+Add rich creation for rich activity and for sub activity types.
 
 #### Improvements
 
@@ -34,6 +40,7 @@
 - Handle correctly the cases, when `ComponentSelect.options` is `None`.
 - `ComponentRow.components` is now `tuple`, `None` (from `list`, `tuple`, `None`).
 - `ComponentSelect.options` is now `tuple`, `None` (from `list`, `None`).
+- `Message.author` could be set as `WebhookRepr` for application command messages.
 
 #### Renames, Deprecation & Removals
 

@@ -349,6 +349,15 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
+- greet
+    - Endpoint : `/channels/{channel_id}/greet`
+    - Method : `POST`
+    - Required auth : `user`
+    - Limiter : `GLOBAL`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Untested.
+
 - invite_get_all_channel
     - Endpoint : `/channels/{channel_id}/invites`
     - Method : `GET`
@@ -1772,6 +1781,7 @@ channel_group_leave = RateLimitGroup.unlimited() # untested; same as channel_del
 channel_edit = RateLimitGroup(LIMITER_CHANNEL)
 channel_group_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
 channel_follow = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
+greet = RateLimitGroup(optimistic=True) # untested
 invite_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
 invite_create = RateLimitGroup()
 message_get_chunk = RateLimitGroup(LIMITER_CHANNEL)

@@ -5983,7 +5983,7 @@ class Client(ClientUserPBase):
                 if guild not in guild.clients:
                     guild.clients.append(self)
             else:
-                profile._set_attributes(user_data)
+                profile._update_attributes(user_data)
         
         return guild
 

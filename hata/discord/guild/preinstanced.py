@@ -109,6 +109,12 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------+---------------------------+-------+
     | sticker_delete            | sticker_delete            | 92    |
     +---------------------------+---------------------------+-------+
+    | scheduled_event_create    | scheduled_event_create    | 100   |
+    +---------------------------+---------------------------+-------+
+    | scheduled_event_update    | scheduled_event_update    | 101   |
+    +---------------------------+---------------------------+-------+
+    | scheduled_event_delete    | scheduled_event_delete    | 102   |
+    +---------------------------+---------------------------+-------+
     | thread_create             | thread_create             | 110   |
     +---------------------------+---------------------------+-------+
     | thread_update             | thread_update             | 111   |
@@ -166,15 +172,19 @@ class AuditLogEvent(PreinstancedBase):
     integration_create = P(80, 'integration_create')
     integration_update = P(81, 'integration_update')
     integration_delete = P(82, 'integration_delete')
-
     
     sticker_create = P(90, 'sticker_create')
     sticker_update = P(91, 'sticker_update')
     sticker_delete = P(92, 'sticker_delete')
     
+    scheduled_event_create = P(100, 'scheduled_event_create')
+    scheduled_event_update = P(101, 'scheduled_event_update')
+    scheduled_event_delete = P(102, 'scheduled_event_delete')
+    
     thread_create = P(110, 'thread_create')
     thread_update = P(111, 'thread_update')
     thread_delete = P(112, 'thread_delete')
+
 
 class VerificationLevel(PreinstancedBase):
     """
@@ -547,9 +557,9 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | more_sticker                  | MORE_STICKERS                     |
     +-------------------------------+-----------------------------------+
-    | thread_archive_three_day          | THREE_DAY_THREAD_ARCHIVE          |
+    | thread_archive_three_day      | THREE_DAY_THREAD_ARCHIVE          |
     +-------------------------------+-----------------------------------+
-    | thread_archive_seven_day          | SEVEN_DAY_THREAD_ARCHIVE          |
+    | thread_archive_seven_day      | SEVEN_DAY_THREAD_ARCHIVE          |
     +-------------------------------+-----------------------------------+
     | private_threads               | PRIVATE_THREADS                   |
     +-------------------------------+-----------------------------------+

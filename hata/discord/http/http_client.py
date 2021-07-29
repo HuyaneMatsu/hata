@@ -1508,6 +1508,16 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/stage-instances/{channel_id}',
         )
     
+    # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
+    # data structure: {'sticker_ids': [sticker_id_1, ...]}
+    async def greet(self, channel_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.greet, channel_id),
+            METHOD_POST,
+            f'{API_ENDPOINT}/channels/{channel_id}/greet',
+            data,
+        )
+    
     # hooman only
     async def bulk_ack(self):
         return await self.discord_request(

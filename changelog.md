@@ -1,5 +1,24 @@
 ## 1.1.93 *\[2021-??-??\]*
 
+#### Improvements
+
+- Add `AuditLogEvent.scheduled_event_create`.
+- Add `AuditLogEvent.scheduled_event_update`.
+- Add `AuditLogEvent.scheduled_event_delete`.
+- Add `privacy_level` transformer to audit logs.
+- Add `ScheduledEventStatus`.
+- Add `status` transformer for audit logs.
+- Add `ScheduledEventEntityType`.
+- Add `entity_type` transformer for audit logs.
+- Add `sku_ids` transformer for audit logs.
+- Add `DiscordHTTPClient.greet`.
+- Add `RATE_LIMIT_GROUPS.greet`.
+
+#### Bug Fixes
+
+- Fix an `AttributeError` in `Client.guild_sync`. (Pichu#0357)
+
+
 ## 1.1.92 *\[2021-07-28\]*
 
 ### Summary

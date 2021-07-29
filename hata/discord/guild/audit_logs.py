@@ -12,6 +12,7 @@ from ..permission import PermissionOverwrite
 from ..integration import Integration
 from ..bases import Icon, maybe_snowflake
 from ..channel import VideoQualityMode
+from ..stage import StagePrivacyLevel, ScheduledEventStatus, ScheduledEventEntityType
 
 from .utils import create_partial_guild_from_id
 from .guild import SystemChannelFlag, Guild
@@ -1010,6 +1011,44 @@ def transform_int__default_auto_archive_after(name, data):
     return change
 
 
+def transform_stage_privacy_level(name, data):
+    change = AuditLogChange()
+    change.attr = 'privacy_level'
+    before = data.get('old_value', None)
+    change.before = None if before is None else StagePrivacyLevel.get(before)
+    after = data.get('new_value', None)
+    change.after = None if before is None else StagePrivacyLevel.get(after)
+    return change
+
+
+def transform_scheduled_event_status(name, data):
+    change = AuditLogChange()
+    change.attr = 'status'
+    before = data.get('old_value', None)
+    change.before = None if before is None else ScheduledEventStatus.get(before)
+    after = data.get('new_value', None)
+    change.after = None if before is None else ScheduledEventStatus.get(after)
+    return change
+
+def transform_scheduled_event_entity_type(name, data):
+    change = AuditLogChange()
+    change.attr = 'entity_type'
+    before = data.get('old_value', None)
+    change.before = None if before is None else ScheduledEventEntityType.get(before)
+    after = data.get('new_value', None)
+    change.after = None if before is None else ScheduledEventEntityType.get(after)
+    return change
+
+def transform_snowflake_array(name, data):
+    change = AuditLogChange()
+    change.attr = name
+    value = data.get('old_value', None)
+    change.before = None if ((value is None) or (not value)) else tuple(int(sub_value) for sub_value in value)
+    value = data.get('new_value', None)
+    change.after = None if ((value is None) or (not value)) else tuple(int(sub_value) for sub_value in value)
+    return change
+
+
 TRANSFORMERS = {
     '$add': transform_role,
     '$remove': transform_role,
@@ -1033,6 +1072,7 @@ TRANSFORMERS = {
     'deny_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'discovery_splash_hash' : transform_icon,
     # enable_emoticons (bool)
+    'entity_type': transform_scheduled_event_entity_type,
     # expire_behavior (int)
     # expire_grace_period (int)
     'explicit_content_filter':transform_content_filter,
@@ -1050,6 +1090,7 @@ TRANSFORMERS = {
     # nsfw (bool)
     'owner_id': transform_user,
     # position (int)
+    'privacy_level': transform_stage_privacy_level,
     'prune_delete_days': transform_int__days,
     'permission_overwrites' : transform_overwrites,
     'permissions': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
@@ -1058,7 +1099,9 @@ TRANSFORMERS = {
     'rate_limit_per_user': transform_int__slowmode,
     'region': transform_region,
     'rules_channel_id': transform_channel,
+    'sku_ids': transform_snowflake_array,
     'splash_hash': transform_icon,
+    'status': transform_scheduled_event_status,
     'system_channel_id': transform_channel,
     'system_channel_flags': transform_system_channel_flags,
     'tags': transform_tags,
@@ -1097,7 +1140,10 @@ del transform_video_quality_mode
 del transform_tags
 del transform_int__auto_archive_after
 del transform_int__default_auto_archive_after
-
+del transform_stage_privacy_level
+del transform_scheduled_event_status
+del transform_scheduled_event_entity_type
+del transform_snowflake_array
 
 class AuditLogChange:
     """

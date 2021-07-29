@@ -2,14 +2,16 @@ __all__ = ('Stage',)
 
 import reprlib
 
-from ...backend.export import export
+from ...backend.export import export, include
 
 from ..bases import DiscordEntity
 from ..channel import ChannelStage, create_partial_channel_from_id
-from ..guild import Guild, create_partial_guild_from_id
 from ..core import STAGES
 
 from .preinstanced import StagePrivacyLevel
+
+Guild = include('Guild')
+create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 @export
 class Stage(DiscordEntity):

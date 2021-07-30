@@ -804,6 +804,25 @@ def str_channel_store(channel, index=None, write_parents=True, overwrites=False,
     
     return result
 
+
+def str_channel_directory(channel, index=None, write_parents=True, overwrites=False, **kwargs):
+    result = PrettyBlock()
+    if index is None:
+        start = ''
+    else:
+        start = f'{index}.: '
+    result.append(f'{start}ChannelDirectory ({channel.type})')
+    result.append(f'- name : {channel.name!r}', 1)
+    result.append(f'- created at : {channel:c}', 1)
+    if not channel.clients:
+        result.append('- DELETED', 1)
+        return result
+    
+    write_guild_channel_extras(channel, result, write_parents, overwrites, kwargs)
+    
+    return result
+
+
 def str_channel_thread(channel, index=None, write_parents=True, overwrites=False, **kwargs):
     result = PrettyBlock()
     if index is None:
@@ -811,7 +830,7 @@ def str_channel_thread(channel, index=None, write_parents=True, overwrites=False
     else:
         start = f'{index}.: '
     
-    result.append(f'{start}ChannelStore ({channel.type})')
+    result.append(f'{start}ChannelThread ({channel.type})')
     result.append(f'- name : {channel.name!r}', 1)
     result.append(f'- created at : {channel:c}', 1)
     if not channel.clients:
@@ -829,7 +848,7 @@ def str_channel_guild_undefined(channel, index=None, write_parents=True, overwri
     else:
         start = f'{index}.: '
     
-    result.append(f'{start}ChannelStore ({channel.type})')
+    result.append(f'{start}ChannelGuildUndefined ({channel.type})')
     result.append(f'- name : {channel.name!r}', 1)
     result.append(f'- created at : {channel:c}', 1)
     if not channel.clients:
@@ -1172,7 +1191,7 @@ def str_AuditLogEntry(entry, index=None, **kwargs):
     if changes is not None:
         result.append(f'- changes: ({len(changes)})', 1)
         for change in changes:
-            attr = change.attr
+            attr = change.attribute_name
             texts = []
             for value in (change.before, change.after):
                 if value is None:
@@ -1833,6 +1852,7 @@ PRETTY_PRINTERS['ChannelVoice'] = str_channel_voice
 PRETTY_PRINTERS['ChannelGroup'] = str_channel_group
 PRETTY_PRINTERS['ChannelCategory'] = str_channel_category
 PRETTY_PRINTERS['ChannelStore'] = str_channel_store
+PRETTY_PRINTERS['ChannelDirectory'] = str_channel_directory
 PRETTY_PRINTERS['ChannelThread'] = str_channel_thread
 PRETTY_PRINTERS['ChannelGuildUndefined'] = str_channel_guild_undefined
 PRETTY_PRINTERS['Guild'] = str_guild

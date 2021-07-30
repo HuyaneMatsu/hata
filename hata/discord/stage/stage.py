@@ -8,7 +8,7 @@ from ..bases import DiscordEntity
 from ..channel import ChannelStage, create_partial_channel_from_id
 from ..core import STAGES
 
-from .preinstanced import StagePrivacyLevel
+from ..scheduled_event import PrivacyLevel
 
 Guild = include('Guild')
 create_partial_guild_from_id = include('create_partial_guild_from_id')
@@ -30,7 +30,7 @@ class Stage(DiscordEntity):
         The guild of the stage channel.
     invite_code : `None` or `str`
         Invite code to the stage's voice channel.
-    privacy_level : ``StagePrivacyLevel``
+    privacy_level : ``PrivacyLevel``
         The privacy level of the stage.
     scheduled_event_id : `int`
         Whether the stage was started by a scheduled event.
@@ -107,7 +107,7 @@ class Stage(DiscordEntity):
         self.topic = data['topic']
         self.invite_code = data.get('invite_code', None)
         self.discoverable = not data.get('discoverable_disabled', False)
-        self.privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
+        self.privacy_level = PrivacyLevel.get(data.get('privacy_level', 2))
     
     
     def _difference_update_attributes(self, data):
@@ -136,7 +136,7 @@ class Stage(DiscordEntity):
         +---------------+-----------------------+
         | invite_code   | `None` or `str`       |
         +---------------+-----------------------+
-        | privacy_level | ``StagePrivacyLevel`` |
+        | privacy_level | ``PrivacyLevel`` |
         +---------------+-----------------------+
         | topic         | `str`                 |
         +---------------+-----------------------+
@@ -161,7 +161,7 @@ class Stage(DiscordEntity):
             self.discoverable = discoverable
         
         
-        privacy_level = StagePrivacyLevel.get(data.get('privacy_level', 2))
+        privacy_level = PrivacyLevel.get(data.get('privacy_level', 2))
         if privacy_level is not self.privacy_level:
             privacy_level['privacy_level'] = self.privacy_level
             self.privacy_level = privacy_level

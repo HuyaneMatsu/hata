@@ -508,7 +508,7 @@ class EventHandlerManager:
         +---------------+-----------------------+
         | invite_code   | `None` or `str`       |
         +---------------+-----------------------+
-        | privacy_level | ``StagePrivacyLevel`` |
+        | privacy_level | ``PrivacyLevel``      |
         +---------------+-----------------------+
         | topic         | `str`                 |
         +---------------+-----------------------+

@@ -523,6 +523,8 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+
     | featurable                    | FEATURABLE                        |
     +-------------------------------+-----------------------------------+
+    | hub                           | HUB                               |
+    +-------------------------------+-----------------------------------+
     | member_list_disabled          | MEMBER_LIST_DISABLED              |
     +-------------------------------+-----------------------------------+
     | more_emoji                    | MORE_EMOJI                        |
@@ -621,6 +623,7 @@ class GuildFeature(PreinstancedBase):
     thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread_archive_three_day')
     thread_archive_seven_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread_archive_seven_day')
     private_threads = P('PRIVATE_THREADS', 'private_threads')
+    hub = P('hub', 'HUB')
     
     
     @class_property

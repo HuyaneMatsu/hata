@@ -3133,12 +3133,12 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 
                 socket.setblocking(False)
             
-            return await self._create_connection_transport(socket, protocol_factory, ssl, server_hostname)
+            return await self._create_connection_transport(socket, protocol_factory, ssl, server_hostname, False)
         
         
         async def open_unix_connection(self, path=None, **kwargs):
             protocol = ProtocolBase(self)
-            await loop.create_unix_connection(protocol, path, **kwargs)
+            await self.create_unix_connection(protocol, path, **kwargs)
             return protocol
         
         

@@ -11,7 +11,7 @@ from ....discord.utils import chunkify
 from ....discord.preconverters import preconvert_color, preconvert_str
 from ....discord.user import UserBase, User
 from ....discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread
+    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelDirectory
 from ....discord.role import Role
 from ....discord.emoji.emoji import Emoji
 from ....discord.guild import Guild
@@ -45,6 +45,7 @@ ARGUMENT_TYPE_TO_NAME = {
     ChannelCategory: 'category-channel',
     ChannelStore: 'store-channel',
     ChannelThread: 'thread-channel',
+    ChannelDirectory: 'directory-channel',
     Invite: 'invite',
     Role: 'role',
     Guild: 'guild',

@@ -81,6 +81,7 @@ You can define them as any other parameter with annotation added. String annotat
 
 - `ChannelBase`
     - `ChannelCategory`
+    - `ChannelDirectory`
     - `ChannelGroup`
     - `ChannelPrivate`
     - `ChannelGuildBase`

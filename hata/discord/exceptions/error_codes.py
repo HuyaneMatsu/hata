@@ -285,6 +285,18 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | cannot_delete_community_channel                   | 50074     | -         |
 +---------------------------------------------------+-----------+-----------+
+| invalid_sticker_sent                              | 50081     | -         |
++---------------------------------------------------+-----------+-----------+
+| invalid_action_for_archived_thread                | 50083     | -         |
++---------------------------------------------------+-----------+-----------+
+| invalid_thread_notification_setting               | 50084     | -         |
++---------------------------------------------------+-----------+-----------+
+| before_value_earlier_than_creation_time           | 50085     | -         |
++---------------------------------------------------+-----------+-----------+
+| invalid_country_code                              | 50095     | -         |
++---------------------------------------------------+-----------+-----------+
+| cannot_friend_self                                | 50096     | -         |
++---------------------------------------------------+-----------+-----------+
 | MFA_enabled                                       | 60001     | -         |
 +---------------------------------------------------+-----------+-----------+
 | MFA_disabled                                      | 60002     | -         |
@@ -303,6 +315,8 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | phone_number_unable_to_send                       | 70003     | -         |
 +---------------------------------------------------+-----------+-----------+
+| phone_verification_required                       | 70007     | -         |
++---------------------------------------------------+-----------+-----------+
 | relationship_incoming_disabled                    | 80000     | -         |
 +---------------------------------------------------+-----------+-----------+
 | relationship_incoming_blocked                     | 80001     | -         |
@@ -312,6 +326,8 @@ These are the following:
 | relationship_invalid_target_self                  | 80003     | -         |
 +---------------------------------------------------+-----------+-----------+
 | relationship_invalid_discord_tag                  | 80004     | -         |
++---------------------------------------------------+-----------+-----------+
+| relationship_already_friends                      | 80007     | -         |
 +---------------------------------------------------+-----------+-----------+
 | reaction_blocked                                  | 90001     | -         |
 +---------------------------------------------------+-----------+-----------+
@@ -492,6 +508,8 @@ invalid_sticker_sent = 50081
 invalid_action_for_archived_thread = 50083
 invalid_thread_notification_setting = 50084
 before_value_earlier_than_creation_time = 50085
+invalid_country_code = 50095
+cannot_friend_self = 50096
 
 MFA_enabled = 60001
 MFA_disabled = 60002
@@ -503,12 +521,14 @@ MFA_invalid_code = 60008
 MFA_invalid_session = 60009
 
 phone_number_unable_to_send = 70003
+phone_verification_required = 70007
 
 relationship_incoming_disabled = 80000
 relationship_incoming_blocked = 80001
 relationship_invalid_target_bot = 80002
 relationship_invalid_target_self = 80003
 relationship_invalid_discord_tag = 80004
+relationship_already_friends = 80007
 
 reaction_blocked = 90001
 

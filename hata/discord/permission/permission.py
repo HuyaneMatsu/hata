@@ -369,12 +369,18 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)
 
+PERMISSION_THREAD_AND_VOICE_DENY = PERMISSION_VOICE_DENY.update_by_keys(
+    use_public_threads = False,
+    use_private_threads = False,
+    use_external_stickers = False,
+)
+
 PERMISSION_VOICE_DENY_CONNECTION = PERMISSION_VOICE_DENY.update_by_keys(
     manage_roles = False,
     manage_channel = False,
 )
 
-PERMISSION_TEXT_AND_VOICE_DENY = Permission(PERMISSION_TEXT_DENY|PERMISSION_VOICE_DENY)
+PERMISSION_TEXT_AND_VOICE_DENY = Permission(PERMISSION_THREAD_AND_VOICE_DENY|PERMISSION_VOICE_DENY)
 
 PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     create_instant_invite = False,

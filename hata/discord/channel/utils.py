@@ -20,6 +20,7 @@ from .preinstanced import VideoQualityMode
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
 from .channel_thread import AUTO_ARCHIVE_OPTIONS
+from .channel_guild_directory import ChannelDirectory
 
 VoiceRegion = include('VoiceRegion')
 Guild = include('Guild')
@@ -36,6 +37,7 @@ CHANNEL_TYPES = {
     11: ChannelThread,
     12: ChannelThread,
     13: ChannelStage,
+    14: ChannelDirectory,
 }
 
 export(CHANNEL_TYPES, 'CHANNEL_TYPES')
@@ -99,6 +101,7 @@ def create_partial_channel_from_id(channel_id, channel_type, partial_guild=None)
     CHANNELS[channel_id] = channel
     
     return channel
+
 
 def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
         user_limit=None, region=None, video_quality_mode=None, archived=None, archived_at=None,

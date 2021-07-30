@@ -1,22 +1,24 @@
-__all__ = ('ChannelStore', )
+__all__ = ('ChannelDirectory', )
 
 from ...backend.utils import copy_docs
 from ...backend.export import export
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY
+from ..permission.permission import PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
 
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
+from ..preconverters import preconvert_snowflake, preconvert_str
 
 
 from .channel_base import ChannelBase
+from .channel_text_base import ChannelTextBase
 from .channel_guild_base import ChannelGuildMainBase
 
+
 @export
-class ChannelStore(ChannelGuildMainBase):
+class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
     """
-    Represents a ``Guild`` store channel.
+    Represents a ``Guild`` directory channel.
     
     Attributes
     ----------
@@ -34,31 +36,41 @@ class ChannelStore(ChannelGuildMainBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    nsfw : `bool`
-        Whether the channel is marked as non safe for work.
+    _message_history_collector :  `None` or ``MessageHistoryCollector``
+        Collector for the channel's message history.
+    _message_keep_limit : `int`
+        The channel's own limit of how much messages it should keep before removing their reference.
+    message_history_reached_end : `bool`
+        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
+        no requests will be requested to get older messages.
+    messages : `deque` of ``Message`` objects
+        The channel's message history.
     
     Class Attributes
     ----------------
-    DEFAULT_TYPE : `int` = `6`
-        The default type, what the channel represents.
-    INTERCHANGE : `tuple` of `int` = `(6,)`
+    DEFAULT_TYPE : `int` = `14`
+        The preferred channel type, if there is no channel type included.
+    INTERCHANGE : `tuple` of `int` = `(14,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
-    type : `int` = `6`
+    MESSAGE_KEEP_LIMIT : `int` = `14`
+        The default amount of messages to store at `.messages`.
+    type : `int` = `14`
         The channel's Discord side type.
     """
-    __slots__ = ('nsfw',) #guild channel store related
+    __slots__ = ()
     
-    DEFAULT_TYPE = 6
     ORDER_GROUP = 0
-    INTERCHANGE = (6,)
-    type = 6
+    DEFAULT_TYPE = 14
+    INTERCHANGE = (14, )
+    type = 14
+    
     
     def __new__(cls, data, client=None, guild=None):
         """
-        Creates a store channel from the channel data received from Discord. If the channel already exists and if
+        Creates a directory channel from the channel data received from Discord. If the channel already exists and if
         it is partial, then updates it.
         
         Parameters
@@ -85,23 +97,20 @@ class ChannelStore(ChannelGuildMainBase):
         
         self._cache_perm = None
         self.name = data['name']
-        self.nsfw = data.get('nsfw', False)
         
         self._init_parent_and_position(data, guild)
         self.overwrites = self._parse_overwrites(data)
         
         return self
     
-    
+    # Ignore empty function, keep for reference
+    """
     @classmethod
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelStore, cls)._create_empty(channel_id, channel_type, partial_guild)
-        
-        self.nsfw = False
-        
+        self = super(ChannelTextBase, cls)._create_empty(channel_id, channel_type, partial_guild)
         return self
-    
+    """
     
     @property
     @copy_docs(ChannelBase.display_name)
@@ -116,9 +125,8 @@ class ChannelStore(ChannelGuildMainBase):
         self.overwrites = self._parse_overwrites(data)
         
         self.name = data['name']
-        self.nsfw = data.get('nsfw', False)
     
-    
+        
     def _difference_update_attributes(self,data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
@@ -143,8 +151,6 @@ class ChannelStore(ChannelGuildMainBase):
         +---------------+-----------------------------------+
         | name          | `str`                             |
         +---------------+-----------------------------------+
-        | nsfw          | `bool`                            |
-        +---------------+-----------------------------------+
         | overwrites    | `list` of ``PermissionOverwrite`` |
         +---------------+-----------------------------------+
         | position      | `int`                             |
@@ -157,11 +163,6 @@ class ChannelStore(ChannelGuildMainBase):
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
-        
-        nsfw = data.get('nsfw', False)
-        if self.nsfw != nsfw:
-            old_attributes['nsfw'] = self.nsfw
-            self.nsfw = nsfw
         
         overwrites = self._parse_overwrites(data)
         if self.overwrites != overwrites:
@@ -195,14 +196,14 @@ class ChannelStore(ChannelGuildMainBase):
             return PERMISSION_NONE
         
         if user.id == guild.owner_id:
-            return PERMISSION_TEXT_AND_VOICE_DENY
+            return PERMISSION_THREAD_AND_VOICE_DENY
         
         result = self._permissions_for(user)
         if not result.can_view_channel:
             return PERMISSION_NONE
         
-        # store channels do not have text and voice related permissions
-        result &= PERMISSION_TEXT_AND_VOICE_DENY
+        # directory channels do not have thread and voice related permissions
+        result &= PERMISSION_THREAD_AND_VOICE_DENY
         
         return Permission(result)
     
@@ -213,8 +214,8 @@ class ChannelStore(ChannelGuildMainBase):
         if not result.can_view_channel:
             return PERMISSION_NONE
         
-        # store channels do not have text and voice related permissions
-        result &= PERMISSION_TEXT_AND_VOICE_DENY
+        # directory channels do not have thread and voice related permissions
+        result &= PERMISSION_THREAD_AND_VOICE_DENY
     
     
     @classmethod
@@ -235,12 +236,10 @@ class ChannelStore(ChannelGuildMainBase):
         ----------------
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        nsfw : `int`, Optional (Keyword only)
-            Whether the channel is marked as nsfw.
         
         Returns
         -------
-        channel : ``ChannelStore``
+        channel : ``ChannelDirectory``
         
         Raises
         ------
@@ -261,14 +260,6 @@ class ChannelStore(ChannelGuildMainBase):
             else:
                 name = preconvert_str(name, 'name', 2, 100)
                 processable.append(('name', name))
-            
-            try:
-                nsfw = kwargs.pop('nsfw')
-            except KeyError:
-                pass
-            else:
-                nsfw = preconvert_bool(nsfw, 'nsfw')
-                processable.append(('nsfw', nsfw))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')

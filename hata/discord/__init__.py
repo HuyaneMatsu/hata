@@ -16,6 +16,7 @@ from .invite import *
 from .message import *
 from .oauth2 import *
 from .permission import *
+from .scheduled_event import *
 from .role import *
 from .stage import *
 from .sticker import *
@@ -49,6 +50,7 @@ __all__ = (
     *oauth2.__all__,
     *permission.__all__,
     *role.__all__,
+    *scheduled_event.__all__,
     *stage.__all__,
     *sticker.__all__,
     *user.__all__,

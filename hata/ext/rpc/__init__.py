@@ -26,6 +26,11 @@ OPERATION_CLOSE = 2
 OPERATION_PING = 3
 OPERATION_PONG = 4
 
+CLOSE_PAYLOAD_KEY_CODE = 'code'
+CLOSE_PAYLOAD_KEY_MESSAGE = 'message'
+
+CLOSE_CODE_UNEXPECTED = 4000
+
 OPERATION_VALUE_TO_NAME = {
     OPERATION_HANDSHAKE: 'handshake',
     OPERATION_FRAME: 'frame',
@@ -77,7 +82,7 @@ def handle_command_DISPATCH(self, data):
     except KeyError:
         sys.stderr.write(
             f'{self!r} cannot handle dispatch event {dispatch_event_name!r}.\n'
-             f'Received data: {data!r}.'
+            f'Received data: {data!r}\n'
         )
         return
     
@@ -118,9 +123,7 @@ if PLATFORM in ('linux', 'darwin'):
                     TEMPORARY_DIRECTORY = get_temporary_directory()
     
     def get_ipc_path(pipe):
-        ipc = 'discord-ipc-'
-        if (pipe is not None):
-            ipc += pipe
+        ipc = f'discord-ipc-{pipe}'
         
         for path in (None, 'snap.discord', 'app/com.discordapp.Discord'):
             if path is None:
@@ -138,9 +141,7 @@ elif PLATFORM == 'win32':
     TEMPORARY_DIRECTORY = '\\\\?\\pipe'
     
     def get_ipc_path(pipe):
-        ipc = 'discord-ipc-'
-        if (pipe is not None):
-            ipc += pipe
+        ipc = f'discord-ipc-{pipe}'
         
         for node_name in list_directory(TEMPORARY_DIRECTORY):
             if node_name.startswith(ipc):
@@ -204,7 +205,7 @@ def check_for_error(data):
         pass
     else:
         if event == EVENT_ERROR:
-            error_data = event[PAYLOAD_KEY_DATA]
+            error_data = data[PAYLOAD_KEY_DATA]
             error_code = error_data['code']
             error_message = error_data['message']
             
@@ -228,7 +229,7 @@ set_docs(get_ipc_path,
 
 PROCESS_IDENTIFIER = get_process_identifier()
 
-class IPCClient:
+class RPCClient:
     """
     Attributes
     ----------
@@ -316,7 +317,7 @@ class IPCClient:
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        Task(self._connect(), KOKORO)
+        Task(self._connect(ipc_path), KOKORO)
     
     async def _connect(self, ipc_path):
         """
@@ -325,8 +326,40 @@ class IPCClient:
         NotImplemented
             Opening pipe is not supported on your platform.
         """
-        while True:
+        self.running = True
+        
+        while self.running:
             await self._open_pipe(ipc_path)
+            await self._handshake()
+            
+            while True:
+                operation, data = await self._receive_data()
+                if operation == OPERATION_CLOSE:
+                    self.close(data)
+                
+                elif operation == OPERATION_FRAME:
+                    if data is None:
+                        continue
+                    
+                    data = from_json(data)
+                    print(data)
+                    check_for_error(data)
+                    
+                    command_name = data[PAYLOAD_KEY_COMMAND]
+                    try:
+                        command_handler = COMMAND_HANDLERS[command_name]
+                    except KeyError:
+                        sys.stderr.write(
+                            f'No command handler for: {command_name}\n'
+                            f'Payload: {data!r}\n'
+                        )
+                    else:
+                        command_handler(self, data)
+                
+                else:
+                    raise RuntimeError(f'Received unexpected operation in handshake, got '
+                        f'{OPERATION_VALUE_TO_NAME.get(operation, DEFAULT_OPERATION_NAME)}, ({operation}).')
+    
     
     async def _send_data(self, operation, payload):
         protocol = self.protocol
@@ -359,7 +392,7 @@ class IPCClient:
     
     if PLATFORM in ('linux', 'darwin'):
         async def _open_pipe(self, ipc_path):
-            protocol = KOKORO.open_unix_connection(ipc_path)
+            protocol = await KOKORO.open_unix_connection(ipc_path)
             self.protocol = protocol
     else:
         
@@ -369,28 +402,10 @@ class IPCClient:
     async def _handshake(self):
         data = {
             'v': IPC_VERSION,
-            'client_id': self.application_id,
+            'client_id': str(self.application_id),
         }
         
         await self._send_data(OPERATION_HANDSHAKE, data)
-        
-        operation, data = await self._receive_data()
-        if operation == OPERATION_CLOSE:
-            self.close()
-        elif operation == OPERATION_FRAME:
-            if data is None:
-                raise RuntimeError(f'Received empty frame payload at handshake.')
-            
-            check_for_error(data)
-            
-            command = data.get(PAYLOAD_KEY_COMMAND, None)
-            if (command is None) or (command != PAYLOAD_COMMAND_AUTHORIZE):
-                raise RuntimeError(f'Received bad command after handshake, got: {command!r}')
-            
-        else:
-            raise RuntimeError(f'Received unexpected operation in handshake, got '
-                f'{OPERATION_VALUE_TO_NAME.get(operation, DEFAULT_OPERATION_NAME)}, ({operation}).')
-    
     
     def _get_nonce(self):
         """
@@ -422,6 +437,25 @@ class IPCClient:
                 pass
     
     
+    def close(self, data):
+        """
+        Closes the rpc client.
+        
+        Parameters
+        ----------
+        data : `None` or `bytes`
+            Received close data.
+        """
+        if (data is not None):
+            data = from_json(data)
+            close_code = data[CLOSE_PAYLOAD_KEY_CODE]
+            close_message = data[CLOSE_PAYLOAD_KEY_MESSAGE]
+            
+            sys.stderr.write(f'Closing rpc client: [{close_code}] {close_message}\n')
+        
+        
+        self.running = False
+        
     
     async def unsubscribe(self, event, guild):
         """

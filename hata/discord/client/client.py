@@ -26,7 +26,7 @@ from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
-    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
@@ -64,9 +64,10 @@ from ..interaction import ApplicationCommand, InteractionResponseTypes, Applicat
 from ..interaction.application_command import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ..color import Color
-from ..stage import Stage, StagePrivacyLevel
+from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
+from ..scheduled_event import PrivacyLevel
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
@@ -7970,7 +7971,7 @@ class Client(ClientUserPBase):
         await self.http.user_move(guild_id, user_id, {'channel_id': None})
     
     
-    async def stage_create(self, channel, topic, *, privacy_level=StagePrivacyLevel.guild_only):
+    async def stage_create(self, channel, topic, *, privacy_level=PrivacyLevel.guild_only):
         """
         Edits the given stage channel.
         
@@ -7986,7 +7987,7 @@ class Client(ClientUserPBase):
             The channel to edit.
         topic : `None` or `str`
             The new topic of the stage.
-        privacy_level : ``StagePrivacyLevel``, `int`, Optional (Keyword only)
+        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The new privacy level of the stage. Defaults to guild only.
         
         Returns
@@ -7998,7 +7999,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `channel` was not given as ``ChannelStage`` neither as `int` instance.
-            - If `privacy_level` was not given neither as ``StagePrivacyLevel`` nor as `int` instance.
+            - If `privacy_level` was not given neither as ``PrivacyLevel`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8021,12 +8022,12 @@ class Client(ClientUserPBase):
                 if (topic_length < 1) or (topic_length > 120):
                     raise AssertionError(f'`topic` length can be in range [1:120], got {topic_length!r}; {topic!r}.')
         
-        if isinstance(privacy_level, StagePrivacyLevel):
+        if isinstance(privacy_level, PrivacyLevel):
             privacy_level = privacy_level.value
         elif isinstance(privacy_level, int):
             privacy_level = privacy_level
         else:
-            raise TypeError(f'`privacy_level` can be given either as {StagePrivacyLevel.__name__} or `int` '
+            raise TypeError(f'`privacy_level` can be given either as {PrivacyLevel.__name__} or `int` '
                 f'instance, got {privacy_level.__class__.__name__}.')
         
         data = {
@@ -8053,14 +8054,14 @@ class Client(ClientUserPBase):
             The stage to edit. Can be given as it's channel's identifier.
         topic : `str`
             The new topic of the stage.
-        privacy_level : ``StagePrivacyLevel``, `int`, Optional (Keyword only)
+        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The new privacy level of the stage.
         
         Raises
         ------
         TypeError
             - If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int` instance.
-            - If `privacy_level` was not given neither as ``StagePrivacyLevel`` nor as `int` instance.
+            - If `privacy_level` was not given neither as ``PrivacyLevel`` nor as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8087,12 +8088,12 @@ class Client(ClientUserPBase):
         
         
         if (privacy_level is not ...):
-            if isinstance(privacy_level, StagePrivacyLevel):
+            if isinstance(privacy_level, PrivacyLevel):
                 privacy_level = privacy_level.value
             elif isinstance(privacy_level, int):
                 privacy_level = privacy_level
             else:
-                raise TypeError(f'`privacy_level` can be given either as {StagePrivacyLevel.__name__} or `int` '
+                raise TypeError(f'`privacy_level` can be given either as {PrivacyLevel.__name__} or `int` '
                     f'instance, got {privacy_level.__class__.__name__}.')
             
             data['privacy_level'] = privacy_level
@@ -10457,7 +10458,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
+        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, ``ChannelDirectory``, `int`
             The channel of the created invite.
         max_age : `int`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
@@ -10476,7 +10477,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-                ``ChannelStore``, neither as `int` instance.
+                ``ChannelStore``, ``ChannelDirectory``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -10487,7 +10488,7 @@ class Client(ClientUserPBase):
             - If `unique` was not given as `bool` instance.
             - If `temporary` was not given as `bool` instance.
         """
-        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
+        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore, ChannelDirectory)):
             channel_id = channel.id
         else:
             channel_id = maybe_snowflake(channel)
@@ -10640,7 +10641,8 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
+        channel : channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``,
+                ``ChannelDirectory``, `int
             The target channel of the invite.
         application : ``Application`` or `int`
             The embedded application to open in the voice channel.
@@ -10663,7 +10665,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-                ``ChannelStore``, neither as `int` instance.
+                ``ChannelStore``, ``ChannelDirectory``, neither as `int` instance.
             - If `application` was not given neither as ``Application`` nor as`int` instance.
         ConnectionError
             No internet connection.
@@ -10676,7 +10678,7 @@ class Client(ClientUserPBase):
             - If `unique` was not given as `bool` instance.
             - If `temporary` was not given as `bool` instance.
         """
-        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
+        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore, ChannelDirectory)):
             channel_id = channel.id
         else:
             channel_id = maybe_snowflake(channel)
@@ -10905,7 +10907,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, `int`
+        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, ``ChannelDirectory``, `int`
             The channel, what's invites will be requested.
         
         Returns
@@ -10916,13 +10918,13 @@ class Client(ClientUserPBase):
         ------
         TypeError
             If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-            ``ChannelStore``, neither as `int` instance.
+            ``ChannelStore``, ``ChannelDirectory``, neither as `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore)):
+        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore, ChannelDirectory)):
             channel_id = channel.id
         else:
             channel_id = maybe_snowflake(channel)

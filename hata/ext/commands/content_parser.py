@@ -23,7 +23,7 @@ from ...discord.emoji import parse_emoji, Emoji
 from ...discord.core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS, EMOJIS
 from ...discord.message import Message
 from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread
+    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelDirectory
 from ...discord.user import User, UserBase
 from ...discord.role import Role
 from ...discord.events.handling_helpers import check_parameter_count_and_convert
@@ -1768,6 +1768,7 @@ ConverterSetting(
         ChannelCategory,
         ChannelStore,
         ChannelThread,
+        ChannelDirectory,
     ],
 )
 

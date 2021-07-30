@@ -42,6 +42,7 @@ setup(
         'hata.discord.oauth2',
         'hata.discord.permission',
         'hata.discord.role',
+        'hata.discord.scheduled_event',
         'hata.discord.stage',
         'hata.discord.sticker',
         'hata.discord.user',

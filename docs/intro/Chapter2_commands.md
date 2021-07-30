@@ -106,22 +106,22 @@ async def hug(client, message, user: User = None):
 
 The supported types are the following:
 
-| Type          | String representation | Alternative types                                                                                                                         |
-|---------------|-----------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| User          | 'user'                | UserBase                                                                                                                                  |
-| Client        | 'client'              | N/A                                                                                                                                       |
-| ChannelBase   | 'channel'             | ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread  |
-| Role          | 'role'                | N/A                                                                                                                                       |
-| Emoji         | 'emoji'               | N/A                                                                                                                                       |
-| Guild         | 'guild'               | N/A                                                                                                                                       |
-| Message       | 'message'             | N/A                                                                                                                                       |
-| Invite        | 'invite'              | N/A                                                                                                                                       |
-| Color         | 'color'               | N/A                                                                                                                                       |
-| str           | N/A                   | N/A                                                                                                                                       |
-| int           | N/A                   | N/A                                                                                                                                       |
-| timedelta     | 'tdelta'              | N/A                                                                                                                                       |
-| relativedelta | 'rdelta'              | N/A                                                                                                                                       |
-| N/A           | 'rest'                | N/A                                                                                                                                       |
+| Type          | String representation | Alternative types                                                                                                                                             |
+|---------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| User          | 'user'                | UserBase                                                                                                                                                      |
+| Client        | 'client'              | N/A                                                                                                                                                           |
+| ChannelBase   | 'channel'             | ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelDirectory    |
+| Role          | 'role'                | N/A                                                                                                                                                           |
+| Emoji         | 'emoji'               | N/A                                                                                                                                                           |
+| Guild         | 'guild'               | N/A                                                                                                                                                           |
+| Message       | 'message'             | N/A                                                                                                                                                           |
+| Invite        | 'invite'              | N/A                                                                                                                                                           |
+| Color         | 'color'               | N/A                                                                                                                                                           |
+| str           | N/A                   | N/A                                                                                                                                                           |
+| int           | N/A                   | N/A                                                                                                                                                           |
+| timedelta     | 'tdelta'              | N/A                                                                                                                                                           |
+| relativedelta | 'rdelta'              | N/A                                                                                                                                                           |
+| N/A           | 'rest'                | N/A                                                                                                                                                           |
 
 Notes:
 - If `'user'` is given as `UserBase` then the parser behaviour will not be altered, it also means, that if it is given

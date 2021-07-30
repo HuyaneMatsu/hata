@@ -8,7 +8,8 @@ from ..utils import parse_time, DISCORD_EPOCH_START
 from ..core import GUILDS, CHANNELS, INVITES
 from ..user import User, ZEROUSER, ClientUserBase
 from ..guild import create_partial_guild_from_data, Guild
-from ..channel import create_partial_channel_from_data, ChannelText, ChannelGroup, ChannelVoice, ChannelStore
+from ..channel import create_partial_channel_from_data, ChannelText, ChannelGroup, ChannelVoice, ChannelStore, \
+    ChannelDirectory
 from ..application import Application
 from ..http import urls as module_urls
 
@@ -27,7 +28,7 @@ class Invite(DiscordEntity, immortal=True):
         as `0`.
     approximate_user_count : `int`
         The approximate amount of users at the respective guild (or group channel). If not included, then set as `0`.
-    channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``
+    channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup`` or ``ChannelDirectory``
         The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
         invite. If channel data was not sent with the invite's, then this attribute is set as `None`.
     code : `str`
@@ -434,7 +435,8 @@ class Invite(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore`` or ``ChannelGroup``, Optional (Keyword only)
+        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup`` or
+                ``ChannelDirectory``, Optional (Keyword only)
             The channel where the invite redirects.
         created_at : `datetime`, Optional (Keyword only)
             When the invite was created.
@@ -524,7 +526,7 @@ class Invite(DiscordEntity, immortal=True):
             
             for key, type_ in (
                     ('guild', Guild),
-                    ('channel', (ChannelText, ChannelGroup, ChannelVoice, ChannelStore)),
+                    ('channel', (ChannelText, ChannelGroup, ChannelVoice, ChannelStore, ChannelDirectory)),
                         ):
                 
                 try:

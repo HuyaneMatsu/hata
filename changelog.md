@@ -13,11 +13,28 @@
 - Add `sku_ids` transformer for audit logs.
 - Add `DiscordHTTPClient.greet`.
 - Add `RATE_LIMIT_GROUPS.greet`.
+- Add `AuditLog.threads`.
+- Add `AuditLogIterator.threads`.
+- Add `ScheduledEvent` converter for audit logs.
+- Add `ChannelThread` converter for audit logs.
+- Add `GuildFeature.hub`.
+- Add `ChannelDirectory`.
+- Add `ERROR_CODES.relationship_already_friends`.
+- Add `ERROR_CODES.phone_verification_required`.
+- Add `ERROR_CODES.cannot_friend_self`.
+- Add `ERROR_CODES.invalid_country_code`.
 
 #### Bug Fixes
 
 - Fix an `AttributeError` in `Client.guild_sync`. (Pichu#0357)
+- Fix a `NameError` in `EventThread.open_unix_connection`.
+- Fix a `TypeError` in `EventTherad.create_unix_connection`.
 
+#### Renames, Deprecation & Removals
+
+- Deprecate `AuditLogChange.attr`.
+- Rename `AuditLogChange.attr` to `.attribute_name`.
+- Rename `StagePrivacyLevel` to `PrivacyLevel`
 
 ## 1.1.92 *\[2021-07-28\]*
 

@@ -14,7 +14,8 @@ from ...discord.core import USERS, CLIENTS, ROLES, CHANNELS, EMOJIS, GUILDS, MES
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.user import User, UserBase
 from ...discord.channel import ChannelGuildBase, ChannelBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelVoiceBase, ChannelStage
+    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelVoiceBase, ChannelStage, \
+    ChannelDirectory
 from ...discord.client import Client
 from ...discord.emoji import Emoji, parse_emoji
 from ...discord.invite import Invite
@@ -1199,6 +1200,7 @@ CONVERTER_CHANNEL = ConverterSetting(
         ChannelStore,
         ChannelThread,
         ChannelStage,
+        ChannelDirectory,
     ],
     requires_part = True,
 )

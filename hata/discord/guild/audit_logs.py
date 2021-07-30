@@ -1,9 +1,11 @@
 __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
+import warnings
+
 from ...env import API_VERSION
 
 from ..utils import Unknown, now_as_id, id_to_time
-from ..core import CHANNELS, USERS, ROLES, MESSAGES
+from ..core import CHANNELS, USERS, ROLES, MESSAGES, SCHEDULED_EVENTS
 from ..permission import Permission
 from ..color import Color
 from ..user import User, ClientUserBase
@@ -11,8 +13,8 @@ from ..webhook import Webhook
 from ..permission import PermissionOverwrite
 from ..integration import Integration
 from ..bases import Icon, maybe_snowflake
-from ..channel import VideoQualityMode
-from ..stage import StagePrivacyLevel, ScheduledEventStatus, ScheduledEventEntityType
+from ..channel import VideoQualityMode, ChannelThread
+from ..scheduled_event import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel
 
 from .utils import create_partial_guild_from_id
 from .guild import SystemChannelFlag, Guild
@@ -27,21 +29,23 @@ class AuditLog:
     
     Attributes
     ----------
-    guild : ``Guild``
-        The audit logs' respective guild.
     entries : `list` of ``AuditLogEntry``
         A list of audit log entries, what the audit log contains.
+    guild : ``Guild``
+        The audit logs' respective guild.
+    integrations : `dict` of (`int`, ``Integration``) items
+        A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
+        the integrations, meanwhile the values are the integrations themselves.
+    threads : `dict` of (`int`, ``ChannelThread``) items
+        A dictionary containing the mentioned threads inside of the audit logs.
     users : `dict` of (`int`, ``ClientUserBase``) items
         A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
         users, meanwhile the values are the users themselves.
     webhooks : `dict` of (`int`, ``Webhook``) items
         A dictionary what contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
-    integrations : `dict` of (`int`, ``Integration``) items
-        A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
-        the integrations, meanwhile the values are the integrations themselves.
     """
-    __slots__ = ('guild', 'entries', 'users', 'webhooks', 'integrations', )
+    __slots__ = ('entries', 'guild', 'integrations', 'threads', 'users', 'webhooks')
     def __init__(self, data, guild):
         """
         Creates an ``AuditLog`` instance from the data received from Discord.
@@ -85,6 +89,16 @@ class AuditLog:
                 integration = Integration(integration_data)
                 integrations[integration.id] = integration
         
+        self.threads = threads = {}
+        try:
+            thread_datas = data['threads']
+        except KeyError:
+            pass
+        else:
+            for thread_data in thread_datas:
+                thread = ChannelThread(thread_data, None, guild)
+                threads[thread.id] = thread
+        
         self.entries = entries = []
         try:
             entry_datas = data['audit_log_entries']
@@ -114,25 +128,13 @@ class AuditLog:
         """Returns the representation of the Audit log."""
         return f'<{self.__class__.__name__} of {self.guild.name}, length={len(self.entries)}>'
 
+
 class AuditLogIterator:
     """
     An async iterator over a guild's audit logs.
     
     Attributes
     ----------
-    guild : ``Guild``
-        The audit log iterator's respective guild.
-    entries : `list` of ``AuditLogEntry``
-        A list of the already received audit log entries.
-    users : `dict` of (`int`, ``ClientUserBase`` items
-        A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
-        users, meanwhile the values are the users themselves.
-    webhooks : `dict` of (`int`, ``Webhook``) items
-        A dictionary what contains the mentioned webhook by the audit log's entries. They keys are the `id`-s of the
-        webhooks, meanwhile the values are the values themselves.
-    integrations : `dict` of (`int`, ``Integration``) items
-        A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
-        the integrations, meanwhile the values are the integrations themselves.
     _data : `dict` of (`str`, `Any`) items
         Data to be sent to Discord when requesting an another audit log chunk. Contains some information, which are not
         stored by any attributes of the audit log iterator, these are the filtering `user` and `event` options.
@@ -140,8 +142,23 @@ class AuditLogIterator:
         The next audit log entries index to yield.
     client : ``Client``
         The client, who will execute the api requests.
+    entries : `list` of ``AuditLogEntry``
+        A list of the already received audit log entries.
+    guild : ``Guild``
+        The audit log iterator's respective guild.
+    integrations : `dict` of (`int`, ``Integration``) items
+        A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
+        the integrations, meanwhile the values are the integrations themselves.
+    threads : `dict` of (`int`, ``ChannelThread``) items
+        A dictionary containing the mentioned threads inside of the audit logs.
+    users : `dict` of (`int`, ``ClientUserBase`` items
+        A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
+        users, meanwhile the values are the users themselves.
+    webhooks : `dict` of (`int`, ``Webhook``) items
+        A dictionary what contains the mentioned webhook by the audit log's entries. They keys are the `id`-s of the
+        webhooks, meanwhile the values are the values themselves.
     """
-    __slots__ = ('guild',  'entries', 'users', 'webhooks', 'integrations', '_data', '_index', 'client', )
+    __slots__ = ('_data', '_index', 'client', 'entries', 'guild', 'integrations', 'threads', 'users', 'webhooks')
     
     async def __new__(cls, client, guild, user=None, event=None):
         """
@@ -172,7 +189,7 @@ class AuditLogIterator:
             If any exception was received from the Discord API.
         """
         data = {
-            'limit' : 100,
+            'limit': 100,
             'before': now_as_id(),
         }
         
@@ -225,11 +242,13 @@ class AuditLogIterator:
         self.users = {}
         self.webhooks = {}
         self.integrations = {}
+        self.threads = {}
         
         if (log_data is not None):
             self._process_data(log_data)
         
         return self
+    
     
     async def load_all(self):
         """
@@ -256,6 +275,7 @@ class AuditLogIterator:
             if len(entries)%100:
                 return
     
+    
     def transform(self):
         """
         Converts the audit log iterator to an audit log object.
@@ -270,6 +290,7 @@ class AuditLogIterator:
         result.users = self.users
         result.webhooks = self.webhooks
         result.integrations = self.integrations
+        result.threads = self.threads
         return result
     
     def __aiter__(self):
@@ -323,37 +344,55 @@ class AuditLogIterator:
         if not entry_datas:
             raise StopAsyncIteration
         
-        users = self.users
+        
         try:
             users_data = data['users']
         except KeyError:
             pass
         else:
+            users = self.users
+            
             for user_data in users_data:
                 user = User(user_data)
                 users[user.id] = user
         
-        webhooks = self.webhooks
+        
         try:
             webhooks_data = data['webhook']
         except KeyError:
             pass
         else:
+            webhooks = self.webhooks
+            
             for webhook_data in webhooks_data:
                 webhook = Webhook(webhook_data)
                 webhooks[webhook.id] = webhook
         
-        integrations = self.integrations
+        
         try:
             integration_datas = data['integrations']
         except KeyError:
             pass
         else:
+            integrations = self.integrations
+            
             for integration_data in integration_datas:
                 integration = Integration(integration_data)
                 integrations[integration.id] = integration
         
-        entries=self.entries
+        
+        try:
+            thread_datas = data['threads']
+        except KeyError:
+            pass
+        else:
+            threads = self.threads
+            
+            for thread_data in thread_datas:
+                thread = ChannelThread(thread_data, None, self.guild)
+                threads[thread.id] = thread
+        
+        entries = self.entries
         for entry_data in entry_datas:
             entries.append(AuditLogEntry(entry_data, self))
 
@@ -361,8 +400,10 @@ class AuditLogIterator:
 def convert_detail_days(key, value, all_):
     return 'days', int(value)
 
+
 def convert_detail_users_removed(key, value, all_):
     return 'users_removed', int(value)
+
 
 def convert_detail_channel(key, value, all_):
     channel_id = int(value)
@@ -371,6 +412,7 @@ def convert_detail_channel(key, value, all_):
     except KeyError:
         channel = Unknown('Channel', channel_id)
     return 'channel', channel
+
 
 def convert_detail_message(key, value, all_):
     message_id = int(value)
@@ -381,11 +423,13 @@ def convert_detail_message(key, value, all_):
     
     return 'message', message
 
+
 def convert_detail_amount(key, value, all_):
     return 'amount', int(value)
 
-def convert_detail_perm_ow_target(key, value, all_):
-    id_=int(value)
+
+def convert_detail_permission_overwrite_target(key, value, all_):
+    id_ = int(value)
     try:
         type_name = all_['type']
     except KeyError:
@@ -404,11 +448,13 @@ def convert_detail_perm_ow_target(key, value, all_):
         except KeyError:
             target = Unknown('Role', id_, all_.get('name', ''))
     else:
-        # perm_ow type can be only member and role, so if it is else,
+        # permission_overwrite type can be only member and role, so if it is else,
         # the data is broken again
         return None
+    
+    return 'target', target
 
-def convert_detail_perm_ow_processed(key, value, all_):
+def convert_detail_permission_overwrite_processed(key, value, all_):
     return None
 
 DETAIL_CONVERSIONS = {
@@ -417,9 +463,9 @@ DETAIL_CONVERSIONS = {
     'channel_id': convert_detail_channel,
     'message_id': convert_detail_message,
     'count': convert_detail_amount,
-    'id': convert_detail_perm_ow_target,
-    'type': convert_detail_perm_ow_processed,
-    'role_name': convert_detail_perm_ow_processed,
+    'id': convert_detail_permission_overwrite_target,
+    'type': convert_detail_permission_overwrite_processed,
+    'role_name': convert_detail_permission_overwrite_processed,
 }
 
 del convert_detail_days
@@ -427,8 +473,9 @@ del convert_detail_users_removed
 del convert_detail_channel
 del convert_detail_message
 del convert_detail_amount
-del convert_detail_perm_ow_target
-del convert_detail_perm_ow_processed
+del convert_detail_permission_overwrite_target
+del convert_detail_permission_overwrite_processed
+
 
 def DETAIL_CONVERTER_DEFAULT(key, value, all_):
     return key, value
@@ -436,6 +483,7 @@ def DETAIL_CONVERTER_DEFAULT(key, value, all_):
 
 def convert_guild(entry, parent, target_id):
     return parent.guild
+
 
 def convert_channel(entry, parent, target_id):
     if target_id is None:
@@ -448,6 +496,7 @@ def convert_channel(entry, parent, target_id):
             target = Unknown('Channel', target_id)
     
     return target
+
 
 def convert_user(entry, parent, target_id):
     # target_id can be None for any reason
@@ -462,11 +511,12 @@ def convert_user(entry, parent, target_id):
     
     return target
 
+
 def convert_role(entry, parent, target_id):
     if target_id is None:
         target = None
     else:
-        target = int(target_id)
+        target_id = int(target_id)
         try:
             target = parent.guild.roles[target_id]
         except KeyError:
@@ -474,10 +524,11 @@ def convert_role(entry, parent, target_id):
     
     return target
 
+
 def convert_invite(entry, parent, target_id):
     #every other data is at #change
     for change in entry.changes:
-        if change.attr!='code':
+        if change.attribute_name != 'code':
             continue
         
         if entry.type is AuditLogEvent.invite_delete:
@@ -487,10 +538,11 @@ def convert_invite(entry, parent, target_id):
         break
     
     else:
-        code = '' #malformed ?
+        code = '' # malformed ?
     
     return Unknown('Invite', code)
-    
+
+
 def convert_webhook(entry, parent, target_id):
     if target_id is None:
         target = None
@@ -502,6 +554,7 @@ def convert_webhook(entry, parent, target_id):
             target = Unknown('Webhook', target_id)
     
     return target
+
 
 def convert_emoji(entry, parent, target_id):
     if target_id is None:
@@ -515,6 +568,7 @@ def convert_emoji(entry, parent, target_id):
     
     return target
 
+
 def convert_message(entry, parent, target_id):
     if target_id is None:
         target = None
@@ -527,7 +581,8 @@ def convert_message(entry, parent, target_id):
     
     return target
 
-def convert_integration(entry, parent,target_id):
+
+def convert_integration(entry, parent, target_id):
     if target_id is None:
         target = None
     else:
@@ -538,6 +593,7 @@ def convert_integration(entry, parent,target_id):
             target = Unknown('Integration', target_id)
     
     return target
+
 
 def convert_sticker(entry, parent, target_id):
     if target_id is None:
@@ -551,6 +607,33 @@ def convert_sticker(entry, parent, target_id):
     
     return target
 
+
+def convert_scheduled_event(entry, parent, target_id):
+    if target_id is None:
+        target = None
+    else:
+        target_id = int(target_id)
+        try:
+            target = SCHEDULED_EVENTS[target_id]
+        except KeyError:
+            target = Unknown('ScheduledEvent', target_id)
+    
+    return target
+
+
+def convert_thread(entry, parent, target_id):
+    if target_id is None:
+        target = None
+    else:
+        target_id = int(target_id)
+        try:
+            target = parent.threads[target_id]
+        except KeyError:
+            target = Unknown('ChannelThread', target_id)
+    
+    return target
+
+
 CONVERSIONS = {
     0: convert_guild,
     1: convert_channel,
@@ -562,6 +645,8 @@ CONVERSIONS = {
     7: convert_message,
     8: convert_integration,
     9: convert_sticker,
+    10: convert_scheduled_event,
+    11: convert_thread,
 }
 
 del convert_guild
@@ -574,6 +659,9 @@ del convert_emoji
 del convert_message
 del convert_integration
 del convert_sticker
+del convert_scheduled_event
+del convert_thread
+
 
 class AuditLogEntry:
     """
@@ -725,158 +813,173 @@ class AuditLogEntry:
 
 
 def transform_nothing(name, data):
-    change = AuditLogChange()
-    change.attr = name
-    change.before = data.get('old_value', None)
-    change.after = data.get('new_value', None)
-    return change
+    before = data.get('old_value', None)
+    after = data.get('new_value', None)
+    return AuditLogChange(name, before, after)
+
 
 def transform_deprecated(name, data):
     return None
 
+
 def transform_icon(name, data):
-    change = AuditLogChange()
     if name == 'splash_hash':
         name = 'invite_splash'
     else:
         name = name[:-5]
-    change.attr = name
     
-    change.before = Icon.from_base16_hash(data.get('old_value', None))
+    before = Icon.from_base16_hash(data.get('old_value', None))
     
-    change.after = Icon.from_base16_hash(data.get('new_value', None))
+    after = Icon.from_base16_hash(data.get('new_value', None))
     
-    return change
+    return AuditLogChange(name, before, after)
+
 
 def transform_bool__separated(name, data):
-    change = AuditLogChange()
-    change.attr = 'separated'
-    change.before = data.get('old_value', None)
-    change.after = data.get('new_value', None)
-    return change
+    before = data.get('old_value', None)
+    after = data.get('new_value', None)
+    
+    return AuditLogChange('separated', before, after)
 
 
 def transform_channel(name, data):
-    change = AuditLogChange()
-    change.attr = name[:-3]
+    name = name[:-3]
     
     value = data.get('old_value', None)
     if value is None:
-        change.before = None
+        before = None
     else:
         value = int(value)
         try:
             before = CHANNELS[value]
         except KeyError:
             before = Unknown('Channel', value)
-        change.before = before
     
     value = data.get('new_value', None)
     if value is None:
-        change.after = None
+        after = None
     else:
         value = int(value)
         try:
             after = CHANNELS[value]
         except KeyError:
             after = Unknown('Channel', value)
-        change.after = after
     
-    return change
+    return AuditLogChange(name, before, after)
+
 
 def transform_color(name, data):
-    change = AuditLogChange()
-    change.attr = 'color'
-    value = data.get('old_value', None)
-    change.before = None if value is None else Color(value)
-    value = data.get('new_value', None)
-    change.after = None if value is None else Color(value)
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = Color(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = Color(after)
+    
+    return AuditLogChange('color', before, after)
+
 
 def transform_content_filter(name, data):
-    change = AuditLogChange()
-    change.attr = 'content_filter'
-    value = data.get('old_value', None)
-    change.before = None if value is None else ContentFilterLevel.get(value)
-    value = data.get('new_value', None)
-    change.after = None if value is None else ContentFilterLevel.get(value)
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = ContentFilterLevel.get(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = ContentFilterLevel.get(after)
+    
+    return AuditLogChange('content_filter', before, after)
+
 
 def transform_video_quality_mode(name, data):
-    change = AuditLogChange()
-    change.attr = 'video_quality_mode'
-    value = data.get('old_value', None)
-    change.before = None if value is None else VideoQualityMode.get(value)
-    value = data.get('new_value', None)
-    change.after = None if value is None else VideoQualityMode.get(value)
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = VideoQualityMode.get(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = VideoQualityMode.get(after)
+    
+    return AuditLogChange('video_quality_mode', before, after)
+
 
 def transform_int__days(name, data):
-    change = AuditLogChange()
-    change.attr = 'days'
-    change.before = data.get('old_value', None)
-    change.after = data.get('new_value', None)
-    return change
+    before = data.get('old_value', None)
+    after = data.get('new_value', None)
+    return AuditLogChange('days', before, after)
+
 
 def transform_int__slowmode(name, data):
-    change = AuditLogChange()
-    change.attr = 'slowmode'
-    change.before = data.get('old_value', None)
-    change.after = data.get('new_value', None)
-    return change
+    before = data.get('old_value', None)
+    after = data.get('new_value', None)
+    return AuditLogChange('slowmode', before, after)
+
 
 def transform_message_notification(name, data):
-    change = AuditLogChange()
-    change.attr = 'message_notification'
     before = data.get('old_value', None)
-    change.before = None if before is None else MessageNotificationLevel.get(before)
+    if (before is not None):
+        before = MessageNotificationLevel.get(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else MessageNotificationLevel.get(after)
-    return change
+    if (after is not None):
+        after = MessageNotificationLevel.get(after)
+    
+    return AuditLogChange('message_notification', before, after)
+
 
 def transform_mfa(name, data):
-    change = AuditLogChange()
-    change.attr = 'mfa'
     before = data.get('old_value', None)
-    change.before = None if before is None else MFA.get(before)
+    if (before is not None):
+        before = MFA.get(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else MFA.get(after)
-    return change
+    if (after is not None):
+        after = MFA.get(after)
+    
+    return AuditLogChange('mfa', before, after)
+
 
 def transform_overwrites(name, data):
-    change = AuditLogChange()
-    change.attr = 'overwrites'
-    value = data.get('old_value', None)
-    change.before = None if value is None else [PermissionOverwrite(ow_data) for ow_data in value]
-    value = data.get('new_value', None)
-    change.after = None if value is None else [PermissionOverwrite(ow_data) for ow_data in value]
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = [PermissionOverwrite(overwrite_data) for overwrite_data in before]
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = [PermissionOverwrite(overwrite_data) for overwrite_data in after]
+    
+    return AuditLogChange('overwrites', before, after)
+
 
 def transform_permission(name, data):
-    change = AuditLogChange()
-    
     if name.endswith('_new'):
         name = name[:-4]
     
-    change.attr = name
-    value = data.get('old_value', None)
-    change.before = None if value is None else Permission(value)
-    value = data.get('new_value', None)
-    change.after = None if value is None else Permission(value)
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = Permission(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = Permission(after)
+    
+    return AuditLogChange(name, before, after)
+
 
 def transform_region(name, data):
-    change = AuditLogChange()
-    change.attr = 'region'
     before = data.get('old_value', None)
-    change.before = None if before is None else VoiceRegion.get(before)
+    if (before is not None):
+        before = VoiceRegion.get(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else VoiceRegion.get(after)
-    return change
+    if (after is not None):
+        after = VoiceRegion.get(after)
+    
+    return AuditLogChange('region', before, after)
 
-def transform_role(name, data):
-    change = AuditLogChange()
-    change.attr = 'role'
+
+def transform_roles(name, data):
     roles = []
     if name == '$add':
         before = None
@@ -885,9 +988,6 @@ def transform_role(name, data):
         before = roles
         after = None
     
-    change.before = before
-    change.after = after
-    
     for element in data['new_value']:
         role_id = int(element['id'])
         try:
@@ -895,53 +995,55 @@ def transform_role(name, data):
         except KeyError:
             role = Unknown('Role', role_id, element['name'])
         roles.append(role)
+    
+    return AuditLogChange('role', before, after)
 
-    return change
 
 def transform_snowflake(name, data):
-    change = AuditLogChange()
-    change.attr = name
-    value = data.get('old_value', None)
-    change.before = None if value is None else int(value)
-    value = data.get('new_value', None)
-    change.after = None if value is None else int(value)
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = int(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = int(after)
+    
+    return AuditLogChange(name, before, after)
 
 def transform_str__vanity_code(name, data):
-    change = AuditLogChange()
-    change.attr = 'vanity_code'
-    change.before = data.get('old_value', None)
-    change.after = data.get('new_value', None)
-    return change
+    before = data.get('old_value', None)
+    after = data.get('new_value', None)
+    return AuditLogChange('vanity_code', before, after)
+
 
 def transform_system_channel_flags(name, data):
-    change = AuditLogChange()
-    change.attr = 'system_channel_flags'
     before = data.get('old_value', None)
-    change.before = None if before is None else SystemChannelFlag(before)
+    if (before is not None):
+        before = SystemChannelFlag(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else SystemChannelFlag(after)
-    return change
+    if (after is not None):
+        after = SystemChannelFlag(after)
+    
+    return AuditLogChange('system_channel_flags', before, after)
+
 
 def transform_type(name, data):
     # If we talk about permission overwrite, type can be `str` too, what we ignore
     before = data.get('old_value', None)
-    if type(before) is str:
-        return
+    if (before is not None) and isinstance(before, str):
+        return None
     
     after = data.get('new_value', None)
-    if type(after) is str:
-        return
+    if (after is not None) and isinstance(after,  str):
+        return None
     
-    change = AuditLogChange()
-    change.attr = 'type'
-    change.before = before
-    change.after = after
-    return change
+    return AuditLogChange('type', before, after)
+
 
 def transform_user(name, data):
-    change = AuditLogChange()
-    change.attr = name[:-3]
+    name = name[:-3]
+    
     value = data.get('old_value', None)
     if value is None:
         before = None
@@ -951,7 +1053,6 @@ def transform_user(name, data):
             before = USERS[value]
         except KeyError:
             before = Unknown('User', value)
-    change.before = before
     
     value = data.get('new_value', None)
     if value is None:
@@ -962,101 +1063,123 @@ def transform_user(name, data):
             after = USERS[value]
         except KeyError:
             after = Unknown('User', value)
-    change.after = after
     
-    return change
+    return AuditLogChange(name, before, after)
+
 
 def transform_verification_level(name, data):
-    change = AuditLogChange()
-    change.attr = 'verification_level'
-    value = data.get('old_value', None)
-    change.before = None if value is None else VerificationLevel.value[value]
-    value = data.get('new_value', None)
-    change.after = None if value is None else VerificationLevel.value[value]
-    return change
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = VerificationLevel.get(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = VerificationLevel.get(after)
+    
+    return AuditLogChange('verification_level', before, after)
+
 
 def transform_tags(name, data):
-    change = AuditLogChange()
-    change.attr = name
-    value = data.get('old_value', None)
-    change.before = None if value is None else frozenset(value.split(', '))
-    value = data.get('new_value', None)
-    change.after = None if value is None else frozenset(value.split(', '))
-    return change
+    before = data.get('old_value', None)
+    if (before is None) or (not before):
+        before = None
+    else:
+        before = frozenset(before.split(', '))
+    
+    after = data.get('new_value', None)
+    if (after is None) or (not after):
+        after = None
+    else:
+        after = frozenset(after.split(', '))
+    
+    return AuditLogChange('tags', before, after)
+
 
 def transform_int__auto_archive_after(name, data):
-    change = AuditLogChange()
-    change.attr = 'auto_archive_after'
     before = data.get('old_value', None)
     if (before is not None):
         before *= 60
-    change.before = before
+    
     after = data.get('new_value', None)
     if (after is not None):
         after *= 60
-    change.after = after
-    return change
+    
+    return AuditLogChange('auto_archive_after', before, after)
+
 
 def transform_int__default_auto_archive_after(name, data):
-    change = AuditLogChange()
-    change.attr = 'default_auto_archive_after'
     before = data.get('old_value', None)
     if (before is not None):
         before *= 60
-    change.before = before
+    
     after = data.get('new_value', None)
     if (after is not None):
         after *= 60
-    change.after = after
-    return change
+    
+    return AuditLogChange('default_auto_archive_after', before, after)
 
 
-def transform_stage_privacy_level(name, data):
-    change = AuditLogChange()
-    change.attr = 'privacy_level'
+def transform_privacy_level(name, data):
     before = data.get('old_value', None)
-    change.before = None if before is None else StagePrivacyLevel.get(before)
+    if (before is not None):
+        before = PrivacyLevel.get(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else StagePrivacyLevel.get(after)
-    return change
+    if (after is not None):
+        after = PrivacyLevel.get(after)
+    
+    return AuditLogChange('privacy_level', before, after)
 
 
 def transform_scheduled_event_status(name, data):
-    change = AuditLogChange()
-    change.attr = 'status'
     before = data.get('old_value', None)
-    change.before = None if before is None else ScheduledEventStatus.get(before)
+    if (before is not None):
+        before = ScheduledEventStatus.get(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else ScheduledEventStatus.get(after)
-    return change
+    if (after is not None):
+        after = ScheduledEventStatus.get(after)
+    
+    return AuditLogChange('status', before, after)
+
 
 def transform_scheduled_event_entity_type(name, data):
-    change = AuditLogChange()
-    change.attr = 'entity_type'
     before = data.get('old_value', None)
-    change.before = None if before is None else ScheduledEventEntityType.get(before)
+    if (before is not None):
+        before = ScheduledEventEntityType.get(before)
+    
     after = data.get('new_value', None)
-    change.after = None if before is None else ScheduledEventEntityType.get(after)
-    return change
+    if (after is not None):
+        after =  ScheduledEventEntityType.get(after)
+    
+    return AuditLogChange('entity_type', before, after)
+
 
 def transform_snowflake_array(name, data):
-    change = AuditLogChange()
-    change.attr = name
-    value = data.get('old_value', None)
-    change.before = None if ((value is None) or (not value)) else tuple(int(sub_value) for sub_value in value)
-    value = data.get('new_value', None)
-    change.after = None if ((value is None) or (not value)) else tuple(int(sub_value) for sub_value in value)
-    return change
+    before = data.get('old_value', None)
+    if (before is None) or (not before):
+        before = None
+    else:
+        before = tuple(int(sub_value) for sub_value in before)
+    
+    after = data.get('new_value', None)
+    if (after is None) or (not after):
+        after = None
+    else:
+        after = tuple(int(sub_value) for sub_value in after)
+    
+    return AuditLogChange(name, before, after)
 
 
 TRANSFORMERS = {
-    '$add': transform_role,
-    '$remove': transform_role,
+    '$add': transform_roles,
+    '$remove': transform_roles,
     'account_id': transform_snowflake,
     'afk_channel_id': transform_channel,
     'allow': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'allow_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'application_id': transform_snowflake,
+    # archived (bool)
     'auto_archive_duration': transform_int__auto_archive_after,
     'avatar_hash': transform_icon,
     'banner_hash': transform_icon,
@@ -1080,6 +1203,7 @@ TRANSFORMERS = {
     'icon_hash': transform_icon,
     'id': transform_snowflake,
     'inviter_id': transform_user,
+    # locked (bool)
     # mentionable (bool)
     # max_age (int)
     # max_uses (int)
@@ -1090,7 +1214,7 @@ TRANSFORMERS = {
     # nsfw (bool)
     'owner_id': transform_user,
     # position (int)
-    'privacy_level': transform_stage_privacy_level,
+    'privacy_level': transform_privacy_level,
     'prune_delete_days': transform_int__days,
     'permission_overwrites' : transform_overwrites,
     'permissions': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
@@ -1129,7 +1253,7 @@ del transform_mfa
 del transform_overwrites
 del transform_permission
 del transform_region
-del transform_role
+del transform_roles
 del transform_snowflake
 del transform_str__vanity_code
 del transform_system_channel_flags
@@ -1140,10 +1264,11 @@ del transform_video_quality_mode
 del transform_tags
 del transform_int__auto_archive_after
 del transform_int__default_auto_archive_after
-del transform_stage_privacy_level
+del transform_privacy_level
 del transform_scheduled_event_status
 del transform_scheduled_event_entity_type
 del transform_snowflake_array
+
 
 class AuditLogChange:
     """
@@ -1151,129 +1276,173 @@ class AuditLogChange:
     
     Attributes
     ----------
-    attr : `str`
-        The name of the attribute, what changed of the target entity.
-    before : `Any`
-        The changed attribute's original value. Defaults to `None`.
     after : `Any`
         The changed attribute's new value. Defaults to `None`.
+    attribute_name : `str`
+        The name of the changed attribute.
+    before : `Any`
+        The changed attribute's original value. Defaults to `None`.
     
     Notes
     -----
     The value of `before` and `after` depending on the value of `attr`. These are:
     
-    +---------------------------+-----------------------------------------------+
-    | attr                      | before / after                                |
-    +===========================+===============================================+
-    | account_id                | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | afk_channel               | `None` or ``ChannelVoice``                    |
-    +---------------------------+-----------------------------------------------+
-    | allow                     | `None` or ``Permission``                      |
-    +---------------------------+-----------------------------------------------+
-    | application_id            | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | avatar                    | `None` or ``Icon``                            |
-    +---------------------------+-----------------------------------------------+
-    | banner                    | `None` or ``Icon``                            |
-    +---------------------------+-----------------------------------------------+
-    | bitrate                   | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | channel                   | `None` or ``ChannelGuildBase`` instance       |
-    +---------------------------+-----------------------------------------------+
-    | code                      | `None` or `str`                               |
-    +---------------------------+-----------------------------------------------+
-    | color                     | `None` or ``Color``                           |
-    +---------------------------+-----------------------------------------------+
-    | content_filter            | `None` or ``ContentFilterLevel``              |
-    +---------------------------+-----------------------------------------------+
-    | days                      | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | deaf                      | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | description               | `None` or `str`                               |
-    +---------------------------+-----------------------------------------------+
-    | deny                      | `None` or ``Permission``                      |
-    +---------------------------+-----------------------------------------------+
-    | discovery_splash          | `None` or ``Icon``                            |
-    +---------------------------+-----------------------------------------------+
-    | enable_emoticons          | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | expire_behavior           | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | expire_grace_period       | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | icon                      | `None` or ``Icon``                            |
-    +---------------------------+-----------------------------------------------+
-    | id                        | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | invite_splash             | `None` or ``Icon``                            |
-    +---------------------------+-----------------------------------------------+
-    | inviter                   | `None`, ``ClientUserBase``                    |
-    +---------------------------+-----------------------------------------------+
-    | mentionable               | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | max_age                   | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | max_uses                  | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | message_notification      | `None` or ``MessageNotificationLevel``        |
-    +---------------------------+-----------------------------------------------+
-    | mfa                       | `None` or ``MFA``                             |
-    +---------------------------+-----------------------------------------------+
-    | mute                      | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | name                      | `None` or `str`                               |
-    +---------------------------+-----------------------------------------------+
-    | nick                      | `None` or `str`                               |
-    +---------------------------+-----------------------------------------------+
-    | nsfw                      | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | owner                     | `None`, ``ClientUserBase``                    |
-    +---------------------------+-----------------------------------------------+
-    | position                  | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | public_updates_channel    | `None` or ``ChannelText``                     |
-    +---------------------------+-----------------------------------------------+
-    | overwrites                | `None` or `list` of ``PermissionOverwrite``   |
-    +---------------------------+-----------------------------------------------+
-    | permissions               | `None` or ``Permission``                      |
-    +---------------------------+-----------------------------------------------+
-    | region                    | `None` or ``VoiceRegion``                     |
-    +---------------------------+-----------------------------------------------+
-    | role                      | `None` or `list` of ``Role``                  |
-    +---------------------------+-----------------------------------------------+
-    | rules_channel             | `None` or ``ChannelText``                     |
-    +---------------------------+-----------------------------------------------+
-    | separated                 | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | slowmode                  | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | system_channel            | `None` or ``ChannelText``                     |
-    +---------------------------+-----------------------------------------------+
-    | system_channel_flags      | `None` or ``SystemChannelFlag``               |
-    +---------------------------+-----------------------------------------------+
-    | tags                      | `None` ot `frozenset` of `str`                |
-    +---------------------------+-----------------------------------------------+
-    | temporary                 | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
-    | topic                     | `None` or `str`                               |
-    +---------------------------+-----------------------------------------------+
-    | type                      | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | uses                      | `None` or `int`                               |
-    +---------------------------+-----------------------------------------------+
-    | vanity_code               | `None` or `str`                               |
-    +---------------------------+-----------------------------------------------+
-    | verification_level        | `None` or ``VerificationLevel``               |
-    +---------------------------+-----------------------------------------------+
-    | widget_channel            | `None` or ``ChannelText``                     |
-    +---------------------------+-----------------------------------------------+
-    | widget_enabled            | `None` or `bool`                              |
-    +---------------------------+-----------------------------------------------+
+    +-------------------------------+-----------------------------------------------+
+    | attribute_name                | before / after                                |
+    +===============================+===============================================+
+    | account_id                    | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | afk_channel                   | `None` or ``ChannelVoice``                    |
+    +-------------------------------+-----------------------------------------------+
+    | allow                         | `None` or ``Permission``                      |
+    +-------------------------------+-----------------------------------------------+
+    | application_id                | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | archived                      | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | auto_archive_duration         | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | avatar                        | `None` or ``Icon``                            |
+    +-------------------------------+-----------------------------------------------+
+    | banner                        | `None` or ``Icon``                            |
+    +-------------------------------+-----------------------------------------------+
+    | bitrate                       | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | channel                       | `None` or ``ChannelGuildBase`` instance       |
+    +-------------------------------+-----------------------------------------------+
+    | code                          | `None` or `str`                               |
+    +-------------------------------+-----------------------------------------------+
+    | color                         | `None` or ``Color``                           |
+    +-------------------------------+-----------------------------------------------+
+    | content_filter                | `None` or ``ContentFilterLevel``              |
+    +-------------------------------+-----------------------------------------------+
+    | days                          | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | deaf                          | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | description                   | `None` or `str`                               |
+    +-------------------------------+-----------------------------------------------+
+    | default_message_notifications | `None` or ``MessageNotificationLevel``        |
+    +-------------------------------+-----------------------------------------------+
+    | deny                          | `None` or ``Permission``                      |
+    +-------------------------------+-----------------------------------------------+
+    | discovery_splash              | `None` or ``Icon``                            |
+    +-------------------------------+-----------------------------------------------+
+    | enable_emoticons              | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | entity_type                   | `None` or ``ScheduledEventEntityType``        |
+    +-------------------------------+-----------------------------------------------+
+    | expire_behavior               | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | expire_grace_period           | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | icon                          | `None` or ``Icon``                            |
+    +-------------------------------+-----------------------------------------------+
+    | id                            | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | invite_splash                 | `None` or ``Icon``                            |
+    +-------------------------------+-----------------------------------------------+
+    | inviter                       | `None`, ``ClientUserBase``                    |
+    +-------------------------------+-----------------------------------------------+
+    | mentionable                   | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | max_age                       | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | max_uses                      | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | message_notification          | `None` or ``MessageNotificationLevel``        |
+    +-------------------------------+-----------------------------------------------+
+    | mfa                           | `None` or ``MFA``                             |
+    +-------------------------------+-----------------------------------------------+
+    | mute                          | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | name                          | `None` or `str`                               |
+    +-------------------------------+-----------------------------------------------+
+    | nick                          | `None` or `str`                               |
+    +-------------------------------+-----------------------------------------------+
+    | nsfw                          | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | owner                         | `None`, ``ClientUserBase``                    |
+    +-------------------------------+-----------------------------------------------+
+    | position                      | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | public_updates_channel        | `None` or ``ChannelText``                     |
+    +-------------------------------+-----------------------------------------------+
+    | overwrites                    | `None` or `list` of ``PermissionOverwrite``   |
+    +-------------------------------+-----------------------------------------------+
+    | permissions                   | `None` or ``Permission``                      |
+    +-------------------------------+-----------------------------------------------+
+    | privacy_level                 | `None` or ``PrivacyLevel``               |
+    +-------------------------------+-----------------------------------------------+
+    | region                        | `None` or ``VoiceRegion``                     |
+    +-------------------------------+-----------------------------------------------+
+    | role                          | `None` or `list` of ``Role``                  |
+    +-------------------------------+-----------------------------------------------+
+    | rules_channel                 | `None` or ``ChannelText``                     |
+    +-------------------------------+-----------------------------------------------+
+    | separated                     | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | slowmode                      | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | sku_ids                       | `None` or `tuple` of `int`                    |
+    +-------------------------------+-----------------------------------------------+
+    | system_channel                | `None` or ``ChannelText``                     |
+    +-------------------------------+-----------------------------------------------+
+    | system_channel_flags          | `None` or ``SystemChannelFlag``               |
+    +-------------------------------+-----------------------------------------------+
+    | tags                          | `None` ot `frozenset` of `str`                |
+    +-------------------------------+-----------------------------------------------+
+    | temporary                     | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | topic                         | `None` or `str`                               |
+    +-------------------------------+-----------------------------------------------+
+    | type                          | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | uses                          | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | vanity_code                   | `None` or `str`                               |
+    +-------------------------------+-----------------------------------------------+
+    | verification_level            | `None` or ``VerificationLevel``               |
+    +-------------------------------+-----------------------------------------------+
+    | widget_channel                | `None` or ``ChannelText``                     |
+    +-------------------------------+-----------------------------------------------+
+    | widget_enabled                | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
     """
-    __slots__ = ('attr', 'before', 'after', )
+    __slots__ = ('after', 'attribute_name', 'before', )
+    
+    def __init__(self, attribute_name, before, after):
+        """
+        Creates a new audit log change instance.
+        
+        Parameters
+        ----------
+        attribute_name : `str`
+            The name of the changed attribute.
+        after : `Any`
+            The changed attribute's new value.
+        before : `Any`
+            The changed attribute's original value.
+        """
+        self.attribute_name = attribute_name
+        self.before = before
+        self.after = after
     
     def __repr__(self):
         """Returns the representation of the audit log change."""
-        return f'{self.__class__.__name__}(attr={self.attr!r}, before={self.before!r}, after={self.after!r})'
+        return (
+            f'{self.__class__.__name__}('
+                f'attribute_name={self.attribute_name!r}, '
+                f'before={self.before!r}, '
+                f'after={self.after!r}'
+            f')'
+        )
+    
+    @property
+    def attr(self):
+        warnings.warn(
+            f'`{self.__class__.__name__}.attr` attribute is deprecated, and will be removed in 2021 November. '
+            f'Please use `.attribute_name` instead.',
+            FutureWarning)
+        
+        return self.attribute_name

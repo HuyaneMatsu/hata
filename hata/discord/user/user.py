@@ -94,6 +94,7 @@ class User(USER_BASE_CLASS):
                 self = object.__new__(cls)
                 self.id = user_id
                 self.guild_profiles = {}
+                self.thread_profiles = None
                 self.status = Status.offline
                 self.statuses = {}
                 self.activities = None
@@ -135,6 +136,7 @@ class User(USER_BASE_CLASS):
                 self = object.__new__(cls)
                 self.id = user_id
                 self.guild_profiles = {}
+                self.thread_profiles = None
                 update = True
                 
                 USERS[user_id] = self
@@ -173,6 +175,7 @@ class User(USER_BASE_CLASS):
                 self = object.__new__(cls)
                 self.id = user_id
                 self.guild_profiles = {}
+                self.thread_profiles = None
                 
                 USERS[user_id] = self
             

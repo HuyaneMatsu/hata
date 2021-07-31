@@ -160,7 +160,7 @@ class ClientUserBase(UserBase):
             user.guild_profiles[guild] = GuildProfile(data)
             guild.users[user_id] = user
             return user, {}
-
+        
         profile._set_joined(data)
         return user, profile._difference_update_attributes(data)
     

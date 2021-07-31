@@ -59,6 +59,7 @@
 - Fix an `AttributeError` in `Client.guild_sync`. (Pichu#0357)
 - Fix a `NameError` in `EventThread.open_unix_connection`.
 - Fix a `TypeError` in `EventTherad.create_unix_connection`.
+- `User.__new__` was not setting `.thread_profiles`.
 
 #### Renames, Deprecation & Removals
 

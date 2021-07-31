@@ -222,29 +222,30 @@ class Role(DiscordEntity, immortal=True):
             processable = None
         
         try:
-            role = ROLES[role_id]
+            self = ROLES[role_id]
         except KeyError:
-            role = object.__new__(cls)
-            role.id = role_id
+            self = object.__new__(cls)
+            self.id = role_id
             
-            role.color = Color()
-            role.guild = None
-            role.separated = False
-            role.manager_type = ROLE_MANAGER_TYPE_NONE
-            role.mentionable = False
-            role.name = ''
-            role.permissions = PERMISSION_NONE
-            role.position = 1
-            ROLES[role_id] = role
+            self.color = Color()
+            self.guild = None
+            self.separated = False
+            self.manager_type = ROLE_MANAGER_TYPE_NONE
+            self.mentionable = False
+            self.name = ''
+            self.permissions = PERMISSION_NONE
+            self.position = 1
+            ROLES[role_id] = self
         else:
-            if (role.guild is not None):
-                return role
+            if (self.guild is not None):
+                return self
         
         if (processable is not None):
             for item in processable:
-                setattr(role, *item)
+                setattr(self, *item)
         
-        return role
+        return self
+    
     
     def _set_managed(self, data):
         """
@@ -329,17 +330,21 @@ class Role(DiscordEntity, immortal=True):
         
         if clear_permission_cache:
             guild._invalidate_perm_cache()
-        
-    def __str__(self):
-        """Returns the role"s name or `'Partial'` if it has non."""
-        name = self.name
-        if not name:
-            name = 'Partial'
-        return name
+    
     
     def __repr__(self):
         """Returns the role's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+        repr_parts = ['<', self.__class__.__name__, ' id=', repr(self.id)]
+        
+        if self.partial:
+            repr_parts.append(' (partial)')
+        else:
+            repr_parts.append(', name=')
+            repr_parts.append(repr(self.name))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
     
     def _difference_update_attributes(self, data):
         """
@@ -476,6 +481,7 @@ class Role(DiscordEntity, immortal=True):
         """
         return (self.position == 0)
     
+    
     @property
     def mention(self):
         """
@@ -486,6 +492,7 @@ class Role(DiscordEntity, immortal=True):
         mention : `str`
         """
         return f'<@&{self.id}>'
+    
     
     def __format__(self, code):
         """
@@ -507,7 +514,7 @@ class Role(DiscordEntity, immortal=True):
         >>>> role = Role.precreate(now_as_id(), name='admiral-general')
         >>>> role
         <Role name='admiral-general', id=725333995067277312>
-        >>>> # no code stands for str(role).
+        >>>> # no code stands for `role.name`.
         >>>> f'{role}'
         'admiral-general'
         >>>> # 'm' stands for mention.
@@ -519,7 +526,7 @@ class Role(DiscordEntity, immortal=True):
         ```
         """
         if not code:
-            return str(self)
+            return self.name
         
         if code == 'm':
             return self.mention
@@ -563,6 +570,7 @@ class Role(DiscordEntity, immortal=True):
         
         return users
     
+    
     @property
     def managed(self):
         """
@@ -573,6 +581,7 @@ class Role(DiscordEntity, immortal=True):
         managed: `bool`
         """
         return (self.manager_type is not ROLE_MANAGER_TYPE_NONE)
+    
     
     @property
     def manager(self):

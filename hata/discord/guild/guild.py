@@ -601,13 +601,11 @@ class Guild(DiscordEntity, immortal=True):
         self.stickers = {}
         return self
     
-    def __str__(self):
-        """Returns the guild's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the guild's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}{"" if self.clients else " (partial)"}>'
+    
     
     def __format__(self, code):
         """
@@ -634,7 +632,7 @@ class Guild(DiscordEntity, immortal=True):
         >>> guild = Guild.precreate(now_as_id(), name='GrassGrass')
         >>> guild
         <Guild name='GrassGrass', id=713718885970345984 (partial)>
-        >>> # no code stands for str(guild).
+        >>> # no code stands for `guild.name`
         >>> f'{guild}'
         'GrassGrass'
         >>> # 'c' stands for created at.

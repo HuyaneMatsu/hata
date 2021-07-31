@@ -106,9 +106,6 @@ class Team(DiscordEntity, immortal=True):
         target_state = TeamMembershipState.accepted
         return [team_member.user for team_member in self.members if team_member.state is target_state]
     
-    def __str__(self):
-        """Returns the team's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the team's representation."""

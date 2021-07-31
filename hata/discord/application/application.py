@@ -259,9 +259,6 @@ class Application(DiscordEntity, immortal=True):
         
         return ''.join(result)
     
-    def __str__(self):
-        """Returns the application's name."""
-        return self.name
     
     def _update_attributes(self, data, set_owner=False):
         """

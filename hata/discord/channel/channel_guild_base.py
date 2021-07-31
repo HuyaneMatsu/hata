@@ -44,8 +44,8 @@ class ChannelGuildBase(ChannelBase):
     
     ORDER_GROUP = 0
     
-    @copy_docs(ChannelBase.__str__)
-    def __str__(self):
+    @copy_docs(ChannelBase._get_processed_name)
+    def _get_processed_name(self):
         return self.name
     
     @property

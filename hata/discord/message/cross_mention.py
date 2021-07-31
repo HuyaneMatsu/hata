@@ -88,9 +88,6 @@ class UnknownCrossMention(DiscordEntity):
             return NotImplemented
         return self.id < other.id
     
-    def __str__(self):
-        """Returns the unknown cross mention's respective channel's name."""
-        return self.name
     
     def __format__(self, code):
         """
@@ -112,7 +109,7 @@ class UnknownCrossMention(DiscordEntity):
             Unknown format code.
         """
         if not code:
-            return self.__str__()
+            return self.name
         
         if code == 'm':
             return f'<#{self.id}>'

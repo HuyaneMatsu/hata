@@ -107,15 +107,13 @@ class GuildPreview(DiscordEntity):
         
         self.approximate_user_count = data['approximate_member_count']
     
-    def __str__(self):
-        """Returns the respective guild's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the guild preview's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
     
-    def __format__(self,code):
+    
+    def __format__(self, code):
         """
         Formats the guild preview in a format string.
         
@@ -142,8 +140,8 @@ class GuildPreview(DiscordEntity):
         >>> guild_id = 302094807046684672
         >>> guild_preview = KOKORO.run(client.guild_preview_get(guild_id))
         >>> guild_preview
-        <GuildPreview name='MINECRAFT', id=302094807046684672>
-        >>> # no code stands for str(guild_preview).
+        <GuildPreview id=302094807046684672, name='MINECRAFT'>
+        >>> # no code stands for `guild_preview.name`.
         >>> f'{guild_preview}'
         'MINECRAFT'
         >>> # 'c' stands for created at.

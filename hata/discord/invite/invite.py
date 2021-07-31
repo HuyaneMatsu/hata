@@ -151,10 +151,6 @@ class Invite(DiscordEntity, immortal=True):
         
         return self
     
-    def __str__(self):
-        """Returns the invite's url."""
-        return self.url
-    
     def __repr__(self):
         """Returns the representation of the invite."""
         return f'<{self.__class__.__name__} code={self.code!r}>'

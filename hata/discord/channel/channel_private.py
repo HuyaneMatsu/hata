@@ -154,14 +154,15 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         
         client.private_channels[user.id] = self
     
-    @copy_docs(ChannelBase.__str__)
-    def __str__(self):
+    @copy_docs(ChannelBase._get_processed_name)
+    def _get_processed_name(self):
         users = self.users
         if users:
             name = f'Direct Message {users[0].full_name} with {users[1].full_name}'
         else:
             name = f'Direct Message (partial)'
         return name
+    
     
     def _delete(self, client):
         """
@@ -183,10 +184,10 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         del client.private_channels[user.id]
     
     
-    name = property(__str__)
+    name = property(_get_processed_name)
     copy_docs(ChannelBase.name)(name)
     
-    display_name = property(__str__)
+    display_name = property(_get_processed_name)
     copy_docs(ChannelBase.display_name)(display_name)
     
     @copy_docs(ChannelBase.permissions_for)
@@ -339,6 +340,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         client.group_channels[channel_id] = self
         return self
     
+    
     @property
     def owner(self):
         """
@@ -356,6 +358,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             owner = ZEROUSER
         return owner
     
+    
     @classmethod
     @copy_docs(ChannelBase._from_partial_data)
     def _from_partial_data(cls, data, channel_id, partial_guild):
@@ -366,6 +369,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             self.name = name
         
         return self
+    
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
@@ -453,8 +457,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         return old_attributes
     
-    @copy_docs(ChannelBase.__str__)
-    def __str__(self):
+    @copy_docs(ChannelBase._get_processed_name)
+    def _get_processed_name(self):
         name = self.name
         if name:
             return name
@@ -465,7 +469,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         return 'Unnamed'
     
-    display_name = property(__str__)
+    display_name = property(_get_processed_name)
     copy_docs(ChannelBase.display_name)(display_name)
     
     @copy_docs(ChannelBase.permissions_for)

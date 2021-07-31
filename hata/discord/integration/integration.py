@@ -107,9 +107,6 @@ class Integration(DiscordEntity, immortal=True):
         """
         return (not self.type)
     
-    def __str__(self):
-        """Returns the integration's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the integration's representation."""

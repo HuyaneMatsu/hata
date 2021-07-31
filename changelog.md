@@ -23,6 +23,36 @@
 - Add `ERROR_CODES.phone_verification_required`.
 - Add `ERROR_CODES.cannot_friend_self`.
 - Add `ERROR_CODES.invalid_country_code`.
+- Add `SKUFeatureType`.
+- Add `SKUGenre`.
+- Add `SKUFlag`.
+- Add `SKUAccessType`.
+- Add `SKUType`.
+- Add `EntitlementType`.
+- Add `'tweet'` extra embed type.
+- Add `DiscordHTTPClient.channel_directory_counts`.
+- Add `RATE_LIMIT_GROUPS.channel_directory_counts`.
+- Add `DiscordHTTPClient.channel_directory_get_all`.
+- Add `RATE_LIMIT_GROUPS.channel_directory_get_all`.
+- Add `DiscordHTTPClient.channel_directory_search`.
+- Add `RATE_LIMIT_GROUPS.channel_directory_search`.
+- Add `ERROR_CODES.guild_monetization_required`.
+- Add `ERROR_CODES.unknown_scheduled_event`.
+- Add `ERROR_CODES.unknown_scheduled_event_user`.
+- Add `ERROR_CODES.unknown_stream`.
+- Add `ERROR_CODES.negative_invoice_amount`.
+- Add `ERROR_CODES.unknown_billing_profile`.
+- Add `ERROR_CODES.unknown_payment_source`.
+- Add `ERROR_CODES.unknown_subscriptions`.
+- Add `ERROR_CODES.already_subscribed`.
+- Add `ERROR_CODES.invalid_plan`.
+- Add `ERROR_CODES.already_cancelled`.
+- Add `ERROR_CODES.invalid_payment`.
+- Add `ERROR_CODES.payment_source_required`.
+- Add `ERROR_CODES.already_refunded`.
+- Add `ERROR_CODES.invalid_billing_address`
+- Add `ERROR_CODES.already_purchased`.
+- `Entity.__str__` should not default to `.name`, instead to `.__repr__`.
 
 #### Bug Fixes
 

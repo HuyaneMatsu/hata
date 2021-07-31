@@ -58,6 +58,7 @@ INTENT_SHIFT_EVENTS = {
         'THREAD_LIST_SYNC',
         'THREAD_MEMBER_UPDATE',
         'THREAD_MEMBERS_UPDATE',
+        'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
@@ -187,82 +188,83 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     Each flag specifies which parser's dispatch event is received from Discord. Not mentioned events do not depend
     on intent flags and they are expected to be received independently.
     
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | Intent flag position's                 | Shift | Intent name                | Corresponding parser              |
-    | respective name                        | value |                            |                                   |
-    +========================================+=======+============================+===================================+
-    | INTENT_SHIFT_GUILDS                    | 0     | guilds                     | GUILD_CREATE,                     |
-    |                                        |       |                            | GUILD_DELETE,                     |
-    |                                        |       |                            | GUILD_UPDATE,                     |
-    |                                        |       |                            | GUILD_ROLE_CREATE,                |
-    |                                        |       |                            | GUILD_ROLE_UPDATE,                |
-    |                                        |       |                            | GUILD_ROLE_DELETE,                |
-    |                                        |       |                            | CHANNEL_CREATE,                   |
-    |                                        |       |                            | CHANNEL_UPDATE,                   |
-    |                                        |       |                            | CHANNEL_DELETE,                   |
-    |                                        |       |                            | CHANNEL_PINS_UPDATE,              |
-    |                                        |       |                            | STAGE_INSTANCE_CREATE,            |
-    |                                        |       |                            | STAGE_INSTANCE_UPDATE,            |
-    |                                        |       |                            | STAGE_INSTANCE_DELETE,            |
-    |                                        |       |                            | THREAD_CREATE,                    |
-    |                                        |       |                            | THREAD_UPDATE,                    |
-    |                                        |       |                            | THREAD_DELETE,                    |
-    |                                        |       |                            | THREAD_LIST_SYNC,                 |
-    |                                        |       |                            | THREAD_MEMBER_UPDATE,             |
-    |                                        |       |                            | THREAD_MEMBERS_UPDATE             |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_USERS               | 1     | guild_users                | GUILD_MEMBER_ADD,                 |
-    |                                        |       |                            | GUILD_MEMBER_UPDATE,              |
-    |                                        |       |                            | GUILD_MEMBER_REMOVE,              |
-    |                                        |       |                            | GUILD_JOIN_REQUEST_DELETE,        |
-    |                                        |       |                            | THREAD_MEMBERS_UPDATE             |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_BANS                | 2     | guild_bans                 | GUILD_BAN_ADD,                    |
-    |                                        |       |                            | GUILD_BAN_REMOVE                  |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS | 3     | guild_emojis_and_stickers  | GUILD_EMOJIS_UPDATE               |
-    |                                        |       |                            | GUILD_STICKERS_UPDATE             |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_INTEGRATIONS        | 4     | guild_integrations         | INTEGRATION_CREATE,               |
-    |                                        |       |                            | INTEGRATION_DELETE,               |
-    |                                        |       |                            | INTEGRATION_UPDATE,               |
-    |                                        |       |                            | GUILD_INTEGRATIONS_UPDATE         |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_WEBHOOKS            | 5     | guild_webhooks             | WEBHOOKS_UPDATE                   |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_INVITES             | 6     | guild_invites              | INVITE_CREATE,                    |
-    |                                        |       |                            | INVITE_DELETE                     |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_VOICE_STATES        | 7     | guild_voice_states         | VOICE_STATE_UPDATE                |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_PRESENCES           | 8     | guild_presences            | PRESENCE_UPDATE                   |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_MESSAGES            | 9     | guild_messages             | CHANNEL_PINS_UPDATE,              |
-    |                                        |       |                            | MESSAGE_CREATE,                   |
-    |                                        |       |                            | MESSAGE_UPDATE,                   |
-    |                                        |       |                            | MESSAGE_DELETE,                   |
-    |                                        |       |                            | MESSAGE_DELETE_BULK               |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_REACTIONS           | 10    | guild_reactions            | MESSAGE_REACTION_ADD,             |
-    |                                        |       |                            | MESSAGE_REACTION_REMOVE,          |
-    |                                        |       |                            | MESSAGE_REACTION_REMOVE_ALL,      |
-    |                                        |       |                            | MESSAGE_REACTION_REMOVE_EMOJI     |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_GUILD_TYPINGS             | 11    | guild_typings              | TYPING_START                      |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_DIRECT_MESSAGES           | 12    | direct_messages            | CHANNEL_CREATE,                   |
-    |                                        |       |                            | CHANNEL_PINS_UPDATE,              |
-    |                                        |       |                            | MESSAGE_CREATE,                   |
-    |                                        |       |                            | MESSAGE_UPDATE,                   |
-    |                                        |       |                            | MESSAGE_DELETE                    |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_DIRECT_REACTIONS          | 13    | direct_reactions           | MESSAGE_REACTION_ADD,             |
-    |                                        |       |                            | MESSAGE_REACTION_REMOVE,          |
-    |                                        |       |                            | MESSAGE_REACTION_REMOVE_ALL,      |
-    |                                        |       |                            | MESSAGE_REACTION_REMOVE_EMOJI     |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
-    | INTENT_SHIFT_DIRECT_TYPINGS            | 14    | direct_typings             | TYPING_START                      |
-    +----------------------------------------+-------+----------------------------+-----------------------------------+
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | Intent flag position's                 | Shift | Intent name                | Corresponding parser                        |
+    | respective name                        | value |                            |                                             |
+    +========================================+=======+============================+=============================================+
+    | INTENT_SHIFT_GUILDS                    | 0     | guilds                     | GUILD_CREATE,                               |
+    |                                        |       |                            | GUILD_DELETE,                               |
+    |                                        |       |                            | GUILD_UPDATE,                               |
+    |                                        |       |                            | GUILD_ROLE_CREATE,                          |
+    |                                        |       |                            | GUILD_ROLE_UPDATE,                          |
+    |                                        |       |                            | GUILD_ROLE_DELETE,                          |
+    |                                        |       |                            | CHANNEL_CREATE,                             |
+    |                                        |       |                            | CHANNEL_UPDATE,                             |
+    |                                        |       |                            | CHANNEL_DELETE,                             |
+    |                                        |       |                            | CHANNEL_PINS_UPDATE,                        |
+    |                                        |       |                            | STAGE_INSTANCE_CREATE,                      |
+    |                                        |       |                            | STAGE_INSTANCE_UPDATE,                      |
+    |                                        |       |                            | STAGE_INSTANCE_DELETE,                      |
+    |                                        |       |                            | THREAD_CREATE,                              |
+    |                                        |       |                            | THREAD_UPDATE,                              |
+    |                                        |       |                            | THREAD_DELETE,                              |
+    |                                        |       |                            | THREAD_LIST_SYNC,                           |
+    |                                        |       |                            | THREAD_MEMBER_UPDATE,                       |
+    |                                        |       |                            | THREAD_MEMBERS_UPDATE,                      |
+    |                                        |       |                            | GUILD_APPLICATION_COMMAND_COUNTS_UPDATE     |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_USERS               | 1     | guild_users                | GUILD_MEMBER_ADD,                           |
+    |                                        |       |                            | GUILD_MEMBER_UPDATE,                        |
+    |                                        |       |                            | GUILD_MEMBER_REMOVE,                        |
+    |                                        |       |                            | GUILD_JOIN_REQUEST_DELETE,                  |
+    |                                        |       |                            | THREAD_MEMBERS_UPDATE                       |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_BANS                | 2     | guild_bans                 | GUILD_BAN_ADD,                              |
+    |                                        |       |                            | GUILD_BAN_REMOVE                            |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS | 3     | guild_emojis_and_stickers  | GUILD_EMOJIS_UPDATE                         |
+    |                                        |       |                            | GUILD_STICKERS_UPDATE                       |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_INTEGRATIONS        | 4     | guild_integrations         | INTEGRATION_CREATE,                         |
+    |                                        |       |                            | INTEGRATION_DELETE,                         |
+    |                                        |       |                            | INTEGRATION_UPDATE,                         |
+    |                                        |       |                            | GUILD_INTEGRATIONS_UPDATE                   |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_WEBHOOKS            | 5     | guild_webhooks             | WEBHOOKS_UPDATE                             |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_INVITES             | 6     | guild_invites              | INVITE_CREATE,                              |
+    |                                        |       |                            | INVITE_DELETE                               |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_VOICE_STATES        | 7     | guild_voice_states         | VOICE_STATE_UPDATE                          |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_PRESENCES           | 8     | guild_presences            | PRESENCE_UPDATE                             |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_MESSAGES            | 9     | guild_messages             | CHANNEL_PINS_UPDATE,                        |
+    |                                        |       |                            | MESSAGE_CREATE,                             |
+    |                                        |       |                            | MESSAGE_UPDATE,                             |
+    |                                        |       |                            | MESSAGE_DELETE,                             |
+    |                                        |       |                            | MESSAGE_DELETE_BULK                         |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_REACTIONS           | 10    | guild_reactions            | MESSAGE_REACTION_ADD,                       |
+    |                                        |       |                            | MESSAGE_REACTION_REMOVE,                    |
+    |                                        |       |                            | MESSAGE_REACTION_REMOVE_ALL,                |
+    |                                        |       |                            | MESSAGE_REACTION_REMOVE_EMOJI               |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_TYPINGS             | 11    | guild_typings              | TYPING_START                                |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_DIRECT_MESSAGES           | 12    | direct_messages            | CHANNEL_CREATE,                             |
+    |                                        |       |                            | CHANNEL_PINS_UPDATE,                        |
+    |                                        |       |                            | MESSAGE_CREATE,                             |
+    |                                        |       |                            | MESSAGE_UPDATE,                             |
+    |                                        |       |                            | MESSAGE_DELETE                              |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_DIRECT_REACTIONS          | 13    | direct_reactions           | MESSAGE_REACTION_ADD,                       |
+    |                                        |       |                            | MESSAGE_REACTION_REMOVE,                    |
+    |                                        |       |                            | MESSAGE_REACTION_REMOVE_ALL,                |
+    |                                        |       |                            | MESSAGE_REACTION_REMOVE_EMOJI               |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_DIRECT_TYPINGS            | 14    | direct_typings             | TYPING_START                                |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
     """
     __keys__ = {
         'guilds': INTENT_SHIFT_GUILDS,

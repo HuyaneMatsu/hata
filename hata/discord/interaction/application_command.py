@@ -549,6 +549,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         return False
     
+    
     @property
     def mention(self):
         """
@@ -559,6 +560,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         mention : `str`
         """
         return f'</{self.name}:{self.id}>'
+    
     
     @property
     def display_name(self):
@@ -571,9 +573,6 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         """
         return self.name.lower().replace('_', '-')
     
-    def __str__(self):
-        """Returns the application command's name."""
-        return self.name
     
     def __format__(self, code):
         """
@@ -600,7 +599,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         >>> application_command = ApplicationCommand('cake-lover', 'Sends a random cake recipe OwO')
         >>> application_command
         <ApplicationCommand partial name='cake-lover', description='Sends a random cake recipe OwO'>
-        >>> # no code stands for str(application_command).
+        >>> # no code stands for `application_command.name`.
         >>> f'{application_command}'
         'CakeLover'
         >>> # 'd' stands for display name.
@@ -615,7 +614,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ```
         """
         if not code:
-            return self.__str__()
+            return self.name
         
         if code == 'm':
             return f'</{self.name}:{self.id}>'

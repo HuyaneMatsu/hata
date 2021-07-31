@@ -56,13 +56,16 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         raise RuntimeError(f'`{cls.__name__}` cannot be instanced.')
     
+    
     def __repr__(self):
         """Returns the representation of the channel."""
-        return f'<{self.__class__.__name__} id={self.id}, name={self.__str__()!r}>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self._get_processed_name()!r}>'
     
-    def __str__(self):
+    
+    def _get_processed_name(self):
         """Returns the channel's name."""
         return ''
+    
     
     def __format__(self, code):
         """
@@ -89,7 +92,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         >>> channel = ChannelText.precreate(now_as_id(), name='GENERAL')
         >>> channel
         <ChannelText id=710506058560307200, name='GENERAL'>
-        >>> # no code stands for str(channel).
+        >>> # no code stands for `channel.name`.
         >>> f'{channel}'
         'GENERAL'
         >>> # 'd' stands for display name.
@@ -104,10 +107,10 @@ class ChannelBase(DiscordEntity, immortal=True):
         ```
         """
         if not code:
-            return self.__str__()
+            return self._get_processed_name()
         
         if code == 'm':
-            return f'<#{self.id}>'
+            return self.mention
         
         if code == 'd':
             return self.display_name

@@ -48,11 +48,8 @@ class Achievement(DiscordEntity):
     
     def __repr__(self):
         """Returns the achievement's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
     
-    def __str__(self):
-        """Returns the achievement's name."""
-        return self.name
     
     def __format__(self,code):
         if not code:

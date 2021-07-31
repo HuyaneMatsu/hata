@@ -41,9 +41,6 @@ class MessageInteraction(DiscordEntity):
         
         return self
     
-    def __str__(self):
-        """Returns the used interaction's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the message interaction's representation."""

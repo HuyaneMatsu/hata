@@ -52,6 +52,7 @@ class GuildWidgetUser(DiscordEntity):
         
         self.activity_name = activity_name
     
+    
     @property
     def full_name(self):
         """
@@ -62,6 +63,7 @@ class GuildWidgetUser(DiscordEntity):
         full_name : `str`
         """
         return f'{self.name}#{self.discriminator:0>4}'
+    
     
     @property
     def mention(self):
@@ -89,13 +91,10 @@ class GuildWidgetUser(DiscordEntity):
         """
         return f'<@!{self.id}>'
     
-    def __str__(self):
-        """Returns the name of the guild widget user."""
-        return self.name
     
     def __repr__(self):
         """Returns the representation of the guild widget user."""
-        return f'<{self.__class__.__name__} name={self.full_name!r} ({self.id})>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self.full_name!r}>'
 
 
 class GuildWidgetChannel(DiscordEntity):
@@ -137,13 +136,11 @@ class GuildWidgetChannel(DiscordEntity):
         """
         return f'<#{self.id}>'
     
-    def __str__(self):
-        """Returns the guild widget channel's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the guild widget channel's representation."""
-        return f'<{self.__class__.__name__} name={self.name} ({self.id})>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
+    
     
     def __gt__(self, other):
         """

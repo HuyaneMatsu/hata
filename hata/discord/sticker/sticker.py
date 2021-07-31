@@ -249,9 +249,6 @@ class Sticker(DiscordEntity, immortal=True):
         
         return old_attributes
     
-    def __str__(self):
-        """Returns the sticker's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the sticker's representation."""

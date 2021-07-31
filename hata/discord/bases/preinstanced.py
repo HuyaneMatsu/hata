@@ -124,7 +124,8 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
             obj_ = cls._from_value(value)
         
         return obj_
-   
+    
+    
     @classmethod
     def _from_value(cls, value):
         """
@@ -146,6 +147,7 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         self.INSTANCES[value] = self
         return self
     
+    
     def __init__(self, value, name):
         """
         Creates a new preinstanced instance.
@@ -160,6 +162,7 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         self.value = value
         self.name = name
         self.INSTANCES[value] = self
+    
     
     def __gt__(self, other):
         """Returns whether self's value is greater than the other object's."""
@@ -176,6 +179,7 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
             return True
         else:
             return False
+    
     
     def __ge__(self, other):
         """Returns whether self's value is greater or equal to the other object's."""
@@ -196,6 +200,7 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         else:
             return False
     
+    
     def __eq__(self, other):
         """Returns whether self's value equals to the other object's."""
         if self is other:
@@ -215,6 +220,7 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         else:
             return False
     
+    
     def __ne__(self, other):
         """Returns whether self's not equals to the other object's."""
         if self is other:
@@ -233,7 +239,8 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
             return True
         else:
             return False
-
+    
+    
     def __le__(self, other):
         """Returns whether self's value is less or equal to the other object's."""
         if self is other:
@@ -252,7 +259,8 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
             return True
         else:
             return False
-
+    
+    
     def __lt__(self, other):
         """Returns whether self's value is less than the other object's."""
         other_type = other.__class__
@@ -269,13 +277,11 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         else:
             return False
     
+    
     def __hash__(self):
         """Returns the hash of the preinstanced object."""
         return hash(self.value)
     
-    def __str__(self):
-        """Returns the name of the preinstanced object."""
-        return self.name
     
     def __repr__(self):
         """Returns the representation of the preinstanced object."""

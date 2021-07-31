@@ -791,9 +791,6 @@ class SlashCommand:
         
         return ''.join(result)
     
-    def __str__(self):
-        """Returns the slash command's name."""
-        return self.name
     
     async def __call__(self, client, interaction_event):
         """

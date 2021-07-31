@@ -150,7 +150,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         repr_parts.append(' id=')
         repr_parts.append(repr(self.id))
         repr_parts.append(', name=')
-        repr_parts.append(repr(self.__str__()))
+        repr_parts.append(repr(self._get_processed_name()))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

@@ -67,6 +67,10 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | unknown_team_member                               | 10040     | -         |
 +---------------------------------------------------+-----------+-----------+
+| unknown_stream                                    | 10049     | -         |
++---------------------------------------------------+-----------+-----------+
+| unknown_guild_boost_cooldown                      | 10050     | -         |
++---------------------------------------------------+-----------+-----------+
 | unknown_guild_template                            | 10057     | -         |
 +---------------------------------------------------+-----------+-----------+
 | unknown_discovery_category                        | 10059     | -         |
@@ -84,6 +88,10 @@ These are the following:
 | unknown_stage                                     | 10067     | -         |
 +---------------------------------------------------+-----------+-----------+
 | unknown_guild_member_verification_form            | 10068     | -         |
++---------------------------------------------------+-----------+-----------+
+| unknown_scheduled_event                           | 10070     | -         |
++---------------------------------------------------+-----------+-----------+
+| unknown_scheduled_event_user                      | 10071     | -         |
 +---------------------------------------------------+-----------+-----------+
 | bots_not_allowed                                  | 20001     | -         |
 +---------------------------------------------------+-----------+-----------+
@@ -297,6 +305,8 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | cannot_friend_self                                | 50096     | -         |
 +---------------------------------------------------+-----------+-----------+
+| guild_monetization_required                       | 50097     | -         |
++---------------------------------------------------+-----------+-----------+
 | MFA_enabled                                       | 60001     | -         |
 +---------------------------------------------------+-----------+-----------+
 | MFA_disabled                                      | 60002     | -         |
@@ -331,11 +341,35 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | reaction_blocked                                  | 90001     | -         |
 +---------------------------------------------------+-----------+-----------+
+| unknown_billing_profile                           | 100001    | -         |
++---------------------------------------------------+-----------+-----------+
+| unknown_payment_source                            | 100002    | -         |
++---------------------------------------------------+-----------+-----------+
+| unknown_subscriptions                             | 100003    | -         |
++---------------------------------------------------+-----------+-----------+
+| already_subscribed                                | 100004    | -         |
++---------------------------------------------------+-----------+-----------+
+| invalid_plan                                      | 100005    | -         |
++---------------------------------------------------+-----------+-----------+
+| payment_source_required                           | 100006    | -         |
++---------------------------------------------------+-----------+-----------+
+| already_cancelled                                 | 100007    | -         |
++---------------------------------------------------+-----------+-----------+
+| invalid_payment                                   | 100008    | -         |
++---------------------------------------------------+-----------+-----------+
+| already_refunded                                  | 100009    | -         |
++---------------------------------------------------+-----------+-----------+
+| invalid_billing_address                           | 100010    | -         |
++---------------------------------------------------+-----------+-----------+
+| already_purchased                                 | 100011    | -         |
++---------------------------------------------------+-----------+-----------+
 | invalid_gift_redemption_subscription_managed      | 100021    | -         |
 +---------------------------------------------------+-----------+-----------+
 | invalid_gift_redemption_subscription_incompatible | 100023    | -         |
 +---------------------------------------------------+-----------+-----------+
 | invalid_gift_redemption_invoice_open              | 100024    | -         |
++---------------------------------------------------+-----------+-----------+
+| negative_invoice_amount                           | 100027    | -         |
 +---------------------------------------------------+-----------+-----------+
 | authentication_required                           | 100029    | -         |
 +---------------------------------------------------+-----------+-----------+
@@ -361,7 +395,7 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | sticker_maximum_dimensions_exceeded               | 170005    | 320x320   |
 +---------------------------------------------------+-----------+-----------+
-| sticker_frame_rate_out_of_expected_range          | 170006    | ?-40      |
+| sticker_frame_rate_out_of_expected_range          | 170006    | ?-400 ms  |
 +---------------------------------------------------+-----------+-----------+
 | sticker_animation_duration_exceeds_5_second       | 170007    | -         |
 +---------------------------------------------------+-----------+-----------+
@@ -395,6 +429,8 @@ unknown_store_directory_layout = 10033
 unknown_redistributable = 10036
 unknown_gift_code = 10038
 unknown_team_member = 10040
+unknown_stream = 10049
+unknown_guild_boost_cooldown = 10050
 unknown_guild_template = 10057
 unknown_discovery_category = 10059
 unknown_sticker = 10060
@@ -404,6 +440,8 @@ unknown_voice_state = 10065
 unknown_application_command_permissions = 10066
 unknown_stage = 10067
 unknown_guild_member_verification_form = 10068
+unknown_scheduled_event = 10070
+unknown_scheduled_event_user = 10071
 
 bots_not_allowed = 20001
 only_bots_allowed = 20002
@@ -510,6 +548,7 @@ invalid_thread_notification_setting = 50084
 before_value_earlier_than_creation_time = 50085
 invalid_country_code = 50095
 cannot_friend_self = 50096
+guild_monetization_required = 50097
 
 MFA_enabled = 60001
 MFA_disabled = 60002
@@ -532,9 +571,21 @@ relationship_already_friends = 80007
 
 reaction_blocked = 90001
 
+unknown_billing_profile = 100001
+unknown_payment_source = 100002
+unknown_subscriptions = 100003
+already_subscribed = 100004
+invalid_plan = 100005
+payment_source_required = 100006
+already_cancelled = 100007
+invalid_payment = 100008
+already_refunded = 100009
+invalid_billing_address = 100010
+already_purchased = 100011
 invalid_gift_redemption_subscription_managed = 100021
 invalid_gift_redemption_subscription_incompatible = 100023
 invalid_gift_redemption_invoice_open = 100024
+negative_invoice_amount = 100027
 authentication_required = 100029
 
 listing_already_joined = 120000

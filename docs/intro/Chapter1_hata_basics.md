@@ -172,7 +172,7 @@ You can read more about intents here [Discord blog](https://support.discord.com/
 
 #### Multiple flags in intents
 
-If you'd like to have multiple IntentFlags example 1,4 and 9 then you would do `int('1000010010', 2)` which is just
+If you'd like to have multiple IntentFlags example 1, 4 and 9 then you would do `int('1000010010', 2)` which is just
 a binary number and 1s represent which IntentFlags you want. 
 
 ## Formatting objects

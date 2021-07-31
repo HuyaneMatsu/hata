@@ -146,11 +146,6 @@ class UserBase(DiscordEntity, immortal=True):
         return old_attributes
     
     
-    def __str__(self):
-        """Returns the user's name."""
-        return self.name
-    
-    
     def __repr__(self):
         """Returns the user's representation."""
         repr_parts = [
@@ -197,7 +192,7 @@ class UserBase(DiscordEntity, immortal=True):
         >>> user = User.precreate(now_as_id(), name='Neko', discriminator=2012)
         >>> user
         <User partial, id=730233383967260672>
-        >>> # no code stands for str(user).
+        >>> # no code stands for `user.name`.
         >>> f'{user}'
         'Neko'
         >>> # 'f' stands for full name

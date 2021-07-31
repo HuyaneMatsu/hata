@@ -347,9 +347,6 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
         """
         return DISCORD_EPOCH_START
     
-    def __str__(self):
-        """Returns the discovery category's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the discovery category's representation."""

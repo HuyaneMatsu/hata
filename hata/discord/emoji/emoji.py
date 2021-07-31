@@ -249,13 +249,11 @@ class Emoji(DiscordEntity, immortal=True):
         
         return self
     
-    def __str__(self):
-        """Returns the emoji's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the emoji's representation."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
+    
     
     def __format__(self, code):
         """
@@ -282,7 +280,7 @@ class Emoji(DiscordEntity, immortal=True):
         >>> emoji = Emoji.precreate(now_as_id(), name='nice')
         >>> emoji
         <Emoji id=712359434843586560, name='nice'>
-        >>> # no code stands for str(emoji)
+        >>> # no code stands for `emoji.name`
         >>> f'{emoji}'
         'nice'
         >>> # 'e' stands for emoji format.
@@ -310,24 +308,16 @@ class Emoji(DiscordEntity, immortal=True):
             return self.name
         
         if code == 'e':
-            if self.id < UNICODE_EMOJI_LIMIT:
-                return self.unicode
-            
-            if self.animated:
-                return f'<a:{self.name}:{self.id}>'
-            else:
-                return f'<:{self.name}:{self.id}>'
+            return self.as_emoji
         
         if code == 'r':
-            if self.id < UNICODE_EMOJI_LIMIT:
-                return self.unicode
-            
-            return f'{self.name}:{self.id}'
+            return self.as_reaction
         
         if code == 'c':
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
     
     @property
     def partial(self):
@@ -352,6 +342,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         return guild.partial
     
+    
     def is_custom_emoji(self):
         """
         Returns whether the emoji is a custom emoji.
@@ -361,7 +352,8 @@ class Emoji(DiscordEntity, immortal=True):
         is_custom_emoji : `bool`
         """
         return (self.id >= UNICODE_EMOJI_LIMIT)
-
+    
+    
     def is_unicode_emoji(self):
         """
         Returns whether the emoji is a unicode emoji.
@@ -371,6 +363,7 @@ class Emoji(DiscordEntity, immortal=True):
         is_custom_emoji : `bool`
         """
         return (self.id < UNICODE_EMOJI_LIMIT)
+    
     
     @property
     def as_reaction(self):
@@ -385,6 +378,7 @@ class Emoji(DiscordEntity, immortal=True):
             return self.unicode
         
         return f'{self.name}:{self.id}'
+    
     
     @property
     def as_emoji(self):
@@ -403,6 +397,7 @@ class Emoji(DiscordEntity, immortal=True):
         else:
             return f'<:{self.name}:{self.id}>'
     
+    
     @property
     def created_at(self):
         """
@@ -419,9 +414,11 @@ class Emoji(DiscordEntity, immortal=True):
             created_at = DISCORD_EPOCH_START
         
         return created_at
-
+    
+    
     url = property(module_urls.emoji_url)
     url_as = module_urls.emoji_url_as
+    
     
     def _delete(self):
         """
@@ -440,6 +437,7 @@ class Emoji(DiscordEntity, immortal=True):
                     del guild.emojis[self.id]
                 except KeyError:
                     pass
+    
     
     def _update_attributes(self, data):
         """
@@ -477,6 +475,7 @@ class Emoji(DiscordEntity, immortal=True):
             self.user = User(user_data)
         
         self.available = data.get('available', True)
+    
     
     def _difference_update_attributes(self, data):
         """

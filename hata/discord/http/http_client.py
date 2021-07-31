@@ -675,6 +675,32 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/pins/ack',
         )
     
+    # channel directory
+    
+    async def channel_directory_search(self, channel_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_directory_search, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/directory-entries/search',
+            data,
+        )
+    
+    
+    async def channel_directory_counts(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_directory_counts, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/directory-entries/counts',
+        )
+    
+    
+    async def channel_directory_get_all(self, channel_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_directory_get_all, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/directory-entries/list',
+        )
+    
     # typing
     
     async def typing(self, channel_id):

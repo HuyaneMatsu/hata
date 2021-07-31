@@ -697,17 +697,16 @@ class ActivityBase:
         """
         raise RuntimeError(f'{cls.__name__} cannot be instanced.')
     
-    def __str__(self):
-        """Returns the activity's name."""
-        return self.name
     
     def __repr__(self):
         """Returns the activity's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}>'
     
+    
     def __hash__(self):
         """Returns the activity's hash value."""
         return self.id
+    
     
     def __eq__(self, other):
         """

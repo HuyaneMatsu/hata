@@ -341,6 +341,33 @@ Group Details
     - Resets after : `OPT`
     - Notes : Untested.
 
+- channel_directory_counts
+    - Endpoint : `/channels/{channel_id}/directory-entries/counts`
+    - Method : `GET`
+    - Required auth : `user`
+    - Limiter : `channel_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Untested.
+
+- channel_directory_get_all
+    - Endpoint : `/channels/{channel_id}/directory-entries/list`
+    - Method : `GET`
+    - Required auth : `user`
+    - Limiter : `channel_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Untested.
+
+- channel_directory_search
+    - Endpoint : `/channels/{channel_id}/directory-entries/search`
+    - Method : `GET`
+    - Required auth : `user`
+    - Limiter : `channel_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Untested.
+
 - channel_follow
     - Endpoint : `/channels/{channel_id}/followers`
     - Method : `POST`
@@ -1780,6 +1807,9 @@ channel_delete = RateLimitGroup.unlimited()
 channel_group_leave = RateLimitGroup.unlimited() # untested; same as channel_delete?
 channel_edit = RateLimitGroup(LIMITER_CHANNEL)
 channel_group_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
+channel_directory_counts = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
+channel_directory_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
+channel_directory_search = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested; same as channel_edit?
 channel_follow = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
 greet = RateLimitGroup(optimistic=True) # untested
 invite_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)

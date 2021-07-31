@@ -6,7 +6,7 @@ from datetime import datetime
 from ..utils import url_cutter
 from ..color import Color
 
-EXTRA_EMBED_TYPES = frozenset(('application_news', 'article', 'gifv', 'image', 'link', 'video'))
+EXTRA_EMBED_TYPES = frozenset(('application_news', 'article', 'gifv', 'image', 'link', 'tweet', 'video'))
 
 
 class EmbedThumbnail:

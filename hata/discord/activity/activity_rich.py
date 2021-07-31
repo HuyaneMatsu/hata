@@ -335,11 +335,18 @@ class ActivityRich(ActivityBase):
         if type_ in CUSTOM_IDS:
             id_ = 0
         else:
-            id_ = int(activity_data['id'], base=16)
+            try:
+                raw_id = activity_data['id']
+            except KeyError:
+                id_ = 0
+            else:
+                id_ = int(raw_id, base=16)
+        
         self.id = id_
         
         self._update_attributes(activity_data)
         return self
+    
     
     def _update_attributes(self, activity_data):
         """

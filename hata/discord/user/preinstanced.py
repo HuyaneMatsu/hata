@@ -575,9 +575,6 @@ class FriendRequestFlag(PreinstancedBase):
         
         return cls.INSTANCES[key]
     
-    def __str__(self):
-        """Returns the name of the friend request flag."""
-        return self.name
     
     def encode(self):
         """

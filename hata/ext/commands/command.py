@@ -956,9 +956,6 @@ class Command:
         
         return ''.join(result)
     
-    def __str__(self):
-        """Returns the command's name."""
-        return self.name
     
     def __hash__(self):
         """Returns the command's hash."""

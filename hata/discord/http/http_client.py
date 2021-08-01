@@ -1562,17 +1562,17 @@ class DiscordHTTPClient(HTTPClient):
     # thread
     
     # DiscordException Bad Request (400), code=50001: Missing Access
-    async def thread_create_private(self, channel_id, data):
+    async def thread_create(self, channel_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create_private, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/threads',
             data,
         )
     
-    async def thread_create_public(self, channel_id, message_id, data):
+    async def thread_create_from_message(self, channel_id, message_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create_public, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_create_from_message, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/messages/{message_id}/threads',
             data,
@@ -1614,9 +1614,9 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
-    async def thread_settings_edit(self, channel_id):
+    async def thread_self_settings_edit(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_settings_edit, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_self_settings_edit, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me/settings',
         )

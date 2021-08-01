@@ -110,6 +110,18 @@ Shared Groups
     - Limit : `10`
     - Resets after : `15.0`
 
+- GROUP_THREAD_CREATE
+    - Used by: `thread_create_from_message`, `thread_create`
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `300.0`
+
+- GROUP_THREAD_ACTION
+    - Used by: `thread_join`, `thread_leave`, `thread_user_add`, `thread_user_delete`
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `5.0`
+
 Group Details
 -----------
 - oauth2_token
@@ -539,14 +551,13 @@ Group Details
     - Limit : `3`
     - Resets after : `1`
 
-- thread_create_public
+- thread_create_from_message
     - Endpoint : `/channels/{channel_id}/messages/{message_id}/threads`
     - Method : `POST`
     - Required auth : `UN`
-    - Limiter : `channel_id`
-    - Limit : `OPT`
-    - Resets after : `OPT`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `300.0`
 
 - permission_overwrite_delete
     - Endpoint : `/channels/{channel_id}/permissions/{overwrite_id}`
@@ -628,64 +639,57 @@ Group Details
     - Endpoint : `/channels/{channel_id}/thread-members/@me`
     - Method : `DELETE`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `5.0`
 
 - thread_user_get_all
     - Endpoint : `/channels/{channel_id}/thread-members`
     - Method : `GET`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `10`
+    - Resets after : `10.0`
 
 - thread_join
     - Endpoint : `/channels/{channel_id}/thread-members/@me`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `5.0`
 
 - thread_user_delete
     - Endpoint : `/channels/{channel_id}/thread-members/{user_id}`
     - Method : `DELETE`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `5.0`
 
 - thread_user_add
     - Endpoint : `/channels/{channel_id}/thread-members/{user_id}`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `5`
+    - Resets after : `5.0`
 
-- thread_settings_edit
+- thread_self_settings_edit
     - Endpoint : `/channels/{channel_id}/thread-members/@me/settings`
     - Method : `PATCH`
     - Required auth : `user`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `4`
+    - Resets after : `60.0`
 
-- thread_create_private
+- thread_create
     - Endpoint : `/channels/{channel_id}/threads`
     - Method : `POST`
     - Required auth : `UN`
-    - Limiter : `channel_id`
-    - Limit : `OPT`
-    - Resets after : `OPT`
-    - Notes : Untested.
+    - Limiter : `GLOBAL`
+    - Limit : `50`
+    - Resets after : `300.0`
 
 - thread_get_chunk_active
     - Endpoint : `/channels/{channel_id}/threads/active`
@@ -1778,6 +1782,8 @@ GROUP_APPLICATION_COMMAND_CREATE = RateLimitGroup()
 GROUP_APPLICATION_COMMAND_DELETE = RateLimitGroup()
 GROUP_APPLICATION_COMMAND_EDIT = RateLimitGroup()
 GROUP_PERMISSION_OVERWRITE_MODIFY = RateLimitGroup(LIMITER_CHANNEL)
+GROUP_THREAD_CREATE = RateLimitGroup()
+GROUP_THREAD_ACTION = RateLimitGroup()
 
 oauth2_token = RateLimitGroup(optimistic=True)
 application_get = RateLimitGroup(optimistic=True) # untested
@@ -1831,7 +1837,7 @@ reaction_delete_own = GROUP_REACTION_MODIFY
 reaction_add = GROUP_REACTION_MODIFY
 reaction_delete = GROUP_REACTION_MODIFY
 message_suppress_embeds = RateLimitGroup()
-thread_create_public = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+thread_create_from_message = GROUP_THREAD_CREATE
 permission_overwrite_delete = GROUP_PERMISSION_OVERWRITE_MODIFY
 permission_overwrite_create = GROUP_PERMISSION_OVERWRITE_MODIFY
 channel_pin_get_all = RateLimitGroup()
@@ -1841,18 +1847,18 @@ message_pin = GROUP_PIN_MODIFY
 channel_group_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
 channel_group_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
 channel_group_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_join = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_leave = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_settings_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_create_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+thread_user_get_all = RateLimitGroup()
+thread_join = GROUP_THREAD_ACTION
+thread_leave = GROUP_THREAD_ACTION
+thread_user_add = GROUP_THREAD_ACTION
+thread_user_delete = GROUP_THREAD_ACTION
+thread_self_settings_edit = RateLimitGroup()
+thread_create = GROUP_THREAD_CREATE
 typing = RateLimitGroup(LIMITER_CHANNEL)
-thread_get_chunk_active = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_get_chunk_archived_private = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_get_chunk_archived_public = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-thread_get_chunk_self_archived = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+thread_get_chunk_active = RateLimitGroup.unlimited()
+thread_get_chunk_archived_private = RateLimitGroup.unlimited()
+thread_get_chunk_archived_public = RateLimitGroup.unlimited()
+thread_get_chunk_self_archived = RateLimitGroup.unlimited()
 webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
 webhook_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
 discovery_category_get_all = RateLimitGroup()

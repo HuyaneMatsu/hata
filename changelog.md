@@ -1,4 +1,8 @@
-## 1.1.93 *\[2021-??-??\]*
+## 1.1.93 *\[2021-08-01\]*
+
+### Summary
+
+Fix threads a lil bit.
 
 #### Improvements
 
@@ -53,6 +57,25 @@
 - Add `ERROR_CODES.invalid_billing_address`
 - Add `ERROR_CODES.already_purchased`.
 - `Entity.__str__` should not default to `.name`, instead to `.__repr__`.
+- Update rate limits of `thread_create` endpoint.
+- Update rate limits of `thread_join` endpoint.
+- Update rate limits of `thread_create_from_message` endpoint.
+- Add `RATE_LIMIT_GROUPS.GROUP_THREAD_CREATE`.
+- Add `RATE_LIMIT_GROUPS.GROUP_THREAD_ACTION`.
+- Update rate limits of `thread_leave` endpoint.
+- Update rate limits of `thread_user_add` endpoint.
+- Update rate limits of `thread_user_delete` endpoint.
+- Update rate limits of `thread_self_settings_edit` endpoint.
+- Update rate limits of `thread_get_chunk_archived_public` endpoint.
+- Update rate limits of `thread_get_chunk_self_archived` endpoint.
+- Update rate limits of `thread_get_chunk_archived_private` endpoint.
+- Update rate limits of `thread_get_chunk_active` endpoint.
+- Update rate limits of `thread_user_get_all` endpoint.
+- Add `type_` parameter to `Client.thread_create`.
+- Add `ThreadProfileFlag.has_interacted`.
+- Add `ThreadProfileFlag.all_messages`.
+- Add `ThreadProfileFlag.only_mentions`.
+- Add `ThreadProfileFlag.no_messages`.
 
 #### Bug Fixes
 
@@ -60,12 +83,20 @@
 - Fix a `NameError` in `EventThread.open_unix_connection`.
 - Fix a `TypeError` in `EventTherad.create_unix_connection`.
 - `User.__new__` was not setting `.thread_profiles`.
+- Fix an `AttributeError` in `Client.thread_create`.
+- `ChannelThread._create_empty` was not setting `.thread_users`.
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `AuditLogChange.attr`.
 - Rename `AuditLogChange.attr` to `.attribute_name`.
 - Rename `StagePrivacyLevel` to `PrivacyLevel`
+- Add `DiscordHTTPClient.thread_create_private` to `.thread_create`.
+- Add `RATE_LIMIT_GROUPS.thread_create_private` to `.thread_create`.
+- Add `DiscordHTTPClient.thread_create_public` to `.thread_create_from_message`.
+- Add `RATE_LIMIT_GROUPS.thread_create_public` to `.thread_create_from_message`.
+- Add `DiscordHTTPClient.thread_settings_edit` to `.thread_self_settings_edit`.
+- Add `RATE_LIMIT_GROUPS.thread_settings_edit` to `.thread_self_settings_edit`.
 
 ## 1.1.92 *\[2021-07-28\]*
 

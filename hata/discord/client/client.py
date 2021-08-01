@@ -8161,9 +8161,9 @@ class Client(ClientUserPBase):
     
     # Thread
     
-    async def thread_create(self, message, name, *, auto_archive_after=None):
+    async def thread_create(self, message_or_channel, name, *, auto_archive_after=None, type_=None):
         """
-        Creates a new thread derived from the given message.
+        Creates a new thread derived from the given message or channel.
         
         > For private thread channels the guild needs to have level 2 boost level.
         
@@ -8171,7 +8171,8 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        message : ``ChannelText``, ``Message``, ``MessageRepr``, ``MessageReference``, `int`, `tuple` (`int`, `int`)
+        message_or_channel : ``ChannelText``, ``Message``, ``MessageRepr``, ``MessageReference``, `int`, \
+                `tuple` (`int`, `int`)
             The channel or message to create thread from.
             
             > If given as a channel instance, will create a private thread, else a public one.
@@ -8182,6 +8183,10 @@ class Client(ClientUserPBase):
             
             > For `259200` seconds (or 3 days) or `604800` seconds (or 7 days) auto archive duration the guild needs
             > to be boosted.
+        
+        type_ : `None`, `int`, Optional (Keyword only)
+            The thread channel's type to create. Can be either `10`,`11`,`12`.
+        
         
         Returns
         -------
@@ -8211,38 +8216,38 @@ class Client(ClientUserPBase):
         #
         # Message cannot be detected by id, only cached ones, so ignore that case.
         
-        if isinstance(message, ChannelTextBase):
+        if isinstance(message_or_channel, ChannelTextBase):
             message_id = None
-            channel = message
+            channel = message_or_channel
             channel_id = channel.id
             guild = channel.guild
-        elif isinstance(message, Message):
-            message_id = message.id
-            channel = message.channel
+        elif isinstance(message_or_channel, Message):
+            message_id = message_or_channel.id
+            channel = message_or_channel.channel
             channel_id = channel.id
             guild = channel.guild
         else:
-            channel_id = maybe_snowflake(message)
+            channel_id = maybe_snowflake(message_or_channel)
             if (channel_id is not None):
                 message_id = None
-                channel = CHANNELS.get(channel_id)
+                channel = CHANNELS.get(channel_id, None)
                 guild = None
-            elif isinstance(message, MessageRepr):
-                message_id = message.id
-                channel = message.channel
+            elif isinstance(message_or_channel, MessageRepr):
+                message_id = message_or_channel.id
+                channel = message_or_channel.channel
                 channel_id = channel.id
                 guild = channel.id
-            elif isinstance(message, MessageReference):
-                channel_id = message.channel_id
-                channel = CHANNELS.get(channel_id)
-                message_id = message.message_id
-                guild = message.guild
+            elif isinstance(message_or_channel, MessageReference):
+                channel_id = message_or_channel.channel_id
+                channel = CHANNELS.get(channel_id, None)
+                message_id = message_or_channel.message_id
+                guild = message_or_channel.guild
             else:
-                snowflake_pair = maybe_snowflake_pair(message)
+                snowflake_pair = maybe_snowflake_pair(message_or_channel)
                 if snowflake_pair is None:
-                    raise TypeError(f'`message` can be given as `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
-                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int` or `tuple` (`int`, `int`), '
-                        f'got {message.__class__.__name__}.')
+                    raise TypeError(f'`message_or_channel` can be given as `{ChannelTextBase.__name__}`, '
+                        f'`{Message.__name__}`, `{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int` or '
+                        f'`tuple` (`int`, `int`), got {message_or_channel.__class__.__name__}.')
                 
                 channel_id, message_id = snowflake_pair
                 channel = CHANNELS.get(channel_id)
@@ -8272,15 +8277,21 @@ class Client(ClientUserPBase):
                     raise AssertionError(f'`auto_archive_after` can be any of: '
                         f'{AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after}.')
         
+        if type_ is None:
+            type_ = 11
+        else:
+            type_ = preconvert_int_options(type_, 'type_', frozenset((10, 11, 12)))
+        
         data = {
             'name': name,
             'auto_archive_duration': auto_archive_after//60,
+            'type': type_,
         }
         
         if message_id is None:
-            coroutine = self.http.thread_create_private(channel_id, data)
+            coroutine = self.http.thread_create(channel_id, data)
         else:
-            coroutine = self.http.thread_create_pulic(channel_id, message_id, data)
+            coroutine = self.http.thread_create_from_message(channel_id, message_id, data)
         
         channel_data = await coroutine
         if guild is None:

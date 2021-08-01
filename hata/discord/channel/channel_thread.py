@@ -247,6 +247,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         self.owner_id = 0
         self.slowmode = 0
         self.type = channel_type
+        self.thread_users = None
         
         return self
     

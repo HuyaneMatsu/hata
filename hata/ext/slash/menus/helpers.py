@@ -22,7 +22,7 @@ def default_check(user, event):
     Parameters
     ----------
     user : ``ClientUserBase``
-        The user who received teh source event.
+        The user who received the source event.
     event : ``InteractionEvent``
         The received interaction event.
     

@@ -18,7 +18,7 @@ class ScheduledEvent(DiscordEntity):
     privacy_level : ``PrivacyLevel``
         The privacy level of the event.
     send_start_notification : `bool`
-        Whether start notification should be sent when teh event is started.
+        Whether start notification should be sent when the event is started.
     status : ``ScheduledEventStatus``
         The status of the event.
     """

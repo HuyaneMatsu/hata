@@ -153,13 +153,13 @@ class UserBase(DiscordEntity, immortal=True):
             self.__class__.__name__,
         ]
         
-        repr_parts.append(', id=')
+        repr_parts.append(' id=')
         repr_parts.append(repr(self.id))
         
         if self.partial:
-            repr_parts.append(' partial')
+            repr_parts.append(' (partial)')
         else:
-            repr_parts.append(' name=')
+            repr_parts.append(', name=')
             repr_parts.append(repr(self.full_name))
         
         repr_parts.append('>')

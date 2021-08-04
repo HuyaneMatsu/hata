@@ -171,7 +171,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if (description is None):
                 raise ValueError(f'`description` cannot be `None` for application commands with non-context target.')
         else:
+            # We do not really care about them, we can just lose them, no problem.
             description = None
+            options_processed = None
         
         self = object.__new__(cls)
         self.id = 0
@@ -627,7 +629,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.options != other.options:
             return True
         
-        if (self.target is other.target):
+        if (self.target is not other.target):
             return True
         
         return False
@@ -700,7 +702,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return self.name
         
         if code == 'm':
-            return f'</{self.name}:{self.id}>'
+            return self.mention
         
         if code == 'd':
             return self.display_name

@@ -9,7 +9,8 @@ from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake, preconvert_bool
 from ...discord.client import Client
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommand, InteractionEvent, \
-    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, ApplicationCommandTarget
+    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, ApplicationCommandTarget, \
+    CONTEXT_APPLICATION_COMMAND_TARGETS
 from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, \
@@ -20,7 +21,8 @@ from .responding import process_command_coroutine
 from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlashCommandWrapper, get_parameter_configurers
-from .converters import get_slash_command_parameter_converters, InternalParameterConverter
+from .converters import get_slash_command_parameter_converters, InternalParameterConverter, \
+    get_context_command_parameter_converters
 from .exceptions import SlashCommandParameterConversionError
 
 # Routers
@@ -117,6 +119,7 @@ def _validate_1_guild(guild):
             f'instance, got {guild.__class__.__name__}.')
     
     return guild_id
+
 
 def _validate_guild(guild):
     """
@@ -408,6 +411,7 @@ def _generate_description_from(command, name, description):
     
     return description
 
+
 @export
 class SlashCommand:
     """
@@ -655,11 +659,10 @@ class SlashCommand:
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-        target : `None`, `int`, `str`, `ApplicationCommandTarget`` or `tuple` of \
-                (`None`, `int`, `str` ``ApplicationCommandTarget``, `Ellipsis`), Optional
+        target : `None`, `int`, `str`, ``ApplicationCommandTarget``, Optional
             The target type of the slash command.
             
-            Defaults to ``ApplicationCommandTarget.chat`.
+            Defaults to `ApplicationCommandTarget.chat`.
         
         Returns
         -------
@@ -691,8 +694,7 @@ class SlashCommand:
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
-            - If `target` was not given neither as `None`, `int`, `str`, `ApplicationCommandTarget`` or \
-                `tuple` of (`None`, `int`, `str` ``ApplicationCommandTarget``, `Ellipsis`)
+            - If `target` was not given neither as `None`, `int`, `str` or ``ApplicationCommandTarget``.
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -704,7 +706,7 @@ class SlashCommand:
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
-        - If `target` could not be matched by any expected target type name or value.
+            - If `target` could not be matched by any expected target type name or value.
         
         """
         if (func is not None) and isinstance(func, SlashCommandWrapper):
@@ -727,7 +729,8 @@ class SlashCommand:
             _validate_delete_on_unload)
         allow_by_default, route_to = _check_maybe_route('allow_by_default', allow_by_default, route_to,
             _validate_allow_by_default)
-        target, route_to = _check_maybe_route('target', target, route_to, _validate_target)
+        
+        target = _validate_target(target)
         
         if route_to:
             name = route_name(name, route_to)
@@ -765,17 +768,21 @@ class SlashCommand:
             parameter_converters = None
         else:
             parameter_configurers = get_parameter_configurers(wrappers)
-            command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
+            
+            if target in CONTEXT_APPLICATION_COMMAND_TARGETS:
+                command, parameter_converters = get_context_command_parameter_converters(command)
+            else:
+                command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
         
         if route_to:
             router = []
             
             for (
                 name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,\
-                allow_by_default, target
+                allow_by_default
             ) in zip(
                 name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,
-                allow_by_default, target
+                allow_by_default
             ):
                 
                 if is_global and (guild_ids is not None):

@@ -46,16 +46,22 @@ class ApplicationCommandInteraction(DiscordEntity):
         The represented application command's identifier number.
     name : `str`
         The name of the command. It's length can be in range [1:32].
-    options : `None` or `list` of ApplicationCommandInteractionOption
+    options : `None` or `tuple` of ApplicationCommandInteractionOption
         The parameters and values from the user if any. Defaults to `None` if non is received.
     resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
         Resolved received channels stored by their identifier as keys if any.
     resolved_roles : `None` or `dict` of (`int`, ``Role``) items
         Resolved received roles stored by their identifier as keys if any.
+    resolved_messages : `None` or `dict` of (`int`, ``Message``) items
+        Resolved received messages stored by their identifier as keys if any.
     resolved_users : `None` or `dict` of (`int`, ``ClientUserBase``) items
         Resolved received users stored by their identifier as keys if any.
+    target_id : `int`
+        The interaction's target's identifier.
     """
-    __slots__ = ('name', 'options', 'resolved_channels', 'resolved_roles', 'resolved_users')
+    __slots__ = ('name', 'options', 'resolved_channels', 'resolved_roles', 'resolved_messages', 'resolved_users',
+        'target_id',)
+    
     def __new__(cls, data, guild, cached_users):
         """
         Creates a new ``ApplicationCommandInteraction`` from the data received from Discord.
@@ -82,6 +88,7 @@ class ApplicationCommandInteraction(DiscordEntity):
             resolved_users = None
             resolved_channels = None
             resolved_roles = None
+            resolved_messages = None
         else:
             try:
                 resolved_user_datas = resolved_data['users']
@@ -145,6 +152,21 @@ class ApplicationCommandInteraction(DiscordEntity):
                         resolved_roles[role.id] = role
                 else:
                     resolved_roles = None
+            
+            try:
+                resolved_message_datas = resolved_data['messages']
+            except KeyError:
+                resolved_messages = None
+            else:
+                if resolved_message_datas:
+                    resolved_messages = {}
+                    
+                    for message_data in resolved_message_datas.values():
+                        message = Message(message_data)
+                        resolved_messages[message.id] = message
+                else:
+                    resolved_messages = None
+        
         
         id_ = int(data['id'])
         name = data['name']
@@ -153,7 +175,13 @@ class ApplicationCommandInteraction(DiscordEntity):
         if (option_datas is None) or (not option_datas):
             options = None
         else:
-            options = [ApplicationCommandInteractionOption(option_data) for option_data in option_datas]
+            options = tuple(ApplicationCommandInteractionOption(option_data) for option_data in option_datas)
+        
+        target_id = data.get('target_id', None)
+        if target_id is None:
+            target_id = 0
+        else:
+            target_id = int(target_id)
         
         self = object.__new__(cls)
         self.id = id_
@@ -162,8 +190,11 @@ class ApplicationCommandInteraction(DiscordEntity):
         self.resolved_users = resolved_users
         self.resolved_channels = resolved_channels
         self.resolved_roles = resolved_roles
+        self.resolved_messages = resolved_messages
+        self.target_id = target_id
         
         return self, cached_users
+    
     
     def __repr__(self):
         """Returns the application command interaction's representation."""
@@ -193,9 +224,89 @@ class ApplicationCommandInteraction(DiscordEntity):
             
             repr_parts.append(']')
         
-        repr_parts.append('>')
         
+        target = self.target
+        if (target is not None):
+            repr_parts.append(', target=')
+            repr_parts.append(repr(target))
+        
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def resolve_entity(self, entity_id):
+        """
+        Tries to resolve the entity by the given identifier.
+        
+        Parameters
+        ----------
+        entity_id : ``int``
+            The entity's identifier.
+        
+        Returns
+        -------
+        resolved : `None` or ``DiscordEntity``
+            The resolved discord entity if found.
+        """
+        # Is used at `InteractionEvent.target`, which wanna access user and message first, so we check that two first.
+        resolved_messages = self.resolved_messages
+        if (resolved_messages is not None):
+            try:
+                entity = resolved_messages[entity_id]
+            except KeyError:
+                pass
+            else:
+                return entity
+        
+        
+        resolved_users = self.resolved_users
+        if (resolved_users is not None):
+            try:
+                entity = resolved_users[entity_id]
+            except KeyError:
+                pass
+            else:
+                return entity
+        
+        
+        resolved_roles = self.resolved_roles
+        if (resolved_roles is not None):
+            try:
+                entity = resolved_roles[entity_id]
+            except KeyError:
+                pass
+            else:
+                return entity
+        
+        
+        resolved_channels = self.resolved_channels
+        if (resolved_channels is not None):
+            try:
+                entity = resolved_channels[entity_id]
+            except KeyError:
+                pass
+            else:
+                return entity
+        
+        
+        return None
+
+    
+    @property
+    def target(self):
+        """
+        Returns the interaction event's target.
+        
+        Only applicable for context application commands.
+        
+        Returns
+        -------
+        target : ``ClientUserBase``, ``Message``
+        """
+        target_id = self.target_id
+        if target_id:
+            return self.resolve_entity(target_id)
 
 
 class ApplicationCommandInteractionOption:
@@ -217,6 +328,7 @@ class ApplicationCommandInteractionOption:
         The given value by the user. Should be always converted to the expected type.
     """
     __slots__ = ('name', 'options', 'type', 'value')
+    
     def __new__(cls, data):
         """
         Creates a new ``ApplicationCommandInteractionOption`` instance from the data received from Discord.
@@ -246,6 +358,7 @@ class ApplicationCommandInteractionOption:
         self.value = value
         
         return self
+    
     
     def __repr__(self):
         """Returns the application command interaction option's representation."""
@@ -559,6 +672,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         application_id = int(data['application_id'])
         
+        
         self = object.__new__(cls)
         self.id = int(data['id'])
         self.application_id = application_id
@@ -681,6 +795,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
                 except KeyError:
                     pass
     
+    
     def __repr__(self):
         """Returns the representation of the event."""
         repr_parts = ['<', self.__class__.__name__]
@@ -705,7 +820,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('responded')
-        elif response_state&RESPONSE_FLAG_EPHEMERAL:
+        elif response_state & RESPONSE_FLAG_EPHEMERAL:
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('ephemeral')
@@ -734,22 +849,34 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         repr_parts.append(repr(interaction_type.value))
         repr_parts.append(')')
         
-        channel = self.channel
-        if (channel is not None):
-            repr_parts.append(' channel=')
-            repr_parts.append(repr(channel))
         
         guild = self.guild
         if (guild is not None):
-            repr_parts.append(' guild=')
+            repr_parts.append(', guild=')
             repr_parts.append(repr(guild))
+        
+        
+        channel = self.channel
+        if (channel is not None):
+            repr_parts.append(', channel=')
+            repr_parts.append(repr(channel))
+
+        
+        message = self.message
+        if (message is not None):
+            repr_parts.append(', message=')
+            repr_parts.append(repr(message))
+        
         
         repr_parts.append(', user=')
         repr_parts.append(repr(self.user))
+        
+        
         repr_parts.append(', interaction=')
         repr_parts.append(repr(self.interaction))
-        repr_parts.append('>')
         
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     

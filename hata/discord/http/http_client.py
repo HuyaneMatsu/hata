@@ -224,7 +224,7 @@ class DiscordHTTPClient(HTTPClient):
         DiscordException
         """
         if headers is None:
-            #normal request
+            # normal request
             headers = self.headers.copy()
             
             if isinstance(data, (dict, list)):
@@ -234,7 +234,7 @@ class DiscordHTTPClient(HTTPClient):
             if reason is not None:
                 headers[AUDIT_LOG_REASON] = quote(reason, safe='\ ')
         else:
-            #bearer or webhook request
+            # bearer or webhook request
             if isinstance(data, (dict, list)) and (CONTENT_TYPE not in headers):
                 headers[CONTENT_TYPE] = 'application/json'
                 data = to_json(data)

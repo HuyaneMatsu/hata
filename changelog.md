@@ -23,9 +23,15 @@ Make messages and interactions weakly bound to their channel and guild.
 - Add `ApplicationCommandTarget`.
 - Add `ApplicationCommand.target`.
 - `ApplicationCommand.description` is now optional for context application commands.
+- Add `ApplicationCommandInteraction.resolved_messages`.
+- Add `ApplicationCommandInteraction.target_id`.
+- Add `ApplicationCommandInteraction.resovle_entity`.
+- Add `ApplicationCommandInteraction.target`.
+- `ApplicationCommandInteraction.options` is now `tuple` or `None` (from `list` or `None`)
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.
+- Add `target` parameter for context commands.
 
 ## 1.1.93 *\[2021-08-01\]*
 

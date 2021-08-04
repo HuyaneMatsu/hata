@@ -11,7 +11,7 @@ from ...discord.client import Client
 from ...discord.user import UserBase, User
 from ...discord.role import Role
 from ...discord.channel import ChannelBase
-from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, \
+from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, InteractionType, \
     ApplicationCommandOptionType, InteractionEvent
 from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
@@ -19,6 +19,8 @@ from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIO
 from .utils import raw_name_to_display, normalize_description
 from .exceptions import SlashCommandParameterConversionError
 from .expression_parser import evaluate_text
+
+INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 
 async def converter_self_client(client, interaction_event):
     """
@@ -42,7 +44,7 @@ async def converter_self_client(client, interaction_event):
 
 async def converter_self_interaction_event(client, interaction_event):
     """
-    Internal converter for returning the  received interaction event.
+    Internal converter for returning the received interaction event.
     
     This function is a coroutine.
     
@@ -59,6 +61,31 @@ async def converter_self_interaction_event(client, interaction_event):
     """
     return interaction_event
 
+
+async def converter_self_interaction_target(client, interaction_event):
+    """
+    Internal converter for returning the received interaction event target. Applicable for context application
+    commands.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    
+    Returns
+    -------
+    target : `None` or ``DiscordEntity``
+        The resolved entity if any.
+    """
+    if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND:
+        return None
+    
+    return interaction_event.interaction.target
+    
 
 async def converter_int(client, interaction_event, value):
     """
@@ -410,6 +437,7 @@ ANNOTATION_TYPE_SELF_CLIENT = 13
 ANNOTATION_TYPE_SELF_INTERACTION_EVENT = 14
 ANNOTATION_TYPE_EXPRESSION = 15
 ANNOTATION_TYPE_FLOAT = 16
+ANNOTATION_TYPE_SELF_TARGET = 17
 
 CLIENT_ANNOTATION_NAMES = frozenset((
     'c',
@@ -420,6 +448,11 @@ INTERACTION_EVENT_ANNOTATION_NAMES = frozenset((
     'e',
     'event',
     'interaction_event',
+))
+
+TARGET_ANNOTATION_NAMES = frozenset((
+    't',
+    'target',
 ))
 
 STR_ANNOTATION_TO_ANNOTATION_TYPE = {
@@ -439,7 +472,8 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'float': ANNOTATION_TYPE_FLOAT,
     
     **un_map_pack((name, ANNOTATION_TYPE_SELF_CLIENT) for name in CLIENT_ANNOTATION_NAMES),
-    **un_map_pack((name, ANNOTATION_TYPE_SELF_INTERACTION_EVENT) for name in CLIENT_ANNOTATION_NAMES),
+    **un_map_pack((name, ANNOTATION_TYPE_SELF_INTERACTION_EVENT) for name in INTERACTION_EVENT_ANNOTATION_NAMES),
+    **un_map_pack((name, ANNOTATION_TYPE_SELF_TARGET) for name in TARGET_ANNOTATION_NAMES),
 }
 
 # Used at repr
@@ -461,6 +495,7 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
     
     ANNOTATION_TYPE_SELF_CLIENT: 'client',
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: 'interaction_event',
+    ANNOTATION_TYPE_SELF_TARGET: 'target',
 }
 
 TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
@@ -495,6 +530,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     
     ANNOTATION_TYPE_SELF_CLIENT: (converter_self_client, True),
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: (converter_self_interaction_event, True),
+    ANNOTATION_TYPE_SELF_TARGET: (converter_self_interaction_target, True),
 }
 
 INTERNAL_ANNOTATION_TYPES = frozenset((
@@ -1389,7 +1425,7 @@ class InternalParameterConverter(ParameterConverter):
             The converter to use to convert a value to it's desired type.
         """
         self = object.__new__(cls)
-        self.type = self
+        self.type = type_
         self.converter = converter
         return self
     
@@ -1588,7 +1624,7 @@ def create_parameter_converter(parameter, parameter_configurer):
 
 def create_internal_parameter_converter(parameter):
     """
-    Creates parameter converter
+    Creates an internal parameter converter.
 
     Parameters
     ----------
@@ -1597,7 +1633,7 @@ def create_internal_parameter_converter(parameter):
     
     Returns
     -------
-    parameter_converter : ``ParameterConverter``
+    parameter_converter : ``ParameterConverter`` or `None`
     """
     if parameter.has_annotation:
         annotation_value = parameter.annotation
@@ -1615,6 +1651,25 @@ def create_internal_parameter_converter(parameter):
     
     converter, is_internal = ANNOTATION_TYPE_TO_CONVERTER[annotation_type]
     return InternalParameterConverter(annotation_type, converter)
+
+
+def create_target_parameter_converter(parameter):
+    """
+    Creates an internal target parameter converter.
+    
+    > Not like other converters creators, this converter will result a parameter converter, so make sure to call it
+    > only once.
+    
+    Parameters
+    ----------
+    parameter : ``Parameter``
+        The parameter to create converter from.
+    
+    Returns
+    -------
+    parameter_converter : ``ParameterConverter``
+    """
+    return InternalParameterConverter(ANNOTATION_TYPE_SELF_TARGET, converter_self_interaction_target)
 
 
 def check_command_coroutine(func):
@@ -1741,7 +1796,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     parameter_converters = tuple(parameter_converters)
     
     if should_instance:
-        func = analyzer.insatnce()
+        func = analyzer.instance()
     
     return func, parameter_converters
 
@@ -1794,6 +1849,61 @@ def get_component_command_parameter_converters(func):
     parameter_converters = tuple(parameter_converters)
     
     if should_instance:
-        func = analyzer.insatnce()
+        func = analyzer.instance()
+    
+    return func, parameter_converters
+
+
+def get_context_command_parameter_converters(func):
+    """
+    Parses the given `func`'s parameters.
+    
+    Parameters
+    ----------
+    func : `async-callable`
+        The function used by a ``SlashCommand``.
+    
+    Returns
+    -------
+    func : `async-callable`
+        The converted function.
+    parameter_converters : `tuple` of ``ParameterConverter``
+        Parameter converters for the given `func` in order.
+    
+    Raises
+    ------
+    TypeError
+        - If `func` is not async callable, neither cannot be instanced to async.
+        - If `func` accepts keyword only parameters.
+        - If `func` accepts `*args`.
+        - If `func` accepts `**kwargs`.
+    ValueError
+        - If any parameter is not internal.
+    """
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func)
+    
+    parameters = real_analyzer.get_non_reserved_positional_parameters()
+    
+    parameter_converters = []
+    
+    target_converter_detected = False
+    for parameter in parameters:
+        parameter_converter = create_internal_parameter_converter(parameter)
+        
+        if (parameter_converter is None):
+            if target_converter_detected:
+                raise TypeError(f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
+                    f'expected internal parameters. Context commands do not accept any additional parameters.')
+            else:
+                parameter_converter = create_target_parameter_converter(parameter)
+                target_converter_detected = True
+        
+        parameter_converters.append(parameter_converter)
+    
+    
+    parameter_converters = tuple(parameter_converters)
+    
+    if should_instance:
+        func = analyzer.instance()
     
     return func, parameter_converters

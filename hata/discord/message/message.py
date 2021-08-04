@@ -8,12 +8,12 @@ from ...backend.export import export, include
 
 from ..bases import DiscordEntity, id_sort_key
 from ..utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
-from ..core import MESSAGES
+from ..core import MESSAGES, CHANNELS, GUILDS
 from ..user import ZEROUSER, User, ClientUserBase, UserBase
 from ..emoji import reaction_mapping
 from ..embed import EmbedCore, EXTRA_EMBED_TYPES, EmbedBase
 from ..webhook import WebhookRepr, create_partial_webhook_from_id, WebhookType, Webhook
-from ..role import Role
+from ..role import Role, create_partial_role_from_id
 from ..preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
     preconvert_preinstanced_type
 from ..sticker import Sticker
@@ -71,8 +71,8 @@ class Message(DiscordEntity, immortal=True):
         Attachments sent with the message.
     author : ``UserBase`` instance
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
-    channel : ``ChannelTextBase`` instance
-        The channel where the message is sent.
+    channel_id : `int`
+        The channel's identifier where the message is sent.
     components : `None` or `tuple` of ``ComponentBase``
         Message components.
     content : `str`
@@ -99,6 +99,8 @@ class Message(DiscordEntity, immortal=True):
         Whether the message contains `@everyone` or `@here`.
     flags : ``MessageFlag``
         The message's flags.
+    guild_id : `int`
+        The channel's guild's identifier.
     interaction : `None` or ``MessageInteraction``
         Present if the message is a response to an ``InteractionEvent``.
     nonce : `None` or `str`
@@ -108,8 +110,8 @@ class Message(DiscordEntity, immortal=True):
         Whether the message is pinned.
     reactions : ``reaction_mapping``
         A dictionary like object, which contains the reactions on the message.
-    role_mentions : `None` or `tuple` of ``Role``
-        The mentioned roles by the message if any.
+    role_mention_ids : `None` or `tuple` of `int`
+        The mentioned roles's identifier by the message if any.
     stickers : `None` or `tuple` of ``Sticker``
         The stickers sent with the message.
         
@@ -123,52 +125,284 @@ class Message(DiscordEntity, immortal=True):
     user_mentions : `None` or `tuple` of ``UserBase``
         The mentioned users by the message if any.
     """
-    __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author', 'channel',
-        'components', 'content', 'cross_mentions', 'deleted', 'edited_at', 'embeds', 'everyone_mention', 'flags',
-        'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mentions', 'stickers', 'thread',
-        'tts', 'type', 'user_mentions',)
+    __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author',
+        'channel_id', 'components', 'content', 'cross_mentions', 'deleted', 'edited_at', 'embeds', 'everyone_mention',
+        'flags', 'guild_id', 'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mention_ids',
+        'stickers', 'thread', 'tts', 'type', 'user_mentions',)
     
-    def __new__(cls, data, channel):
+    def __new__(cls, data):
         """
-        A message should not be created with `.__new__` method, but should be created through a channel method, or
-        by ``Message.custom``.
+        Creates a new message object form the given message payload. If the message already exists, picks it up.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
             Message data.
-        channel : ``ChannelTextBase`` instance
-            Source channel.
-        
-        Raises
-        ------
-        RuntimeError
-            Message should not be created like this.
         """
-        raise RuntimeError(f'`{cls.__name__}` should not be created like this.')
+        message_id = int(data['id'])
+        try:
+            self = MESSAGES[message_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = message_id
+            MESSAGES[self.id] = self
+        else:
+            if not self.partial:
+                return self
+        
+        self._set_attributes(data)
+        return self
+    
     
     @classmethod
-    def _create_unlinked(cls, message_id, data, channel):
+    def _create_message_is_in_cache(cls, data):
         """
-        Creates an unlinked message.
+        Creates a new message object form the given message payload. If the message already exists, picks it up.
         
         Parameters
         ----------
-        message_id : `int`
-            The message's unique identifier number.
         data : `dict` of (`str`, `Any`) items
             Message data.
-        channel : ``ChannelTextBase`` instance
-            Source channel.
         
         Returns
         -------
         self : ``Message``
+            The created or found message instance.
+        from_cache : `bool`
+            Whether the message was found in the cache.
         """
-        self = object.__new__(cls)
-        self.id = message_id
-        self._finish_init(data, channel)
-        return self
+        message_id = int(data['id'])
+        try:
+            self = MESSAGES[message_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = message_id
+            MESSAGES[self.id] = self
+        else:
+            if not self.partial:
+                return True, self
+        
+        self._set_attributes(data)
+        return False, self
+    
+    
+    def _set_attributes(self, data):
+        """
+        Finishes the message's initialization process by setting it's attributes (except `.id`).
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        """
+        self.deleted = False
+        
+        channel_id = int(data['channel_id'])
+        channel = CHANNELS.get(channel_id, None)
+        self.channel_id = channel_id
+        
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+            guild = None
+        else:
+            guild_id = int(guild_id)
+            guild = GUILDS.get(guild_id, None)
+        
+        self.guild_id = guild_id
+        
+        author_data = data.get('author', None)
+        webhook_id = data.get('webhook_id', None)
+        application_id = data.get('application_id', None)
+        
+        if (application_id is None):
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        
+        if application_id or (webhook_id is None):
+            cross_mentions = None
+            if author_data is None:
+                author = ZEROUSER
+            else:
+                try:
+                     author_data['member'] = data['member']
+                except KeyError:
+                    pass
+                
+                author = User(author_data, guild)
+        else:
+            webhook_id = int(webhook_id)
+            if (data.get('message_reference', None) is not None):
+                cross_mention_datas = data.get('mention_channels', None)
+                if (cross_mention_datas is None) or (not cross_mention_datas):
+                    cross_mentions = None
+                else:
+                    cross_mentions = tuple(sorted(
+                        (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                        key = id_sort_key,
+                    ))
+                
+                webhook_type = WebhookType.server
+            else:
+                cross_mentions = None
+                webhook_type = WebhookType.bot
+            
+            if author_data is None:
+                author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
+            else:
+                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
+        
+        self.author = author
+        self.application_id = application_id
+        self.cross_mentions = cross_mentions
+        
+        self.reactions = reaction_mapping(data.get('reactions', None))
+        
+
+        referenced_message_data = data.get('referenced_message', None)
+        if referenced_message_data is None:
+            referenced_message_data = data.get('message_reference', None)
+            if referenced_message_data is None:
+                referenced_message = None
+            else:
+                referenced_message = MessageReference(referenced_message_data)
+        else:
+            referenced_message = Message(referenced_message_data)
+        
+        self.referenced_message = referenced_message
+        
+
+        try:
+            application_data = data['application']
+        except KeyError:
+            application = None
+        else:
+            application = MessageApplication(application_data)
+        self.application = application
+        
+        try:
+            activity_data = data['activity']
+        except KeyError:
+            activity = None
+        else:
+            activity = MessageActivity(activity_data)
+        self.activity = activity
+        
+        edited_timestamp = data.get('edited_timestamp', None)
+        if (edited_timestamp is None):
+            edited_at = None
+        else:
+            edited_at = parse_time(edited_timestamp)
+        self.edited_at = edited_at
+        
+        self.pinned = data.get('pinned', False)
+        self.everyone_mention = data.get('mention_everyone', False)
+        self.tts = data.get('tts', False)
+        self.flags = flags = MessageFlag(data.get('flags', 0))
+        
+        try:
+            message_type_value = data['type']
+        except KeyError:
+            if flags.invoking_user_only:
+                message_type = MessageType.application_command
+            else:
+                message_type = MessageType.default
+        else:
+            message_type = MessageType.get(message_type_value)
+        
+        self.type = message_type
+        
+        attachment_datas = data.get('attachments', None)
+        if (attachment_datas is not None) and attachment_datas:
+            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+        else:
+            attachments = None
+        self.attachments = attachments
+        
+        embed_datas = data.get('embeds', None)
+        if (embed_datas is not None) and embed_datas:
+            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+        else:
+            embeds = None
+        self.embeds = embeds
+        
+        self.nonce = data.get('nonce', None)
+        self.content = data.get('content', '')
+        
+        interaction_data = data.get('interaction', None)
+        if interaction_data is None:
+            interaction = None
+        else:
+            interaction = MessageInteraction(interaction_data)
+            try_resolve_interaction_message(self, interaction)
+        
+        self.interaction = interaction
+        
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = tuple(create_component(component_data) for component_data in component_datas)
+        self.components = components
+        
+        sticker_datas = data.get('sticker_items', None)
+        if sticker_datas is None:
+            stickers = None
+        else:
+            stickers = tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas)
+        self.stickers = stickers
+        
+        user_mention_datas = data.get('mentions', None)
+        if (user_mention_datas is not None) and user_mention_datas:
+            user_mentions = tuple(sorted(
+                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                key = id_sort_key,
+            ))
+        else:
+            user_mentions = None
+        self.user_mentions = user_mentions
+        
+        if guild is None:
+            channel_mentions = None
+        else:
+            channel_mentions = ...
+        
+        self._channel_mentions = channel_mentions
+        
+        role_mention_ids = data.get('mention_roles', None)
+        if (role_mention_ids is None) or (not role_mention_ids):
+            role_mention_ids = None
+        else:
+            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+    
+        self.role_mention_ids = role_mention_ids
+        
+        try:
+            thread_data = data['thread']
+        except KeyError:
+            thread = None
+        else:
+            thread = CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+        self.thread = thread
+    
+    @property
+    def role_mentions(self):
+        """
+        Returns the mentioned roles by the message.
+        
+        Returns
+        -------
+        role_mentions : `None` or `tuple` of ``Role``
+        """
+        role_mention_ids = self.role_mention_ids
+        if role_mention_ids is None:
+            role_mentions = None
+        else:
+            role_mentions = tuple(create_partial_role_from_id(role_id) for role_id in role_mention_ids)
+        
+        return role_mentions
+    
     
     def _finish_init(self, data, channel):
         """
@@ -183,8 +417,18 @@ class Message(DiscordEntity, immortal=True):
             Source channel.
         """
         self.deleted = False
-        self.channel = channel
+        self.channel_id = channel.id
         guild = channel.guild
+        
+        guild_id = data.get('guild_id', None)
+        
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        self.guild_id = guild_id
+        
         author_data = data.get('author', None)
         webhook_id = data.get('webhook_id', None)
         application_id = data.get('application_id', None)
@@ -246,7 +490,7 @@ class Message(DiscordEntity, immortal=True):
             else:
                 referenced_message = MessageReference(referenced_message_data)
         else:
-            referenced_message = channel._create_unknown_message(referenced_message_data)
+            referenced_message = Message(referenced_message_data)
         
         self.referenced_message = referenced_message
         
@@ -371,6 +615,238 @@ class Message(DiscordEntity, immortal=True):
                 role_mentions = tuple(role_mentions)
         
         self.role_mentions = role_mentions
+        
+        try:
+            thread_data = data['thread']
+        except KeyError:
+            thread = None
+        else:
+            thread = CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+        self.thread = thread
+        
+        MESSAGES[self.id] = self
+    
+    
+    @classmethod
+    def _create_unlinked(cls, message_id, data, channel):
+        """
+        Creates an unlinked message.
+        
+        Parameters
+        ----------
+        message_id : `int`
+            The message's unique identifier number.
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        channel : ``ChannelTextBase`` instance
+            Source channel.
+        
+        Returns
+        -------
+        self : ``Message``
+        """
+        self = object.__new__(cls)
+        self.id = message_id
+        self._finish_init(data, channel)
+        return self
+    
+    
+    def _finish_init(self, data, channel):
+        """
+        This method is called after a message object is created and it's id is set. Fills up the message's attributes
+        from the given message data and stores the message at `MESSAGES` weak value dictionary.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data.
+        channel : ``ChannelTextBase`` instance
+            Source channel.
+        """
+        self.deleted = False
+        self.channel_id = channel.id
+        guild = channel.guild
+        
+        guild_id = data.get('guild_id', None)
+        
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        self.guild_id = guild_id
+        
+        author_data = data.get('author', None)
+        webhook_id = data.get('webhook_id', None)
+        application_id = data.get('application_id', None)
+        
+        if (application_id is None):
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        
+        if application_id or (webhook_id is None):
+            cross_mentions = None
+            if author_data is None:
+                author = ZEROUSER
+            else:
+                try:
+                     author_data['member'] = data['member']
+                except KeyError:
+                    pass
+                author = User(author_data, guild)
+        else:
+            webhook_id = int(webhook_id)
+            if (data.get('message_reference', None) is not None):
+                cross_mention_datas = data.get('mention_channels', None)
+                if (cross_mention_datas is None) or (not cross_mention_datas):
+                    cross_mentions = None
+                else:
+                    cross_mentions = tuple(sorted(
+                        (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                        key = id_sort_key,
+                    ))
+                
+                webhook_type = WebhookType.server
+            else:
+                cross_mentions = None
+                webhook_type = WebhookType.bot
+            
+            if author_data is None:
+                author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
+            else:
+                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
+        
+        self.author = author
+        self.application_id = application_id
+        self.cross_mentions = cross_mentions
+        
+        self.reactions = reaction_mapping(data.get('reactions', None))
+        
+        # Most common case is reply
+        # First always check the `referenced_message` payload, and then second the `message_reference` one.
+        #
+        # Note, that `referenced_message` wont contain an another `referenced_message`, but only `message_reference`
+        # one.
+        
+        referenced_message_data = data.get('referenced_message', None)
+        if referenced_message_data is None:
+            referenced_message_data = data.get('message_reference', None)
+            if referenced_message_data is None:
+                referenced_message = None
+            else:
+                referenced_message = MessageReference(referenced_message_data)
+        else:
+            referenced_message = Message(referenced_message_data)
+        
+        self.referenced_message = referenced_message
+        
+        
+        try:
+            application_data = data['application']
+        except KeyError:
+            application = None
+        else:
+            application = MessageApplication(application_data)
+        self.application = application
+        
+        try:
+            activity_data = data['activity']
+        except KeyError:
+            activity = None
+        else:
+            activity = MessageActivity(activity_data)
+        self.activity = activity
+        
+        edited_timestamp = data.get('edited_timestamp', None)
+        if (edited_timestamp is None):
+            edited_at = None
+        else:
+            edited_at = parse_time(edited_timestamp)
+        self.edited_at = edited_at
+        
+        self.pinned = data.get('pinned', False)
+        self.everyone_mention = data.get('mention_everyone', False)
+        self.tts = data.get('tts', False)
+        self.flags = flags = MessageFlag(data.get('flags', 0))
+        
+        try:
+            message_type_value = data['type']
+        except KeyError:
+            if flags.invoking_user_only:
+                message_type = MessageType.application_command
+            else:
+                message_type = MessageType.default
+        else:
+            message_type = MessageType.get(message_type_value)
+        
+        self.type = message_type
+        
+        attachment_datas = data.get('attachments', None)
+        if (attachment_datas is not None) and attachment_datas:
+            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+        else:
+            attachments = None
+        self.attachments = attachments
+        
+        embed_datas = data.get('embeds', None)
+        if (embed_datas is not None) and embed_datas:
+            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+        else:
+            embeds = None
+        self.embeds = embeds
+        
+        self.nonce = data.get('nonce', None)
+        self.content = data.get('content', '')
+        
+        interaction_data = data.get('interaction', None)
+        if interaction_data is None:
+            interaction = None
+        else:
+            interaction = MessageInteraction(interaction_data)
+            try_resolve_interaction_message(self, interaction)
+        
+        self.interaction = interaction
+        
+        component_datas = data.get('components', None)
+        if (component_datas is None) or (not component_datas):
+            components = None
+        else:
+            components = tuple(create_component(component_data) for component_data in component_datas)
+        self.components = components
+        
+        sticker_datas = data.get('sticker_items', None)
+        if sticker_datas is None:
+            stickers = None
+        else:
+            stickers = tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas)
+        self.stickers = stickers
+        
+        user_mention_datas = data.get('mentions', None)
+        if (user_mention_datas is not None) and user_mention_datas:
+            user_mentions = tuple(sorted(
+                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                key = id_sort_key,
+            ))
+        else:
+            user_mentions = None
+        self.user_mentions = user_mentions
+        
+        if guild is None:
+            channel_mentions = None
+        else:
+            channel_mentions = ...
+        
+        self._channel_mentions = channel_mentions
+        
+        
+        role_mention_ids = data.get('mention_roles', None)
+        if (role_mention_ids is None) or (not role_mention_ids):
+            role_mention_ids = None
+        else:
+            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+        
+        self.role_mention_ids = role_mention_ids
         
         try:
             thread_data = data['thread']
@@ -936,7 +1412,6 @@ class Message(DiscordEntity, immortal=True):
                             raise TypeError(f'`role_mentions` contains a non `{Role.__name__}` instance, '
                                 f'`{role.__class__.__name__}`.')
                     
-                    role_mentions = tuple(sorted(role_mentions, key=id_sort_key))
                 else:
                     # There cannot be an empty mention list, so lets fix it.
                     role_mentions = None
@@ -945,6 +1420,11 @@ class Message(DiscordEntity, immortal=True):
             if (role_mentions is not None) and (not isinstance(channel,ChannelGuildBase)):
                 raise ValueError('`role_mentions` are set as not `None`, meanwhile the `channel` is not '
                     f'`{ChannelGuildBase}` subclass\'s instance; `{channel!r}`')
+        
+        if (role_mentions is None):
+            role_mention_ids = None
+        else:
+            role_mention_ids = tuple(sorted(role.id for role in role_mentions))
         
         try:
             stickers = kwargs.pop('stickers')
@@ -1089,7 +1569,8 @@ class Message(DiscordEntity, immortal=True):
         self.application_id = application_id
         self.attachments = attachments
         self.author = author
-        self.channel = channel
+        self.channel_id = channel.id
+        self.guild_id = 0
         self.content = content
         self.cross_mentions = cross_mentions
         self.referenced_message = referenced_message
@@ -1102,7 +1583,7 @@ class Message(DiscordEntity, immortal=True):
         self.nonce = nonce
         self.pinned = pinned
         self.reactions = reactions
-        self.role_mentions = role_mentions
+        self.role_mention_ids = role_mention_ids
         self.stickers = stickers
         self.tts = tts
         self.type = type_
@@ -1112,6 +1593,7 @@ class Message(DiscordEntity, immortal=True):
         self.thread = thread
         
         return self
+    
     
     def _parse_channel_mentions(self):
         """
@@ -1156,6 +1638,7 @@ class Message(DiscordEntity, immortal=True):
     
     url = property(module_urls.message_jump_url)
     
+    
     @property
     def channel_mentions(self):
         """
@@ -1170,6 +1653,7 @@ class Message(DiscordEntity, immortal=True):
             channel_mentions = self._parse_channel_mentions()
         
         return channel_mentions
+    
     
     def __repr__(self):
         """Returns the representation of the message."""
@@ -1191,7 +1675,6 @@ class Message(DiscordEntity, immortal=True):
         
         return ''.join(repr_parts)
     
-    __str__ = __repr__
     
     def __format__(self, code):
         """
@@ -1204,7 +1687,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : `str`
+        message : `str`
         
         Raises
         ------
@@ -1236,7 +1719,7 @@ class Message(DiscordEntity, immortal=True):
         ```
         """
         if not code:
-            return self.__str__()
+            return self.__repr__()
         
         if code == 'c':
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
@@ -1250,6 +1733,7 @@ class Message(DiscordEntity, immortal=True):
             return edited_at
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
     
     def _difference_update_attributes(self, data):
         """
@@ -1299,7 +1783,7 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | user_mentions     | `None` or (`tuple` of ``ClientUserBase``)                             |
         +-------------------+-----------------------------------------------------------------------+
-        | role_mentions     | `None` or (`tuple` of ``Role``)                                       |
+        | role_mention_ids  | `None` or (`tuple` of `int`)                                          |
         +-------------------+-----------------------------------------------------------------------+
         """
         old_attributes = {}
@@ -1424,14 +1908,14 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            guild = self.channel.guild
+            guild = self.guild
             
             if (user_mention_datas is None) or (not user_mention_datas):
                 user_mentions = None
             else:
                 user_mentions = tuple(sorted(
                     (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                    key=id_sort_key,
+                    key = id_sort_key,
                 ))
             
             if self.user_mentions != user_mentions:
@@ -1453,9 +1937,6 @@ class Message(DiscordEntity, immortal=True):
                 self.components = components
         
         
-        if guild is None:
-            return old_attributes
-        
         self._channel_mentions = ...
         
         try:
@@ -1468,41 +1949,25 @@ class Message(DiscordEntity, immortal=True):
             else:
                 cross_mentions = tuple(sorted(
                     (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                    key=id_sort_key,
+                    key = id_sort_key,
                 ))
             
             if self.cross_mentions != cross_mentions:
                 old_attributes['cross_mentions'] = self.cross_mentions
                 self.cross_mentions = cross_mentions
         
-        try:
-            role_mention_ids = data['mention_roles']
-        except KeyError:
-            pass
+        role_mention_ids = data.get('mention_roles', None)
+        if (role_mention_ids is None) or (not role_mention_ids):
+            role_mention_ids = None
         else:
-            if (role_mention_ids is None) or (not role_mention_ids):
-                role_mentions = None
-            else:
-                roles = guild.roles
-                role_mentions = []
-                
-                for role_id in role_mention_ids:
-                    role_id = int(role_id)
-                    try:
-                        role = roles[role_id]
-                    except KeyError:
-                        continue
-                    
-                    role_mentions.append(role)
-                
-                role_mentions.sort(key=id_sort_key)
-                role_mentions = tuple(role_mentions)
-            
-            if self.role_mentions != role_mentions:
-                old_attributes['role_mentions'] = self.role_mentions
-                self.role_mentions = role_mentions
+            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+        
+        if self.role_mention_ids != role_mention_ids:
+            old_attributes['role_mention_ids'] = self.role_mention_ids
+            self.role_mention_ids = role_mention_ids
         
         return old_attributes
+    
     
     def _update_attributes(self, data):
         """
@@ -1569,9 +2034,9 @@ class Message(DiscordEntity, immortal=True):
         
         self.everyone_mention = data['mention_everyone']
 
-        #ignoring tts
-        #ignoring type
-        #ignoring nonce
+        # ignoring tts
+        # ignoring type
+        # ignoring nonce
         
         try:
             attachment_datas = data['attachments']
@@ -1613,7 +2078,7 @@ class Message(DiscordEntity, immortal=True):
                 components = tuple(create_component(component_data) for component_data in component_datas)
             self.components = components
         
-        guild = self.channel.guild
+        guild = self.guild
         
         try:
             user_mention_datas = data['mentions']
@@ -1623,15 +2088,12 @@ class Message(DiscordEntity, immortal=True):
             if user_mention_datas:
                 user_mentions = tuple(sorted(
                     (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                    key=id_sort_key,
+                    key = id_sort_key,
                 ))
             else:
                 user_mentions = None
             
             self.user_mentions = user_mentions
-        
-        if guild is None:
-            return
         
         self._channel_mentions = ...
         
@@ -1645,35 +2107,18 @@ class Message(DiscordEntity, immortal=True):
             else:
                 cross_mentions = tuple(sorted(
                     (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                    key=id_sort_key,
+                    key = id_sort_key,
                 ))
             
             self.cross_mentions = cross_mentions
         
-        try:
-            role_mention_ids = data['mention_roles']
-        except KeyError:
-            pass
+        role_mention_ids = data.get('mention_roles', None)
+        if (role_mention_ids is None) or (not role_mention_ids):
+            role_mention_ids = None
         else:
-            if (role_mention_ids is None) or (not role_mention_ids):
-                role_mentions = None
-            else:
-                roles = guild.roles
-                role_mentions = []
-                
-                for role_id in role_mention_ids:
-                    role_id = int(role_id)
-                    try:
-                        role = roles[role_id]
-                    except KeyError:
-                        continue
-                    
-                    role_mentions.append(role)
-                
-                role_mentions.sort(key=id_sort_key)
-                role_mentions = tuple(role_mentions)
-            
-            self.role_mentions = role_mentions
+            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+        
+        self.role_mention_ids = role_mention_ids
     
     
     def _update_embed(self, data):
@@ -1872,6 +2317,20 @@ class Message(DiscordEntity, immortal=True):
     
     
     @property
+    def channel(self):
+        """
+        Returns the message's channel's guild.
+        
+        Returns
+        -------
+        guild : `None` or ``ChannelTextBase``
+        """
+        channel_id = self.channel_id
+        if channel_id:
+            return CHANNELS.get(channel_id, None)
+    
+    
+    @property
     def guild(self):
         """
         Returns the message's channel's guild.
@@ -1880,7 +2339,9 @@ class Message(DiscordEntity, immortal=True):
         -------
         guild : `None` or ``Guild``
         """
-        return self.channel.guild
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)
     
     
     @property
@@ -1921,7 +2382,23 @@ class Message(DiscordEntity, immortal=True):
                 contents.extend(embed.contents)
 
         return contents
-
+    
+    
+    @property
+    def partial(self):
+        """
+        Returns whether the message is partial.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
+        if self.channel_id:
+            return True
+        
+        return False
+    
+    
     @property
     def mentions(self):
         """
@@ -1973,6 +2450,7 @@ class Message(DiscordEntity, immortal=True):
         
         return result
     
+    
     @property
     def clean_embeds(self):
         """
@@ -1997,7 +2475,8 @@ class Message(DiscordEntity, immortal=True):
                 clean_embeds.append(embed._clean_copy(self))
         
         return clean_embeds
-
+    
+    
     def did_react(self, emoji, user):
         """
         Returns whether the given user reacted with the given emoji on the message.

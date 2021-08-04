@@ -28,6 +28,7 @@ class MessageIterator:
         The client, who will do the api requests for requesting more messages.
     """
     __slots__ = ('_can_read_history', '_index', 'channel', 'chunk_size', 'client',)
+    
     async def __new__(cls, client, channel, chunk_size=99):
         """
         Creates a message iterator.
@@ -96,7 +97,7 @@ class MessageIterator:
                     if messages:
                         channel = messages[0].channel
                     else:
-                        channel = await client._maybe_get_channel(channel_id)
+                        channel = None
         
         self = object.__new__(cls)
         self.client = client
@@ -118,6 +119,8 @@ class MessageIterator:
         This method is a coroutine.
         """
         channel = self.channel
+        if (channel is None):
+            raise StopAsyncIteration
         
         index = self._index
         messages = channel.messages
@@ -140,7 +143,7 @@ class MessageIterator:
                 ERROR_CODES.missing_access, # client removed
                 ERROR_CODES.missing_permissions, # permissions changed meanwhile
                 ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                    ):
+            ):
                 pass
             else:
                 raise
@@ -152,7 +155,21 @@ class MessageIterator:
         
         raise StopAsyncIteration
     
+    
     def __repr__(self):
         """Returns the representation of the message iterator."""
-        return (f'<{self.__class__.__name__} of client {self.client.full_name}, at channel {self.channel.name!r} ('
-            f'{self.channel.id})>')
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' of client ', self.client.full_name,
+        ]
+        
+        channel = self.channel
+        if (channel is not None):
+            repr_parts.append(', at channel ')
+            repr_parts.append(repr(channel.name))
+            repr_parts.append(' (')
+            repr_parts.append(repr(channel.id))
+            repr_parts.append(')')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)

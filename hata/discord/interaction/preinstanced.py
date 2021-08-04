@@ -1,5 +1,5 @@
-__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'ButtonStyle',
-    'ComponentType', 'InteractionType', )
+__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'ApplicationCommandTarget',
+    'ButtonStyle', 'CONTEXT_APPLICATION_COMMAND_TARGETS', 'ComponentType', 'InteractionType', )
 
 import warnings
 
@@ -10,7 +10,7 @@ from ..bases import PreinstancedBase, Preinstance as P
 
 class ApplicationCommandOptionType(PreinstancedBase):
     """
-    Represents an application command options' type.
+    Represents an application command option's type.
     
     Attributes
     ----------
@@ -317,3 +317,55 @@ class ButtonStyle(PreinstancedBase):
             FutureWarning)
         
         return self.red
+
+
+class ApplicationCommandTarget(PreinstancedBase):
+    """
+    Represents an application command's target.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the application command target.
+    value : `int`
+        The identifier value the application command target.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ApplicationCommandTarget``) items
+        Stores the predefined ``ApplicationCommandTarget`` instances. These can be accessed with their `value` as
+        key.
+    VALUE_TYPE : `type` = `int`
+        The application command targets' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the application command targets.
+    
+    Every predefined application command target can be accessed as class attribute as well:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | Name              | Value |
+    +=======================+===================+=======+
+    | none                  | none              | 0     |
+    +-----------------------+-------------------+-------+
+    | chat                  | chat              | 1     |
+    +-----------------------+-------------------+-------+
+    | user                  | user              | 2     |
+    +-----------------------+-------------------+-------+
+    | message               | message           | 3     |
+    +-----------------------+-------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = P(0, 'none',)
+    chat = P(1, 'chat',)
+    user = P(2, 'user',)
+    message = P(3, 'message',)
+
+CONTEXT_APPLICATION_COMMAND_TARGETS = frozenset((
+    ApplicationCommandTarget.user,
+    ApplicationCommandTarget.message,
+))

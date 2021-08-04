@@ -248,6 +248,9 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     if isinstance(exception, SlashCommandError):
         forward = exception.pretty_repr
         render = False
+    elif isinstance(exception, DiscordException) and (exception.status == 500):
+        forward = None
+        render = True
     elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
         forward = choice(ERROR_MESSAGES)
         render = True
@@ -261,7 +264,9 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 pass
-            elif isinstance(err, DiscordException) and (err.code == ERROR_CODES.unknown_interaction):
+            elif isinstance(err, DiscordException) and (
+                    (err.status == 500) or (err.code == ERROR_CODES.unknown_interaction)
+            ):
                 pass
             else:
                 raise

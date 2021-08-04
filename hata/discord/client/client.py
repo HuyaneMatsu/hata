@@ -3142,6 +3142,7 @@ class Client(ClientUserPBase):
         
         await self.http.channel_delete(channel_id, reason)
     
+    
     async def channel_follow(self, source_channel, target_channel):
         """
         Follows the `source_channel` with the `target_channel`. Returns the webhook, what will crosspost the published
@@ -3195,42 +3196,6 @@ class Client(ClientUserPBase):
         return webhook
     
     # messages
-    
-    async def _maybe_get_channel(self, channel_id):
-        """
-        Method for creating a channel from `channel_id`. Used by ``.message_get_chunk`` and familiar methods to detect
-        and create channel type from id.
-        
-        The method should be called only after successful data request.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        channel_id : `int`
-            The channel's id.
-        
-        Returns
-        -------
-        channel : ``ChannelTextBase`` instance
-        """
-        # First try to get from cache.
-        if not self.is_bot:
-            # Private channel maybe?
-            await self.channel_private_get_all()
-            
-            try:
-                channel = CHANNELS[channel_id]
-            except KeyError:
-                pass
-            else:
-                return channel
-        
-        # If we do not find the channel, not it is private (probably), we create a guild text channel.
-        # The exception case of real users is pretty small, so we can ignore it.
-        channel = create_partial_channel_from_id(channel_id, 0)
-        return channel
-    
     
     async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
         """
@@ -3305,12 +3270,8 @@ class Client(ClientUserPBase):
         # Set some collection delay.
         channel._add_message_collection_delay(60.0)
         
-        data = await self.http.message_get_chunk(channel_id, data)
-        
-        if channel is None:
-            channel = await self._maybe_get_channel(channel_id)
-        
-        return channel._process_message_chunk(data)
+        message_datas = await self.http.message_get_chunk(channel_id, data)
+        return process_message_chunk(message_datas, channel)
     
     
     # If you have 0-1 messages at a channel, and you wanna store the messages. The other wont store it, because it
@@ -3361,14 +3322,13 @@ class Client(ClientUserPBase):
         data = {'limit': limit, 'before': 9223372036854775807}
         data = await self.http.message_get_chunk(channel_id, data)
         if data:
-            if channel is None:
-                channel = await self._maybe_get_channel(channel_id)
+            if (channel is not None):
+                # Call this method first, so the channel's messages will be set even if message caching is at 0
+                channel._maybe_increase_queue_size()
+                
+                channel._create_new_message(data[0])
             
-            # Call this method first, so the channel's messages will be set even if message caching is at 0
-            channel._maybe_increase_queue_size()
-            
-            channel._create_new_message(data[0])
-            messages = channel._process_message_chunk(data)
+            messages = process_message_chunk(data, channel)
         else:
             messages = []
         
@@ -3401,7 +3361,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, ChannelTextBase)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
@@ -3409,10 +3369,8 @@ class Client(ClientUserPBase):
         
         message_data = await self.http.message_get(channel_id, message_id_value)
         
-        if channel is None:
-            channel = await self._maybe_get_channel(channel_id)
-        
-        return channel._create_unknown_message(message_data)
+        return Message(message_data)
+    
     
     async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=...,
             sticker=None, components=None, reply_fail_fallback=False, tts=False, nonce=None):
@@ -4092,7 +4050,7 @@ class Client(ClientUserPBase):
                                 else:
                                     author_id = int(author_id)
                         else:
-                            message_ = channel._create_unknown_message(message_data)
+                            message_ = Message(message_data)
                             last_message_id = message_.id
                             
                             # Did we reach the after limit?
@@ -4486,7 +4444,7 @@ class Client(ClientUserPBase):
                                 else:
                                     author_id = int(author_id)
                         else:
-                            message_ = channel._create_unknown_message(message_data)
+                            message_ = Message(message_data)
                             last_message_id = message_.id
                             
                             # Did we reach the after limit?
@@ -4782,14 +4740,11 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, ChannelTextBase)
         
         data = await self.http.channel_pin_get_all(channel_id)
         
-        if channel is None:
-            channel = await self._maybe_get_channel(channel_id)
-        
-        return [channel._create_unknown_message(message_data) for message_data in data]
+        return [Message(message_data) for message_data in data]
     
     
     async def _load_messages_till(self, channel, index):
@@ -10073,25 +10028,14 @@ class Client(ClientUserPBase):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         """
-        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
+        webhook_id, webhook_token = get_webhook_id_token(webhook)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
             raise TypeError(f'`message_id` can be given as `int` instance, got {message_id.__class__.__name__}.')
         
         message_data = await self.http.webhook_message_get(webhook_id, webhook_token, message_id_value)
-        
-        while True:
-            if (webhook is not None):
-                channel = webhook.channel
-                if (channel is not None):
-                    break
-            
-            channel_id = int(message_data['channel_id'])
-            channel = create_partial_channel_from_id(channel_id, 0)
-            break
-        
-        return channel._create_unknown_message(message_data)
+        return Message(message_data)
     
     
     async def emoji_get(self, guild, emoji):
@@ -12906,7 +12850,7 @@ class Client(ClientUserPBase):
         message_data = await self.http.interaction_response_message_get(application_id, interaction.id,
             interaction.token)
         
-        return interaction.channel._create_unknown_message(message_data)
+        return Message(message_data)
     
     
     async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, file=None,
@@ -13280,7 +13224,7 @@ class Client(ClientUserPBase):
         message_data = await self.http.interaction_followup_message_get(application_id, interaction.id,
             interaction.token, message_id)
         
-        return interaction.channel._create_unknown_message(message_data)
+        return Message(message_data)
     
     # Sticker
     

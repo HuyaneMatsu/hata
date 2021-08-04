@@ -229,6 +229,10 @@ class CertifiedDevice:
         ----------
         data : `dict` of (`str`, `Any`) items
             Device data.
+        
+        Returns
+        -------
+        self : ``CertifiedDevice``
         """
         id_ = UUID(data['id'])
         
@@ -328,6 +332,10 @@ class Vendor:
         ----------
         data : `dict` of (`str`, `Any`) items
             Vendor data.
+        
+        Returns
+        -------
+        self : ``Vendor``
         """
         self = object.__new__(cls)
         self.name = data['name']
@@ -411,6 +419,10 @@ class Model:
         ----------
         data : `dict` of (`str`, `Any`) items
             Model data.
+        
+        Returns
+        -------
+        self : ``Model``
         """
         self = object.__new__(cls)
         self.name = data['name']

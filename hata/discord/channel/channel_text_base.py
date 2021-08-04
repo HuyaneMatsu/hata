@@ -202,7 +202,8 @@ class ChannelTextBase:
         self.messages = new_messages
         self._message_keep_limit = limit
     
-    def _create_new_message(self, data):
+    
+    def _create_new_message(self, message_data):
         """
         Creates a new message at the channel. If the message already exists inside of the channel's message history,
         returns that instead.
@@ -216,21 +217,13 @@ class ChannelTextBase:
         -------
         message : ``Message``
         """
-        message_id = int(data['id'])
-        
-        try:
-            message = MESSAGES[message_id]
-        except KeyError:
-            pass
-        else:
-            message._late_init(data)
+        from_cache, message = Message._create_message_is_in_cache(message_data)
+        if from_cache:
+            message._late_init(message_data)
             return message
         
         messages = self._maybe_create_queue()
-        
-        message = object.__new__(Message)
-        message.id = message_id
-        message._finish_init(data, self)
+        message_id = message.id
         
         if (messages is not None):
             if messages and (messages[0].id > message_id):
@@ -262,14 +255,15 @@ class ChannelTextBase:
         
         return message
     
-    def _create_old_message(self, data):
+    
+    def _create_old_message(self, message_data):
         """
         Creates an old message at the channel. If the message already exists inside of the channel's message history,
         returns that instead.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `Any`) items
             Message data received from Discord.
         
         Returns
@@ -280,16 +274,8 @@ class ChannelTextBase:
         -----
         The created message cannot be added to the channel's message history, if it has no more spaces.
         """
-        message_id = int(data['id'])
-        
-        try:
-            message = MESSAGES[message_id]
-        except KeyError:
-            message = object.__new__(Message)
-            message.id = message_id
-            message._finish_init(data, self)
-        else:
-            message._late_init(data)
+        message = Message(message_data)
+        message_id = message.id
         
         messages = self.messages
         if (messages is not None) and messages and (message_id > messages[-1].id):
@@ -302,14 +288,15 @@ class ChannelTextBase:
         
         return message
     
-    def _create_find_message(self, data, chained):
+    
+    def _create_find_message(self, message_data, chained):
         """
         Tries to find whether the given message's data represents an existing message at the channel. If not, creates
         it. This method also returns whether the message existed at the channel's message history.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `Any`) items
             The message's data to find or create.
         chained : `bool`
             Whether the created message should be chained to the channel's message history's end, if not found.
@@ -319,7 +306,7 @@ class ChannelTextBase:
         message : ``Message``
         found : `bool`
         """
-        message_id = int(data['id'])
+        message_id = int(message_data['id'])
         messages = self.messages
         if (messages is not None):
             index = message_relative_index(messages, message_id)
@@ -328,43 +315,12 @@ class ChannelTextBase:
                 if message.id == message_id:
                     return message, True
         
-        try:
-            message = MESSAGES[message_id]
-        except KeyError:
-            message = object.__new__(Message)
-            message.id = message_id
-            message._finish_init(data, self)
-        else:
-            message._late_init(data)
+        message = Message(message_data)
         
         if chained:
             self._maybe_increase_queue_size().append(message)
         
         return message, False
-    
-    def _create_unknown_message(self, data):
-        """
-        Creates a message at the channel, what should not be linked to it's history. If the message exists at
-        `MESSAGES`, returns that instead.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            The message's data.
-        
-        Returns
-        -------
-        message : ``Message``
-        """
-        message_id = int(data['id'])
-        try:
-            message = MESSAGES[message_id]
-        except KeyError:
-            message = Message._create_unlinked(message_id, data, self)
-        else:
-            message._late_init(data)
-        
-        return message
     
     
     def _add_message_collection_delay(self, delay):
@@ -382,6 +338,7 @@ class ChannelTextBase:
         else:
             message_history_collector.add_delay(delay)
     
+    
     def _cancel_message_collection(self):
         """
         Cancels the message collector of the channel.
@@ -390,6 +347,7 @@ class ChannelTextBase:
         if (message_history_collector is not None):
             self._message_history_collector = None
             message_history_collector.cancel()
+    
     
     def _maybe_increase_queue_size(self):
         """
@@ -416,6 +374,7 @@ class ChannelTextBase:
                     self._add_message_collection_delay(110.0)
         
         return messages
+    
     
     def _maybe_create_queue(self):
         """
@@ -445,6 +404,7 @@ class ChannelTextBase:
                     self.messages = messages = deque(messages, maxlen=None)
         
         return messages
+    
     
     def _switch_to_limited(self):
         """
@@ -612,68 +572,3 @@ class ChannelTextBase:
             self._switch_to_limited()
         
         return found, missed
-    
-    
-    def _process_message_chunk(self, data):
-        """
-        Called with the response data after requesting older messages of a channel. It checks whether we can chain
-        the messages to the channel's history. If we can it chains them and removes the length limitation too if
-        needed.
-        
-        Parameters
-        ----------
-        data : `list` of (`dict` of (`str`, `Any`) items) elements
-            A list of message's data received from Discord.
-        
-        Returns
-        -------
-        received : `list` of ``Message`` objects
-        """
-        received = []
-        index = 0
-        limit = len(data)
-        
-        if index == limit:
-            return received
-        
-        message_data = data[index]
-        index += 1
-        message, exists = self._create_find_message(message_data, False)
-        received.append(message)
-        
-        if exists:
-            while True:
-                if index == limit:
-                    break
-                
-                message_data = data[index]
-                index += 1
-                message, exists = self._create_find_message(message_data, True)
-                received.append(message)
-                
-                if exists:
-                    continue
-                
-                while True:
-                    if index == limit:
-                        break
-                    
-                    message_data = data[index]
-                    index += 1
-                    message = self._create_old_message(message_data)
-                    received.append(message)
-                    continue
-                
-                break
-        else:
-            while True:
-                if index == limit:
-                    break
-                
-                message_data = data[index]
-                index += 1
-                message = self._create_unknown_message(message_data)
-                received.append(message)
-                continue
-        
-        return received

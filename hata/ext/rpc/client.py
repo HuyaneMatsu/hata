@@ -10,9 +10,10 @@ from ...backend.event_loop import EventThread
 from ...backend.futures import Task, Future, future_or_timeout, sleep
 from ...discord.core import KOKORO
 from ...discord.preconverters import preconvert_snowflake
-from ...discord.client.request_helpers import get_user_id, get_guild_id
+from ...discord.client.request_helpers import get_user_id, get_guild_id, get_channel_id
 from ...discord.activity import ActivityRich
 from ...discord.user import ZEROUSER
+from ...discord.channel import ChannelTextBase
 
 from .certified_device import CertifiedDevice
 from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, OPERATION_FRAME, IPC_VERSION, \
@@ -20,9 +21,11 @@ from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, 
     PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET, CLOSE_PAYLOAD_KEY_MESSAGE, PAYLOAD_KEY_PARAMETERS, PAYLOAD_KEY_EVENT, \
     PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT, PAYLOAD_COMMAND_ACTIVITY_SET, PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT, \
     PAYLOAD_COMMAND_UNSUBSCRIBE, PAYLOAD_COMMAND_SUBSCRIBE, RECONNECT_INTERVAL, RECONNECT_RATE_LIMITED_INTERVAL, \
-    CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_CODES_FATAL
+    CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_CODES_FATAL, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, \
+    PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET
 from .command_handling import COMMAND_HANDLERS
 from .utils import get_ipc_path, check_for_error
+from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode
 
 PROCESS_IDENTIFIER = get_process_identifier()
 
@@ -382,6 +385,254 @@ class RPCClient:
         self.running = False
     
     
+    
+    async def channel_voice_get(self):
+        """
+        Gets the voice channel to what the user is joined to.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        voice_settings : ``VoiceSettings``
+            The new voice settings of the user.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_VOICE_GET,
+        }
+        
+        return await self._send_request(data)
+    
+    
+    async def channel_text_select(self, channel):
+        """
+        Selects the given text channel by the user.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : `None`, ``ChannelTextBase`` or `int`
+            The channel to select or `None` to leave.
+        
+        Returns
+        -------
+        channel : ``ChannelTextBase`` or `None`
+        
+        Raises
+        ------
+        TypeError
+            If `channel` is neither `None`, ``ChannelTextBase`` nor `int`.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        if (channel is None):
+            channel_id = None
+        else:
+            channel_id = get_channel_id(channel, ChannelTextBase)
+            channel_id = str(channel_id)
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT,
+            PAYLOAD_KEY_PARAMETERS: {
+                'channel_id': channel_id,
+                'timeout': REQUEST_TIMEOUT,
+            },
+        }
+        
+        return await self._send_request(data)
+    
+    
+    async def voice_settings_get(self):
+        """
+        gets the user's voice settings.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        voice_settings : ``VoiceSettings``
+            The voice settings of the user.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_VOICE_SETTINGS_GET,
+        }
+        
+        return await self._send_request(data)
+    
+    
+    async def voice_settings_set(self, *, input_=None, output=None, mode=None, automatic_gain_control=None,
+            echo_cancellation=None, noise_suppression=None, quality_of_service=None, silence_warning=None, deaf=None,
+            mute=None):
+        """
+        Modifies the user's voice settings and returns it's actual one.
+        
+        Only the passed parameters are modified.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        input_ : ``VoiceSettingsInput``, Optional (Keyword only)
+            Input settings.
+        output : ``VoiceSettingsOutput``, Optional (Keyword only)
+            Output settings.
+        mode : ``VoiceSettingsMode``, Optional (Keyword only)
+            Voice mode settings.
+        automatic_gain_control : `bool`, Optional (Keyword only)
+            Whether automatic gain control should be enabled.
+        echo_cancellation : `bool`, Optional (Keyword only)
+            Whether echo cancellation should be enabled.
+        noise_suppression : `bool`, Optional (Keyword only)
+            Whether noise suppression should be enabled.
+        quality_of_service : `bool`, Optional (Keyword only)
+            Whether voice quality of service should be enabled.
+            
+            > QoS, quality of service is a method to prioritize network traffic going through a router to provide
+            > acceptable service to most users.
+        silence_warning : `bool`, Optional (Keyword only)
+            Whether silence warning notice should be enabled.
+        deaf : `bool`, Optional (Keyword only)
+            Whether the user should be deaf.
+        mute : `bool`, Optional (Keyword only)
+            Whether the user should be muted.
+        
+        Returns
+        -------
+        voice_settings : ``VoiceSettings``
+            The new voice settings of the user.
+        
+        Raises
+        ------
+        AssertionError
+            - If `input_` is not ``VoiceSettingsInput`` instance.
+            - If `output` is not ``VoiceSettingsOutput`` instance.
+            - If `mode` is not ``VoiceSettingsMode`` instance.
+            - If `automatic_gain_control` is not `bool` instance.
+            - If `echo_cancellation` is not `bool` instance.
+            - If `noise_suppression` is not `bool` instance.
+            - If `quality_of_service` is not `bool` instance.
+            - If `silence_warning` is not `bool` instance.
+            - If `deaf` is not `bool` instance.
+            - If `mute` is not `bool` instance.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        if __debug__:
+            if (input_ is not None) and (not isinstance(input_, VoiceSettingsInput)):
+                raise AssertionError(f'`input_` can be given as `{VoiceSettingsInput.__name__}` instance, got'
+                    f'{input_.__class__.__name__}')
+            
+            if (output is not None) and (not isinstance(output, VoiceSettingsOutput)):
+                raise AssertionError(f'`output` can be given as `{VoiceSettingsOutput.__name__}` instance, got'
+                    f'{output.__class__.__name__}')
+            
+            if (mode is not None) and (not isinstance(mode, VoiceSettingsMode)):
+                raise AssertionError(f'`mode` can be given as `{VoiceSettingsMode.__name__}` instance, got'
+                    f'{mode.__class__.__name__}')
+            
+            if (automatic_gain_control is not None) and (not isinstance(automatic_gain_control, bool)):
+                raise AssertionError(f'`automatic_gain_control` can be given as `bool` instance, got '
+                    f'{automatic_gain_control.__class__.__name__}.')
+            
+            if (echo_cancellation is not None) and (not isinstance(echo_cancellation, bool)):
+                raise AssertionError(f'`echo_cancellation` can be given as `bool` instance, got '
+                    f'{echo_cancellation.__class__.__name__}.')
+            
+            if (noise_suppression is not None) and (not isinstance(noise_suppression, bool)):
+                raise AssertionError(f'`noise_suppression` can be given as `bool` instance, got '
+                    f'{noise_suppression.__class__.__name__}.')
+            
+            if (quality_of_service is not None) and (not isinstance(quality_of_service, bool)):
+                raise AssertionError(f'`quality_of_service` can be given as `bool` instance, got '
+                    f'{quality_of_service.__class__.__name__}.')
+            
+            if (silence_warning is not None) and (not isinstance(silence_warning, bool)):
+                raise AssertionError(f'`silence_warning` can be given as `bool` instance, got '
+                    f'{silence_warning.__class__.__name__}.')
+            
+            if (deaf is not None) and (not isinstance(deaf, bool)):
+                raise AssertionError(f'`deaf` can be given as `bool` instance, got '
+                    f'{deaf.__class__.__name__}.')
+            
+            if (mute is not None) and (not isinstance(mute, bool)):
+                raise AssertionError(f'`mute` can be given as `bool` instance, got '
+                    f'{mute.__class__.__name__}.')
+        
+        
+        parameters = {}
+        
+        if (input_ is not None):
+            input_data = input_.to_data()
+            if input_data:
+                parameters['input'] = input_data
+        
+        if (output is not None):
+            output_data = output.to_data()
+            if output_data:
+                parameters['output'] = output_data
+        
+        if (mode is not None):
+            mode_data = mode.to_data()
+            if mode_data:
+                parameters['mode'] = mode_data
+        
+        if (automatic_gain_control is not None):
+            parameters['automatic_gain_control'] = automatic_gain_control
+        
+        if (echo_cancellation is not None):
+            parameters['echo_cancellation'] = echo_cancellation
+        
+        if (noise_suppression is not None):
+            parameters['noise_suppression'] = noise_suppression
+        
+        if (quality_of_service is not None):
+            parameters['qos'] = quality_of_service
+        
+        if (silence_warning is not None):
+            parameters['silence_warning'] = silence_warning
+        
+        if (deaf is not None):
+            parameters['deaf'] = deaf
+        
+        if (mute is not None):
+            parameters['mute'] = mute
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_VOICE_SETTINGS_SET,
+            PAYLOAD_KEY_PARAMETERS: parameters,
+        }
+        
+        return await self._send_request(data)
+    
+    
+    
     async def subscribe(self, event, guild):
         """
         Subscribes to an event.
@@ -397,11 +648,8 @@ class RPCClient:
         ------
         TypeError
             If `guild` is neither ``Guild``, nor `int` instance.
-        
-        Raises
-        ------
         ConnectionError
-            RPC client not connected.
+            RPC client is not connected.
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
@@ -435,11 +683,8 @@ class RPCClient:
         ------
         TypeError
             If `guild` is neither ``Guild``, nor `int` instance.
-        
-        Raises
-        ------
         ConnectionError
-            RPC client not connected.
+            RPC client is not connected.
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
@@ -464,7 +709,7 @@ class RPCClient:
         
         This method is a coroutine.
         
-        Attributes
+        Parameters
         ----------
         *devices : ``CertifiedDevice``
             Certified devices.
@@ -472,7 +717,7 @@ class RPCClient:
         Raises
         ------
         ConnectionError
-            RPC client not connected.
+            RPC client is not connected.
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
@@ -516,7 +761,7 @@ class RPCClient:
         Raises
         ------
         ConnectionError
-            RPC client not connected.
+            RPC client is not connected.
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
@@ -553,7 +798,7 @@ class RPCClient:
             - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
             - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
         ConnectionError
-            RPC client not connected.
+            RPC client is not connected.
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
@@ -588,7 +833,7 @@ class RPCClient:
             - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
             - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
         ConnectionError
-            RPC client not connected.
+            RPC client is not connected.
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError

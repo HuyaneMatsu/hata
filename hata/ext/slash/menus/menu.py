@@ -1382,7 +1382,7 @@ class Menu(metaclass=MenuType):
     __slots__ = ('_allowed_mentions', '_canceller', '_component_proxy_cache', '_gui_state', '_timeouter',
         '_tracked_changes', 'channel', 'client', 'message', '_components',)
     
-    async def __new__(cls, client, interaction_event, *args, **kwargs):
+    async def __new__(cls, client, target, *args, **kwargs):
         """
         Creates a new menu instance.
         
@@ -1390,7 +1390,7 @@ class Menu(metaclass=MenuType):
         ----------
         client : ``Client``
             The client instance whi will execute the action.
-        interaction_event : ``InteractionEvent``, ``Message``, ``ChannelTextBase``
+        target : ``InteractionEvent``, ``Message``, ``ChannelTextBase``, `int`
             The event to respond to, or the channel to send the message at, or the message to edit.
         *args : Positional parameters
             Additional positional parameters.
@@ -1400,8 +1400,8 @@ class Menu(metaclass=MenuType):
         Raises
         ------
         TypeError
-            If `interaction_event` was not given neither as ``InteractionEvent``, ``Message`` nor as
-            ``ChannelTextBase`` instance.
+            If `interaction_event` was not given neither as ``InteractionEvent``, ``Message``, ``ChannelTextBase``,
+             nor as instance.
         RuntimeError
             If `interaction_event` is given as ``InteractionEvent``, but it's client cannot be detected.
         """
@@ -1412,33 +1412,38 @@ class Menu(metaclass=MenuType):
         
         # use goto
         while True:
-            if isinstance(interaction_event, InteractionEvent):
-                target_channel = interaction_event.channel
-                target_message = interaction_event.message # Should be `None`
-                
+            if isinstance(target, InteractionEvent):
+                target_message = target.message # Should be `None`
+                interaction_event = target
                 is_interaction = True
                 break
                 
-            if isinstance(interaction_event, Message):
-                target_channel = interaction_event.channel
-                target_message = interaction_event
+            if isinstance(target, Message):
+                target_channel_id = target.channel_id
+                target_message = target
                 is_interaction = False
                 break
             
-            if isinstance(interaction_event, ChannelTextBase):
-                target_channel = interaction_event
+            if isinstance(target, ChannelTextBase):
+                target_channel_id = target.id
                 target_message = None
                 is_interaction = False
                 break
             
-            raise TypeError(f'`interaction_event` can be given as `{InteractionEvent.__name__}`, '
-                f'`{Message.__name__}` or as `{ChannelTextBase.__name__}` instance, got '
-                f'{interaction_event.__class__.__name__}.')
+            if isinstance(target, int):
+                target_channel_id = target
+                target_message = None
+                is_interaction = False
+                break
+                
+                
+            raise TypeError(f'`target` can be given as `{InteractionEvent.__name__}`, '
+                f'`{Message.__name__}`, `{ChannelTextBase.__name__}` or as `int` instance, got '
+                f'{target.__class__.__name__}.')
         
         
         self = object.__new__(cls)
         self._canceller = None
-        self.channel = target_channel
         self.message = target_message
         self.client = client
         self._gui_state = GUI_STATE_NONE
@@ -1450,7 +1455,7 @@ class Menu(metaclass=MenuType):
         
         init = menu_structure.init
         if (init is not None):
-            init(self, client, interaction_event, *args, **kwargs)
+            init(self, client, target, *args, **kwargs)
         
         if is_interaction and interaction_event.is_unanswered():
             await client.interaction_application_command_acknowledge(interaction_event)
@@ -1475,7 +1480,7 @@ class Menu(metaclass=MenuType):
             message = await client.interaction_followup_message_create(interaction_event, **kwargs)
         else:
             if target_message is None:
-                message = await client.message_create(target_channel, **kwargs)
+                message = await client.message_create(target_channel_id, **kwargs)
             else:
                 await client.message_edit(target_message, **kwargs)
                 message = target_message

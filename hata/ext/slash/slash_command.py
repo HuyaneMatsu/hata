@@ -9,7 +9,7 @@ from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake, preconvert_bool
 from ...discord.client import Client
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommand, InteractionEvent, \
-    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType
+    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, ApplicationCommandTarget
 from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, \
@@ -26,7 +26,7 @@ from .exceptions import SlashCommandParameterConversionError
 # Routers
 
 SLASH_COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild',
-    'is_default', 'delete_on_unload', 'allow_by_default')
+    'is_default', 'delete_on_unload', 'allow_by_default', 'target')
 
 SLASH_COMMAND_NAME_NAME = 'name'
 SLASH_COMMAND_COMMAND_NAME = 'command'
@@ -284,6 +284,76 @@ def _validate_allow_by_default(allow_by_default):
     return allow_by_default
 
 
+DEFAULT_APPLICATION_COMMAND_TARGET_TYPE = ApplicationCommandTarget.chat
+
+APPLICATION_COMMAND_TARGET_TYPES_BY_NAME = {
+    application_command_target.name: application_command_target for
+    application_command_target in ApplicationCommandTarget.INSTANCES.values()
+}
+
+APPLICATION_COMMAND_TARGET_TYPES_BY_VALUE = {
+    application_command_target.value: application_command_target for
+    application_command_target in ApplicationCommandTarget.INSTANCES.values()
+}
+
+
+def  _validate_target(target):
+    """
+    Validates the given `TargetType` value.
+    
+    Parameters
+    ----------
+    target : `None`, `int`, `str`, ``ApplicationCommandTarget``
+        The `target` to validate.
+    
+    Returns
+    -------
+    target : ``ApplicationCommandTarget``
+        The validated `target`.
+    
+    Raises
+    ------
+    ValueError
+        - If `target` could not be matched by any expected target type name or value.
+    TypeError
+        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTarget`` instance.
+    """
+    if target is None:
+        target = ApplicationCommandTarget.none
+    
+    elif isinstance(target, ApplicationCommandTarget):
+        pass
+    
+    elif isinstance(target, str):
+        if type(target) is not str:
+            target = str(target)
+        
+        target = target.lower()
+        
+        try:
+            target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
+        except KeyError:
+            raise ValueError(f'Unknown `target` name: {target!r}.') from None
+    
+    elif isinstance(target, int):
+        if type(target) is not int:
+            target = int(target)
+        
+        try:
+            target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
+        except KeyError:
+            raise ValueError(f'Unknown `target` value: {target!r}.') from None
+    
+    else:
+        raise TypeError(f'`target` can be given as `None`, `{ApplicationCommandTarget.__name__}`, `str` or '
+            f'as `int` instance, got {target.__class__.__name__}.')
+    
+    if target is ApplicationCommandTarget.none:
+        target = DEFAULT_APPLICATION_COMMAND_TARGET_TYPE
+    
+    return target
+
+
 def _generate_description_from(command, name, description):
     """
     Generates description from the command and it's optionally given description. If both `description` and
@@ -389,6 +459,10 @@ class SlashCommand:
         Guild commands have ``.guild_ids`` set as `None`.
     name : `str`
         Application command name. It's length can be in range [1:32].
+    target : ``ApplicationCommandTarget``
+        The target type of the slash command.
+        
+        Defaults to ``ApplicationCommandTarget.chat`.
     
     Notes
     -----
@@ -396,7 +470,7 @@ class SlashCommand:
     """
     __slots__ = ('__weakref__', '_command', '_overwrites', '_registered_application_command_ids', '_schema',
         '_sub_commands', '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default',
-        'is_global', 'name')
+        'is_global', 'name', 'target')
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -555,7 +629,7 @@ class SlashCommand:
             SLASH_COMMAND_COMMAND_NAME)
     
     def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
-            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None):
+            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None):
         """
         Creates a new ``SlashCommand`` instance with the given parameters.
         
@@ -581,6 +655,11 @@ class SlashCommand:
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+        target : `None`, `int`, `str`, `ApplicationCommandTarget`` or `tuple` of \
+                (`None`, `int`, `str` ``ApplicationCommandTarget``, `Ellipsis`), Optional
+            The target type of the slash command.
+            
+            Defaults to ``ApplicationCommandTarget.chat`.
         
         Returns
         -------
@@ -612,6 +691,8 @@ class SlashCommand:
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
+            - If `target` was not given neither as `None`, `int`, `str`, `ApplicationCommandTarget`` or \
+                `tuple` of (`None`, `int`, `str` ``ApplicationCommandTarget``, `Ellipsis`)
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -623,6 +704,8 @@ class SlashCommand:
             - If `description` length is out of range [2:100].
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
+        - If `target` could not be matched by any expected target type name or value.
+        
         """
         if (func is not None) and isinstance(func, SlashCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
@@ -644,6 +727,7 @@ class SlashCommand:
             _validate_delete_on_unload)
         allow_by_default, route_to = _check_maybe_route('allow_by_default', allow_by_default, route_to,
             _validate_allow_by_default)
+        target, route_to = _check_maybe_route('target', target, route_to, _validate_target)
         
         if route_to:
             name = route_name(name, route_to)
@@ -656,6 +740,7 @@ class SlashCommand:
             is_default = route_value(is_default, route_to)
             unloading_behaviour = route_value(unloading_behaviour, route_to)
             allow_by_default = route_value(allow_by_default, route_to)
+            target = route_value(target, route_to)
             
             description = [
                 _generate_description_from(command, sub_name, description)
@@ -685,9 +770,13 @@ class SlashCommand:
         if route_to:
             router = []
             
-            for name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,\
-                    allow_by_default in zip(name, description, show_for_invoking_user_only, is_global, guild_ids,
-                        is_default, unloading_behaviour, allow_by_default):
+            for (
+                name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,\
+                allow_by_default, target
+            ) in zip(
+                name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,
+                allow_by_default, target
+            ):
                 
                 if is_global and (guild_ids is not None):
                     raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
@@ -714,6 +803,7 @@ class SlashCommand:
                 self._unloading_behaviour = unloading_behaviour
                 self.allow_by_default = allow_by_default
                 self._overwrites = None
+                self.target = target
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -748,6 +838,7 @@ class SlashCommand:
             self._unloading_behaviour = unloading_behaviour
             self.allow_by_default = allow_by_default
             self._overwrites = None
+            self.target = target
             
             if (wrappers is not None):
                 for wrapper in wrappers:
@@ -772,6 +863,11 @@ class SlashCommand:
         
         if not self.allow_by_default:
             result.append(', allow_by_default=False')
+        
+        target = self.target
+        if target is not DEFAULT_APPLICATION_COMMAND_TARGET_TYPE:
+             result.append(', target=')
+             result.append(target.name)
         
         if (guild_ids is not None):
             result.append(', guild_ids=')
@@ -873,7 +969,8 @@ class SlashCommand:
                     options.append(option)
         
         return ApplicationCommand(self.name, self.description, allow_by_default=self.allow_by_default,
-            options=options, )
+            options=options, target=self.target)
+    
     
     def as_sub(self):
         """
@@ -888,7 +985,8 @@ class SlashCommand:
             return command
         
         return SlashCommandCategory(self)
-        
+    
+    
     def copy(self):
         """
         Copies the slash command.
@@ -934,6 +1032,9 @@ class SlashCommand:
             overwrites = {guild_id: overwrite.copy() for guild_id, overwrite in overwrites.items()}
         
         new._overwrites = overwrites
+        
+        new.target = self.target
+        
         return new
     
     @property
@@ -954,6 +1055,7 @@ class SlashCommand:
             raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
         
         return _EventHandlerManager(self)
+    
     
     def create_event(self, func, *args, **kwargs):
         """
@@ -1001,6 +1103,7 @@ class SlashCommand:
         self._add_slash_command(command)
         return self
     
+    
     def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a sub-command or sub-category.
@@ -1033,6 +1136,7 @@ class SlashCommand:
         self._add_slash_command(command)
         return self
     
+    
     def _add_slash_command(self, command):
         """
         Adds a sub-command or sub-category to the slash command.
@@ -1060,6 +1164,7 @@ class SlashCommand:
         
         sub_commands[command.name] = command.as_sub()
         self._schema = None
+    
     
     def __eq__(self, other):
         """Returns whether the two slash commands are the same."""
@@ -1096,7 +1201,11 @@ class SlashCommand:
         if self._overwrites != other._overwrites:
             return False
         
+        if self.target is not other.target:
+            return False
+        
         return True
+    
     
     def add_overwrite(self, guild_id, overwrite):
         """
@@ -1314,6 +1423,7 @@ class SlashCommandFunction:
         return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.sub_command,
             options=options, default=self.is_default)
     
+    
     def copy(self):
         """
         Copies the slash command function.
@@ -1325,7 +1435,8 @@ class SlashCommandFunction:
         self : ``SlashCommandFunction``
         """
         return self
-
+    
+    
     def __eq__(self, other):
         """Returns whether the two slash command functions are equal."""
         if type(self) is not type(other):
@@ -1388,6 +1499,7 @@ class SlashCommandCategory:
         self.is_default = slash_command.is_default
         return self
     
+    
     async def __call__(self, client, interaction_event, options):
         """
         Calls the slash command category.
@@ -1425,6 +1537,7 @@ class SlashCommandCategory:
         
         await sub_command(client, interaction_event, option.options)
     
+    
     def as_option(self):
         """
         Returns the slash command category as an application command option.
@@ -1441,6 +1554,7 @@ class SlashCommandCategory:
         
         return ApplicationCommandOption(self.name, self.description, ApplicationCommandOptionType.sub_command_group,
             options=options, default=self.is_default)
+    
     
     def copy(self):
         """
@@ -1459,6 +1573,7 @@ class SlashCommandCategory:
         new._parent_reference = None
         return new
     
+    
     @property
     def interactions(self):
         """
@@ -1469,6 +1584,7 @@ class SlashCommandCategory:
         handler : ``_EventHandlerManager``
         """
         return _EventHandlerManager(self)
+    
     
     def create_event(self, func, *args, **kwargs):
         """
@@ -1512,6 +1628,7 @@ class SlashCommandCategory:
         self._add_slash_command(command)
         return self
     
+    
     def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a sub-command.
@@ -1544,6 +1661,7 @@ class SlashCommandCategory:
         
         self._add_slash_command(command)
         return self
+    
     
     def _add_slash_command(self, command):
         """
@@ -1582,6 +1700,7 @@ class SlashCommandCategory:
             parent = parent_reference()
             if (parent is not None):
                 parent._schema = None
+    
     
     def __eq__(self, other):
         """Returns whether the two slash commands categories are equal."""

@@ -6,6 +6,7 @@ from .dispatch_handling import *
 from .exceptions import *
 from .preinstanced import *
 from .utils import *
+from .voice_settings import *
 
 __all__ = (
     *certified_device.__all__,
@@ -16,4 +17,5 @@ __all__ = (
     *exceptions.__all__,
     *preinstanced.__all__,
     *utils.__all__,
+    *voice_settings.__all__,
 )

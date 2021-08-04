@@ -10,7 +10,8 @@ from ..utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
 from ..user import User, UserBase, ClientUserBase
 from ..role import Role, create_partial_role_from_id
 
-from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteType
+from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteType, \
+    ApplicationCommandTarget, CONTEXT_APPLICATION_COMMAND_TARGETS
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
@@ -37,7 +38,6 @@ APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX = 100
 # ApplicationCommandPermissionOverwrite
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX = 10
 
-
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
     Represents a Discord slash command.
@@ -57,14 +57,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     options : `None` or `list` of ``ApplicationCommandOption``
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
+    target : ``ApplicationCommandTarget``
+        The application command target's type describing where it shows up.
     
     Notes
     -----
     ``ApplicationCommand`` instances are weakreferable.
     """
-    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options')
+    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target',)
     
-    def __new__(cls, name, description, *, allow_by_default=True, options=None):
+    def __new__(cls, name, description=None, *, allow_by_default=True, options=None, target=None):
         """
         Creates a new ``ApplicationCommand`` instance with the given parameters.
         
@@ -72,22 +74,34 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name of the command. It's length can be in range [1:32].
-        description : `str`
+        
+        description : `None` or `str`, Optional
             The command's description. It's length can be in range [2:100].
+        
         allow_by_default : `bool`, Optional (Keyword only)
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
             
             Defaults to `True`.
+        
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
+        target : `int`, ``ApplicationCommandTarget``, Optional (Keyword only)
+            The application command's target type.
+            
+            Defaults to `ApplicationCommandTarget.chat`.
+        
         Raises
         ------
+        TypeError
+            If `target` is neither `int`, nor ``ApplicationCommandTarget`` instance.
+        ValueError
+            `description` cannot be `None` for application commands with non-context target.
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name` length is out of range [1:32].
             - If `name` contains unexpected character.
-            - If `description` was not given as `str` instance.
+            - If `description` was not given as `None` nor `str` instance.
             - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
@@ -107,16 +121,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if not is_valid_application_command_name(name):
                 raise AssertionError(f'`name` contains an unexpected character; Got {name!r}.')
             
-            if not isinstance(description, str):
-                raise AssertionError(f'`description` can be given as `str` instance, got '
-                    f'{description.__class__.__name__}.')
-            
-            description_length = len(description)
-            if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
-                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
-                raise AssertionError(f'`description` length can be in range '
-                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
-                    f'got {description_length!r}; {description!r}.')
+            if (description is not None):
+                if not isinstance(description, str):
+                    raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
+                        f'{description.__class__.__name__}.')
+                
+                description_length = len(description)
+                if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
+                        description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
+                    raise AssertionError(f'`description` length can be in range '
+                        f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                        f'got {description_length!r}; {description!r}.')
             
             if not isinstance(allow_by_default, bool):
                 raise AssertionError(f'`allow_by_default` can be given as `bool` instance, got '
@@ -147,6 +162,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             else:
                 options_processed = None
         
+        if target is None:
+            target = ApplicationCommandTarget.chat
+        else:
+            target = preconvert_preinstanced_type(target, 'target', ApplicationCommandTarget)
+        
+        if (target not in CONTEXT_APPLICATION_COMMAND_TARGETS):
+            if (description is None):
+                raise ValueError(f'`description` cannot be `None` for application commands with non-context target.')
+        else:
+            description = None
+        
         self = object.__new__(cls)
         self.id = 0
         self.application_id = 0
@@ -154,7 +180,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.description = description
         self.allow_by_default = allow_by_default
         self.options = options_processed
+        self.target = target
         return self
+    
     
     def add_option(self, option):
         """
@@ -198,6 +226,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         options.append(option)
         return self
     
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -223,13 +252,15 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             APPLICATION_COMMANDS[application_command_id] = self
         
             # Discord might not include attributes in edit data, so we will set them first to avoid unset attributes.
-            self.description = ''
+            self.description = None
             self.name = ''
             self.options = None
             self.allow_by_default = True
+            self.target = ApplicationCommandTarget.chat
         
         self._update_attributes(data)
         return self
+    
     
     def _update_attributes(self, data):
         """
@@ -241,7 +272,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             Received application command data.
         """
         try:
-            self.description = data['description']
+            self.description = data.get('description', None)
         except KeyError:
             pass
         
@@ -266,6 +297,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         except KeyError:
             pass
         
+        try:
+            target = data['type']
+        except KeyError:
+            pass
+        else:
+            self.target = ApplicationCommandTarget.get(target)
+    
+    
     def _difference_update_attributes(self, data):
         """
         Updates the application command with the given data and returns the updated attributes in a dictionary with the
@@ -286,7 +325,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +-----------------------+---------------------------------------------------+
             | Keys                  | Values                                            |
             +=======================+===================================================+
-            | description           | `str`                                             |
+            | description           | `None` or `str`                                   |
             +-----------------------+---------------------------------------------------+
             | allow_by_default      | `bool`                                            |
             +-----------------------+---------------------------------------------------+
@@ -294,11 +333,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +-----------------------+---------------------------------------------------+
             | options               | `None` or `list` of ``ApplicationCommandOption``  |
             +-----------------------+---------------------------------------------------+
+            | target                | ``ApplicationCommandTarget``                      |
+            +-----------------------+---------------------------------------------------+
         """
         old_attributes = {}
         
         try:
-            description = data['description']
+            description = data.get('description', None)
         except KeyError:
             pass
         else:
@@ -338,7 +379,19 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 old_attributes['allow_by_default'] = allow_by_default
                 self.allow_by_default = allow_by_default
         
+        try:
+            target = data['type']
+        except KeyError:
+            pass
+        else:
+            target = ApplicationCommandTarget.get(target)
+            if (self.target is not target):
+                old_attributes['target'] = self.target
+                self.target = target
+        
+        
         return old_attributes
+    
     
     def to_data(self):
         """
@@ -349,10 +402,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
         """
         data = {
-            'description': self.description,
             'name': self.name,
         }
-    
+        
+        description = self.description
+        if (description is not None):
+            data['description'] = description
+        
         options = self.options
         if (options is None):
             option_datas = []
@@ -364,6 +420,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # Always add this to data, so if we update the command with it, will be always updated.
         data['default_permission'] = self.allow_by_default
         
+        data['type'] = self.target.value
+        
         return data
     
     def __repr__(self):
@@ -374,17 +432,28 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         id_ = self.id
         if id_ == 0:
-            repr_parts.append(' partial')
+            repr_parts.append(' (partial)')
         else:
             repr_parts.append(' id=')
             repr_parts.append(repr(id_))
             repr_parts.append(', application_id=')
             repr_parts.append(repr(self.application_id))
         
-        repr_parts.append(' name=')
+        repr_parts.append(', name=')
         repr_parts.append(repr(self.name))
-        repr_parts.append(', description=')
-        repr_parts.append(repr(self.description))
+        
+        target = self.target
+        if (target is not ApplicationCommandTarget.none):
+            repr_parts.append(', target=')
+            repr_parts.append(target.name)
+            repr_parts.append(' (')
+            repr_parts.append(repr(target))
+            repr_parts.append(')')
+        
+        description = self.description
+        if (description is not None):
+            repr_parts.append(', description=')
+            repr_parts.append(repr(self.description))
         
         if not self.allow_by_default:
             repr_parts.append(', allow_by_default=False')
@@ -413,6 +482,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         return ''.join(repr_parts)
     
+    
     @property
     def partial(self):
         """
@@ -427,6 +497,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         return False
     
+    
     def __hash__(self):
         """Returns the application's hash value."""
         id_ = self.id
@@ -434,6 +505,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return id_
         
         raise TypeError(f'Cannot hash partial {self.__class__.__name__} object.')
+    
     
     @classmethod
     def _from_edit_data(cls, data, interaction_id, application_id):
@@ -463,13 +535,15 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             APPLICATION_COMMANDS[interaction_id] = self
             
             # Discord might not include attributes in edit data, so we will set them first to avoid unset attributes.
-            self.description = ''
+            self.description = None
             self.name = ''
             self.options = None
+            self.target = ApplicationCommandTarget.chat
         
         self._update_attributes(data)
         
         return self
+    
     
     def copy(self):
         """
@@ -491,6 +565,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if (options is not None):
             options = [option.copy() for option in options]
         new.options = options
+        
+        new.target = self.target
         
         return new
     
@@ -520,7 +596,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.options != other.options:
             return False
         
+        if (self.target is not other.target):
+            return False
+        
         return True
+    
     
     def __ne__(self, other):
         """Returns whether the two application commands are different."""
@@ -545,6 +625,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return True
         
         if self.options != other.options:
+            return True
+        
+        if (self.target is other.target):
             return True
         
         return False
@@ -626,6 +709,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
     
     def __len__(self):
         """Returns the application command's length."""
@@ -1554,21 +1638,21 @@ class ApplicationCommandPermissionOverwrite:
                 break
             
             if isinstance(target, tuple) and len(target) == 2:
-                target_type_maybe, target_id_maybe = target
+                target_maybe, target_id_maybe = target
                 
-                if isinstance(target_type_maybe, type):
-                    if issubclass(target_type_maybe, Role):
+                if isinstance(target_maybe, type):
+                    if issubclass(target_maybe, Role):
                         type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE
-                    elif issubclass(target_type_maybe, ClientUserBase):
+                    elif issubclass(target_maybe, ClientUserBase):
                         type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
                     else:
                         target_lookup_failed = True
                         break
                 
-                elif isinstance(target_type_maybe, str):
-                    if target_type_maybe in ('Role', 'role'):
+                elif isinstance(target_maybe, str):
+                    if target_maybe in ('Role', 'role'):
                         type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE
-                    elif target_type_maybe in ('User', 'user'):
+                    elif target_maybe in ('User', 'user'):
                         type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
                     else:
                         target_lookup_failed = True

@@ -7,8 +7,8 @@ from ...backend.export import export
 from ...backend.futures import Future, shield, future_or_timeout
 
 from ..bases import EventBase, DiscordEntity
-from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS
-from ..channel import ChannelPrivate, ChannelText, create_partial_channel_from_data, create_partial_channel_from_id
+from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS, CHANNELS, GUILDS
+from ..channel import ChannelPrivate, ChannelText, create_partial_channel_from_data
 from ..message import Message
 from ..permission import Permission
 from ..permission.permission import PERMISSION_PRIVATE
@@ -497,8 +497,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
-    __slots__ = ('_cached_users', '_response_flag', 'application_id', 'channel', 'guild', 'interaction', 'message',
-        'token', 'type', 'user', 'user_permissions')
+    __slots__ = ('_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'interaction',
+        'message', 'token', 'type', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -519,21 +519,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         if guild_id:
             guild = create_partial_guild_from_id(guild_id)
-        else:
-            guild = None
-        
-        if (guild is not None) and (not guild.partial):
             cached_users = []
         else:
+            guild = None
             cached_users = None
         
         channel_id = int(data['channel_id'])
-        if guild_id:
-            channel_type = 0
-        else:
-            channel_type = 1
-        
-        channel = create_partial_channel_from_id(channel_id, channel_type, guild)
         
         try:
             user_data = data['member']
@@ -556,7 +547,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         except KeyError:
             message = None
         else:
-            message = channel._create_unknown_message(message_data)
+            message = Message(message_data)
         
         
         type_value = data['type']
@@ -572,8 +563,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         self.id = int(data['id'])
         self.application_id = application_id
         self.type = InteractionType.get(type_value)
-        self.channel = channel
-        self.guild = guild
+        self.channel_id = channel_id
+        self.guild_id = guild_id
         self.interaction = interaction
         self.token = data['token']
         # We ignore `type` field, since we always get only `InteractionType.application_command`.
@@ -658,6 +649,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
             return
         
         guild = self.guild
+        if (guild is None):
+            return
         
         for user in cached_users:
             key = (user, guild)
@@ -741,8 +734,16 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         repr_parts.append(repr(interaction_type.value))
         repr_parts.append(')')
         
-        repr_parts.append(' channel=')
-        repr_parts.append(repr(self.channel))
+        channel = self.channel
+        if (channel is not None):
+            repr_parts.append(' channel=')
+            repr_parts.append(repr(channel))
+        
+        guild = self.guild
+        if (guild is not None):
+            repr_parts.append(' guild=')
+            repr_parts.append(repr(guild))
+        
         repr_parts.append(', user=')
         repr_parts.append(repr(self.user))
         repr_parts.append(', interaction=')
@@ -750,6 +751,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
     
     def is_unanswered(self):
         """
@@ -761,6 +763,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         """
         return True if (self._response_flag == RESPONSE_FLAG_IS_NONE) else False
     
+    
     def is_acknowledging(self):
         """
         Returns whether the event is being acknowledged.
@@ -771,6 +774,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         """
         return True if (self._response_flag & RESPONSE_FLAG_IS_ACKNOWLEDGING) else False
     
+    
     def is_acknowledged(self):
         """
         Returns whether the event is acknowledged.
@@ -780,6 +784,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         is_acknowledged : `bool`
         """
         return True if (self._response_flag & RESPONSE_FLAG_IS_ACKNOWLEDGED) else False
+    
     
     def is_deferred(self):
         """
@@ -798,6 +803,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         return False
     
+    
     def is_responding(self):
         """
         Returns whether the even it being responded.
@@ -807,6 +813,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         is_responding : `bool`
         """
         return True if (self._response_flag & RESPONSE_FLAG_RESPONDING) else False
+    
     
     def is_responded(self):
         """
@@ -818,9 +825,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         """
         return True if (self._response_flag & RESPONSE_FLAG_RESPONDED) else False
     
+    
     def __len__(self):
         """Helper for unpacking if needed."""
         return 3
+    
     
     def __iter__(self):
         """
@@ -828,10 +837,36 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         This method is a generator.
         """
-        yield self.channel
+        yield self.type
         yield self.user
         yield self.interaction
     
+    
+    @property
+    def channel(self):
+        """
+        Returns the interaction's event.
+        
+        Returns
+        -------
+        channel : ``ChannelTextBase``, `None`
+        """
+        return CHANNELS.get(self.channel_id, None)
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the interaction's guild.
+        
+        Returns
+        -------
+        guild : ``Guild``, `None`
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)
+
 
 class InteractionResponseContext:
     """

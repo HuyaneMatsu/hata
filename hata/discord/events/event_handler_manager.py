@@ -36,7 +36,7 @@ class EventHandlerManager:
             application_command_permission: ``ApplicationCommandPermission``)
         Called when an application command's permissions are updated inside of a guild.
     
-    application_command_update(client : ``Client``, guild_id: `int`, application:command: ``ApplicationCommand``, \
+    application_command_update(client : ``Client``, guild_id: `int`, application_command: ``ApplicationCommand``, \
             old_attributes : {`dict`, `None`})
         Called when you update one of your guild bound application command.
         
@@ -49,13 +49,15 @@ class EventHandlerManager:
         +-----------------------+---------------------------------------------------+
         | Keys                  | Values                                            |
         +=======================+===================================================+
-        | default_permission    | bool                                              |
+        | default_permission    | `bool`                                            |
         +-----------------------+---------------------------------------------------+
-        | description           | str                                               |
+        | description           | `None` or `str`                                   |
         +-----------------------+---------------------------------------------------+
-        | name                  | str                                               |
+        | name                  | `str`                                             |
         +-----------------------+---------------------------------------------------+
         | options               | `None` or `list` of ``ApplicationCommandOption``  |
+        +-----------------------+---------------------------------------------------+
+        | target                | ``ApplicationCommandTarget``                      |
         +-----------------------+---------------------------------------------------+
     
     channel_create(client: ``Client``, channel: ``ChannelBase``)
@@ -408,7 +410,7 @@ class EventHandlerManager:
         +-------------------+-----------------------------------------------------------------------+
         | user_mentions     | `None` or (`tuple` of ``UserBase``)                                   |
         +-------------------+-----------------------------------------------------------------------+
-        | role_mentions     | `None` or (`tuple` of ``Role``)                                       |
+        | role_mention_ids  | `None` or (`tuple` of `int`)                                          |
         +-------------------+-----------------------------------------------------------------------+
         
         A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` parameter is
@@ -530,7 +532,7 @@ class EventHandlerManager:
         +=======================+===================================+
         | available             | `bool`                            |
         +-----------------------+-----------------------------------+
-        | description           | ``str``                           |
+        | description           | `None` or `str`                   |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
         +-----------------------+-----------------------------------+

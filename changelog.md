@@ -1,3 +1,32 @@
+## 1.1.94 *\[2021-08-??\]*
+
+### Summary
+
+Make messages and interactions weakly bound to their channel and guild.
+
+#### Improvements
+
+- Add `preconvert_float`.
+- Add `message.channel_id` attribute.
+- Add `message.guild_id` attribute.
+- `Message.channel` is now a property.
+- Add `Message.role_mention_ids`.
+- `Message.role_mentions` is now a property.
+- `Message` instances are now weakly bound to their channel, meaning messages can exist without their channel.
+    After this channel cache will not be needed for message instances to be created.
+- `InteractionEvent.__iter__` now iterates `type, user, interaction` (from `channel, user, interaction`).
+- Add `InteractionEvent.channel_id` attribute.
+- Add `InteractionEvent.guild_id` attribute.
+- Add `InteractionEvent.channel` is now a property.
+- Add `InteractionEvent.guild` is now a property.
+- `InteractionEvent` is now weakly bound to it's channel and guild.
+- Add `ApplicationCommandTarget`.
+- Add `ApplicationCommand.target`.
+- `ApplicationCommand.description` is now optional for context application commands.
+
+##### ext.slash
+- Add `target` parameter to `.interactions` decorator.
+
 ## 1.1.93 *\[2021-08-01\]*
 
 ### Summary

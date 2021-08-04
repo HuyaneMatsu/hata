@@ -405,7 +405,7 @@ def preconvert_int(value, name, lower_limit, upper_limit):
     """
     value = _pre_validate_int(value, name)
     
-    if value < lower_limit or value > upper_limit:
+    if (value < lower_limit) or (value > upper_limit):
         raise ValueError(f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.')
     
     return value
@@ -439,5 +439,48 @@ def preconvert_int_options(value, name, options):
     
     if value not in options:
         raise ValueError(f'`{name}` can be any of: {", ".join(options)}, got {value!r}.')
+    
+    return value
+
+
+def preconvert_float(value, name, lower_limit, upper_limit):
+    """
+    Converts the given `value` to an acceptable float by the wrapper.
+    
+    Parameters
+    ----------
+    value : `Any`
+        The value to convert.
+    name : `str`
+        The name of the value.
+    lower_limit : `float`
+        The minimal value of `value`.
+    upper_limit : `float`
+        The maximal value of `value`.
+    
+    Returns
+    -------
+    value : `float`
+    
+    Raises
+    ------
+    TypeError
+        If `value` was not given as `float` instance.
+    ValueError
+        If `value` is less than `lower_limit`, or is higher than the `upper_limit`.
+    """
+    if type(value) is float:
+        pass
+    elif isinstance(value, float):
+        value = int(value)
+    else:
+        float_converter = getattr(type(value), '__float__', None)
+        if float_converter is None:
+            raise TypeError(f'`{name}` can be `float` instance, got {value.__class__.__name__}.')
+        
+        value = float_converter(value)
+    
+    if (value < lower_limit) or (value > upper_limit):
+        raise ValueError(f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.')
     
     return value

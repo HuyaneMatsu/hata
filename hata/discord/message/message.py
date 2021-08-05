@@ -7,7 +7,7 @@ from ...backend.utils import BaseMethodDescriptor
 from ...backend.export import export, include
 
 from ..bases import DiscordEntity, id_sort_key
-from ..utils import parse_time, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
+from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
 from ..core import MESSAGES, CHANNELS, GUILDS
 from ..user import ZEROUSER, User, ClientUserBase, UserBase
 from ..emoji import reaction_mapping
@@ -293,7 +293,7 @@ class Message(DiscordEntity, immortal=True):
         if (edited_timestamp is None):
             edited_at = None
         else:
-            edited_at = parse_time(edited_timestamp)
+            edited_at = timestamp_to_datetime(edited_timestamp)
         self.edited_at = edited_at
         
         self.pinned = data.get('pinned', False)
@@ -515,7 +515,7 @@ class Message(DiscordEntity, immortal=True):
         if (edited_timestamp is None):
             edited_at = None
         else:
-            edited_at = parse_time(edited_timestamp)
+            edited_at = timestamp_to_datetime(edited_timestamp)
         self.edited_at = edited_at
         
         self.pinned = data.get('pinned', False)
@@ -762,7 +762,7 @@ class Message(DiscordEntity, immortal=True):
         if (edited_timestamp is None):
             edited_at = None
         else:
-            edited_at = parse_time(edited_timestamp)
+            edited_at = timestamp_to_datetime(edited_timestamp)
         self.edited_at = edited_at
         
         self.pinned = data.get('pinned', False)
@@ -1827,7 +1827,7 @@ class Message(DiscordEntity, immortal=True):
             if edited_timestamp is None:
                 return old_attributes
             
-            edited_at = parse_time(edited_timestamp)
+            edited_at = timestamp_to_datetime(edited_timestamp)
         
             if self.edited_at == edited_at:
                 return old_attributes
@@ -2010,7 +2010,7 @@ class Message(DiscordEntity, immortal=True):
             if edited_timestamp is None:
                 return
             
-            edited_at = parse_time(edited_timestamp)
+            edited_at = timestamp_to_datetime(edited_timestamp)
             if self.edited_at == edited_at:
                 return
             

@@ -8,7 +8,7 @@ from ..permission.permission import PERMISSION_NONE
 from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_int_options
-from ..utils import parse_time
+from ..utils import timestamp_to_datetime
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
@@ -295,7 +295,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         if archived_at_data is None:
             archived_at = None
         else:
-            archived_at = parse_time(archived_at_data)
+            archived_at = timestamp_to_datetime(archived_at_data)
         self.archived_at = archived_at
         
         self.open = not data.get('locked', True)
@@ -369,7 +369,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         if archived_at_data is None:
             archived_at = None
         else:
-            archived_at = parse_time(archived_at_data)
+            archived_at = timestamp_to_datetime(archived_at_data)
         if (self.archived_at != archived_at):
             old_attributes['archived_at'] = self.archived_at
             self.archived_at = archived_at

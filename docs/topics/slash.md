@@ -412,28 +412,28 @@ do the prettification for you internally.
 As an example: an already used function's name has conflict with the command's.
 
 ```py
-from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
+from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitro.interactions(guild=TEST_GUILD, name='id-to-time')
 async def idtotime(
         snowflake : ('int', 'Id please!'),
             ):
     """Converts the given Discord snowflake to time."""
-    time = id_to_time(snowflake)
+    time = id_to_datetime(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
 
 You can resolve name conflicts in an other way as well. Trailing `_` characters are ignored.
 
 ```py
-from hata import id_to_time, DATETIME_FORMAT_CODE, elapsed_time
+from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def id_to_time_(
+async def id_to_datetime_(
         snowflake : ('int', 'Id please!'),
             ):
     """Converts the given Discord snowflake to time."""
-    time = id_to_time(snowflake)
+    time = id_to_datetime(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
 

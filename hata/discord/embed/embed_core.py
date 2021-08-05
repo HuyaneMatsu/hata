@@ -2,7 +2,7 @@ __all__ = ('EmbedCore', )
 
 from ...backend.utils import copy_docs
 
-from ..utils import parse_time, sanitize_mentions
+from ..utils import timestamp_to_datetime, sanitize_mentions, datetime_to_timestamp
 from ..color import Color
 
 from .embed_base import EmbedBase, EmbedFooter, EmbedImage, EmbedThumbnail, EmbedVideo, EmbedProvider, EmbedAuthor, \
@@ -107,7 +107,7 @@ class EmbedCore(EmbedBase):
         except KeyError:
             timestamp = None
         else:
-           timestamp = parse_time(timestamp_data)
+           timestamp = timestamp_to_datetime(timestamp_data)
         self.timestamp = timestamp
         
         try:
@@ -208,7 +208,7 @@ class EmbedCore(EmbedBase):
         
         timestamp = self.timestamp
         if (timestamp is not None):
-            data['timestamp'] = timestamp.isoformat()
+            data['timestamp'] = datetime_to_timestamp(timestamp)
         
         footer = self.footer
         if (footer is not None):

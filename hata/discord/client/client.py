@@ -19,7 +19,7 @@ from ...backend.export import export
 from ...backend.formdata import Formdata
 
 from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_media_type, Relationship, \
-    MEDIA_TYPE_TO_EXTENSION
+    MEDIA_TYPE_TO_EXTENSION, datetime_to_timestamp
 from ..user import User, GuildProfile, UserBase, UserFlag, create_partial_user_from_id, thread_user_create, \
     ClientUserBase, ClientUserPBase, Status, PremiumType, HypesquadHouse, RelationshipType
 from ..emoji import Emoji
@@ -1270,7 +1270,7 @@ class Client(ClientUserPBase):
         if status == 'idle':
             since = int(time_now()*1000.)
         else:
-            since = 0.0
+            since = 0
         
         if __debug__:
             if not isinstance(afk, bool):
@@ -5795,7 +5795,7 @@ class Client(ClientUserPBase):
             data['form_fields'] = step_datas
         
         if data:
-            data['version'] = datetime.now().isoformat()
+            data['version'] = datetime_to_timestamp(datetime.now())
             data = await self.http.verification_screen_edit(guild_id, data)
             if data is None:
                 verification_screen = None
@@ -14371,7 +14371,7 @@ class Client(ClientUserPBase):
             raise RuntimeError(f'Cannot join partial channel: {channel!r}')
         
         if request:
-            timestamp = datetime.now().isoformat()
+            timestamp = datetime_to_timestamp(datetime.now())
         else:
             timestamp = None
         

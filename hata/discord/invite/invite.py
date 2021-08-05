@@ -4,7 +4,7 @@ from datetime import datetime
 
 from ..bases import DiscordEntity, instance_or_id_to_instance
 from ..preconverters import preconvert_str, preconvert_int, preconvert_bool, preconvert_preinstanced_type
-from ..utils import parse_time, DISCORD_EPOCH_START
+from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START
 from ..core import GUILDS, CHANNELS, INVITES
 from ..user import User, ZEROUSER, ClientUserBase
 from ..guild import create_partial_guild_from_data, Guild
@@ -249,7 +249,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             created_at = DISCORD_EPOCH_START
         else:
-            created_at = parse_time(created_at_data)
+            created_at = timestamp_to_datetime(created_at_data)
         self.created_at = created_at
         
         self.target_type = InviteTargetType.get(data.get('target_type', 0))
@@ -357,7 +357,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.created_at = parse_time(created_at_data)
+            self.created_at = timestamp_to_datetime(created_at_data)
         
         try:
             target_type_value = data['target_type']

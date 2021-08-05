@@ -4,7 +4,7 @@ from ...backend.export import include
 
 from ..bases import DiscordEntity, id_sort_key
 from ..core import EMOJIS, GUILDS
-from ..utils import id_to_time, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from ..utils import id_to_datetime, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..user import User, ZEROUSER
 from ..preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 from ..role import create_partial_role_from_id, Role
@@ -409,7 +409,7 @@ class Emoji(DiscordEntity, immortal=True):
         """
         id_ = self.id
         if id_ > UNICODE_EMOJI_LIMIT:
-            created_at = id_to_time(id_)
+            created_at = id_to_datetime(id_)
         else:
             created_at = DISCORD_EPOCH_START
         

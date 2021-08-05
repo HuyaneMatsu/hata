@@ -4,7 +4,7 @@ from datetime import datetime
 
 from ...backend.export import include
 
-from ..utils import parse_time
+from ..utils import timestamp_to_datetime
 
 from .flags import ThreadProfileFlag
 
@@ -199,7 +199,7 @@ class ThreadProfile:
         data : `dict` of (`str`, `Any`) items
             Received thread profile data.
         """
-        self.joined_at = parse_time(data['join_timestamp'])
+        self.joined_at = timestamp_to_datetime(data['join_timestamp'])
         
         self._update_attributes(data)
     

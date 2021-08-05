@@ -4,7 +4,7 @@ from datetime import datetime
 
 from ...backend.export import include
 
-from ..utils import parse_time
+from ..utils import timestamp_to_datetime
 
 from .utils import create_partial_user_from_id
 
@@ -69,7 +69,7 @@ class VoiceState:
         
         requested_to_speak_at = data.get('request_to_speak_timestamp', None)
         if (requested_to_speak_at is not None):
-            requested_to_speak_at = parse_time(requested_to_speak_at)
+            requested_to_speak_at = timestamp_to_datetime(requested_to_speak_at)
         
         self.is_speaker = not data.get('suppress', False)
         
@@ -165,7 +165,7 @@ class VoiceState:
         
         requested_to_speak_at = data.get('request_to_speak_timestamp', None)
         if (requested_to_speak_at is not None):
-            requested_to_speak_at = parse_time(requested_to_speak_at)
+            requested_to_speak_at = timestamp_to_datetime(requested_to_speak_at)
         
         if self.requested_to_speak_at != requested_to_speak_at:
             old_attributes['requested_to_speak_at'] = self.requested_to_speak_at
@@ -199,7 +199,7 @@ class VoiceState:
         
         requested_to_speak_at = data.get('request_to_speak_timestamp', None)
         if (requested_to_speak_at is not None):
-            requested_to_speak_at = parse_time(requested_to_speak_at)
+            requested_to_speak_at = timestamp_to_datetime(requested_to_speak_at)
         
         self.requested_to_speak_at = requested_to_speak_at
         

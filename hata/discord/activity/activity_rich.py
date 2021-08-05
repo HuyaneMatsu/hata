@@ -1,12 +1,11 @@
 __all__ = ('ActivityRich',)
 
 from datetime import datetime
-from math import floor
 
 from ..color import Color
 from ..preconverters import preconvert_str, preconvert_int_options, preconvert_snowflake, preconvert_flag
 from ..http import urls as module_urls
-from ..utils import is_url, DISCORD_EPOCH_START
+from ..utils import is_url, DISCORD_EPOCH_START, unix_time_to_datetime, datetime_to_unix_time
 
 from . import activity_types as ACTIVITY_TYPES
 from .activity_base import ActivityBase, ACTIVITY_TYPE_NAMES, ActivityAssets, ActivityParty, ActivitySecrets, \
@@ -377,7 +376,7 @@ class ActivityRich(ActivityBase):
         if created_at is None:
             created_at = DISCORD_EPOCH_START
         else:
-            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+            created_at = unix_time_to_datetime(created_at)
         self.created_at = created_at
         
         self.details = activity_data.get('details', None)
@@ -493,7 +492,7 @@ class ActivityRich(ActivityBase):
         if created_at is None:
             created_at = DISCORD_EPOCH_START
         else:
-            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+            created_at = unix_time_to_datetime(created_at)
         if self.created_at != created_at:
             old_attributes['created_at'] = self.created_at
             self.created_at = created_at
@@ -672,7 +671,7 @@ class ActivityRich(ActivityBase):
         # receive only?
         created_at = self.created_at
         if created_at != DISCORD_EPOCH_START:
-            activity_data['created_at'] = floor(created_at.timestamp()*1000.0)
+            activity_data['created_at'] = datetime_to_unix_time(created_at)
         
         return activity_data
     
@@ -738,7 +737,7 @@ class ActivityRich(ActivityBase):
         if end is None:
             return None
         
-        return datetime.utcfromtimestamp(end/1000.0) - datetime.utcfromtimestamp(start/1000.0)
+        return end-start
     
     
     @property

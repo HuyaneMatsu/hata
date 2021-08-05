@@ -1,14 +1,17 @@
 ﻿__all__ = ('CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
     'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'USER_MENTION_RP', 'Unknown', 'cchunkify',
-    'chunkify', 'elapsed_time', 'filter_content', 'id_to_time', 'is_id', 'is_invite_code', 'is_mention',
-    'is_role_mention', 'is_url', 'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta',
-    'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'time_to_id')
+    'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time', 'filter_content',
+    'id_to_datetime', 'id_to_time', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention',
+    'is_url', 'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id',
+    'sanitize_content', 'sanitize_mentions', 'time_to_id', 'unix_time_to_id')
 
-import random, sys
+import sys, warnings
+from random import random
 from re import compile as re_compile, I as re_ignore_case, U as re_unicode
 from datetime import datetime, timedelta, timezone
 from base64 import b64encode
 from time import time as time_now
+from math import floor
 from email._parseaddr import _parsedate_tz as parse_date_timezone
 
 try:
@@ -50,6 +53,7 @@ def endswith_xFFxD9(data):
         
         index -= 1
         continue
+
 
 def get_image_media_type(data):
     """
@@ -117,6 +121,7 @@ def image_to_base64(data):
 
 
 DISCORD_EPOCH = 1420070400000
+
 # example dates:
 # "2016-03-31T19:15:39.954000+00:00"
 # "2019-04-28T15:14:38+00:00"
@@ -125,9 +130,9 @@ DISCORD_EPOCH = 1420070400000
 # at desuppress:
 # "2019-07-17T18:52:50.758000+00:00"
 
-PARSE_TIME_RP = re_compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
+PARSE_TIMESTAMP_RP = re_compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
 
-def parse_time(timestamp):
+def timestamp_to_datetime(timestamp):
     """
     Parses the given timestamp.
     
@@ -156,7 +161,7 @@ def parse_time(timestamp):
     -----
     I already noted that timestamp formats are inconsistent, but even our baka Chiruno could have fix it...
     """
-    parsed = PARSE_TIME_RP.fullmatch(timestamp)
+    parsed = PARSE_TIMESTAMP_RP.fullmatch(timestamp)
     if parsed is None:
         sys.stderr.write(f'Cannot parse timestamp: `{timestamp}`, returning `DISCORD_EPOCH_START`\n')
         return DISCORD_EPOCH_START
@@ -176,8 +181,37 @@ def parse_time(timestamp):
     
     return datetime(year, month, day, hour, minute, second, micro)
 
+
+def datetime_to_timestamp(date_time):
+    """
+    Converts the given datetime to it's timestamp representation.
+    
+    Parameters
+    ----------
+    date_time : `datetime`
+        The datetime to convert to timestamp.
+    
+    Returns
+    -------
+    timestamp : `str`
+    """
+    return date_time.isoformat()
+
+
 @export
 def id_to_time(id_):
+    """
+    `id_to_time`\'s is deprecated, and will be removed in 2021 November. Please use ``id_to_datetime`` instead.
+    """
+    warnings.warn(
+        f'`id_to_time`\'s is deprecated, and will be removed in 2021 November. '
+        f'Please use `id_to_datetime` instead.',
+        FutureWarning)
+    return id_to_datetime(id_)
+
+
+@export
+def id_to_datetime(id_):
     """
     Converts the given id to datetime.
     
@@ -188,25 +222,103 @@ def id_to_time(id_):
     
     Returns
     -------
-    time : `datetime`
+    date_time : `datetime`
     """
     return datetime.utcfromtimestamp(((id_>>22)+DISCORD_EPOCH)/1000.)
 
-DISCORD_EPOCH_START = id_to_time(0)
+
+DISCORD_EPOCH_START = id_to_datetime(0)
+
+def id_to_unix_time(id_):
+    """
+    Converts the given id to unix time.
+    
+    Parameters
+    ----------
+    id_ : `int`
+        Unique identifier number of a Discord entity.
+    
+    Returns
+    -------
+    unix_time : `int`
+    """
+    return ((id_>>22)+DISCORD_EPOCH)//1000
+
+
+def unix_time_to_id(unix_time):
+    """
+    Converts the given unix time to id.
+    
+    Parameters
+    ----------
+    unix_time : `int`, `float`
+        The unix time to convert to id.
+    
+    Returns
+    -------
+    id_ : `int`
+    """
+    return (floor(unix_time*1000.)-DISCORD_EPOCH)<<22
+
+
+def unix_time_to_datetime(unix_time):
+    """
+    Converts the given unix time to datetime.
+    
+    Parameters
+    ----------
+    unix_time : `int`, `float`
+        The unix time to convert to datetime.
+    
+    Returns
+    -------
+    date_time : `datetime`
+    """
+    return datetime.utcfromtimestamp(unix_time/1000.0)
+
 
 def time_to_id(time):
+    """
+    `id_to_time`\'s is deprecated, and will be removed in 2021 November. Please use ``id_to_datetime`` instead.
+    """
+    warnings.warn(
+        f'`id_to_time`\'s is deprecated, and will be removed in 2021 November. '
+        f'Please use `id_to_datetime` instead.',
+        FutureWarning)
+    return datetime_to_id(time)
+
+
+def datetime_to_id(date_time):
     """
     Converts the given time to it's respective discord identifier number.
     
     Parameters
     ----------
-    time : `datetime`
+    date_time : `datetime`
+        The datetime to convert to Discord identifier.
     
     Returns
     -------
     id_ `int`
     """
-    return ((time.timestamp()*1000.).__int__()-DISCORD_EPOCH)<<22
+    return (floor(date_time.timestamp()*1000.)-DISCORD_EPOCH)<<22
+
+
+def datetime_to_unix_time(date_time):
+    """
+    Converts the given time to it's unix time value.
+    
+    Parameters
+    ----------
+    date_time : `datetime`
+        The datetime to convert to unix time.
+    
+    Returns
+    -------
+    unit_time : `int`
+    """
+    return floor(date_time.timestamp()*1000.0)
+
 
 def random_id():
     """
@@ -216,7 +328,7 @@ def random_id():
     -------
     id_ `int`
     """
-    return (((time_now()*1000.).__int__()-DISCORD_EPOCH)<<22)+(random.random()*4194304.).__int__()
+    return ((floor(time_now()*1000.)-DISCORD_EPOCH)<<22)+floor(random()*4194304.0)
 
 
 def log_time_converter(value):
@@ -266,6 +378,7 @@ EMOJI_NAME_RP = re_compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
 FILTER_RP = re_compile('("(.+?)"|\S+)')
 INVITE_CODE_RP = re_compile('([a-zA-Z0-9-]+)')
 
+
 def is_valid_application_command_name(name):
     """
     Returns whether the given application command name is valid.
@@ -281,6 +394,7 @@ def is_valid_application_command_name(name):
     """
     return (APPLICATION_COMMAND_NAME_RP.fullmatch(name) is not None)
 
+
 def is_id(text):
     """
     Returns whether the given text is a valid snowflake.
@@ -294,6 +408,7 @@ def is_id(text):
     result : `bool`
     """
     return ID_RP.fullmatch(text) is not None
+
 
 def is_mention(text):
     """
@@ -309,6 +424,7 @@ def is_mention(text):
     """
     return IS_MENTION_RP.fullmatch(text) is not None
 
+
 def is_user_mention(text):
     """
     Returns whether the given text mentions a user.
@@ -322,6 +438,7 @@ def is_user_mention(text):
     result : `str`
     """
     return USER_MENTION_RP.fullmatch(text) is not None
+
 
 def is_channel_mention(text):
     """
@@ -337,6 +454,7 @@ def is_channel_mention(text):
     """
     return CHANNEL_MENTION_RP.fullmatch(text) is not None
 
+
 def is_role_mention(text):
     """
     Returns whether the given text mentions a role.
@@ -350,6 +468,7 @@ def is_role_mention(text):
     result : `bool`
     """
     return ROLE_MENTION_RP.fullmatch(text) is not None
+
 
 def is_application_command_mention(text):
     """
@@ -365,6 +484,7 @@ def is_application_command_mention(text):
     """
     return (APPLICATION_COMMAND_MENTION_RP.fullmatch(text) is not None)
 
+
 def is_invite_code(text):
     """
     Returns whether the given text is an invite code
@@ -379,6 +499,7 @@ def is_invite_code(text):
     """
     return (INVITE_CODE_RP.fullmatch(text) is not None)
 
+
 def now_as_id():
     """
     Returns the current time as a Discord snowflake.
@@ -387,7 +508,8 @@ def now_as_id():
     -------
     snowflake : `int`
     """
-    return ((time_now()*1000.)-DISCORD_EPOCH).__int__()<<22
+    return (floor(time_now()*1000.)-DISCORD_EPOCH)<<22
+
 
 def filter_content(content):
     """
@@ -403,6 +525,7 @@ def filter_content(content):
     parts : `list` of `str`
     """
     return [match[1] or match[0] for match in FILTER_RP.findall(content)]
+
 
 def chunkify(lines, limit=2000):
     """
@@ -470,6 +593,7 @@ def chunkify(lines, limit=2000):
     result.append('\n'.join(chunk))
     
     return result
+
 
 def cchunkify(lines, lang='', limit=2000):
     """

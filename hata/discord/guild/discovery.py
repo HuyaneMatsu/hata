@@ -2,7 +2,7 @@ __all__ = ('DiscoveryCategory', 'GuildDiscovery', )
 
 from ..bases import DiscordEntity
 from ..core import DISCOVERY_CATEGORIES
-from ..utils import DISCORD_EPOCH_START, parse_time
+from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
 
 class GuildDiscovery:
     """
@@ -66,13 +66,13 @@ class GuildDiscovery:
         
         application_actioned = data.get('partner_actioned_timestamp', None)
         if (application_actioned is not None):
-            application_actioned = parse_time(application_actioned)
+            application_actioned = timestamp_to_datetime(application_actioned)
         
         self.application_actioned = application_actioned
         
         application_requested = data.get('partner_application_timestamp', None)
         if (application_requested is not None):
-            application_requested = parse_time(application_requested)
+            application_requested = timestamp_to_datetime(application_requested)
         
         self.application_requested = application_requested
         

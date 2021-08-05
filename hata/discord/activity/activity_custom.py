@@ -1,10 +1,7 @@
 __all__ = ('ActivityCustom',)
 
-from datetime import datetime
-from math import floor
-
 from ...backend.export import include
-from ..utils import DISCORD_EPOCH_START
+from ..utils import DISCORD_EPOCH_START, unix_time_to_datetime, datetime_to_unix_time
 
 from .activity_base import ActivityBase
 from . import activity_types as ACTIVITY_TYPES
@@ -115,7 +112,7 @@ class ActivityCustom(ActivityBase):
         if created_at is None:
             created_at = DISCORD_EPOCH_START
         else:
-            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+            created_at = unix_time_to_datetime(created_at)
         self.created_at = created_at
     
     def _difference_update_attributes(self, activity_data):
@@ -165,7 +162,7 @@ class ActivityCustom(ActivityBase):
         if created_at is None:
             created_at = DISCORD_EPOCH_START
         else:
-            created_at = datetime.utcfromtimestamp(created_at/1000.0)
+            created_at = unix_time_to_datetime(created_at)
         if self.created_at != created_at:
             old_attributes['created_at'] = self.created_at
             self.created_at = created_at
@@ -204,6 +201,6 @@ class ActivityCustom(ActivityBase):
         
         created_at = self.created_at
         if created_at != DISCORD_EPOCH_START:
-            activity_data['created_at'] = floor(created_at.timestamp()*1000.0)
+            activity_data['created_at'] = datetime_to_unix_time(created_at)
         
         return activity_data

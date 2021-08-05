@@ -2,9 +2,8 @@ __all__ = ('ActivityAssets', 'ActivityBase', 'ActivityParty', 'ActivitySecrets',
     'ACTIVITY_TYPES',)
 
 from datetime import datetime
-from math import floor
 
-from ..utils import DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
+from ..utils import DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, unix_time_to_datetime, datetime_to_unix_time
 from ..color import Color
 
 from . import activity_types as ACTIVITY_TYPES
@@ -81,11 +80,11 @@ class ActivityTimestamps:
         """
         start = timestamps_data.get('start', None)
         if (start is not None):
-            start = datetime.utcfromtimestamp(start/1000.0)
+            start = unix_time_to_datetime(start)
         
         end = timestamps_data.get('end', None)
         if (end is not None):
-            end = datetime.utcfromtimestamp(end/1000.0)
+            end = unix_time_to_datetime(end)
         
         self = object.__new__(cls)
         self.start = start
@@ -147,11 +146,11 @@ class ActivityTimestamps:
         
         start = self.start
         if (start is not None):
-            timestamps_data['start'] = floor(start.timestamp()*1000.0)
+            timestamps_data['start'] = datetime_to_unix_time(start)
         
         end = self.end
         if (end is not None):
-            timestamps_data['end'] = floor(end.timestamp()*1000.0)
+            timestamps_data['end'] = datetime_to_unix_time(end)
         
         return timestamps_data
 
@@ -758,8 +757,6 @@ class ActivityBase:
         created_at : `datetime`
         """
         return DISCORD_EPOCH_START
-        
-        return datetime.utcfromtimestamp(created/1000.)
     
     @classmethod
     def from_data(cls, activity_data):

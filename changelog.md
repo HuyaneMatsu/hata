@@ -28,10 +28,21 @@ Make messages and interactions weakly bound to their channel and guild.
 - Add `ApplicationCommandInteraction.resovle_entity`.
 - Add `ApplicationCommandInteraction.target`.
 - `ApplicationCommandInteraction.options` is now `tuple` or `None` (from `list` or `None`)
+- Add `id_to_datetime`.
+- Add `id_to_unix_time`.
+- Add `datetime_to_id`.
+- Add `unix_time_to_id`.
+- Add `datetime_to_unix_time`.
+- Add `datetime_to_timestamp`.
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.
 - Add `target` parameter for context commands.
+
+#### Renames, Deprecation & Removals
+- Deprecate `id_to_time`.
+- Rename `parse_time` to `timestamp_to_datetime`
+- Deprecate `time_to_id`.
 
 ## 1.1.93 *\[2021-08-01\]*
 

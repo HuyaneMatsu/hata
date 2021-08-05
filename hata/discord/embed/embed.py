@@ -2,7 +2,7 @@ __all__ = ('Embed', )
 
 from ...backend.utils import copy_docs
 
-from ..utils import parse_time
+from ..utils import timestamp_to_datetime, datetime_to_timestamp
 
 from .embed_base import EmbedBase, EmbedFooter, EmbedImage, EmbedThumbnail, EmbedVideo, EmbedProvider, EmbedAuthor, \
     EmbedField
@@ -78,7 +78,7 @@ class Embed(EmbedBase):
             data['url'] = url
             
         if (timestamp is not None):
-            data['timestamp'] = timestamp.isoformat()
+            data['timestamp'] = datetime_to_timestamp(timestamp)
             
         if (type_ is not None):
             data['type'] = type_
@@ -490,11 +490,11 @@ class Embed(EmbedBase):
         except KeyError:
             return None
         
-        return parse_time(timestamp_value)
+        return timestamp_to_datetime(timestamp_value)
     
     @timestamp.setter
     def timestamp(self, value):
-        self._data['timestamp'] = value.isoformat()
+        self._data['timestamp'] = datetime_to_timestamp(value)
     
     @timestamp.deleter
     def timestamp(self):

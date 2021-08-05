@@ -1,6 +1,6 @@
 __all__ = ('IntegrationDetail', )
 
-from ..utils import parse_time, DISCORD_EPOCH_START
+from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START
 from ..role import create_partial_role_from_id
 
 from .preinstanced import IntegrationExpireBehavior
@@ -54,7 +54,7 @@ class IntegrationDetail:
         except KeyError:
             synced_at = DISCORD_EPOCH_START
         else:
-            synced_at = parse_time(synced_at)
+            synced_at = timestamp_to_datetime(synced_at)
         self.synced_at = synced_at
         
         self.subscriber_count = data.get('subscriber_count', 0)

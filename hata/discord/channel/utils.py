@@ -8,6 +8,7 @@ from ...backend.export import export, include
 
 from ..bases import maybe_snowflake
 from ..core import CHANNELS
+from ..utils import datetime_to_timestamp
 
 from .channel_guild_text import ChannelText
 from .channel_private import ChannelPrivate, ChannelGroup
@@ -407,7 +408,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
                 raise AssertionError(f'`archived_at` can be given as `None` or as `datetime` instance, got '
                     f'{archived_at.__class__.__name__}.')
         
-        channel_data['archive_timestamp'] =  archived_at.isoformat()
+        channel_data['archive_timestamp'] =  datetime_to_timestamp(archived_at)
     
     
     if (auto_archive_after is not None):

@@ -6,7 +6,7 @@ from ...backend.export import include
 
 from ..bases import IconSlot, Slotted
 
-from ..utils import parse_time, DISCORD_EPOCH_START
+from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START
 from ..color import Color
 
 create_partial_role_from_id = include('create_partial_role_from_id')
@@ -70,7 +70,7 @@ class GuildProfile(metaclass=Slotted):
         except KeyError:
             joined_at = None
         else:
-            joined_at = parse_time(joined_at_data)
+            joined_at = timestamp_to_datetime(joined_at_data)
         
         self.joined_at = joined_at
         
@@ -97,7 +97,7 @@ class GuildProfile(metaclass=Slotted):
             except KeyError:
                 joined_at = None
             else:
-                joined_at = parse_time(joined_at_data)
+                joined_at = timestamp_to_datetime(joined_at_data)
             
             self.joined_at = joined_at
     
@@ -134,7 +134,7 @@ class GuildProfile(metaclass=Slotted):
         
         boosts_since = data.get('premium_since', None)
         if (boosts_since is not None):
-            boosts_since = parse_time(boosts_since)
+            boosts_since = timestamp_to_datetime(boosts_since)
         self.boosts_since = boosts_since
         
         self.pending = data.get('pending', None)
@@ -212,7 +212,7 @@ class GuildProfile(metaclass=Slotted):
         
         boosts_since = data.get('premium_since', None)
         if (boosts_since is not None):
-            boosts_since = parse_time(boosts_since)
+            boosts_since = timestamp_to_datetime(boosts_since)
         if self.boosts_since != boosts_since:
             old_attributes['boosts_since'] = self.boosts_since
             self.boosts_since = boosts_since

@@ -4,7 +4,7 @@ import reprlib
 
 from ...backend.utils import BaseMethodDescriptor
 
-from ..utils import DATETIME_FORMAT_CODE, parse_time
+from ..utils import DATETIME_FORMAT_CODE, timestamp_to_datetime, datetime_to_timestamp
 from ..preconverters import preconvert_preinstanced_type
 from .preinstanced import VerificationScreenStepType
 
@@ -35,7 +35,7 @@ class VerificationScreen:
             Verification screen data.
         """
         self = object.__new__(cls)
-        self.created_at = parse_time(data['version'])
+        self.created_at = timestamp_to_datetime(data['version'])
         self.description = data.get('description', None)
         self.steps = tuple(VerificationScreenStep.from_data(field_data) for field_data in data['form_fields'])
         return self
@@ -49,7 +49,7 @@ class VerificationScreen:
         data : `dict` of (`str`, `Any`)
         """
         return {
-            'version' : self.created_at.isoformat(),
+            'version' : datetime_to_timestamp(self.created_at),
             'description' : self.description,
             'form_fields' : [step.to_data() for step in self.steps],
         }

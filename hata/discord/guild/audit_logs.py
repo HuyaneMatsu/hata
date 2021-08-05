@@ -4,7 +4,7 @@ import warnings
 
 from ...env import API_VERSION
 
-from ..utils import Unknown, now_as_id, id_to_time
+from ..utils import Unknown, now_as_id, id_to_datetime
 from ..core import CHANNELS, USERS, ROLES, MESSAGES, SCHEDULED_EVENTS
 from ..permission import Permission
 from ..color import Color
@@ -767,7 +767,7 @@ class AuditLogEntry:
         -------
         created_at : `datetime`
         """
-        return id_to_time(self.id)
+        return id_to_datetime(self.id)
     
     def __repr__(self):
         """Returns the representation of the audit log entry."""

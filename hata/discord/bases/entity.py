@@ -2,7 +2,7 @@ __all__ = ('DiscordEntity', 'Slotted', )
 
 from ...backend.export import include
 
-id_to_time = include('id_to_time')
+id_to_datetime = include('id_to_datetime')
 
 
 def _get_direct_parents_and_merge_slots(class_name, class_parents, class_attributes):
@@ -200,7 +200,7 @@ class DiscordEntity(object, metaclass=DiscordEntityMeta):
         -------
         created_at : `datetime`
         """
-        return id_to_time(self.id)
+        return id_to_datetime(self.id)
     
     def __hash__(self):
         """Returns the has value of the entity, what equals to it's id."""

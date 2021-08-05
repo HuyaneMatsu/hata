@@ -14,6 +14,7 @@ from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
 from ..channel import ChannelVoiceBase, ChannelStage
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from ..user import User
+from ..utils import datetime_to_timestamp
 
 from .audio_source import AudioSource
 from .opus import OpusEncoder
@@ -635,7 +636,7 @@ class VoiceClient:
             return
         
         if request:
-            timestamp = datetime.now().isoformat()
+            timestamp = datetime_to_timestamp(datetime.now())
         else:
             timestamp = None
         
@@ -643,7 +644,7 @@ class VoiceClient:
             'suppress': False,
             'request_to_speak_timestamp': timestamp,
             'channel_id': channel.id
-                }
+        }
         
         await self.client.http.voice_state_client_edit(guild.id, data)
     

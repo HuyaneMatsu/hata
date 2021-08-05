@@ -707,6 +707,7 @@ class SlashCommand:
             - If `guild` is given as an empty container.
             - If `name` length is out of the expected range [1:32].
             - If `target` could not be matched by any expected target type name or value.
+            - For context commands `command` parameter is required (cannot be `None`).
         
         """
         if (func is not None) and isinstance(func, SlashCommandWrapper):
@@ -764,16 +765,18 @@ class SlashCommand:
             
             description = _generate_description_from(command, name, description)
         
-        if command is None:
-            parameter_converters = None
-        else:
-            parameter_configurers = get_parameter_configurers(wrappers)
+        if target in CONTEXT_APPLICATION_COMMAND_TARGETS:
+            if command is None:
+                raise ValueError(f'For context commands `command` parameter is required (cannot be `None`).')
             
-            if target in CONTEXT_APPLICATION_COMMAND_TARGETS:
-                command, parameter_converters = get_context_command_parameter_converters(command)
+            command, parameter_converters = get_context_command_parameter_converters(command)
+        else:
+            if command is None:
+                parameter_converters = None
             else:
+                parameter_configurers = get_parameter_configurers(wrappers)
                 command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
-        
+            
         if route_to:
             router = []
             
@@ -852,6 +855,7 @@ class SlashCommand:
                     wrapper.apply(self)
             
             return self
+    
     
     def __repr__(self):
         """returns the slash command's representation."""

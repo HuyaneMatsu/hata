@@ -258,7 +258,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.name = ''
             self.options = None
             self.allow_by_default = True
-            self.target = ApplicationCommandTarget.chat
+            self.target = ApplicationCommandTarget.none
         
         self._update_attributes(data)
         return self
@@ -274,9 +274,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             Received application command data.
         """
         try:
-            self.description = data.get('description', None)
+            description = data['description']
         except KeyError:
             pass
+        else:
+            if (description is not None) and (not description):
+                description = None
+            self.description = description
         
         try:
             self.name = data['name']
@@ -341,10 +345,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         old_attributes = {}
         
         try:
-            description = data.get('description', None)
+            description = data['description']
         except KeyError:
             pass
         else:
+            if (description is not None) and (not description):
+                description = None
             if self.description != description:
                 old_attributes['description'] = self.description
                 self.description = description
@@ -449,7 +455,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(', target=')
             repr_parts.append(target.name)
             repr_parts.append(' (')
-            repr_parts.append(repr(target))
+            repr_parts.append(repr(target.value))
             repr_parts.append(')')
         
         description = self.description
@@ -540,7 +546,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.description = None
             self.name = ''
             self.options = None
-            self.target = ApplicationCommandTarget.chat
+            self.target = ApplicationCommandTarget.none
         
         self._update_attributes(data)
         
@@ -1043,6 +1049,7 @@ class ApplicationCommandOption:
         self.choices = choices
         
         self.default = data.get('default', False)
+        
         self.description = data['description']
         self.name = data['name']
         

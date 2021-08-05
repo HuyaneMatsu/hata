@@ -222,6 +222,7 @@ class DiscordHTTPClient(HTTPClient):
         ConnectionError
             No internet connection.
         DiscordException
+            Any exception raised by the Discord API.
         """
         if headers is None:
             # normal request

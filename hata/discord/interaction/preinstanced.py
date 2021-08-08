@@ -1,4 +1,4 @@
-__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteType', 'ApplicationCommandTarget',
+__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteTargetType', 'ApplicationCommandTargetType',
     'ButtonStyle', 'CONTEXT_APPLICATION_COMMAND_TARGETS', 'ComponentType', 'InteractionType', )
 
 import warnings
@@ -124,7 +124,7 @@ class InteractionType(PreinstancedBase):
     message_component = P(3, 'message_component')
 
 
-class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
+class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
     """
     Represents an application command's permission's type.
     
@@ -137,8 +137,8 @@ class ApplicationCommandPermissionOverwriteType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationCommandPermissionOverwriteType``) items
-        Stores the predefined ``ApplicationCommandPermissionOverwriteType`` instances. These can be accessed with their
+    INSTANCES : `dict` of (`int`, ``ApplicationCommandPermissionOverwriteTargetType``) items
+        Stores the predefined ``ApplicationCommandPermissionOverwriteTargetType`` instances. These can be accessed with their
         `value` as key.
     VALUE_TYPE : `type` = `int`
         The application command permission overwrite types' values' type.
@@ -319,7 +319,7 @@ class ButtonStyle(PreinstancedBase):
         return self.red
 
 
-class ApplicationCommandTarget(PreinstancedBase):
+class ApplicationCommandTargetType(PreinstancedBase):
     """
     Represents an application command's target.
     
@@ -332,8 +332,8 @@ class ApplicationCommandTarget(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``ApplicationCommandTarget``) items
-        Stores the predefined ``ApplicationCommandTarget`` instances. These can be accessed with their `value` as
+    INSTANCES : `dict` of (`int`, ``ApplicationCommandTargetType``) items
+        Stores the predefined ``ApplicationCommandTargetType`` instances. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
         The application command targets' values' type.
@@ -366,6 +366,6 @@ class ApplicationCommandTarget(PreinstancedBase):
     message = P(3, 'message',)
 
 CONTEXT_APPLICATION_COMMAND_TARGETS = frozenset((
-    ApplicationCommandTarget.user,
-    ApplicationCommandTarget.message,
+    ApplicationCommandTargetType.user,
+    ApplicationCommandTargetType.message,
 ))

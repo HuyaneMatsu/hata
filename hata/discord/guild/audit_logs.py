@@ -1175,7 +1175,7 @@ TRANSFORMERS = {
     '$add': transform_roles,
     '$remove': transform_roles,
     'account_id': transform_snowflake,
-    'afk_channel_id': transform_channel,
+    'afk_channel_id': transform_snowflake,
     'allow': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'allow_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'application_id': transform_snowflake,
@@ -1219,14 +1219,14 @@ TRANSFORMERS = {
     'permission_overwrites' : transform_overwrites,
     'permissions': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'permissions_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
-    'public_updates_channel_id' : transform_channel,
+    'public_updates_channel_id' : transform_snowflake,
     'rate_limit_per_user': transform_int__slowmode,
     'region': transform_region,
-    'rules_channel_id': transform_channel,
+    'rules_channel_id': transform_snowflake,
     'sku_ids': transform_snowflake_array,
     'splash_hash': transform_icon,
     'status': transform_scheduled_event_status,
-    'system_channel_id': transform_channel,
+    'system_channel_id': transform_snowflake,
     'system_channel_flags': transform_system_channel_flags,
     'tags': transform_tags,
     # temporary (bool)
@@ -1236,7 +1236,7 @@ TRANSFORMERS = {
     'vanity_url_code': transform_str__vanity_code,
     'verification_level': transform_verification_level,
     'video_quality_mode': transform_video_quality_mode,
-    'widget_channel_id': transform_channel,
+    'widget_channel_id': transform_snowflake,
     # widget_enabled (bool)
 }
 
@@ -1292,7 +1292,7 @@ class AuditLogChange:
     +===============================+===============================================+
     | account_id                    | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
-    | afk_channel                   | `None` or ``ChannelVoice``                    |
+    | afk_channel_id                | `int`                                         |
     +-------------------------------+-----------------------------------------------+
     | allow                         | `None` or ``Permission``                      |
     +-------------------------------+-----------------------------------------------+
@@ -1366,19 +1366,19 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | position                      | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
-    | public_updates_channel        | `None` or ``ChannelText``                     |
+    | public_updates_channel_id     | `int`                                         |
     +-------------------------------+-----------------------------------------------+
     | overwrites                    | `None` or `list` of ``PermissionOverwrite``   |
     +-------------------------------+-----------------------------------------------+
     | permissions                   | `None` or ``Permission``                      |
     +-------------------------------+-----------------------------------------------+
-    | privacy_level                 | `None` or ``PrivacyLevel``               |
+    | privacy_level                 | `None` or ``PrivacyLevel``                    |
     +-------------------------------+-----------------------------------------------+
     | region                        | `None` or ``VoiceRegion``                     |
     +-------------------------------+-----------------------------------------------+
     | role                          | `None` or `list` of ``Role``                  |
     +-------------------------------+-----------------------------------------------+
-    | rules_channel                 | `None` or ``ChannelText``                     |
+    | rules_channel_id              | `int`                                         |
     +-------------------------------+-----------------------------------------------+
     | separated                     | `None` or `bool`                              |
     +-------------------------------+-----------------------------------------------+
@@ -1386,7 +1386,7 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | sku_ids                       | `None` or `tuple` of `int`                    |
     +-------------------------------+-----------------------------------------------+
-    | system_channel                | `None` or ``ChannelText``                     |
+    | system_channel_id             | `int`                                         |
     +-------------------------------+-----------------------------------------------+
     | system_channel_flags          | `None` or ``SystemChannelFlag``               |
     +-------------------------------+-----------------------------------------------+
@@ -1404,7 +1404,7 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | verification_level            | `None` or ``VerificationLevel``               |
     +-------------------------------+-----------------------------------------------+
-    | widget_channel                | `None` or ``ChannelText``                     |
+    | widget_channel_id             | `int`                                         |
     +-------------------------------+-----------------------------------------------+
     | widget_enabled                | `None` or `bool`                              |
     +-------------------------------+-----------------------------------------------+

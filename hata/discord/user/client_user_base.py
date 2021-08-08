@@ -2,7 +2,7 @@ __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
 from ...backend.utils import copy_docs
 
-from ..core import USERS
+from ..core import USERS, GUILDS
 
 from ..color import Color
 from ..activity import create_activity_from_data, ActivityRich, ActivityCustom
@@ -37,7 +37,7 @@ class ClientUserBase(UserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -143,7 +143,7 @@ class ClientUserBase(UserBase):
             +-------------------+-------------------------------+
             | pending           | `bool`                        |
             +-------------------+-------------------------------+
-            | roles             | `None` or `list` of ``Role``  |
+            | role_ids          | `None` or `tuple` of `int`    |
             +-------------------+-------------------------------+
         """
         user_id = int(data['user']['id'])
@@ -155,14 +155,14 @@ class ClientUserBase(UserBase):
             return user, {}
         
         try:
-            profile = user.guild_profiles[guild]
+            guild_profile = user.guild_profiles[guild.id]
         except KeyError:
-            user.guild_profiles[guild] = GuildProfile(data)
+            user.guild_profiles[guild.id] = GuildProfile(data)
             guild.users[user_id] = user
             return user, {}
         
-        profile._set_joined(data)
-        return user, profile._difference_update_attributes(data)
+        guild_profile._set_joined(data)
+        return user, guild_profile._difference_update_attributes(data)
     
     
     @classmethod
@@ -194,11 +194,11 @@ class ClientUserBase(UserBase):
             user = cls(data, guild)
         else:
             try:
-                profile = user.guild_profiles[guild]
+                guild_profile = user.guild_profiles[guild.id]
             except KeyError:
-                user.guild_profiles[guild] = GuildProfile(data)
+                user.guild_profiles[guild.id] = GuildProfile(data)
             else:
-                profile._update_attributes(data)
+                guild_profile._update_attributes(data)
         
         return user
     
@@ -229,13 +229,13 @@ class ClientUserBase(UserBase):
             return
         
         try:
-            profile = user.guild_profiles[guild]
+            guild_profile = user.guild_profiles[guild.id]
         except KeyError:
             guild.users[user_id] = user
-            user.guild_profiles[guild] = GuildProfile(guild_profile_data)
+            user.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
         else:
-            profile._set_joined(guild_profile_data)
-            profile._update_attributes(guild_profile_data)
+            guild_profile._set_joined(guild_profile_data)
+            guild_profile._update_attributes(guild_profile_data)
 
     
     @classmethod
@@ -257,11 +257,7 @@ class ClientUserBase(UserBase):
         self.discriminator = client.discriminator
         self.name = client.name
         
-        guild_profiles = client.guild_profiles
-        if (guild_profiles is not None):
-            guild_profiles = guild_profiles.copy()
-        
-        self.guild_profiles = guild_profiles
+        self.guild_profiles = client.guild_profiles.copy()
         self.is_bot = client.is_bot
         self.flags = client.flags
         self.thread_profiles = client.thread_profiles.copy()
@@ -336,7 +332,12 @@ class ClientUserBase(UserBase):
         # we cannot full delete a user, because of the mentions, so we delete it only from the guilds
         guild_profiles = self.guild_profiles
         while guild_profiles:
-            guild, profile = guild_profiles.popitem()
+            guild_id, guild_profile = guild_profiles.popitem()
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                continue
+            
             try:
                 del guild.users[self.id]
             except KeyError:
@@ -347,11 +348,11 @@ class ClientUserBase(UserBase):
     def color_at(self, guild):
         if (guild is not None):
             try:
-                profile = self.guild_profiles[guild]
+                guild_profile = self.guild_profiles[guild.id]
             except KeyError:
                 pass
             else:
-                return profile.color
+                return guild_profile.color
         
         return Color()
     
@@ -360,12 +361,12 @@ class ClientUserBase(UserBase):
     def name_at(self, guild):
         if (guild is not None):
             try:
-                profile = self.guild_profiles[guild]
+                guild_profile = self.guild_profiles[guild.id]
             except KeyError:
                 pass
             else:
-                nick = profile.nick
-                if nick is not None:
+                nick = guild_profile.nick
+                if (nick is not None):
                     return nick
         
         return self.name
@@ -373,32 +374,36 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.has_role)
     def has_role(self, role):
-        # if role is deleted, it's guild is None
-        guild = role.guild
-        if guild is None:
-            return False
+        guild_id = role.guild_id
         
         try:
-            profile = self.guild_profiles[guild]
+            guild_profile = self.guild_profiles[guild_id]
         except KeyError:
             return False
         
-        roles = profile.roles
-        if roles is None:
+        role_id = role.id
+        if guild_id == role_id:
+            return True
+        
+        role_ids = guild_profile.role_ids
+        if role_ids is None:
             return False
         
-        return (role in profile.roles)
+        if role_id in role_ids:
+            return True
+        
+        return False
     
     
     @copy_docs(UserBase.top_role_at)
     def top_role_at(self, guild, default=None):
         if (guild is not None):
             try:
-                profile = self.guild_profiles[guild]
+                guild_profile = self.guild_profiles[guild.id]
             except KeyError:
                 pass
             else:
-                return profile.get_top_role(default)
+                return guild_profile.get_top_role(default)
         
         return default
     
@@ -408,27 +413,30 @@ class ClientUserBase(UserBase):
         if emoji.is_unicode_emoji():
             return True
         
-        guild = emoji.guild
-        if guild is None:
-            return False
+        guild_id = emoji.guild_id
         
         try:
-            profile = self.guild_profiles[guild]
+            guild_profile = self.guild_profiles[guild_id]
         except KeyError:
             return False
         
-        emoji_roles = emoji.roles
-        if (emoji_roles is None):
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            pass
+        else:
+            if guild.owner_id == self.id:
+                return True
+        
+        emoji_role_ids = emoji.roles
+        if (emoji_role_ids is None):
             return True
         
-        if guild.owner_id == self.id:
-            return True
-        
-        profile_roles = profile.roles
-        if (profile_roles is None):
+        guild_profile_role_ids = guild_profile.role_ids
+        if (guild_profile_role_ids is None):
             return False
         
-        if emoji_roles.isdisjoint(profile_roles):
+        if emoji_role_ids.isdisjoint(guild_profile_role_ids):
             return False
         
         return True
@@ -436,19 +444,22 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.has_higher_role_than)
     def has_higher_role_than(self, role):
-        guild = role.guild
-        if guild is None:
-            return False
+        guild_id = role.guild_id
         
         try:
-            profile = self.guild_profiles[guild]
+            guild_profile = self.guild_profiles[guild_id]
         except KeyError:
             return False
         
-        if guild.owner_id == self.id:
-            return True
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            pass
+        else:
+            if guild.owner_id == self.id:
+                return True
         
-        top_role = profile.get_top_role()
+        top_role = guild_profile.get_top_role()
         if top_role is None:
             return False
         
@@ -464,7 +475,7 @@ class ClientUserBase(UserBase):
             return False
         
         try:
-            own_profile = self.guild_profiles[guild]
+            own_profile = self.guild_profiles[guild.id]
         except KeyError:
             return False
         
@@ -472,15 +483,9 @@ class ClientUserBase(UserBase):
             return True
         
         try:
-            other_profile = user.guild_profiles[guild]
+            other_profile = user.guild_profiles[guild.id]
         except KeyError:
             # We always have higher permissions if the other user is not in the guild or if it is a webhook.
-            # webhook_guild = getattr(user, 'guild', None)
-            # if (webhook_guild is not guild):
-            #     return True
-            #
-            # if (own_profile.roles is not None):
-            #    return True
             return True
         
         if guild.owner_id == user.id:
@@ -499,14 +504,40 @@ class ClientUserBase(UserBase):
         
         return False
     
+    
+    @copy_docs(UserBase.get_guild_profile_for)
+    def get_guild_profile_for(self, guild):
+        if (guild is not None):
+            return self.guild_profiles.get(guild.id, None)
+    
+    
+    @copy_docs(UserBase.iter_guild_profiles)
+    def iter_guild_profiles(self):
+        for guild_id, guild_profile in self.guild_profiles.items():
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                continue
+            
+            yield guild, guild_profile
+    
+    
     @property
     @copy_docs(UserBase.partial)
     def partial(self):
-        for guild in self.guild_profiles:
-            if not guild.partial:
-                return False
+        for guild_id in self.guild_profiles.keys():
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                continue
             
-            return True
+            if guild.partial:
+                continue
+            
+            return False
+        
+        return True
+
 
 class ClientUserPBase(ClientUserBase):
     """
@@ -531,7 +562,7 @@ class ClientUserPBase(ClientUserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`

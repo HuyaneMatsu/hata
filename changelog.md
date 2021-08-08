@@ -2,7 +2,7 @@
 
 ### Summary
 
-Make messages and interactions weakly bound to their channel and guild.
+Make multiple entities to weakly bound to other ones.
 
 #### Improvements
 
@@ -20,8 +20,8 @@ Make messages and interactions weakly bound to their channel and guild.
 - Add `InteractionEvent.channel` is now a property.
 - Add `InteractionEvent.guild` is now a property.
 - `InteractionEvent` is now weakly bound to it's channel and guild.
-- Add `ApplicationCommandTarget`.
-- Add `ApplicationCommand.target`.
+- Add `ApplicationCommandTargetType`.
+- Add `ApplicationCommand.target_type`.
 - `ApplicationCommand.description` is now optional for context application commands.
 - Add `ApplicationCommandInteraction.resolved_messages`.
 - Add `ApplicationCommandInteraction.target_id`.
@@ -34,15 +34,91 @@ Make messages and interactions weakly bound to their channel and guild.
 - Add `unix_time_to_id`.
 - Add `datetime_to_unix_time`.
 - Add `datetime_to_timestamp`.
+- `ChannelGuildBase.guild_id`.
+- `ChannelGuildBase.guild` is now a property.
+- To `client.events.channel_delete` now only 3 parameter is passed (`client`, `channel`, from 3: `client`, `channel`,
+    `guild`).
+- Guild channels are now weakly bound to their guild.
+- User guild profiles are now weakly bound to their guild.
+- Add `ChannelGuildBase.parent_id`.
+- `ChannelGuildBase.parent` is now a property.
+- Add `UserBase.get_guild_profile_for`.
+- Add `UserBase.iter_guild_profiles`.
+- `GuildProfile.roles` is now a property.
+- Add `GuildProfile.role_ids`.
+- `ClientUserBase.has_role` could return `False` for default role.
+- `Emoji.roles` is now a property.
+- Add `Emoji.role_ids`.
+- Add `iterable_of_instance_or_id_to_snowflakes`.
+- `.overwrites` is now a dictionary (from list).
+- Add `PermissionOverwrite.target_id`.
+- Add `PermissionOverwrite.target_type`.
+- Remove `._parse_overwrites`, add `parse_permission_overwrites` instead.
+- Add `CHANNEL_TYPES`.
+- Add `Guild.public_updates_channel_id`.
+- `Guild.public_updates_channel` is nwo a property.
+- Add `Guild.afk_channel_id`.
+- `Guild.afk_channel` is now a property.
+- Add `Guild.rules_channel_id`.
+- `Guild.rules_channel` is now a property.
+- Add `Guild.system_channel_id`.
+- `Guild.system_channel` is now a property.
+- Add `Guild.widget_channel_id`.
+- `Guild.widget_channel` is now a property.
+- Add `Client.guilds`.
+- Add `WebhookBase.channel_id`.
+- `WebhokBase.channel` is now a property.
+- `User.guild_profiles` is now `guild_id` - `GuildProfile` relation (from `Guild` - `GuildProfile`).
+- `User.thread_profiles` is now `None` / `thread_id` - `ThreadProfile` relation (from `None` /
+    `ChannelThread` - `ThreadProfile`).
+- Add `Role.guild_id`.
+- `Role.guild` is now a property.
+- Add `IntegrationDetail.role_id`.
+- `IntegrationDetail.role` is now a property.
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.
 - Add `target` parameter for context commands.
 
+#### Bug Fixes
+- Fix `AttributeError` in `SlashCommandParameterConfigurerWrapper`.
+
+#### Bug Fixes
+
+- Fix an `AttributeError` in `Guild._delete`.
+- `ChannelThread.__new__` was not setting `owner_id`.
+- Deleted roles could not resolve removing their references correctly.
+- `ApplicationCommandPermissionOverwrite.target` could raise `NameError`.
+
 #### Renames, Deprecation & Removals
 - Deprecate `id_to_time`.
 - Rename `parse_time` to `timestamp_to_datetime`
 - Deprecate `time_to_id`.
+- Remove `Emoji._delete`.
+- Remove `Sticker._delete`.
+- Remove `PermissionOverwrite.taget_role`.
+- Remove `PermissionOverwrite.targte_user_id`.
+- Rename `.overwrites` to `.permission_overwrites`.
+- Rename `._invalidate_perm_cache` to `._invalidate_permission_cache`
+- Rename `._cache_perm` to `._permission_cache`.
+- Rename `overwrties` parameter of `cr_pg_channel_object` to `permission_overwrties`.
+- Deprecate `overwrites` parameter of `cr_pg_channel_object`.
+- Rename `cr_p_overwrite_object` to `cr_p_permission_overwrite_object`.
+- Deprecate `cr_p_overwrite_object`.
+- Rename `ApplicationCommandPermissionOverwrite.type` to `.target_type`.
+- Rename `ApplicationCommandPermissionOverwriteType` to `ApplicationCommandPermissionOverwriteTargetType`.
+- Rename `ApplicationCommandPermission.add_overwrite` to `.add_permission_overwrite`.
+- Rename `InteractionResponseTypes` to `INTERACTION_RESPONSE_TYPES`.
+- Remove `PermissionOverwrite.id`.
+- Remove `PermissionOverwrite.type`.
+- Rename `CHANNEL_TYPES` to `CHANNEL_TYPE_MAP`.
+
+##### ext.slash
+- Rename `SlashCommand._overwrite` to `._permission_overwrites`.
+- Rename `SlashCommandPermissionOverwriteWrapper._overwrite` to `._permission_overwrite`.
+- Rename `SlashCommand.add_overwrite` to `.add_permission_overwrite`.
+- Rename `SlashCommand._get_sync_permission_ids` to `._get_permission_sync_ids`.
+- Rename `SlashCommand.get_permission_overwrite_for` to `.get_permission_overwrites_for`.
 
 ## 1.1.93 *\[2021-08-01\]*
 

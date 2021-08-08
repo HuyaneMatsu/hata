@@ -1520,7 +1520,7 @@ else:
                 
                 if flags&CONVERTER_FLAG_EVERYWHERE:
                     if flags&CONVERTER_FLAG_PROFILE:
-                        guild = message.channel.guild
+                        guild = message.guild
                         if (guild is not None):
                             try:
                                 user = await content_parser_ctx.client.guild_user_get(guild, id_)
@@ -1663,11 +1663,11 @@ async def client_converter(parser_ctx, content_parser_ctx):
                     if (pattern.match(client.name) is not None):
                         return client
                 
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     for client in clients:
                         try:
-                            guild_profile = client.guild_profiles[guild]
+                            guild_profile = client.guild_profiles[guild.id]
                         except KeyError:
                             continue
                         
@@ -1794,7 +1794,7 @@ async def role_converter(parser_ctx, content_parser_ctx):
                     return role
             
             else:
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     try:
                         role = guild.roles[id_]
@@ -1809,7 +1809,7 @@ async def role_converter(parser_ctx, content_parser_ctx):
             return role
     
     if flags&CONVERTER_FLAG_NAME:
-        guild = message.channel.guild
+        guild = message.guild
         if (guild is not None):
             role = guild.get_role_like(part)
             if (role is not None):
@@ -1853,7 +1853,7 @@ async def emoji_converter(parser_ctx, content_parser_ctx):
                     return emoji
             
             else:
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     try:
                         emoji = guild.emojis[id_]
@@ -1863,7 +1863,7 @@ async def emoji_converter(parser_ctx, content_parser_ctx):
                         return emoji
     
     if flags&CONVERTER_FLAG_NAME:
-        guild = message.channel.guild
+        guild = message.guild
         if (guild is not None):
             emoji = guild.get_emoji_like(part)
             if (emoji is not None):
@@ -1933,7 +1933,7 @@ async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
                     # Message found, but other channel, yield None
                     return None
             else:
-                if message.channel.guild is guild:
+                if message.guild is guild:
                     return message
                 else:
                     # Message found, but other guild, yield None
@@ -1973,7 +1973,7 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
         else:
             # Only local message can be yielded, so check if it is local
             guild = channel.guild
-            if (message.channel is channel) if (guild is None) else (message.channel.guild is guild):
+            if (message.channel is channel) if (guild is None) else (message.guild is guild):
                 return message
         
         # Message found, but other guild or channel yield None
@@ -2232,7 +2232,7 @@ PREREGISTERED_DEFAULT_CODES['message.channel'] = prdc_mc
 del prdc_mc
 
 async def prdc_mg(content_parser_ctx):
-    return content_parser_ctx.message.channel.guild
+    return content_parser_ctx.message.guild
 
 PREREGISTERED_DEFAULT_CODES['message.guild'] = prdc_mg
 PREREGISTERED_DEFAULT_CODES['message.channel.guild'] = prdc_mg
@@ -2251,14 +2251,14 @@ PREREGISTERED_DEFAULT_CODES['rest'] = prdc_rest
 del prdc_rest
 
 async def prdc_mgr(content_parser_ctx):
-    guild = content_parser_ctx.message.channel.guild
+    guild = content_parser_ctx.message.guild
     if guild is None:
         return None
     
     return guild.default_role
 
 PREREGISTERED_DEFAULT_CODES['message.guild.default_role'] = prdc_mgr
-PREREGISTERED_DEFAULT_CODES['message.channel.guild.default_role'] = prdc_mgr
+PREREGISTERED_DEFAULT_CODES['message.guild.default_role'] = prdc_mgr
 del prdc_mgr
 
 def validate_default_code(default_code):
@@ -2609,7 +2609,7 @@ class Converter:
             +----------------------------------------+--------------------------------------------------------------+
             | `'message.guild'`                      | Returns the message's guild. (Can be `None`)                 |
             +----------------------------------------+--------------------------------------------------------------+
-            | `'message.channel.guild'`              | Same as the `'message.guild'` one.                           |
+            | `'message.guild'`              | Same as the `'message.guild'` one.                           |
             +----------------------------------------+--------------------------------------------------------------+
             | `'client'`                             | Returns the client, who received the message.                |
             +----------------------------------------+--------------------------------------------------------------+
@@ -2618,7 +2618,7 @@ class Converter:
             +----------------------------------------+--------------------------------------------------------------+
             | `'message.guild.default_role'`         | Returns the message's guild's default role. (Can be `None`)  |
             +----------------------------------------+--------------------------------------------------------------+
-            | `'message.channel.guild.default_role'` | Same as the `''message.guild.default_role''` one.            |
+            | `'message.guild.default_role'` | Same as the `''message.guild.default_role''` one.            |
             +----------------------------------------+--------------------------------------------------------------+
             
             Defining these might can be difficult, because first you need to get along with hata internals, but to

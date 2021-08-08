@@ -956,7 +956,7 @@ else:
                 
                 if flags&CONVERTER_FLAG_EVERYWHERE:
                     if flags&CONVERTER_FLAG_PROFILE:
-                        guild = message.channel.guild
+                        guild = message.guild
                         if (guild is not None):
                             try:
                                 user = await command_context.client.guild_user_get(guild, id_)
@@ -1096,11 +1096,11 @@ async def client_converter(command_context, content_parser_parameter_detail, par
                     if (pattern.match(client.name) is not None):
                         return client
                 
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     for client in clients:
                         try:
-                            guild_profile = client.guild_profiles[guild]
+                            guild_profile = client.guild_profiles[guild.id]
                         except KeyError:
                             continue
                         
@@ -1223,7 +1223,7 @@ async def role_converter(command_context, content_parser_parameter_detail, part)
                     return role
             
             else:
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     try:
                         role = guild.roles[id_]
@@ -1238,7 +1238,7 @@ async def role_converter(command_context, content_parser_parameter_detail, part)
             return role
     
     if flags&CONVERTER_FLAG_NAME:
-        guild = message.channel.guild
+        guild = message.guild
         if (guild is not None):
             role = guild.get_role_like(part)
             if (role is not None):
@@ -1279,7 +1279,7 @@ async def emoji_converter(command_context, content_parser_parameter_detail, part
                     return emoji
             
             else:
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     try:
                         emoji = guild.emojis[id_]
@@ -1289,7 +1289,7 @@ async def emoji_converter(command_context, content_parser_parameter_detail, part
                         return emoji
     
     if flags&CONVERTER_FLAG_NAME:
-        guild = message.channel.guild
+        guild = message.guild
         if (guild is not None):
             emoji = guild.get_emoji_like(part)
             if (emoji is not None):
@@ -1330,7 +1330,7 @@ async def sticker_converter(command_context, content_parser_parameter_detail, pa
                     return sticker
             
             else:
-                guild = message.channel.guild
+                guild = message.guild
                 if (guild is not None):
                     try:
                         sticker = await command_context.client.sticker_get(id_)
@@ -1343,7 +1343,7 @@ async def sticker_converter(command_context, content_parser_parameter_detail, pa
                         return sticker
     
     if flags&CONVERTER_FLAG_NAME:
-        guild = message.channel.guild
+        guild = message.guild
         if (guild is not None):
             sticker = guild.get_sticker_like(part)
             if (sticker is not None):
@@ -1412,7 +1412,7 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
                     # Message found, but other channel, yield None
                     return None
             else:
-                if message.channel.guild is guild:
+                if message.guild is guild:
                     return message
                 else:
                     # Message found, but other guild, yield None
@@ -1452,7 +1452,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
         else:
             # Only local message can be yielded, so check if it is local
             guild = channel.guild
-            if (message.channel is channel) if (guild is None) else (message.channel.guild is guild):
+            if (message.channel is channel) if (guild is None) else (message.guild is guild):
                 return message
         
         # Message found, but other guild or channel yield None

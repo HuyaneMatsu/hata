@@ -145,7 +145,7 @@ def parse_role(text, message=None):
         return role
     
     if (message is not None):
-        guild = message.channel.guild
+        guild = message.guild
         if (guild is not None):
             role = guild.get_role_like(text)
             if (role is not None):

@@ -20,6 +20,8 @@ from .channel_guild_base import ChannelGuildMainBase
 from .channel_base import ChannelBase
 
 VoiceRegion = include('VoiceRegion')
+parse_permission_overwrites = include('parse_permission_overwrites')
+
 
 @export
 class ChannelVoiceBase(ChannelGuildMainBase):
@@ -30,15 +32,15 @@ class ChannelVoiceBase(ChannelGuildMainBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent : `None`, ``ChannelCategory``
-        The channel's parent. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+    parent_id : `int`
+        The channel's parent's identifier.
+    guild_id : `int`
+        The channel's guild's identifier. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermissionOverwrite`` objects
+    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -110,15 +112,15 @@ class ChannelVoice(ChannelVoiceBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent : `None`, ``ChannelCategory``
-        The channel's parent. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+    parent_id : `int`
+        The channel's parent's identifier.
+    guild_id : `int`
+        The channel's guild's identifier. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermissionOverwrite`` objects
+    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -176,11 +178,11 @@ class ChannelVoice(ChannelVoiceBase):
                 return self
         
         # Guild base
-        self._cache_perm = None
+        self._permission_cache = None
         self.name = data['name']
         
         self._init_parent_and_position(data, guild)
-        self.overwrites = self._parse_overwrites(data)
+        self.permission_overwrites = parse_permission_overwrites(data)
         
         # Voice base
         region = data.get('rtc_region', None)
@@ -206,29 +208,11 @@ class ChannelVoice(ChannelVoiceBase):
         return self
     
     
-    @copy_docs(ChannelBase._delete)
-    def _delete(self):
-        guild = self.guild
-        if guild is None:
-            return
-        
-        self.guild = None
-        del guild.channels[self.id]
-        
-        self.parent = None
-        
-        # safe delete
-        if self is guild.afk_channel:
-            guild.afk_channel = None
-        
-        self.overwrites.clear()
-        self._cache_perm = None
-    
     @copy_docs(ChannelBase._update_attributes)
     def _update_attributes(self, data):
-        self._cache_perm = None
+        self._permission_cache = None
         self._set_parent_and_position(data)
-        self.overwrites = self._parse_overwrites(data)
+        self.permission_overwrites = parse_permission_overwrites(data)
         
         self.name = data['name']
         self.bitrate = data['bitrate']
@@ -240,6 +224,7 @@ class ChannelVoice(ChannelVoiceBase):
         self.region = region
         
         self.video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
+    
     
     def _difference_update_attributes(self, data):
         """
@@ -259,27 +244,27 @@ class ChannelVoice(ChannelVoiceBase):
         Returned Data Structure
         -----------------------
         
-        +-----------------------+-----------------------------------+
-        | Keys                  | Values                            |
-        +=======================+===================================+
-        | bitrate               | `int`                             |
-        +-----------------------+-----------------------------------+
-        | parent                | ``ChannelCategory``               |
-        +-----------------------+-----------------------------------+
-        | name                  | `str`                             |
-        +-----------------------+-----------------------------------+
-        | overwrites            | `list` of ``PermissionOverwrite`` |
-        +-----------------------+-----------------------------------+
-        | position              | `int`                             |
-        +-----------------------+-----------------------------------+
-        | region                | `None` or ``VoiceRegion``         |
-        +-----------------------+-----------------------------------+
-        | user_limit            | `int`                             |
-        +-----------------------+-----------------------------------+
-        | video_quality_mode    | ``VideoQualityMode``              |
-        +-----------------------+-----------------------------------+
+        +-----------------------+---------------------------------------------------+
+        | Keys                  | Values                                            |
+        +=======================+===================================================+
+        | bitrate               | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | parent_id             | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | name                  | `str`                                             |
+        +-----------------------+---------------------------------------------------+
+        | permission_overwrites | `dict` of (`int`, ``PermissionOverwrite``) items  |
+        +-----------------------+---------------------------------------------------+
+        | position              | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | region                | `None` or ``VoiceRegion``                         |
+        +-----------------------+---------------------------------------------------+
+        | user_limit            | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | video_quality_mode    | ``VideoQualityMode``                              |
+        +-----------------------+---------------------------------------------------+
         """
-        self._cache_perm = None
+        self._permission_cache = None
         old_attributes = {}
         
         name = data['name']
@@ -297,10 +282,10 @@ class ChannelVoice(ChannelVoiceBase):
             old_attributes['user_limit'] = self.user_limit
             self.user_limit = user_limit
         
-        overwrites = self._parse_overwrites(data)
-        if self.overwrites != overwrites:
-            old_attributes['overwrites'] = self.overwrites
-            self.overwrites = overwrites
+        permission_overwrites = parse_permission_overwrites(data)
+        if self.permission_overwrites != permission_overwrites:
+            old_attributes['permission_overwrites'] = self.permission_overwrites
+            self.permission_overwrites = permission_overwrites
         
         region = data.get('rtc_region', None)
         if (region is not None):
@@ -319,15 +304,9 @@ class ChannelVoice(ChannelVoiceBase):
         
         return old_attributes
     
+    
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        guild = self.guild
-        if guild is None:
-            return PERMISSION_NONE
-        
-        if user.id == guild.owner_id:
-            return PERMISSION_TEXT_DENY
-        
         result = self._permissions_for(user)
         if not result.can_view_channel:
             return PERMISSION_NONE
@@ -339,6 +318,7 @@ class ChannelVoice(ChannelVoiceBase):
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
+    
     
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
@@ -353,7 +333,8 @@ class ChannelVoice(ChannelVoiceBase):
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
-
+    
+    
     @classmethod
     def precreate(cls, channel_id, **kwargs):
         """
@@ -465,15 +446,15 @@ class ChannelStage(ChannelVoiceBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent : `None`, ``ChannelCategory``
-        The channel's parent. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+    parent_id : `int`
+        The channel's parent's identifier.
+    guild_id : `int`
+        The channel's guild's identifier.. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermissionOverwrite`` objects
+    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -532,11 +513,11 @@ class ChannelStage(ChannelVoiceBase):
                 return self
         
         # Guild base
-        self._cache_perm = None
+        self._permission_cache = None
         self.name = data['name']
         
         self._init_parent_and_position(data, guild)
-        self.overwrites = self._parse_overwrites(data)
+        self.permission_overwrites = parse_permission_overwrites(data)
         
         # Voice base
         region = data.get('rtc_region', None)
@@ -560,25 +541,25 @@ class ChannelStage(ChannelVoiceBase):
         
         return self
     
+    
     @copy_docs(ChannelBase._delete)
     def _delete(self):
+        self.permission_overwrites.clear()
+        self._permission_cache = None
+        
         guild = self.guild
-        if guild is None:
-            return
-        
-        self.guild = None
-        del guild.channels[self.id]
-        
-        self.parent = None
-        
-        self.overwrites.clear()
-        self._cache_perm = None
+        if (guild is not None):
+            try:
+                del guild.channels[self.id]
+            except KeyError:
+                pass
+    
     
     @copy_docs(ChannelBase._update_attributes)
     def _update_attributes(self, data):
-        self._cache_perm = None
+        self._permission_cache = None
         self._set_parent_and_position(data)
-        self.overwrites = self._parse_overwrites(data)
+        self.permission_overwrites = parse_permission_overwrites(data)
         
         self.name = data['name']
         self.bitrate = data['bitrate']
@@ -590,6 +571,7 @@ class ChannelStage(ChannelVoiceBase):
         self.region = region
         
         self.topic = None
+    
     
     def _difference_update_attributes(self, data):
         """
@@ -609,27 +591,27 @@ class ChannelStage(ChannelVoiceBase):
         Returned Data Structure
         -----------------------
         
-        +-----------------------+-----------------------------------+
-        | Keys                  | Values                            |
-        +=======================+===================================+
-        | bitrate               | `int`                             |
-        +-----------------------+-----------------------------------+
-        | parent                | ``ChannelCategory``  |
-        +-----------------------+-----------------------------------+
-        | name                  | `str`                             |
-        +-----------------------+-----------------------------------+
-        | overwrites            | `list` of ``PermissionOverwrite`` |
-        +-----------------------+-----------------------------------+
-        | position              | `int`                             |
-        +-----------------------+-----------------------------------+
-        | region                | `None` or ``VoiceRegion``         |
-        +-----------------------+-----------------------------------+
-        | user_limit            | `int`                             |
-        +-----------------------+-----------------------------------+
-        | topic                 | `None` or `int`                   |
-        +-----------------------+-----------------------------------+
+        +-----------------------+---------------------------------------------------+
+        | Keys                  | Values                                            |
+        +=======================+===================================================+
+        | bitrate               | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | parent_id             | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | name                  | `str`                                             |
+        +-----------------------+---------------------------------------------------+
+        | permission_overwrites | `dict` of (`int`, ``PermissionOverwrite``) items  |
+        +-----------------------+---------------------------------------------------+
+        | position              | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | region                | `None` or ``VoiceRegion``                         |
+        +-----------------------+---------------------------------------------------+
+        | user_limit            | `int`                                             |
+        +-----------------------+---------------------------------------------------+
+        | topic                 | `None` or `int`                                   |
+        +-----------------------+---------------------------------------------------+
         """
-        self._cache_perm = None
+        self._permission_cache = None
         old_attributes = {}
         
         name = data['name']
@@ -647,10 +629,10 @@ class ChannelStage(ChannelVoiceBase):
             old_attributes['user_limit'] = self.user_limit
             self.user_limit = user_limit
         
-        overwrites = self._parse_overwrites(data)
-        if self.overwrites != overwrites:
-            old_attributes['overwrites'] = self.overwrites
-            self.overwrites = overwrites
+        permission_overwrites = parse_permission_overwrites(data)
+        if self.permission_overwrites != permission_overwrites:
+            old_attributes['permission_overwrites'] = self.permission_overwrites
+            self.permission_overwrites = permission_overwrites
         
         region = data.get('rtc_region', None)
         if (region is not None):
@@ -668,16 +650,10 @@ class ChannelStage(ChannelVoiceBase):
             self.topic = topic
         
         return old_attributes
-
+    
+    
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
-        guild = self.guild
-        if guild is None:
-            return PERMISSION_NONE
-        
-        if user.id == guild.owner_id:
-            return PERMISSION_TEXT_DENY
-        
         result = self._permissions_for(user)
         if not result.can_view_channel:
             return PERMISSION_NONE
@@ -689,6 +665,7 @@ class ChannelStage(ChannelVoiceBase):
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
+    
     
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
@@ -703,7 +680,8 @@ class ChannelStage(ChannelVoiceBase):
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
-
+    
+    
     @classmethod
     def precreate(cls, channel_id, **kwargs):
         """
@@ -808,6 +786,7 @@ class ChannelStage(ChannelVoiceBase):
         
         return self
     
+    
     @property
     def audience(self):
         """
@@ -828,6 +807,7 @@ class ChannelStage(ChannelVoiceBase):
         
         return users
     
+    
     @property
     def speakers(self):
         """
@@ -847,6 +827,7 @@ class ChannelStage(ChannelVoiceBase):
                 users.append(state.user)
         
         return users
+    
     
     @property
     def moderators(self):

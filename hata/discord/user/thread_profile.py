@@ -39,9 +39,9 @@ def thread_user_create(thread_channel, user, thread_user_data):
         thread_profiles = user.thread_profiles = {}
     
     try:
-        thread_profile = thread_profiles[thread_channel]
+        thread_profile = thread_profiles[thread_channel.id]
     except KeyError:
-        thread_profiles[thread_channel] = ThreadProfile(thread_user_data)
+        thread_profiles[thread_channel.id] = ThreadProfile(thread_user_data)
         created = True
     else:
         thread_profile._update_attributes(thread_user_data)
@@ -77,9 +77,9 @@ def thread_user_update(thread_channel, user, thread_user_data):
         thread_profiles = user.thread_profiles = {}
     
     try:
-        thread_profile = thread_profiles[thread_channel]
+        thread_profile = thread_profiles[thread_channel.id]
     except KeyError:
-        thread_profiles[thread_channel] = ThreadProfile(thread_user_data)
+        thread_profiles[thread_channel.id] = ThreadProfile(thread_user_data)
         return None
     
     old_attributes = thread_profile._update_attributes(thread_user_data)
@@ -113,7 +113,7 @@ def thread_user_delete(thread_channel, user_id):
             thread_profiles = user.thread_profiles
             if (thread_profiles is not None):
                 try:
-                    del thread_profiles[thread_channel]
+                    del thread_profiles[thread_channel.id]
                 except KeyError:
                     pass
                 else:
@@ -152,10 +152,10 @@ def thread_user_pop(thread_channel, user_id, me):
             thread_profiles = user.thread_profiles
             if (thread_profiles is not None):
                 if isinstance(user, Client) and (user is not me):
-                    thread_profile = thread_profiles.get(thread_channel, None)
+                    thread_profile = thread_profiles.get(thread_channel.id, None)
                 else:
                     try:
-                        thread_profile = thread_profiles.pop(thread_channel)
+                        thread_profile = thread_profiles.pop(thread_channel.id)
                     except KeyError:
                         thread_profile = None
                     else:

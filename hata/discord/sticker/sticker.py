@@ -527,27 +527,8 @@ class Sticker(DiscordEntity, immortal=True):
         self.type = StickerType.none
         self.user = ZEROUSER
         return self
-
-    def _delete(self):
-        """
-        Removes the sticker's references.
-        
-        Called when a sticker is deleted.
-        """
-        self.available = False
-        
-        guild_id = self.guild_id
-        if guild_id:
-            try:
-                guild = GUILDS[guild_id]
-            except KeyError:
-                pass
-            else:
-                try:
-                    del guild.stickers[self.id]
-                except KeyError:
-                    pass
-
+    
+    
     @property
     def guild(self):
         """

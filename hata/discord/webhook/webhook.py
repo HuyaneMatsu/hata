@@ -46,8 +46,8 @@ class Webhook(WebhookBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    channel : `None` or ``ChannelText``
-        The channel, where the webhook is going to send it's messages.
+    channel_id : `int`
+        The channel's identifier, where the webhook is going to send it's messages.
     type : ``WebhookType``
         The webhook's type.
     application_id : `int`
@@ -244,8 +244,8 @@ class Webhook(WebhookBase):
             cls.banner.precovert(kwargs, processable)
             
             for attribute_name, attribute_type in (
-                    ('user'   , (User, Client),),
-                    ('channel', ChannelText   ,),
+                    ('user'      , (User, Client),),
+                    ('channel_id', ChannelText   ,),
                         ):
                 try:
                     attribute_value = kwargs.pop(attribute_name)
@@ -293,23 +293,11 @@ class Webhook(WebhookBase):
         return self
     
     
-    def _delete(self):
-        """
-        Removes the webhook's references.
-        """
-        channel = self.channel
-        if channel is None:
-            return
-        
-        self.channel = None
-        self.user = ZEROUSER
-    
-    
     url = property(module_urls.webhook_url)
     
     
     @classmethod
-    async def _from_follow_data(cls, data, source_channel, target_channel, client):
+    async def _from_follow_data(cls, data, source_channel, target_channel_id, client):
         """
         Creates the webhook, what executes cross-posts.
         
@@ -323,8 +311,8 @@ class Webhook(WebhookBase):
             Received webhook data.
         source_channel : ``ChannelText`` instance
             The followed channel.
-        target_channel : ``ChannelText`` instance
-            The target channel where the webhook messages will be sent.
+        target_channel_id : `int`
+            The target channel's identifier where the webhook messages will be sent.
         client : ``Client``
             The client who created the webhook.
         
@@ -381,7 +369,7 @@ class Webhook(WebhookBase):
         self.banner_type = ICON_TYPE_NONE
         self.name = name
         
-        self.channel = target_channel
+        self.channel_id = target_channel_id
         self.type = WebhookType.server
         
         self.application_id = 0

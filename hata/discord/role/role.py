@@ -3,7 +3,7 @@ __all__ = ('Role', )
 from ...backend.export import export, include
 
 from ..bases import DiscordEntity
-from ..core import ROLES
+from ..core import ROLES, GUILDS
 from ..utils import DATETIME_FORMAT_CODE
 from ..color import Color
 from ..user import create_partial_user_from_id
@@ -36,7 +36,7 @@ class Role(DiscordEntity, immortal=True):
     color : ``Color``
         The role's color. If the color equals to ``Color(0)``, then it is ignored meanwhile calculating towards a
         user's display color.
-    guild : ``Guild`` or `None`
+    guild_id : ``Guild`` or `None`
         The guild of the role. If the role is partial, including already deleted roles, then it's `.guild` is set to
         `None`.
     separated : `bool`
@@ -54,7 +54,7 @@ class Role(DiscordEntity, immortal=True):
     position : `int`
         The role's position.
     """
-    __slots__ = ('color', 'guild', 'separated', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions',
+    __slots__ = ('color', 'guild_id', 'separated', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions',
         'position',)
     
     def __new__(cls, data, guild):
@@ -75,38 +75,39 @@ class Role(DiscordEntity, immortal=True):
         """
         role_id = int(data['id'])
         try:
-            role = ROLES[role_id]
-            update = (role.guild is None)
+            self = ROLES[role_id]
         except KeyError:
-            role = object.__new__(cls)
-            role.id = role_id
+            self = object.__new__(cls)
+            self.id = role_id
             update = True
-            ROLES[role_id] = role
+            ROLES[role_id] = self
+        else:
+            update = self.partial
         
         if update:
             
-            guild.roles[role.id] = role
-            role.guild = guild
+            guild.roles[self.id] = self
+            self.guild_id = guild.id
             
-            role.name = data['name']
+            self.name = data['name']
             
-            role.position = data.get('position', 0)
+            self.position = data.get('position', 0)
             
-            role.color = Color(data.get('color', 0))
+            self.color = Color(data.get('color', 0))
             
-            role.permissions = Permission(data[PERMISSION_KEY])
+            self.permissions = Permission(data[PERMISSION_KEY])
             
-            role.separated = data.get('hoist', False)
+            self.separated = data.get('hoist', False)
             
             if data.get('managed', False):
-                role._set_managed(data)
+                self._set_managed(data)
             else:
-                role.manager_id = 0
-                role.manager_type = ROLE_MANAGER_TYPE_NONE
+                self.manager_id = 0
+                self.manager_type = ROLE_MANAGER_TYPE_NONE
             
-            role.mentionable = data.get('mentionable', False)
+            self.mentionable = data.get('mentionable', False)
         
-        return role
+        return self
     
     
     @classmethod
@@ -228,7 +229,7 @@ class Role(DiscordEntity, immortal=True):
             self.id = role_id
             
             self.color = Color()
-            self.guild = None
+            self.guild_id = 0
             self.separated = False
             self.manager_type = ROLE_MANAGER_TYPE_NONE
             self.mentionable = False
@@ -237,7 +238,7 @@ class Role(DiscordEntity, immortal=True):
             self.position = 1
             ROLES[role_id] = self
         else:
-            if (self.guild is not None):
+            if (not self.partial):
                 return self
         
         if (processable is not None):
@@ -293,6 +294,7 @@ class Role(DiscordEntity, immortal=True):
         self.manager_id = manager_id
         self.manager_type = manager_type
         
+        
     def _update_attributes(self, data):
         """
         Updates the role with the given `data` with overwriting it's old attributes.
@@ -302,10 +304,6 @@ class Role(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Role data received from Discord.
         """
-        guild = self.guild
-        if guild is None:
-            return
-        
         clear_permission_cache = False
         
         position = data['position']
@@ -329,8 +327,15 @@ class Role(DiscordEntity, immortal=True):
         self.mentionable = data['mentionable']
         
         if clear_permission_cache:
-            guild._invalidate_perm_cache()
-    
+            guild_id = self.guild_id
+            if guild_id:
+                try:
+                    guild = GUILDS[self.guild_id]
+                except KeyError:
+                    pass
+                else:
+                    guild._invalidate_permission_cache()
+        
     
     def __repr__(self):
         """Returns the role's representation."""
@@ -382,9 +387,6 @@ class Role(DiscordEntity, immortal=True):
         +---------------+-------------------+
         """
         old_attributes = {}
-        guild = self.guild
-        if guild is None:
-            return old_attributes
         
         clear_permission_cache = False
         
@@ -429,46 +431,54 @@ class Role(DiscordEntity, immortal=True):
             self.mentionable = mentionable
         
         if clear_permission_cache:
-            guild._invalidate_perm_cache()
+            guild_id = self.guild_id
+            if guild_id:
+                try:
+                    guild = GUILDS[self.guild_id]
+                except KeyError:
+                    pass
+                else:
+                    guild._invalidate_permission_cache()
         
         return old_attributes
+    
     
     def _delete(self):
         """
         Removes the role's references.
         
-        Used when the role is deleted.
+        Called when the role is deleted.
         """
-        guild = self.guild
-        if guild is None:
-            return # already deleted
-        
-        self.guild = None
-        
+        guild_id = self.guild_id
         try:
-            del guild.roles[self.id]
+            guild = GUILDS[guild_id]
         except KeyError:
             pass
-        
-        guild._cache_perm = None
-        for channel in guild.channels.values():
-            channel._cache_perm = None
-        
-        for user in guild.users.values():
+        else:
+            guild._invalidate_permission_cache()
+            
+            role_id = self.id
             try:
-                profile = user.guild_profiles[guild]
+                del guild.roels[role_id]
             except KeyError:
-                # the user has no ``GuildProfile``, it supposed to be impossible
-                continue
-            
-            roles = profile.roles
-            if roles is None:
-                continue
-            
-            try:
-                roles.remove(self)
-            except ValueError:
                 pass
+            else:
+                for user in guild.users.values():
+                    try:
+                        guild_profile = user.guild_profiles[guild_id]
+                    except KeyError:
+                        pass
+                    else:
+                        role_ids = guild_profile.role_ids
+                        if (role_ids is not None):
+                            index = role_ids.index(role_id)
+                            if (index != -1):
+                                if len(role_ids) == 1:
+                                    role_ids = None # It is so deep! (that's what she said)
+                                else:
+                                    role_ids = tuple(*role_ids[:index], *role_ids[index+1:])
+                                guild_profile.role_ids = role_ids
+    
     
     @property
     def is_default(self):
@@ -479,7 +489,7 @@ class Role(DiscordEntity, immortal=True):
         -------
         is_default : `bool`
         """
-        return (self.position == 0)
+        return (self.id == self.guild_id)
     
     
     @property
@@ -543,30 +553,30 @@ class Role(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) instances
+        users : `list` of ``ClientUserBase`` instances
         """
-        guild = self.guild
-        if guild is None:
-            users = []
-        elif self.position == 0:
-            users = list(guild.users.values())
+        users = []
+        guild_id = self.guild_id
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            pass
         else:
-            users = []
-            for user in guild.users.values():
-                try:
-                    profile = user.guild_profiles[guild]
-                except KeyError:
-                    # should not happen
-                    continue
-                
-                roles = profile.roles
-                if roles is None:
-                    continue
-                
-                if self not in user.roles:
-                    continue
-                
-                users.append(user)
+            role_id = self.id
+            if role_id == guild.id:
+                users.extend(guild.users.values())
+            else:
+                for user in guild.users.values():
+                    try:
+                        guild_profile = user.guild_profiles[guild.id]
+                    except KeyError:
+                        # should not happen
+                        pass
+                    else:
+                        role_ids = guild_profile
+                        if (role_ids is not None):
+                            if role_id in role_ids:
+                                users.append(user)
         
         return users
     
@@ -612,6 +622,20 @@ class Role(DiscordEntity, immortal=True):
         return manager
     
     @property
+    def guild(self):
+        """
+        Returns the role's guild.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)
+    
+    
+    @property
     def partial(self):
         """
         Returns whether the role is partial.
@@ -622,7 +646,16 @@ class Role(DiscordEntity, immortal=True):
         -------
         partial : `bool`
         """
-        return (self.guild is None)
+        guild_id = self.guild_id
+        if guild_id:
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                pass
+            else:
+                return guild.partial
+        
+        return True
     
     
     def __gt__(self, other):
@@ -639,6 +672,7 @@ class Role(DiscordEntity, immortal=True):
         
         return NotImplemented
     
+    
     def __ge__(self, other):
         """Returns whether this role's position is higher or equal to the other's."""
         if type(self) is type(other):
@@ -653,6 +687,7 @@ class Role(DiscordEntity, immortal=True):
         
         return NotImplemented
     
+    
     def __le__(self, other):
         """Returns whether this role's position is less or equal to the other's."""
         if type(self) is type(other):
@@ -666,6 +701,7 @@ class Role(DiscordEntity, immortal=True):
             return False
         
         return NotImplemented
+    
     
     def __lt__(self, other):
         """Returns whether this role's position is less than the other's."""

@@ -3,6 +3,7 @@ __all__ = ('WebhookBase',)
 from ...backend.utils import copy_docs
 
 from ..user import UserBase
+from ..core import CHANNELS, GUILDS
 
 from .preinstanced import WebhookType
 
@@ -28,12 +29,12 @@ class WebhookBase(UserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    channel : `None` or ``ChannelText``
-        The channel, where the webhook is going to send it's messages.
+    channel_id : `int`
+        The channel's identifier, where the webhook is going to send it's messages.
     type : ``WebhookType``
         The webhook's type.
     """
-    __slots__ = ('channel', 'type',)
+    __slots__ = ('channel_id', 'type',)
     
     @property
     def is_bot(self):
@@ -58,14 +59,27 @@ class WebhookBase(UserBase):
         -------
         partial : `bool`
         """
-        channel = self.channel
-        if channel is None:
+        try:
+            channel = CHANNELS[self.channel_id]
+        except KeyError:
             return True
         
         if channel.guild is None:
             return True
         
         return False
+    
+    
+    @property
+    def channel(self):
+        """
+        Returns the webhook's channel if applicable.
+        
+        Returns
+        -------
+        channel : `None` or ``ChannelText``
+        """
+        return CHANNELS.get(self.channel_id, None)
     
     
     @property
@@ -77,11 +91,12 @@ class WebhookBase(UserBase):
         -------
         guild : `None` or ``Guild``
         """
-        channel = self.channel
-        if channel is None:
-            return
-        
-        return channel.guild
+        try:
+            channel = CHANNELS[self.channel_id]
+        except KeyError:
+            pass
+        else:
+            return channel.guild
     
     
     @copy_docs(UserBase.can_use_emoji)

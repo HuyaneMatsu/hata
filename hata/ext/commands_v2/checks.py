@@ -851,7 +851,7 @@ class CheckIsGuildOwner(CheckBase):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         message = context.context
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -892,7 +892,7 @@ class CheckIsGuildOwnerOrIsOwner(CheckIsGuildOwner, CheckIsOwner):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         message = context.context
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1069,7 +1069,7 @@ class CheckHasGuildPermission(CheckHasPermissionBase):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         message = context.message
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1155,7 +1155,7 @@ class CheckHasGuildPermissionOrIsOwner(CheckHasGuildPermission, CheckIsOwner):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         message = context.message
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1235,7 +1235,7 @@ class CheckHasClientGuildPermission(CheckHasClientPermission):
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        guild = context.message.channel.guild
+        guild = context.message.guild
         if guild is None:
             return False
         
@@ -1331,7 +1331,7 @@ class CheckIsGuild(CheckIsGuildBase):
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        guild = context.message.channel.guild
+        guild = context.message.guild
         if guild is None:
             return False
         
@@ -1390,7 +1390,7 @@ class CheckIsAnyGuild(CheckIsGuildBase):
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        guild = context.message.channel.guild
+        guild = context.message.guild
         if guild is None:
             return False
         
@@ -1658,7 +1658,7 @@ class CheckIsInVoice(CheckSingleBase):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         message = context.message
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1677,12 +1677,12 @@ class CheckIsBooster(CheckSingleBase):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         message = context.message
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return
         
         try:
-            profile = message.author.guild_profiles[guild]
+            profile = message.author.guild_profiles[guild.id]
         except KeyError:
             return False
         

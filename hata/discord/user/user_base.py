@@ -372,7 +372,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+        guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         """
         return {}
     
@@ -521,14 +521,14 @@ class UserBase(DiscordEntity, immortal=True):
         
         role_mentions = message.role_mentions
         if (role_mentions is not None):
-            guild = message.channel.guild
+            guild = message.guild
             if (guild is not None):
                 try:
-                    profile = self.guild_profiles[guild]
+                    guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     pass
                 else:
-                    roles = profile.roles
+                    roles = guild_profile.roles
                     if (roles is not None):
                         for role in roles:
                             if role in role_mentions:
@@ -629,6 +629,40 @@ class UserBase(DiscordEntity, immortal=True):
         has_higher_role_than_at : `bool`
         """
         return False
+    
+    
+    def get_guild_profile_for(self, guild):
+        """
+        Returns the user's guild profile for the given guild.
+        
+        Parameters
+        ----------
+        guild : ``Guild``
+            The guild to get guild profile for.
+        
+        Returns
+        -------
+        guild_profile : `None` or ``Guild``
+        """
+        return None
+    
+    
+    def iter_guild_profiles(self):
+        """
+        Iterates over the guild profiles of the user.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        guild : ``Guild``
+            The guild profile's guild.
+        guild_profile : ``GuildProfile``
+            The user's guild profile in the guild.
+        """
+        return
+        yield
+    
     
     avatar_url_for = property(module_urls.user_avatar_url_for)
     avatar_url_for_as = module_urls.user_avatar_url_for_as

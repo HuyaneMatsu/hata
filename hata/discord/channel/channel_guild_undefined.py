@@ -1,15 +1,17 @@
 __all__ = ('ChannelGuildUndefined', )
 
 from ...backend.utils import copy_docs
-from ...backend.export import export
+from ...backend.export import export, include
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY
+from ..permission.permission import PERMISSION_NONE
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildMainBase
+
+parse_permission_overwrites = include('parse_permission_overwrites')
 
 @export
 class ChannelGuildUndefined(ChannelGuildMainBase):
@@ -21,15 +23,15 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent : `None`, ``ChannelCategory``
-        The channel's parent. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+    parent_id : `int`
+        The channel's parent's identifier.
+    guild_id : `int`
+        The channel's guild's identifier. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    overwrites : `list` of ``PermissionOverwrite`` objects
+    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -57,7 +59,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     __slots__ = ('type', '__dict__', )
     
     DEFAULT_TYPE = 7
-    IGNORED_NAMES = frozenset(('type', 'name', 'position', 'parent_id', 'permission_overwrites', ))
+    IGNORED_NAMES = frozenset(('type', 'name', 'position', 'permission_overwrites', ))
     INTERCHANGE = ()
     ORDER_GROUP = 0
     REPRESENTED_TYPES = (7, 8, )
@@ -89,12 +91,12 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
             if self.clients:
                 return self
         
-        self._cache_perm = None
+        self._permission_cache = None
         self.name = data['name']
         self.type = data['type']
         
         self._init_parent_and_position(data, guild)
-        self.overwrites = self._parse_overwrites(data)
+        self.permission_overwrites = parse_permission_overwrites(data)
         
         for key in data.keys():
             if key in self.IGNORED_NAMES:
@@ -136,9 +138,9 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     
     @copy_docs(ChannelBase._update_attributes)
     def _update_attributes(self, data):
-        self._cache_perm = None
+        self._permission_cache = None
         self._set_parent_and_position(data)
-        self.overwrites = self._parse_overwrites(data)
+        self.permission_overwrites = parse_permission_overwrites(data)
         
         self.name = data['name']
         
@@ -165,19 +167,20 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | parent        | ``ChannelCategory``               |
-        +---------------+-----------------------------------+
-        | name          | `str`                             |
-        +---------------+-----------------------------------+
-        | overwrites    | `list` of ``PermissionOverwrite`` |
-        +---------------+-----------------------------------+
-        | position      | `int`                             |
-        +---------------+-----------------------------------+
+        
+        +---------------------------+---------------------------------------------------+
+        | Keys                      | Values                                            |
+        +===========================+===================================================+
+        | parent_id                 | `int`                                             |
+        +---------------------------+---------------------------------------------------+
+        | name                      | `str`                                             |
+        +---------------------------+---------------------------------------------------+
+        | permission_overwrites     | `dict` of (`int`, ``PermissionOverwrite``) items  |
+        +---------------------------+---------------------------------------------------+
+        | position                  | `int`                                             |
+        +---------------------------+---------------------------------------------------+
         """
-        self._cache_perm = None
+        self._permission_cache = None
         old_attributes = {}
         
         name = data['name']
@@ -185,10 +188,10 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
             old_attributes['name'] = self.name
             self.name = name
         
-        overwrites = self._parse_overwrites(data)
-        if self.overwrites != overwrites:
-            old_attributes['overwrites'] = self.overwrites
-            self.overwrites = overwrites
+        permission_overwrites = parse_permission_overwrites(data)
+        if self.permission_overwrites != permission_overwrites:
+            old_attributes['permission_overwrites'] = self.permission_overwrites
+            self.permission_overwrites = permission_overwrites
         
         self._update_parent_and_position(data, old_attributes)
 
@@ -208,38 +211,15 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         
         return old_attributes
     
-    @copy_docs(ChannelBase._delete)
-    def _delete(self):
-        guild = self.guild
-        if guild is None:
-            return
-        
-        self.guild = None
-        
-        try:
-            del guild.channels[self.id]
-        except KeyError:
-            pass
-        
-        self.parent = None
-        
-        self.overwrites.clear()
-        self._cache_perm = None
     
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self,user):
-        guild = self.guild
-        if guild is None:
-            return PERMISSION_NONE
-        
-        if user.id == guild.owner_id:
-            return PERMISSION_TEXT_AND_VOICE_DENY
-        
         result = self._permissions_for(user)
         if not result.can_view_channel:
             return PERMISSION_NONE
         
         return Permission(result)
+    
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):
@@ -315,5 +295,3 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
                 setattr(self, *item)
         
         return self
-
-

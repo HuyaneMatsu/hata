@@ -791,7 +791,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
             
             if reference_count == 0:
                 try:
-                    del user.guild_profiles[guild]
+                    del user.guild_profiles[guild.id]
                 except KeyError:
                     pass
     

@@ -20,6 +20,7 @@ except ImportError:
     relativedelta = None
 
 from ..backend.export import export, include
+from ..backend.utils import modulize
 
 from .bases import DiscordEntity
 from .core import USERS, CHANNELS, ROLES
@@ -1341,3 +1342,129 @@ def is_url(url):
     is_url : `bool`
     """
     return (URL_RP.fullmatch(url) is not None)
+
+
+@modulize
+class TIMESTAMP_STYLES:
+    """
+    Contains timestamp format styles, which can be used within Discord's markdown format.
+    You may be use these styles at `format_datetime`, `format_id` and at `format_unix_time`.
+    
+    The style formats are the following:
+    
+    +-------------------+-------+-----------+
+    | Name              | Value | Note      |
+    +====================+======+===========+
+    | short_time        | `'t'` |           |
+    +-------------------+-------+-----------+
+    | long_time         | `'T'` |           |
+    +-------------------+-------+-----------+
+    | short_date        | `'d'` |           |
+    +-------------------+-------+-----------+
+    | long_date         | `'D'` |           |
+    +-------------------+-------+-----------+
+    | short_date_time   | `'f'` | default   |
+    +-------------------+-------+-----------+
+    | long_date_time    | `'F'` |           |
+    +-------------------+-------+-----------+
+    | relative_time     | `'R'` |           |
+    +-------------------+-------+-----------+
+    
+    Note, that Discord's time formatting is localized and they are all stultus when english language is selected.
+    To avoid insanity, I beg you to use
+    `datetime formatting:https://docs.python.org/3/library/datetime.html#datetime.date.__format__` instead.
+    
+    > "wen day is dark always rember happy day"
+    
+    As a quick example, hata internally uses the following formatting:
+    
+    ```py
+    >>> from hata import DATETIME_FORMAT_CODE
+    >>> from datetime import datetime
+    >>> print(f'{datetime.utcnow():{DATETIME_FORMAT_CODE}}')
+    2021-08-05 13:53:16
+    ```
+    
+    Hata also gives option for relative formatting with the ``elapsed_time`` function. It is available when
+    `dateutil:https://pypi.org/project/python-dateutil/` is installed.
+    
+    ```py
+    >>> from hata import elapsed_time
+    >>> from datetime import datetime, timedelta
+    >>> when = datetime.utcnow()-timedelta(days=5)
+    >>> print(f'{elapsed_time(when)} ago')
+    5 days ago
+    ```
+    """
+    short_time = 't'
+    long_time = 'T'
+    short_date = 'd'
+    long_date = 'D'
+    short_date_time = 'f'
+    long_date_time = 'F'
+    relative_time = 'R'
+
+
+def format_datetime(date_time, style=None):
+    """
+    Formats date time to Discord's timestamp markdown format.
+    
+    For formatting details please check out ``TIMESTAMP_STYLES``, which contains the usable styles.
+    
+    Parameters
+    ----------
+    date_time : `datetime`
+        The datetime to format.
+    style : `None` or `str`, `optional
+        Format code to use. They are listed within ``TIMESTAMP_STYLES``.
+    
+    Returns
+    -------
+    formatted_string : `str`
+    """
+    return format_unix_time(datetime_to_unix_time(date_time), style)
+
+
+def format_id(id_, style=None):
+    """
+    Formats Discord identifier to Discord's timestamp markdown format.
+    
+    For formatting details please check out ``TIMESTAMP_STYLES``, which contains the usable styles.
+    
+    Parameters
+    ----------
+    id_ : `int`
+        The Discord identifier to format.
+    style : `None` or `str`, `optional
+        Format code to use. They are listed within ``TIMESTAMP_STYLES``.
+    
+    Returns
+    -------
+    formatted_string : `str`
+    """
+    return format_unix_time(id_to_unix_time(id_), style)
+
+
+def format_unix_time(unix_time, style=None):
+    """
+    Formats unix time to Discord'stimestamp  markdown format.
+    
+    For formatting details please check out ``TIMESTAMP_STYLES``, which contains the usable styles.
+    
+    Parameters
+    ----------
+    unix_time : `int`
+        The datetime to format.
+    style : `None` or `str`, `optional
+        Format code to use. They are listed within ``TIMESTAMP_STYLES``.
+    
+    Returns
+    -------
+    formatted_string : `str`
+    """
+    if style is None:
+        formatted_string = f'<t:{unix_time}>'
+    else:
+        formatted_string = f'<t:{unix_time}:{style}>'
+    
+    return formatted_string

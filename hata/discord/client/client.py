@@ -24,7 +24,7 @@ from ..user import User, GuildProfile, UserBase, UserFlag, create_partial_user_f
     ClientUserBase, ClientUserPBase, Status, PremiumType, HypesquadHouse, RelationshipType
 from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
-    message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPES, ChannelTextBase, ChannelVoice, \
+    message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPE_MAP, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
     ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
@@ -59,7 +59,7 @@ from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_boo
 from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
 from ..bases import ICON_TYPE_NONE
 from ..embed import EmbedImage
-from ..interaction import ApplicationCommand, InteractionResponseTypes, ApplicationCommandPermission, \
+from ..interaction import ApplicationCommand, INTERACTION_RESPONSE_TYPES, ApplicationCommandPermission, \
     ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext
 from ..interaction.application_command import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
@@ -68,6 +68,7 @@ from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
 from ..scheduled_event import PrivacyLevel
+from ..message.utils import process_message_chunk
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
@@ -112,7 +113,7 @@ class Client(ClientUserPBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -147,6 +148,8 @@ class Client(ClientUserPBase):
     gateway : ``DiscordGateway`` or ``DiscordGatewaySharder``
         The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
         as gateway.
+    guilds : `set` of ``Guild``
+        The guilds, where the client is in.
     http : ``DiscordHTTPClient``
         The http session of the client. Can be used as a normal http session, or for lower level interactions with the
         Discord API.
@@ -228,8 +231,8 @@ class Client(ClientUserPBase):
         'email', 'locale', 'mfa', 'premium_type', 'verified', # OAUTH 2
         '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
         '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
-        'gateway', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships', 'running',
-        'secret', 'shard_count', 'token', 'voice_clients', )
+        'gateway', 'guilds', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships',
+        'running', 'secret', 'shard_count', 'token', 'voice_clients', )
     
     loop = KOKORO
     _next_auto_id = 1
@@ -552,6 +555,7 @@ class Client(ClientUserPBase):
         self.group_channels = {}
         self.private_channels = {}
         self.voice_clients = {}
+        self.guilds = set()
         self.id = client_id
         self.ready_state = None
         self.application = application
@@ -597,7 +601,12 @@ class Client(ClientUserPBase):
                         # we already exists, we need to go tru everything and replace our self.
                         guild_profiles = alter_ego.guild_profiles
                         self.guild_profiles = guild_profiles
-                        for guild in guild_profiles:
+                        for guild_id in guild_profiles.keys():
+                            try:
+                                guild = GUILDS[guild_id]
+                            except KeyError:
+                                continue
+                            
                             guild.users[client_id] = self
             
             # This part should run at both case, except when there is no alter_ego detected when caching users.
@@ -731,7 +740,12 @@ class Client(ClientUserPBase):
         USERS[client_id] = alter_ego
         
         guild_profiles = self.guild_profiles
-        for guild in guild_profiles:
+        for guild_id in guild_profiles.keys():
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                continue
+            
             guild.users[client_id] = alter_ego
         
         for client in CLIENTS.values():
@@ -1151,7 +1165,7 @@ class Client(ClientUserPBase):
             should_edit_nick = True
         else:
             try:
-                guild_profile = self.guild_profiles[guild]
+                guild_profile = self.guild_profiles[guild.id]
             except KeyError:
                 # we aren't at the guild probably ->  will raise the request for us, if really
                 should_edit_nick = True
@@ -2558,7 +2572,7 @@ class Client(ClientUserPBase):
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self)
+                channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self)
                 channels.append(channel)
         
         return channels
@@ -3042,9 +3056,9 @@ class Client(ClientUserPBase):
         
         Other Parameters
         ----------------
-        overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional (Keyword only)
+        permission_overwrites : `list` of ``cr_p_permission_overwrite_object`` returns, Optional (Keyword only)
             A list of permission overwrites of the channel. The list should contain json serializable permission
-            overwrites made by the ``cr_p_overwrite_object`` function.
+            overwrites made by the ``cr_p_permission_overwrite_object`` function.
         topic : `str`, Optional (Keyword only)
             The channel's topic.
         nsfw : `bool`, Optional (Keyword only)
@@ -3081,7 +3095,7 @@ class Client(ClientUserPBase):
             - If `type_` was given as `int` and exceeds the defined channel type limit.
             - If `name` was not given as `str` instance.
             - If `name`'s length is out of range `[1:100]`.
-            - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
+            - If `permission_overwrites` was not given as `None`, neither as `list` of `dict`-s.
             - If `topic` was not given as `str` instance.
             - If `topic`'s length is over `1024`.
             - If `topic` was given, but the respective channel type is not ``ChannelText``.
@@ -3109,7 +3123,7 @@ class Client(ClientUserPBase):
         data = await self.http.channel_create(guild_id, data, reason)
         
         if (guild is not None):
-            return CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)(data, self, guild)
+            return CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, self, guild)
     
     
     async def channel_delete(self, channel, *, reason=None):
@@ -3192,7 +3206,7 @@ class Client(ClientUserPBase):
         }
         
         data = await self.http.channel_follow(source_channel_id, data)
-        webhook = await Webhook._from_follow_data(data, source_channel, target_channel, self)
+        webhook = await Webhook._from_follow_data(data, source_channel, target_channel_id, self)
         return webhook
     
     # messages
@@ -5933,9 +5947,9 @@ class Client(ClientUserPBase):
             
             user_data = await self.http.guild_user_get(guild_id, self.id)
             try:
-                profile = self.guild_profiles[guild]
+                profile = self.guild_profiles[guild.id]
             except KeyError:
-                self.guild_profiles[guild] = GuildProfile(user_data)
+                self.guild_profiles[guild.id] = GuildProfile(user_data)
                 if guild not in guild.clients:
                     guild.clients.append(self)
             else:
@@ -5951,9 +5965,9 @@ class Client(ClientUserPBase):
 ##           except (DiscordException, ConnectionError):
 ##                continue
 ##            try:
-##                profile=client.guild_profiles[guild]
+##                profile = client.guild_profiles[guild.id]
 ##            except KeyError:
-##                client.guild_profiles[guild]=GuildProfile(user_data)
+##                client.guild_profiles[guild.id] = GuildProfile(user_data)
 ##                if client not in guild.clients:
 ##                    guild.clients.append(client)
 ##            else:
@@ -5983,7 +5997,7 @@ class Client(ClientUserPBase):
 ##           except KeyError:
 ##               continue #huh?
 ##           try:
-##               del user.guild_profiles[guild]
+##               del user.guild_profiles[guild.id]
 ##           except KeyError:
 ##               pass #huh??
     
@@ -7655,7 +7669,7 @@ class Client(ClientUserPBase):
             
             if (guild is not None) and (user is not None) and guild.partial:
                 try:
-                    guild_profile = user.guild_profiles[guild]
+                    guild_profile = user.guild_profiles[guild.id]
                 except KeyError:
                     should_edit_nick = True
                 else:
@@ -8565,7 +8579,12 @@ class Client(ClientUserPBase):
             if user is None:
                 break
             
-            for guild in user.guild_profiles:
+            for guild_id in user.guild_profiles.keys():
+                try:
+                    guild = GUILDS[guild_id]
+                except KeyError:
+                    continue
+                
                 if not guild.partial:
                     return user
             
@@ -8839,10 +8858,6 @@ class Client(ClientUserPBase):
         if role is None:
             return
         
-        guild = role.guild
-        if guild is None:
-            return
-        
         data = {}
         
         if expire_behavior is not None:
@@ -8878,7 +8893,8 @@ class Client(ClientUserPBase):
             
             data['enable_emoticons'] = enable_emojis
         
-        await self.http.integration_edit(guild.id, integration.id, data)
+        await self.http.integration_edit(role.guild_id, integration.id, data)
+    
     
     async def integration_delete(self, integration):
         """
@@ -8913,11 +8929,7 @@ class Client(ClientUserPBase):
         if role is None:
             return
         
-        guild = role.guild
-        if guild is None:
-            return
-        
-        await self.http.integration_delete(guild.id, integration.id)
+        await self.http.integration_delete(role.guild_id, integration.id)
     
     async def integration_sync(self, integration):
         """
@@ -8952,14 +8964,10 @@ class Client(ClientUserPBase):
         if role is None:
             return
         
-        guild = role.guild
-        if guild is None:
-            return
-        
-        await self.http.integration_sync(guild.id, integration.id)
+        await self.http.integration_sync(role.guild_id, integration.id)
     
     
-    async def permission_overwrite_edit(self, channel, overwrite, *, allow=None, deny=None, reason=None):
+    async def permission_overwrite_edit(self, channel, permission_overwrite, *, allow=None, deny=None, reason=None):
         """
         Edits the given permission overwrite.
         
@@ -8969,7 +8977,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ˙˙ChannelGuildMainBase`` or `int` instance
             The channel where the permission overwrite is.
-        overwrite : ``PermissionOverwrite``
+        permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
         allow : `None`, ``Permission`` or `int`, Optional (Keyword only)
             The permission overwrite's new allowed permission's value.
@@ -8987,19 +8995,19 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `overwrite` was not given as ``PermissionOverwrite`` instance.
+            - If `permission_overwrite` was not given as ``PermissionOverwrite`` instance.
             - If `allow` was not given neither as `None`, ``Permission`` not other `int` instance.
             - If `deny` was not given neither as `None`, ``Permission`` not other `int` instance.
         """
         channel_id = get_channel_id(channel, ChannelGuildMainBase)
         
         if __debug__:
-            if not isinstance(overwrite, PermissionOverwrite):
-                raise AssertionError(f'`overwrite` can be given as `{PermissionOverwrite.__name__}` instance, got '
-                    f'{overwrite.__class__.__name__}.')
+            if not isinstance(permission_overwrite, PermissionOverwrite):
+                raise AssertionError(f'`permission_overwrite` can be given as `{PermissionOverwrite.__name__}` '
+                    f'instance, got {overwrite.__class__.__name__}.')
         
         if allow is None:
-            allow = overwrite.allow
+            allow = permission_overwrite.allow
         else:
             if __debug__:
                 if not isinstance(allow, int):
@@ -9007,7 +9015,7 @@ class Client(ClientUserPBase):
                         f'`int` instance, got {allow.__class__.__name__}.')
         
         if deny is None:
-            deny = overwrite.deny
+            deny = permission_overwrite.deny
         else:
             if __debug__:
                 if not isinstance(deny, int):
@@ -9017,13 +9025,13 @@ class Client(ClientUserPBase):
         data = {
             'allow': allow,
             'deny': deny,
-            'type': overwrite.type.value
+            'type': permission_overwrite.target_type.value
         }
         
         await self.http.permission_overwrite_create(channel_id, overwrite.target.id, data, reason)
     
     
-    async def permission_overwrite_delete(self, channel, overwrite, *, reason=None):
+    async def permission_overwrite_delete(self, channel, permission_overwrite, *, reason=None):
         """
         Deletes the given permission overwrite.
         
@@ -9033,7 +9041,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ˙˙ChannelGuildMainBase`` instance
             The channel where the permission overwrite is.
-        overwrite : ``PermissionOverwrite``
+        permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -9047,16 +9055,16 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `overwrite` was not given as ``PermissionOverwrite`` instance.
+            If `permission_overwrite` was not given as ``PermissionOverwrite`` instance.
         """
         channel_id = get_channel_id(channel, ChannelGuildMainBase)
         
         if __debug__:
-            if not isinstance(overwrite, PermissionOverwrite):
-                raise AssertionError(f'`overwrite` can be given as `{PermissionOverwrite.__name__}` instance, got '
-                    f'{overwrite.__class__.__name__}.')
+            if not isinstance(permission_overwrite, PermissionOverwrite):
+                raise AssertionError(f'`permission_overwrite` can be given as `{PermissionOverwrite.__name__}` '
+                    f'instance, got {permission_overwrite.__class__.__name__}.')
         
-        await self.http.permission_overwrite_delete(channel_id, overwrite.target.id, reason)
+        await self.http.permission_overwrite_delete(channel_id, permission_overwrite.target_id, reason)
     
     
     async def permission_overwrite_create(self, channel, target, allow, deny, *, reason=None):
@@ -11189,11 +11197,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         if isinstance(role, Role):
-            guild = role.guild
-            if guild is None:
-                return
-            
-            guild_id = guild.id
+            guild_id = role.guild_id
         else:
             snowflake_pair = maybe_snowflake_pair(role)
             if snowflake_pair is None:
@@ -11201,10 +11205,13 @@ class Client(ClientUserPBase):
                     f'{role.__class__.__name__}.')
             
             guild_id, role_id = snowflake_pair
-            guild = GUILDS.get(guild_id, None)
-            if (guild is None) or guild.partial:
-                guild = await self.guild_sync(guild_id)
-            
+            role = None
+        
+        guild = GUILDS.get(guild_id, None)
+        if (guild is None) or guild.partial:
+            guild = await self.guild_sync(guild_id)
+        
+        if role is None:
             try:
                 role = ROLES[role_id]
             except KeyError:
@@ -11224,7 +11231,7 @@ class Client(ClientUserPBase):
             if position == 0:
                 raise ValueError(f'Role cannot be moved to position `0`.')
         
-        data = change_on_switch(guild.role_list, role, position, key=lambda role_, pos:{'id': role_.id,'position': pos})
+        data = change_on_switch(guild.role_list, role, position, key=lambda role_, pos:{'id': role_.id, 'position': pos})
         if not data:
             return
         
@@ -11266,7 +11273,7 @@ class Client(ClientUserPBase):
         
         role, position = item
         if isinstance(role, Role):
-            guild = role.guild
+            guild_id = role.guild_id
         
         else:
             snowflake_pair = maybe_snowflake_pair(role)
@@ -11275,10 +11282,13 @@ class Client(ClientUserPBase):
                     f'{role.__class__.__name__}.')
             
             guild_id, role_id = snowflake_pair
-            guild = GUILDS.get(guild_id, None)
-            if (guild is None) or guild.partial:
-                guild = await self.guild_sync(guild_id)
-            
+            role = None
+        
+        guild = GUILDS.get(guild_id, None)
+        if (guild is None) or guild.partial:
+            guild = await self.guild_sync(guild_id)
+        
+        if role is None:
             role = ROLES.get(role_id, None)
         
         if not isinstance(position, int):
@@ -12209,12 +12219,11 @@ class Client(ClientUserPBase):
         return ApplicationCommandPermission.from_data(permission_data)
     
     
-    async def application_command_permission_edit(self, guild, application_command,
-            overwrites):
+    async def application_command_permission_edit(self, guild, application_command, permission_overwrite):
         """
         Edits the permissions of the given `application_command` in the given `guild`.
         
-        > The new permissions will overwrite the existing permission of an application command.
+        > The new permissions will permission overwrite the existing permission of an application command.
         >
         > A command will lose it's permissions on rename.
         
@@ -12226,7 +12235,7 @@ class Client(ClientUserPBase):
             The respective guild.
         application_command : ``ApplicationCommand`` or `int`
             The respective application command.
-        overwrites : `None` or (`tuple`, `list` of `set`) of ``ApplicationCommandPermissionOverwrite``
+        permission_overwrite : `None` or (`tuple`, `list` of `set`) of ``ApplicationCommandPermissionOverwrite``
             The new permission overwrites of the given application command inside of the guild.
             
             Give it as `None` to remove all existing one.
@@ -12247,9 +12256,9 @@ class Client(ClientUserPBase):
         AssertionError
             - If the client's application is not yet synced.
             - If an application command was not given neither as ``ApplicationCommand`` or `int` instance.
-            - If `overwrites` was not given as `None`, `tuple`, `list` or `set`.
-            - If `overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
-            - If `overwrites` contains more than 10 elements.
+            - If `permission_overwrite` was not given as `None`, `tuple`, `list` or `set`.
+            - If `permission_overwrite` contains a non ``ApplicationCommandPermissionOverwrite`` element.
+            - If `permission_overwrite` contains more than 10 elements.
         """
         application_id = self.application.id
         if __debug__:
@@ -12266,31 +12275,31 @@ class Client(ClientUserPBase):
                 raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}` or `int` '
                     f'instance, got {application_command.__class__.__name__}.')
         
-        overwrite_datas = []
-        if (overwrites is not None):
+        permission_overwrite_datas = []
+        if (permission_overwrites is not None):
             if __debug__:
-                if not isinstance(overwrites, (list, set, tuple)):
-                    raise AssertionError(f'`overwrites` can be given as `None`, `list`, `tuple` or `set`, got '
-                        f'{overwrites.__class__.__name__}.')
+                if not isinstance(permission_overwrites, (list, set, tuple)):
+                    raise AssertionError(f'`permission_overwrites` can be given as `None`, `list`, `tuple` or '
+                        f'`set`, got {permission_overwrites.__class__.__name__}.')
             
-            for overwrite in overwrites:
+            for permission_overwrite in permission_overwrites:
                 if __debug__:
-                    if not isinstance(overwrite, ApplicationCommandPermissionOverwrite):
-                        raise AssertionError(f'`overwrites` contains a non '
+                    if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
+                        raise AssertionError(f'`permission_overwrites` contains a non '
                             f'{ApplicationCommandPermissionOverwrite.__name__} instance, got '
-                            f'{overwrite.__class__.__name__}.')
+                            f'{permission_overwrite.__class__.__name__}.')
                 
-                overwrite_datas.append(overwrite.to_data())
+                permission_overwrite_datas.append(permission_overwrite.to_data())
             
             if __debug__:
-                if len(overwrite_datas) > APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
-                    raise AssertionError(f'`overwrites` can contain up to '
-                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` overwrites, which is passed, got '
-                        f'{len(overwrites)!r}.')
+                if len(permission_overwrite_datas) > APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
+                    raise AssertionError(f'`permission_overwrites` can contain up to '
+                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` permission_overwrites, which is passed, got '
+                        f'{len(permission_overwrites)!r}.')
         
-        data = {'permissions': overwrite_datas}
-        permission_data = await self.http.application_command_permission_edit(application_id, guild_id, application_command_id,
-            data)
+        data = {'permissions': permission_overwrite_datas}
+        permission_data = await self.http.application_command_permission_edit(application_id, guild_id,
+            application_command_id, data)
         
         return ApplicationCommandPermission.from_data(permission_data)
     
@@ -12373,7 +12382,7 @@ class Client(ClientUserPBase):
         if not interaction.is_unanswered():
             return
         
-        data = {'type': InteractionResponseTypes.source}
+        data = {'type': INTERACTION_RESPONSE_TYPES.source}
         
         if show_for_invoking_user_only:
             data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
@@ -12531,9 +12540,9 @@ class Client(ClientUserPBase):
             data['data'] = message_data
         
         if is_deferring:
-            response_type = InteractionResponseTypes.source
+            response_type = INTERACTION_RESPONSE_TYPES.source
         else:
-            response_type = InteractionResponseTypes.message_and_source
+            response_type = INTERACTION_RESPONSE_TYPES.message_and_source
         
         data['type'] = response_type
         
@@ -12581,7 +12590,7 @@ class Client(ClientUserPBase):
         if not interaction.is_unanswered():
             return
         
-        data = {'type': InteractionResponseTypes.component}
+        data = {'type': INTERACTION_RESPONSE_TYPES.component}
         
         with InteractionResponseContext(interaction, True, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
@@ -12769,7 +12778,7 @@ class Client(ClientUserPBase):
         
         data = {
             'data': message_data,
-            'type': InteractionResponseTypes.component_message_edit,
+            'type': INTERACTION_RESPONSE_TYPES.component_message_edit,
         }
         
         
@@ -14229,15 +14238,24 @@ class Client(ClientUserPBase):
                     return
                 
                 to_remove = []
-                for guild in self.guild_profiles:
-                    guild._delete(self)
-                    if guild.clients:
+                for guild_id in self.guild_profiles.keys():
+                    try:
+                        guild = GUILDS[guild_id]
+                    except KeyError:
                         continue
-                    to_remove.append(guild)
+                    
+                    guild._delete(self)
+                    if not guild.partial:
+                        continue
+                    
+                    to_remove.append(guild_id)
                 
                 if to_remove:
-                    for guild in to_remove:
-                        del self.guild_profiles[guild]
+                    for guild_id in to_remove:
+                        try:
+                            del self.guild_profiles[guild_id]
+                        except KeyError:
+                            pass
                 
                 # need to delete the references for cleanup
                 guild = None
@@ -14702,7 +14720,7 @@ class Client(ClientUserPBase):
         voice_client : `None` or ``VoiceClient``
             The voice client if applicable.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             voice_client = None
         else:
@@ -14740,7 +14758,12 @@ class Client(ClientUserPBase):
             if name_length < 2 or name_length > 100:
                 raise AssertionError(f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.')
         
-        for guild in self.guild_profiles.keys():
+        for guild_id in self.guild_profiles.keys():
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                continue
+            
             if guild.name == name:
                 return guild
         
@@ -15033,13 +15056,13 @@ class Client(ClientUserPBase):
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `list` of ``Role``  |
+        | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
         """
         try:
-            profile = self.guild_profiles[guild]
+            profile = self.guild_profiles[guild.id]
         except KeyError:
-            self.guild_profiles[guild] = GuildProfile(data)
+            self.guild_profiles[guild.id] = GuildProfile(data)
             guild.users[self.id] = self
             return {}
         return profile._difference_update_attributes(data)
@@ -15056,9 +15079,9 @@ class Client(ClientUserPBase):
             The respective guild of the guild profile.
         """
         try:
-            profile = self.guild_profiles[guild]
+            profile = self.guild_profiles[guild.id]
         except KeyError:
-            self.guild_profiles[guild] = GuildProfile(data)
+            self.guild_profiles[guild.id] = GuildProfile(data)
             guild.users[self.id] = self
         else:
             profile._set_attributes(data)

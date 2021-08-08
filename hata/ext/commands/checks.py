@@ -1230,7 +1230,7 @@ class guild_owner(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1268,7 +1268,7 @@ class owner_or_guild_owner(guild_owner):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1466,7 +1466,7 @@ class has_guild_permissions(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1507,7 +1507,7 @@ class owner_or_has_guild_permissions(has_permissions):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1666,7 +1666,7 @@ class client_has_guild_permissions(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1747,7 +1747,7 @@ class is_guild(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -1844,7 +1844,7 @@ class is_any_guild(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -2224,7 +2224,7 @@ class is_in_voice(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return False
         
@@ -2263,12 +2263,12 @@ class booster_only(_check_base):
         passed : `bool`
             Whether the check passed.
         """
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return
         
         try:
-            profile = message.author.guild_profiles[guild]
+            profile = message.author.guild_profiles[guild.id]
         except KeyError:
             return False
         

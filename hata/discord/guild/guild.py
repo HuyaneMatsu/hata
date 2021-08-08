@@ -12,13 +12,12 @@ from ...backend.export import export, include
 from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..core import GUILDS, KOKORO
 from ..utils import EMOJI_NAME_RP, DATETIME_FORMAT_CODE
-from ..user import User, create_partial_user_from_id, VoiceState, ZEROUSER
+from ..user import User, create_partial_user_from_id, VoiceState, ZEROUSER, ClientUserBase
 from ..role import Role
-from ..channel import CHANNEL_TYPES, ChannelCategory, ChannelText, ChannelGuildUndefined
+from ..channel import CHANNEL_TYPE_MAP, ChannelCategory, ChannelText, ChannelGuildUndefined
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL
 from ..emoji import Emoji
-from ..webhook import Webhook, WebhookRepr
 from ..oauth2.helpers import parse_preferred_locale, DEFAULT_LOCALE
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from .preinstanced import GuildFeature, VoiceRegion, VerificationLevel, MessageNotificationLevel, MFA, \
@@ -70,7 +69,7 @@ MAX_USERS_DEFAULT = 250000
 MAX_VIDEO_CHANNEL_USERS_DEFAULT = 25
 
 
-# discord does not send `widget_channel`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
+# discord does not send `widget_channel_id`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 
 @export
 class Guild(DiscordEntity, immortal=True):
@@ -83,10 +82,12 @@ class Guild(DiscordEntity, immortal=True):
         The unique identifier number of the guild.
     _boosters : `None` or `list` of (``User`` or ``Client``) objects
         Cached slot for the boosters of the guild.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    afk_channel : `None` or ``ChannelVoice``
-        The afk channel of the guild if it has.
+    afk_channel_id : `int`
+        The afk channel's identifier of the guild if it has.
+        
+        Defaults to `0`.
     afk_timeout : `int`
         The afk timeout at the `afk_channel`. Can be `60`, `300`, `900`, `1800`, `3600` in seconds.
     approximate_online_count : `int`
@@ -148,20 +149,26 @@ class Guild(DiscordEntity, immortal=True):
         The preferred language of the guild. The guild must be a Community guild, defaults to `'en-US'`.
     premium_tier : `int`
         The premium tier of the guild. More subs = higher tier.
-    public_updates_channel : `None` or ``ChannelText``
-        The channel where the guild's public updates should go. The guild must be a Community guild.
+    public_updates_channel_id : `int`
+        The channel's identifier where the guild's public updates should go. The guild must be a `community` guild.
+        
+        Defaults to `0`.
     region : ``VoiceRegion``
         The voice region of the guild.
     roles : `dict` of (`int`, ``Role``) items
         The roles of the guild stored in `role_id` - `role` relation.
-    rules_channel : `None` or ``ChannelText``
-        The channel where the rules of a public guild's should be. The guild must be a Community guild.
+    rules_channel_id : `int`
+        The channel's identifier where the rules of a public guild's should be.
+        
+        The guild must be a `community` guild.
     stages : `None` or `dict` of (`int`, ``Stage``) items
         Active stages of the guild. Defaults to `None` if would be empty.
     stickers : `dict` of (`int`, ``Sticker``) items
         Stickers of th guild.
-    system_channel : `None` or ``ChannelText``
-        The channel where the system messages are sent.
+    system_channel_id : `int`
+        The channel's identifier where the system messages are sent.
+        
+        Defaults to `0`.
     system_channel_flags : ``SystemChannelFlag``
         Describe which type of messages are sent automatically to the system channel.
     threads : `dict` of (`int`, ``ChannelThread``)
@@ -177,8 +184,10 @@ class Guild(DiscordEntity, immortal=True):
     voice_states : `dict` of (`int`, ``VoiceState``) items
         Each user at a voice channel is represented by a ``VoiceState`` object. voice state are stored in
         `respective user's id` - `voice state` relation.
-    widget_channel : `None` or ``ChannelText``
-        The channel for the guild's widget.
+    widget_channel_id : `int`
+        The channel's identifier for which the guild's widget is for.
+        
+        Defaults to `0`.
     widget_enabled : `bool`
         Whether the guild's widget is enabled. Linked to ``.widget_channel``.
     
@@ -186,18 +195,18 @@ class Guild(DiscordEntity, immortal=True):
     -----
     When a guild is loaded first time, some of it's attributes might not reflect their real value. These are the
     following:
-    - ``.max_presences``
+    - ``.max_presences_``
     - ``.max_users``
-    - ``.widget_channel``
+    - ``.widget_channel_id``
     - ``.widget_enabled``
     """
-    __slots__ = ('_boosters', '_cache_perm', 'afk_channel', 'afk_timeout', 'approximate_online_count',
+    __slots__ = ('_boosters', '_permission_cache', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
         'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
         'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
         'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
-        'public_updates_channel', 'region', 'roles', 'roles', 'rules_channel', 'stages', 'stickers', 'system_channel',
-        'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states',
-        'widget_channel', 'widget_enabled')
+        'public_updates_channel_id', 'region', 'roles', 'roles', 'rules_channel_id', 'stages', 'stickers',
+        'system_channel_id', 'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code',
+        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled')
     
     banner = IconSlot('banner', 'banner',
         module_urls.guild_banner_url,
@@ -252,7 +261,7 @@ class Guild(DiscordEntity, immortal=True):
             self.features = []
             self.threads = {}
             self.stickers = {}
-            self._cache_perm = None
+            self._permission_cache = None
             self._boosters = None
             self.user_count = 1
             self.approximate_online_count = 0
@@ -315,7 +324,7 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 later = []
                 for channel_data in channel_datas:
-                    channel_type = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)
+                    channel_type = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)
                     if channel_type is ChannelCategory:
                         channel_type(channel_data, client, self)
                     else:
@@ -366,7 +375,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for thread_data in thread_datas:
-                    CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, self)
+                    CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, self)
             
             stage_datas = data.get('stage_instances', None)
             if (stage_datas is not None) and stage_datas:
@@ -392,6 +401,7 @@ class Guild(DiscordEntity, immortal=True):
                 Task(VoiceClient._kill_ghost(client, ghost_state.channel), KOKORO)
             
             self.clients.append(client)
+            client.guilds.add(self)
         
         return self
     
@@ -549,8 +559,8 @@ class Guild(DiscordEntity, immortal=True):
         """
         self = object.__new__(cls)
         self._boosters = None
-        self._cache_perm = None
-        self.afk_channel = None
+        self._permission_cache = None
+        self.afk_channel_id = 0
         self.afk_timeout = 0
         self.channels = {}
         self.roles = {}
@@ -578,19 +588,19 @@ class Guild(DiscordEntity, immortal=True):
         self.owner_id = 0
         self.preferred_locale = DEFAULT_LOCALE
         self.premium_tier = 0
-        self.public_updates_channel = None
+        self.public_updates_channel_id = 0
         self.region = VoiceRegion.eu_central
-        self.rules_channel = None
+        self.rules_channel_id = 0
         self.invite_splash_hash = 0
         self.invite_splash_type = ICON_TYPE_NONE
-        self.system_channel = None
+        self.system_channel_id = 0
         self.system_channel_flags = SystemChannelFlag.NONE
         self.approximate_user_count = 1
         self.users = GUILD_USERS_TYPE()
         self.vanity_code = None
         self.verification_level = VerificationLevel.none
         self.voice_states = {}
-        self.widget_channel = None
+        self.widget_channel_id = 0
         self.widget_enabled = False
         self.user_count = 0
         self.approximate_online_count = 0
@@ -604,7 +614,35 @@ class Guild(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the guild's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}{"" if self.clients else " (partial)"}>'
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' id=', repr(self.id),
+        ]
+        
+        if self.partial:
+            repr_parts.append(' (partial)')
+        
+        name = self.name
+        if name:
+            repr_parts.append(', name=')
+            repr_parts.append(repr(name))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __del__(self):
+        """Clears up the guild profile references of the guild."""
+        users = self.users
+        if users:
+            guild_id = self.id
+            for user in users.values():
+                try:
+                    user.guild_profiles[guild_id]
+                except KeyError:
+                    pass
+            
+            users.clear()
     
     
     def __format__(self, code):
@@ -649,7 +687,7 @@ class Guild(DiscordEntity, immortal=True):
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
     widget_url = module_urls.guild_widget_url
-
+    
     def _delete(self, client):
         """
         When a client leaves (gets kicked or banned) from a guild, this method is called. If the guild loses it's last
@@ -667,40 +705,30 @@ class Guild(DiscordEntity, immortal=True):
         except ValueError:
             pass
         
+        client.guilds.discard(self)
+        
         if clients:
             return
         
-        for category in self.channel_list:
-            if isinstance(category, ChannelCategory):
-                for channel in category.channel_list:
-                    channel._delete()
-            category._delete()
-        
-        for thread in self.thread_channels:
-            thread._delete()
-        
-        for emoji in list(self.emojis.values()):
-            emoji._delete()
-        
+        self.threads.clear()
+        self.channels.clear()
+        self.emojis.clear()
         self.stickers.clear()
-        
         self.voice_states.clear()
         
         users = self.users
+        guild_id = self.id
         for user in users.values():
             if isinstance(user, User):
                 try:
-                    del user.guild_profiles[self]
+                    del user.guild_profiles[guild_id]
                 except KeyError:
                     pass
         
         users.clear()
         
-        for role in self.role_list:
-            role._delete()
-        
+        self.roles.clear()
         self._boosters = None
-    
     
     def _update_voice_state(self, data, user):
         """
@@ -1112,7 +1140,7 @@ class Guild(DiscordEntity, immortal=True):
         
         later = []
         for channel_data in data:
-            channel_type = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)
+            channel_type = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)
             if channel_type is ChannelCategory:
                 #categories
                 channel = channel_type(channel_data, None, self)
@@ -1209,8 +1237,9 @@ class Guild(DiscordEntity, immortal=True):
             if user.name == name:
                 return user
         
+        guild_id = self.id
         for user in users.values():
-            nick = user.guild_profiles[self].nick
+            nick = user.guild_profiles[guild_id].nick
             if nick is None:
                 continue
             
@@ -1255,11 +1284,12 @@ class Guild(DiscordEntity, immortal=True):
             return default
         
         pattern = re_compile(re_escape(name), re_ignore_case)
+        guild_id = self.id
         for user in self.users.values():
             if (pattern.match(user.name) is not None):
                 return user
             
-            nick = user.guild_profiles[self].nick
+            nick = user.guild_profiles[guild_id].nick
             
             if nick is None:
                 continue
@@ -1306,9 +1336,10 @@ class Guild(DiscordEntity, immortal=True):
             return result
         
         pattern = re_compile(re_escape(name), re_ignore_case)
+        guild_id = self.id
         for user in self.users.values():
             if pattern.match(user.name) is None:
-                nick = user.guild_profiles[self].nick
+                nick = user.guild_profiles[guild_id].nick
                 if nick is None:
                     continue
                 
@@ -1338,8 +1369,9 @@ class Guild(DiscordEntity, immortal=True):
             return to_sort
         
         pattern = re_compile(re_escape(name), re_ignore_case)
+        guild_id = self.id
         for user in self.users.values():
-            profile = user.guild_profiles[self]
+            profile = user.guild_profiles[guild_id]
             if pattern.match(user.name) is None:
                 nick = profile.nick
                 if nick is None:
@@ -1651,41 +1683,53 @@ class Guild(DiscordEntity, immortal=True):
         Parameters
         ----------
         user : ``UserBase`` instance
+            The user to calculate it's permissions of.
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         
         See Also
         --------
         ``.cached_permissions_for`` : Cached permission calculator.
         """
+        guild_id = self.id
+        if not isinstance(user, ClientUserBase):
+            if user.channel_id in self.channels:
+                role_everyone = self.roles.get(guild_id, None)
+                if role_everyone is None:
+                    permissions = PERMISSION_NONE
+                else:
+                    permissions = role_everyone.permissions
+                
+                return permissions
+            else:
+                return PERMISSION_NONE
+        
         if user.id == self.owner_id:
             return PERMISSION_ALL
         
-        default_role = self.roles.get(self.id, None)
-        if default_role is None:
-            base = 0
+        role_everyone = self.roles.get(guild_id, None)
+        if role_everyone is None:
+            permissions = 0
         else:
-            base = default_role.permissions
+            permissions = role_everyone.permissions
         
         try:
-            guild_profile = user.guild_profiles[self]
+            guild_profile = user.guild_profiles[guild_id]
         except KeyError:
-            if isinstance(user, (Webhook, WebhookRepr)) and user.guild is self:
-                return base
             return PERMISSION_NONE
         
         roles = guild_profile.roles
         if (roles is not None):
-            roles.sort()
             for role in roles:
-                base |= role.permissions
+                permissions |= role.permissions
         
-        if Permission.can_administrator(base):
+        if Permission.can_administrator(permissions):
             return PERMISSION_ALL
         
-        return Permission(base)
+        return Permission(permissions)
     
     
     def cached_permissions_for(self, user):
@@ -1696,10 +1740,12 @@ class Guild(DiscordEntity, immortal=True):
         Parameters
         ----------
         user : ``UserBase`` instance
+            The user to calculate it's permissions of.
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         
         Notes
         -----
@@ -1709,17 +1755,17 @@ class Guild(DiscordEntity, immortal=True):
         if not isinstance(user, Client):
             return self.permissions_for(user)
         
-        cache_perm = self._cache_perm
-        if cache_perm is None:
-            self._cache_perm = cache_perm = {}
+        permission_cache = self._permission_cache
+        if permission_cache is None:
+            self._permission_cache = permission_cache = {}
         else:
             try:
-                return cache_perm[user.id]
+                return permission_cache[user.id]
             except KeyError:
                 pass
         
         permissions = self.permissions_for(user)
-        cache_perm[user.id] = permissions
+        permission_cache[user.id] = permissions
         return permissions
     
     
@@ -1734,7 +1780,8 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         
         Notes
         -----
@@ -1742,18 +1789,20 @@ class Guild(DiscordEntity, immortal=True):
         """
         default_role = self.roles.get(self.id, None)
         if default_role is None:
-            base = 0
+            permissions = 0
         else:
-            base = default_role.permissions
+            permissions = default_role.permissions
         
-        for role in sorted(roles):
+        roles = sorted(roles)
+        
+        for role in roles:
             if role.guild is self:
-                base |= role.permissions
+                permissions |= role.permissions
         
-        if Permission.can_administrator(base):
+        if Permission.can_administrator(permissions):
             return PERMISSION_ALL
         
-        return Permission(base)
+        return Permission(permissions)
     
     
     def _difference_update_attributes(self, data):
@@ -1776,7 +1825,7 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | Keys                      | Values                        |
         +===========================+===============================+
-        | afk_channel               | `None` or ``ChannelVoice`     |
+        | afk_channel_id            | `int`                         |
         +---------------------------+-------------------------------+
         | afk_timeout               | `int`                         |
         +---------------------------+-------------------------------+
@@ -1818,13 +1867,13 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | premium_tier              | `int`                         |
         +---------------------------+-------------------------------+
-        | public_updates_channel    | `None` or ``ChannelText``     |
+        | public_updates_channel_id | `int`                         |
         +---------------------------+-------------------------------+
         | region                    | ``VoiceRegion``               |
         +---------------------------+-------------------------------+
-        | rules_channel             | `None` or ``ChannelText``     |
+        | rules_channel_id          | `int`                         |
         +---------------------------+-------------------------------+
-        | system_channel            | `None` or ``ChannelText``     |
+        | system_channel_id         | `int`                         |
         +---------------------------+-------------------------------+
         | system_channel_flags      | ``SystemChannelFlag``         |
         +---------------------------+-------------------------------+
@@ -1832,7 +1881,7 @@ class Guild(DiscordEntity, immortal=True):
         +---------------------------+-------------------------------+
         | verification_level        | ``VerificationLevel``         |
         +---------------------------+-------------------------------+
-        | widget_channel            | `None` or ``ChannelText``     |
+        | widget_channel_id         | `int`                         |
         +---------------------------+-------------------------------+
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
@@ -1908,13 +1957,13 @@ class Guild(DiscordEntity, immortal=True):
         
         system_channel_id = data.get('system_channel_id', None)
         if system_channel_id is None:
-            system_channel = None
+            system_channel_id = 0
         else:
-            system_channel = self.channels[int(system_channel_id)]
+            system_channel_id = int(system_channel_id)
         
-        if self.system_channel is not system_channel:
-            old_attributes['system_channel'] = self.system_channel
-            self.system_channel = system_channel
+        if self.system_channel_id != system_channel_id:
+            old_attributes['system_channel_id'] = self.system_channel_id
+            self.system_channel_id = system_channel_id
         
         try:
             system_channel_flags = SystemChannelFlag(data['system_channel_flags'])
@@ -1927,13 +1976,13 @@ class Guild(DiscordEntity, immortal=True):
         
         public_updates_channel_id = data.get('public_updates_channel_id', None)
         if public_updates_channel_id is None:
-            public_updates_channel = None
+            public_updates_channel_id = 0
         else:
-            public_updates_channel = self.channels[int(public_updates_channel_id)]
+            public_updates_channel_id = int(public_updates_channel_id)
         
-        if self.public_updates_channel is not public_updates_channel:
-            old_attributes['public_updates_channel'] = self.public_updates_channel
-            self.public_updates_channel = public_updates_channel
+        if self.public_updates_channel_id !=  public_updates_channel_id:
+            old_attributes['public_updates_channel_id'] = self.public_updates_channel_id
+            self.public_updates_channel_id = public_updates_channel_id
         
         owner_id = data.get('owner_id', None)
         if owner_id is None:
@@ -1947,12 +1996,12 @@ class Guild(DiscordEntity, immortal=True):
         
         afk_channel_id = data['afk_channel_id']
         if afk_channel_id is None:
-            afk_channel = None
+            afk_channel_id = 0
         else:
-            afk_channel = self.channels[int(afk_channel_id)]
-        if self.afk_channel is not afk_channel:
-            old_attributes['afk_channel'] = self.afk_channel
-            self.afk_channel = afk_channel
+            afk_channel_id = int(afk_channel_id)
+        if self.afk_channel_id != afk_channel_id:
+            old_attributes['afk_channel_id'] = self.afk_channel_id
+            self.afk_channel_id = afk_channel_id
         
         widget_enabled = data.get('widget_enabled', False)
         if self.widget_enabled != widget_enabled:
@@ -1961,23 +2010,23 @@ class Guild(DiscordEntity, immortal=True):
         
         widget_channel_id = data.get('widget_channel_id', None)
         if widget_channel_id is None:
-            widget_channel = None
+            widget_channel_id = 0
         else:
-            widget_channel = self.channels[int(widget_channel_id)]
+            widget_channel_id = int(widget_channel_id)
         
-        if self.widget_channel is not widget_channel:
-            old_attributes['widget_channel'] = self.widget_channel
-            self.widget_channel = widget_channel
+        if self.widget_channel_id != widget_channel_id:
+            old_attributes['widget_channel_id'] = self.widget_channel_id
+            self.widget_channel_id = widget_channel_id
         
         rules_channel_id = data.get('rules_channel_id', None)
         if rules_channel_id is None:
-            rules_channel = None
+            rules_channel_id = 0
         else:
-            rules_channel = self.channels[int(rules_channel_id)]
+            rules_channel_id = int(rules_channel_id)
         
-        if self.rules_channel is not rules_channel:
-            old_attributes['rules_channel'] = self.rules_channel
-            self.rules_channel = rules_channel
+        if self.rules_channel_id != rules_channel_id:
+            old_attributes['rules_channel_id'] = self.rules_channel_id
+            self.rules_channel_id = rules_channel_id
         
         description = data.get('description', None)
         if self.description != description:
@@ -2089,10 +2138,10 @@ class Guild(DiscordEntity, immortal=True):
         
         system_channel_id = data.get('system_channel_id', None)
         if system_channel_id is None:
-            system_channel = None
+            system_channel_id = 0
         else:
-            system_channel = self.channels[int(system_channel_id)]
-        self.system_channel = system_channel
+            system_channel_id = int(system_channel_id)
+        self.system_channel_id = system_channel_id
         
         try:
             system_channel_flags = SystemChannelFlag(data['system_channel_flags'])
@@ -2102,10 +2151,10 @@ class Guild(DiscordEntity, immortal=True):
         
         public_updates_channel_id = data.get('public_updates_channel_id', None)
         if public_updates_channel_id is None:
-            public_updates_channel = None
+            public_updates_channel_id = 0
         else:
-            public_updates_channel = self.channels[int(public_updates_channel_id)]
-        self.public_updates_channel = public_updates_channel
+            public_updates_channel_id = int(public_updates_channel_id)
+        self.public_updates_channel_id = public_updates_channel_id
         
         owner_id = data.get('owner_id', None)
         if owner_id is None:
@@ -2116,26 +2165,26 @@ class Guild(DiscordEntity, immortal=True):
         
         afk_channel_id = data.get('afk_channel_id', None)
         if afk_channel_id is None:
-            afk_channel = None
+            afk_channel_id = 0
         else:
-            afk_channel = self.channels[int(afk_channel_id)]
-        self.afk_channel = afk_channel
+            afk_channel_id = int(afk_channel_id)
+        self.afk_channel_id = afk_channel_id
         
         self.widget_enabled = data.get('widget_enabled', False)
 
         widget_channel_id = data.get('widget_channel_id', None)
         if widget_channel_id is None:
-            widget_channel = None
+            widget_channel_id = 0
         else:
-            widget_channel = self.channels[int(widget_channel_id)]
-        self.widget_channel = widget_channel
+            widget_channel_id = int(widget_channel_id)
+        self.widget_channel_id = widget_channel_id
         
         rules_channel_id = data.get('rules_channel_id', None)
         if rules_channel_id is None:
-            rules_channel = None
+            rules_channel_id = 0
         else:
-            rules_channel = self.channels[int(rules_channel_id)]
-        self.rules_channel = rules_channel
+            rules_channel_id = int(rules_channel_id)
+        self.rules_channel_id = rules_channel_id
         
         self.description = data.get('description', None)
         
@@ -2250,7 +2299,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------------------+-------------------------------+
             | require_colons    | `bool`                        |
             +-------------------+-------------------------------+
-            | roles             | `None` or `set` of ``Role``   |
+            | roles_ids         | `None` or `tuple` of ``Role`` |
             +-------------------+-------------------------------+
         """
         emojis = self.emojis
@@ -2272,9 +2321,12 @@ class Guild(DiscordEntity, immortal=True):
                 old_ids.remove(emoji_id)
         
         for emoji_id in old_ids:
-            emoji = emojis[emoji_id]
-            emoji._delete()
-            changes.append((EMOJI_UPDATE_DELETE, emoji, None),)
+            try:
+                emoji = emojis[emoji_id]
+            except KeyError:
+                pass
+            else:
+                changes.append((EMOJI_UPDATE_DELETE, emoji, None),)
         
         return changes
     
@@ -2303,8 +2355,10 @@ class Guild(DiscordEntity, immortal=True):
                 old_ids.remove(emoji_id)
         
         for emoji_id in old_ids:
-            emoji = emojis[emoji_id]
-            emoji._delete()
+            try:
+                del emojis[emoji_id]
+            except KeyError:
+                pass
     
     
     def _update_stickers(self, data):
@@ -2381,9 +2435,12 @@ class Guild(DiscordEntity, immortal=True):
                 old_ids.remove(sticker_id)
         
         for sticker_id in old_ids:
-            sticker = stickers[sticker_id]
-            sticker._delete()
-            changes.append((STICKER_UPDATE_DELETE, sticker, None),)
+            try:
+                sticker = stickers.pop(sticker_id)
+            except KeyError:
+                pass
+            else:
+                changes.append((STICKER_UPDATE_DELETE, sticker, None),)
         
         return changes
     
@@ -2412,17 +2469,19 @@ class Guild(DiscordEntity, immortal=True):
                 old_ids.remove(sticker_id)
         
         for sticker_id in old_ids:
-            sticker = stickers[sticker_id]
-            sticker._delete()
+            try:
+                del stickers[sticker_id]
+            except KeyError:
+                pass
     
     
-    def _invalidate_perm_cache(self):
+    def _invalidate_permission_cache(self):
         """
         Invalidates the cached permissions of the guild.
         """
-        self._cache_perm = None
+        self._permission_cache = None
         for channel in self.channels.values():
-            channel._cache_perm = None
+            channel._permission_cache = None
     
     
     @property
@@ -2522,10 +2581,17 @@ class Guild(DiscordEntity, immortal=True):
         if boosters is None:
             if self.booster_count:
                 boosters_ordered = []
+                guild_id = self.id
                 for user in self.users.values():
-                    boosts_since = user.guild_profiles[self].boosts_since
+                    try:
+                        guild_profile = user.guild_profiles[guild_id]
+                    except KeyError:
+                        continue
+                    
+                    boosts_since = guild_profile.boosts_since
                     if boosts_since is None:
                         continue
+                    
                     boosters_ordered.append((boosts_since, user),)
                     
                 boosters_ordered.sort(key=lambda element: element[0])
@@ -2658,3 +2724,73 @@ class Guild(DiscordEntity, immortal=True):
             return True
         
         return False
+    
+    
+    @property
+    def public_updates_channel(self):
+        """
+        Returns the channel's where the guild's public updates should go.
+        
+        Returns
+        -------
+        public_updates_channel : `None` or ``ChannelText``
+        """
+        public_updates_channel_id = self.public_updates_channel_id
+        if public_updates_channel_id:
+            return self.channels.get(public_updates_channel_id, None)
+    
+    
+    @property
+    def afk_channel(self):
+        """
+        Returns the afk channel of the guild if it has.
+        
+        Returns
+        -------
+        afk_channel : `None` or ``ChannelVoice``
+        """
+        afk_channel_id = self.afk_channel_id
+        if afk_channel_id:
+            return self.channels.get(afk_channel_id, None)
+    
+    
+    @property
+    def rules_channel(self):
+        """
+        Returns the channel where the rules of a public guild's should be.
+
+        Returns
+        -------
+        rules_channel : `None` or ``ChannelText``
+        """
+        rules_channel_id = self.rules_channel_id
+        if rules_channel_id:
+            return self.channels.get(rules_channel_id, None)
+    
+    
+    @property
+    def system_channel(self):
+        """
+        Returns the channel where the system messages are sent.
+        
+        Returns
+        -------
+        public_updates_channel : `None` or ``ChannelText``
+        """
+        system_channel_id = self.system_channel_id
+        if system_channel_id:
+            return self.channels.get(system_channel_id, None)
+    
+    
+    @property
+    def widget_channel(self):
+        """
+        Returns the channel for which the guild's widget is for.
+        
+        Returns
+        -------
+        public_updates_channel : `None` or ``ChannelText``
+        """
+        widget_channel_id = self.widget_channel_id
+        if widget_channel_id:
+            return self.channels.get(widget_channel_id, None)

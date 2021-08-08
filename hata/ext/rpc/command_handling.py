@@ -3,7 +3,7 @@ __all__ = ()
 import sys
 
 from ...discord.activity import ActivityRich
-from ...discord.channel import CHANNEL_TYPES, ChannelGuildUndefined
+from ...discord.channel import CHANNEL_TYPE_MAP, ChannelGuildUndefined
 
 from .dispatch_handling import DISPATCH_EVENT_HANDLERS
 from .constants import PAYLOAD_KEY_EVENT, PAYLOAD_KEY_DATA, PAYLOAD_KEY_NONCE, PAYLOAD_COMMAND_DISPATCH, \
@@ -83,7 +83,7 @@ def handle_command_channel_select_and_get(self, data):
     if (channel_data is None):
         channel = None
     else:
-        channel = CHANNEL_TYPES.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self)
+        channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self)
     
     response_waiter.set_result_if_pending(channel)
 

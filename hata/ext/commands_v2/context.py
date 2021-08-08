@@ -113,7 +113,7 @@ class CommandContext(object):
         -------
         guild : `None` or ``Guild``
         """
-        return self.message.channel.guild
+        return self.message.guild
     
     
     @property
@@ -138,7 +138,7 @@ class CommandContext(object):
         voice_state : `None` or ``VoiceState``
         """
         message = self.message
-        guild = message.channel.guild
+        guild = message.guild
         if guild is None:
             return None
         
@@ -154,7 +154,7 @@ class CommandContext(object):
         -------
         voice_client : `None` or ``VoiceClient``
         """
-        guild = self.message.channel.guild
+        guild = self.message.guild
         if guild is None:
             voice_client = None
         else:

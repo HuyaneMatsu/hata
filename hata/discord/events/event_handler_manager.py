@@ -57,7 +57,7 @@ class EventHandlerManager:
         +-----------------------+---------------------------------------------------+
         | options               | `None` or `list` of ``ApplicationCommandOption``  |
         +-----------------------+---------------------------------------------------+
-        | target                | ``ApplicationCommandTarget``                      |
+        | target_type           | ``ApplicationCommandTargetType``                  |
         +-----------------------+---------------------------------------------------+
     
     channel_create(client: ``Client``, channel: ``ChannelBase``)
@@ -65,7 +65,7 @@ class EventHandlerManager:
         
         > This event is not called when a private channel is created.
     
-    channel_delete(client: ``Client``, channel: ``ChannelBase``, guild: {`None`, ``Guild``})
+    channel_delete(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is deleted.
     
     channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: `dict`)
@@ -85,7 +85,7 @@ class EventHandlerManager:
         +-----------------------+---------------------------------------+
         | bitrate               | `int`                                 |
         +-----------------------+---------------------------------------+
-        | parent                | ``ChannelCategory``                   |
+        | parent_id             | `int`                                 |
         +-----------------------+---------------------------------------+
         | icon                  | ``Icon``                              |
         +-----------------------+---------------------------------------+
@@ -201,7 +201,7 @@ class EventHandlerManager:
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `tuple` of ``Role`` |
+        | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
     
     error(client: ``Client``, name: `str`, err: `Any`):
@@ -239,7 +239,7 @@ class EventHandlerManager:
         +---------------------------+-------------------------------+
         | Keys                      | Values                        |
         +===========================+===============================+
-        | afk_channel               | `None` or ``ChannelVoice``    |
+        | afk_channel_id            | `int`                         |
         +---------------------------+-------------------------------+
         | afk_timeout               | `int`                         |
         +---------------------------+-------------------------------+
@@ -281,13 +281,13 @@ class EventHandlerManager:
         +---------------------------+-------------------------------+
         | premium_tier              | `int`                         |
         +---------------------------+-------------------------------+
-        | public_updates_channel    | `None` or ``ChannelText``     |
+        | public_updates_channel_id | `int`                         |
         +---------------------------+-------------------------------+
         | region                    | ``VoiceRegion``               |
         +---------------------------+-------------------------------+
-        | rules_channel             | `None` or ``ChannelText``     |
+        | rules_channel_id          | `int`                         |
         +---------------------------+-------------------------------+
-        | system_channel            | `None` or ``ChannelText``     |
+        | system_channel_id         | `int`                         |
         +---------------------------+-------------------------------+
         | system_channel_flags      | ``SystemChannelFlag``         |
         +---------------------------+-------------------------------+
@@ -295,7 +295,7 @@ class EventHandlerManager:
         +---------------------------+-------------------------------+
         | verification_level        | ``VerificationLevel``         |
         +---------------------------+-------------------------------+
-        | widget_channel            | `None` or ``ChannelText``     |
+        | widget_channel_id         | `int`                         |
         +---------------------------+-------------------------------+
         | widget_enabled            | `bool`                        |
         +---------------------------+-------------------------------+
@@ -335,7 +335,7 @@ class EventHandlerManager:
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `list` of ``Role``  |
+        | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
     
     integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):

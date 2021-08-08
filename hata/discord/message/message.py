@@ -38,7 +38,7 @@ ChannelPrivate = include('ChannelPrivate')
 ChannelGroup = include('ChannelGroup')
 create_component = include('create_component')
 ChannelGuildUndefined = include('ChannelGuildUndefined')
-CHANNEL_TYPES = include('CHANNEL_TYPES')
+CHANNEL_TYPE_MAP = include('CHANNEL_TYPE_MAP')
 InteractionType = include('InteractionType')
 ComponentBase = include('ComponentBase')
 ChannelThread = include('ChannelThread')
@@ -251,7 +251,7 @@ class Message(DiscordEntity, immortal=True):
             if author_data is None:
                 author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
             else:
-                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
+                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel_id)
         
         self.author = author
         self.application_id = application_id
@@ -383,7 +383,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             thread = None
         else:
-            thread = CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
         self.thread = thread
     
     @property
@@ -468,7 +468,7 @@ class Message(DiscordEntity, immortal=True):
             if author_data is None:
                 author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
             else:
-                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
+                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel.id)
         
         self.author = author
         self.application_id = application_id
@@ -621,7 +621,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             thread = None
         else:
-            thread = CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
         self.thread = thread
         
         MESSAGES[self.id] = self
@@ -715,7 +715,7 @@ class Message(DiscordEntity, immortal=True):
             if author_data is None:
                 author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
             else:
-                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel=channel)
+                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel.id)
         
         self.author = author
         self.application_id = application_id
@@ -853,7 +853,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             thread = None
         else:
-            thread = CHANNEL_TYPES.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
         self.thread = thread
         
         MESSAGES[self.id] = self

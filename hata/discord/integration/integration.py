@@ -30,7 +30,7 @@ class Integration(DiscordEntity, immortal=True):
         The name of the integration.
     type : `str`
         The type of the integration (`'twitch'`, `'youtube'`, `'discord'`, ).
-    user : ``Client`` or ``User``
+    user : `ClientUserBase`
         User for who the integration is. Defaults to `ZEROUSER`
     """
     __slots__ = ('account', 'application', 'enabled', 'detail', 'name', 'type', 'user',)
@@ -95,6 +95,7 @@ class Integration(DiscordEntity, immortal=True):
         self.account = IntegrationAccount(data['account'], integration_type)
         
         return self
+    
     
     @property
     def partial(self):

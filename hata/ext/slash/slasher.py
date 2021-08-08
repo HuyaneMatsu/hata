@@ -727,7 +727,8 @@ class Slasher(EventHandlerBase):
     _sync_tasks : `dict` of (`int, ``Task``) items
         A dictionary of guilds, which are in sync at the moment.
     _synced_permissions : `dict` of (`int`, `dict` of (`int`, ``ApplicationCommandPermission``) items) items
-        A nested dictionary, which contains application command permission overwrites per guild_id and per command_id.
+        A nested dictionary, which contains application command permission overwrites per guild_id and per
+        `command_id`.
     command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
     regex_custom_id_to_component_command : `dict` of (``RegexMatcher``, ``ComponentCommand``) items.
@@ -1775,7 +1776,7 @@ class Slasher(EventHandlerBase):
         """
         if guild_id == SYNC_ID_GLOBAL:
             tasks = []
-            for permission_guild_id in command._get_sync_permission_ids():
+            for permission_guild_id in command._get_permission_sync_ids():
                 task = Task(self._register_command_task(client, command, permission_guild_id, application_command),
                     KOKORO)
                 tasks.append(task)
@@ -1822,16 +1823,17 @@ class Slasher(EventHandlerBase):
         if not success:
             return False
         
-        overwrites = command.get_overwrites_for(guild_id)
+        permission_overwrites = command.get_permission_overwrites_for(guild_id)
         
         if permission is None:
-            current_overwrites = None
+            current_permission_overwrites = None
         else:
-            current_overwrites = permission.overwrites
+            current_permission_overwrites = permission.permission_overwrites
         
-        if overwrites != current_overwrites:
+        if permission_overwrites != current_permission_overwrites:
             try:
-                permission = await client.application_command_permission_edit(guild_id, application_command, overwrites)
+                permission = await client.application_command_permission_edit(guild_id, application_command,
+                    permission_overwrites)
             except BaseException as err:
                 if not isinstance(err, ConnectionError):
                     await client.events.error(client, f'{self!r}._register_command', err)
@@ -1845,6 +1847,7 @@ class Slasher(EventHandlerBase):
             per_guild[permission.application_command_id] = permission
         
         return True
+    
     
     async def _edit_guild_command_to_non_global(self, client, command, command_state, guild_id, application_command):
         """

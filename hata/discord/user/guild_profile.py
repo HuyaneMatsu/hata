@@ -5,9 +5,9 @@ from datetime import datetime
 from ...backend.export import include
 
 from ..bases import IconSlot, Slotted
-
 from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START
 from ..color import Color
+from ..core import ROLES
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 
@@ -27,16 +27,14 @@ class GuildProfile(metaclass=Slotted):
         The user's nick at the guild if it has.
     pending : `bool`
         Whether the user has not yet passed the guild's membership screening requirements. Defaults to `False`.
-    roles : `None` or `list` of ``Role``
+    role_ids : `None` or `tuple` of ``Role``
         The user's roles at the guild.
-        
-        Feel free to use `.sort()` on it.
     avatar_hash : `int`
         The respective user's avatar hash at the guild in `uint128`.
     avatar_type : `bool`
         The respective user's avatar type at the guild.
     """
-    __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'roles',)
+    __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'role_ids',)
     
     avatar = IconSlot('avatar', 'avatar', None, None)
     
@@ -115,22 +113,10 @@ class GuildProfile(metaclass=Slotted):
         
         role_ids = data['roles']
         if role_ids:
-            roles = []
-            for role_id in role_ids:
-                role_id = int(role_id)
-                try:
-                    role = create_partial_role_from_id(role_id)
-                except KeyError:
-                    continue
-                
-                roles.append(role)
-            
-            if (not roles):
-                roles = None
+            role_ids = tuple(sorted(int(role_id) for role_id in role_ids))
         else:
-            roles = None
-        
-        self.roles = roles
+            role_ids = None
+        self.role_ids = role_ids
         
         boosts_since = data.get('premium_since', None)
         if (boosts_since is not None):
@@ -171,7 +157,7 @@ class GuildProfile(metaclass=Slotted):
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `list` of ``Role``  |
+        | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
         """
         old_attributes = {}
@@ -182,33 +168,13 @@ class GuildProfile(metaclass=Slotted):
         
         role_ids = data['roles']
         if role_ids:
-            roles = []
-            for role_id in role_ids:
-                role_id = int(role_id)
-                role = create_partial_role_from_id(role_id)
-                roles.append(role)
-            
-            if (not roles):
-                roles = None
+            role_ids = tuple(sorted(int(role_id) for role_id in role_ids))
         else:
-            roles = None
+            role_ids = None
         
-        own_roles = self.roles
-        if roles is None:
-            if (own_roles is not None):
-                old_attributes['roles'] = self.roles
-                self.roles = None
-        else:
-            if own_roles is None:
-                old_attributes['roles'] = None
-                self.roles = roles
-            else:
-                own_roles.sort()
-                roles.sort()
-                
-                if own_roles != roles:
-                    old_attributes['roles'] = self.roles
-                    self.roles = roles
+        if role_ids != self.role_ids:
+            old_attributes['role_ids'] = self.role_ids
+            self.role_ids = role_ids
         
         boosts_since = data.get('premium_since', None)
         if (boosts_since is not None):
@@ -240,12 +206,43 @@ class GuildProfile(metaclass=Slotted):
         -------
         top_role : ``Role`` or `default`
         """
-        roles = self.roles
-        if roles is None:
-            return default
+        top_role = default
         
-        roles.sort()
-        return roles[-1]
+        role_ids = self.role_ids
+        if (role_ids is not None):
+            role_found = False
+            
+            for role_id in role_ids:
+                try:
+                    role = ROLES[role_id]
+                except KeyError:
+                    continue
+                
+                if role_found:
+                    if role > top_role:
+                        top_role = role
+                else:
+                    top_role = role
+        
+        return top_role
+    
+    
+    @property
+    def roles(self):
+        """
+        Returns the roles of the guild profile in sorted form.
+        
+        Returns
+        -------
+        roles : `None` or `list` of ``Role``
+        """
+        role_ids = self.role_ids
+        if role_ids is None:
+            roles = None
+        else:
+            roles = sorted(create_partial_role_from_id(role_id) for role_id in self.role_ids)
+        
+        return roles
     
     
     @property
@@ -257,10 +254,9 @@ class GuildProfile(metaclass=Slotted):
         -------
         color : ``Color``
         """
-        roles = self.roles
-        if (roles is not None):
-            roles.sort()
-            for role in reversed(roles):
+        role_ids = self.role_ids
+        if (role_ids is not None):
+            for role in sorted((create_partial_role_from_id(role_id) for role_id in self.role_ids), reverse=True):
                 color = role.color
                 if color:
                     return color

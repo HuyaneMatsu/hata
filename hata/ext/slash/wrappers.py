@@ -104,10 +104,10 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         The wrapped object.
     _guild_id : `int`
         The guild id where the overwrites should be applied to.
-    _overwrite : ``ApplicationCommandPermissionOverwrite``
+    _permission_overwrite : ``ApplicationCommandPermissionOverwrite``
         The permission overwrite to apply.
     """
-    __slots__ = ('_guild_id', '_overwrite')
+    __slots__ = ('_guild_id', '_permission_overwrite')
     def __new__(cls, guild, target, allow):
         """
         Creates a partial function to wrap a slash command.
@@ -153,7 +153,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         return partial_func(cls._decorate, cls, guild_id, overwrite)
     
     
-    def _decorate(cls, guild_id, overwrite, wrapped):
+    def _decorate(cls, guild_id, permission_overwrite, wrapped):
         """
         Wraps given command.
         
@@ -161,7 +161,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         ----------
         guild_id : `int`
             The guild id where the overwrites should be applied to.
-        overwrite : ``ApplicationCommandPermissionOverwrite``
+        permission_overwrite : ``ApplicationCommandPermissionOverwrite``
             The permission overwrite to apply.
         wrapped : `Any`
             The slash command or other wrapper to wrap.
@@ -173,7 +173,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         """
         self = object.__new__(cls)
         self._guild_id = guild_id
-        self._overwrite = overwrite
+        self._permission_overwrite = permission_overwrite
         self._wrapped = wrapped
         return self
     
@@ -186,13 +186,13 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         ----------
         slash_command : ``SlashCommand``
         """
-        slash_command.add_overwrite(self._guild_id, self._overwrite)
+        slash_command.add_permission_overwrite(self._guild_id, self._permission_overwrite)
     
     
     def __repr__(self):
         """Returns the slash command wrapper's representation."""
         return f'<{self.__class__.__name__} wrapped={self._wrapped!r}, guild_id={self._guild_id!r}, ' \
-            f'overwrite={self._overwrite!r}>'
+            f'overwrite={self._permission_overwrite!r}>'
 
 
 class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
@@ -312,7 +312,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
             ', parameter_name=', repr(self.parameter_name),
         ]
         
-        type_ = self.type
+        type_ = self._type
         type_name = ANNOTATION_TYPE_TO_STR_ANNOTATION[type_]
         repr_parts.append(', type=')
         repr_parts.append(type_name)

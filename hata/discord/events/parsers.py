@@ -11,7 +11,7 @@ from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMM
     STAGES, USERS
 from ..user import User, create_partial_user_from_id, thread_user_create, thread_user_update, thread_user_pop, \
     thread_user_delete
-from ..channel import CHANNEL_TYPES, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
+from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_NEW, STICKER_UPDATE_DELETE
@@ -70,7 +70,7 @@ def READY(client, data):
         pass
     else:
         for channel_private_data in channel_private_datas:
-            CHANNEL_TYPES.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client)
+            CHANNEL_TYPE_MAP.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client)
     
     old_application_id = client.application.id
     client.application._create_update(data['application'], True)
@@ -1306,7 +1306,7 @@ if CACHE_USER:
             return
         
         if isinstance(user, Client):
-            guild._invalidate_perm_cache()
+            guild._invalidate_permission_cache()
         
         Task(client.events.guild_user_edit(client, user, guild, old_attributes), KOKORO)
     
@@ -1330,7 +1330,7 @@ if CACHE_USER:
             return
         
         if isinstance(user, Client):
-            guild._invalidate_perm_cache()
+            guild._invalidate_permission_cache()
         
         clients.send(user)
         for client_ in clients:
@@ -1349,7 +1349,7 @@ if CACHE_USER:
         user = User._update_profile(data, guild)
 
         if isinstance(user, Client):
-            guild._invalidate_perm_cache()
+            guild._invalidate_permission_cache()
     
     def GUILD_MEMBER_UPDATE__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -1365,7 +1365,7 @@ if CACHE_USER:
         user = User._update_profile(data, guild)
         
         if isinstance(user, Client):
-            guild._invalidate_perm_cache()
+            guild._invalidate_permission_cache()
 
 else:
     def GUILD_MEMBER_UPDATE__CAL_SC(client, data):
@@ -1385,7 +1385,7 @@ else:
         if not old_attributes:
             return
         
-        guild._invalidate_perm_cache()
+        guild._invalidate_permission_cache()
         
         Task(client.events.guild_user_edit(client, client, guild, old_attributes), KOKORO)
     
@@ -1405,7 +1405,7 @@ else:
         
         client._update_profile_only(data, guild)
         
-        guild._invalidate_perm_cache()
+        guild._invalidate_permission_cache()
     
     GUILD_MEMBER_UPDATE__OPT_MC = GUILD_MEMBER_UPDATE__OPT_SC
 
@@ -1425,7 +1425,6 @@ def CHANNEL_DELETE__CAL_SC(client, data):
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client, data, None)
         return
     
     if isinstance(channel, ChannelGuildBase):
@@ -1436,40 +1435,41 @@ def CHANNEL_DELETE__CAL_SC(client, data):
         channel._delete()
     else:
         channel._delete(client)
-        guild = None
     
-    Task(client.events.channel_delete(client, channel, guild), KOKORO)
+    Task(client.events.channel_delete(client, channel), KOKORO)
 
 def CHANNEL_DELETE__CAL_MC(client, data):
     channel_id = int(data['id'])
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client, data, None)
         return
     
     if isinstance(channel, ChannelGuildBase):
-        guild = channel.guild
-        if guild is None:
+        clients = filter_clients(channel.clients, INTENT_MASK_GUILDS)
+        if clients.send(None) is not client:
+            clients.close()
             return
         
         channel._delete()
         
-        for client in guild.clients:
-            if client.intents&INTENT_MASK_GUILDS:
-                event_handler = client.events.channel_delete
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, channel, guild), KOKORO)
+        for client_ in clients.clients:
+            event_handler = client_.events.channel_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, channel), KOKORO)
+        
     else:
         channel._delete(client)
-        Task(client.events.channel_delete(client, channel, None), KOKORO)
+        
+        event_handler = client.events.channel_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(client.events.channel_delete(client, channel), KOKORO)
 
 def CHANNEL_DELETE__OPT(client, data):
     channel_id = int(data['id'])
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        guild_sync(client, data, None)
         return
     
     if isinstance(channel, ChannelGuildBase):
@@ -1559,7 +1559,7 @@ del CHANNEL_UPDATE__CAL_SC, \
     CHANNEL_UPDATE__OPT_MC
 
 def CHANNEL_CREATE__CAL(client, data):
-    channel_type = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
+    channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
     
     guild_id = data.get('guild_id', None)
     if guild_id is None:
@@ -1578,7 +1578,7 @@ def CHANNEL_CREATE__CAL(client, data):
     Task(client.events.channel_create(client, channel), KOKORO)
 
 def CHANNEL_CREATE__OPT(client, data):
-    channel_type = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
+    channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
     
     guild_id = data.get('guild_id', None)
     if guild_id is None:
@@ -2063,16 +2063,16 @@ if CACHE_USER:
         try:
             del guild.users[user.id]
         except KeyError:
-            profile = None
+            guild_profile = None
         else:
             if isinstance(user, Client):
-                profile = user.guild_profiles.get(guild, None)
+                guild_profile = user.guild_profiles.get(guild_id, None)
             else:
-                profile = user.guild_profiles.pop(guild, None)
+                guild_profile = user.guild_profiles.pop(guild_id, None)
         
         guild.user_count -= 1
         
-        Task(client.events.guild_user_delete(client, guild, user,profile), KOKORO)
+        Task(client.events.guild_user_delete(client, guild, user, guild_profile), KOKORO)
     
     def GUILD_MEMBER_REMOVE__CAL_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -2092,19 +2092,19 @@ if CACHE_USER:
         try:
             del guild.users[user.id]
         except KeyError:
-            profile = None
+            guild_profile = None
         else:
             if isinstance(user, Client):
-                profile = user.guild_profiles.get(guild, None)
+                guild_profile = user.guild_profiles.get(guild_id, None)
             else:
-                profile = user.guild_profiles.pop(guild, None)
+                guild_profile = user.guild_profiles.pop(guild_id, None)
         
         guild.user_count -= 1
         
         for client_ in clients:
             event_handler = client_.events.guild_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, guild, user,profile), KOKORO)
+                Task(event_handler(client_, guild, user, guild_profile), KOKORO)
     
     def GUILD_MEMBER_REMOVE__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -2122,7 +2122,10 @@ if CACHE_USER:
             pass
         else:
             if not isinstance(user, Client):
-                user.guild_profiles.pop(guild, None)
+                try:
+                    del user.guild_profiles[guild]
+                except KeyError:
+                    pass
         
         guild.user_count -= 1
     
@@ -2145,7 +2148,10 @@ if CACHE_USER:
             pass
         else:
             if not isinstance(user, Client):
-                user.guild_profiles.pop(guild, None)
+                try:
+                    del user.guild_profiles[guild_id]
+                except KeyError:
+                    pass
         
         guild.user_count -= 1
 
@@ -2416,7 +2422,7 @@ def GUILD_DELETE__CAL(client, data):
     if data.get('unavailable', 2) == 1:
         return
     
-    profile = client.guild_profiles.pop(guild, None)
+    guild_profile = client.guild_profiles.pop(guild, None)
     
     guild._delete(client)
     
@@ -2424,7 +2430,7 @@ def GUILD_DELETE__CAL(client, data):
     if (ready_state is not None):
         ready_state.discard_guild(guild)
     
-    Task(client.events.guild_delete(client, guild,profile), KOKORO)
+    Task(client.events.guild_delete(client, guild, guild_profile), KOKORO)
 
 def GUILD_DELETE__OPT(client, data):
     guild_id = int(data['id'])
@@ -2436,7 +2442,10 @@ def GUILD_DELETE__OPT(client, data):
     if data.get('unavailable', 2) == 1:
         return
     
-    client.guild_profiles.pop(guild, None)
+    try:
+        del client.guild_profiles[guild_id]
+    except KeyError:
+        pass
     
     guild._delete(client)
 

@@ -9,7 +9,7 @@ from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake, preconvert_bool
 from ...discord.client import Client
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommand, InteractionEvent, \
-    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, ApplicationCommandTarget, \
+    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, ApplicationCommandTargetType, \
     CONTEXT_APPLICATION_COMMAND_TARGETS
 from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
@@ -287,16 +287,16 @@ def _validate_allow_by_default(allow_by_default):
     return allow_by_default
 
 
-DEFAULT_APPLICATION_COMMAND_TARGET_TYPE = ApplicationCommandTarget.chat
+DEFAULT_APPLICATION_COMMAND_TARGET_TYPE = ApplicationCommandTargetType.chat
 
 APPLICATION_COMMAND_TARGET_TYPES_BY_NAME = {
-    application_command_target.name: application_command_target for
-    application_command_target in ApplicationCommandTarget.INSTANCES.values()
+    application_command_target_type.name: application_command_target_type for
+    application_command_target_type in ApplicationCommandTargetType.INSTANCES.values()
 }
 
 APPLICATION_COMMAND_TARGET_TYPES_BY_VALUE = {
-    application_command_target.value: application_command_target for
-    application_command_target in ApplicationCommandTarget.INSTANCES.values()
+    application_command_target_type.value: application_command_target_type for
+    application_command_target_type in ApplicationCommandTargetType.INSTANCES.values()
 }
 
 
@@ -306,12 +306,12 @@ def  _validate_target(target):
     
     Parameters
     ----------
-    target : `None`, `int`, `str`, ``ApplicationCommandTarget``
+    target : `None`, `int`, `str`, ``ApplicationCommandTargetType``
         The `target` to validate.
     
     Returns
     -------
-    target : ``ApplicationCommandTarget``
+    target : ``ApplicationCommandTargetType``
         The validated `target`.
     
     Raises
@@ -319,12 +319,12 @@ def  _validate_target(target):
     ValueError
         - If `target` could not be matched by any expected target type name or value.
     TypeError
-        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTarget`` instance.
+        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTargetType`` instance.
     """
     if target is None:
-        target = ApplicationCommandTarget.none
+        target = ApplicationCommandTargetType.none
     
-    elif isinstance(target, ApplicationCommandTarget):
+    elif isinstance(target, ApplicationCommandTargetType):
         pass
     
     elif isinstance(target, str):
@@ -348,10 +348,10 @@ def  _validate_target(target):
             raise ValueError(f'Unknown `target` value: {target!r}.') from None
     
     else:
-        raise TypeError(f'`target` can be given as `None`, `{ApplicationCommandTarget.__name__}`, `str` or '
+        raise TypeError(f'`target` can be given as `None`, `{ApplicationCommandTargetType.__name__}`, `str` or '
             f'as `int` instance, got {target.__class__.__name__}.')
     
-    if target is ApplicationCommandTarget.none:
+    if target is ApplicationCommandTargetType.none:
         target = DEFAULT_APPLICATION_COMMAND_TARGET_TYPE
     
     return target
@@ -421,7 +421,7 @@ class SlashCommand:
     ----------
     _command : `None` or ``SlashCommandFunction``
         The command of the slash command.
-    _overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
+    _permission_overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
         Permission overwrites applied to the slash command.
     _registered_application_command_ids : `None` or `dict` of (`int`, `int`) items
         The registered application command ids, which are matched by the command's schema.
@@ -463,16 +463,16 @@ class SlashCommand:
         Guild commands have ``.guild_ids`` set as `None`.
     name : `str`
         Application command name. It's length can be in range [1:32].
-    target : ``ApplicationCommandTarget``
+    target : ``ApplicationCommandTargetType``
         The target type of the slash command.
         
-        Defaults to ``ApplicationCommandTarget.chat`.
+        Defaults to ``ApplicationCommandTargetType.chat`.
     
     Notes
     -----
     ``SlashCommand`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_command', '_overwrites', '_registered_application_command_ids', '_schema',
+    __slots__ = ('__weakref__', '_command', '_permission_overwrites', '_registered_application_command_ids', '_schema',
         '_sub_commands', '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default',
         'is_global', 'name', 'target')
     
@@ -659,10 +659,10 @@ class SlashCommand:
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-        target : `None`, `int`, `str`, ``ApplicationCommandTarget``, Optional
+        target : `None`, `int`, `str`, ``ApplicationCommandTargetType``, Optional
             The target type of the slash command.
             
-            Defaults to `ApplicationCommandTarget.chat`.
+            Defaults to `ApplicationCommandTargetType.chat`.
         
         Returns
         -------
@@ -694,7 +694,7 @@ class SlashCommand:
             - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
             - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
                 `Ellipsis`).
-            - If `target` was not given neither as `None`, `int`, `str` or ``ApplicationCommandTarget``.
+            - If `target` was not given neither as `None`, `int`, `str` or ``ApplicationCommandTargetType``.
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
@@ -812,7 +812,7 @@ class SlashCommand:
                 self.is_default = is_default
                 self._unloading_behaviour = unloading_behaviour
                 self.allow_by_default = allow_by_default
-                self._overwrites = None
+                self._permission_overwrites = None
                 self.target = target
                 
                 if (wrappers is not None):
@@ -847,7 +847,7 @@ class SlashCommand:
             self.is_default = is_default
             self._unloading_behaviour = unloading_behaviour
             self.allow_by_default = allow_by_default
-            self._overwrites = None
+            self._permission_overwrites = None
             self.target = target
             
             if (wrappers is not None):
@@ -980,7 +980,7 @@ class SlashCommand:
                     options.append(option)
         
         return ApplicationCommand(self.name, self.description, allow_by_default=self.allow_by_default,
-            options=options, target=self.target)
+            options=options, target_type=self.target)
     
     
     def as_sub(self):
@@ -1038,11 +1038,14 @@ class SlashCommand:
                         parent_reference = WeakReferer(new)
                     sub_command._parent_reference = parent_reference
         
-        overwrites = self._overwrites
-        if (overwrites is not None):
-            overwrites = {guild_id: overwrite.copy() for guild_id, overwrite in overwrites.items()}
+        permission_overwrites = self._permission_overwrites
+        if (permission_overwrites is not None):
+            permission_overwrites = {
+                guild_id: permission_overwrite.copy() for
+                guild_id, permission_overwrite in permission_overwrites.items()
+            }
         
-        new._overwrites = overwrites
+        new._permission_overwrites = permission_overwrites
         
         new.target = self.target
         
@@ -1209,7 +1212,7 @@ class SlashCommand:
         if self.allow_by_default != other.allow_by_default:
             return False
         
-        if self._overwrites != other._overwrites:
+        if self._permission_overwrites != other._permission_overwrites:
             return False
         
         if self.target is not other.target:
@@ -1218,7 +1221,7 @@ class SlashCommand:
         return True
     
     
-    def add_overwrite(self, guild_id, overwrite):
+    def add_permission_overwrite(self, guild_id, permission_overwrite):
         """
         Adds an overwrite to the slash command.
         
@@ -1226,7 +1229,7 @@ class SlashCommand:
         ----------
         guild_id : `int`
             The guild's id where the overwrite will be applied.
-        overwrite : ``ApplicationCommandPermissionOverwrite`` or `None`
+        permission_overwrite : ``ApplicationCommandPermissionOverwrite`` or `None`
             The permission overwrite to add
         
         Raises
@@ -1234,73 +1237,77 @@ class SlashCommand:
         AssertionError
             - Each command in each guild can have up to `10` overwrite, which is already reached.
         """
-        overwrites = self._overwrites
-        if overwrites is None:
-            self._overwrites = overwrites = {}
+        permission_overwrites = self._permission_overwrites
+        if permission_overwrites is None:
+            self._permission_overwrites = permission_overwrites = {}
         
-        overwrites_for_guild = overwrites.get(guild_id, None)
+        permission_overwrites_for_guild = permission_overwrites.get(guild_id, None)
         
         if __debug__:
-            if (overwrites_for_guild is not None) and \
-                    (len(overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX):
+            if (permission_overwrites_for_guild is not None) and \
+                    (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX):
                 raise AssertionError(f'`Each command in each guild can have up to '
-                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX} overwrite,s which is already reached.')
+                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX} permission overwrites which is already reached.')
         
-        if (overwrites_for_guild is not None) and (overwrite is not None):
-            target_id = overwrite.target_id
-            for index in range(len(overwrites_for_guild)):
-                overwrite_ = overwrites_for_guild[index]
+        if (permission_overwrites_for_guild is not None) and (permission_overwrite is not None):
+            target_id = permission_overwrite.target_id
+            for index in range(len(permission_overwrites_for_guild)):
+                iter_permission_overwrites = permission_overwrites_for_guild[index]
                 
-                if overwrite_.target_id != target_id:
+                if iter_permission_overwrites.target_id != target_id:
                     continue
                 
-                if overwrite.allow == overwrite_.allow:
+                if permission_overwrite.allow == iter_permission_overwrites.allow:
                     return
                 
-                del overwrites_for_guild[index]
+                del permission_overwrites_for_guild[index]
                 
-                if overwrites_for_guild:
+                if permission_overwrites_for_guild:
                     return
                 
-                overwrites[guild_id] = None
+                permission_overwrites[guild_id] = None
                 return
         
-        if overwrite is None:
-            if overwrites_for_guild is None:
-                overwrites[guild_id] = None
+        if permission_overwrite is None:
+            if permission_overwrites_for_guild is None:
+                permission_overwrites[guild_id] = None
         else:
-            if overwrites_for_guild is None:
-                overwrites[guild_id] = overwrites_for_guild = []
+            if permission_overwrites_for_guild is None:
+                permission_overwrites[guild_id] = permission_overwrites_for_guild = []
             
-            overwrites_for_guild.append(overwrite)
+            permission_overwrites_for_guild.append(permission_overwrite)
     
-    def get_overwrites_for(self, guild_id):
+    
+    def get_permission_overwrites_for(self, guild_id):
         """
-        Returns the slash command's overwrites for the given guild.
+        Returns the slash command's permissions overwrites for the given guild.
         
         Returns
         -------
-        overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
+        permission_overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
             Returns `None` instead of an empty list.
         """
-        overwrites = self._overwrites
-        if overwrites is None:
-            return
-        
-        return overwrites.get(guild_id, None)
-
-    def _get_sync_permission_ids(self):
+        permission_overwrites = self._permission_overwrites
+        if (permission_overwrites is not None):
+            return permission_overwrites.get(guild_id, None)
+    
+    
+    def _get_permission_sync_ids(self):
         """
         Gets the permission overwrite guild id-s which should be synced.
+        
+        Returns
+        -------
+        permission_sync_ids : `set` of `int`
         """
         permission_sync_ids = set()
         guild_ids = self.guild_ids
         # If the command is guild bound, sync it in every guild, if not, then sync it in every guild where it has an
-        # an overwrite.
+        # a permission overwrite.
         if (guild_ids is None):
-            overwrites = self._overwrites
-            if (overwrites is not None):
-                permission_sync_ids.update(overwrites)
+            permission_overwrites = self._permission_overwrites
+            if (permission_overwrites is not None):
+                permission_sync_ids.update(permission_overwrites.keys())
         else:
             permission_sync_ids.update(guild_ids)
         

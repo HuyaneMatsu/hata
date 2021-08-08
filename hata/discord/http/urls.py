@@ -1039,7 +1039,7 @@ def user_avatar_url_for(user, guild):
         return None
     
     try:
-        guild_profile = user.guild_profiles[guild]
+        guild_profile = user.guild_profiles[guild.id]
     except KeyError:
         return None
     
@@ -1086,7 +1086,7 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
         return None
     
     try:
-        guild_profile = user.guild_profiles[guild]
+        guild_profile = user.guild_profiles[guild.id]
     except KeyError:
         return None
     

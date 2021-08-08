@@ -3,7 +3,7 @@ __all__ = ('AUTO_ARCHIVE_DEFAULT', 'AUTO_ARCHIVE_OPTIONS', 'ChannelThread', )
 from ...backend.utils import copy_docs
 from ...backend.export import export
 
-from ..core import CHANNELS
+from ..core import CHANNELS, GUILDS
 from ..permission.permission import PERMISSION_NONE
 from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
@@ -36,6 +36,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         The unique identifier of the channel.
     parent : `None` or ``ChannelText``
         The text channel from where the thread is created from.
+    guild_id : `int`
+        The channel's guild's identifier. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
     _message_history_collector :  `None` or ``MessageHistoryCollector``
@@ -122,6 +124,13 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             self.type = data['type']
             self._init_parent(data, guild)
             self._update_attributes(data)
+            
+            owner_id = data.get('owner_id', None)
+            if owner_id is None:
+                owner_id = 0
+            else:
+                owner_id = int(owner_id)
+            self.owner_id = owner_id
         
         if (client is not None):
             try:
@@ -173,6 +182,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         return owner
     
+    
     def is_announcements(self):
         """
         Returns whether the thread channel is bound to an announcements channel.
@@ -182,6 +192,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         is_announcements : `bool`
         """
         return self.type == 10
+    
     
     def is_public(self):
         """
@@ -193,6 +204,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         """
         return self.type == 11
     
+    
     def is_private(self):
         """
         Returns whether the thread channel is private.
@@ -202,6 +214,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         is_private : `bool`
         """
         return self.type == 12
+    
     
     def _init_parent(self, data, guild):
         """
@@ -215,10 +228,13 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         guild : ``Guild``
             The guild of the channel.
         """
-        self.guild = guild
-        
-        if (guild is not None):
+        if (guild is None):
+            guild_id = 0
+        else:
             guild.threads[self.id] = self
+            guild_id = guild.id
+        
+        self.guild_id = guild.id
         
         parent_id = data.get('parent_id', None)
         if (parent_id is None):
@@ -268,6 +284,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         return users
     
+    
     @copy_docs(ChannelBase.iter_users)
     def iter_users(self):
         thread_users = self.thread_users
@@ -299,6 +316,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         self.archived_at = archived_at
         
         self.open = not data.get('locked', True)
+    
     
     def _difference_update_attributes(self, data):
         """
@@ -384,25 +402,26 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     
     @copy_docs(ChannelBase._delete)
     def _delete(self):
-        parent = self.parent
-        if parent is None:
-            return
-        
-        self.parent = None
-        
-        guild = self.guild
-        if (guild is not None):
-            self.guild = None
-            del guild.threads[self.id]
+        guild_id = self.guild_id
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            pass
+        else:
+            try:
+                del guild.threads[self.id]
+            except KeyError:
+                pass
         
         thread_users = self.thread_users
         if (thread_users is not None):
             self.thread_users = None
+            channel_id = self.id
             for user in thread_users.values():
                 thread_profiles = user.thread_profiles
                 if (thread_profiles is not None):
                     try:
-                        del thread_profiles[self]
+                        del thread_profiles[channel_id]
                     except KeyError:
                         pass
                     else:
@@ -416,7 +435,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             return PERMISSION_NONE
         
         return parent.permissions_for(user)
-
+    
+    
     @copy_docs(ChannelBase.cached_permissions_for)
     def cached_permissions_for(self, user):
         parent = self.parent
@@ -425,6 +445,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         return parent.cached_permissions_for(user)
     
+    
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         parent = self.parent
@@ -432,6 +453,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             return PERMISSION_NONE
         
         return parent.permissions_for_roles(*roles)
+    
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):

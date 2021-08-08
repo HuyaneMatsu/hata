@@ -5,14 +5,18 @@ import re, warnings
 from ...backend.utils import copy_docs
 from ...backend.export import export, include
 
-from ..permission import Permission, PermissionOverwrite
+from ..permission import Permission, PermissionOverwriteTargetType
 from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL
-from ..webhook import Webhook, WebhookRepr
+from ..core import GUILDS, CHANNELS
+from ..user import ClientUserBase
 
+PERMISSION_OVERWRITE_TYPE_ROLE = PermissionOverwriteTargetType.role
+PERMISSION_OVERWRITE_TYPE_USER = PermissionOverwriteTargetType.user
 
 from .channel_base import ChannelBase
 
 Client = include('Client')
+create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 @export
 class ChannelGuildBase(ChannelBase):
@@ -23,10 +27,10 @@ class ChannelGuildBase(ChannelBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    parent : `None`, ``ChannelCategory``
-        The channel's parent. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+    parent_id : `int`
+        The channel's parent's identifier.
+    guild_id : `int`
+        The channel's guild's identifier. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
     
@@ -40,13 +44,14 @@ class ChannelGuildBase(ChannelBase):
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
     """
-    __slots__ = ('parent', 'guild', 'name', )
+    __slots__ = ('parent_id', 'guild_id', 'name', )
     
     ORDER_GROUP = 0
     
     @copy_docs(ChannelBase._get_processed_name)
     def _get_processed_name(self):
         return self.name
+    
     
     @property
     @copy_docs(ChannelBase.users)
@@ -72,17 +77,19 @@ class ChannelGuildBase(ChannelBase):
         
         return guild.clients
     
+    
     @copy_docs(ChannelBase.get_user)
     def get_user(self, name, default=None):
-        if self.guild is None:
-            return default
+        name_length = len(name)
+        if (name_length < 1) or (name_length > 32):
+            return
         
-        if (not 1 < len(name) < 38):
+        if self.guild is None:
             return default
         
         users = self.users
         
-        if len(name) > 6 and name[-5] == '#':
+        if (name_length > 6) and (name[-5] == '#'):
             try:
                 discriminator = int(name[-4:])
             except ValueError:
@@ -90,19 +97,25 @@ class ChannelGuildBase(ChannelBase):
             else:
                 name_ = name[:-5]
                 for user in users:
-                    if user.discriminator == discriminator and user.name == name_:
+                    if (user.discriminator == discriminator) and (user.name == name_):
                         return user
         
-        if len(name) > 32:
+        if name_length > 32:
             return default
 
         for user in users:
             if user.name == name:
                 return user
         
-        guild = self.guild
+        guild_id = self.guild_id
+        
         for user in users:
-            nick = user.guild_profiles[guild]
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
+            
+            nick = guild_profile.nick
             if nick is None:
                 continue
             
@@ -111,16 +124,18 @@ class ChannelGuildBase(ChannelBase):
         
         return default
     
+    
     @copy_docs(ChannelBase.get_user_like)
     def get_user_like(self, name, default=None):
+        name_length = len(name)
+        if (name_length < 1) or (name_length > 37):
+            return
+        
         guild = self.guild
         if guild is None:
             return default
         
-        if not 1 < len(name) < 38:
-            return default
-        
-        if len(name) > 6 and name[-5] == '#':
+        if (name_length > 6) and (name[-5] == '#'):
             try:
                 discriminator = int(name[-4:])
             except ValueError:
@@ -131,13 +146,15 @@ class ChannelGuildBase(ChannelBase):
                     if not self.permissions_for(user).can_view_channel:
                         continue
                     
-                    if user.discriminator == discriminator and user.name == name_:
+                    if (user.discriminator == discriminator) and (user.name == name_):
                         return user
         
-        if len(name) > 32:
+        if (name_length > 32):
             return default
         
         pattern = re.compile(re.escape(name), re.I)
+        
+        guild_id = guild.id
         
         for user in guild.users.values():
             if not self.permissions_for(user).can_view_channel:
@@ -146,7 +163,12 @@ class ChannelGuildBase(ChannelBase):
             if pattern.match(user.name) is not None:
                 return user
             
-            nick = user.guild_profiles[guild].nick
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
+            
+            nick = guild_profile.nick
             if nick is None:
                 continue
             
@@ -157,19 +179,22 @@ class ChannelGuildBase(ChannelBase):
         
         return default
     
+    
     @copy_docs(ChannelBase.get_users_like)
     def get_users_like(self, name):
         result = []
+        
+        name_length = len(name)
+        if (name_length < 1) or (name_length > 37):
+            return result
+        
         guild = self.guild
         if guild is None:
             return result
         
-        if (not 1 < len(name) < 38):
-            return result
-        
         users = self.users
         
-        if len(name) > 6 and name[-5] == '#':
+        if (name_length > 6) and (name[-5] == '#'):
             try:
                 discriminator = int(name[-4:])
             except ValueError:
@@ -180,15 +205,16 @@ class ChannelGuildBase(ChannelBase):
                     if not self.permissions_for(user).can_view_channel:
                         continue
                     
-                    if user.discriminator == discriminator and user.name == name_:
+                    if (user.discriminator == discriminator) and (user.name == name_):
                         result.append(user)
                         break
         
-        if len(name) > 32:
+        if name_length > 32:
             return result
         
         pattern = re.compile(re.escape(name), re.I)
         
+        guild_id = guild.id
         for user in guild.users.values():
             if not self.permissions_for(user).can_view_channel:
                 continue
@@ -197,7 +223,12 @@ class ChannelGuildBase(ChannelBase):
                 result.append(user)
                 continue
             
-            nick = user.guild_profiles[guild].nick
+            try:
+                guild_profile = user.guild_profiles[guild_id]
+            except KeyError:
+                continue
+            
+            nick = guild_profile.nick
             if nick is None:
                 continue
             
@@ -207,6 +238,7 @@ class ChannelGuildBase(ChannelBase):
             result.append(user)
         
         return result
+    
     
     @classmethod
     @copy_docs(ChannelBase._from_partial_data)
@@ -222,14 +254,47 @@ class ChannelGuildBase(ChannelBase):
         
         return self
     
+    
     @classmethod
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, partial_guild):
         self = super(ChannelGuildBase, cls)._create_empty(channel_id, channel_type, partial_guild)
-        self.parent = None
-        self.guild = partial_guild
+        self.parent_id = 0
+        if partial_guild is None:
+            guild_id = 0
+        else:
+            guild_id = partial_guild.id
+        self.guild_id = guild_id
         self.name = ''
         return self
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the channel's guild.
+        
+        Returns
+        -------
+        guild : ``Guild`` or `None`
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return create_partial_guild_from_id(guild_id)
+    
+    
+    @property
+    def parent(self):
+        """
+        Returns the channel's parent channel.
+        
+        Returns
+        -------
+        parent : `None` or ``ChannelGuildBase``
+        """
+        parent_id = self.parnet_id
+        if parent_id:
+            return CHANNELS.get(parent_id, None)
 
 
 @export
@@ -241,15 +306,15 @@ class ChannelGuildMainBase(ChannelGuildBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    parent : `None`, ``ChannelCategory``
-        The channel's parent. If the channel is deleted, set to `None`.
-    guild : `None` or ``Guild``
-        The channel's guild. If the channel is deleted, set to `None`.
+    parent_id : `int`
+        The channel's parent's identifier.
+    guild_id : `int`
+        The channel's guild's identifier. If the channel is deleted, set to `None`.
     name : `str`
         The channel's name.
-    _cache_perm : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    overwrites : `list` of ``PermissionOverwrite`` objects
+    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
     position : `int`
         The channel's position.
@@ -264,7 +329,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
     """
-    __slots__ = ('_cache_perm', 'overwrites', 'position', )
+    __slots__ = ('_permission_cache', 'permission_overwrites', 'position', )
     
     def __gt__(self, other):
         """
@@ -362,6 +427,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
         
         return NotImplemented
     
+    
     def _init_parent_and_position(self, data, guild):
         """
         Initializes the `.parent` and the `.position` of the channel. If a channel is under the ``Guild``,
@@ -374,16 +440,16 @@ class ChannelGuildMainBase(ChannelGuildBase):
         guild : ``Guild``
             The guild of the channel.
         """
-        self.guild = guild
+        self.guild_id = guild.id
         guild.channels[self.id] = self
         
         parent_id = data.get('parent_id', None)
         if (parent_id is None):
-            parent = None
+            parent_id = 0
         else:
-            parent = guild.channels[int(parent_id)]
+            parent_id = int(parent_id)
         
-        self.parent = parent
+        self.parent_id = parent_id
         
         self.position = data.get('position', 0)
     
@@ -406,20 +472,20 @@ class ChannelGuildMainBase(ChannelGuildBase):
         
         new_parent_id = data.get('parent_id', None)
         if new_parent_id is None:
-            new_parent = None
+            new_parent_id = 0
         else:
-            new_parent = guild.channels[int(new_parent_id)]
+            new_parent_id = int(new_parent_id)
         
         position = data.get('position', 0)
         
-        parent = self.parent
-        if parent is new_parent:
+        parent_id = self.parent_id
+        if parent_id is new_parent_id:
             if self.position != position:
                 self.position = position
         
         else:
             self.position = position
-            self.parent = new_parent
+            self.parent_id = new_parent_id
     
     
     def _update_parent_and_position(self, data, old_attributes):
@@ -435,30 +501,35 @@ class ChannelGuildMainBase(ChannelGuildBase):
             Channel data received from Discord
         old_attributes : `dict` of (`str`, `Any`) items
             `attribute-name` - `old-value` relations containing the changes of caused by the update.
-        """
-        guild = self.guild
-        if guild is None:
-            return
         
+            The method may add the following items to the dictionary:
+            +---------------+-----------------------------------+
+            | Keys          | Values                            |
+            +===============+===================================+
+            | parent_id     | `int`                             |
+            +---------------+-----------------------------------+
+            | position      | `int`                             |
+            +---------------+-----------------------------------+
+        """
         new_parent_id = data.get('parent_id', None)
         if new_parent_id is None:
-            new_parent = None
+            new_parent_id = 0
         else:
-            new_parent = guild.channels[int(new_parent_id)]
+            new_parent_id = int(new_parent_id)
         
         position = data.get('position', 0)
         
-        parent = self.parent
-        if parent is new_parent:
+        parent_id = self.parent_id
+        if parent_id is new_parent_id:
             if self.position != position:
                 old_attributes['position'] = self.position
                 self.position = position
         else:
-            old_attributes['parent'] = parent
+            old_attributes['parent_id'] = parent_id
             old_attributes['position'] = self.position
             
             self.position = position
-            self.parent = parent
+            self.parent_id = parent_id
     
     
     def _permissions_for(self, user):
@@ -468,94 +539,125 @@ class ChannelGuildMainBase(ChannelGuildBase):
         Parameters
         ----------
         user : ``UserBase`` instance
-            The user, who's permissions will be returned.
+            The user to calculate it's permissions of.
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         """
-        guild = self.guild
-        if guild is None:
-            return PERMISSION_NONE
-        
-        default_role = guild.roles.get(guild.id, None)
-        if default_role is None:
-            base = 0
-        else:
-            base = default_role.permissions
-        
+        guild_id = self.guild_id
         try:
-            guild_profile = user.guild_profiles[guild]
+            guild = GUILDS[guild_id]
         except KeyError:
-            if isinstance(user, (Webhook, WebhookRepr)) and user.channel is self:
-                
-                overwrites = self.overwrites
-                if overwrites:
-                    overwrite = overwrites[0]
-                    
-                    if overwrite.target_role is default_role:
-                        base = (base&~overwrite.deny)|overwrite.allow
-                
-                return Permission(base)
-            
-            return PERMISSION_NONE
-        
-        roles = guild_profile.roles
-        if (roles is not None):
-            roles.sort()
-            for role in roles:
-                base |= role.permissions
-        
-        if Permission.can_administrator(base):
-            return PERMISSION_ALL
-        
-        overwrites = self.overwrites
-        if overwrites:
-            overwrite = overwrites[0]
-            
-            if overwrite.target_role is default_role:
-                base = (base&~overwrite.deny)|overwrite.allow
-            
-            for overwrite in overwrites:
-                overwrite_target_role = overwrite.target_role
-                if (overwrite_target_role is not None):
-                    if roles is None:
-                        continue
-                    
-                    if overwrite_target_role not in roles:
-                        continue
-                
-                else:
-                    if overwrite.target_user_id != user.id:
-                        continue
-                
-                base = (base&~overwrite.deny)|overwrite.allow
-        
-        return Permission(base)
-    
-    @copy_docs(ChannelBase.permissions_for)
-    def permissions_for(self, user):
-        guild = self.guild
-        if guild is None:
             return PERMISSION_NONE
         
         if user.id == guild.owner_id:
             return PERMISSION_ALL
         
+        if not isinstance(user, ClientUserBase):
+            if  user.guild_id in guild.channels:
+                role_everyone = guild.roles.get(guild_id, None)
+                if role_everyone is None:
+                    permissions = PERMISSION_NONE
+                else:
+                    permissions = role_everyone.permissions
+                
+                # Apply everyone's if applicable
+                permission_overwrites = self.permission_overwrites
+                try:
+                    permission_overwrite_everyone = permission_overwrites[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    permissions &= ~permission_overwrite_everyone.deny
+                    permissions |= permission_overwrite_everyone.allow
+            
+                return permissions
+            else:
+                return PERMISSION_NONE
+        
+        # Are we in the guild?
+        try:
+            guild_profile = user.guild_profiles[guild_id]
+        except KeyError:
+            return PERMISSION_NONE
+        
+        # Apply everyone's
+        guild_id = guild.id
+        role_everyone = guild.roles.get(guild_id, None)
+        if role_everyone is None:
+            permissions = 0
+        else:
+            permissions = role_everyone.permissions
+        
+        roles = guild_profile.roles
+        
+        # Apply permissions of each role of the user.
+        if (roles is not None):
+            for role in roles:
+                permissions |= role.permissions
+        
+        # Apply everyone's if applicable
+        permission_overwrites = self.permission_overwrites
+        try:
+            permission_overwrite_everyone = permission_overwrites[guild_id]
+        except KeyError:
+            pass
+        else:
+            permissions &= ~permission_overwrite_everyone.deny
+            permissions |= permission_overwrite_everyone.allow
+        
+        # Apply role overwrite
+        allow = 0
+        deny = 0
+        
+        if (roles is not None):
+            for role in roles:
+                try:
+                    permission_overwrite_role = permission_overwrites[role.id]
+                except KeyError:
+                    pass
+                else:
+                    allow |= permission_overwrite_role.allow
+                    deny |= permission_overwrite_role.deny
+        
+        permissions &= ~deny
+        permissions |= allow
+        
+        # Apply user specific
+        try:
+            permission_overwrite_user = permission_overwrites[user.id]
+        except KeyError:
+            pass
+        else:
+            permissions &= ~permission_overwrite_user.deny
+            permissions |= permission_overwrite_user.allow
+        
+        # Are we admin?
+        if Permission.can_administrator(permissions):
+            return PERMISSION_ALL
+        
+        return Permission(permissions)
+    
+    
+    @copy_docs(ChannelBase.permissions_for)
+    def permissions_for(self, user):
         result = self._permissions_for(user)
         if not result.can_view_channel:
             result = PERMISSION_NONE
         
         return result
     
+    
     @copy_docs(ChannelBase.cached_permissions_for)
     def cached_permissions_for(self, user):
         if not isinstance(user, Client):
             return self.permissions_for(user)
         
-        cache_perm = self._cache_perm
+        cache_perm = self._permission_cache
         if cache_perm is None:
-            self._cache_perm = cache_perm = {}
+            self._permission_cache = cache_perm = {}
         else:
             try:
                 return cache_perm[user.id]
@@ -565,6 +667,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
         permissions = self.permissions_for(user)
         cache_perm[user.id] = permissions
         return permissions
+    
     
     def _permissions_for_roles(self, roles):
         """
@@ -578,7 +681,8 @@ class ChannelGuildMainBase(ChannelGuildBase):
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         
         Notes
         -----
@@ -588,100 +692,78 @@ class ChannelGuildMainBase(ChannelGuildBase):
         if guild is None:
             return PERMISSION_NONE
         
-        default_role = guild.roles.get(guild.id, None)
-        if default_role is None:
-            base = 0
+        guild_id = guild.id
+        role_everyone = guild.roles.get(guild_id, None)
+        if role_everyone is None:
+            permissions = 0
         else:
-            base = default_role.permissions
+            permissions = role_everyone.permissions
         
-        for role in sorted(roles):
-            if role.guild is self:
-                base |= role.permissions
+        roles = sorted(roles)
+        for role in roles:
+            if role.guild_id == guild_id:
+                permissions |= role.permissions
         
-        if Permission.can_administrator(base):
+        if Permission.can_administrator(permissions):
             return PERMISSION_ALL
         
-        roles = set(roles)
+        permission_overwrites = self.permission_overwrites
+        try:
+            permission_overwrite_everyone = permission_overwrites[guild_id]
+        except KeyError:
+            pass
+        else:
+            permissions &= ~permission_overwrite_everyone.deny
+            permissions |= permission_overwrite_everyone.allow
         
-        overwrites = self.overwrites
-        if overwrites:
-            overwrite = overwrites[0]
-            
-            if overwrite.target_role is default_role:
-                base = (base&~overwrite.deny)|overwrite.allow
-            
-            for overwrite in overwrites:
-                overwrite_target_role = overwrite.target_role
-                if (overwrite_target_role is None):
-                    continue
-                
-                if overwrite_target_role not in roles:
-                    continue
-                
-                base = (base&~overwrite.deny)|overwrite.allow
+        allow = 0
+        deny = 0
         
-        return Permission(base)
+        for role in roles:
+            try:
+                permission_overwrite_role = permission_overwrites[role.id]
+            except KeyError:
+                pass
+            else:
+                allow |= permission_overwrite_role.allow
+                deny |= permission_overwrite_role.deny
+        
+        permissions &= ~deny
+        permissions |= allow
+        
+        return Permission(permissions)
     
     
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
-        result = self._permissions_for_roles(roles)
-        if not result.can_view_channel:
-            result = PERMISSION_NONE
+        permissions = self._permissions_for_roles(roles)
+        if not permissions.can_view_channel:
+            permissions = PERMISSION_NONE
         
-        return result
+        return permissions
     
-    
-    def _parse_overwrites(self, data):
-        """
-        Parses the permission overwrites from the given data and returns them.
-        
-        Parameters
-        ----------
-        data : `list` of (`dict` of (`str`, `Any`) items) elements
-            A list of permission overwrites' data.
-        
-        Returns
-        -------
-        overwrites : `list` of ``PermissionOverwrite``
-        """
-        overwrites = []
-        try:
-            overwrites_data = data['permission_overwrites']
-        except KeyError:
-            return overwrites
-        
-        if not overwrites_data:
-            return overwrites
-        
-        default_role = self.guild.default_role
-        
-        for overwrite_data in overwrites_data:
-            overwrite = PermissionOverwrite(overwrite_data)
-            if overwrite.target_role is default_role:
-                overwrites.insert(0, overwrite)
-            else:
-                overwrites.append(overwrite)
-        
-        return overwrites
-    
-    @property
-    def category(self):
-        """
-        Deprecated, please use ``.parent`` instead. Will be removed in 2021 july.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.category` is deprecated, and will be removed in 2021 july. '
-            f'Please use `{self.__class__.__name__}.parent` instead.',
-            FutureWarning)
-        
-        return self.parent
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, partial_guild):
         self = super(ChannelGuildMainBase, cls)._create_empty(channel_id, channel_type, partial_guild)
-        self._cache_perm = None
-        self.overwrites = []
+        self._permission_cache = None
+        self.permission_overwrites = {}
         self.position = 0
         return self
+    
+    
+    @copy_docs(ChannelBase._delete)
+    def _delete(self):
+        self.permission_overwrites.clear()
+        self._permission_cache = None
+        
+        try:
+            guild = GUILDS[self.guild_id]
+        except KeyError:
+            pass
+        else:
+            try:
+                del guild.channels[self.id]
+            except KeyError:
+                pass

@@ -2,13 +2,15 @@ __all__ = ('ChannelBase',)
 
 import re
 
-from ...backend.export import export
+from ...backend.export import export, include
 
 from ..bases import DiscordEntity
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE
 from ..user import User
 from ..utils import DATETIME_FORMAT_CODE
+
+Client = include('Client')
 
 @export
 class ChannelBase(DiscordEntity, immortal=True):
@@ -311,16 +313,14 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        clients : `list` of ``Client`` objects
+        clients : `list` of ``Client``
         """
-        result = []
+        clients = []
         for user in self.users:
-            if type(user) is User:
-                continue
-            
-            result.append(user)
+            if isinstance(user, Client):
+                clients.append(user)
         
-        return result
+        return clients
     
     # for sorting channels
     def __gt__(self, other):
@@ -384,6 +384,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         return self.__class__.__name__
     
+    
     def has_name_like(self, name):
         """
         Returns whether the channel's name is like the given string.
@@ -401,13 +402,14 @@ class ChannelBase(DiscordEntity, immortal=True):
             name = name[1:]
         
         target_name_length = len(name)
-        if target_name_length<2 or target_name_length>100:
+        if (target_name_length < 2) or (target_name_length > 100):
             return False
         
         if re.match(re.escape(name), self.name, re.I) is None:
             return False
         
         return True
+    
     
     def permissions_for(self, user):
         """
@@ -416,11 +418,13 @@ class ChannelBase(DiscordEntity, immortal=True):
         Parameters
         ----------
         user : ``UserBase`` instance
-            The user, who's permissions will be returned.
+            The user to calculate it's permissions of.
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
+            
         
         See Also
         --------
@@ -432,6 +436,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         return PERMISSION_NONE
     
+    
     def cached_permissions_for(self, user):
         """
         Returns the permissions for the given user at the channel. If the user's permissions are not cached, calculates
@@ -440,10 +445,12 @@ class ChannelBase(DiscordEntity, immortal=True):
         Parameters
         ----------
         user : ``UserBase`` instance
+            The user to calculate it's permissions of.
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         
         Notes
         -----
@@ -453,6 +460,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         Always return empty permissions. Subclasses should implement this method.
         """
         return PERMISSION_NONE
+    
     
     def permissions_for_roles(self, *roles):
         """
@@ -465,7 +473,8 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        permission : ``Permission``
+        permissions : ``Permission``
+            The calculated permissions.
         
         Notes
         -----
@@ -498,7 +507,8 @@ class ChannelBase(DiscordEntity, immortal=True):
             Channel data received from Discord.
         """
         pass
-
+    
+    
     def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
@@ -515,6 +525,7 @@ class ChannelBase(DiscordEntity, immortal=True):
             All item in the returned dict is optional.
         """
         return {}
+    
     
     def _delete(self):
         """

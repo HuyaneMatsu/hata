@@ -1,20 +1,20 @@
 __all__ = ('ApplicationCommand', 'ApplicationCommandOption', 'ApplicationCommandOptionChoice',
-    'InteractionResponseTypes', 'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', )
+     'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', )
 
-from ...backend.utils import modulize
+import warnings
 
 from ..bases import DiscordEntity, maybe_snowflake
 from ..core import APPLICATION_COMMANDS, ROLES
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
-from ..user import User, UserBase, ClientUserBase
+from ..user import User, UserBase, ClientUserBase, create_partial_user_from_id
 from ..role import Role, create_partial_role_from_id
 
-from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteType, \
-    ApplicationCommandTarget, CONTEXT_APPLICATION_COMMAND_TARGETS
+from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteTargetType, \
+    ApplicationCommandTargetType, CONTEXT_APPLICATION_COMMAND_TARGETS
 
-APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER = ApplicationCommandPermissionOverwriteType.user
-APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE = ApplicationCommandPermissionOverwriteType.role
+APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER = ApplicationCommandPermissionOverwriteTargetType.user
+APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE = ApplicationCommandPermissionOverwriteTargetType.role
 
 # ApplicationCommand
 APPLICATION_COMMAND_LIMIT_GLOBAL = 100
@@ -57,16 +57,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     options : `None` or `list` of ``ApplicationCommandOption``
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
-    target : ``ApplicationCommandTarget``
+    target_type : ``ApplicationCommandTargetType``
         The application command target's type describing where it shows up.
     
     Notes
     -----
     ``ApplicationCommand`` instances are weakreferable.
     """
-    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target',)
+    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target_type',)
     
-    def __new__(cls, name, description=None, *, allow_by_default=True, options=None, target=None):
+    def __new__(cls, name, description=None, *, allow_by_default=True, options=None, target_type=None):
         """
         Creates a new ``ApplicationCommand`` instance with the given parameters.
         
@@ -86,15 +86,15 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
-        target : `int`, ``ApplicationCommandTarget``, Optional (Keyword only)
+        target_type : `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
             The application command's target type.
             
-            Defaults to `ApplicationCommandTarget.chat`.
+            Defaults to `ApplicationCommandTargetType.chat`.
         
         Raises
         ------
         TypeError
-            If `target` is neither `int`, nor ``ApplicationCommandTarget`` instance.
+            If `target_type` is neither `int`, nor ``ApplicationCommandTargetType`` instance.
         ValueError
             `description` cannot be `None` for application commands with non-context target.
         AssertionError
@@ -162,12 +162,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             else:
                 options_processed = None
         
-        if target is None:
-            target = ApplicationCommandTarget.chat
+        if target_type is None:
+            target_type = ApplicationCommandTargetType.chat
         else:
-            target = preconvert_preinstanced_type(target, 'target', ApplicationCommandTarget)
+            target_type = preconvert_preinstanced_type(target_type, 'target_type', ApplicationCommandTargetType)
         
-        if (target not in CONTEXT_APPLICATION_COMMAND_TARGETS):
+        if (target_type not in CONTEXT_APPLICATION_COMMAND_TARGETS):
             if (description is None):
                 raise ValueError(f'`description` cannot be `None` for application commands with non-context target.')
         else:
@@ -182,7 +182,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.description = description
         self.allow_by_default = allow_by_default
         self.options = options_processed
-        self.target = target
+        self.target_type = target_type
         return self
     
     
@@ -258,7 +258,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.name = ''
             self.options = None
             self.allow_by_default = True
-            self.target = ApplicationCommandTarget.none
+            self.target_type = ApplicationCommandTargetType.none
         
         self._update_attributes(data)
         return self
@@ -304,11 +304,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             pass
         
         try:
-            target = data['type']
+            target_type = data['type']
         except KeyError:
             pass
         else:
-            self.target = ApplicationCommandTarget.get(target)
+            self.target_type = ApplicationCommandTargetType.get(target_type)
     
     
     def _difference_update_attributes(self, data):
@@ -339,7 +339,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +-----------------------+---------------------------------------------------+
             | options               | `None` or `list` of ``ApplicationCommandOption``  |
             +-----------------------+---------------------------------------------------+
-            | target                | ``ApplicationCommandTarget``                      |
+            | target_type           | ``ApplicationCommandTargetType``                  |
             +-----------------------+---------------------------------------------------+
         """
         old_attributes = {}
@@ -388,14 +388,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 self.allow_by_default = allow_by_default
         
         try:
-            target = data['type']
+            target_type = data['type']
         except KeyError:
             pass
         else:
-            target = ApplicationCommandTarget.get(target)
-            if (self.target is not target):
-                old_attributes['target'] = self.target
-                self.target = target
+            target_type = ApplicationCommandTargetType.get(target_type)
+            if (self.target_type is not target_type):
+                old_attributes['target_type'] = self.target_type
+                self.target_type = target_type
         
         
         return old_attributes
@@ -428,7 +428,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # Always add this to data, so if we update the command with it, will be always updated.
         data['default_permission'] = self.allow_by_default
         
-        data['type'] = self.target.value
+        data['type'] = self.target_type.value
         
         return data
     
@@ -450,12 +450,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         repr_parts.append(', name=')
         repr_parts.append(repr(self.name))
         
-        target = self.target
-        if (target is not ApplicationCommandTarget.none):
-            repr_parts.append(', target=')
-            repr_parts.append(target.name)
+        target_type = self.target_type
+        if (target_type is not ApplicationCommandTargetType.none):
+            repr_parts.append(', target_type=')
+            repr_parts.append(target_type.name)
             repr_parts.append(' (')
-            repr_parts.append(repr(target.value))
+            repr_parts.append(repr(target_type.value))
             repr_parts.append(')')
         
         description = self.description
@@ -546,7 +546,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.description = None
             self.name = ''
             self.options = None
-            self.target = ApplicationCommandTarget.none
+            self.target_type = ApplicationCommandTargetType.none
         
         self._update_attributes(data)
         
@@ -574,7 +574,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             options = [option.copy() for option in options]
         new.options = options
         
-        new.target = self.target
+        new.target_type = self.target_type
         
         return new
     
@@ -604,7 +604,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.options != other.options:
             return False
         
-        if (self.target is not other.target):
+        if (self.target_type is not other.target_type):
             return False
         
         return True
@@ -635,7 +635,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.options != other.options:
             return True
         
-        if (self.target is not other.target):
+        if (self.target_type is not other.target_type):
             return True
         
         return False
@@ -1367,12 +1367,12 @@ class ApplicationCommandPermission:
         The application command's application's identifier.
     guild_id : `int`
         The identifier of the respective guild.
-    overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
-        The application command overwrites relating to the respective application command in the guild.
+    permission_overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
+        The application command permissions overwrites relating to the respective application command in the guild.
     """
-    __slots__ = ('application_command_id', 'application_id', 'guild_id', 'overwrites')
+    __slots__ = ('application_command_id', 'application_id', 'guild_id', 'permission_overwrites')
     
-    def __new__(cls, application_command, *, overwrites=None):
+    def __new__(cls, application_command, *, permission_overwrites=None, overwrites=None):
         """
         Creates a new ``ApplicationCommandPermission`` instance from the given parameters.
         
@@ -1380,7 +1380,7 @@ class ApplicationCommandPermission:
         ----------
         application_command : ``ApplicationCommand`` or `int`
             The application command's identifier.
-        overwrites : `None` or (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
+        permission_overwrites : `None` or (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
                 , Optional (Keyword only)
             Overwrites for the application command.
         
@@ -1389,10 +1389,19 @@ class ApplicationCommandPermission:
         TypeError
             - If `application_command` was not given neither as ``ApplicationCommand`` nor as `int` instance.
         AssertionError
-            - If `overwrites` was not give neither as `None`, `list`, `set` or `tuple`.
-            - If `overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
-            - If `overwrites` length is over `10`.
+            - If `permission_overwrites` was not give neither as `None`, `list`, `set` or `tuple`.
+            - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
+            - If `permission_overwrites` length is over `10`.
         """
+        if (overwrites is not None):
+            warnings.warn(
+                f'`ApplicationCommandPermission.__new__`\'s `overwrites` parameter is deprecated, '
+                f'and will be removed in 2021 November. '
+                f'Please use `permission_overwrites` instead.',
+                FutureWarning)
+            
+            permission_overwrites = overwrites
+        
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
         else:
@@ -1401,41 +1410,42 @@ class ApplicationCommandPermission:
                 raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, or as `int` '
                     f'instance, got {application_command.__class__.__name__}.')
         
-        if overwrites is None:
-            overwrites_processed = None
+        if permission_overwrites is None:
+            permission_overwrites_processed = None
         else:
             if __debug__:
-                if not isinstance(overwrites, (list, set, tuple)):
-                    raise AssertionError(f'`overwrites` can be given either as `None` or as `list`, `set`, `tuple`'
-                         f'instance, got {overwrites.__class__.__name__}.')
+                if not isinstance(permission_overwrites, (list, set, tuple)):
+                    raise AssertionError(f'`permission_overwrites` can be given either as `None` or as `list`, '
+                        f'`set`, `tuple`instance, got {permission_overwrites.__class__.__name__}.')
             
-            overwrites_processed = []
+            permission_overwrites_processed = []
             
-            for overwrite in overwrites:
+            for permission_overwrite in permission_overwrites:
                 if __debug__:
-                    if not isinstance(overwrite, ApplicationCommandPermissionOverwrite):
-                        raise AssertionError(f'`overwrites` contains a non '
+                    if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
+                        raise AssertionError(f'`permission_overwrites` contains a non '
                             f'{ApplicationCommandPermissionOverwrite.__name__} element, got '
                             f'{overwrite.__class__.__name__}.')
                 
-                overwrites_processed.append(overwrite)
+                permission_overwrites_processed.append(permission_overwrite)
                 
             
-            if overwrites_processed:
+            if permission_overwrites_processed:
                 if __debug__:
                     if len(overwrites) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
-                        raise AssertionError(f'`overwrites` can contain up to '
-                            f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` overwrites, which is passed, got '
-                            f'{len(overwrites)!r}.')
+                        raise AssertionError(f'`permission_overwrites` can contain up to '
+                            f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` permission_overwrites, which is passed, '
+                            f'got {len(permission_overwrites)!r}.')
             else:
-                overwrites_processed = None
+                permission_overwrites_processed = None
         
         self = object.__new__(cls)
         self.application_command_id = application_command_id
         self.application_id = 0
         self.guild_id = 0
-        self.overwrites = overwrites_processed
+        self.permission_overwrites = permission_overwrites_processed
         return self
+    
     
     @classmethod
     def from_data(cls, data):
@@ -1451,20 +1461,23 @@ class ApplicationCommandPermission:
         -------
         self : ``ApplicationCommandPermission``
         """
-        overwrite_datas = data['permissions']
-        if overwrite_datas:
-            overwrites = [ApplicationCommandPermissionOverwrite.from_data(overwrite_data) for \
-                overwrite_data in overwrite_datas]
+        permission_overwrite_datas = data['permissions']
+        if permission_overwrite_datas:
+            permission_overwrites = [
+                ApplicationCommandPermissionOverwrite.from_data(permission_overwrite_data) for
+                permission_overwrite_data in permission_overwrite_datas
+            ]
             
         else:
-            overwrites = None
+            permission_overwrites = None
         
         self = object.__new__(cls)
         self.application_command_id = int(data['id'])
         self.application_id = int(data['application_id'])
         self.guild_id = int(data['guild_id'])
-        self.overwrites = overwrites
+        self.permission_overwrites = permission_overwrites
         return self
+    
     
     def to_data(self):
         """
@@ -1480,28 +1493,30 @@ class ApplicationCommandPermission:
             'guild_id': self.guild_id,
         }
         
-        overwrites = self.overwrites
-        if overwrites is None:
-            overwrites = []
+        permission_overwrites = self.permission_overwrites
+        if permission_overwrites is None:
+            permission_overwrite_datas = []
         else:
-            overwrites = [overwrite.to_data() for overwrite in overwrites]
+            permission_overwrite_datas = [
+                permission_overwrite.to_data() for permission_overwrite in permission_overwrites
+            ]
         
-        data['permissions'] = overwrites
+        data['permissions'] = permission_overwrite_datas
         
         return data
     
     def __repr__(self):
         """Returns the application command permission's representation."""
         repr_parts = ['<', self.__class__.__name__, ' application_command_id=', repr(self.application_command_id),
-            ' guild_id=', repr(self.guild_id), ', overwrite count=']
+            ' guild_id=', repr(self.guild_id), ', permission overwrite count=']
         
-        overwrites = self.overwrites
-        if overwrites is None:
-            overwrites_count = '0'
+        permission_overwrites = self.overwrites
+        if permission_overwrites is None:
+            permission_overwrite_count = '0'
         else:
-            overwrites_count = repr(len(overwrites))
+            permission_overwrite_count = repr(len(permission_overwrites))
         
-        repr_parts.append(overwrites_count)
+        repr_parts.append(permission_overwrite_count)
         repr_parts.append('>')
         
         return ''.join(repr_parts)
@@ -1518,7 +1533,7 @@ class ApplicationCommandPermission:
         if self.guild_id != other.guild_id:
             return False
         
-        if self.overwrites != other.overwrites:
+        if self.permission_overwrites != other.permission_overwrites:
             return False
         
         return True
@@ -1526,10 +1541,10 @@ class ApplicationCommandPermission:
     def __hash__(self):
         """Returns the application command overwrite's hash value."""
         hash_ = self.application_command_id ^ self.guild_id
-        overwrites = self.overwrites
-        if (overwrites is not None):
-            for overwrite in overwrites:
-                hash_ ^= hash(overwrite)
+        permission_overwrites = self.permission_overwrites
+        if (permission_overwrites is not None):
+            for permission_overwrite in permission_overwrites:
+                hash_ ^= hash(permission_overwrite)
         
         return hash_
     
@@ -1547,21 +1562,21 @@ class ApplicationCommandPermission:
         new.application_command_id = self.application_command_id
         new.guild_id = self.guild_id
         
-        overwrites = self.overwrites
-        if (overwrites is not None):
-            overwrites = [overwrite.copy() for overwrite in overwrites]
+        permission_overwrites = self.permission_overwrites
+        if (permission_overwrites is not None):
+            permission_overwrites = [permission_overwrite.copy() for permission_overwrite in permission_overwrites]
         
-        new.overwrites = overwrites
+        new.permission_overwrites = permission_overwrites
         
         return new
     
-    def add_overwrite(self, overwrite):
+    def add_permission_overwrite(self, permission_overwrite):
         """
         Adds an application command permission overwrite to the overwrites of the application command permission.
         
         Parameters
         ----------
-        overwrite : ``ApplicationCommandPermissionOverwrite``
+        permission_overwrite : ``ApplicationCommandPermissionOverwrite``
             The overwrite to add.
         
         Raises
@@ -1571,20 +1586,22 @@ class ApplicationCommandPermission:
             - If the application command permission has `10` overwrites already.
         """
         if __debug__:
-            if not isinstance(overwrite, ApplicationCommandPermissionOverwrite):
-                raise AssertionError(f'`overwrite` can be given as {ApplicationCommandPermissionOverwrite.__name__} '
-                    f' instance, got {overwrite.__class__.__name__}.')
+            if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
+                raise AssertionError(f'`permission_overwrite` can be given as '
+                    f'{ApplicationCommandPermissionOverwrite.__name__}  instance, got '
+                    f'{permission_overwrite.__class__.__name__}.')
         
-        overwrites = self.overwrites
-        if overwrites is None:
-            self.overwrites = overwrites = []
+        permission_overwrites = self.permission_overwrites
+        if permission_overwrites is None:
+            self.permission_overwrites = permission_overwrites = []
         else:
             if __debug__:
-                if len(overwrites) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
-                    raise AssertionError(f'`overwrites` can contain up to '
-                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` overwrites, which is already reached.')
+                if len(permission_overwrites) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
+                    raise AssertionError(f'`permission_overwrites` can contain up to '
+                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` permission_overwrites, which is already '
+                        f'reached.')
         
-        overwrites.append(overwrite)
+        permission_overwrites.append(permission_overwrite)
 
 
 class ApplicationCommandPermissionOverwrite:
@@ -1597,9 +1614,11 @@ class ApplicationCommandPermissionOverwrite:
         Whether the respective command is allowed for the represented entity.
     target_id : `int`
         The represented entity's identifier.
-    type : ``ApplicationCommandPermissionOverwriteType`
+    target_type : ``ApplicationCommandPermissionOverwriteTargetType`
         The target entity's type.
     """
+    __slots__ = ('allow', 'target_id', 'target_type')
+    
     def __new__(cls, target, allow):
         """
         Creates a new ``ApplicationCommandPermission`` instance with the given parameters.
@@ -1635,13 +1654,13 @@ class ApplicationCommandPermissionOverwrite:
         # GOTO
         while True:
             if isinstance(target, Role):
-                type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE
+                target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
                 target_id = target.id
                 target_lookup_failed = False
                 break
             
             if isinstance(target, ClientUserBase):
-                type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
+                target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
                 target_id = target.id
                 target_lookup_failed = False
                 break
@@ -1651,18 +1670,18 @@ class ApplicationCommandPermissionOverwrite:
                 
                 if isinstance(target_maybe, type):
                     if issubclass(target_maybe, Role):
-                        type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE
+                        target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
                     elif issubclass(target_maybe, ClientUserBase):
-                        type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
+                        target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
                     else:
                         target_lookup_failed = True
                         break
                 
                 elif isinstance(target_maybe, str):
                     if target_maybe in ('Role', 'role'):
-                        type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE
+                        target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
                     elif target_maybe in ('User', 'user'):
-                        type_ = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER
+                        target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
                     else:
                         target_lookup_failed = True
                         break
@@ -1698,7 +1717,7 @@ class ApplicationCommandPermissionOverwrite:
         self = object.__new__(cls)
         self.allow = allow
         self.target_id = target_id
-        self.type = type_
+        self.target_type = target_type
         return self
     
     @classmethod
@@ -1719,8 +1738,9 @@ class ApplicationCommandPermissionOverwrite:
         self = object.__new__(cls)
         self.allow = data['permission']
         self.target_id = int(data['id'])
-        self.type = ApplicationCommandPermissionOverwriteType.get(data['type'])
+        self.target_type = ApplicationCommandPermissionOverwriteTargetType.get(data['type'])
         return self
+    
     
     def to_data(self):
         """
@@ -1733,8 +1753,9 @@ class ApplicationCommandPermissionOverwrite:
         return {
             'permission': self.allow,
             'id': self.target_id,
-            'type': self.type.value,
+            'type': self.target_type.value,
         }
+    
     
     @property
     def target(self):
@@ -1743,20 +1764,30 @@ class ApplicationCommandPermissionOverwrite:
         
         Returns
         -------
-        target : ``Role``, ``ClientUserBase``
+        target : `None`, ``Role``, ``ClientUserBase``
         """
-        type_ = self.type
+        target_type = self.target_type
         target_id = self.target_id
-        if type_ is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE:
+        
+        if target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
             target = create_partial_role_from_id(target_id)
-        else: # type_ is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER:
+        
+        elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
             target = create_partial_user_from_id(target_id)
+        
+        else:
+            target = None
         
         return target
     
+    
     def __repr__(self):
         """Returns the application command permission overwrite's representation."""
-        return f'<{self.__class__.__name__} type={self.type.name}, target_id={self.target_id!r}, allow={self.allow!r}>'
+        return (
+            f'<{self.__class__.__name__} target_type={self.target_type.name}, target_id={self.target_id!r}, '
+            f'allow={self.allow!r}>'
+        )
+    
     
     def __eq__(self, other):
         """Returns whether the two application command overwrites are equal."""
@@ -1766,7 +1797,7 @@ class ApplicationCommandPermissionOverwrite:
         if self.allow != other.allow:
             return False
         
-        if self.type is not other.type:
+        if self.target_type is not other.target_type:
             return False
         
         if self.target_id != other.target_id:
@@ -1774,9 +1805,11 @@ class ApplicationCommandPermissionOverwrite:
         
         return True
     
+    
     def __hash__(self):
         """Returns the application command permission overwrite's hash value."""
-        return self.type.value^(self.allow<<8)^self.target_id
+        return self.target_type.value^(self.allow<<8)^self.target_id
+    
     
     def copy(self):
         """
@@ -1789,18 +1822,19 @@ class ApplicationCommandPermissionOverwrite:
         new = object.__new__(type(self))
         
         new.allow = self.allow
-        new.type = self.type
+        new.target_type = self.target_type
         new.target_id = self.target_id
         
         return new
+    
     
     def __gt__(self, other):
         """Returns whether self is greater than other."""
         if type(self) is not type(other):
             return NotImplemented
         
-        self_type_value = self.type.value
-        other_type_value = other.type.value
+        self_type_value = self.target_type.value
+        other_type_value = other.target_type.value
         
         if self_type_value > other_type_value:
             return True
@@ -1808,7 +1842,7 @@ class ApplicationCommandPermissionOverwrite:
         if self_type_value < other_type_value:
             return False
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
             self_target_id = self.target_id
             other_target_id = other.target_id
             
@@ -1825,19 +1859,20 @@ class ApplicationCommandPermissionOverwrite:
                 else:
                     return (self_role > other_role)
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
             return (self.target_id > other.target_id)
         
         # Should not happen
         return False
-
+    
+    
     def __lt__(self, other):
         """Returns whether self is greater than other."""
         if type(self) is not type(other):
             return NotImplemented
         
-        self_type_value = self.type.value
-        other_type_value = other.type.value
+        self_type_value = self.target_type.value
+        other_type_value = other.target_type.value
         
         if self_type_value > other_type_value:
             return False
@@ -1845,7 +1880,7 @@ class ApplicationCommandPermissionOverwrite:
         if self_type_value < other_type_value:
             return True
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_ROLE:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
             self_target_id = self.target_id
             other_target_id = other.target_id
             
@@ -1862,43 +1897,8 @@ class ApplicationCommandPermissionOverwrite:
                 else:
                     return (self_role < other_role)
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TYPE_USER:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
             return (self.target_id < other.target_id)
         
         # Should not happen
         return True
-
-
-@modulize
-class InteractionResponseTypes:
-    """
-    Contains the interaction response type's, which are the following:
-    
-    +---------------------------+-------+---------------+
-    | Respective name           | Value | Notes         |
-    +===========================+=======+===============+
-    | none                      | 0     | -             |
-    +---------------------------+-------+---------------+
-    | pong                      | 1     | -             |
-    +---------------------------+-------+---------------+
-    | acknowledge               | 2     | Deprecated.   |
-    +---------------------------+-------+---------------+
-    | message                   | 3     | Deprecated.   |
-    +---------------------------+-------+---------------+
-    | message_and_source        | 4     | -             |
-    +---------------------------+-------+---------------+
-    | source                    | 5     | -             |
-    +---------------------------+-------+---------------+
-    | component                 | 6     | -             |
-    +---------------------------+-------+---------------+
-    | component_message_edit    | 7     | -             |
-    +---------------------------+-------+---------------+
-    """
-    none = 0
-    pong = 1
-    acknowledge = 2
-    message = 3
-    message_and_source = 4
-    source = 5
-    component = 6
-    component_message_edit = 7

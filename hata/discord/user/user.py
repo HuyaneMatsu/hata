@@ -45,7 +45,7 @@ class User(USER_BASE_CLASS):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    guild_profiles : `dict` of (``Guild``, ``GuildProfile``) items
+    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
     is_bot : `bool`
@@ -110,10 +110,10 @@ class User(USER_BASE_CLASS):
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = self.guild_profiles[guild]
+                    profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
             
@@ -149,12 +149,12 @@ class User(USER_BASE_CLASS):
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = self.guild_profiles[guild]
+                    guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
                 else:
-                    profile._set_joined(guild_profile_data)
+                    guild_profile._set_joined(guild_profile_data)
                     
             return self
     
@@ -183,7 +183,7 @@ class User(USER_BASE_CLASS):
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                self.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
             
             return self
     
@@ -369,13 +369,13 @@ class User(USER_BASE_CLASS):
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = self.guild_profiles[guild]
+                    guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
                 else:
-                    profile._set_joined(guild_profile_data)
-                    profile._update_attributes(guild_profile_data)
+                    guild_profile._set_joined(guild_profile_data)
+                    guild_profile._update_attributes(guild_profile_data)
             
             return self
         
@@ -405,13 +405,13 @@ class User(USER_BASE_CLASS):
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
-                    profile = self.guild_profiles[guild]
+                    guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
                 else:
-                    profile._set_joined(guild_profile_data)
-                    profile._update_attributes(guild_profile_data)
+                    guild_profile._set_joined(guild_profile_data)
+                    guild_profile._update_attributes(guild_profile_data)
             
             return self
         
@@ -441,7 +441,7 @@ class User(USER_BASE_CLASS):
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                self.guild_profiles[guild] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
             
             return self
     

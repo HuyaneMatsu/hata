@@ -8,7 +8,7 @@ from ..utils import id_to_datetime, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..user import User, ZEROUSER
 from ..preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
 from ..role import create_partial_role_from_id, Role
-from ..bases import instance_or_id_to_instance, iterable_of_instance_or_id_to_instances, instance_or_id_to_snowflake
+from ..bases import instance_or_id_to_instance, iterable_of_instance_or_id_to_snowflakes, instance_or_id_to_snowflake
 from ..http import urls as module_urls
 
 Client = include('Client')
@@ -43,8 +43,8 @@ class Emoji(DiscordEntity, immortal=True):
         Whether the emoji is managed by an integration.
     name : `int`
         The emoji's name.
-    roles : `None` or `tuple` of ``Role``
-        The set of roles for which the custom emoji is whitelisted to. If the emoji is not limited for specific roles,
+    role_ids : `None` or `tuple` of `int`
+        A set of role identifiers for which the custom emoji is whitelisted to. If the emoji is not limited for specific roles,
         then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this attribute is set to
         `None` as  well.
     unicode : `None` or `str`
@@ -59,7 +59,8 @@ class Emoji(DiscordEntity, immortal=True):
     - ``create_partial_emoji`` : A function to create an emoji object from partial emoji data.
     - ``parse_emoji`` : Parses a partial emoji object out from text.
     """
-    __slots__ = ('animated', 'available', 'guild_id', 'managed', 'name', 'require_colons', 'roles', 'unicode', 'user', )
+    __slots__ = ('animated', 'available', 'guild_id', 'managed', 'name', 'require_colons', 'role_ids', 'unicode',
+        'user', )
     
     def __new__(cls, data, guild):
         """
@@ -128,11 +129,11 @@ class Emoji(DiscordEntity, immortal=True):
         
         role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
-            roles = None
+            role_ids = None
         else:
-            roles = tuple(sorted((create_partial_role_from_id(int(role_id)) for role_id in role_ids), key=id_sort_key))
+            role_ids = tuple(sorted(int(role_id)for role_id in role_ids))
         
-        self.roles = roles
+        self.role_ids = role_ids
         
         return self
     
@@ -221,10 +222,10 @@ class Emoji(DiscordEntity, immortal=True):
                 pass
             else:
                 if (roles is not None):
-                    roles = iterable_of_instance_or_id_to_instances(roles, Role, 'roles')
-                    if roles:
-                        roles = tuple(sorted(roles, key=id_sort_key))
-                        processable.append(('roles', roles))
+                    role_ids = iterable_of_instance_or_id_to_snowflakes(roles, Role, 'roles')
+                    if role_ids:
+                        role_ids = tuple(sorted(role_ids))
+                        processable.append(('role_ids', role_ids))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -420,25 +421,6 @@ class Emoji(DiscordEntity, immortal=True):
     url_as = module_urls.emoji_url_as
     
     
-    def _delete(self):
-        """
-        Removes the emoji's references.
-        
-        Used when the emoji is deleted.
-        """
-        guild_id = self.guild_id
-        if guild_id:
-            try:
-                guild = GUILDS[guild_id]
-            except KeyError:
-                pass
-            else:
-                try:
-                    del guild.emojis[self.id]
-                except KeyError:
-                    pass
-    
-    
     def _update_attributes(self, data):
         """
         Updates the emoji with overwriting it's old attributes.
@@ -507,7 +489,7 @@ class Emoji(DiscordEntity, immortal=True):
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | roles             | `None` or `tuple` of ``Role`` |
+        | role_ids          | `None` or `tuple` of ``Role`` |
         +-------------------+-------------------------------+
         """
         old_attributes = {}
@@ -536,13 +518,13 @@ class Emoji(DiscordEntity, immortal=True):
         
         role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
-            roles = None
+            role_ids = None
         else:
-            roles = tuple(sorted((create_partial_role_from_id(int(role_id)) for role_id in role_ids), key=id_sort_key))
+            role_ids = tuple(sorted(int(role_id) for role_id in role_ids))
         
-        if self.roles != roles:
-            old_attributes['roles'] = self.roles
-            self.roles = roles
+        if self.role_ids != role_ids:
+            old_attributes['role_ids'] = self.role_ids
+            self.role_ids = role_ids
         
         try:
             user_data = data['user']
@@ -583,8 +565,11 @@ class Emoji(DiscordEntity, immortal=True):
             self = EMOJIS[emoji_id]
             if self.partial:
                 self.name = name
+                self.animated = animated
         except KeyError:
             self = cls._create_empty(emoji_id)
+            self.name = name
+            self.animated = animated
             EMOJIS[emoji_id] = self
         
         return self
@@ -615,7 +600,7 @@ class Emoji(DiscordEntity, immortal=True):
         self.require_colons = True
         self.managed = False
         self.user = ZEROUSER
-        self.roles = None
+        self.role_ids = None
         return self
     
     
@@ -634,3 +619,24 @@ class Emoji(DiscordEntity, immortal=True):
         guild_id = self.guild_id
         if guild_id:
             return GUILDS.get(guild_id, None)
+    
+    
+    @property
+    def roles(self):
+        """
+        Returns the roles for which's members the emoji's usage is restricted to.
+        
+        Returns
+        -------
+        roles : `None` or `tuple` of ``Role``
+        """
+        role_ids = self.role_ids
+        if role_ids is None:
+            roles = None
+        else:
+            roles = tuple(sorted(
+                (create_partial_role_from_id(role_id) for role_id in role_ids),
+                key = id_sort_key,
+            ))
+        
+        return roles

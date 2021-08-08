@@ -9,7 +9,8 @@ create_partial_role_from_id = include('create_partial_role_from_id')
 create_partial_user_from_id = include('create_partial_user_from_id')
 Role = include('Role')
 
-PERMISSION_OVERWRITE_TYPE_ROLE_VALUE = PermissionOverwriteTargetType.role.value
+PERMISSION_OVERWRITE_TYPE_ROLE = PermissionOverwriteTargetType.role
+PERMISSION_OVERWRITE_TYPE_USER = PermissionOverwriteTargetType.user
 
 class PermissionOverwrite:
     """
@@ -21,12 +22,17 @@ class PermissionOverwrite:
         The allowed permissions by the overwrite.
     deny : ``Permission``
         The denied permission by the overwrite.
+    target_id : `int`
+        The permission overwrites target's identifier.
+    target_type : ``PermissionOverwriteTargetType``
+        The permission overwrite's target's type.
+
     target_role : `None`, ``Role`` or ``Unknown``
         The target role entity of the overwrite if applicable. Defaults to `None`.
     target_user_id : `int`
         The target user id of the overwrite if applicable. Defaults to `0`.
     """
-    __slots__ = ('allow', 'deny', 'target_role', 'target_user_id')
+    __slots__ = ('allow', 'deny', 'target_id', 'target_type')
     
     def __init__(self, data):
         """
@@ -37,16 +43,8 @@ class PermissionOverwrite:
         data : `dict` of (`str`, `Any`) items
             Received permission overwrite data.
         """
-        id_ = int(data['id'])
-        if get_permission_overwrite_key_value(data) == PERMISSION_OVERWRITE_TYPE_ROLE_VALUE:
-            target_role = create_partial_role_from_id(id_)
-            target_user_id = 0
-        else:
-            target_role = None
-            target_user_id = id_
-        
-        self.target_role = target_role
-        self.target_user_id = target_user_id
+        self.target_id = int(data['id'])
+        self.target_type = PermissionOverwriteTargetType.get(get_permission_overwrite_key_value(data))
         self.allow = Permission(data[PERMISSION_ALLOW_KEY])
         self.deny = Permission(data[PERMISSION_DENY_KEY])
     
@@ -57,13 +55,22 @@ class PermissionOverwrite:
         
         Returns
         -------
-        target : ``ClientUserBase`` or ``Role``
+        target : ``ClientUserBase``, ``Role``, `None`
         """
-        target = self.target_role
-        if target is None:
-            target = create_partial_user_from_id(self.target_user_id)
+        target_type = self.target_type
+        target_id = self.target_id
+        
+        if target_type is PERMISSION_OVERWRITE_TYPE_ROLE:
+            target = create_partial_role_from_id(target_id)
+        
+        elif target_type is PERMISSION_OVERWRITE_TYPE_USER:
+            target = create_partial_user_from_id(target_id)
+        
+        else:
+            target = None
         
         return target
+    
     
     @classmethod
     def custom(cls, target, allow, deny):
@@ -83,23 +90,22 @@ class PermissionOverwrite:
         -------
         self : ``PermissionOverwrite``
         """
+        target_id = target.id
         if isinstance(target, Role):
-            target_role = target
-            target_user_id = 0
+            target_type = PERMISSION_OVERWRITE_TYPE_ROLE
         else:
-            target_role = None
-            target_user_id = target.id
+            target_type = PERMISSION_OVERWRITE_TYPE_USER
         
         self = object.__new__(cls)
-        self.target_role = target_role
-        self.target_user_id = target_user_id
+        self.target_id = target_id
+        self.target_type = target_type
         self.allow = Permission(allow)
         self.deny = Permission(deny)
         return self
     
     def __hash__(self):
         """Returns the permission overwrite's hash."""
-        return self.target.id^self.allow^self.deny
+        return self.target_id^self.allow^self.deny^(self.target_type.value<<16)
     
     def __repr__(self):
         """Returns the permission overwrite's representation."""
@@ -117,8 +123,6 @@ class PermissionOverwrite:
             Permissions' respective name.
         """
         yield from Permission.__keys__.keys()
-    
-    __iter__ = keys
     
     def values(self):
         """
@@ -165,7 +169,7 @@ class PermissionOverwrite:
         
         Yields
         -------
-        name : str`
+        name : `str`
             Permissions' respective name.
         state : `int`
             The permission's state.
@@ -194,6 +198,7 @@ class PermissionOverwrite:
             
             yield key, state
     
+    
     def __getitem__(self, key):
         """Returns the permission's state for the given permission name."""
         index = Permission.__keys__[key]
@@ -206,71 +211,45 @@ class PermissionOverwrite:
         
         return state
     
-    @property
-    def type(self):
-        """
-        Returns the Discord side identifier value permission overwrite.
-        
-        Returns
-        -------
-        type_ : ``Per`
-            Can be either `'role'` or `'member'`
-        """
-        if self.target_role is None:
-            type_ = PermissionOverwriteTargetType.user
-        else:
-            type_ = PermissionOverwriteTargetType.role
-        
-        return type_
-    
-    @property
-    def id(self):
-        """
-        Returns the permission overwrite's target's id.
-        
-        Returns
-        -------
-        id_ : `int`
-        """
-        target_role = self.target_role
-        if target_role is None:
-            id_ = self.target_user_id
-        else:
-            id_ = target_role.id
-        
-        return id_
     
     def __lt__(self, other):
         """Returns whether is this permission overwrite is at lower position in ordering than the order."""
         if type(self) is not type(other):
             return NotImplemented
         
-        self_target_role = self.target_role
-        if self_target_role is None:
-            self_target_type = 0
-            self_target_id = self.target_user_id
-        else:
-            self_target_type = 1
-            self_target_id = self_target_role.id
+        target_type = self.target_type
+        if target_type is PERMISSION_OVERWRITE_TYPE_USER:
+            self_target_type_sort_value = 0
         
-        other_target_role = other.target_role
-        if other_target_role is None:
-            other_target_type = 0
-            other_target_id = other.target_user_id
-        else:
-            other_target_type = 1
-            other_target_id = other_target_role.id
+        elif target_type is PERMISSION_OVERWRITE_TYPE_ROLE:
+            self_target_type_sort_value = 1
         
-        if self_target_type < other_target_type:
+        else:
+            self_target_type_sort_value = 2
+        
+
+        target_type = other.target_type
+        if target_type is PERMISSION_OVERWRITE_TYPE_USER:
+            other_target_type_sort_value = 0
+        
+        elif target_type is PERMISSION_OVERWRITE_TYPE_ROLE:
+            other_target_type_sort_value = 1
+        
+        else:
+            other_target_type_sort_value = 2
+        
+        
+        if self_target_type_sort_value < other_target_type_sort_value:
             return True
         
-        if self_target_type == other_target_type:
-            if self_target_id < other_target_id:
+        if self_target_type_sort_value == other_target_type_sort_value:
+            if self.target_id < other.target_id:
                 return True
             
             return False
         
         return False
+    
     
     def __eq__(self, other):
         """Returns whether is this permission overwrite is same as the other."""
@@ -283,49 +262,44 @@ class PermissionOverwrite:
         if self.deny != other.deny:
             return False
         
-        self_target_role = self.target_role
-        if self_target_role is None:
-            self_target_id = self.target_user_id
-        else:
-            self_target_id = self_target_role.id
-        
-        other_target_role = other.target_role
-        if other_target_role is None:
-            other_target_id = other.target_user_id
-        else:
-            other_target_id = other_target_role.id
-        
-        if self_target_id != other_target_id:
+        if self.target_id != other.target_id:
             return False
         
         return True
+    
     
     def __gt__(self, other):
         """Returns whether is this permission overwrite is at greater position in ordering than the order."""
         if type(self) is not type(other):
             return NotImplemented
         
-        self_target_role = self.target_role
-        if self_target_role is None:
-            self_target_type = 0
-            self_target_id = self.target_user_id
-        else:
-            self_target_type = 1
-            self_target_id = self_target_role.id
-            
-        other_target_role = other.target_role
-        if other_target_role is None:
-            other_target_type = 0
-            other_target_id = other.target_user_id
-        else:
-            other_target_type = 1
-            other_target_id = other_target_role.id
+        target_type = self.target_type
+        if target_type is PERMISSION_OVERWRITE_TYPE_USER:
+            self_target_type_sort_value = 0
         
-        if self_target_type > other_target_type:
+        elif target_type is PERMISSION_OVERWRITE_TYPE_ROLE:
+            self_target_type_sort_value = 1
+        
+        else:
+            self_target_type_sort_value = 2
+        
+
+        target_type = other.target_type
+        if target_type is PERMISSION_OVERWRITE_TYPE_USER:
+            other_target_type_sort_value = 0
+        
+        elif target_type is PERMISSION_OVERWRITE_TYPE_ROLE:
+            other_target_type_sort_value = 1
+        
+        else:
+            other_target_type_sort_value = 2
+        
+        
+        if self_target_type_sort_value > other_target_type_sort_value:
             return True
         
-        if self_target_type == other_target_type:
-            if self_target_id > other_target_id:
+        if self_target_type_sort_value == other_target_type_sort_value:
+            if self.target_id > other.target_id:
                 return True
             
             return False

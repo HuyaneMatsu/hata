@@ -765,7 +765,7 @@ async def latest_users(event):
     for user in guild.users.values():
         # `joined_at` might be set as `None` if the user is a lurker.
         # We can ignore lurkers, so use `created_at` which defaults to Discord epoch.
-        created_at = user.guild_profiles[guild].created_at
+        created_at = user.guild_profiles[guild.id].created_at
         if created_at > date_limit:
             users.append((created_at, user))
     

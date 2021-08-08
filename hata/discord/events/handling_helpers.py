@@ -1791,12 +1791,12 @@ class EventWaitforMeta(type):
     _call_waitfors['channel_edit'] = _call_channel_edit
     del _call_channel_edit
     
-    async def _call_channel_delete(self, client, channel, guild):
-        args = (client, channel, guild)
+    async def _call_channel_delete(self, client, channel):
+        args = (client, channel)
         self._run_waitfors_for(channel, args)
-        if guild is None:
-            return
-        self._run_waitfors_for(guild, args)
+        guild = channel.guild
+        if (guild is not None):
+            self._run_waitfors_for(guild, args)
     
     _call_waitfors['channel_delete'] = _call_channel_delete
     del _call_channel_delete

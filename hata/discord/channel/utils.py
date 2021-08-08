@@ -1,4 +1,4 @@
-__all__ = ('CHANNEL_TYPES', 'cr_pg_channel_object', 'create_partial_channel_from_data',
+__all__ = ('CHANNEL_TYPE_MAP', 'cr_pg_channel_object', 'create_partial_channel_from_data',
     'create_partial_channel_from_id')
 
 from datetime import datetime
@@ -9,6 +9,7 @@ from ...backend.export import export, include
 from ..bases import maybe_snowflake
 from ..core import CHANNELS
 from ..utils import datetime_to_timestamp
+from ..permission import PermissionOverwrite
 
 from .channel_guild_text import ChannelText
 from .channel_private import ChannelPrivate, ChannelGroup
@@ -22,26 +23,27 @@ from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
 from .channel_thread import AUTO_ARCHIVE_OPTIONS
 from .channel_guild_directory import ChannelDirectory
+from . import channel_types as CHANNEL_TYPES
 
 VoiceRegion = include('VoiceRegion')
 Guild = include('Guild')
 
-CHANNEL_TYPES = {
-     0: ChannelText,
-     1: ChannelPrivate,
-     2: ChannelVoice,
-     3: ChannelGroup,
-     4: ChannelCategory,
-     5: ChannelText,
-     6: ChannelStore,
-    10: ChannelThread,
-    11: ChannelThread,
-    12: ChannelThread,
-    13: ChannelStage,
-    14: ChannelDirectory,
+CHANNEL_TYPE_MAP = {
+    CHANNEL_TYPES.guild_text: ChannelText,
+    CHANNEL_TYPES.private: ChannelPrivate,
+    CHANNEL_TYPES.guild_voice: ChannelVoice,
+    CHANNEL_TYPES.private_group: ChannelGroup,
+    CHANNEL_TYPES.guild_category: ChannelCategory,
+    CHANNEL_TYPES.guild_announcements: ChannelText,
+    CHANNEL_TYPES.guild_store: ChannelStore,
+    CHANNEL_TYPES.guild_thread_announcements: ChannelThread,
+    CHANNEL_TYPES.guild_thread_public: ChannelThread,
+    CHANNEL_TYPES.guild_thread_private: ChannelThread,
+    CHANNEL_TYPES.guild_stage: ChannelStage,
+    CHANNEL_TYPES.guild_directory: ChannelDirectory,
 }
 
-export(CHANNEL_TYPES, 'CHANNEL_TYPES')
+export(CHANNEL_TYPE_MAP, 'CHANNEL_TYPE_MAP')
 
 
 def create_partial_channel_from_data(data, partial_guild=None):
@@ -69,7 +71,7 @@ def create_partial_channel_from_data(data, partial_guild=None):
     except KeyError:
         pass
     
-    cls = CHANNEL_TYPES.get(data['type'], ChannelGuildUndefined)
+    cls = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
     
     channel = cls._from_partial_data(data, channel_id, partial_guild)
     CHANNELS[channel_id] = channel
@@ -96,7 +98,7 @@ def create_partial_channel_from_id(channel_id, channel_type, partial_guild=None)
     except KeyError:
         pass
     
-    cls = CHANNEL_TYPES.get(channel_type, ChannelGuildUndefined)
+    cls = CHANNEL_TYPE_MAP.get(channel_type, ChannelGuildUndefined)
     
     channel = cls._create_empty(channel_id, channel_type, partial_guild)
     CHANNELS[channel_id] = channel
@@ -104,9 +106,9 @@ def create_partial_channel_from_id(channel_id, channel_type, partial_guild=None)
     return channel
 
 
-def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
+def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
         user_limit=None, region=None, video_quality_mode=None, archived=None, archived_at=None,
-        auto_archive_after=None, open_=None, default_auto_archive_after=None, parent=None, category=None, guild=None):
+        auto_archive_after=None, open_=None, default_auto_archive_after=None, parent=None, guild=None, overwrites=None):
     """
     Creates a json serializable object representing a ``GuildChannelBase`` instance.
     
@@ -116,9 +118,9 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         The name of the channel. Can be between `1` and `100` characters.
     type_ : `int` or ``ChannelGuildBase`` subclass
         The channel's type.
-    overwrites : `list` of ``cr_p_overwrite_object`` returns, Optional (Keyword only)
+    permission_overwrites : `list` of ``cr_p_permission_overwrite_object`` returns, Optional (Keyword only)
         A list of permission overwrites of the channel. The list should contain json serializable permission
-        overwrites made by the ``cr_p_overwrite_object`` function.
+        overwrites made by the ``cr_p_permission_overwrite_object`` function.
     topic : `str`, Optional (Keyword only)
         The channel's topic.
     nsfw : `bool`, Optional (Keyword only)
@@ -169,7 +171,7 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `type_` was given as `int` and exceeds the defined channel type limit.
         - If `name` was not given as `str` instance.
         - If `name`'s length is under `1` or over `100`.
-        - If `overwrites` was not given as `None`, neither as `list` of `dict`-s.
+        - If `permission_overwrites` was not given as `None`, neither as `list` of `dict`-s.
         - If `topic` was not given as `str` instance.
         - If `topic`'s length is over `1024` or `120` depending on channel type.
         - If `topic` was given, but the respective channel type is not ``ChannelText`` nor ``ChannelStage``.
@@ -200,28 +202,28 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         - If `default_auto_archive_after` was not given neither as `None` or `int` instance.
         - If `default_auto_archive_after` is not any of the expected values.
     """
+    if (overwrites is not None):
+        warnings.warn(
+            f'`cr_pg_channel_object`\'s `overwrites` parameter is deprecated, and will be removed in 2021 November. '
+            f'Please use `permission_overwrites` instead.',
+            FutureWarning)
+        
+        permission_overwrites = overwrites
+    
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
             raise AssertionError('`guild` is given, but not as `None` nor `Guild` instance, got '
                 f'{guild.__class__.__name__}.')
     
-    if (category is not None):
-        warnings.warn(
-            f'`cr_pg_channel_object`\'s `category` parameter is deprecated, and will be removed in 2021 july. '
-            f'Please use `parent` instead.',
-            FutureWarning)
-        
-        parent = category
-    
     if isinstance(type_, int):
         if __debug__:
             if type_ < 0:
                 raise AssertionError(f'`type_` cannot be negative value, got `{type_!r}`.')
-            if type_ not in CHANNEL_TYPES:
-                raise AssertionError(f'`type_` is not in an of the existing channel types: {set(CHANNEL_TYPES)!r}, '
-                    f'got `{type_}`.')
+            if type_ not in CHANNEL_TYPE_MAP.keys():
+                raise AssertionError(f'`type_` is not in an of the existing channel types: '
+                    f'{set(CHANNEL_TYPE_MAP.keys())!r}, got `{type_}`.')
         
-        channel_type = CHANNEL_TYPES.get(type_, ChannelGuildUndefined)
+        channel_type = CHANNEL_TYPE_MAP.get(type_, ChannelGuildUndefined)
         channel_type_value = type_
     
     elif issubclass(type_, ChannelBase):
@@ -250,20 +252,20 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
     }
     
     if not issubclass(channel_type, ChannelThread):
-        if overwrites is None:
-            overwrites = []
+        if permission_overwrites is None:
+            permission_overwrites = []
         else:
             if __debug__:
-                if not isinstance(overwrites, list):
-                    raise AssertionError(f'`overwrites` can be given as `None` or `list` of `cr_p_overwrite_object` '
-                         f'returns, got {overwrites.__class__.__name__}')
+                if not isinstance(permission_overwrites, list):
+                    raise AssertionError(f'`permission_overwrites` can be given as `None` or `list` of '
+                        f'`cr_p_permission_overwrite_object` returns, got {permission_overwrites.__class__.__name__}')
                 
-                for index, element in enumerate(overwrites):
+                for index, element in enumerate(permission_overwrites):
                     if not isinstance(element, dict):
-                        raise AssertionError(f'`overwrites`\'s element {index} should be `dict` instance, but got '
-                            f'{element.__class__.__name__}')
-    
-        channel_data['permission_overwrites'] = overwrites
+                        raise AssertionError(f'`permission_overwrites`\'s element {index} should be `dict` instance, '
+                            f'but got {element.__class__.__name__}')
+        
+        channel_data['permission_overwrites'] = permission_overwrites
     
     
     if (topic is not None):
@@ -477,3 +479,28 @@ def cr_pg_channel_object(name, type_, *, overwrites=None, topic=None, nsfw=None,
         channel_data['parent_id'] = parent_id
     
     return channel_data
+
+
+@export
+def parse_permission_overwrites(data):
+    """
+    Parses the permission overwrites from the given data and returns them.
+    
+    Parameters
+    ----------
+    data : `list` of (`dict` of (`str`, `Any`) items) elements
+        A list of permission overwrites' data.
+    
+    Returns
+    -------
+    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
+    """
+    permission_overwrites = {}
+    
+    permission_overwrites_datas = data.get('permission_overwrites', None)
+    if (permission_overwrites_datas is not None) and permission_overwrites_datas:
+        for permission_overwrite_data in permission_overwrites_datas:
+            permission_overwrite = PermissionOverwrite(permission_overwrite_data)
+            permission_overwrites[permission_overwrite.target_id] = permission_overwrite
+    
+    return permission_overwrites

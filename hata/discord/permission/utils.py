@@ -1,4 +1,6 @@
-__all__ = ('get_permission_overwrite_key_value', 'cr_p_overwrite_object', )
+__all__ = ('get_permission_overwrite_key_value', 'cr_p_permission_overwrite_object', )
+
+import warnings
 
 from ...env import API_VERSION
 
@@ -50,7 +52,20 @@ else:
 
 def cr_p_overwrite_object(target, allow, deny):
     """
-    Creates a json serializable object representing a ``PermissionOverwrite``(permission overwrite).
+    `cr_p_overwrite_object` is deprecated, and will be removed in 2021 November. Please use '
+    ``cr_p_permission_overwrite_object`` instead.
+    """
+    warnings.warn(
+        f'`cr_p_overwrite_object`\'s is deprecated, and will be removed in 2021 November. '
+        f'Please use `cr_p_permission_overwrite_object` instead.',
+        FutureWarning)
+
+    return cr_p_permission_overwrite_object(target, allow, deny)
+
+
+def cr_p_permission_overwrite_object(target, allow, deny):
+    """
+    Creates a json serializable object representing a ``PermissionOverwrite``.
     
     Parameters
     ----------
@@ -65,13 +80,13 @@ def cr_p_overwrite_object(target, allow, deny):
     permission_overwrite_data : `dict` of (`str`, `Any) items
     """
     if isinstance(target, Role):
-        overwrite_target_type = PermissionOverwriteTargetType.role
+        permission_overwrite_target_type = PermissionOverwriteTargetType.role
     else:
-        overwrite_target_type = PermissionOverwriteTargetType.user
+        permission_overwrite_target_type = PermissionOverwriteTargetType.user
     
     return {
         'allow': allow,
         'deny': deny,
         'id': target.id,
-        'type': overwrite_target_type.value,
+        'type': permission_overwrite_target_type.value,
     }

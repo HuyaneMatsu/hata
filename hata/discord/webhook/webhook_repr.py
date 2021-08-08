@@ -29,7 +29,7 @@ class WebhookRepr(WebhookBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    channel : `None` or ``ChannelText``
+    channel_id : `int`
         The channel, where the webhook is going to send it's messages.
     type : ``WebhookType``
         The webhook's type.
@@ -40,7 +40,7 @@ class WebhookRepr(WebhookBase):
     """
     __slots__ = ()
     
-    def __init__(self, data, webhook_id, type_, channel):
+    def __init__(self, data, webhook_id, type_, channel_id):
         """
         Creates a webhook representation.
         
@@ -52,8 +52,8 @@ class WebhookRepr(WebhookBase):
             The respective webhook's identifier number.
         type_ : ``WebhookType``
             The respective webhook's type.
-        channel : ``ChannelText``
-            The respective webhook's channel.
+        channel_id : `int`
+            The respective webhook's channel's identifier.
         """
         self.id = webhook_id
         self.discriminator = 0
@@ -61,7 +61,7 @@ class WebhookRepr(WebhookBase):
         self._set_avatar(data)
         self._set_banner(data)
         self.type = type_
-        self.channel = channel
+        self.channel_id = channel_id
         self.banner_color = None
     
     @property
@@ -73,4 +73,4 @@ class WebhookRepr(WebhookBase):
         -------
         webhook : ``Webhook``
         """
-        return create_partial_webhook_from_id(self.id, '', self.type, self.channel)
+        return create_partial_webhook_from_id(self.id, '', self.type, self.channel_id)

@@ -459,7 +459,7 @@ class Role(DiscordEntity, immortal=True):
             
             role_id = self.id
             try:
-                del guild.roels[role_id]
+                del guild.roles[role_id]
             except KeyError:
                 pass
             else:

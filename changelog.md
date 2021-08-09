@@ -75,6 +75,9 @@ Make multiple entities to weakly bound to other ones.
 - `Role.guild` is now a property.
 - Add `IntegrationDetail.role_id`.
 - `IntegrationDetail.role` is now a property.
+- Add `ChannelThread.invitable`.
+- Add `invitable` parameter to `ChannelThread.precreate`.
+- Add `open` parameter to `ChannelThread.precreate`.
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.

@@ -7,7 +7,8 @@ from ..core import CHANNELS, GUILDS
 from ..permission.permission import PERMISSION_NONE
 from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_int_options
+from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_int_options, \
+    preconvert_bool
 from ..utils import timestamp_to_datetime
 
 from .channel_base import ChannelBase
@@ -56,6 +57,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
         `259200`, `604800`.
+    invitable : `bool`
+        Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
     open : `bool`
         Whether the thread channel is open.
     slowmode : `int`
@@ -82,7 +85,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     REPRESENTED_TYPES : `tuple` = (`10`, `11`, `12`,)
         The type values which ``ChannelThread`` might represent.
     """
-    __slots__ = ('archived', 'archived_at', 'auto_archive_after', 'open', 'owner_id', 'slowmode',
+    __slots__ = ('archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode',
         'thread_users', 'type')
     
     DEFAULT_TYPE = 12
@@ -142,6 +145,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         return self
     
+    
     @copy_docs(ChannelBase.__repr__)
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
@@ -163,6 +167,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
     
     @property
     def owner(self):
@@ -191,7 +196,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         -------
         is_announcements : `bool`
         """
-        return self.type == 10
+        return (self.type == 10)
     
     
     def is_public(self):
@@ -202,7 +207,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         -------
         is_public : `bool`
         """
-        return self.type == 11
+        return (self.type == 11)
     
     
     def is_private(self):
@@ -213,7 +218,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         -------
         is_private : `bool`
         """
-        return self.type == 12
+        return (self.type == 12)
     
     
     def _init_parent(self, data, guild):
@@ -234,7 +239,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             guild.threads[self.id] = self
             guild_id = guild.id
         
-        self.guild_id = guild.id
+        self.guild_id = guild_id
         
         parent_id = data.get('parent_id', None)
         if (parent_id is None):
@@ -264,6 +269,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         self.slowmode = 0
         self.type = channel_type
         self.thread_users = None
+        self.invitable = True
         
         return self
     
@@ -316,6 +322,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         self.archived_at = archived_at
         
         self.open = not data.get('locked', True)
+        self.invitable = data.get('invitable', True)
     
     
     def _difference_update_attributes(self, data):
@@ -344,6 +351,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         | archived_at           | `None` or `datetime`              |
         +-----------------------+-----------------------------------+
         | auto_archive_after    | `int`                             |
+        +-----------------------+-----------------------------------+
+        | invitable             | `bool`                            |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
         +-----------------------+-----------------------------------+
@@ -396,6 +405,13 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         if (self.open != open_):
             old_attributes['open'] = self.open
             self.open = open_
+        
+        
+        invitable = data.get('invitable', True)
+        if (self.invitable != invitable):
+            old_attributes['invitable'] = self.invitable
+            self.invitable = invitable
+        
         
         return old_attributes
     
@@ -473,6 +489,10 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         ----------------
         auto_archive_after: `int`, Optional (Keyword only)
             The channel's ``.auto_archive_after``.
+        invitable : `bool`, Optional (Keyword only)
+            The channel's `..invitable``.
+        open : `bool`, Optional (Keyword only)
+            The channel's ``.open``.
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
         slowmode : `int`, Optional (Keyword only)
@@ -534,6 +554,17 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
                     raise ValueError(f'`type` should be one of: {cls.REPRESENTED_TYPES!r}')
                 
                 processable.append(('type', type_))
+            
+            
+            for attribute_name in ('open', 'invitable'):
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    pass
+                else:
+                    attribute_value = preconvert_bool(attribute_value, attribute_name)
+                    processable.append((attribute_name, attribute_value))
+            
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')

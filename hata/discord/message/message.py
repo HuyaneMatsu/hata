@@ -268,6 +268,9 @@ class Message(DiscordEntity, immortal=True):
             else:
                 referenced_message = MessageReference(referenced_message_data)
         else:
+            # Discord do not sends `guild_id` for nested message instanced.
+            referenced_message_data['guild_id'] = data.get('guild_id', None)
+            
             referenced_message = Message(referenced_message_data)
         
         self.referenced_message = referenced_message

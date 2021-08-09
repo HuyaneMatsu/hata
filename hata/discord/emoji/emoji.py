@@ -1,9 +1,9 @@
-﻿__all__ = ('BUILTIN_EMOJIS', 'UNICODE_TO_EMOJI', 'Emoji')
+﻿__all__ = ('Emoji',)
 
 from ...backend.export import include
 
 from ..bases import DiscordEntity, id_sort_key
-from ..core import EMOJIS, GUILDS
+from ..core import EMOJIS, GUILDS, BUILTIN_EMOJIS, UNICODE_TO_EMOJI
 from ..utils import id_to_datetime, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 from ..user import User, ZEROUSER
 from ..preconverters import preconvert_str, preconvert_bool, preconvert_snowflake
@@ -15,9 +15,6 @@ Client = include('Client')
 Guild = include('Guild')
 
 UNICODE_EMOJI_LIMIT = 1<<21
-
-BUILTIN_EMOJIS = {}
-UNICODE_TO_EMOJI = {}
 
 
 class Emoji(DiscordEntity, immortal=True):
@@ -601,6 +598,49 @@ class Emoji(DiscordEntity, immortal=True):
         self.managed = False
         self.user = ZEROUSER
         self.role_ids = None
+        return self
+    
+    
+    @classmethod
+    def _create_unicode(cls, emoji_id, name, unicode, aliases):
+        """
+        Creates a new unicode emoji with the given identifier.
+        
+        Parameters
+        ----------
+        emoji_id : `int`
+            The emoji's identifier.
+        name : `str`
+            The emoji's name.
+        unicode : `str`
+            The emoji's unicode value.
+        aliases : `tuple` of `str`
+            Emoji name aliases.
+        
+        Returns
+        -------
+        self : ``Emoji``
+            The created emoji.
+        """
+        self = object.__new__(cls)
+        self.id = emoji_id
+        self.animated = False
+        self.name = name
+        self.unicode = unicode
+        self.guild_id = 0
+        self.available = True
+        self.require_colons = True
+        self.managed = False
+        self.user = ZEROUSER
+        self.role_ids = None
+        
+        EMOJIS[emoji_id] = self
+        UNICODE_TO_EMOJI[unicode] = self
+        BUILTIN_EMOJIS[name] = self
+        
+        for alias in aliases:
+            BUILTIN_EMOJIS[alias] = self
+        
         return self
     
     

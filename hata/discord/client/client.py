@@ -8110,7 +8110,7 @@ class Client(ClientUserPBase):
     
     async def guild_thread_get_all_active(self, guild):
         """
-        Gets all the active threads of teh given guild.
+        Gets all the active threads of the given guild.
         
         This method is a coroutine.
         

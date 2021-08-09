@@ -82,27 +82,28 @@ class Invite(DiscordEntity, immortal=True):
         code = data['code']
         
         try:
-            invite = INVITES[code]
+            self = INVITES[code]
         except KeyError:
-            invite = object.__new__(cls)
-            invite.code = code
-            invite.partial = data_partial
+            self = object.__new__(cls)
+            self.code = code
+            self.partial = data_partial
+            INVITES[code] = self
             updater = cls._set_attributes
         else:
-            if invite.partial:
+            if self.partial:
                 if data_partial:
                     updater = cls._update_attributes
                 else:
                     updater = cls._set_attributes
-                    invite.partial = False
+                    self.partial = False
             else:
                 if data_partial:
                     updater = cls._update_counts_only
                 else:
                     updater = cls._update_attributes
         
-        updater(invite, data)
-        return invite
+        updater(self, data)
+        return self
     
     @classmethod
     def _create_vanity(cls, guild, data):

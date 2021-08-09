@@ -2,10 +2,7 @@ __all__ = ()
 
 from ...backend.utils import call
 
-from ..core import EMOJIS
-from ..user import ZEROUSER
-
-from .emoji import Emoji, BUILTIN_EMOJIS, UNICODE_TO_EMOJI
+from .emoji import Emoji
 
 @call
 def generate_builtin_emojis():
@@ -3556,31 +3553,4 @@ def generate_builtin_emojis():
             (b'\xf0\x9f\x91\xa9\xf0\x9f\x8f\xbf\xe2\x80\x8d\xf0\x9f\xa4\x9d\xe2\x80\x8d\xf0\x9f\x91\xa8\xf0\x9f\x8f\xbe', 'woman_and_man_holding_hands_tone5_tone4', 'woman_and_man_holding_hands_tone5_tone4'),
                 ), 1):
         
-        value = element[0].decode('utf8')
-        name = element[1]
-        
-        emoji = object.__new__(Emoji)
-        emoji.animated = False
-        emoji.id = emoji_id
-        emoji.name = name
-        emoji.unicode = value
-        emoji.guild_id = 0
-        emoji.role_ids = None
-        emoji.managed = False
-        emoji.require_colons = True
-        emoji.user = ZEROUSER
-        emoji.available = True
-        EMOJIS[emoji_id] = emoji
-        
-        UNICODE_TO_EMOJI[value] = emoji
-        
-        index = 2
-        limit = len(element)
-        while True:
-            name = element[index]
-            index += 1
-            
-            BUILTIN_EMOJIS[name] = emoji
-            
-            if index == limit:
-                break
+        Emoji._create_unicode(emoji_id, element[1], element[0].decode('utf8'), element[2:])

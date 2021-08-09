@@ -4,7 +4,7 @@ from functools import partial as partial_func
 
 from ....discord.message import Message
 from ....discord.interaction import InteractionEvent, create_auto_custom_id
-from ....discord.emoji import BUILTIN_EMOJIS
+from ....discord.core import BUILTIN_EMOJIS
 
 EMOJI_LEFT_2 = BUILTIN_EMOJIS['track_previous']
 EMOJI_LEFT = BUILTIN_EMOJIS['arrow_backward']

@@ -81,6 +81,7 @@ Make multiple entities to weakly bound to other ones.
 - Add `DiscordHttpClient.guild_thread_get_all_active`.
 - Add `RATE_LIMIT_GROUPS.guild_thread_get_all_active`.
 - Add `Client.guild_thread_get_all_active`.
+- Add `Emoji._create_unicode`.
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.

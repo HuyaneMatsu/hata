@@ -3,7 +3,8 @@ __all__ = ('UserMenuFactory', 'UserMenuRunner', 'UserPagination',)
 from ...backend.futures import CancelledError
 from ...backend.utils import copy_docs
 from ...backend.analyzer import CallableAnalyzer
-from ...discord.emoji import BUILTIN_EMOJIS, Emoji
+from ...discord.core import BUILTIN_EMOJIS
+from ...discord.emoji import Emoji
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
 from ...discord import ChannelTextBase

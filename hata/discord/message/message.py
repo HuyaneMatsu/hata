@@ -198,7 +198,6 @@ class Message(DiscordEntity, immortal=True):
         self.deleted = False
         
         channel_id = int(data['channel_id'])
-        channel = CHANNELS.get(channel_id, None)
         self.channel_id = channel_id
         
         guild_id = data.get('guild_id', None)
@@ -268,7 +267,7 @@ class Message(DiscordEntity, immortal=True):
             else:
                 referenced_message = MessageReference(referenced_message_data)
         else:
-            # Discord do not sends `guild_id` for nested message instanced.
+            # Discord do not sends `guild_id` for nested message instances.
             referenced_message_data['guild_id'] = data.get('guild_id', None)
             
             referenced_message = Message(referenced_message_data)
@@ -366,12 +365,7 @@ class Message(DiscordEntity, immortal=True):
             user_mentions = None
         self.user_mentions = user_mentions
         
-        if guild is None:
-            channel_mentions = None
-        else:
-            channel_mentions = ...
-        
-        self._channel_mentions = channel_mentions
+        self._channel_mentions = ...
         
         role_mention_ids = data.get('mention_roles', None)
         if (role_mention_ids is None) or (not role_mention_ids):

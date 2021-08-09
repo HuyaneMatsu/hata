@@ -3,7 +3,7 @@ __all__ = ('Closer', )
 
 from ...backend.futures import CancelledError
 from ...backend.utils import copy_docs
-from ...discord.emoji import BUILTIN_EMOJIS
+from ...discord.core import BUILTIN_EMOJIS
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
 from ...discord import ChannelTextBase

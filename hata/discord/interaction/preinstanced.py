@@ -265,58 +265,6 @@ class ButtonStyle(PreinstancedBase):
     green = P(3, 'green')
     red = P(4, 'red')
     link = P(5, 'link')
-    
-    
-    @property
-    def primary(self):
-        """
-        Deprecated, please use `.violet` instead. Will be removed in 2021 july.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.primary` is deprecated, and will be removed in 2021 july. '
-            f'Please use `{self.__class__.__name__}.violet` instead.',
-            FutureWarning)
-        
-        return self.violet
-    
-    
-    @property
-    def secondary(self):
-        """
-        Deprecated, please use `.gray` instead. Will be removed in 2021 july.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.secondary` is deprecated, and will be removed in 2021 july. '
-            f'Please use `{self.__class__.__name__}.gray` instead.',
-            FutureWarning)
-        
-        return self.gray
-    
-    
-    @property
-    def success(self):
-        """
-        Deprecated, please use `.green` instead. Will be removed in 2021 july.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.success` is deprecated, and will be removed in 2021 july. '
-            f'Please use `{self.__class__.__name__}.green` instead.',
-            FutureWarning)
-        
-        return self.green
-    
-    
-    @property
-    def destructive(self):
-        """
-        Deprecated, please use `.red` instead. Will be removed in 2021 july.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.destructive` is deprecated, and will be removed in 2021 july. '
-            f'Please use `{self.__class__.__name__}.red` instead.',
-            FutureWarning)
-        
-        return self.red
 
 
 class ApplicationCommandTargetType(PreinstancedBase):

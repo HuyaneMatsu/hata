@@ -416,6 +416,7 @@ class _EventHandlerManager:
             The respective event handler.
         """
         self.parent = parent
+    
     def __repr__(self):
         """Returns the representation of the event handler manager."""
         return f'<{self.__class__.__name__} of {self.parent!r}>'

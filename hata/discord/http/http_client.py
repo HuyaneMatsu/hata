@@ -1562,6 +1562,13 @@ class DiscordHTTPClient(HTTPClient):
     
     # thread
     
+    async def guild_thread_get_all_active(self, guild_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_thread_get_all_active, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/threads/active',
+        )
+    
     # DiscordException Bad Request (400), code=50001: Missing Access
     async def thread_create(self, channel_id, data):
         return await self.discord_request(
@@ -1622,31 +1629,31 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me/settings',
         )
     
-    async def thread_get_chunk_active(self, channel_id, data):
+    async def channel_thread_get_chunk_active(self, channel_id, data):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_active, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_active, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/active',
             params = data,
         )
     
-    async def thread_get_chunk_archived_private(self, channel_id):
+    async def channel_thread_get_chunk_archived_private(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_archived_private, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_archived_private, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/private',
         )
     
-    async def thread_get_chunk_archived_public(self, channel_id):
+    async def channel_thread_get_chunk_archived_public(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_archived_public, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_archived_public, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/threads/archived/public',
         )
     
-    async def thread_get_chunk_self_archived(self, channel_id):
+    async def channel_thread_get_chunk_self_archived(self, channel_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_get_chunk_self_archived, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_self_archived, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/users/@me/threads/archived/private',
         )

@@ -883,7 +883,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
 
 
 
-async def request_thread_channels(client, guild, channel_id, request_function):
+async def request_channel_thread_channels(client, guild, channel_id, request_function):
     """
     Gets thread channels trough the discord API with the given http client and function.
     

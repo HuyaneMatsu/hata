@@ -78,6 +78,9 @@ Make multiple entities to weakly bound to other ones.
 - Add `ChannelThread.invitable`.
 - Add `invitable` parameter to `ChannelThread.precreate`.
 - Add `open` parameter to `ChannelThread.precreate`.
+- Add `DiscordHttpClient.guild_thread_get_all_active`.
+- Add `RATE_LIMIT_GROUPS.guild_thread_get_all_active`.
+- Add `Client.guild_thread_get_all_active`.
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.
@@ -115,6 +118,24 @@ Make multiple entities to weakly bound to other ones.
 - Remove `PermissionOverwrite.id`.
 - Remove `PermissionOverwrite.type`.
 - Rename `CHANNEL_TYPES` to `CHANNEL_TYPE_MAP`.
+- Deprecate `Client.thread_get_all_active`.
+- Rename `Client.thread_get_all_active` to `.channel_thread_get_all_active`.
+- Rename `RATE_LIMIT_GROUPS.thread_get_chunk_active` to `.channel_thread_get_chunk_active`.
+- Rename `DiscordHttpClient.thread_get_chunk_active` to `.channel_thread_get_chunk_active`.
+- Rename `request_thread_channels` to `request_channel_thread_channels`.
+- Deprecate `Client.thread_get_all_archived_private`.
+- Rename `Client.thread_get_all_archived_private` to `.channel_thread_get_all_archived_private`.
+- Rename `DiscordHttpClient.thread_get_chunk_archived_private` to `.channel_thread_get_chunk_archived_private`.
+- Rename `RATE_LIMIT_GROUPS.thread_get_chunk_archived_private` to `.channel_thread_get_chunk_archived_private`.
+- Deprecate `Client.thread_get_all_archived_public`.
+- Rename `Client.thread_get_all_archived_public` to `.channel_thread_get_all_archived_public`.
+- Rename `DiscordHttpClient.thread_get_chunk_archived_public` to `.channel_thread_get_chunk_archived_public`.
+- Rename `RATE_LIMIT_GROUPS.thread_get_chunk_archived_public` to `.channel_thread_get_chunk_archived_public`.
+- Deprecate `Client.thread_get_all_self_archived`.
+- Rename `Client.thread_get_all_self_archived` to `.channel_thread_get_all_self_archived`.
+- Rename `DiscordHttpClient.thread_get_chunk_self_archived` to `.channel_thread_get_chunk_self_archived`.
+- Rename `RATE_LIMIT_GROUPS.thread_get_chunk_self_archived` to `.channel_thread_get_chunk_self_archived`.
+
 
 ##### ext.slash
 - Rename `SlashCommand._overwrite` to `._permission_overwrites`.

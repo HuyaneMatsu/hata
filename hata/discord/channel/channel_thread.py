@@ -243,16 +243,11 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         parent_id = data.get('parent_id', None)
         if (parent_id is None):
-            parent = None
+            parent_id = 0
         else:
             parent_id = int(parent_id)
-            
-            if guild is None:
-                parent = CHANNELS.get(parent_id, None)
-            else:
-                parent = guild.channels.get(parent_id, None)
         
-        self.parent = parent
+        self.parent_id = parent_id
     
     
     @classmethod

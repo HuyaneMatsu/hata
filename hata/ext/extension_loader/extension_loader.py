@@ -1231,20 +1231,6 @@ class ExtensionLoader:
             is_processing_extension = False
         
         return is_processing_extension
-
-    @property
-    def extensions(self):
-        """
-        Deprecated, please use ``.get_extension`` instead. Will be removed in 2021 juli.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.extensions` is deprecated, and will be removed in 2021 juli. '
-            f'Please use `{self.__class__.__name__}.get_extension(name)` instead.',
-            FutureWarning)
-        
-        return self._extensions_by_name
     
     
     def get_extension(self, name):

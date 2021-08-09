@@ -691,7 +691,7 @@ Group Details
     - Limit : `50`
     - Resets after : `300.0`
 
-- thread_get_chunk_active
+- channel_thread_get_chunk_active
     - Endpoint : `/channels/{channel_id}/threads/active`
     - Method : `GET`
     - Required auth : `bot`
@@ -699,7 +699,7 @@ Group Details
     - Limit : `N/A`
     - Resets after : `N/A`
 
-- thread_get_chunk_archived_private
+- channel_thread_get_chunk_archived_private
     - Endpoint : `/channels/{channel_id}/threads/archived/private`
     - Method : `GET`
     - Required auth : `bot`
@@ -707,7 +707,7 @@ Group Details
     - Limit : `N/A`
     - Resets after : `N/A`
 
-- thread_get_chunk_archived_public
+- channel_thread_get_chunk_archived_public
     - Endpoint : `/channels/{channel_id}/threads/archived/public`
     - Method : `GET`
     - Required auth : `bot`
@@ -723,7 +723,7 @@ Group Details
     - Limit : `5`
     - Resets after : `5.0`
 
-- thread_get_chunk_self_archived
+- channel_thread_get_chunk_self_archived
     - Endpoint : `/channels/{channel_id}/users/@me/threads/archived/private`
     - Method : `POST`
     - Required auth : `bot`
@@ -1258,6 +1258,14 @@ Group Details
 
 - sticker_guild_get
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
+
+- guild_thread_get_all_active
+    - Endpoint : `/guilds/{guild_id}/threads/active`
     - Method : `GET`
     - Required auth : `bot`
     - Limiter : `UNLIMITED`
@@ -1855,10 +1863,10 @@ thread_user_delete = GROUP_THREAD_ACTION
 thread_self_settings_edit = RateLimitGroup()
 thread_create = GROUP_THREAD_CREATE
 typing = RateLimitGroup(LIMITER_CHANNEL)
-thread_get_chunk_active = RateLimitGroup.unlimited()
-thread_get_chunk_archived_private = RateLimitGroup.unlimited()
-thread_get_chunk_archived_public = RateLimitGroup.unlimited()
-thread_get_chunk_self_archived = RateLimitGroup.unlimited()
+channel_thread_get_chunk_active = RateLimitGroup.unlimited()
+channel_thread_get_chunk_archived_private = RateLimitGroup.unlimited()
+channel_thread_get_chunk_archived_public = RateLimitGroup.unlimited()
+channel_thread_get_chunk_self_archived = RateLimitGroup.unlimited()
 webhook_get_all_channel = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
 webhook_create = RateLimitGroup(LIMITER_CHANNEL, optimistic=True)
 discovery_category_get_all = RateLimitGroup()
@@ -1920,10 +1928,11 @@ role_create = RateLimitGroup(LIMITER_GUILD)
 role_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 role_edit = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_get_all = RateLimitGroup.unlimited()
+sticker_guild_create = RateLimitGroup()
 sticker_guild_edit = RateLimitGroup()
 sticker_guild_delete = RateLimitGroup()
 sticker_guild_get = RateLimitGroup.unlimited()
-sticker_guild_create = RateLimitGroup()
+guild_thread_get_all_active = RateLimitGroup.unlimited()
 vanity_invite_get = RateLimitGroup.unlimited()
 vanity_invite_edit = RateLimitGroup()
 voice_state_client_edit = RateLimitGroup()

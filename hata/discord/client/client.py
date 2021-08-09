@@ -72,7 +72,7 @@ from ..message.utils import process_message_chunk
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
-    _message_delete_multiple_private_task, _message_delete_multiple_task, request_thread_channels, ForceUpdateCache
+    _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, ForceUpdateCache
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -2620,14 +2620,6 @@ class Client(ClientUserPBase):
         -----
         This method also fixes the messy channel positions of Discord to an intuitive one.
         """
-        if (category is not ...):
-            warnings.warn(
-                f'`{self.__class__.__name__}.channel_move`\'s `category` parameter is deprecated, and will be removed '
-                f'in 2021 july. Please use `parent` instead.',
-                FutureWarning)
-            
-            parent = category
-        
         # Check channel type
         if not isinstance(channel, ChannelGuildMainBase):
             raise TypeError(f'`channel` can be given as `{ChannelGuildMainBase.__name__}` instance, got '
@@ -7589,20 +7581,6 @@ class Client(ClientUserPBase):
     
     # users
     
-    async def user_edit(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.user_guild_profile_edit`` instead. Will be removed in 2021 June.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.user_edit` is deprecated, and will be removed in 2021 September. '
-            f'Please use `{self.__class__.__name__}.user_guild_profile_edit` instead.',
-            FutureWarning)
-        
-        return await self.user_guild_profile_edit(*args, **kwargs)
-    
-    
     async def user_guild_profile_edit(self, guild, user, *, nick=..., deaf=None, mute=None, voice_channel=...,
             roles=..., reason=None):
         """
@@ -8130,6 +8108,59 @@ class Client(ClientUserPBase):
     
     # Thread
     
+    async def guild_thread_get_all_active(self, guild):
+        """
+        Gets all the active threads of teh given guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to get it's threads of.
+        
+        Returns
+        ------
+        threads : `list` of ``ChannelThread``
+        
+        Raises
+        ------
+        TypeError
+            If `guild` is neither ``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, guild_id = get_guild_and_id(guild)
+        
+        data = await self.http.guild_thread_get_all_active(guild_id)
+        
+        if guild is None:
+            guild = GUILDS.get(guild_id, None)
+        
+        thread_channel_datas = data['threads']
+        
+        thread_channels = [
+            ChannelThread(thread_channel_data, self, guild) for thread_channel_data in thread_channel_datas
+        ]
+        
+        thread_user_datas = data['members']
+        for thread_user_data in thread_user_datas:
+            thread_chanel_id = int(thread_user_data['id'])
+            try:
+                thread_channel = CHANNELS[thread_chanel_id]
+            except KeyError:
+                continue
+    
+            user_id = int(thread_user_data['user_id'])
+            user = create_partial_user_from_id(user_id)
+            
+            thread_user_create(thread_channel, user, thread_user_data)
+        
+        return thread_channels
+    
+    
     async def thread_create(self, message_or_channel, name, *, auto_archive_after=None, type_=None):
         """
         Creates a new thread derived from the given message or channel.
@@ -8432,8 +8463,19 @@ class Client(ClientUserPBase):
         
         return users
     
-    
     async def thread_get_all_active(self, channel):
+        """
+        Deprecated, please use ``.channel_thread_get_all_active`` instead.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.thread_get_all_active` is deprecated, and will be removed in 2021 November. '
+            f'Please use `.thread_get_all_active` instead.',
+            FutureWarning)
+        
+        return await self.channel_thread_get_all_active(channel)
+    
+    
+    async def channel_thread_get_all_active(self, channel):
         """
         Requests all the active threads of the given channel.
         
@@ -8456,10 +8498,23 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_thread_channels(self, guild, channel_id, type(self.http).thread_get_chunk_active)
+        return await request_channel_thread_channels(self, guild, channel_id,
+            type(self.http).channel_thread_get_chunk_active)
     
     
     async def thread_get_all_archived_private(self, channel):
+        """
+        Deprecated, please use ``.channel_thread_get_all_archived_private`` instead.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.thread_get_all_archived_private` is deprecated, and will be removed in '
+            f'2021 November. Please use `.channel_thread_get_all_archived_private` instead.',
+            FutureWarning)
+        
+        return await self.channel_thread_get_all_archived_private(channel)
+    
+    
+    async def channel_thread_get_all_archived_private(self, channel):
         """
         Requests all the archived private of the given channel.
         
@@ -8482,11 +8537,23 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_thread_channels(self, guild, channel_id,
-            type(self.http).thread_get_chunk_archived_private)
+        return await request_channel_thread_channels(self, guild, channel_id,
+            type(self.http).channel_thread_get_chunk_archived_private)
     
     
     async def thread_get_all_archived_public(self, channel):
+        """
+        Deprecated, please use ``.channel_thread_get_all_archived_public`` instead.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.thread_get_all_archived_public` is deprecated, and will be removed in '
+            f'2021 November. Please use `.channel_thread_get_all_archived_public` instead.',
+            FutureWarning)
+        
+        return await self.channel_thread_get_all_archived_public(channel)
+    
+    
+    async def channel_thread_get_all_archived_public(self, channel):
         """
         Requests all the archived public threads of the given channel.
         
@@ -8509,10 +8576,23 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_thread_channels(self, guild, channel_id, type(self.http).thread_get_chunk_archived_public)
+        return await request_channel_thread_channels(self, guild, channel_id,
+            type(self.http).channel_thread_get_chunk_archived_public)
     
     
     async def thread_get_all_self_archived(self, channel):
+        """
+        Deprecated, please use ``.thread_get_all_self_archived`` instead.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.thread_get_all_self_archived` is deprecated, and will be removed in '
+            f'2021 November. Please use `.channel_thread_get_all_self_archived` instead.',
+            FutureWarning)
+        
+        return await self.channel_thread_get_all_self_archived(channel)
+    
+    
+    async def channel_thread_get_all_self_archived(self, channel):
         """
         Requests all the archived private threads by the client.
         
@@ -8535,7 +8615,8 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_thread_channels(self, guild, channel_id, type(self.http).thread_get_chunk_self_archived)
+        return await request_channel_thread_channels(self, guild, channel_id,
+            type(self.http).channel_thread_get_chunk_self_archived)
     
     
     async def user_get(self, user, *, force_update=False):
@@ -14266,19 +14347,6 @@ class Client(ClientUserPBase):
                     self.ready_state = None
                     ready_state.cancel()
                     ready_state = None
-    
-    async def join_voice_channel(self, *args, **kwargs):
-        """
-        Deprecated, please use ``.join_voice`` instead. Will be removed in 2021 June.
-        
-        This method is a coroutine.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.join_voice_channel` is deprecated, and will be removed in 2021 June. '
-            f'Please use `{self.__class__.__name__}.join_voice` instead.',
-            FutureWarning)
-        
-        return await self.join_voice(*args, **kwargs)
     
     
     async def join_voice(self, channel):

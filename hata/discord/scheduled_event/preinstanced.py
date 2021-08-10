@@ -2,6 +2,8 @@ __all__ = ('PrivacyLevel', 'ScheduledEventEntityType', 'ScheduledEventStatus',)
 
 from ..bases import PreinstancedBase, Preinstance as P
 
+from .metadata import StageEntityMetadata
+
 class ScheduledEventStatus(PreinstancedBase):
     """
     Represents a scheduled event's status.
@@ -61,6 +63,8 @@ class ScheduledEventEntityType(PreinstancedBase):
         The name of the scheduled event's entity's type.
     value : `int`
         The identifier value the scheduled event's entity type.
+    metadata_type : `None` or ``ScheduledEventEntityMetadata`` subclass
+        The scheduled event's metadata's applicable type.
     
     Class Attributes
     ----------------
@@ -73,22 +77,66 @@ class ScheduledEventEntityType(PreinstancedBase):
     
     Every predefined scheduled event can be accessed as class attribute as well:
     
-    +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | stage                 | stage         | 1     |
-    +-----------------------+---------------+-------+
+    +-----------------------+---------------+-------+---------------------------+
+    | Class attribute name  | Name          | Value | Metadata type             |
+    +=======================+===============+=======+===========================+
+    | none                  | none          | 0     | None                      |
+    +-----------------------+---------------+-------+---------------------------+
+    | stage                 | stage         | 1     | ``StageEntityMetadata``   |
+    +-----------------------+---------------+-------+---------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
     DEFAULT_NAME = 'UNDEFINED'
     
-    __slots__ = ()
+    __slots__ = ('metadata_type',)
     
-    none = P(0, 'none')
-    stage = P(1, 'stage')
+
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a scheduled event entity type from the given id and stores it at class's `.INSTANCES`.
+        
+        Called by `.get` when no scheduled event entity type was found with the given id.
+        
+        Parameters
+        ----------
+        id_ : `str`
+            The identifier of the scheduled event entity type.
+        
+        Returns
+        -------
+        self : ``ScheduledEventEntityType``
+        """
+        self = object.__new__(cls)
+        self.name = cls.DEFAULT_NAME
+        self.metadata_type = None
+        
+        self.INSTANCES[value] = self
+        return self
+    
+    
+    def __init__(self, value, name, metadata_type):
+        """
+        Creates a new scheduled event entity type instance from the given parameters.
+        
+        Parameters
+        ----------
+        value : `str`
+            The unique identifier of the scheduled event entity type.
+        name : `str`
+            The name of the scheduled event entity type.
+        metadata_type : `None` or ``ScheduledEventEntityMetadata`` subclass
+            The scheduled event's metadata's applicable type.
+        """
+        self.name = name
+        self.value = value
+        self.metadata_type = metadata_type
+        self.INSTANCES[value] = self
+    
+    
+    none = P(0, 'none', None)
+    stage = P(1, 'stage', StageEntityMetadata)
 
 
 class PrivacyLevel(PreinstancedBase):

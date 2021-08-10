@@ -145,7 +145,7 @@ class Webhook(WebhookBase):
     def _set_attributes(self, data):
         self._update_attributes(data)
         
-        self.channel = create_partial_channel_from_id(int(data['channel_id']), 0)
+        self.channel_id = int(data['channel_id'])
         
         token = data.get('token', None)
         if (token is not None):

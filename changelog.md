@@ -82,6 +82,25 @@ Make multiple entities to weakly bound to other ones.
 - Add `RATE_LIMIT_GROUPS.guild_thread_get_all_active`.
 - Add `Client.guild_thread_get_all_active`.
 - Add `Emoji._create_unicode`.
+- Add `ScheduledEventEntityMetadata`.
+- Add `StageEntityMetadata`.
+- Add `ScheduledEvent.channel_id`.
+- Add `ScheduledEvent.entity_id`.
+- Add `ScheduledEvent.entity_metadata`.
+- Add `ScheduledEvent.image`.
+- Add `ScheduledEvent.name`.
+- Add `ScheduledEvent.scheduled_end`.
+- Add `ScheduledEvent.scheduled_start`.
+- Add `ScheduledEvent.__new__`.
+- Add `ScheduledEvent._set_attributes`.
+- Add `ScheduledEvent.__repr__`.
+- Add `ScheduledEvent.entity`.
+- Add `ScheduledEvent.channel`.
+- Add `ScheduledEvent.guild`.
+- Add `ScheduledEventEntityType.metadata_type`.
+- Add `ScheduledEvent.entity_metadata`.
+- Add `ScheduledEventEntityMetadata`.
+- Add `StageEntityMetadata`.
 
 ##### ext.slash
 - Add `target` parameter to `.interactions` decorator.

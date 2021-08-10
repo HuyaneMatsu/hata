@@ -331,7 +331,7 @@ class VoiceRegion(PreinstancedBase):
         
         Returns
         -------
-        voice_region : ``VoiceRegion``
+        self : ``VoiceRegion``
         """
         name_parts = value.split('-')
         for index in range(len(name_parts)):
@@ -393,6 +393,8 @@ class VoiceRegion(PreinstancedBase):
         ----------
         value : `str`
             The unique identifier of the voice region.
+        name : `str`
+            The voice region's name.
         deprecated : `bool`
             Whether the voice region is deprecated.
         name : `str`

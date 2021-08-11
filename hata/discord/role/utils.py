@@ -35,7 +35,7 @@ def create_partial_role_from_id(role_id):
     role.id = role_id
     
     role.color = Color()
-    role.guild = None
+    role.guild_id = 0
     role.separated = False
     # id is set up
     role.manager_type = ROLE_MANAGER_TYPE_NONE

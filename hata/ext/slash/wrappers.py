@@ -1,4 +1,5 @@
-__all__ = ('SlashCommandParameterConfigurerWrapper', 'SlashCommandPermissionOverwriteWrapper', 'SlashCommandWrapper')
+__all__ = ('SlasherApplicationCommandParameterConfigurerWrapper',
+    'SlasherApplicationCommandPermissionOverwriteWrapper', 'SlasherCommandWrapper')
 
 import reprlib
 from functools import partial as partial_func
@@ -10,7 +11,7 @@ from ...discord.interaction import ApplicationCommandPermissionOverwrite
 from .converters import parse_annotation_description, parse_annotation_type_and_choice, parse_annotation_name, \
     ANNOTATION_TYPE_TO_STR_ANNOTATION
 
-class SlashCommandWrapper:
+class SlasherCommandWrapper:
     """
     Wraps a slash command enabling the wrapper to postprocess the created slash command.
     
@@ -28,7 +29,7 @@ class SlashCommandWrapper:
         
         Returns
         -------
-        wrapper : `functools.partial` of ``SlashCommandWrapper._decorate``
+        wrapper : `functools.partial` of ``SlasherCommandWrapper._decorate``
             Partial function to wrap a slash command.
         """
         return partial_func(cls._decorate, cls)
@@ -46,14 +47,14 @@ class SlashCommandWrapper:
         
         Returns
         -------
-        self : ``SlashCommandWrapper``
+        self : ``SlasherCommandWrapper``
             The created instance.
         """
         self = object.__new__(cls)
         self._wrapped = wrapped
         return self
     
-    def apply(self, slash_command):
+    def apply(self, slasher_application_command):
         """
         Applies the wrapper's changes on the respective slash command.
         
@@ -61,7 +62,7 @@ class SlashCommandWrapper:
         
         Parameters
         ----------
-        slash_command : ``SlashCommand``
+        slasher_application_command : ``SlasherApplicationCommand``
         """
         pass
     
@@ -77,13 +78,13 @@ class SlashCommandWrapper:
         -------
         function : `Any`
             The wrapped function.
-        wrappers : `list` of ``SlashCommandWrapper`` instances
+        wrappers : `list` of ``SlasherCommandWrapper`` instances
             The fetched back wrappers.
         """
         wrappers = [self]
         maybe_wrapper = self._wrapped
         while True:
-            if isinstance(maybe_wrapper, SlashCommandWrapper):
+            if isinstance(maybe_wrapper, SlasherCommandWrapper):
                 wrappers.append(maybe_wrapper)
                 maybe_wrapper = maybe_wrapper._wrapped
             else:
@@ -94,7 +95,7 @@ class SlashCommandWrapper:
         return function, wrappers
 
 
-class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
+class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper):
     """
     Wraps a slash to command allowing / disallowing it only for the given user or role inside of a guild.
     
@@ -137,7 +138,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         
         Returns
         -------
-        wrapper : `functools.partial` of ``SlashCommandWrapper._decorate``
+        wrapper : `functools.partial` of ``SlasherCommandWrapper._decorate``
             Partial function to wrap a slash command.
         """
         if isinstance(guild, Guild):
@@ -168,7 +169,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         
         Returns
         -------
-        self : ``SlashCommandWrapper``
+        self : ``SlasherCommandWrapper``
             The created instance.
         """
         self = object.__new__(cls)
@@ -178,15 +179,15 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
         return self
     
     
-    def apply(self, slash_command):
+    def apply(self, slasher_application_command):
         """
         Applies the wrapper's changes on the respective slash command.
         
         Parameters
         ----------
-        slash_command : ``SlashCommand``
+        slasher_application_command : ``SlasherApplicationCommand``
         """
-        slash_command.add_permission_overwrite(self._guild_id, self._permission_overwrite)
+        slasher_application_command.add_permission_overwrite(self._guild_id, self._permission_overwrite)
     
     
     def __repr__(self):
@@ -195,7 +196,7 @@ class SlashCommandPermissionOverwriteWrapper(SlashCommandWrapper):
             f'overwrite={self._permission_overwrite!r}>'
 
 
-class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
+class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper):
     """
     Wraps a slash command enabling you to modify it's parameter's annotations.
     
@@ -233,7 +234,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
         
         Returns
         -------
-        wrapper : `functools.partial` of ``SlashCommandWrapper._decorate``
+        wrapper : `functools.partial` of ``SlasherCommandWrapper._decorate``
             Partial function to wrap a slash command.
         
         Raises
@@ -290,7 +291,7 @@ class SlashCommandParameterConfigurerWrapper(SlashCommandWrapper):
         
         Returns
         -------
-        self : ``SlashCommandWrapper``
+        self : ``SlasherCommandWrapper``
             The created instance.
         """
         self = object.__new__(cls)
@@ -345,19 +346,19 @@ def get_parameter_configurers(wrappers):
     
     Parameters
     ----------
-    wrappers : `None` or `list` of ``SlashCommandWrapper``
+    wrappers : `None` or `list` of ``SlasherCommandWrapper``
         The fetched back wrappers if any.
     
     Returns
     -------
-    parameter_configurers : `None` or `dict` of (`str`, ``SlashCommandParameterConfigurerWrapper``) items
+    parameter_configurers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
         The collected parameter configurers if any.
     """
     parameter_configurers = None
     
     if (wrappers is not None):
         for wrapper in wrappers:
-            if isinstance(wrapper, SlashCommandParameterConfigurerWrapper):
+            if isinstance(wrapper, SlasherApplicationCommandParameterConfigurerWrapper):
                 if parameter_configurers is None:
                     parameter_configurers = {}
                 

@@ -14,7 +14,7 @@ from ...discord.interaction import ApplicationCommand, InteractionEvent, Interac
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
-from .slash_command import SlashCommand
+from .application_command import SlasherApplicationCommand
 from .component_command import ComponentCommand
 from .exceptions import handle_command_exception, test_exception_handler, default_slasher_exception_handler
 
@@ -29,16 +29,16 @@ def match_application_commands_to_commands(application_commands, commands, match
     ----------
     application_commands : `list` of ``ApplicationCommand``
         Received application commands.
-    commands : `None` or `list` of ``SlashCommand``
+    commands : `None` or `list` of ``SlasherApplicationCommand``
         A list of slash commands if any.
     match_schema : `bool`
         Whether schema or just name should be matched.
     
     Returns
     -------
-    commands : `None` or `list` of ``SlashCommand``
+    commands : `None` or `list` of ``SlasherApplicationCommand``
         The remaining matched commands.
-    matched : `None` or `list` of `tuple` (``ApplicationCommand``, ``SlashCommand`)
+    matched : `None` or `list` of `tuple` (``ApplicationCommand``, ``SlasherApplicationCommand`)
         The matched commands in pairs.
     """
     matched = None
@@ -87,7 +87,7 @@ class CommandChange:
     ----------
     added : `bool`
         Whether the command was added.
-    command : ``SlashCommand``
+    command : ``SlasherApplicationCommand``
         The command itself.
     """
     __slots__ = ('added', 'command')
@@ -99,7 +99,7 @@ class CommandChange:
         ----------
         added : `bool`
             Whether the command was added.
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The command itself.
         """
         self.added = added
@@ -124,13 +124,13 @@ class CommandState:
     
     Attributes
     ----------
-    _active : `None` or `list` of ``SlashCommand``
+    _active : `None` or `list` of ``SlasherApplicationCommand``
         Active slash commands, which were added.
     _changes : `None` or `list` of ``CommandChange``
         Newly added or removed commands in order.
     _is_non_global : `bool`
         Whether the command state is a command state of non global commands.
-    _kept : `None` or `list` of ``SlashCommand``
+    _kept : `None` or `list` of ``SlasherApplicationCommand``
         Slash commands, which are removed, but should not be deleted.
     """
     __slots__ = ('_active', '_changes', '_is_non_global', '_kept', )
@@ -190,13 +190,13 @@ class CommandState:
         
         return ''.join(result)
     
-    def get_should_add_slash_commands(self):
+    def get_should_add_application_commands(self):
         """
         Returns the commands, which should be added.
         
         Returns
         -------
-        commands : `list` of ``SlashCommand``
+        commands : `list` of ``SlasherApplicationCommand``
         """
         commands = []
         active = self._active
@@ -231,7 +231,7 @@ class CommandState:
         
         Returns
         -------
-        commands : `list` of ``SlashCommand``
+        commands : `list` of ``SlasherApplicationCommand``
         """
         commands = []
         kept = self._kept
@@ -252,13 +252,13 @@ class CommandState:
         
         return commands
     
-    def get_should_remove_slash_commands(self):
+    def get_should_remove_application_commands(self):
         """
         Returns the commands, which should be removed.
         
         Returns
         -------
-        commands : `list` of ``SlashCommand``
+        commands : `list` of ``SlasherApplicationCommand``
         """
         commands = []
         
@@ -294,7 +294,7 @@ class CommandState:
         
         Returns
         -------
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
@@ -343,7 +343,7 @@ class CommandState:
         
         Returns
         -------
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
@@ -396,7 +396,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The slash command.
         """
         if self._is_non_global:
@@ -415,7 +415,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The slash command.
         """
         if self._is_non_global:
@@ -434,7 +434,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The slash command.
         """
         if self._is_non_global:
@@ -448,12 +448,12 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The command to add.
         
         Returns
         -------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The existing command or the given one.
         
         action_identifier : `int`
@@ -534,7 +534,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The command to add.
         slasher_unloading_behaviour : `int`
             The parent slasher's unload behaviour.
@@ -551,7 +551,7 @@ class CommandState:
         
         Returns
         -------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The existing command or the given one.
         action_identifier : `int`
             The action what took place.
@@ -705,7 +705,7 @@ class Slasher(EventHandlerBase):
         +-------------------+-------------------------------------------+
         | interaction_event | ``InteractionEvent``                      |
         +-------------------+-------------------------------------------+
-        | command           | ``SlashCommand``, ``ComponentCommand``    |
+        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``    |
         +-------------------+-------------------------------------------+
         | exception         | `BaseException`                           |
         +-------------------+-------------------------------------------+
@@ -729,7 +729,7 @@ class Slasher(EventHandlerBase):
     _synced_permissions : `dict` of (`int`, `dict` of (`int`, ``ApplicationCommandPermission``) items) items
         A nested dictionary, which contains application command permission overwrites per guild_id and per
         `command_id`.
-    command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
+    command_id_to_command : `dict` of (`int`, ``SlasherApplicationCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
     regex_custom_id_to_component_command : `dict` of (``RegexMatcher``, ``ComponentCommand``) items.
         A dictionary which contains component commands based on regex patterns.
@@ -740,7 +740,7 @@ class Slasher(EventHandlerBase):
     ----------------
     __event_name__ : `str` = 'interaction_create'
         Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
-    SUPPORTED_TYPES : `tuple` (``SlashCommand``, ``ComponentCommand``)
+    SUPPORTED_TYPES : `tuple` (``SlasherApplicationCommand``, ``ComponentCommand``)
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     
     Notes
@@ -754,7 +754,7 @@ class Slasher(EventHandlerBase):
     
     __event_name__ = 'interaction_create'
     
-    SUPPORTED_TYPES = (SlashCommand, ComponentCommand)
+    SUPPORTED_TYPES = (SlasherApplicationCommand, ComponentCommand)
     
     def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True):
         """
@@ -1016,7 +1016,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        func : ``SlashCommand``, ``ComponentCommand``
+        func : ``SlasherApplicationCommand``, ``ComponentCommand``
              The created or added command.
         
         Raises
@@ -1029,8 +1029,8 @@ class Slasher(EventHandlerBase):
         if isinstance(func, Router):
             func = func[0]
         
-        if isinstance(func, SlashCommand):
-            self._add_slash_command(func)
+        if isinstance(func, SlasherApplicationCommand):
+            self._add_application_command(func)
             return func
         
         if isinstance(func, ComponentCommand):
@@ -1040,13 +1040,13 @@ class Slasher(EventHandlerBase):
         if 'custom_id' in kwargs:
             command = ComponentCommand(func, *args, **kwargs)
         else:
-            command = SlashCommand(func, *args, **kwargs)
+            command = SlasherApplicationCommand(func, *args, **kwargs)
         
         if isinstance(command, Router):
             command = command[0]
         
-        if isinstance(command, SlashCommand):
-            self._add_slash_command(command)
+        if isinstance(command, SlasherApplicationCommand):
+            self._add_application_command(command)
         else:
             self._add_component_command(command)
         
@@ -1063,7 +1063,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        func : ``SlashCommand``, ``ComponentCommand``
+        func : ``SlasherApplicationCommand``, ``ComponentCommand``
              The created or added command.
         
         Raises
@@ -1076,43 +1076,43 @@ class Slasher(EventHandlerBase):
         if hasattr(klass, 'custom_id'):
             command = ComponentCommand.from_class(klass)
         else:
-            command = SlashCommand.from_class(klass)
+            command = SlasherApplicationCommand.from_class(klass)
         
         if isinstance(command, Router):
             command = command[0]
         
-        if isinstance(command, SlashCommand):
-            self._add_slash_command(command)
+        if isinstance(command, SlasherApplicationCommand):
+            self._add_application_command(command)
         else:
             self._add_component_command(command)
         
         return command
     
     
-    def _add_slash_command(self, command):
+    def _add_application_command(self, command):
         """
         Adds a slash command to the ``Slasher`` if applicable.
         
         Parameters
         ---------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The command to add.
         """
         if self._check_late_register(command, True):
             return
         
-        self._register_slash_command(command)
+        self._register_application_command(command)
         
         self._maybe_sync()
     
     
-    def _register_slash_command(self, command):
+    def _register_application_command(self, command):
         """
         Registers the given slash command.
         
         Parameters
         ---------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The command to add.
         """
         for sync_id in command._iter_sync_ids():
@@ -1144,7 +1144,7 @@ class Slasher(EventHandlerBase):
                 continue
     
     
-    def _remove_slash_command(self, command):
+    def _remove_application_command(self, command):
         """
         Tries to remove the given command from the ``Slasher``.
         
@@ -1156,12 +1156,12 @@ class Slasher(EventHandlerBase):
         if self._check_late_register(command, False):
             return
         
-        self._unregister_slash_command(command)
+        self._unregister_application_command(command)
         
         self._maybe_sync()
     
     
-    def _unregister_slash_command(self, command):
+    def _unregister_application_command(self, command):
         """
         Unregisters the given slash command.
         
@@ -1256,9 +1256,9 @@ class Slasher(EventHandlerBase):
             while call_later:
                 add, command = call_later.pop()
                 if add:
-                    self._register_slash_command(command)
+                    self._register_application_command(command)
                 else:
-                    self._unregister_slash_command(command)
+                    self._unregister_application_command(command)
             
             self._call_later = None
             registered_any = True
@@ -1271,7 +1271,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        func : ``SlashCommand``, ``Router`` of ``SlashCommand``
+        func : ``SlasherApplicationCommand``, ``Router`` of ``SlasherApplicationCommand``
             The command to remove.
         name : `None` or `str`, Optional
             The command's name to remove.
@@ -1279,22 +1279,22 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         TypeError
-            If `func` was not given neither as ``SlashCommand`` not as ``Router`` of ``SlashCommand``.
+            If `func` was not given neither as ``SlasherApplicationCommand`` not as ``Router`` of ``SlasherApplicationCommand``.
         """
         if isinstance(func, Router):
             for sub_func in func:
-                if not isinstance(sub_func, SlashCommand):
-                    raise TypeError(f'`func` was not given neither as `{SlashCommand.__name__}`, or '
-                        f'`{Router.__name__}` of `{SlashCommand.__name__}` instances, got {func!r}.')
+                if not isinstance(sub_func, SlasherApplicationCommand):
+                    raise TypeError(f'`func` was not given neither as `{SlasherApplicationCommand.__name__}`, or '
+                        f'`{Router.__name__}` of `{SlasherApplicationCommand.__name__}` instances, got {func!r}.')
             
             for sub_func in func:
-                self._remove_slash_command(sub_func)
+                self._remove_application_command(sub_func)
                 
-        elif isinstance(func, SlashCommand):
-            self._remove_slash_command(func)
+        elif isinstance(func, SlasherApplicationCommand):
+            self._remove_application_command(func)
         else:
-            raise TypeError(f'`func` was not given neither as `{SlashCommand.__name__}`, or `{Router.__name__}` of '
-                f'`{SlashCommand.__name__}` instances, got {func!r}.')
+            raise TypeError(f'`func` was not given neither as `{SlasherApplicationCommand.__name__}`, or `{Router.__name__}` of '
+                f'`{SlasherApplicationCommand.__name__}` instances, got {func!r}.')
     
     async def _try_get_command_by_id(self, client, interaction_event):
         """
@@ -1401,7 +1401,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The slash command to unregister.
         command_state : `None` or ``CommandState``
             The command's respective state instance.
@@ -1425,7 +1425,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The slash command to register.
         command_state : `None` or ``CommandState``
             The command's respective state instance.
@@ -1446,7 +1446,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The slash command to register.
         command_state : `None` or ``CommandState``
             The command's respective state instance.
@@ -1497,7 +1497,7 @@ class Slasher(EventHandlerBase):
                 guild_keep_commands = None
                 guild_removed_commands = None
             else:
-                guild_added_commands = guild_command_state.get_should_add_slash_commands()
+                guild_added_commands = guild_command_state.get_should_add_application_commands()
                 if not guild_added_commands:
                     guild_added_commands = None
                 
@@ -1505,7 +1505,7 @@ class Slasher(EventHandlerBase):
                 if not guild_keep_commands:
                     guild_keep_commands = None
                 
-                guild_removed_commands = guild_command_state.get_should_remove_slash_commands()
+                guild_removed_commands = guild_command_state.get_should_remove_application_commands()
                 if not guild_removed_commands:
                     guild_removed_commands = None
             
@@ -1514,7 +1514,7 @@ class Slasher(EventHandlerBase):
                 non_global_added_commands = None
                 non_global_keep_commands = None
             else:
-                non_global_added_commands = non_global_command_state.get_should_add_slash_commands()
+                non_global_added_commands = non_global_command_state.get_should_add_application_commands()
                 if not non_global_added_commands:
                     non_global_added_commands = None
                 
@@ -1665,7 +1665,7 @@ class Slasher(EventHandlerBase):
                 global_keep_commands = None
                 global_removed_commands = None
             else:
-                global_added_commands = global_command_state.get_should_add_slash_commands()
+                global_added_commands = global_command_state.get_should_add_application_commands()
                 if not global_added_commands:
                     global_added_commands = None
                 
@@ -1673,7 +1673,7 @@ class Slasher(EventHandlerBase):
                 if not global_keep_commands:
                     global_keep_commands = None
                 
-                global_removed_commands = global_command_state.get_should_remove_slash_commands()
+                global_removed_commands = global_command_state.get_should_remove_application_commands()
                 if not global_removed_commands:
                     global_removed_commands = None
             
@@ -1760,7 +1760,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The non_global command what replaced the slash command.
         command_state : ``CommandState``
             The command's command state.
@@ -1807,7 +1807,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The non_global command what replaced the slash command.
         guild_id : `int`
             The respective guild's identifier where the command is.
@@ -1859,7 +1859,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The non_global command what replaced the slash command.
         command_state : ``CommandState``
             The command's command state.
@@ -1899,7 +1899,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The slash command to update the application command to.
         command_state : ``CommandState``
             The command's command state.
@@ -1945,7 +1945,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The slash command to delete.
         command_state : ``CommandState``
             The command's command state.
@@ -1990,7 +1990,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : `None` or ``SlashCommand``
+        command : `None` or ``SlasherApplicationCommand``
             The slash command to create.
         command_state : ``CommandState``
             The command's command state.
@@ -2155,7 +2155,7 @@ class Slasher(EventHandlerBase):
         except KeyError:
             return
         
-        for command in non_global_command_state.get_should_add_slash_commands():
+        for command in non_global_command_state.get_should_add_application_commands():
             if command.get_schema() == application_command:
                 self._register_helper(command, non_global_command_state, guild_id, application_command.id)
                 break
@@ -2176,7 +2176,7 @@ class Slasher(EventHandlerBase):
         except KeyError:
             return
         
-        for command in non_global_command_state.get_should_add_slash_commands():
+        for command in non_global_command_state.get_should_add_application_commands():
             if command.get_schema() == application_command:
                 self._unregister_helper(command, non_global_command_state, guild_id)
                 break

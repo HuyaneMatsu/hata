@@ -138,7 +138,7 @@ painful when reloading global commands, because it would need 1 hour for the cha
 Whether the slasher default exception handler should be used to handle exceptions dropped while handling or running a
 slash or a component command. Defaults to `True`.
 
-The default slasher exception handler forwards `SlashCommandError`-s' prettified error messages. These exceptions
+The default slasher exception handler forwards `SlasherCommandError`-s' prettified error messages. These exceptions
 are raised meanwhile looking up, or validating slash command parameters. If any other exception occurs, it will forward
 a random not related error message, and call `client.events.error`.
 
@@ -1002,6 +1002,31 @@ async def kaboom_mixed(client, event):
     for message in messages:
         await sleep(1.0)
         await client.interaction_followup_message_delete(event, message)
+```
+
+## Context commands
+
+Context commands can be defined by passing the `target` parameter when registering a command with the `.interactions`
+decorator. The `target` parameter can be given either as `'user'` or `'message'`.
+
+> `'chat'` target works as well, but that refers to regular slash commands and will ot make any difference.
+
+```py
+@Nitori.interactions(is_global=True, target='user')
+async def about(target):
+    avatar_url = target.avatar_url_as(size=4096)
+    return Embed(f'{target.full_name}\'s avatar', url=avatar_url).add_image(avatar_url)
+```
+
+Context commands support only one additional parameter which is'nt client and event, the context's target.
+when defining a command, the first parameter which is'nt client or event, will be marked as the target parameter.
+Defining any other parameter will yield error, since context commands do not support any Discord side parameters.
+Sub commands are also not supported.
+
+```py
+@Nitori.interactions(is_global=True, target='message')
+async def length(target):
+    return len(target)
 ```
 
 ## FAQ

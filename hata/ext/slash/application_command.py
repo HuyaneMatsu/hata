@@ -1,4 +1,4 @@
-__all__ = ('SlashCommand', )
+__all__ = ('SlasherApplicationCommand', )
 
 from ...backend.utils import WeakReferer
 from ...backend.export import export
@@ -15,15 +15,15 @@ from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIO
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, \
     APPLICATION_COMMAND_NAME_LENGTH_MAX
-    
+
 
 from .responding import process_command_coroutine
 from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
-from .wrappers import SlashCommandWrapper, get_parameter_configurers
+from .wrappers import SlasherCommandWrapper, get_parameter_configurers
 from .converters import get_slash_command_parameter_converters, InternalParameterConverter, \
     get_context_command_parameter_converters
-from .exceptions import SlashCommandParameterConversionError
+from .exceptions import SlasherApplicationCommandParameterConversionError
 
 # Routers
 
@@ -413,13 +413,13 @@ def _generate_description_from(command, name, description):
 
 
 @export
-class SlashCommand:
+class SlasherApplicationCommand:
     """
     Class to wrap an application command providing interface for ``Slasher``.
     
     Attributes
     ----------
-    _command : `None` or ``SlashCommandFunction``
+    _command : `None` or ``SlasherApplicationCommandFunction``
         The command of the slash command.
     _permission_overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
         Permission overwrites applied to the slash command.
@@ -445,7 +445,7 @@ class SlashCommand:
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    _sub_commands: `None` or `dict` of (`str`, ``SlashCommandFunction`` or ``SlashSubCommand``) items
+    _sub_commands: `None` or `dict` of (`str`, ``SlasherApplicationCommandFunction`` or ``SlashSubCommand``) items
         Sub-commands of the slash command.
         
         Mutually exclusive with the ``._command`` parameter.
@@ -470,7 +470,7 @@ class SlashCommand:
     
     Notes
     -----
-    ``SlashCommand`` instances are weakreferable.
+    ``SlasherApplicationCommand`` instances are weakreferable.
     """
     __slots__ = ('__weakref__', '_command', '_permission_overwrites', '_registered_application_command_ids', '_schema',
         '_sub_commands', '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default',
@@ -478,7 +478,7 @@ class SlashCommand:
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
-        Registers an application command's identifier to the ``SlashCommand`.
+        Registers an application command's identifier to the ``SlasherApplicationCommand`.
         
         Parameters
         ----------
@@ -495,7 +495,7 @@ class SlashCommand:
     
     def _unregister_guild_and_application_command_id(self, guild_id, application_command_id):
         """
-        Unregisters an application command's identifier from the ``SlashCommand`.
+        Unregisters an application command's identifier from the ``SlasherApplicationCommand`.
         
         Parameters
         ----------
@@ -611,7 +611,7 @@ class SlashCommand:
     @classmethod
     def from_class(cls, klass):
         """
-        Creates a new ``SlashCommand`` instance from the given `klass`.
+        Creates a new ``SlasherApplicationCommand`` instance from the given `klass`.
         
         Parameters
         ----------
@@ -620,7 +620,7 @@ class SlashCommand:
         
         Returns
         -------
-        self : ``SlashCommand`` or ``Router``
+        self : ``SlasherApplicationCommand`` or ``Router``
         
         Raises
         ------
@@ -635,7 +635,7 @@ class SlashCommand:
     def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
             guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None):
         """
-        Creates a new ``SlashCommand`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommand`` instance with the given parameters.
         
         Parameters
         ----------
@@ -666,7 +666,7 @@ class SlashCommand:
         
         Returns
         -------
-        self : ``SlashCommand`` or ``Router``
+        self : ``SlasherApplicationCommand`` or ``Router``
         
         Raises
         ------
@@ -710,7 +710,7 @@ class SlashCommand:
             - For context commands `command` parameter is required (cannot be `None`).
         
         """
-        if (func is not None) and isinstance(func, SlashCommandWrapper):
+        if (func is not None) and isinstance(func, SlasherCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:
             command = func
@@ -796,8 +796,8 @@ class SlashCommand:
                     command_function = None
                     sub_commands = {}
                 else:
-                    command_function = SlashCommandFunction(command, parameter_converters, name, description,
-                        show_for_invoking_user_only, is_default)
+                    command_function = SlasherApplicationCommandFunction(command, parameter_converters, name,
+                        description, show_for_invoking_user_only, is_default)
                     sub_commands = None
                 
                 self = object.__new__(cls)
@@ -831,7 +831,7 @@ class SlashCommand:
                 sub_commands = {}
                 command_function = None
             else:
-                command_function = SlashCommandFunction(command, parameter_converters, name, description,
+                command_function = SlasherApplicationCommandFunction(command, parameter_converters, name, description,
                     show_for_invoking_user_only, is_default)
                 sub_commands = None
             
@@ -914,7 +914,7 @@ class SlashCommand:
         
         Raises
         ------
-        SlashCommandParameterConversionError
+        SlasherApplicationCommandParameterConversionError
             Command parameter conversion failed.
         """
         options = interaction_event.interaction.options
@@ -932,7 +932,7 @@ class SlashCommand:
         try:
             sub_command = self._sub_commands[option.name]
         except KeyError:
-            raise SlashCommandParameterConversionError(
+            raise SlasherApplicationCommandParameterConversionError(
                 None,
                 option.name,
                 'sub-command',
@@ -989,13 +989,13 @@ class SlashCommand:
         
         Returns
         -------
-        new : ``SlashCommandFunction`` or ``SlashCommandCategory``
+        new : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
         """
         command = self._command
         if command is not None:
             return command
         
-        return SlashCommandCategory(self)
+        return SlasherApplicationCommandCategory(self)
     
     
     def copy(self):
@@ -1033,7 +1033,7 @@ class SlashCommand:
         if (sub_commands is not None):
             parent_reference = None
             for sub_command in sub_commands.values():
-                if isinstance(sub_command, SlashCommandCategory):
+                if isinstance(sub_command, SlasherApplicationCommandCategory):
                     if parent_reference is None:
                         parent_reference = WeakReferer(new)
                     sub_command._parent_reference = parent_reference
@@ -1063,7 +1063,7 @@ class SlashCommand:
         Raises
         ------
         RuntimeError
-            The ``SlashCommand`` is not a category.
+            The ``SlasherApplicationCommand`` is not a category.
         """
         if self._command is not None:
             raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
@@ -1080,13 +1080,13 @@ class SlashCommand:
         func : `async-callable`
             The function used as the command when using the respective slash command.
         *args : Positional Parameters
-            Positional parameters to pass to ``SlashCommand``'s constructor.
+            Positional parameters to pass to ``SlasherApplicationCommand``'s constructor.
         **kwargs : Keyword parameters
-            Keyword parameters to pass to the ``SlashCommand``'s constructor.
+            Keyword parameters to pass to the ``SlasherApplicationCommand``'s constructor.
         
         Returns
         -------
-        self : ``SlashCommand``
+        self : ``SlasherApplicationCommand``
         
         Raises
         ------
@@ -1095,8 +1095,8 @@ class SlashCommand:
         ValueError
             If Any parameter's value is incorrect.
         RuntimeError
-            - The ``SlashCommand`` is not a category.
-            - The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlasherApplicationCommand`` is not a category.
+            - The ``SlasherApplicationCommand`` reached the maximal amount of children.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         if self._command is not None:
@@ -1106,7 +1106,7 @@ class SlashCommand:
             func = func[0]
         
         if isinstance(func, type(self)):
-            self._add_slash_command(func)
+            self._add_application_command(func)
             return self
         
         command = type(self)(func, *args, **kwargs)
@@ -1114,7 +1114,7 @@ class SlashCommand:
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_slash_command(command)
+        self._add_application_command(command)
         return self
     
     
@@ -1129,7 +1129,7 @@ class SlashCommand:
         
         Returns
         -------
-        self : ``SlashCommand``
+        self : ``SlasherApplicationCommand``
          
         Raises
         ------
@@ -1138,8 +1138,8 @@ class SlashCommand:
         ValueError
             If Any attribute's value is incorrect.
         RuntimeError
-            - The ``SlashCommand`` is not a category.
-            - The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlasherApplicationCommand`` is not a category.
+            - The ``SlasherApplicationCommand`` reached the maximal amount of children.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         command = type(self).from_class(klass)
@@ -1147,23 +1147,23 @@ class SlashCommand:
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_slash_command(command)
+        self._add_application_command(command)
         return self
     
     
-    def _add_slash_command(self, command):
+    def _add_application_command(self, command):
         """
         Adds a sub-command or sub-category to the slash command.
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The slash command to add.
         
         Raises
         ------
         RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlasherApplicationCommand`` reached the maximal amount of children.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         sub_commands = self._sub_commands
@@ -1314,7 +1314,7 @@ class SlashCommand:
         return permission_sync_ids
 
 
-class SlashCommandFunction:
+class SlasherApplicationCommandFunction:
     """
     Represents an application command's backend implementation.
     
@@ -1338,7 +1338,7 @@ class SlashCommandFunction:
     
     def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
-        Creates a new ``SlashCommandFunction`` instance with the given parameters-
+        Creates a new ``SlasherApplicationCommandFunction`` instance with the given parameters-
         
         Parameters
         ----------
@@ -1382,7 +1382,7 @@ class SlashCommandFunction:
         
         Raises
         ------
-        SlashCommandParameterConversionError
+        SlasherApplicationCommandParameterConversionError
             Exception occurred meanwhile parsing parameter.
         """
         parameters = []
@@ -1450,7 +1450,7 @@ class SlashCommandFunction:
         
         Returns
         -------
-        self : ``SlashCommandFunction``
+        self : ``SlasherApplicationCommandFunction``
         """
         return self
     
@@ -1481,15 +1481,15 @@ class SlashCommandFunction:
         return True
 
 
-class SlashCommandCategory:
+class SlasherApplicationCommandCategory:
     """
     Represents an application command's backend implementation.
     
     Attributes
     ----------
-    _sub_commands : `dict` of (`str`, ``SlashCommandFunction``) items
+    _sub_commands : `dict` of (`str`, ``SlasherApplicationCommandFunction``) items
         The sub-commands of the category.
-    _parent_reference : `None` or ``WeakReferer`` to ``SlashCommand
+    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand
         The parent slash command of the category if any.
     description : `str`
         The slash command's description.
@@ -1500,21 +1500,21 @@ class SlashCommandCategory:
     """
     __slots__ = ('_sub_commands', '_parent_reference', 'description', 'is_default', 'name')
     
-    def __new__(cls, slash_command):
+    def __new__(cls, slasher_application_command):
         """
-        Creates a new ``SlashCommandCategory`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommandCategory`` instance with the given parameters.
         
         Parameters
         ----------
-        slash_command : ``SlashCommand``
+        slasher_application_command : ``SlasherApplicationCommand``
             The parent slash command.
         """
         self = object.__new__(cls)
-        self.name = slash_command.name
-        self.description = slash_command.description
+        self.name = slasher_application_command.name
+        self.description = slasher_application_command.description
         self._sub_commands = {}
-        self._parent_reference = WeakReferer(slash_command)
-        self.is_default = slash_command.is_default
+        self._parent_reference = WeakReferer(slasher_application_command)
+        self.is_default = slasher_application_command.is_default
         return self
     
     
@@ -1535,7 +1535,7 @@ class SlashCommandCategory:
         
         Raises
         ------
-        SlashCommandParameterConversionError
+        SlasherApplicationCommandParameterConversionError
             Exception occurred meanwhile parsing parameter.
         """
         if (options is None) or len(options) != 1:
@@ -1546,7 +1546,7 @@ class SlashCommandCategory:
         try:
             sub_command = self._sub_commands[option.name]
         except KeyError:
-            raise SlashCommandParameterConversionError(
+            raise SlasherApplicationCommandParameterConversionError(
                 None,
                 option.name,
                 'sub-command',
@@ -1580,7 +1580,7 @@ class SlashCommandCategory:
         
         Returns
         -------
-        new : ``SlashCommandCategory``
+        new : ``SlasherApplicationCommandCategory``
         """
         sub_commands = {category_name: category.copy() for category_name, category in self._sub_commands.items()}
         
@@ -1613,13 +1613,13 @@ class SlashCommandCategory:
         func : `async-callable`
             The function used as the command when using the respective slash command.
         *args : Positional Parameters
-            Positional parameters to pass to ``SlashCommand``'s constructor.
+            Positional parameters to pass to ``SlasherApplicationCommand``'s constructor.
         **kwargs : Keyword parameters
-            Keyword parameters to pass to the ``SlashCommand``'s constructor.
+            Keyword parameters to pass to the ``SlasherApplicationCommand``'s constructor.
         
         Returns
         -------
-        self : ``SlashCommandCategory``
+        self : ``SlasherApplicationCommandCategory``
         
         Raises
         ------
@@ -1628,22 +1628,22 @@ class SlashCommandCategory:
         ValueError
             If Any parameter's value is incorrect.
         RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlasherApplicationCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         if isinstance(func, Router):
             func = func[0]
         
-        if isinstance(func, SlashCommand):
-            self._add_slash_command(func)
+        if isinstance(func, SlasherApplicationCommand):
+            self._add_application_command(func)
             return self
         
-        command = SlashCommand(func, *args, **kwargs)
+        command = SlasherApplicationCommand(func, *args, **kwargs)
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_slash_command(command)
+        self._add_application_command(command)
         return self
     
     
@@ -1658,7 +1658,7 @@ class SlashCommandCategory:
         
         Returns
         -------
-        self : ``SlashCommandCategory``
+        self : ``SlasherApplicationCommandCategory``
          
         Raises
         ------
@@ -1667,33 +1667,33 @@ class SlashCommandCategory:
         ValueError
             If Any attribute's value is incorrect.
         RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlasherApplicationCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
-        command = create_event_from_class(SlashCommand, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
+        command = create_event_from_class(SlasherApplicationCommand, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
             SLASH_COMMAND_COMMAND_NAME)
         
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_slash_command(command)
+        self._add_application_command(command)
         return self
     
     
-    def _add_slash_command(self, command):
+    def _add_application_command(self, command):
         """
         Adds a sub-command or sub-category to the slash command.
         
         Parameters
         ----------
-        command : ``SlashCommand``
+        command : ``SlasherApplicationCommand``
             The slash command to add.
         
         Raises
         ------
         RuntimeError
-            - The ``SlashCommand`` reached the maximal amount of children.
+            - The ``SlasherApplicationCommand`` reached the maximal amount of children.
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """

@@ -5,7 +5,7 @@ import math
 from ...backend.utils import copy_docs
 from ...discord.utils import sanitize_content
 
-from .exceptions import SlashCommandError
+from .exceptions import SlasherCommandError
 
 LIMIT_LEFT_SHIFT_MAX = 64*8
 LIMIT_RIGHT_SHIFT_MIN = -64*8
@@ -1997,7 +1997,7 @@ JUST_PARSE = ParserAny([
 ])
 
 
-class EvaluationError(SlashCommandError):
+class EvaluationError(SlasherCommandError):
     """
     Exception raised in any parsing related issue.
     
@@ -2071,7 +2071,7 @@ class EvaluationError(SlashCommandError):
         return repr_
     
     @property
-    @copy_docs(SlashCommandError.pretty_repr)
+    @copy_docs(SlasherCommandError.pretty_repr)
     def pretty_repr(self):
         pretty_repr = self._pretty_repr
         if pretty_repr is None:

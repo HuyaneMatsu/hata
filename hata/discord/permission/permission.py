@@ -159,8 +159,8 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
             FutureWarning)
         
         return self.can_manage_emojis_and_stickers
-
-
+    
+    
     @property
     def allow_manage_emojis(self):
         """

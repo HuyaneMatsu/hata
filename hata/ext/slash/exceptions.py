@@ -1,4 +1,4 @@
-__all__ = ('SlashCommandError', 'SlashCommandParameterConversionError')
+__all__ = ('SlasherCommandError', 'SlasherApplicationCommandParameterConversionError')
 
 from random import choice
 
@@ -9,9 +9,9 @@ from ...backend.analyzer import CallableAnalyzer
 from ...discord.interaction import InteractionType
 from ...discord.exceptions import DiscordException, ERROR_CODES
 
-SlashCommand = include('SlashCommand')
+SlasherApplicationCommand = include('SlasherApplicationCommand')
 
-class SlashCommandError(Exception):
+class SlasherCommandError(Exception):
     """
     Base class for slash command internal errors.
     """
@@ -28,7 +28,7 @@ class SlashCommandError(Exception):
         """
         return ''
 
-class SlashCommandParameterConversionError(SlashCommandError):
+class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
     """
     Exception raised when a command's parameter's parsing fails.
     
@@ -49,7 +49,7 @@ class SlashCommandParameterConversionError(SlashCommandError):
     """
     def __init__(self, parameter_name, received_value, excepted_type, expected_values):
         """
-        Creates a new ``SlashCommandParameterConversionError`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommandParameterConversionError`` instance with the given parameters.
         
         Parameters
         ----------
@@ -139,7 +139,7 @@ class SlashCommandParameterConversionError(SlashCommandError):
     
     
     @property
-    @copy_docs(SlashCommandError.pretty_repr)
+    @copy_docs(SlasherCommandError.pretty_repr)
     def pretty_repr(self):
         pretty_repr = self._pretty_repr
         if pretty_repr is None:
@@ -235,7 +235,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         The respective client.
     interaction_event : ``InteractionEvent``
         The received interaction event.
-    command : ``SlashCommand`` or ``ComponentCommand``
+    command : ``SlasherApplicationCommand`` or ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
@@ -245,7 +245,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     handled : `bool`
         Whether the error handler handled the exception.
     """
-    if isinstance(exception, SlashCommandError):
+    if isinstance(exception, SlasherCommandError):
         forward = exception.pretty_repr
         render = False
     elif isinstance(exception, DiscordException) and (exception.status == 500):
@@ -260,7 +260,8 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     
     if (forward is not None):
         try:
-            await client.interaction_response_message_create(interaction_event, forward, show_for_invoking_user_only=True)
+            await client.interaction_response_message_create(interaction_event, forward,
+                show_for_invoking_user_only=True)
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 pass
@@ -272,11 +273,11 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
                 raise
     
     if render:
-        await _render_slash_command_exception(client, command, exception)
+        await _render_application_command_exception(client, command, exception)
     
     return True
 
-async def _render_slash_command_exception(client, command, exception):
+async def _render_application_command_exception(client, command, exception):
     """
     Renders interaction command exception.
     
@@ -284,12 +285,12 @@ async def _render_slash_command_exception(client, command, exception):
     ----------
     client : ``Client``
         The respective client.
-    command : ``SlashCommand`` or ``ComponentCommand``
+    command : ``SlasherApplicationCommand`` or ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
     """
-    if isinstance(command, SlashCommand):
+    if isinstance(command, SlasherApplicationCommand):
         command_name = command.name
     else:
         command_name = command.__class__.__name__
@@ -311,7 +312,7 @@ async def handle_command_exception(exception_handlers, client, interaction_event
         The respective client.
     interaction_event : ``InteractionEvent``
         The received interaction event.
-    command : ``SlashCommand`` or ``ComponentCommand``
+    command : ``SlasherApplicationCommand`` or ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
@@ -327,8 +328,8 @@ async def handle_command_exception(exception_handlers, client, interaction_event
             if handled:
                 return
     
-    if not isinstance(exception, SlashCommandError):
-        await _render_slash_command_exception(client, command, exception)
+    if not isinstance(exception, SlasherCommandError):
+        await _render_application_command_exception(client, command, exception)
 
 
 def test_exception_handler(exception_handler):
@@ -349,7 +350,7 @@ def test_exception_handler(exception_handler):
         +-------------------+-------------------------------------------+
         | interaction_event | ``InteractionEvent``                      |
         +-------------------+-------------------------------------------+
-        | command           | ``SlashCommand``, ``ComponentCommand``    |
+        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``    |
         +-------------------+-------------------------------------------+
         | exception         | `BaseException`                           |
         +-------------------+-------------------------------------------+

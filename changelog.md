@@ -1,3 +1,23 @@
+## 1.1.95 *\[2021-08-??\]*
+
+#### Renames, Deprecation & Removals
+
+##### ext.slash
+- Rename `SlashCommand` to `SlasherApplicationCommand`.
+- Rename `SlashCommandParameterConversionError` to `SlasherApplicationCommandParameterConversionError`
+- Rename `SlashCommandWrapper` to `SlasherCommandWrapper`.
+- Rename `SlashCommandError` to `SlasherCommandError`.
+- Rename `SlashCommandPermissionOverwriteWrapper` to `SlasherApplicationCommandPermissionOverwriteWrapper`.
+- Rename `SlashCommandParameterConfigurerWrapper` to `SlasherApplicationCommandParameterConfigurerWrapper`.
+- Rename `SlashCommandCategory` to `SlasherApplicationCommandCategory`.
+- Rename `SlashCommandFunction` to `SlasherApplicationCommandFunction`.
+- Rename `SlashCommand` to `SlasherApplicationCommand`.
+- Rename `._add_slash_command` to `._add_application_command`.
+- Rename `._remove_slash_command` to `._remove_application_command`.
+- Rename `.get_should_remove_slash_commands` to `get_should_remove_application_commands`.
+- Rename `._register_slash_command` to `._register_application_command`.
+- Rename `._unregister_slash_command` to `._unregister_application_command`.
+
 ## 1.1.94 *\[2021-08-11\]*
 
 ### Summary
@@ -107,16 +127,17 @@ Make multiple entities to weakly bound to other ones.
 - Add `target` parameter for context commands.
 
 #### Bug Fixes
-- Fix `AttributeError` in `SlashCommandParameterConfigurerWrapper`.
-
-#### Bug Fixes
 
 - Fix an `AttributeError` in `Guild._delete`.
 - `ChannelThread.__new__` was not setting `owner_id`.
 - Deleted roles could not resolve removing their references correctly.
 - `ApplicationCommandPermissionOverwrite.target` could raise `NameError`.
 
+##### ext.slash
+- Fix `AttributeError` in `SlashCommandParameterConfigurerWrapper`.
+
 #### Renames, Deprecation & Removals
+
 - Deprecate `id_to_time`.
 - Rename `parse_time` to `timestamp_to_datetime`
 - Deprecate `time_to_id`.

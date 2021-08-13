@@ -9,7 +9,7 @@ except ImportError:
 
 from ...discord.interaction.components import COMPONENT_CUSTOM_ID_LENGTH_MAX
 from ...discord.events.handling_helpers import route_value, Router, create_event_from_class
-from .wrappers import SlashCommandWrapper
+from .wrappers import SlasherCommandWrapper
 from .utils import _check_maybe_route
 from .converters import get_component_command_parameter_converters, RegexMatcher, \
     check_component_converters_satisfy_string, check_component_converters_satisfy_regex
@@ -224,7 +224,7 @@ class ComponentCommand:
             - If no `custom_id` was received.
             - If `custom_id` contains incorrect value.
         """
-        if (func is not None) and isinstance(func, SlashCommandWrapper):
+        if (func is not None) and isinstance(func, SlasherCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:
             command = func

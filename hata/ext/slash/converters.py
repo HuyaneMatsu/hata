@@ -17,7 +17,7 @@ from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIO
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
 
 from .utils import raw_name_to_display, normalize_description
-from .exceptions import SlashCommandParameterConversionError
+from .exceptions import SlasherApplicationCommandParameterConversionError
 from .expression_parser import evaluate_text
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
@@ -1302,7 +1302,7 @@ class ParameterConverter:
         
         Raises
         ------
-        SlashCommandParameterConversionError
+        SlasherApplicationCommandParameterConversionError
             The parameter cannot be parsed.
         """
         pass
@@ -1512,7 +1512,7 @@ class SashCommandParameterConverter(ParameterConverter):
             if (converted_value is not None) and ((choices is None) or (converted_value in choices)):
                 return converted_value
         
-        raise SlashCommandParameterConversionError(
+        raise SlasherApplicationCommandParameterConversionError(
             self.name,
             value,
             ANNOTATION_TYPE_TO_REPRESENTATION.get(self.type, '???'),
@@ -1567,7 +1567,7 @@ def create_parameter_converter(parameter, parameter_configurer):
     ----------
     parameter : ``Parameter``
         The parameter to create converter from.
-    parameter_configurer : `None` or ``SlashCommandParameterConfigurerWrapper``
+    parameter_configurer : `None` or ``SlasherApplicationCommandParameterConfigurerWrapper``
         Parameter configurer for the parameter if any.
     
     Returns
@@ -1735,8 +1735,8 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     Parameters
     ----------
     func : `async-callable`
-        The function used by a ``SlashCommand``.
-    parameter_configurers : `None` or `dict` of (`str`, ``SlashCommandParameterConfigurerWrapper``) items
+        The function used by a ``SlasherApplicationCommand``.
+    parameter_configurers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
         Parameter configurers to overwrite annotations.
     
     Returns
@@ -1861,7 +1861,7 @@ def get_context_command_parameter_converters(func):
     Parameters
     ----------
     func : `async-callable`
-        The function used by a ``SlashCommand``.
+        The function used by a ``SlasherApplicationCommand``.
     
     Returns
     -------

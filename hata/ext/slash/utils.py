@@ -64,7 +64,7 @@ def normalize_description(description):
 
 def _check_maybe_route(variable_name, variable_value, route_to, validator):
     """
-    Helper class of ``SlashCommand`` parameter routing.
+    Helper class of ``SlasherApplicationCommand`` parameter routing.
     
     Parameters
     ----------

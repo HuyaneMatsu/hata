@@ -1,6 +1,7 @@
 """
 Hata extensions for supporting interactions.
 """
+from .application_command import *
 from .components import *
 from .component_command import *
 from .converters import *
@@ -8,7 +9,6 @@ from .event_handlers import *
 from .exceptions import *
 from .expression_parser import *
 from .responding import *
-from .slash_command import *
 from .slasher import *
 from .utils import *
 from .waiters import *
@@ -18,6 +18,7 @@ __all__ = (
     'configure_parameter',
     'set_permission',
     'setup_ext_slash',
+    *application_command.__all__,
     *components.__all__,
     *component_command.__all__,
     *converters.__all__,
@@ -25,7 +26,6 @@ __all__ = (
     *exceptions.__all__,
     *expression_parser.__all__,
     *responding.__all__,
-    *slash_command.__all__,
     *slasher.__all__,
     *utils.__all__,
     *waiters.__all__,
@@ -38,8 +38,8 @@ from .event_handlers import _do_initial_sync, _application_command_create_watche
     _application_command_delete_watcher, _application_command_permission_update_watcher
 from .client_wrapper_extension import *
 
-set_permission = SlashCommandPermissionOverwriteWrapper
-configure_parameter = SlashCommandParameterConfigurerWrapper
+set_permission = SlasherApplicationCommandPermissionOverwriteWrapper
+configure_parameter = SlasherApplicationCommandParameterConfigurerWrapper
 
 
 def setup_ext_slash(client, **kwargs):

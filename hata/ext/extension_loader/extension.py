@@ -9,6 +9,7 @@ from ...backend.export import include
 
 from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snapshot
 from .utils import _validate_entry_or_exit, PROTECTED_NAMES
+from .exceptions import DoNotLoadExtension
 
 EXTENSION_LOADER = include('EXTENSION_LOADER')
 
@@ -17,11 +18,13 @@ EXTENSIONS = WeakValueDictionary()
 EXTENSION_STATE_UNDEFINED = 0
 EXTENSION_STATE_LOADED = 1
 EXTENSION_STATE_UNLOADED = 2
+EXTENSION_STATE_UNSATISFIED = 3
 
 EXTENSION_STATE_VALUE_TO_NAME = {
     EXTENSION_STATE_UNDEFINED: 'undefined',
     EXTENSION_STATE_LOADED: 'loaded',
     EXTENSION_STATE_UNLOADED: 'unloaded',
+    EXTENSION_STATE_UNSATISFIED: 'unsatisfied',
 }
 
 class Extension:
@@ -51,15 +54,17 @@ class Extension:
         The module specification for the extension's module's import system related state.
     _state : `int`
         The state of the extension. Can be:
-        +---------------------------+-------+
-        | Respective name           | Value |
-        +===========================+=======+
-        | EXTENSION_STATE_UNDEFINED | 0     |
-        +---------------------------+-------+
-        | EXTENSION_STATE_LOADED    | 1     |
-        +---------------------------+-------+
-        | EXTENSION_STATE_UNLOADED  | 2     |
-        +---------------------------+-------+
+        +-------------------------------+-------+
+        | Respective name               | Value |
+        +===============================+=======+
+        | EXTENSION_STATE_UNDEFINED     | 0     |
+        +-------------------------------+-------+
+        | EXTENSION_STATE_LOADED        | 1     |
+        +-------------------------------+-------+
+        | EXTENSION_STATE_UNLOADED      | 2     |
+        +-------------------------------+-------+
+        | EXTENSION_STATE_UNSATISFIED   | 3     |
+        +-------------------------------+-------+
     _take_snapshot : `bool`
         Whether snapshot difference should be taken.
     """
@@ -353,24 +358,40 @@ class Extension:
                 if self._take_snapshot:
                     snapshot_old = take_snapshot()
                 
-                spec.loader.exec_module(lib)
+                try:
+                    spec.loader.exec_module(lib)
+                except DoNotLoadExtension:
+                    loaded = False
+                else:
+                    loaded = True
+                
                 sys.modules[spec.name] = lib
             
-                if self._take_snapshot:
-                    snapshot_new = take_snapshot()
-                    
-                    self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+                if loaded:
+                    if self._take_snapshot:
+                        snapshot_new = take_snapshot()
+                        
+                        self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+            
+            else:
+                loaded = True
             
             self._lib = lib
             
-            self._state = EXTENSION_STATE_LOADED
+            if loaded:
+                state = EXTENSION_STATE_LOADED
+            else:
+                state = EXTENSION_STATE_UNSATISFIED
+                lib = None
+            
+            self._state = state
             return lib
         
         if state == EXTENSION_STATE_LOADED:
             # return None -> already loaded
             return None
         
-        if state == EXTENSION_STATE_UNLOADED:
+        if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
             # reload
             lib = self._lib
             
@@ -389,16 +410,30 @@ class Extension:
             if self._take_snapshot:
                 snapshot_old = take_snapshot()
             
-            reload_module(lib)
+            try:
+                reload_module(lib)
+            except DoNotLoadExtension:
+                loaded = False
+            else:
+                loaded = True
             
-            if self._take_snapshot:
-                snapshot_new = take_snapshot()
-                
-                self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+            if loaded:
+                if self._take_snapshot:
+                    snapshot_new = take_snapshot()
+                    
+                    self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
             
-            self._state = EXTENSION_STATE_LOADED
+            if loaded:
+                state = EXTENSION_STATE_LOADED
+            else:
+                state = EXTENSION_STATE_UNSATISFIED
+                lib = None
+            
+            self._state = state
+            
             return lib
         
+        return None, False
         # no more cases
     
     def _unload(self):
@@ -423,7 +458,7 @@ class Extension:
             self._state = EXTENSION_STATE_UNLOADED
             return self._lib
         
-        if state == EXTENSION_STATE_UNLOADED:
+        if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
             return None
         
         # no more cases
@@ -475,7 +510,6 @@ class Extension:
         return short_name
     
     
-    @property
     def is_loaded(self):
         """
         Returns whether the extension is loaded.
@@ -485,6 +519,17 @@ class Extension:
         is_loaded : `bool`
         """
         return (self._state == EXTENSION_STATE_LOADED)
+    
+   
+    def is_unsatisfied(self):
+        """
+        Returns whether the extension is unsatisfied.
+        
+        Returns
+        -------
+        is_unsatisfied : `bool`
+        """
+        return (self._state == EXTENSION_STATE_UNSATISFIED)
     
     
     def _unlink(self):
@@ -513,11 +558,17 @@ class Extension:
                 for name in default_variables:
                     delattr(lib, name)
             
-            del sys.modules[self._spec.name]
+            try:
+                del sys.modules[self._spec.name]
+            except KeyError:
+                pass
             return
         
-        if state == EXTENSION_STATE_UNLOADED:
-            del sys.modules[self._spec.name]
+        if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
+            try:
+                del sys.modules[self._spec.name]
+            except KeyError:
+                pass
             return
         
         # no more cases

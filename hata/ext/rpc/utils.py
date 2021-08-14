@@ -1,7 +1,7 @@
 __all__ = ()
 
 from sys import platform as PLATFORM
-from os.path import join as join_path
+from os.path import join as join_paths
 from os import listdir as list_directory, environ as ENVIRONMENTAL_VARIABLES
 from tempfile import gettempdir as get_temporary_directory
 
@@ -28,11 +28,11 @@ if PLATFORM in ('linux', 'darwin'):
             if path is None:
                 full_path = TEMPORARY_DIRECTORY
             else:
-                full_path = join_path(TEMPORARY_DIRECTORY)
+                full_path = join_paths(TEMPORARY_DIRECTORY)
             
             for node_name in list_directory(full_path):
                 if node_name.startswith(ipc):
-                    return join_path(full_path, node_name)
+                    return join_paths(full_path, node_name)
         
         return None
 
@@ -44,7 +44,7 @@ elif PLATFORM == 'win32':
         
         for node_name in list_directory(TEMPORARY_DIRECTORY):
             if node_name.startswith(ipc):
-                return join_path(TEMPORARY_DIRECTORY, node_name)
+                return join_paths(TEMPORARY_DIRECTORY, node_name)
         
         return None
 

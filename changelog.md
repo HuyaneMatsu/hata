@@ -1,5 +1,13 @@
 ## 1.1.95 *\[2021-08-??\]*
 
+#### Improvements
+
+##### ext.extension_loaded
+- `Extension.is_loaded` is a method now (from property).
+- Add `Extension.is_unsatisfied`.
+- Add `require`.
+
+
 #### Renames, Deprecation & Removals
 
 ##### ext.slash

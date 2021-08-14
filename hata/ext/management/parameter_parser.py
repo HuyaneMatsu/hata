@@ -1,5 +1,7 @@
 __all__ = ()
 
+from ...backend.utils import WeakReferer, copy_docs
+
 TYPE_IDENTIFIER_STR = 1
 TYPE_IDENTIFIER_INT = 2
 TYPE_IDENTIFIER_FLOAT = 3
@@ -284,34 +286,6 @@ def validate_command_line_parameter_modifier(modifier):
     return modifier
 
 
-def validate_command_line_parameter_keyword_only(keyword_only):
-    """
-    Validates ``CommandLineParameter``'s `keyword_only` parameter.
-    
-    Parameters
-    ----------
-    keyword_only : `bool`
-        Multi parameters to validate.
-    
-    Returns
-    -------
-    keyword_only : `bool`
-        Validated multi parameter.
-    
-    Raises
-    ------
-    TypeError
-        If `keyword_only` is not `bool` instance.
-    """
-    if type(keyword_only) is bool:
-        pass
-    elif isinstance(keyword_only, bool):
-        keyword_only = bool(keyword_only)
-    else:
-        raise TypeError(f'`multi` can be `bool` instance, got {keyword_only.__class__.__name__}.')
-    
-    return keyword_only
-
 
 class CommandLineParameter:
     """
@@ -329,8 +303,6 @@ class CommandLineParameter:
         Whether the parameter is a modifier.
     keyword : `None` or `bool`
         Keyword to pass the parameter.
-    keyword_only : `bool`
-        Whether the parameter is keyword only.
     multi : `bool`
         Whether the parameter accepts multiple values.
     name : `str`
@@ -339,8 +311,7 @@ class CommandLineParameter:
     __slots__ = ('default_value', 'expected_type_identifier', 'has_default', 'modifier', 'keyword', 'keyword_only',
         'multi', 'name')
     
-    def __new__(cls, name, *, default=DEFAULT_DEFAULT_VALUE, keyword=None, keyword_only=False, multi=False,
-            expected_type=None, modifier=False):
+    def __new__(cls, name, *, default=DEFAULT_DEFAULT_VALUE, keyword=None, multi=False, expected_type=None, modifier=False):
         """
         Creates a new ``CommandLineParameter`` instance from the given parameters.
         
@@ -365,9 +336,7 @@ class CommandLineParameter:
             - If `keyword` is neither `None` nor `str` instance.
             - If `multi` is not `bool` instance.
             - If `modifier` is not `bool` instance.
-            - If `keyword_only` is not `bool` instance.
             - `default` and `modifier` parameters are mutually exclusive.
-            - `keyword` parameter is required if `keyword_only` is `True`
             - Keyword parameters must have either `default` or `multi` parameters defined.
         ValueError
             If `expected_type` is correct type, but it's value is incorrect and cannot identifier converter for it.
@@ -378,28 +347,20 @@ class CommandLineParameter:
         multi = validate_command_line_parameter_multi(multi)
         expected_type_identifier = validate_command_line_parameter_expected_type_identifier(expected_type)
         modifier = validate_command_line_parameter_modifier(modifier)
-        keyword_only = validate_command_line_parameter_keyword_only(keyword_only)
         
         if modifier:
             if has_default:
                 raise TypeError(f'`default` and `modifier` parameters are mutually exclusive.')
             
-            keyword_only = False
-        
         else:
-            if keyword_only:
-                if (keyword is None):
-                    raise TypeError(f'`keyword` parameter is required if `keyword_only` is `True`.')
-            
-                if (not has_default) and (not multi):
-                    raise TypeError(f'Keyword parameters must have either `default` or `multi` parameters defined.')
-        
+            if (not has_default) and (not multi):
+                raise TypeError(f'Keyword parameters must have either `default` or `multi` parameters defined.')
+    
         
         self = object.__new__(cls)
         self.name = name
         self.default_value = default_value
         self.keyword = keyword
-        self.keyword_only = keyword_only
         self.multi = multi
         self.expected_type_identifier = expected_type_identifier
         self.has_default = has_default
@@ -433,9 +394,6 @@ class CommandLineParameter:
         if self.modifier:
             repr_parts.append(', modifier=True')
         
-        if self.keyword_only:
-            repr_parts.append(', keyword_only=True')
-        
         repr_parts.append('>')
         return ''.join(repr_parts)
     
@@ -459,28 +417,6 @@ class CommandLineParameter:
         return is_positional_only
     
     
-    def is_positional_or_keyword(self):
-        """
-        Returns whether the command line parameter is a positional or keyword.
-        
-        Returns
-        -------
-        is_positional_or_keyword : `bool`
-        """
-        if self.modifier:
-            is_positional_or_keyword = False
-        else:
-            if self.keyword_only:
-                is_positional_or_keyword = False
-            else:
-                if self.keyword is None:
-                    is_positional_or_keyword = True
-                else:
-                    is_positional_or_keyword = False
-        
-        return is_positional_or_keyword
-    
-    
     def is_keyword_only(self):
         """
         Returns whether the parameter is keyword only.
@@ -492,7 +428,10 @@ class CommandLineParameter:
         if self.modifier:
             is_keyword_only = False
         else:
-            is_keyword_only = self.keyword_only
+            if self.keyword is None:
+                is_keyword_only = False
+            else:
+                is_keyword_only = True
         
         return is_keyword_only
     
@@ -506,6 +445,23 @@ class CommandLineParameter:
         is_modifier : `bool`
         """
         return self.modifier
+    
+    
+    def convert(self, value):
+        """
+        Calls the parameter's converter on the given value.
+        
+        Parameters
+        ----------
+        value : `str`
+            The value to convert.
+        
+        Returns
+        -------
+        value : `Any`
+            The converted value.
+        """
+        return TYPE_IDENTIFIER_TO_CONVERTER[self.expected_type_identifier](value)
 
 
 def normalize_command_name(command_name):
@@ -525,23 +481,43 @@ class CommandLineCommand:
     """
     Attributes
     ----------
-    _command_function : `None` or ``CommandLineCommandFunction``
-        Command to call, if sub command could not be detected.
-    _sub_commands : `None` or `dict` of (`str`, ``CommandLineCommand``) items
-        Sub commands of the command.
+    _command_category : `None` or ``CommandLineCommandCategory``
+        Command category of the command.
+    _self_reference : `None` or ``WeakReferer``
+        Reference to itself.
     help : `str`
         Command help message.
+    name : `str`
+        The command's name.
     """
-    __slots__ = ('_command_function', '_sub_commands', 'help', )
+    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'help', 'name')
     
     def __new__(cls, name, help_):
+        """
+        Creates a new command line command.
+        
+        Parameters
+        ----------
+        name : `str`
+            The command's name.
+        help : `str`
+            The command's help message.
+        """
+        name = normalize_command_name(name)
+        
         self = object.__new__(cls)
-        self._command_function = None
-        self._sub_commands = None
+        self._command_category = None
+        self.name = name
         self.help = None
+        self._self_reference = None
+        
+        self._self_reference = WeakReferer(self)
+        self._command_category = CommandLineCommandCategory(self, '')
+        
         return self
     
-    def register_sub_command(self, name):
+    
+    def register_command_category(self, name):
         """
         Registers a sub command to the command.
         
@@ -552,13 +528,118 @@ class CommandLineCommand:
         
         Returns
         -------
-        sub_command : ``CommandLineSubCommand``
+        sub_command : ``CommandLineCommandCategory``
         """
-        sub_command = CommandLineSubCommand(name)
-        sub_commands = self._sub_commands
+        return self._command_category.register_command_category(self, name)
+    
+    
+    def register_command_function(self, function):
+        """
+        Parameters
+        ----------
+        function : `callable`
+            The function to call when the command is used.
+        
+        Returns
+        -------
+        command_function : ``CommandLineCommandFunction``
+        """
+        return self._command_category.register_command_function(self, function)
+    
+    
+    def __call__(self, parameters, index):
+        """
+        Calls the command line command.
+        
+        Parameters
+        ----------
+        parameters : `list` of `str`
+            Command line parameters.
+        index : `int`
+            The index of the first parameter trying to process.
+        """
+        command_category = self._command_category
+        if (command_category is not None):
+            self._command_category(parameters, index)
+    
+    
+    def _trace_back_name(self):
+        """
+        Traces back to the source name of the command.
+        
+        This method is an iterable coroutine.
+        
+        Yields
+        ------
+        name : `str`
+        """
+        yield self.name
+
+
+class CommandLineCommandCategory:
+    """
+    Command line command category.
+    
+    Attributes
+    ----------
+    _command_categories : `None` or `dict` of (`str`, ``CommandLineCommandCategory``) items
+        Sub commands of the command.
+    _command_function : `None` or ``CommandLineCommandFunction``
+        Command to call, if sub command could not be detected.
+    _parent_reference : `None` or ``WeakReferer``
+        Weakreference to the command category's parent.
+    _self_reference : `None` or ``WeakReferer``
+        Weakreference to the category itself.
+    name : `None` or `str`
+        The sub command category's name.
+    """
+    __slots__ = ('__weakref__', '_command_categories', '_command_function', '_parent_reference', '_self_reference',
+        'name')
+    
+    def __new__(cls, parent, name):
+        """
+        Creates a new command line command category.
+        
+        Parameters
+        ----------
+        parent : ``CommandLineCommand`` or ``CommandLineCommandCategory``
+            The parent command or command category.
+        name : `None` or `str`
+            The command category's name.
+        """
+        if (name is not None):
+            name = normalize_command_name(name)
+        
+        self = object.__new__(cls)
+        self.name = name
+        self._command_function = None
+        self._command_categories = None
+        self._self_reference = None
+        self._parent_reference = parent._self_reference
+        
+        self._self_reference = WeakReferer(self)
+        
+        return self
+    
+    
+    def register_command_category(self, name):
+        """
+        Registers a sub command to the command.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the sub-command.
+        
+        Returns
+        -------
+        sub_command : ``CommandLineCommandCategory``
+        """
+        sub_command = CommandLineCommandCategory(self, name)
+        sub_commands = self._command_categories
         if (sub_commands is None):
             sub_commands = {}
-            self._sub_commands = sub_commands
+            self._command_categories = sub_commands
         
         sub_commands[sub_command.name] = sub_command
         return sub_command
@@ -575,27 +656,59 @@ class CommandLineCommand:
         -------
         command_function : CommandLineCommandFunction
         """
-        command_function = CommandLineCommandFunction(function)
+        command_function = CommandLineCommandFunction(self, function)
         self._command_function = command_function
         return command_function
-
-
-class CommandLineSubCommand:
-    """
-    Command line command category.
     
-    Parameters
-    ----------
-    name : `str`
-        The sub command category's name.
-    """
-    __slots__ = ('name',)
-    def __new__(cls, name):
-        name = normalize_command_name(name)
+    
+    @copy_docs(CommandLineCommand._trace_back_name)
+    def _trace_back_name(self):
+        parent_reference = self._parent_reference
+        if (parent_reference is not None):
+            parent = parent_reference()
+            if (parent is not None):
+                yield from parent._trace_back_name()
         
-        self = object.__new__(cls)
-        self.name = name
-        self.
+        name = self.name
+        if (name is not None):
+            yield name
+    
+    
+    def __call__(self, parameters, index):
+        """
+        Calls the command line command category.
+        
+        Parameters
+        ----------
+        parameters : `list` of `str`
+            Command line parameters.
+        index : `int`
+            The index of the first parameter trying to process.
+        """
+        while True:
+            if index >= len(parameters):
+                break
+            
+            command_categories = self._command_categories
+            if (command_categories is None):
+                break
+            
+            command_name = parameters[index]
+            command_name = normalize_command_name(command_name)
+            
+            try:
+                command_category = command_categories[command_name]
+            except KeyError:
+                break
+            
+            command_category(parameters, index+1)
+            return
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            command_function(parameters, index)
+
+
 
 class CommandLineCommandFunction:
     """
@@ -605,19 +718,19 @@ class CommandLineCommandFunction:
     ----------
     _function : `callable`
         The function to call.
+    _parent_reference : `None` or ``WeakReferer``
+        Weakreference to the command function's parent.
     _parameters_keyword_only : `None` or `list` of ``CommandLineParameter``
         Keyword only parameters.
     _parameters_modifier : `None` or `list` of ``CommandLineParameter``
         Parameter modifiers.
     _parameters_positional_only : `None` or `list` of ``CommandLineParameter``
         Positional only parameters.
-    _parameters_positional_or_keyword : `None` or `list` of ``CommandLineParameter``
-        Positional only keyword only parameters.
     """
-    __slots__ = ('_function', '_parameters_keyword_only', '_parameters_modifier', '_parameters_positional_only',
-        '_parameters_positional_or_keyword')
+    __slots__ = ('_function', '_parent_reference', '_parameters_keyword_only', '_parameters_modifier',
+        '_parameters_positional_only',)
     
-    def __new__(cls, function):
+    def __new__(cls, parent, function):
         """
         Creates a new ``CommandLineCommandFunction`` instance.
         
@@ -631,7 +744,7 @@ class CommandLineCommandFunction:
         self._parameters_modifier = None
         self._parameters_positional_only = None
         self._parameters_keyword_only = None
-        self._parameters_positional_or_keyword = None
+        self._parent_reference = parent._self_reference
         return self
     
     
@@ -643,8 +756,19 @@ class CommandLineCommandFunction:
         ----------
         parameter : ``CommandLineParameter``
             The parameter to add.
+        
+        Raises
+        ------
+        TypeError
+            Bad parameter order.
         """
         if parameter.is_modifier():
+            parameters_positional_only = self._parameters_positional_only
+            if (parameters_positional_only is not None):
+                last_parameter = parameters_positional_only[-1]
+                if last_parameter.multi:
+                    raise TypeError(f'Cannot add modifier after parameter positional parameter marked as multi.')
+            
             parameters_modifier = self._parameters_modifier
             if parameters_modifier is None:
                 parameters_modifier = []
@@ -654,35 +778,192 @@ class CommandLineCommandFunction:
         
         
         elif parameter.is_positional_only():
-            if (self._parameters_keyword_only is not None) or (self._parameters_positional_or_keyword is not None):
-                raise TypeError(f'Positional only parameter cannot be added after keyword, got: {parameter!r}.')
+            if parameter.multi:
+                if (self._parameters_modifier is not None):
+                    raise TypeError(f'Cannot add positional multi parameter after adding any modifier one.')
+                
+                if (self._parameters_keyword_only is not None):
+                    raise TypeError(f'Cannot add positional multi parameter after adding any keyword one.')
             
             parameters_positional_only = self._parameters_positional_only
             if (parameters_positional_only is None):
                 parameters_positional_only = []
                 self._parameters_positional_only = parameters_positional_only
+            else:
+                last_parameter = parameters_positional_only[-1]
+                if last_parameter.multi:
+                    raise TypeError(f'Only the last positional parameter can be `multi`.')
             
             parameters_positional_only.append(parameter)
         
-        elif parameter.is_positional_or_keyword():
-            if (self._parameters_keyword_only is not None):
-                raise TypeError(f'Positional or keyword only parameter cannot be added after keyword only, '
-                    f'got: {parameter!r}.')
-            
-            parameters_positional_or_keyword = self._parameters_positional_or_keyword
-            if (parameters_positional_or_keyword is None):
-                parameters_positional_or_keyword = []
-                self._parameters_positional_or_keyword = parameters_positional_or_keyword
-            
-            parameters_positional_or_keyword.append(parameter)
-        
         elif parameter.is_keyword_only():
+            parameters_positional_only = self._parameters_positional_only
+            if (parameters_positional_only is not None):
+                last_parameter = parameters_positional_only[-1]
+                if last_parameter.multi:
+                    raise TypeError(f'Cannot add modifier after parameter positional parameter marked as multi.')
+            
             parameters_keyword_only = self._parameters_keyword_only
             if (parameters_keyword_only is None):
                 parameters_keyword_only = []
                 self._parameters_keyword_only = parameters_keyword_only
             
             parameters_keyword_only.append(parameter)
-
-
-
+    
+    
+    @copy_docs(CommandLineCommand._trace_back_name)
+    def _trace_back_name(self):
+        parent_reference = self._parent_reference
+        if (parent_reference is not None):
+            parent = parent_reference()
+            if (parent is not None):
+                yield from parent._trace_back_name()
+    
+    
+    def __call__(self, parameters, index):
+        """
+        Calls the command line command.
+        
+        Parameters
+        ----------
+        parameters : `list` of `str`
+            Command line parameters.
+        index : `int`
+            The index of the first parameter trying to process.
+        """
+        parsed_parameters = {}
+        parameter_count = len(parameters)
+        
+        parameters_positional_only = self._parameters_positional_only
+        if (parameters_positional_only is not None):
+            for positional_parameter in parameters_positional_only:
+                if positional_parameter.multi:
+                    parameter_values = []
+                    while True:
+                        if index == parameter_count:
+                            break
+                        
+                        parameter_value = parameters[index]
+                        index += 1
+                        
+                        parameter_value = positional_parameter.convert(parameter_value)
+                        if parameter_value is None:
+                            # TODO
+                            return
+                        
+                        parameter_values.append(parameter_value)
+                        continue
+                    
+                    parameter_value = parameter_values
+                    
+                else:
+                    if (index == parameter_count):
+                        if positional_parameter.has_default:
+                            parameter_value = positional_parameter.default
+                        else:
+                            return
+                            # Failure todo
+                        
+                    else:
+                        parameter_value = parameters[index]
+                        index += 1
+                        
+                        parameter_value = positional_parameter.convert(parameter_value)
+                        if parameter_value is None:
+                            # TODO
+                            return
+                
+                parsed_parameters[positional_parameter.name] = parameter_value
+                continue
+        
+        modifier_parameters = self._parameters_modifier
+        if (modifier_parameters is not None):
+            modifier_parameters = {parameter.name for parameter in modifier_parameters}
+        
+        
+        parameters_keyword_only = self._parameters_keyword_only
+        if (parameters_keyword_only is None):
+            if (modifier_parameters is not None):
+                while True:
+                    if index == parameter_count:
+                        break
+                    
+                    parameter_name = parameters[index]
+                    index += 1
+                    
+                    try:
+                        modifier_parameters.remove(parameter_name)
+                    except KeyError:
+                        # TODO
+                        return
+                    
+                    parsed_parameters[parameter_name] = True
+                    continue
+        
+        else:
+            parameters_keyword_only = {parameter.name: parameter for parameter in parameters_keyword_only}
+            
+            while True:
+                if index == parameter_count:
+                    break
+                
+                parameter_name = parameters[index]
+                index += 1
+                
+                if (modifier_parameters is not None):
+                    try:
+                        modifier_parameters.remove(parameter_name)
+                    except KeyError:
+                        pass
+                    else:
+                        parsed_parameters[parameter_name] = True
+                        continue
+                
+                try:
+                    keyword_parameter = parameters_keyword_only[parameter_name]
+                except KeyError:
+                    # TODO
+                    return
+                
+                if index == parameter_count:
+                    # TODO
+                    return
+                
+                parameter_value = parameters[index]
+                index += 1
+                
+                parameter_value = keyword_parameter.convert(parameter_value)
+                if parameter_value is None:
+                    # TODO
+                    return
+                
+                if keyword_parameter.multi:
+                    try:
+                        parameter_value = parsed_parameters[parameter_name]
+                    except KeyError:
+                        parameter_value = []
+                        parsed_parameters[parameter_name] = parameter_value
+                    
+                    parameter_value.append(parameter_value)
+                
+                else:
+                    del parameters_keyword_only[parameter_name]
+                    parsed_parameters[parameter_name] = parameter_value
+            
+            for parameter_name, parameter in parameters_keyword_only.items():
+                if parameter.multi:
+                    parameter_value = []
+                else:
+                    parameter_value = parameter.default
+                
+                parsed_parameters[parameter_name] = parameter_value
+        
+        if (modifier_parameters is not None):
+            for parameter_name in modifier_parameters:
+                parsed_parameters[parameter_name] = False
+        
+        if index != parameter_count:
+            # TODO
+            return
+        
+        self._function(parsed_parameters)

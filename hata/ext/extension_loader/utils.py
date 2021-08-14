@@ -1,12 +1,13 @@
-__all__ = ()
+__all__ = ('require', )
 
-from sys import path as route_paths
-from os.path import join as join_path, isdir as is_folder, isfile as is_file, exists
+from importlib.util import module_from_spec
+from sys import path as route_paths, _getframe as get_frame, modules as MODULES
+from os.path import join as join_paths, isdir as is_folder, isfile as is_file, exists
 from os import listdir as list_directory
 
 from ...backend.utils import HybridValueDictionary
 from ...backend.analyzer import CallableAnalyzer
-
+from .exceptions import DoNotLoadExtension
 
 def _validate_entry_or_exit(point):
     """
@@ -274,9 +275,9 @@ def _lookup_path(import_name):
     ImportError
         If `name` name could not be detected as en extension.
     """
-    path_end = join_path(*import_name.split('.'))
+    path_end = join_paths(*import_name.split('.'))
     for base_path in route_paths:
-        path = join_path(base_path, path_end)
+        path = join_paths(base_path, path_end)
         if exists(path) and is_folder(path):
             yield from _iter_folder(import_name, path)
             return
@@ -306,7 +307,7 @@ def _iter_folder(import_name, folder_path):
         Detected import names for each applicable file in the folder.
     """
     for python_extension_name in PYTHON_EXTENSION_NAMES:
-        file_path = join_path(folder_path, f'__init__{python_extension_name}')
+        file_path = join_paths(folder_path, f'__init__{python_extension_name}')
         if exists(file_path) and is_file(file_path):
             yield import_name
             return
@@ -315,7 +316,7 @@ def _iter_folder(import_name, folder_path):
         if file_name.startswith('.') or (file_name == '__pycache__'):
             continue
         
-        path = join_path(folder_path, file_name)
+        path = join_paths(folder_path, file_name)
         
         if is_file(path):
             for python_extension_name in PYTHON_EXTENSION_NAMES:
@@ -332,3 +333,40 @@ def _iter_folder(import_name, folder_path):
         
         # no more cases
         continue
+
+
+
+def require(*args, **kwargs):
+    """
+    Requires the given parameters.
+    
+    Parameters
+    ----------
+    *args : Parameters
+        Required variable names.
+    **kwargs : Keyword parameters
+        Variables and their expected value / type.
+    """
+    frame = get_frame().f_back
+    spec = frame.f_globals['__spec__']
+    module = MODULES.get(spec.name, None)
+    if module is None:
+        module = module_from_spec(spec)
+    
+    for variable_name in args:
+        if not hasattr(module, variable_name):
+            raise DoNotLoadExtension(variable_name)
+    
+    for variable_name, expected_value in kwargs.items():
+        try:
+            variable_value = getattr(module, variable_name)
+        except AttributeError:
+            raise DoNotLoadExtension(variable_name)
+        
+        if variable_value is expected_value:
+            continue
+        
+        if issubclass(expected_value, type) and isinstance(variable_value, expected_value):
+            continue
+        
+        raise DoNotLoadExtension(variable_value, expected_value)

@@ -1050,7 +1050,7 @@ class ExtensionLoader:
                 message = await KOKORO.run_in_executor(alchemy_incendiary(
                     self._render_exc, (err, [
                     'Exception occurred meanwhile loading an extension: `', extension.name, '`.\n\n',],
-                        )))
+                )))
                 
                 raise ExtensionError(message) from None
             
@@ -1085,7 +1085,8 @@ class ExtensionLoader:
                 raise ExtensionError(message) from None
         finally:
             self._execute_counter -= 1
-        
+    
+    
     async def _unload_extension(self, extension):
         """
         Unloads the extension. If the extension is not loaded, will do nothing.

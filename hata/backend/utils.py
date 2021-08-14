@@ -7,7 +7,7 @@
 from functools import partial as partial_func
 from types import MethodType, FunctionType, MappingProxyType, GetSetDescriptorType, ModuleType
 from json import dumps as dump_to_json, loads as from_json
-
+from os import sep as PATH_SEPARATOR
 NoneType = type(None)
 
 import sys
@@ -17,8 +17,9 @@ try:
 except ImportError:
     from weakref import ref as WeakrefType
 
-
 from ..env import DOCS_ENABLED
+
+IS_UNIX = (sys.platform != 'win32')
 
 def has_docs(target):
     """
@@ -5418,3 +5419,24 @@ class class_property:
         new : ``class_property``
         """
         return type(self)(self.fget, self.fset, fdel, self.__instance_doc__)
+
+
+@has_docs
+def get_short_executable():
+    """
+    Gets short executable name.
+    
+    Returns
+    -------
+    executable : `str`
+    """
+    executable = sys.executable
+    
+    index = executable.rfind(PATH_SEPARATOR)
+    if index != -1:
+        executable = executable[index+1:]
+    
+    if (not IS_UNIX) and executable.endswith('.exe'):
+        executable = executable[:-len('.exe')]
+    
+    return executable

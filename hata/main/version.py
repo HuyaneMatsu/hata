@@ -2,6 +2,13 @@ import sys
 from platform import platform as get_platform
 from .. import __package__ as PACKAGE_NAME, __version__ as VERSION
 
+NAME = 'version'
+USAGE = 'v | version'
+
+HELP = (
+    f'Prints out hata\'s version.\n'
+)
+
 def __main__():
     output_parts = []
     

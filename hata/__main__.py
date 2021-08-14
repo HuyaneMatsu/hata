@@ -1,11 +1,45 @@
 import sys
-from . import __package__ as PACKAGE_NAME
+from os.path import dirname as get_directory_name, realpath as get_real_path, join as join_paths, \
+    normpath as normalize_path, expanduser as get_user_home_directory
+from os import getcwd as get_current_work_directory
+
+try:
+    from . import __package__ as PACKAGE_NAME
+except ImportError:
+    # If we have hata not setuped
+    PACKAGE_NAME = sys.path[0]
+    
+    sys.path.append(
+        normalize_path(
+            join_paths(
+                get_directory_name(
+                    get_real_path(
+                        join_paths(
+                            get_current_work_directory(),
+                            get_user_home_directory(__file__),
+                        )
+                    )
+                ),
+                '..',
+            )
+        )
+    )
+
 
 PACKAGE = __import__(PACKAGE_NAME)
 
 SYSTEM_DEFAULT_PARAMETER = 'i'
 
-SCRIPT_NAMES = {
+COMMAND_NAMES = tuple(sorted((
+    'help',
+    'interpreter',
+    'version',
+)))
+
+COMMAND_MAP = {
+    'h': 'help',
+    'help': 'help',
+    
     'i': 'interpreter',
     'interpreter': 'interpreter',
     
@@ -13,11 +47,13 @@ SCRIPT_NAMES = {
     'version': 'version',
 }
 
-assert SYSTEM_DEFAULT_PARAMETER in SCRIPT_NAMES
+assert SYSTEM_DEFAULT_PARAMETER in COMMAND_MAP
 
 
-def no_script_found():
-    output_parts = ['No main function is added for: ']
+def command_not_found():
+    from hata.backend.utils import get_short_executable
+    
+    output_parts = ['No command is added for: ']
     
     system_parameter = sys.argv
     
@@ -34,6 +70,11 @@ def no_script_found():
         continue
     
     output_parts.append('\n')
+    output_parts.append('Try using "$')
+    output_parts.append(get_short_executable())
+    output_parts.append(' ')
+    output_parts.append(PACKAGE_NAME)
+    output_parts.append(' help" for more information\n.')
     
     output = ''.join(output_parts)
     
@@ -45,15 +86,15 @@ def __main__():
     if len(system_parameters) < 2:
         system_parameter = SYSTEM_DEFAULT_PARAMETER
     else:
-        system_parameter = system_parameters[1]
+        system_parameter = system_parameters[1].lower()
     
     try:
-        script_name = SCRIPT_NAMES[system_parameter]
+        command_name = COMMAND_MAP[system_parameter]
     except KeyError:
-        return no_script_found
+        return command_not_found
     
-    __import__(f'{PACKAGE_NAME}.main.{script_name}')
-    return getattr(PACKAGE.main, script_name).__main__
+    __import__(f'{PACKAGE_NAME}.main.{command_name}')
+    return getattr(PACKAGE.main, command_name).__main__
 
 
 if __name__ == '__main__':

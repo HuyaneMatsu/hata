@@ -12,15 +12,13 @@ from stat import S_ISSOCK
 
 from .export import export
 from .utils import alchemy_incendiary, WeakReferer, weakmethod, MethodType, WeakCallable, doc_property, DOCS_ENABLED, \
-    set_docs
+    set_docs, IS_UNIX
 from .futures import Future, Task, Gatherer, render_exc_to_list, is_coroutine, FutureAsyncWrapper, WaitTillFirst, \
     CancelledError, skip_ready_cycle
 from .transprotos import SSLProtocol, _SelectorSocketTransport, _SelectorDatagramTransport
 from .executor import Executor
 from .analyzer import CallableAnalyzer
 from .protocol import ProtocolBase
-
-IS_UNIX = (sys.platform != 'win32')
 
 if IS_UNIX:
     from .subprocess import UnixReadPipeTransport, UnixWritePipeTransport, AsyncProcess

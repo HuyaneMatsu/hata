@@ -21,9 +21,9 @@ try:
     from ast import PyCF_ALLOW_TOP_LEVEL_AWAIT
 except ImportError:
     PyCF_ALLOW_TOP_LEVEL_AWAIT = 1<<13
-    await_available = False
+    AWAIT_AVAILABLE = False
 else:
-    await_available = True
+    AWAIT_AVAILABLE = True
 
 
 def run_code_callback(console, code):
@@ -93,6 +93,18 @@ class AsynchronousInteractiveConsole(InteractiveConsole):
         else:
             return result
 
+if AWAIT_AVAILABLE:
+    AWAIT_NOTE = 'Use \'await\' directly.'
+else:
+    AWAIT_NOTE = '!!! Direct \'await\' is not available on your python version. Please use python 3.8 or newer !!!'
+
+NAME = 'interpreter'
+USAGE = 'i | interpreter'
+
+HELP = (
+    f'Runs asynchronous python interpreter through hata\'s asynchronous environment.\n'
+    f'{AWAIT_NOTE}\n'
+)
 
 def __main__():
     interactive_console_locals = {PACKAGE_NAME: PACKAGE}
@@ -109,14 +121,11 @@ def __main__():
     for variable_name in PACKAGE.__all__:
         interactive_console_locals[variable_name] = getattr(PACKAGE, variable_name)
     
-    if await_available:
-        note = 'Use \'await\' directly.'
-    else:
-        note = '!!! Direct \'await\' is not available on your python version. Please use python 3.8 or newer !!!'
+
     
     banner = (
         f'{PACKAGE_NAME} interactive_console {sys.version} on {sys.platform}.\n'
-        f'{note}\n'
+        f'{AWAIT_NOTE}\n'
         f'Type \'help\', \'copyright\', \'credits\' or \'license\' for more information.'
     )
     

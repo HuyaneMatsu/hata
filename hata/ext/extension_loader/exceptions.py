@@ -68,3 +68,9 @@ class ExtensionError(Exception):
         return f'{self.__class__.__name__} ({len(self)}):\n{self.message}\n'
     
     __str__ = __repr__
+
+
+class DoNotLoadExtension(BaseException):
+    """
+    Raised to stop an extension loaded without error.
+    """

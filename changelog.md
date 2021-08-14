@@ -7,6 +7,11 @@
 - Add `Extension.is_unsatisfied`.
 - Add `require`.
 
+#### Bug Fixes
+
+- No presence intent reduces large guild size to `0` so check presence intent when requesting guild members.
+    (BrainDead#6105)
+- Fix a bad intent masking, ops.
 
 #### Renames, Deprecation & Removals
 

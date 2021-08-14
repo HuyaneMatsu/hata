@@ -2,6 +2,37 @@ __all__ = ()
 
 from ...backend.utils import WeakReferer, copy_docs
 
+COMMAND_FAILURE_ERROR_CODE_CONVERSION_FAILED = 1
+
+
+
+class CommandFailure:
+    def __new__(cls, error_code, *detail_parameters):
+        """
+        Creates a new ``CommandFailure`` instance with teh given parameters.
+        
+        Parameters
+        ----------
+        error_code : `int`
+            Command failure error code.
+        """
+        self = object.__new__(cls)
+        self.error_code = error_code
+        self.detail_parameters = detail_parameters
+        return self
+    
+    def message(self):
+        """
+        Returns the error message.
+        
+        Returns
+        -------
+        error_message : `str`
+        """
+        return COMMAND_FAILURE_ERROR_CODE_TO_MESSAGE_CONVERTER[self.error_code](*self.detail_parameters)
+    
+
+
 TYPE_IDENTIFIER_STR = 1
 TYPE_IDENTIFIER_INT = 2
 TYPE_IDENTIFIER_FLOAT = 3
@@ -89,6 +120,7 @@ def converter_parameter_to_float(value):
         value = None
     
     return value
+
 
 TYPE_IDENTIFIER_TO_CONVERTER = {
     TYPE_IDENTIFIER_STR: converter_parameter_to_str,

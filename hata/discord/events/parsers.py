@@ -54,7 +54,7 @@ def READY(client, data):
     if not client.is_bot:
         for guild_data in guild_datas:
             guild = Guild(guild_data, client)
-            ready_state.feed_guild(guild)
+            ready_state.feed_guild(client, guild)
     
     try:
         relationship_datas = data['relationships']
@@ -2263,7 +2263,7 @@ if CACHE_PRESENCE:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+        if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents&INTENT_SHIFT_GUILD_USERS) and guild.is_large:
                 Task(client._request_members(guild.id), KOKORO)
             
@@ -2278,7 +2278,7 @@ if CACHE_PRESENCE:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+        if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents&INTENT_SHIFT_GUILD_USERS) and guild.is_large:
                 Task(client._request_members(guild.id), KOKORO)
 
@@ -2291,7 +2291,7 @@ elif CACHE_USER:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+        if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             if (client.intents&INTENT_SHIFT_GUILD_USERS):
                 Task(client._request_members(guild.id), KOKORO)
             
@@ -2305,7 +2305,8 @@ elif CACHE_USER:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if (ready_state is None) or (not ready_state.feed_guild(guild)) and (client.intents&INTENT_SHIFT_GUILD_USERS):
+        if (ready_state is None) or (not ready_state.feed_guild(client, guild)) and \
+                (client.intents&INTENT_SHIFT_GUILD_USERS):
             Task(client._request_members(guild.id), KOKORO)
 
 else:
@@ -2317,7 +2318,7 @@ else:
         guild = Guild(data, client)
         
         ready_state = client.ready_state
-        if (ready_state is None) or (not ready_state.feed_guild(guild)):
+        if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
             Task(client.events.guild_create(client, guild), KOKORO)
     
     def GUILD_CREATE__OPT(client, data):
@@ -2329,7 +2330,7 @@ else:
         
         ready_state = client.ready_state
         if (ready_state is not None):
-            ready_state.feed_guild(guild)
+            ready_state.feed_guild(client, guild)
 
 
 add_parser(

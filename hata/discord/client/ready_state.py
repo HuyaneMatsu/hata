@@ -9,7 +9,7 @@ from ...backend.futures import Future, sleep, Task, WaitTillAll, CancelledError,
 
 from ..core import KOKORO
 from ..gateway.client_gateway import REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
-from ..events.intent import INTENT_SHIFT_GUILD_USERS
+from ..events.intent import INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_PRESENCES
 
 READY_STATE_TO_DO_GUILD_IDS = set()
 GUILD_RECEIVE_TIMEOUT = 5.0
@@ -193,13 +193,16 @@ class ShardUserRequester:
 
 
 if CACHE_PRESENCE:
-    def should_request_users_of(guild):
-        return guild.is_large
+    def should_request_users_of(client, guild):
+        if client.intents&INTENT_MASK_GUILD_PRESENCES:
+            return guild.is_large
+        else:
+            return True
 elif CACHE_USER:
-    def should_request_users_of(guild):
+    def should_request_users_of(client, guild):
         return True
 else:
-    def should_request_users_of(guild):
+    def should_request_users_of(client, guild):
         return False
 
 set_docs(should_request_users_of,
@@ -213,6 +216,8 @@ set_docs(should_request_users_of,
     
     Returns
     -------
+    client : ``Client``
+        The respective client instance.
     should_request_users : `bool`
         Whether the guild's users should be requested.
     """)
@@ -280,7 +285,7 @@ class ReadyState:
         
         guild_ids = set(int(guild_data['id']) for guild_data in guild_datas)
         
-        can_request_users = client.intents&INTENT_SHIFT_GUILD_USERS
+        can_request_users = client.intents&INTENT_MASK_GUILD_USERS
         
         if can_request_users:
             READY_STATE_TO_DO_GUILD_IDS.update(guild_ids)
@@ -301,13 +306,15 @@ class ReadyState:
             Task(client.events.ready(client), KOKORO)
     
     
-    def feed_guild(self, guild):
+    def feed_guild(self, client, guild):
         """
         Feeds the given `guild` to the ready state. Sets the last received guild's time to the current time and ends
         the ready state if there are no more guilds to receive.
         
         Parameters
         ----------
+        client : ``Client``
+            The respective client instance.
         guild : ``Guild``
             Received guild.
         
@@ -316,7 +323,7 @@ class ReadyState:
         request_enqueued : `bool`
             Whether the request is queued up.
         """
-        should_request_users = should_request_users_of(guild)
+        should_request_users = should_request_users_of(client, guild)
         
         guild_id = guild.id
         

@@ -433,7 +433,7 @@ class Extension:
             
             return lib
         
-        return None, False
+        return None
         # no more cases
     
     def _unload(self):

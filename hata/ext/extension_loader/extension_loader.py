@@ -880,7 +880,7 @@ class ExtensionLoader:
         """
         error_messages = None
         
-        for extension in self._extensions_by_name.values():
+        for extension in EXTENSIONS.values():
             if extension._locked:
                 continue
             
@@ -940,7 +940,7 @@ class ExtensionLoader:
         """
         error_messages = []
         
-        for extension in self._extensions_by_name.values():
+        for extension in EXTENSIONS.values():
             if extension._locked:
                 continue
             
@@ -997,7 +997,7 @@ class ExtensionLoader:
         """
         error_messages = []
         
-        for extension in self._extensions_by_name.values():
+        for extension in EXTENSIONS.values():
             if extension._locked:
                 continue
             

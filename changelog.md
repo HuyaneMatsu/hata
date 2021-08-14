@@ -1,5 +1,11 @@
 ## 1.1.96 *\[2021-08-??\]*
 
+#### Bug Fixes
+
+##### ext.extension_loaded
+- `.{}_all` methods could try to load the same extension multiple time.
+- Python sets module variables late, so check globals instead.
+
 ## 1.1.95 *\[2021-08-14\]*
 
 #### Improvements

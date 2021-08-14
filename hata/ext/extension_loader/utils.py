@@ -1,7 +1,6 @@
 __all__ = ('require', )
 
-from importlib.util import module_from_spec
-from sys import path as route_paths, _getframe as get_frame, modules as MODULES
+from sys import path as route_paths, _getframe as get_frame
 from os.path import join as join_paths, isdir as is_folder, isfile as is_file, exists
 from os import listdir as list_directory
 
@@ -347,26 +346,22 @@ def require(*args, **kwargs):
     **kwargs : Keyword parameters
         Variables and their expected value / type.
     """
-    frame = get_frame().f_back
-    spec = frame.f_globals['__spec__']
-    module = MODULES.get(spec.name, None)
-    if module is None:
-        module = module_from_spec(spec)
+    module_globals = get_frame().f_back.f_globals
     
     for variable_name in args:
-        if not hasattr(module, variable_name):
+        if variable_name not in module_globals:
             raise DoNotLoadExtension(variable_name)
     
     for variable_name, expected_value in kwargs.items():
         try:
-            variable_value = getattr(module, variable_name)
-        except AttributeError:
-            raise DoNotLoadExtension(variable_name)
+            variable_value = module_globals[variable_name]
+        except KeyError:
+            raise DoNotLoadExtension(variable_name) from None
         
         if variable_value is expected_value:
             continue
         
-        if issubclass(expected_value, type) and isinstance(variable_value, expected_value):
+        if isinstance(expected_value, type) and isinstance(variable_value, expected_value):
             continue
         
-        raise DoNotLoadExtension(variable_value, expected_value)
+        raise DoNotLoadExtension(variable_name, variable_value, expected_value)

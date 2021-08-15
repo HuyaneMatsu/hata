@@ -47,11 +47,15 @@ def match_application_commands_to_commands(application_commands, commands, match
         for application_command_index in reversed(range(len(application_commands))):
             application_command = application_commands[application_command_index]
             application_command_name = application_command.name
+            application_command_target_type = application_command.target_type
             
             for command_index in reversed(range(len(commands))):
                 command = commands[command_index]
                 
                 if command.name != application_command_name:
+                    continue
+                
+                if command.target is not application_command_target_type:
                     continue
                 
                 if match_schema:
@@ -207,9 +211,14 @@ class CommandState:
         if (changes is not None):
             for added, command in changes:
                 command_name = command.name
+                command_target_type = command.target
                 
                 for index in range(len(commands)):
-                    if commands[index].name != command_name:
+                    iter_command = commands[index]
+                    if iter_command.name != command_name:
+                        continue
+                    
+                    if iter_command.target is not command_target_type:
                         continue
                     
                     if added:
@@ -242,9 +251,14 @@ class CommandState:
         if (changes is not None):
             for command_change_state in changes:
                 command_name = command_change_state.command.name
+                command_target_type = command_change_state.command.target
                 
                 for index in range(len(commands)):
-                    if commands[index].name != command_name:
+                    iter_command = commands[index]
+                    if iter_command.name != command_name:
+                        continue
+                    
+                    if iter_command.target is not command_target_type:
                         continue
                     
                     del commands[index]
@@ -266,11 +280,16 @@ class CommandState:
         if (changes is not None):
             for added, command in changes:
                 command_name = command.name
+                command_target_type = command.target
                 
                 for index in range(len(commands)):
-                    if commands[index].name != command_name:
+                    iter_command = commands[index]
+                    if iter_command.name != command_name:
                         continue
-                
+                    
+                    if iter_command.target is not command_target_type:
+                        continue
+                    
                     if added:
                         del commands[index]
                     else:
@@ -283,7 +302,8 @@ class CommandState:
         
         return commands
     
-    def _try_purge_from_changes(self, name):
+    
+    def _try_purge_from_changes(self, name, target_type):
         """
         Purges the commands with the given names from the changed ones.
         
@@ -291,6 +311,8 @@ class CommandState:
         ----------
         name : `str`
             The command's name.
+        target_type : ``ApplicationCommandTargetType``
+            The commands's target type.
         
         Returns
         -------
@@ -319,6 +341,9 @@ class CommandState:
                 if command.name != name:
                     continue
                 
+                if command.target is not target_type:
+                    continue
+                
                 del changes[index]
                 if not changes:
                     self._changes = None
@@ -332,7 +357,8 @@ class CommandState:
         
         return None, COMMAND_STATE_IDENTIFIER_NONE
     
-    def _try_purge(self, name):
+    
+    def _try_purge(self, name, target_type):
         """
         Tries to purge the commands from the given name from the command state.
         
@@ -340,6 +366,8 @@ class CommandState:
         ----------
         name : `str`
             The respective command's name.
+        target_type : ``ApplicationCommandTargetType``
+            The respective command's target type.
         
         Returns
         -------
@@ -364,13 +392,13 @@ class CommandState:
             | COMMAND_STATE_IDENTIFIER_KEPT     | 4     |
             +-----------------------------------+-------+
         """
-        from_changes_result = self._try_purge_from_changes(name)
+        from_changes_result = self._try_purge_from_changes(name, target_type)
         
         active = self._active
         if (active is not None):
             for index in range(len(active)):
                 command = active[index]
-                if command.name == name:
+                if (command.name == name) and (command.target is target_type):
                     del active[index]
                     if not active:
                         self._active = None
@@ -381,7 +409,7 @@ class CommandState:
         if (kept is not None):
             for index in range(len(kept)):
                 command = kept[index]
-                if command.name == name:
+                if (command.name == name) and (command.target is target_type):
                     del kept[index]
                     if not kept:
                         self._kept = None
@@ -389,6 +417,7 @@ class CommandState:
                     return command, COMMAND_STATE_IDENTIFIER_KEPT
         
         return from_changes_result
+    
     
     def activate(self, command):
         """
@@ -402,12 +431,13 @@ class CommandState:
         if self._is_non_global:
             return
         
-        self._try_purge(command.name)
+        self._try_purge(command.name, command.target)
         active = self._active
         if active is None:
             self._active = active = []
         
         active.append(command)
+    
     
     def keep(self, command):
         """
@@ -421,12 +451,13 @@ class CommandState:
         if self._is_non_global:
             return
         
-        self._try_purge(command.name)
+        self._try_purge(command.name, command.target)
         kept = self._kept
         if kept is None:
             self._kept = kept = []
         
         kept.append(command)
+    
     
     def delete(self, command):
         """
@@ -440,7 +471,8 @@ class CommandState:
         if self._is_non_global:
             return
         
-        self._try_purge(command.name)
+        self._try_purge(command.name, command.target)
+    
     
     def add(self, command):
         """
@@ -474,7 +506,7 @@ class CommandState:
             +---------------------------------------+-------+
         """
         if self._is_non_global:
-            existing_command, purge_identifier = self._try_purge(command.name)
+            existing_command, purge_identifier = self._try_purge(command.name, command.target)
             active = self._active
             if active is None:
                 self._active = active = []
@@ -485,10 +517,14 @@ class CommandState:
         kept = self._kept
         if (kept is not None):
             command_name = command.name
+            command_target_type = command.target
             
             for index in range(len(kept)):
                 kept_command = kept[index]
                 if kept_command.name != command_name:
+                    continue
+                
+                if kept_command.target is not command_target_type:
                     continue
                 
                 if kept_command != command:
@@ -498,16 +534,21 @@ class CommandState:
                 if not kept:
                     self._kept = None
                 
-                self._try_purge_from_changes(command_name)
+                self._try_purge_from_changes(command_name, command_target_type)
                 return kept_command, COMMAND_STATE_IDENTIFIER_KEPT
+        
         
         active = self._active
         if (active is not None):
             command_name = command.name
+            command_target_type = command.target
             
             for index in range(len(active)):
                 active_command = active[index]
                 if active_command.name != command_name:
+                    continue
+                
+                if active_command.target is not command_target_type:
                     continue
                 
                 if active_command != command:
@@ -517,7 +558,7 @@ class CommandState:
                 if not active:
                     self._active = None
                 
-                self._try_purge_from_changes(command_name)
+                self._try_purge_from_changes(command_name, command_target_type)
                 return active_command, COMMAND_STATE_IDENTIFIER_ACTIVE
         
         changes = self._changes
@@ -582,7 +623,7 @@ class CommandState:
                 should_keep = True
         
         if self._is_non_global:
-            existing_command, purge_identifier = self._try_purge(command.name)
+            existing_command, purge_identifier = self._try_purge(command.name, command.target)
             if should_keep:
                 kept = self._kept
                 if kept is None:
@@ -593,15 +634,19 @@ class CommandState:
             return existing_command, COMMAND_STATE_IDENTIFIER_NON_GLOBAL
         
         if should_keep:
-            self._try_purge_from_changes(command.name)
+            self._try_purge_from_changes(command.name, command.target)
             
             kept = self._kept
             if (kept is not None):
                 command_name = command.name
+                command_target_type = command.target
                 
                 for index in range(len(kept)):
                     kept_command = kept[index]
                     if kept_command.name != command_name:
+                        continue
+                    
+                    if kept_command.target is not command_target_type:
                         continue
                     
                     if kept_command != command:
@@ -612,10 +657,14 @@ class CommandState:
             active = self._active
             if (active is not None):
                 command_name = command.name
+                command_target_type = command.target
                 
                 for index in range(len(active)):
                     active_command = active[index]
                     if active_command.name != command_name:
+                        continue
+                    
+                    if active_command.target is not command_target_type:
                         continue
                     
                     if active_command != command:
@@ -643,10 +692,14 @@ class CommandState:
         kept = self._kept
         if (kept is not None):
             command_name = command.name
+            command_target_type = command.target
             
             for index in range(len(kept)):
                 kept_command = kept[index]
                 if kept_command.name != command_name:
+                    continue
+                
+                if kept_command.target is not command_target_type:
                     continue
                 
                 if kept_command != command:
@@ -698,17 +751,17 @@ class Slasher(EventHandlerBase):
     
         The following parameters are passed to it:
         
-        +-------------------+-------------------------------------------+
-        | Name              | Type                                      |
-        +===================+===========================================+
-        | client            | ``Client``                                |
-        +-------------------+-------------------------------------------+
-        | interaction_event | ``InteractionEvent``                      |
-        +-------------------+-------------------------------------------+
-        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``    |
-        +-------------------+-------------------------------------------+
-        | exception         | `BaseException`                           |
-        +-------------------+-------------------------------------------+
+        +-------------------+-------------------------------------------------------+
+        | Name              | Type                                                  |
+        +===================+=======================================================+
+        | client            | ``Client``                                            |
+        +-------------------+-------------------------------------------------------+
+        | interaction_event | ``InteractionEvent``                                  |
+        +-------------------+-------------------------------------------------------+
+        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``   |
+        +-------------------+-------------------------------------------------------+
+        | exception         | `BaseException`                                       |
+        +-------------------+-------------------------------------------------------+
         
         Should return the following parameters:
         

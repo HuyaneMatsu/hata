@@ -1,6 +1,5 @@
 __all__ = ()
 
-from ...backend.utils import multidict
 from ...discord.events.handling_helpers import asynclist, ChunkWaiter
 from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES, DEFAULT_EVENT_HANDLER
 from ...discord.core import CLIENTS
@@ -38,6 +37,30 @@ def should_ignore_event_handler(event_handler):
 
 EVENT_NAMES = tuple(EVENT_HANDLER_NAME_TO_PARSER_NAMES.keys())
 
+def iterate_event_handler(event_handler):
+    """
+    Iterates over the given event handler, yielding each valuable handler.
+    
+    This method is an iterable generator.
+    
+    Parameters
+    ----------
+    event_handler : `Any`
+        Event handler to iterate trough.
+    
+    Yields
+    ------
+    event_handler : `sync-callable`
+        Valuable event handler-
+    """
+    if isinstance(event_handler, asynclist):
+        for iterated_event_handler in list.__iter__(event_handler):
+            if not should_ignore_event_handler(iterated_event_handler):
+                yield iterated_event_handler
+    else:
+        if not should_ignore_event_handler(event_handler):
+            yield event_handler
+
 
 def take_event_handler_snapshot(client):
     """
@@ -50,25 +73,21 @@ def take_event_handler_snapshot(client):
     
     Returns
     -------
-    collected : `multidict` of `str`, `async-callable` items
+    collected : `dict` of (`str`, `list` of `async-callable`) items
         A multidict storing `event-name`, `event-handler` pairs.
     """
-    collected = multidict()
+    collected = {}
     
     event_descriptor = client.events
     for event_name in EVENT_NAMES:
-        event_handler = getattr(event_descriptor, event_name)
-        if isinstance(event_handler, asynclist):
-            for event_handler in event_handler:
-                if should_ignore_event_handler(event_handler):
-                    continue
-                
-                collected[event_name] = event_handler
-        else:
-            if should_ignore_event_handler(event_handler):
-                continue
+        for event_handler in iterate_event_handler(getattr(event_descriptor, event_name)):
+            try:
+                event_handlers = collected[event_name]
+            except KeyError:
+                event_handlers = []
+                collected[event_name] = event_handlers
             
-            collected[event_name] = event_handler
+            event_handlers.append(event_handler)
     
     return collected
 
@@ -81,9 +100,9 @@ def calculate_event_handler_snapshot_difference(client, snapshot_old, snapshot_n
     ----------
     client : ``Client``
         The respective client instance.
-    snapshot_old : `multidict` of `str`, `async-callable` items
+    snapshot_old : `dict` of (`str`, `list` of `async-callable`) items
         An old snapshot taken.
-    snapshot_new : `multidict` of `str`, `async-callable` items
+    snapshot_new : `dict` of (`str`, `list` of `async-callable`) items
         A new snapshot.
     
     Returns
@@ -99,12 +118,11 @@ def calculate_event_handler_snapshot_difference(client, snapshot_old, snapshot_n
     """
     snapshot_difference = []
     
-    event_names = set(snapshot_old)
-    event_names.update(snapshot_new)
+    event_names = {*snapshot_old.keys(), *snapshot_new.keys()}
     
     for event_name in event_names:
-        old_handlers = snapshot_old.get_all(event_name)
-        new_handlers = snapshot_new.get_all(event_name)
+        old_handlers = snapshot_old.get(event_name, None)
+        new_handlers = snapshot_new.get(event_name, None)
         
         if (old_handlers is not None) and (new_handlers is not None):
             for index in reversed(range(len(old_handlers))):
@@ -189,6 +207,7 @@ def take_snapshot():
     
     return snapshot
 
+
 def calculate_snapshot_difference(snapshot_old, snapshot_new):
     """
     Calculates snapshot differences between two snapshots.
@@ -228,8 +247,7 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
     snapshot_difference = []
     
     for client, client_snapshot_old, client_snapshot_new in parallel_snapshots:
-        client_snapshot_difference = []
-        snapshot_difference.append((client, client_snapshot_difference))
+        client_snapshot_difference = None
         
         # Collect snapshot type names, which are present.
         snapshot_types_name_interception = set(e[0] for e in client_snapshot_old)&set(e[0] for e in client_snapshot_new)
@@ -247,7 +265,13 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
             
             # `difference_calculator` might return `None`
             if (snapshot_type_specific_difference is not None):
+                if (client_snapshot_difference is None):
+                    client_snapshot_difference = []
+                
                 client_snapshot_difference.append((snapshot_type_name, snapshot_type_specific_difference))
+        
+        if (client_snapshot_difference is not None):
+            snapshot_difference.append((client, client_snapshot_difference))
     
     return snapshot_difference
 

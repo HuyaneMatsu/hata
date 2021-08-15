@@ -366,7 +366,7 @@ class Extension:
                     loaded = True
                 
                 sys.modules[spec.name] = lib
-            
+                
                 if loaded:
                     if self._take_snapshot:
                         snapshot_new = take_snapshot()

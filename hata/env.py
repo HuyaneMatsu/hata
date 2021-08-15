@@ -49,7 +49,16 @@ HATA_DOCS_ENABLED : `bool` = `True`
     
     If python is run with `-OO`, then this always defaults to `False`.
 """
-import os, warnings
+import warnings
+from os import getenv as get_environmental_variable
+
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:
+    pass
+else:
+    load_dotenv()
+
 
 def get_bool_env(name, default):
     """
@@ -68,7 +77,7 @@ def get_bool_env(name, default):
     -------
     env_variable : `bool`
     """
-    env_variable = os.getenv(name)
+    env_variable = get_environmental_variable(name)
     if env_variable is None:
         return default
     
@@ -98,7 +107,7 @@ def get_str_env(name, default=None):
     -------
     variable : `str` or `default`
     """
-    env_variable = os.getenv(name)
+    env_variable = get_environmental_variable(name)
     if env_variable is None:
         return default
     
@@ -124,7 +133,7 @@ def get_int_env(name, default):
     -------
     variable : `int` or `default`
     """
-    env_variable = os.getenv(name)
+    env_variable = get_environmental_variable(name)
     if env_variable is None:
         return default
     

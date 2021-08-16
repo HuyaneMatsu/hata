@@ -2,9 +2,280 @@ __all__ = ()
 
 from ...backend.utils import WeakReferer, copy_docs
 
-COMMAND_FAILURE_ERROR_CODE_CONVERSION_FAILED = 1
+COMMAND_ERROR_CODE_CONVERSION_FAILED = 1
+COMMAND_ERROR_CODE_PARAMETER_REQUIRED = 2
+COMMAND_ERROR_CODE_PARAMETER_UNEXPECTED = 3
+COMMAND_ERROR_CODE_PARAMETER_EXTRA = 4
+COMMAND_ERROR_CODE_PARAMETER_UNSATISFIED = 5
+COMMAND_ERROR_CODE_COMMAND_UNINITIALIZED = 6
+COMMAND_ERROR_CODE_CATEGORY_EMPTY = 7
+COMMAND_ERROR_CODE_CATEGORY_REQUIRES_PARAMETER = 8
+COMMAND_ERROR_CODE_CATEGORY_UNKNOWN_SUB_COMMAND = 9
+
+def command_error_message_creator_conversion_failed(command_line_parameter, received_value):
+    """
+    Command failure message converter if conversion fails.
+    
+    Parameters
+    ----------
+    command_line_parameter : ``CommandLineParameter``
+        Respective command parameter.
+    received_value : `str`
+        Received value, which could not be converted to the respective type.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    message_parts = []
+    
+    message_parts.append('Parameter: ')
+    message_parts.append(repr(command_line_parameter.name))
+    message_parts.append(' received value of incorrect type.\nGot: ')
+    message_parts.append(received_value)
+    message_parts.append('\nExpected type: ')
+    
+    type_name = TYPE_IDENTIFIER_TO_NAME[command_line_parameter.expected_type_identifier]
+    message_parts.append(type_name)
+    message_parts.append('\n')
+    
+    return ''.join(message_parts)
 
 
+def command_error_message_creator_parameter_required(command_line_parameter):
+    """
+    Command failure message converter if a parameter stays unsatisfied.
+    
+    Parameters
+    ----------
+    command_line_parameter : ``CommandLineParameter``
+        Respective command parameter.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    message_parts = []
+    
+    message_parts.append('Parameter: ')
+    message_parts.append(repr(command_line_parameter.name))
+    message_parts.append(' is required.\n')
+    
+    return ''.join(message_parts)
+
+
+def command_error_message_creator_parameter_unexpected(parameter_value):
+    """
+    Command failure message converter if a received parameter is unexpected.
+    
+    Parameters
+    ----------
+    parameter_value : `str`
+        Received parameter.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    message_parts = []
+    
+    message_parts.append('Unexpected parameter: ')
+    message_parts.append(repr(parameter_value))
+    message_parts.append('.\n')
+    
+    return ''.join(message_parts)
+
+
+def command_error_message_creator_parameter_extra(parameter_values):
+    """
+    Command failure message converter if received extra parameter(s).
+    
+    Parameters
+    ----------
+    parameter_values : `str`
+        Extra parameters.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    message_parts = []
+    
+    message_parts.append('Extra parameters: ')
+    
+    index = 0
+    limit = len(parameter_values)
+    
+    while True:
+        parameter_value = parameter_values[index]
+        index += 1
+        
+        message_parts.append(repr(parameter_value))
+        
+        if index == limit:
+            break
+        
+        message_parts.append(', ')
+        continue
+    
+    message_parts.append('.\n')
+    
+    return ''.join(message_parts)
+
+
+def command_error_message_creator_parameter_unsatisfied(command_line_parameter):
+    """
+    Command failure message converter if a parameter name is defined, but it's value is not.
+    
+    Parameters
+    ----------
+    command_line_parameter : ``CommandLineParameter``
+        Respective command parameter.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    message_parts = []
+    
+    message_parts.append('Keyword parameter without value defined: ')
+    message_parts.append(repr(command_line_parameter.name))
+    message_parts.append('.\n')
+    
+    return ''.join(message_parts)
+
+
+def command_error_message_creator_command_uninitialized(command_line_command):
+    """
+    Command failure message converter if a command line command is not initialized (should not happen).
+    
+    Parameters
+    ----------
+    command_line_command : ``CommandLineCommand``
+        Respective command.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    message_parts = []
+    
+    message_parts.append('Command: ')
+    message_parts.append(repr(command_line_command.name))
+    message_parts.append(' is not initialized correctly.\n')
+    
+    return ''.join(message_parts)
+    
+
+def command_error_message_creator_category_empty(command_category):
+    """
+    Command failure message converter if a command category is empty.
+    
+    Parameters
+    ----------
+    command_category : ``CommandLineCommandCategory``
+        Respective command category.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    command_full_name = ''.join(command_category._trace_back_name())
+    
+    message_parts = []
+    
+    message_parts.append('Command category: ')
+    message_parts.append(repr(command_full_name.name))
+    message_parts.append(' has no direct command, neither sub commands registered.\n')
+    
+    return ''.join(message_parts)
+
+
+def command_error_message_creator_category_requires_parameter(command_category):
+    """
+    Command failure message converter if a command category has no command function to call, when no extra parameter
+    is defined.
+    
+    Parameters
+    ----------
+    command_category : ``CommandLineCommandCategory``
+        Respective command category.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    command_full_name = ''.join(command_category._trace_back_name())
+
+    message_parts = []
+    
+    message_parts.append('Command category: ')
+    message_parts.append(repr(command_full_name.name))
+    message_parts.append(
+        ' has no direct command defined, only sub commands.\n'
+        'Please define a sub command by name to call.\n'
+        'Available sub-commands:\n'
+    )
+    
+    command_categories = command_category._command_categories
+    if (command_categories is not None):
+        for command_category_name in sorted(command_categories.keys()):
+            message_parts.append('- ')
+            message_parts.append(command_category_name)
+            message_parts.append('\n')
+    
+    return ''.join(message_parts)
+
+
+def command_error_message_creator_category_unknown_sub_command(command_category, command_name):
+    """
+    Command failure message converter if a command category received unknown sub-command.
+    
+    Parameters
+    ----------
+    command_category : ``CommandLineCommandCategory``
+        Respective command category.
+    command_name : `str`
+        The received command name.
+    
+    Returns
+    -------
+    message : `str`
+    """
+    command_full_name = ''.join(command_category._trace_back_name())
+
+    message_parts = []
+    
+    message_parts.append('Command category: ')
+    message_parts.append(repr(command_full_name.name))
+    message_parts.append(' has no sub command named: ')
+    message_parts.append(repr(command_name))
+    message_parts.append(
+        '.\n'
+        'Available sub-commands:\n'
+    )
+    
+    command_categories = command_category._command_categories
+    if (command_categories is not None):
+        for command_category_name in sorted(command_categories.keys()):
+            message_parts.append('- ')
+            message_parts.append(command_category_name)
+            message_parts.append('\n')
+    
+    return ''.join(message_parts)
+
+
+COMMAND_ERROR_CODE_TO_MESSAGE_CONVERTER = {
+    COMMAND_ERROR_CODE_CONVERSION_FAILED: command_error_message_creator_conversion_failed,
+    COMMAND_ERROR_CODE_PARAMETER_REQUIRED: command_error_message_creator_parameter_required,
+    COMMAND_ERROR_CODE_PARAMETER_UNEXPECTED: command_error_message_creator_parameter_unexpected,
+    COMMAND_ERROR_CODE_PARAMETER_EXTRA: command_error_message_creator_parameter_extra,
+    COMMAND_ERROR_CODE_PARAMETER_UNSATISFIED: command_error_message_creator_parameter_unsatisfied,
+    COMMAND_ERROR_CODE_COMMAND_UNINITIALIZED: command_error_message_creator_command_uninitialized,
+    COMMAND_ERROR_CODE_CATEGORY_EMPTY: command_error_message_creator_category_empty,
+    COMMAND_ERROR_CODE_CATEGORY_REQUIRES_PARAMETER: command_error_message_creator_category_requires_parameter,
+    COMMAND_ERROR_CODE_CATEGORY_UNKNOWN_SUB_COMMAND: command_error_message_creator_category_unknown_sub_command,
+}
 
 class CommandFailure:
     def __new__(cls, error_code, *detail_parameters):
@@ -29,7 +300,7 @@ class CommandFailure:
         -------
         error_message : `str`
         """
-        return COMMAND_FAILURE_ERROR_CODE_TO_MESSAGE_CONVERTER[self.error_code](*self.detail_parameters)
+        return COMMAND_ERROR_CODE_TO_MESSAGE_CONVERTER[self.error_code](*self.detail_parameters)
     
 
 
@@ -591,8 +862,13 @@ class CommandLineCommand:
             The index of the first parameter trying to process.
         """
         command_category = self._command_category
-        if (command_category is not None):
-            self._command_category(parameters, index)
+        if (command_category is None):
+            return CommandFailure(
+                COMMAND_ERROR_CODE_COMMAND_UNINITIALIZED,
+                self,
+            )
+        else:
+            return command_category(parameters, index)
     
     
     def _trace_back_name(self):
@@ -717,13 +993,28 @@ class CommandLineCommandCategory:
         index : `int`
             The index of the first parameter trying to process.
         """
-        while True:
-            if index >= len(parameters):
-                break
+        command_categories = self._command_categories
+        if (command_categories is None):
+            command_function = self._command_function
+            if (command_function is None):
+                return CommandFailure(
+                    COMMAND_ERROR_CODE_CATEGORY_EMPTY,
+                    self,
+                )
             
-            command_categories = self._command_categories
-            if (command_categories is None):
-                break
+            else:
+                return command_function(parameters, index)
+        
+        else:
+            if index >= len(parameters):
+                command_function = self._command_function
+                if (command_function is None):
+                    return CommandFailure(
+                        COMMAND_ERROR_CODE_CATEGORY_REQUIRES_PARAMETER,
+                        command_error_message_creator_category_requires_parameter,
+                    )
+                else:
+                    return command_function(parameters, index)
             
             command_name = parameters[index]
             command_name = normalize_command_name(command_name)
@@ -731,15 +1022,18 @@ class CommandLineCommandCategory:
             try:
                 command_category = command_categories[command_name]
             except KeyError:
-                break
+                command_function = self._command_function
+                if (command_function is None):
+                    return CommandFailure(
+                        COMMAND_ERROR_CODE_CATEGORY_UNKNOWN_SUB_COMMAND,
+                        self,
+                        command_name,
+                    )
+                else:
+                    return command_function(parameters, index)
             
-            command_category(parameters, index+1)
-            return
-        
-        command_function = self._command_function
-        if (command_function is not None):
-            command_function(parameters, index)
-
+            else:
+                return command_category(parameters, index+1)
 
 
 class CommandLineCommandFunction:
@@ -878,12 +1172,15 @@ class CommandLineCommandFunction:
                         parameter_value = parameters[index]
                         index += 1
                         
-                        parameter_value = positional_parameter.convert(parameter_value)
-                        if parameter_value is None:
-                            # TODO
-                            return
+                        converted_parameter_value = positional_parameter.convert(parameter_value)
+                        if converted_parameter_value is None:
+                            return CommandFailure(
+                                COMMAND_ERROR_CODE_CONVERSION_FAILED,
+                                positional_parameter,
+                                parameter_value,
+                            )
                         
-                        parameter_values.append(parameter_value)
+                        parameter_values.append(converted_parameter_value)
                         continue
                     
                     parameter_value = parameter_values
@@ -893,17 +1190,24 @@ class CommandLineCommandFunction:
                         if positional_parameter.has_default:
                             parameter_value = positional_parameter.default
                         else:
-                            return
-                            # Failure todo
-                        
+                            return CommandFailure(
+                                COMMAND_ERROR_CODE_PARAMETER_REQUIRED,
+                                positional_parameter,
+                            )
+                    
                     else:
                         parameter_value = parameters[index]
                         index += 1
                         
-                        parameter_value = positional_parameter.convert(parameter_value)
-                        if parameter_value is None:
-                            # TODO
-                            return
+                        converted_parameter_value = positional_parameter.convert(parameter_value)
+                        if converted_parameter_value is None:
+                            return CommandFailure(
+                                COMMAND_ERROR_CODE_CONVERSION_FAILED,
+                                positional_parameter,
+                                parameter_value,
+                            )
+                        
+                        parameter_value = converted_parameter_value
                 
                 parsed_parameters[positional_parameter.name] = parameter_value
                 continue
@@ -926,8 +1230,10 @@ class CommandLineCommandFunction:
                     try:
                         modifier_parameters.remove(parameter_name)
                     except KeyError:
-                        # TODO
-                        return
+                        return CommandFailure(
+                            COMMAND_ERROR_CODE_PARAMETER_UNEXPECTED,
+                            parameter_name,
+                        )
                     
                     parsed_parameters[parameter_name] = True
                     continue
@@ -954,29 +1260,38 @@ class CommandLineCommandFunction:
                 try:
                     keyword_parameter = parameters_keyword_only[parameter_name]
                 except KeyError:
-                    # TODO
-                    return
+                    return CommandFailure(
+                        COMMAND_ERROR_CODE_PARAMETER_UNEXPECTED,
+                        parameter_name,
+                    )
                 
                 if index == parameter_count:
-                    # TODO
-                    return
+                    return CommandFailure(
+                        COMMAND_ERROR_CODE_PARAMETER_UNSATISFIED,
+                        keyword_parameter,
+                    )
                 
                 parameter_value = parameters[index]
                 index += 1
                 
-                parameter_value = keyword_parameter.convert(parameter_value)
-                if parameter_value is None:
-                    # TODO
-                    return
+                converted_parameter_value = keyword_parameter.convert(parameter_value)
+                if converted_parameter_value is None:
+                    return CommandFailure(
+                        COMMAND_ERROR_CODE_CONVERSION_FAILED,
+                        keyword_parameter,
+                        parameter_value,
+                    )
+                
+                parameter_value = converted_parameter_value
                 
                 if keyword_parameter.multi:
                     try:
-                        parameter_value = parsed_parameters[parameter_name]
+                        parameter_values = parsed_parameters[parameter_name]
                     except KeyError:
-                        parameter_value = []
-                        parsed_parameters[parameter_name] = parameter_value
+                        parameter_values = []
+                        parsed_parameters[parameter_name] = parameter_values
                     
-                    parameter_value.append(parameter_value)
+                    parameter_values.append(parameter_value)
                 
                 else:
                     del parameters_keyword_only[parameter_name]
@@ -995,7 +1310,9 @@ class CommandLineCommandFunction:
                 parsed_parameters[parameter_name] = False
         
         if index != parameter_count:
-            # TODO
-            return
+            return CommandFailure(
+                COMMAND_ERROR_CODE_PARAMETER_EXTRA,
+                parameters[index:],
+            )
         
         self._function(parsed_parameters)

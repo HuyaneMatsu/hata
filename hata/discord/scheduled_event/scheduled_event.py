@@ -28,7 +28,7 @@ class ScheduledEvent(DiscordEntity):
     guild_id : `int`
         The respective event's identifier.
     entity_metadata : `None` or ``ScheduledEventMetadata`` instance
-        Metadata about teh target entity.
+        Metadata about the target entity.
     image_type : ``IconType``
         The event's image's type.
     image_hash : `int`

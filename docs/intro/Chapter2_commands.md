@@ -575,12 +575,16 @@ If the command processer has no `command_error` or if your `command_error` raise
 ```py
 @NekoBot.commands
 async def default_event(client, message):
-    lowercase_content = message.content.lower()
+    content = message.content
+    if content is None:
+        return
     
-    if lowercase_content in ('owo', 'uwu', '0w0'):
-        await client.message_create(message.channel, lowercase_content)
+    content = content.lower()
     
-    elif lowercase_content.startswith('ayy'):
+    if content in ('owo', 'uwu', '0w0'):
+        await client.message_create(message.channel, content)
+    
+    elif content.startswith('ayy'):
         await client.message_create(message.channel, 'lmao')
 ```
 

@@ -28,7 +28,7 @@ from .message_application import MessageApplication
 from .message_interaction import MessageInteraction
 from .message_reference import MessageReference
 from .flags import MessageFlag
-from .preinstanced import MessageType
+from .preinstanced import MessageType, GENERIC_MESSAGE_TYPES
 
 
 ChannelTextBase = include('ChannelTextBase')
@@ -75,7 +75,7 @@ class Message(DiscordEntity, immortal=True):
         The channel's identifier where the message is sent.
     components : `None` or `tuple` of ``ComponentBase``
         Message components.
-    content : `str`
+    content : `None` or `str`
         The message's content.
     cross_mentions : `None` or `tuple` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
         Cross guild channel mentions of a crosspost message if applicable. If a channel is not loaded by the wrapper,
@@ -258,7 +258,7 @@ class Message(DiscordEntity, immortal=True):
         
         self.reactions = reaction_mapping(data.get('reactions', None))
         
-
+        
         referenced_message_data = data.get('referenced_message', None)
         if referenced_message_data is None:
             referenced_message_data = data.get('message_reference', None)
@@ -274,7 +274,7 @@ class Message(DiscordEntity, immortal=True):
         
         self.referenced_message = referenced_message
         
-
+        
         try:
             application_data = data['application']
         except KeyError:
@@ -330,7 +330,11 @@ class Message(DiscordEntity, immortal=True):
         self.embeds = embeds
         
         self.nonce = data.get('nonce', None)
-        self.content = data.get('content', '')
+        
+        content = data.get('content', None)
+        if (content is not None) and (not content):
+            content = None
+        self.content = content
         
         interaction_data = data.get('interaction', None)
         if interaction_data is None:
@@ -547,7 +551,11 @@ class Message(DiscordEntity, immortal=True):
         self.embeds = embeds
         
         self.nonce = data.get('nonce', None)
-        self.content = data.get('content', '')
+        
+        content = data.get('content', None)
+        if (content is not None) and (not content):
+            content = None
+        self.content = content
         
         interaction_data = data.get('interaction', None)
         if interaction_data is None:
@@ -576,7 +584,7 @@ class Message(DiscordEntity, immortal=True):
         if (user_mention_datas is not None) and user_mention_datas:
             user_mentions = tuple(sorted(
                 (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                key=id_sort_key,
+                key = id_sort_key,
             ))
         else:
             user_mentions = None
@@ -794,7 +802,11 @@ class Message(DiscordEntity, immortal=True):
         self.embeds = embeds
         
         self.nonce = data.get('nonce', None)
-        self.content = data.get('content', '')
+        
+        content = data.get('content', None)
+        if (content is not None) and (not content):
+            content = None
+        self.content = content
         
         interaction_data = data.get('interaction', None)
         if interaction_data is None:
@@ -866,13 +878,14 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data.
         """
-        if not self.content:
+        if (self.content is None):
             try:
                 content = data['content']
             except KeyError:
                 pass
             else:
-                self.content = content
+                if (content is not None) and content:
+                    self.content = content
         
         if (self.interaction is None):
             interaction_data = data.get('interaction', None)
@@ -939,7 +952,7 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod, defaults to `None`.
         
-        content : `str`, Optional (Keyword only)
+        content : `None` or `str`, Optional (Keyword only)
             The ``.content`` attribute of the message. Can be between length `0` and `4000`.
             
             If called as a classmethod defaults to `''` (empty string).
@@ -1160,11 +1173,12 @@ class Message(DiscordEntity, immortal=True):
             content = kwargs.pop('content')
         except KeyError:
             if base is None:
-                content = ''
+                content = None
             else:
                 content = base.content
         else:
-            content = preconvert_str(content, 'content', 0, 4000)
+            if (content is not None):
+                content = preconvert_str(content, 'content', 0, 4000)
         
         try:
             referenced_message = kwargs.pop('referenced_message')
@@ -1175,8 +1189,8 @@ class Message(DiscordEntity, immortal=True):
                 referenced_message = base.referenced_message
         else:
             if (referenced_message is not None) and (type(referenced_message) not in (Message, MessageReference)):
-                    raise TypeError(f'`referenced_message` should be `None` or type `{Message.__name__}`, '
-                        f'`{MessageReference.__call__}`, got `{referenced_message!r}`')
+                raise TypeError(f'`referenced_message` should be `None` or type `{Message.__name__}`, '
+                    f'`{MessageReference.__call__}`, got `{referenced_message!r}`')
         
         try:
             cross_mentions = kwargs.pop('cross_mentions')
@@ -1605,30 +1619,33 @@ class Message(DiscordEntity, immortal=True):
             The parsed channel mentions.
         """
         content = self.content
-        channel_mentions = []
-        channels = self.channel.guild.channels
-        cross_mentions = self.cross_mentions
-
-        for channel_id in CHANNEL_MENTION_RP.findall(content):
-            channel_id = int(channel_id)
-            try:
-                channel = channels[channel_id]
-            except KeyError:
-                if cross_mentions is None:
-                    continue
-                try:
-                    channel = cross_mentions[channel_id]
-                except KeyError:
-                    continue
-            
-            if channel not in channel_mentions:
-                channel_mentions.append(channel)
-        
-        if channel_mentions:
-            channel_mentions.sort(key=id_sort_key)
-            channel_mentions = tuple(channel_mentions)
-        else:
+        if content is None:
             channel_mentions = None
+        else:
+            channel_mentions = []
+            channels = self.channel.guild.channels
+            cross_mentions = self.cross_mentions
+    
+            for channel_id in CHANNEL_MENTION_RP.findall(content):
+                channel_id = int(channel_id)
+                try:
+                    channel = channels[channel_id]
+                except KeyError:
+                    if cross_mentions is None:
+                        continue
+                    try:
+                        channel = cross_mentions[channel_id]
+                    except KeyError:
+                        continue
+                
+                if channel not in channel_mentions:
+                    channel_mentions.append(channel)
+            
+            if channel_mentions:
+                channel_mentions.sort(key=id_sort_key)
+                channel_mentions = tuple(channel_mentions)
+            else:
+                channel_mentions = None
         
         self._channel_mentions = channel_mentions
         return channel_mentions
@@ -1764,7 +1781,7 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | components        | `None` or (`tuple` of ``ComponentBase``)                              |
         +-------------------+-----------------------------------------------------------------------+
-        | content           | `str                                                                  |
+        | content           | `None` or `str`                                                       |
         +-------------------+-----------------------------------------------------------------------+
         | cross_mentions    | `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMention``))   |
         +-------------------+-----------------------------------------------------------------------+
@@ -1896,6 +1913,9 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
+            if (content is not None) and (not content):
+                content = None
+            
             if self.content != content:
                 old_attributes['content'] = self.content
                 self.content = content
@@ -2062,6 +2082,8 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
+            if (content is not None) and (not content):
+                content = None
             self.content = content
         
         try:
@@ -2286,6 +2308,7 @@ class Message(DiscordEntity, immortal=True):
         if (embeds is not None):
             return embeds[0]
     
+    
     @property
     def attachment(self):
         """
@@ -2298,6 +2321,7 @@ class Message(DiscordEntity, immortal=True):
         attachments = self.attachments
         if (attachments is not None):
             return attachments[0]
+    
     
     @property
     def sticker(self):
@@ -2349,7 +2373,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        clean_content : `str`
+        clean_content : `None` or `str`
         
         Notes
         -----
@@ -2370,7 +2394,7 @@ class Message(DiscordEntity, immortal=True):
         """
         contents = []
         content = self.content
-        if content:
+        if (content is not None):
             contents.append(content)
         
         embeds = self.embeds
@@ -2433,19 +2457,25 @@ class Message(DiscordEntity, immortal=True):
         -------
         length : `int`
         """
-        if self.type is MessageType.default:
-            result = len(self.content)
+        if self.type in GENERIC_MESSAGE_TYPES:
+            content = self.content
+            if (content is None):
+                length = 0
+            else:
+                length = len(content)
         else:
-            result = len(self.clean_content)
+            length = len(self.clean_content)
         
         embeds = self.embeds
         if (embeds is not None):
             for embed in embeds:
-                if embed.type in EXTRA_EMBED_TYPES:
+                embed_type = embed.type
+                if (embed_type is not None) and (embed_type in EXTRA_EMBED_TYPES):
                     break
-                result += len(embed)
+                
+                length += len(embed)
         
-        return result
+        return length
     
     
     @property
@@ -2493,4 +2523,238 @@ class Message(DiscordEntity, immortal=True):
             reactors = self.reactions[emoji]
         except KeyError:
             return False
+        
         return (user in reactors)
+    
+    
+    # Methods for testing purposes
+    
+    def has_activity(self):
+        """
+        Returns whether the message has ``.activity`` set.
+        
+        Returns
+        -------
+        has_activity : `bool`
+        """
+        return (self.activity is not None)
+    
+    
+    def has_application(self):
+        """
+        Returns whether the message has ``.application`` set.
+        
+        Returns
+        -------
+        has_application : `bool`
+        """
+        return (self.application is not None)
+    
+    
+    def has_application_id(self):
+        """
+        Returns whether the message has ``.application_id`` set.
+        
+        Returns
+        -------
+        has_application_id : `bool`
+        """
+        return (self.application_id != 0)
+    
+    
+    def has_attachments(self):
+        """
+        Returns whether the message has ``.attachments`` set.
+        
+        Returns
+        -------
+        has_attachments : `bool`
+        """
+        return (self.attachments is not None)
+    
+    
+    def has_components(self):
+        """
+        Returns whether the message has ``.components`` set.
+        
+        Returns
+        -------
+        has_components : `bool`
+        """
+        return (self.components is not None)
+    
+    
+    def has_content(self):
+        """
+        Returns whether the message has ``.content`` set.
+        
+        Returns
+        -------
+        has_content : `bool`
+        """
+        return (self.content is not None)
+    
+    
+    def has_cross_mentions(self):
+        """
+        Returns whether the message has ``.cross_mentions`` set.
+        
+        Returns
+        -------
+        has_cross_mentions : `bool`
+        """
+        return (self.cross_mentions is not None)
+    
+    
+    def has_referenced_message(self):
+        """
+        Returns whether the message has ``.referenced_message`` set.
+        
+        Returns
+        -------
+        has_referenced_message : `bool`
+        """
+        return (self.referenced_message is not None)
+    
+    
+    def has_deleted(self):
+        """
+        Returns whether the message has ``.deleted`` set.
+        
+        Returns
+        -------
+        has_deleted : `bool`
+        """
+        return self.deleted
+    
+    
+    def has_edited_at(self):
+        """
+        Returns whether the message has ``.edited_at`` set.
+        
+        Returns
+        -------
+        has_edited_at : `bool`
+        """
+        return (self.edited_at is not None)
+    
+    
+    def has_embeds(self):
+        """
+        Returns whether the message has ``.embeds`` set.
+        
+        Returns
+        -------
+        has_embeds : `bool`
+        """
+        return (self.embeds is not None)
+    
+    
+    def has_everyone_mention(self):
+        """
+        Returns whether the message has ``.everyone_mention`` set.
+        
+        Returns
+        -------
+        has_everyone_mention : `bool`
+        """
+        return self.everyone_mention
+    
+    
+    def has_interaction(self):
+        """
+        Returns whether the message has ``.interaction`` set.
+        
+        Returns
+        -------
+        has_interaction : `bool`
+        """
+        return (self.interaction is not None)
+    
+    
+    def has_nonce(self):
+        """
+        Returns whether the message has ``.nonce`` set.
+        
+        Returns
+        -------
+        has_nonce : `bool`
+        """
+        return (self.nonce is not None)
+    
+    
+    def has_pinned(self):
+        """
+        Returns whether the message has ``.pinned`` set.
+        
+        Returns
+        -------
+        has_pinned : `bool`
+        """
+        return self.pinned
+    
+    
+    def has_reactions(self):
+        """
+        Returns whether the message has ``.reactions`` set.
+        
+        Returns
+        -------
+        has_reactions : `bool`
+        """
+        return (True if self.reactions else False)
+    
+    
+    def has_role_mention_ids(self):
+        """
+        Returns whether the message has ``.role_mention_ids`` set.
+        
+        Returns
+        -------
+        has_role_mention_ids : `bool`
+        """
+        return (self.role_mention_ids is not None)
+    
+    
+    def has_stickers(self):
+        """
+        Returns whether the message has ``.stickers`` set.
+        
+        Returns
+        -------
+        has_stickers : `bool`
+        """
+        return (self.stickers is not None)
+    
+    
+    def has_thread(self):
+        """
+        Returns whether the message has ``.thread`` set.
+        
+        Returns
+        -------
+        has_thread : `bool`
+        """
+        return (self.thread is not None)
+    
+    
+    def has_tts(self):
+        """
+        Returns whether the message has ``.tts`` set.
+        
+        Returns
+        -------
+        has_tts : `bool`
+        """
+        return self.tts
+    
+    
+    def has_user_mentions(self):
+        """
+        Returns whether the message has ``.has_user_mentions`` set.
+        
+        Returns
+        -------
+        has_user_mentions : `bool
+        """
+        return (self.user_mentions is not None)

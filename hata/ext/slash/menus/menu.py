@@ -1731,7 +1731,7 @@ class Menu(metaclass=MenuType):
         """
         message = self.message
         if message is None:
-            content = ''
+            content = None
         else:
             content = message.content
         

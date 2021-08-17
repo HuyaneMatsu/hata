@@ -456,13 +456,17 @@ async def prefix_wrapper_async_callable(prefix_factory, re_flags, message):
         return None, -1
     
     content = message.content
-    parsed = re_match(escaped_prefix, content, re_flags)
-    if parsed is None:
+    if content is None:
         prefix = None
         end = -1
     else:
-        prefix = parsed.group(0)
-        end = parsed.end()
+        parsed = re_match(escaped_prefix, content, re_flags)
+        if parsed is None:
+            prefix = None
+            end = -1
+        else:
+            prefix = parsed.group(0)
+            end = parsed.end()
     
     return prefix, end
 
@@ -527,13 +531,17 @@ async def prefix_wrapper_sync_callable(prefix_factory, re_flags, message):
         return None, -1
     
     content = message.content
-    parsed = re_match(escaped_prefix, content, re_flags)
-    if parsed is None:
+    if content is None:
         prefix = None
         end = -1
     else:
-        prefix = parsed.group(0)
-        end = parsed.end()
+        parsed = re_match(escaped_prefix, content, re_flags)
+        if parsed is None:
+            prefix = None
+            end = -1
+        else:
+            prefix = parsed.group(0)
+            end = parsed.end()
     
     return prefix, end
 
@@ -588,13 +596,17 @@ async def prefix_wrapper_regex(re_pattern, message):
         The start of the content after the prefix. Returned as `-1` if parsing failed.
     """
     content = message.content
-    parsed = re_pattern.match(content)
-    if parsed is None:
+    if content is None:
         prefix = None
-        end = - 1
+        end = -1
     else:
-        prefix = parsed.group(0)
-        end = parsed.end()
+        parsed = re_pattern.match(content)
+        if parsed is None:
+            prefix = None
+            end = -1
+        else:
+            prefix = parsed.group(0)
+            end = parsed.end()
     
     return prefix, end
 

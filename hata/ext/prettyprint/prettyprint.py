@@ -153,7 +153,7 @@ def str_message(message, index=None, **kwargs):
     
     if message.type is not MessageType.default:
         result.append(f'--------------------\n{message.clean_content}\n--------------------', -1)
-    elif message.content:
+    elif (message.content is not None):
         content = message.clean_content
         content_length = len(content)
         result.append(f'- content: (len={content_length})', 1)

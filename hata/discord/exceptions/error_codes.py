@@ -169,6 +169,8 @@ These are the following:
 +---------------------------------------------------+-----------+-----------+
 | max_ban_fetches                                   | 30037     | -         |
 +---------------------------------------------------+-----------+-----------+
+| max_stickers                                      | 30039     | -         |
+| rate_limit_prune                                  | 30040     | -         |
 | unauthorized                                      | 40001     | -         |
 +---------------------------------------------------+-----------+-----------+
 | email_verification_required                       | 40002     | -         |
@@ -482,6 +484,8 @@ max_application_commands = 30032
 max_thread_participants = 30033
 max_bans = 30035
 max_ban_fetches = 30037
+max_stickers = 30039
+rate_limit_prune = 30040
 
 unauthorized = 40001
 email_verification_required = 40002

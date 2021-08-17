@@ -1915,7 +1915,7 @@ class CommandProcesser(EventWaitforBase):
         +-------------------+---------------+-------------------------------------------+
         | command           | `str`         | The command's name.                       |
         +-------------------+---------------+-------------------------------------------+
-        | content           | `str`         | The message'"s content after the prefix.  |
+        | content           | `str`         | The message's content after the prefix.   |
         +-------------------+---------------+-------------------------------------------+
     
     - `mention_prefix`
@@ -1947,7 +1947,7 @@ class CommandProcesser(EventWaitforBase):
         +-------------------+-------------------+-------------------------------------------+
         | command           | ``Command``       | The respective command.                   |
         +-------------------+-------------------+-------------------------------------------+
-        | content           | `str`             | The message'"s content after the prefix.  |
+        | content           | `str`             | The message's content after the prefix.   |
         +-------------------+-------------------+-------------------------------------------+
         | err               | ``BaseException`` | The occurred exception.                   |
         +-------------------+-------------------+-------------------------------------------+
@@ -2440,6 +2440,9 @@ class CommandProcesser(EventWaitforBase):
                             escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
                         
                         content = message.content
+                        if content is None:
+                            return
+                        
                         result = re.match(escaped_prefix, content, flag)
                         if result is None:
                             return
@@ -2457,14 +2460,28 @@ class CommandProcesser(EventWaitforBase):
                         else:
                             escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
                         
-                        result = re.match(escaped_prefix, message.content, flag)
-                        if result is None:
+                        content = message.content
+                        if content is None:
                             if isinstance(practical_prefix, str):
                                 prefix_for = practical_prefix
                             else:
                                 prefix_for = next(iter(practical_prefix), '')
                         else:
-                            prefix_for =  result.group(0)
+                            content = message.content
+                            if content is None:
+                                if isinstance(practical_prefix, str):
+                                    prefix_for = practical_prefix
+                                else:
+                                    prefix_for = next(iter(practical_prefix), '')
+                            else:
+                                result = re.match(escaped_prefix, content, flag)
+                                if result is None:
+                                    if isinstance(practical_prefix, str):
+                                        prefix_for = practical_prefix
+                                    else:
+                                        prefix_for = next(iter(practical_prefix), '')
+                                else:
+                                    prefix_for =  result.group(0)
 
                         return prefix_for
                 
@@ -2477,6 +2494,9 @@ class CommandProcesser(EventWaitforBase):
                             escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
                         
                         content = message.content
+                        if content is None:
+                            return
+                        
                         result = re.match(escaped_prefix, content, flag)
                         if result is None:
                             return
@@ -2494,14 +2514,21 @@ class CommandProcesser(EventWaitforBase):
                         else:
                             escaped_prefix = '|'.join(re.escape(prefix_) for prefix_ in practical_prefix)
                         
-                        result = re.match(escaped_prefix, message.content, flag)
-                        if result is None:
+                        content = message.content
+                        if content is None:
                             if isinstance(practical_prefix, str):
                                 prefix_for = practical_prefix
                             else:
                                 prefix_for = next(iter(practical_prefix), '')
                         else:
-                            prefix_for =  result.group(0)
+                            result = re.match(escaped_prefix, content, flag)
+                            if result is None:
+                                if isinstance(practical_prefix, str):
+                                    prefix_for = practical_prefix
+                                else:
+                                    prefix_for = next(iter(practical_prefix), '')
+                            else:
+                                prefix_for =  result.group(0)
 
                         return prefix_for
                 
@@ -2531,17 +2558,24 @@ class CommandProcesser(EventWaitforBase):
                 practical_prefix = next(iter(prefix), '')
                 
                 def get_prefix_for(message):
-                    result = PREFIX_RP.match(message.content)
-                    if result is None:
+                    content = message.content
+                    if content is None:
                         return practical_prefix
                     else:
-                        return result.group(0)
+                        result = PREFIX_RP.match(content)
+                        if result is None:
+                            return practical_prefix
+                        else:
+                            return result.group(0)
             else:
                 raise TypeError(f'Prefix can be only `callable`, `str` or `tuple` / `list` of `str` instances,  got '
                     f'{prefix.__class__.__name__}.')
             
             async def prefix_filter(message):
                 content = message.content
+                if content is None:
+                    return
+                
                 result = PREFIX_RP.match(content)
                 if result is None:
                     return
@@ -2833,7 +2867,7 @@ class CommandProcesser(EventWaitforBase):
                 '` would overwrite an other command; `',
                 repr(overwrites),
                 '`.',
-                    ]
+            ]
             
             if (would_overwrite is not None):
                 error_message_parts.append(' The command already overwrites an another one with the same name: `')
@@ -3106,11 +3140,15 @@ class CommandProcesser(EventWaitforBase):
                 if client not in message.mentions:
                     break
                 
-                result = USER_MENTION_RP.match(message.content)
+                content = message.content
+                if content is None:
+                    break
+                
+                result = USER_MENTION_RP.match(content)
                 if result is None or int(result.group(1)) != client.id:
                     break
                 
-                result = COMMAND_RP.match(message.content, result.end())
+                result = COMMAND_RP.match(content, result.end())
                 if result is None:
                     break
                 

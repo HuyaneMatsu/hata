@@ -1,6 +1,8 @@
 __all__ = ('MessageType', 'MessageActivityType')
 
-from ...backend.utils import any_to_any
+import warnings
+
+from ...backend.utils import any_to_any, class_property
 
 from ..bases import PreinstancedBase, Preinstance as P
 from ..utils import sanitize_mentions
@@ -70,11 +72,11 @@ def MESSAGE_DEFAULT_CONVERTER(self):
     
     Returns
     -------
-    content : `str`
+    content : `None` or `str`
         The converted content if applicable. Might be empty string.
     """
     content = self.content
-    if content:
+    if (content is not None):
         content = sanitize_mentions(content, self.guild)
     
     return content
@@ -194,8 +196,10 @@ def convert_new_follower_channel(self):
     
     user_name = self.author.name_at(guild)
     
-    return (f'{user_name} has added {guild_name} #{channel.name} to this channel. Its most important updates '
-        'will show up here.')
+    return (
+        f'{user_name} has added {guild_name} #{channel.name} to this channel. '
+        f'Its most important updates will show up here.'
+    )
 
 def convert_stream(self):
     user = self.author
@@ -211,26 +215,51 @@ def convert_stream(self):
     return f'{user_name} is live! Now streaming {activity_name}'
 
 def convert_discovery_disqualified(self):
-    return ('This server has been removed from Server Discovery because it no longer passes all the requirements. '
-        'Check `Server Settings` for more details.')
+    return (
+        'This server has been removed from Server Discovery because it no longer passes all the requirements. '
+        'Check `Server Settings` for more details.'
+    )
 
 def convert_discovery_requalified(self):
     return 'This server is eligible for Server Discovery again and has been automatically relisted!'
 
 def convert_discovery_grace_period_initial_warning(self):
-    return ('This server has failed Discovery activity requirements for 1 week. If this server fails for 4 weeks in '
-        'a row, it will be automatically removed from Discovery.')
+    return (
+        'This server has failed Discovery activity requirements for 1 week. '
+        'If this server fails for 4 weeks in a row, it will be automatically removed from Discovery.'
+    )
 
 def convert_discovery_grace_period_final_warning(self):
-    return ('This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 '
-        'more week, it will be removed from Discovery.')
+    return (
+        'This server has failed Discovery activity requirements for 3 weeks in a row. '
+        'If this server fails for 1 more week, it will be removed from Discovery.'
+    )
 
 def convert_thread_created(self):
-    user_name = self.author.name_at(self.guild)
+    guild_id = self.guild_id
+    user = self.author
+    
+    if guild_id:
+        try:
+            guild_profile = user.guild_profiiles[guild_id]
+        except KeyError:
+            user_name = user.name
+        else:
+            user_name = guild_profile.nick
+            if (user_name is None):
+                user_name = user.name
+    else:
+        user_name = user.name
+    
     return f'{user_name} started a thread'
 
+
 def convert_invite_reminder(self):
-    return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
+    return (
+        'Wondering who to invite?\n'
+        'Start by inviting anyone who can help you build the server!'
+    )
+
 
 class MessageType(PreinstancedBase):
     """
@@ -302,11 +331,13 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+---------------------------------------------------+-------+
     | inline_reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
     +-------------------------------------------+---------------------------------------------------+-------+
-    | application_command                       | MESSAGE_DEFAULT_CONVERTER                         | 20    |
+    | slash_command                             | MESSAGE_DEFAULT_CONVERTER                         | 20    |
     +-------------------------------------------+---------------------------------------------------+-------+
     | thread_started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
     +-------------------------------------------+---------------------------------------------------+-------+
     | invite_reminder                           | convert_invite_reminder                           | 22    |
+    +-------------------------------------------+---------------------------------------------------+-------+
+    | context_menu_command                      | MESSAGE_DEFAULT_CONVERTER                         | 23    |
     +-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
@@ -382,9 +413,25 @@ class MessageType(PreinstancedBase):
         convert_discovery_grace_period_final_warning)
     thread_created = P(18, 'thread_created', convert_thread_created)
     inline_reply = P(19, 'inline_reply', MESSAGE_DEFAULT_CONVERTER)
-    application_command = P(20, 'application_command', MESSAGE_DEFAULT_CONVERTER)
+    slash_command = P(20, 'slash_command', MESSAGE_DEFAULT_CONVERTER)
     thread_started = P(21, 'thread_started', MESSAGE_DEFAULT_CONVERTER)
     invite_reminder = P(22, 'invite_reminder', convert_invite_reminder)
+    context_menu_command = P(23, 'context_menu_command', MESSAGE_DEFAULT_CONVERTER)
+    
+    
+    @class_property
+    def application_command(cls):
+        """
+        ``.application_command`` is deprecated, please use ``.slash_command`` instead.
+        Will be removed in 2021 September.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.application_command` is deprecated, and will be removed in 2021 November. '
+            f'Please use `{cls.__name__}.slash_command` instead.',
+            FutureWarning)
+        
+        return cls.slash_command
+
 
 del convert_add_user
 del convert_remove_user
@@ -405,3 +452,11 @@ del convert_discovery_grace_period_initial_warning
 del convert_discovery_grace_period_final_warning
 del convert_thread_created
 del convert_invite_reminder
+
+GENERIC_MESSAGE_TYPES = frozenset((
+    MessageType.default,
+    MessageType.inline_reply,
+    MessageType.slash_command,
+    MessageType.thread_started,
+    MessageType.context_menu_command,
+))

@@ -1,10 +1,47 @@
 ## 1.1.96 *\[2021-08-??\]*
 
+#### Improvements
+
+- Add `ERROR_CODES.max_stickers`.
+- Add `ERROR_CODES.rate_limit_prune`.
+- Add `MessageType.context_menu_command`.
+- `Message.content` defaults to `None`.
+- Add `Message.has_activity`.
+- Add `Message.has_application`.
+- Add `Message.has_application_id`.
+- Add `Message.has_attachments`.
+- Add `Message.has_components`.
+- Add `Message.has_content`.
+- Add `Message.has_cross_mentions`.
+- Add `Message.has_referenced_message`.
+- Add `Message.has_deleted`.
+- Add `Message.has_edited_at`.
+- Add `Message.has_embeds`.
+- Add `Message.has_everyone_mention`.
+- Add `Message.has_interaction`.
+- Add `Message.has_nonce`.
+- Add `Message.has_pinned`.
+- Add `Message.has_reactions`.
+- Add `Message.has_role_mention_ids`.
+- Add `Message.has_stickers`.
+- Add `Message.has_thread`.
+- Add `Message.has_tts`.
+- Add `Message.has_user_mentions`.
+
 #### Bug Fixes
+
+- `GuildProfile.get_top_role` could return bad role. (from 1.1.94)
+- `convert_thread_created` was not handling cases when guild is not cached.
+- `Message.__len__` could return bad value for multiple message types.
 
 ##### ext.extension_loaded
 - `.{}_all` methods could try to load the same extension multiple time.
 - Python sets module variables late, so check globals instead.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `MessageType.application_command`.
+- Rename `MessageType.application_command` to `.slash_command`.
 
 ## 1.1.95 *\[2021-08-14\]*
 

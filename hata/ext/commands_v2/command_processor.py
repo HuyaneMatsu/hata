@@ -337,13 +337,21 @@ class CommandProcessor(EventWaitforBase):
             if (user_mentions is None) or (client not in user_mentions):
                 return
             
-            parsed = USER_MENTION_RP.match(message.content)
+            content = message.content
+            if content is None:
+                return
+            
+            parsed = USER_MENTION_RP.match(content)
             if (parsed is None) or (int(parsed.group(1)) != client.id):
                 return
             
             end = parsed.end()
         
-        parsed = COMMAND_NAME_RP.match(message.content, end)
+        content = message.content
+        if content is None:
+            return
+        
+        parsed = COMMAND_NAME_RP.match(content, end)
         if (parsed is None):
             return
         
@@ -357,7 +365,7 @@ class CommandProcessor(EventWaitforBase):
         except KeyError:
             pass
         else:
-            content = message.content[end:]
+            content = content[end:]
             
             if prefix is None:
                 prefix = await self._prefix_getter(message)

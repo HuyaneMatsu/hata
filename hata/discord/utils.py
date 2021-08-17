@@ -1157,15 +1157,18 @@ def sanitize_mentions(content, guild=None):
     
     Parameters
     ----------
-    content : `str`
+    content : `None` or `str`
         The content to sanitize.
     guild : `None` or ``Guild``, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
     -------
-    content : `str`
+    content : `None` or `str`
     """
+    if (content is None):
+        return
+    
     transformations = {
         '@everyone':'@\u200beveryone',
         '@here':'@\u200bhere',
@@ -1202,8 +1205,7 @@ def sanitize_mentions(content, guild=None):
         
         transformations[f'<@&{id_}>'] = sanitized_mention
     
-    return re_compile('|'.join(transformations)).sub(
-        lambda mention: transformations[mention.group(0)], content)
+    return re_compile('|'.join(transformations)).sub(lambda mention: transformations[mention.group(0)], content)
 
 
 def sanitize_content(content, guild=None):
@@ -1212,15 +1214,18 @@ def sanitize_content(content, guild=None):
     
     Parameters
     ----------
-    content : `str`
+    content : `None` or `str`
         The content to sanitize.
     guild : `None` or ``Guild``, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
     -------
-    content : `str`
+    content : `None` or `str`
     """
+    if (content is None):
+        return
+    
     content = content.replace('\\', '\\\\')
     content = content.replace('_', '\\_')
     content = content.replace('*', '\\*')

@@ -23,13 +23,17 @@ async def message_create(client, message):
     """Simple reply functionality based on message content."""
     if message.author.is_bot:
         return  # We will ignore messages from bot accounts
+    
+    content = message.content
+    if content is None:
+        return
+    
+    content = content.lower()
 
-    lowercase_content = message.content.lower()
+    if content in ('owo', 'uwu', '0w0'):
+        await client.message_create(message.channel, content)
 
-    if lowercase_content in ('owo', 'uwu', '0w0'):
-        await client.message_create(message.channel, lowercase_content)
-
-    elif lowercase_content.startswith('ayy'):
+    elif content.startswith('ayy'):
         await client.message_create(message.channel, 'lmao')
 
 

@@ -223,6 +223,7 @@ class GuildProfile(metaclass=Slotted):
                         top_role = role
                 else:
                     top_role = role
+                    role_found = True
         
         return top_role
     

@@ -31,6 +31,7 @@
 - Add `ApplicationCommand.is_slash_command`.
 - Add `send_messages_in_threads` permission.
 - Add `ChannelGuildUndefined.permissions_for_roles`.
+- Add `217` new emojis and fix `6` old alternative names.
 
 #### Bug Fixes
 

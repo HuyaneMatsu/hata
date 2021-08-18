@@ -4,7 +4,10 @@ from ...backend.utils import copy_docs
 from ...backend.export import export
 
 from ..core import CHANNELS, GUILDS
-from ..permission.permission import PERMISSION_NONE
+from ..permission import Permission
+from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, \
+    PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_SEND_MESSAGES, \
+    PERMISSION_DENY_SEND_MESSAGES_ONLY
 from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_int_options, \
@@ -35,6 +38,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     ----------
     id : `int`
         The unique identifier of the channel.
+    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+        A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent : `None` or ``ChannelText``
         The text channel from where the thread is created from.
     guild_id : `int`
@@ -124,6 +129,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
                 update = True
         
         if update:
+            self._permission_cache = None
             self.type = data['type']
             self._init_parent(data, guild)
             self._update_attributes(data)
@@ -439,22 +445,30 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
                         if (not thread_profiles):
                             user.thread_profiles = None
     
+    
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         parent = self.parent
         if parent is None:
             return PERMISSION_NONE
         
-        return parent.permissions_for(user)
-    
-    
-    @copy_docs(ChannelBase.cached_permissions_for)
-    def cached_permissions_for(self, user):
-        parent = self.parent
-        if parent is None:
+        result = parent._permissions_for(user)
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        return parent.cached_permissions_for(user)
+        # text channels don't have voice permissions
+        result &= PERMISSION_VOICE_DENY
+        
+        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
+            result = result&PERMISSION_TEXT_DENY
+            return Permission(result)
+        
+        if result&PERMISSION_MASK_SEND_MESSAGES:
+            result &= PERMISSION_DENY_SEND_MESSAGES_ONLY
+        else:
+            result &= PERMISSION_TEXT_DENY
+        
+        return Permission(result)
     
     
     @copy_docs(ChannelBase.permissions_for_roles)
@@ -463,7 +477,23 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         if parent is None:
             return PERMISSION_NONE
         
-        return parent.permissions_for_roles(*roles)
+        result = parent._permissions_for_roles(roles)
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+            return PERMISSION_NONE
+        
+        # text channels don't have voice permissions
+        result &= PERMISSION_VOICE_DENY
+        
+        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
+            result = result&PERMISSION_TEXT_DENY
+            return Permission(result)
+        
+        if result&PERMISSION_MASK_SEND_MESSAGES:
+            result &= PERMISSION_DENY_SEND_MESSAGES_ONLY
+        else:
+            result &= PERMISSION_TEXT_DENY
+        
+        return Permission(result)
     
     
     @classmethod

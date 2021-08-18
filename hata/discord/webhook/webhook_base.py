@@ -3,7 +3,8 @@ __all__ = ('WebhookBase',)
 from ...backend.utils import copy_docs
 
 from ..user import UserBase
-from ..core import CHANNELS, GUILDS
+from ..core import CHANNELS
+from ..permission.permission import PERMISSION_MASK_USE_EXTERNAL_EMOJIS
 
 from .preinstanced import WebhookType
 
@@ -113,7 +114,7 @@ class WebhookBase(UserBase):
             return False
         
         default_role = guild.default_role
-        if (default_role.can_use_external_emojis):
+        if default_role&PERMISSION_MASK_USE_EXTERNAL_EMOJIS:
             return True
         
         return False

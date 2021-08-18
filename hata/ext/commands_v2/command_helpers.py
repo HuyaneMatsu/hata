@@ -8,6 +8,8 @@ from ...backend.utils import FunctionType
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.export import include
 
+from ...discord.permission.permission import PERMISSION_CAN_SEND_MESSAGES_ALL
+
 from .exceptions import CommandProcessingError, CommandCheckError
 from .utils import raw_name_to_display
 CheckBase = include('CheckBase')
@@ -164,7 +166,7 @@ def default_precheck(client, message):
     if message.author.is_bot:
         return False
     
-    if not message.channel.cached_permissions_for(client).can_send_messages:
+    if not message.channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
         return False
     
     return True

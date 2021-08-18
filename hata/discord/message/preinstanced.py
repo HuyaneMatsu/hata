@@ -337,7 +337,7 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+---------------------------------------------------+-------+
     | invite_reminder                           | convert_invite_reminder                           | 22    |
     +-------------------------------------------+---------------------------------------------------+-------+
-    | context_menu_command                      | MESSAGE_DEFAULT_CONVERTER                         | 23    |
+    | context_command                           | MESSAGE_DEFAULT_CONVERTER                         | 23    |
     +-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
@@ -416,7 +416,7 @@ class MessageType(PreinstancedBase):
     slash_command = P(20, 'slash_command', MESSAGE_DEFAULT_CONVERTER)
     thread_started = P(21, 'thread_started', MESSAGE_DEFAULT_CONVERTER)
     invite_reminder = P(22, 'invite_reminder', convert_invite_reminder)
-    context_menu_command = P(23, 'context_menu_command', MESSAGE_DEFAULT_CONVERTER)
+    context_command = P(23, 'context_command', MESSAGE_DEFAULT_CONVERTER)
     
     
     @class_property
@@ -458,5 +458,5 @@ GENERIC_MESSAGE_TYPES = frozenset((
     MessageType.inline_reply,
     MessageType.slash_command,
     MessageType.thread_started,
-    MessageType.context_menu_command,
+    MessageType.context_command,
 ))

@@ -5,7 +5,7 @@ from ...backend.export import export, include
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY
+from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY, PERMISSION_MASK_VIEW_CHANNEL
 
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool
 
@@ -179,7 +179,7 @@ class ChannelStore(ChannelGuildMainBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result.can_view_channel:
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # store channels do not have text and voice related permissions
@@ -191,12 +191,12 @@ class ChannelStore(ChannelGuildMainBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         result = self._permissions_for_roles(roles)
-        if not result.can_view_channel:
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # store channels do not have text and voice related permissions
         result &= PERMISSION_TEXT_AND_VOICE_DENY
-    
+        return Permission(result)
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):

@@ -13,6 +13,7 @@ from ..utils import time_now, DISCORD_EPOCH
 from ..exceptions import DiscordException
 from ..channel import ChannelThread
 from ..user import create_partial_user_from_id, thread_user_create
+from ..permission.permission import PERMISSION_MASK_VIEW_CHANNEL
 
 USER_CHUNK_TIMEOUT = 2.5
 
@@ -592,6 +593,7 @@ class MultiClientMessageDeleteSequenceSharder:
     """
     __slots__ = ('can_manage_messages', 'can_read_message_history', 'client', 'delete_mass_task', 'delete_new_task',
         'delete_old_task', )
+    
     def __new__(cls, client, channel):
         """
         Creates a new helper instance of a multi client message sequence deleter.
@@ -609,7 +611,7 @@ class MultiClientMessageDeleteSequenceSharder:
             If the respective client could not contribute to any task, returns `None`.
         """
         permissions = channel.cached_permissions_for(client)
-        if not permissions.can_view_channel:
+        if not permissions&PERMISSION_MASK_VIEW_CHANNEL:
             return None
         
         self = object.__new__(cls)

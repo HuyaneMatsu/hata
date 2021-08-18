@@ -1,5 +1,5 @@
 __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteTargetType', 'ApplicationCommandTargetType',
-    'ButtonStyle', 'CONTEXT_APPLICATION_COMMAND_TARGETS', 'ComponentType', 'InteractionType', )
+    'ButtonStyle', 'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES', 'ComponentType', 'InteractionType', )
 
 import warnings
 
@@ -313,7 +313,7 @@ class ApplicationCommandTargetType(PreinstancedBase):
     user = P(2, 'user',)
     message = P(3, 'message',)
 
-CONTEXT_APPLICATION_COMMAND_TARGETS = frozenset((
+APPLICATION_COMMAND_CONTEXT_TARGET_TYPES = frozenset((
     ApplicationCommandTargetType.user,
     ApplicationCommandTargetType.message,
 ))

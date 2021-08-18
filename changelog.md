@@ -4,7 +4,7 @@
 
 - Add `ERROR_CODES.max_stickers`.
 - Add `ERROR_CODES.rate_limit_prune`.
-- Add `MessageType.context_menu_command`.
+- Add `MessageType.context_command`.
 - `Message.content` defaults to `None`.
 - Add `Message.has_activity`.
 - Add `Message.has_application`.
@@ -27,12 +27,18 @@
 - Add `Message.has_thread`.
 - Add `Message.has_tts`.
 - Add `Message.has_user_mentions`.
+- Add `ApplicationCommand.is_context_command`.
+- Add `ApplicationCommand.is_slash_command`.
+- Add `send_messages_in_threads` permission.
+- Add `ChannelGuildUndefined.permissions_for_roles`.
 
 #### Bug Fixes
 
 - `GuildProfile.get_top_role` could return bad role. (from 1.1.94)
 - `convert_thread_created` was not handling cases when guild is not cached.
 - `Message.__len__` could return bad value for multiple message types.
+- `ChannelStore.permissions_for_roles` returned `None`.
+- `ChannelDirectory.permissions_for_roles` returned `None`.
 
 ##### ext.extension_loaded
 - `.{}_all` methods could try to load the same extension multiple time.
@@ -42,6 +48,20 @@
 
 - Deprecate `MessageType.application_command`.
 - Rename `MessageType.application_command` to `.slash_command`.
+- Rename `Permission.use_public_threads` to `.create_public_threads`.
+- Rename `Permission.can_use_public_threads` to `.can_create_public_threads`.
+- Rename `Permission.deny_use_public_threads` to `.deny_create_public_threads`.
+- Rename `Permission.allow_use_public_threads` to `.allow_create_public_threads`.
+- Deprecate `Permission.can_create_public_threads`.
+- Deprecate `Permission.deny_create_public_threads`.
+- Deprecate `Permission.allow_create_public_threads`.
+- Remove unused `Permission.handle_overwrite`.
+- Rename `Permission.can_use_private_threads` to `.can_create_private_threads`.
+- Rename `Permission.deny_use_private_threads` to `.deny_create_private_threads`.
+- Rename `Permission.allow_use_private_threads` to `.allow_create_private_threads`.
+- Deprecate `Permission.can_create_private_threads`.
+- Deprecate `Permission.deny_create_private_threads`.
+- Deprecate `Permission.allow_create_private_threads`.
 
 ## 1.1.95 *\[2021-08-14\]*
 

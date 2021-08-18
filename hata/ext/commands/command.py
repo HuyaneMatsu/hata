@@ -12,6 +12,7 @@ from ...discord.events.handling_helpers import EventWaitforBase, compare_convert
     check_parameter_count_and_convert, Router, route_name, route_value, create_event_from_class
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
+from ...discord.permission.permission import PERMISSION_CAN_SEND_MESSAGES_ALL
 
 from .content_parser import CommandContentParser
 from .checks import validate_checks
@@ -219,7 +220,7 @@ async def process_command_coroutine(client, channel, coro):
         response = await coro
     
     if (response is not None) and isinstance(response, (str, EmbedBase)) and \
-            channel.cached_permissions_for(client).can_send_messages:
+            channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
         
         try:
             await client.message_create(channel, response)
@@ -2613,7 +2614,7 @@ class CommandProcesser(EventWaitforBase):
         if message.author.is_bot:
             return False
         
-        if not message.channel.cached_permissions_for(client).can_send_messages:
+        if not message.channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
             return False
         
         return True

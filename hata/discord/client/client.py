@@ -57,6 +57,8 @@ from ..application import Application, Team, EULA
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
     preconvert_flag, preconvert_preinstanced_type, preconvert_color
 from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
+from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY, PERMISSION_MASK_MANAGE_MESSAGES, \
+    PERMISSION_MASK_CREATE_INSTANT_INVITE
 from ..bases import ICON_TYPE_NONE
 from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, INTERACTION_RESPONSE_TYPES, ApplicationCommandPermission, \
@@ -72,7 +74,8 @@ from ..message.utils import process_message_chunk
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
-    _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, ForceUpdateCache
+    _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, \
+    ForceUpdateCache
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -3814,7 +3817,7 @@ class Client(ClientUserPBase):
         
         # Check permissions
         permissions = channel.cached_permissions_for(self)
-        if not permissions.can_manage_messages:
+        if not permissions&PERMISSION_MASK_MANAGE_MESSAGES:
             return
         
         before = 9223372036854775807 if before is None else log_time_converter(before)
@@ -3834,7 +3837,7 @@ class Client(ClientUserPBase):
         message_group_old_own = deque()
         
         # Check if we can request more messages
-        if channel.message_history_reached_end or (not permissions.can_read_message_history):
+        if channel.message_history_reached_end or (not permissions&PERMISSION_MASK_READ_MESSAGE_HISTORY):
             should_request = False
         else:
             should_request = True
@@ -4952,7 +4955,7 @@ class Client(ClientUserPBase):
             ln = len(messages)
         
         if (end >= ln) and (not channel.message_history_reached_end) and \
-               channel.cached_permissions_for(self).can_read_message_history:
+               channel.cached_permissions_for(self)&PERMISSION_MASK_READ_MESSAGE_HISTORY:
             
             try:
                 await self._load_messages_till(channel, end)
@@ -10841,7 +10844,7 @@ class Client(ClientUserPBase):
             break
         
         # Check permission, because it can save a lot of time >.>
-        if not channel.cached_permissions_for(self).can_create_instant_invite:
+        if not channel.cached_permissions_for(self)&PERMISSION_MASK_CREATE_INSTANT_INVITE:
             return None
         
         try:

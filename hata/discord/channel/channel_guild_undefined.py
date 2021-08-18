@@ -5,7 +5,7 @@ from ...backend.export import export, include
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE
+from ..permission.permission import PERMISSION_NONE, PERMISSION_MASK_VIEW_CHANNEL
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int
 
 from .channel_base import ChannelBase
@@ -215,11 +215,20 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self,user):
         result = self._permissions_for(user)
-        if not result.can_view_channel:
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         return Permission(result)
     
+    
+    @copy_docs(ChannelBase.permissions_for_roles)
+    def permissions_for_roles(self, *roles):
+        result = self._permissions_for_roles(roles)
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+            return PERMISSION_NONE
+        
+        # store channels do not have text and voice related permissions
+        return Permission(result)
     
     @classmethod
     def precreate(cls, channel_id, **kwargs):

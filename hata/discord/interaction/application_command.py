@@ -11,7 +11,7 @@ from ..user import User, UserBase, ClientUserBase, create_partial_user_from_id
 from ..role import Role, create_partial_role_from_id
 
 from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteTargetType, \
-    ApplicationCommandTargetType, CONTEXT_APPLICATION_COMMAND_TARGETS
+    ApplicationCommandTargetType, APPLICATION_COMMAND_CONTEXT_TARGET_TYPES
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER = ApplicationCommandPermissionOverwriteTargetType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE = ApplicationCommandPermissionOverwriteTargetType.role
@@ -167,7 +167,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             target_type = preconvert_preinstanced_type(target_type, 'target_type', ApplicationCommandTargetType)
         
-        if (target_type not in CONTEXT_APPLICATION_COMMAND_TARGETS):
+        if (target_type not in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
             if (description is None):
                 raise ValueError(f'`description` cannot be `None` for application commands with non-context target.')
         else:
@@ -729,6 +729,28 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 length += len(option)
         
         return length
+    
+    
+    def is_context_command(self):
+        """
+        Returns whether the application command is a context command.
+        
+        Returns
+        -------
+        is_context_command : `bool`
+        """
+        return (self.target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES)
+    
+    
+    def is_slash_command(self):
+        """
+        Returns whether the application command is a slash command.
+        
+        Returns
+        -------
+        is_slash_command : `bool`
+        """
+        return (self.target_type is ApplicationCommandTargetType.chat)
 
 
 class ApplicationCommandOption:

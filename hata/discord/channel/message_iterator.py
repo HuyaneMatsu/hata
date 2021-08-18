@@ -3,6 +3,7 @@ __all__ = ('MessageIterator', )
 from ..bases import maybe_snowflake
 from ..core import CHANNELS
 from ..exceptions import DiscordException, ERROR_CODES
+from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY
 
 from .channel_text_base import ChannelTextBase
 
@@ -18,7 +19,7 @@ class MessageIterator:
     _index : `int`
         The index of the message, what will be yielded.
     _can_read_history : `bool`
-        Tells the message iterator, whether it's client can not read the history if it's channel.
+        Tells the message iterator, whether it's client can read the history if it's channel.
     channel : ``ChannelTextBase`` instance
         The channel, what's messages the message iterator will iterates over.
     chunk_size : `int`
@@ -104,7 +105,7 @@ class MessageIterator:
         self.channel = channel
         self.chunk_size = chunk_size
         self._index = 0
-        self._can_read_history = not channel.cached_permissions_for(client).can_read_message_history
+        self._can_read_history = channel.cached_permissions_for(client)&PERMISSION_MASK_READ_MESSAGE_HISTORY
         return self
     
     def __aiter__(self):
@@ -128,7 +129,7 @@ class MessageIterator:
             self._index = index+1
             return channel.messages[index]
         
-        if channel.message_history_reached_end or self._can_read_history:
+        if channel.message_history_reached_end or (not self._can_read_history):
             raise StopAsyncIteration
         
         try:

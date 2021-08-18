@@ -6,7 +6,9 @@ from ...backend.export import export, include
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY
+from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, \
+    PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_SEND_MESSAGES, \
+    PERMISSION_DENY_SEND_MESSAGES_IN_THREADS_ONLY
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_bool, \
     preconvert_int_options
 
@@ -110,7 +112,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             CHANNELS[channel_id] = self
             self._messageable_init()
         else:
-            if self.clients:
+            if not self.partial:
                 return self
         
         self._permission_cache = None
@@ -295,18 +297,20 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result.can_view_channel:
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # text channels don't have voice permissions
         result &= PERMISSION_VOICE_DENY
         
-        if self.type and (not Permission.can_manage_messages(result)):
+        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
             result = result&PERMISSION_TEXT_DENY
             return Permission(result)
         
-        if not Permission.can_send_messages(result):
-            result = result&PERMISSION_TEXT_DENY
+        if result&PERMISSION_MASK_SEND_MESSAGES:
+            result &= PERMISSION_DENY_SEND_MESSAGES_IN_THREADS_ONLY
+        else:
+            result &= PERMISSION_TEXT_DENY
         
         return Permission(result)
     
@@ -314,18 +318,20 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         result = self._permissions_for_roles(roles)
-        if not result.can_view_channel:
+        if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # text channels don't have voice permissions
         result &= PERMISSION_VOICE_DENY
         
-        if self.type and (not Permission.can_manage_messages(result)):
+        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
             result = result&PERMISSION_TEXT_DENY
             return Permission(result)
         
-        if not Permission.can_send_messages(result):
-            result = result&PERMISSION_TEXT_DENY
+        if result&PERMISSION_MASK_SEND_MESSAGES:
+            result &= PERMISSION_DENY_SEND_MESSAGES_IN_THREADS_ONLY
+        else:
+            result &= PERMISSION_TEXT_DENY
         
         return Permission(result)
     
@@ -450,4 +456,3 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
                 setattr(self, *item)
         
         return self
-

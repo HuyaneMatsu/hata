@@ -16,7 +16,7 @@ from ..user import User, create_partial_user_from_id, VoiceState, ZEROUSER, Clie
 from ..role import Role
 from ..channel import CHANNEL_TYPE_MAP, ChannelCategory, ChannelText, ChannelGuildUndefined
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL
+from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR
 from ..emoji import Emoji
 from ..oauth2.helpers import parse_preferred_locale, DEFAULT_LOCALE
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
@@ -1726,7 +1726,7 @@ class Guild(DiscordEntity, immortal=True):
             for role in roles:
                 permissions |= role.permissions
         
-        if Permission.can_administrator(permissions):
+        if permissions&PERMISSION_MASK_ADMINISTRATOR:
             return PERMISSION_ALL
         
         return Permission(permissions)
@@ -1799,7 +1799,7 @@ class Guild(DiscordEntity, immortal=True):
             if role.guild is self:
                 permissions |= role.permissions
         
-        if Permission.can_administrator(permissions):
+        if permissions&PERMISSION_MASK_ADMINISTRATOR:
             return PERMISSION_ALL
         
         return Permission(permissions)

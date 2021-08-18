@@ -1,7 +1,5 @@
 __all__ = ('Menu',)
 
-# Work in progress
-
 from collections import OrderedDict
 from types import MemberDescriptorType
 

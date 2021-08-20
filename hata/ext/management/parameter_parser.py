@@ -1,4 +1,4 @@
-__all__ = ()
+__all__ = ('execute_command_from_system_parameters', )
 
 import sys
 from ...backend.utils import WeakReferer, copy_docs
@@ -897,7 +897,7 @@ class CommandLineCommand:
         -------
         sub_command : ``CommandLineCommandCategory``
         """
-        return self._command_category.register_command_category(self, name)
+        return self._command_category.register_command_category(name)
     
     
     def register_command_function(self, function):
@@ -911,7 +911,7 @@ class CommandLineCommand:
         -------
         command_function : ``CommandLineCommandFunction``
         """
-        return self._command_category.register_command_function(self, function)
+        return self._command_category.register_command_function(function)
     
     
     def __call__(self, parameters, index):
@@ -1449,7 +1449,7 @@ def call_command(parameters, index, output_stream):
     output_stream.write(command_result.get_message())
 
 
-def execute_from_command_system_parameters():
+def execute_command_from_system_parameters():
     """
     Calls the respective command from system parameters.
     """

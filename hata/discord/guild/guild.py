@@ -55,7 +55,11 @@ STICKER_FORMAT_STATIC = StickerFormat.png
 STICKER_FORMAT_ANIMATED = StickerFormat.apng
 STICKER_FORMAT_LOTTIE = StickerFormat.lottie
 
-COMMUNITY_FEATURES = {GuildFeature.community, GuildFeature.discoverable, GuildFeature.public}
+COMMUNITY_FEATURES = frozenset((
+    GuildFeature.community,
+    GuildFeature.discoverable,
+    GuildFeature.public,
+))
 
 
 if CACHE_USER:

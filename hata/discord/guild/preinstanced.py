@@ -506,67 +506,73 @@ class GuildFeature(PreinstancedBase):
     
     Every predefined guild feature can be accessed as class attribute as well:
     
-    +-------------------------------+-----------------------------------+
-    | Class attribute names         | Value                             |
-    +===============================+===================================+
-    | animated_icon                 | ANIMATED_ICON                     |
-    +-------------------------------+-----------------------------------+
-    | banner                        | BANNER                            |
-    +-------------------------------+-----------------------------------+
-    | commerce                      | COMMERCE                          |
-    +-------------------------------+-----------------------------------+
-    | community                     | COMMUNITY                         |
-    +-------------------------------+-----------------------------------+
-    | discoverable                  | DISCOVERABLE                      |
-    +-------------------------------+-----------------------------------+
-    | discoverable_disabled         | DISCOVERABLE_DISABLED             |
-    +-------------------------------+-----------------------------------+
-    | discoverable_enabled_before   | ENABLED_DISCOVERABLE_BEFORE       |
-    +-------------------------------+-----------------------------------+
-    | featurable                    | FEATURABLE                        |
-    +-------------------------------+-----------------------------------+
-    | hub                           | HUB                               |
-    +-------------------------------+-----------------------------------+
-    | member_list_disabled          | MEMBER_LIST_DISABLED              |
-    +-------------------------------+-----------------------------------+
-    | more_emoji                    | MORE_EMOJI                        |
-    +-------------------------------+-----------------------------------+
-    | news                          | NEWS                              |
-    +-------------------------------+-----------------------------------+
-    | partnered                     | PARTNERED                         |
-    +-------------------------------+-----------------------------------+
-    | public                        | PUBLIC                            |
-    +-------------------------------+-----------------------------------+
-    | public_disabled               | PUBLIC_DISABLED                   |
-    +-------------------------------+-----------------------------------+
-    | relay_enabled                 | RELAY_ENABLED                     |
-    +-------------------------------+-----------------------------------+
-    | invite_splash                 | INVITE_SPLASH                     |
-    +-------------------------------+-----------------------------------+
-    | vanity_invite                 | VANITY_URL                        |
-    +-------------------------------+-----------------------------------+
-    | verified                      | VERIFIED                          |
-    +-------------------------------+-----------------------------------+
-    | vip                           | VIP_REGIONS                       |
-    +-------------------------------+-----------------------------------+
-    | welcome_screen                | WELCOME_SCREEN_ENABLED            |
-    +-------------------------------+-----------------------------------+
-    | verification_screen           | MEMBER_VERIFICATION_GATE_ENABLED  |
-    +-------------------------------+-----------------------------------+
-    | preview_enabled               | PREVIEW_ENABLED                   |
-    +-------------------------------+-----------------------------------+
-    | ticket_events_enabled         | TICKETED_EVENTS_ENABLED           |
-    +-------------------------------+-----------------------------------+
-    | monetization_enabled          | MONETIZATION_ENABLED              |
-    +-------------------------------+-----------------------------------+
-    | more_sticker                  | MORE_STICKERS                     |
-    +-------------------------------+-----------------------------------+
-    | thread_archive_three_day      | THREE_DAY_THREAD_ARCHIVE          |
-    +-------------------------------+-----------------------------------+
-    | thread_archive_seven_day      | SEVEN_DAY_THREAD_ARCHIVE          |
-    +-------------------------------+-----------------------------------+
-    | private_threads               | PRIVATE_THREADS                   |
-    +-------------------------------+-----------------------------------+
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | Class attribute names         | name                              | value                             |
+    +===============================+===================================+===================================+
+    | animated_icon                 | animated icon                     | ANIMATED_ICON                     |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | announcement_channels         | announcement channels             | NEWS                              |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | banner                        | banner                            | BANNER                            |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | commerce                      | commerce                          | COMMERCE                          |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | community                     | community                         | COMMUNITY                         |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | discoverable                  | discoverable                      | DISCOVERABLE                      |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | discoverable_disabled         | discoverable disabled             | DISCOVERABLE_DISABLED             |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | discoverable_enabled_before   | discoverable enabled before       | ENABLED_DISCOVERABLE_BEFORE       |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | featurable                    | featurable                        | FEATURABLE                        |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | hub                           | hub                               | HUB                               |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | invite_splash                 | invite splash                     | INVITE_SPLASH                     |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | member_list_disabled          | member list disabled              | MEMBER_LIST_DISABLED              |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | monetization_enabled          | monetization enabled              | MONETIZATION_ENABLED              |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | more_emoji                    | more emoji                        | MORE_EMOJI                        |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | more_sticker                  | more sticker                      | MORE_STICKERS                     |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | partnered                     | partnered                         | PARTNERED                         |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | public                        | public                            | PUBLIC                            |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | preview_enabled               | preview enabled                   | PREVIEW_ENABLED                   |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | public_disabled               | public disabled                   | PUBLIC_DISABLED                   |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | private_threads               | private threads                   | PRIVATE_THREADS                   |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | relay_enabled                 | relay enabled                     | RELAY_ENABLED                     |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | role_icons                    | role icons                        | ROLE_ICONS                        |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | thread_archive_seven_day      | thread archive seven day          | SEVEN_DAY_THREAD_ARCHIVE          |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | thread_archive_three_day      | thread archive three day          | THREE_DAY_THREAD_ARCHIVE          |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | threads_enabled               | threads enabled                   | THREADS_ENABLED                   |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | threads_enabled_testing       | threads enabled testing           | THREADS_ENABLED_TESTING           |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | ticket_events_enabled         | ticket events enabled             | TICKETED_EVENTS_ENABLED           |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | vanity_invite                 | vanity invite                     | VANITY_URL                        |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | verified                      | verified                          | VERIFIED                          |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | vip voice regions             | vip voice regions                 | VIP_REGIONS                       |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | welcome_screen_enabled        | welcome screen enabled            | WELCOME_SCREEN_ENABLED            |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | verification_screen_enabled   | verification screen enabled       | MEMBER_VERIFICATION_GATE_ENABLED  |
+    +-------------------------------+-----------------------------------+-----------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = str
@@ -591,41 +597,44 @@ class GuildFeature(PreinstancedBase):
         """
         self = object.__new__(cls)
         self.value = value
-        self.name = value
+        self.name = value.lower().replace('_', ' ')
         self.INSTANCES[value] = self
         return self
     
     
     # predefined
-    animated_icon = P('ANIMATED_ICON', 'animated_icon')
+    animated_icon = P('ANIMATED_ICON', 'animated icon')
+    announcement_channels = P('NEWS', 'announcement_channels')
     banner = P('BANNER', 'banner')
     commerce = P('COMMERCE', 'commerce')
     community = P('COMMUNITY', 'community')
     discoverable = P('DISCOVERABLE', 'discoverable')
-    discoverable_disabled = P('DISCOVERABLE_DISABLED', 'discoverable_disabled')
-    discoverable_enabled_before = P('ENABLED_DISCOVERABLE_BEFORE', 'discoverable_enabled_before')
+    discoverable_disabled = P('DISCOVERABLE_DISABLED', 'discoverable disabled')
+    discoverable_enabled_before = P('ENABLED_DISCOVERABLE_BEFORE', 'discoverable enabled before')
     featurable = P('FEATURABLE', 'featurable')
-    member_list_disabled = P('MEMBER_LIST_DISABLED', 'member_list_disabled')
-    more_emoji = P('MORE_EMOJI', 'more_emoji')
-    news = P('NEWS', 'news')
+    hub = P('HUB', 'hub')
+    invite_splash = P('INVITE_SPLASH', 'invite splash')
+    member_list_disabled = P('MEMBER_LIST_DISABLED', 'member list disabled')
+    monetization_enabled = P('MONETIZATION_ENABLED', 'monetization enabled')
+    more_emoji = P('MORE_EMOJI', 'more emoji')
+    more_sticker = P('MORE_STICKERS', 'more sticker')
     partnered = P('PARTNERED', 'partnered')
+    preview_enabled = P('PREVIEW_ENABLED', 'preview enabled')
+    private_threads = P('PRIVATE_THREADS', 'private threads')
     public = P('PUBLIC', 'public')
-    public_disabled = P('PUBLIC_DISABLED', 'public_disabled')
-    relay_enabled = P('RELAY_ENABLED', 'relay_enabled')
-    invite_splash = P('INVITE_SPLASH', 'invite_splash')
-    vanity_invite = P('VANITY_URL', 'vanity_invite')
+    public_disabled = P('PUBLIC_DISABLED', 'public disabled')
+    relay_enabled = P('RELAY_ENABLED', 'relay enabled')
+    role_icons = P('ROLE_ICONS', 'role icons')
+    thread_archive_seven_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread archive seven day')
+    thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread archive three day')
+    threads_enabled = P('THREADS_ENABLED', 'threads enabled')
+    threads_enabled_testing = P('THREADS_ENABLED_TESTING', 'threads enabled testing')
+    ticket_events_enabled = P('TICKETED_EVENTS_ENABLED', 'ticket events enabled')
+    vanity_invite = P('VANITY_URL', 'vanity invite')
+    verification_screen_enabled = P('MEMBER_VERIFICATION_GATE_ENABLED', 'verification screen enabled')
     verified = P('VERIFIED', 'verified')
-    vip = P('VIP_REGIONS', 'vip')
-    welcome_screen = P('WELCOME_SCREEN_ENABLED', 'welcome_screen')
-    verification_screen = P('MEMBER_VERIFICATION_GATE_ENABLED', 'verification_screen')
-    preview_enabled = P('PREVIEW_ENABLED', 'preview_enabled')
-    ticket_events_enabled = P('TICKETED_EVENTS_ENABLED', 'ticket_events_enabled')
-    monetization_enabled = P('MONETIZATION_ENABLED', 'monetization_enabled')
-    more_sticker = P('MORE_STICKERS', 'more_sticker')
-    thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread_archive_three_day')
-    thread_archive_seven_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread_archive_seven_day')
-    private_threads = P('PRIVATE_THREADS', 'private_threads')
-    hub = P('hub', 'HUB')
+    vip_voice_regions = P('VIP_REGIONS', 'vip_voice_regions')
+    welcome_screen_enabled = P('WELCOME_SCREEN_ENABLED', 'welcome screen enabled')
     
     
     @class_property
@@ -639,6 +648,63 @@ class GuildFeature(PreinstancedBase):
             FutureWarning)
         
         return cls.vanity_invite
+    
+    
+    @class_property
+    def welcome_screen(cls):
+        """
+        ``.welcome_screen`` is deprecated, please use ``.welcome_screen_enabled`` instead. Will be removed in 2021
+        November.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.welcome_screen` is deprecated, and will be removed in 2021 November. '
+            f'Please use `{cls.__name__}.welcome_screen_enabled` instead.',
+            FutureWarning)
+        
+        return cls.welcome_screen_enabled
+    
+    
+    @class_property
+    def verification_screen(cls):
+        """
+        ``.verification_screen`` is deprecated, please use ``.verification_screen_enabled`` instead. Will be removed in 2021
+        November.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.verification_screen` is deprecated, and will be removed in 2021 November. '
+            f'Please use `{cls.__name__}.verification_screen_enabled` instead.',
+            FutureWarning)
+        
+        return cls.verification_screen_enabled
+    
+    
+    @class_property
+    def vip(cls):
+        """
+        ``.vip`` is deprecated, please use ``.vip_voice_regions`` instead. Will be removed in 2021
+        November.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.vip` is deprecated, and will be removed in 2021 November. '
+            f'Please use `{cls.__name__}.vip_voice_regions` instead.',
+            FutureWarning)
+        
+        return cls.vip_voice_regions
+    
+    
+    @class_property
+    def news(cls):
+        """
+        ``.news`` is deprecated, please use ``.announcement_channels`` instead. Will be removed in 2021
+        November.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.news` is deprecated, and will be removed in 2021 November. '
+            f'Please use `{cls.__name__}.announcement_channels` instead.',
+            FutureWarning)
+        
+        return cls.announcement_channels
+
 
 
 

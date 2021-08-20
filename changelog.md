@@ -1,4 +1,29 @@
+## 1.1.97 *\[2021-08-19\]*
+
+#### Improvements
+
+- `GuildFeature._from_value` now correctly transforms `.name`.
+- Add `GuildFeature.threads_enabled`.
+- Add `GuildFeature.role_icons`.
+- Guild feature names now use space instead of underscore.
+- Add `GuildFeature.threads_enabled_testing`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `GuildFeature.verification_screen` to `.verification_screen_enabled`.
+- Deprecate `GuildFeature.verification_screen`.
+- Rename `GuildFeature.welcome_screen` to `.welcome_screen_enabled`.
+- Deprecate `GuildFeature.welcome_screen`.
+- Rename `GuildFeature.vip` to `.vip_voice_regions`.
+- Deprecate `GuildFeature.vip`.
+- Rename `GuildFeature.news` to `.announcement_channels`.
+- Deprecate `GuildFeature.new`.
+
 ## 1.1.96 *\[2021-08-19\]*
+
+### Summary
+
+Add new emojis.
 
 #### Improvements
 
@@ -65,6 +90,10 @@
 - Deprecate `Permission.allow_create_private_threads`.
 
 ## 1.1.95 *\[2021-08-14\]*
+
+### Summary
+
+Sync slash extension's type names with recent application command target type addition.
 
 #### Improvements
 

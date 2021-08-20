@@ -5699,7 +5699,7 @@ class Client(ClientUserPBase):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        if (guild is None) or (GuildFeature.verification_screen in guild.features):
+        if (guild is None) or (GuildFeature.verification_screen_enabled in guild.features):
             verification_screen_data = await self.http.verification_screen_get(guild_id)
             if verification_screen_data is None:
                 verification_screen = None

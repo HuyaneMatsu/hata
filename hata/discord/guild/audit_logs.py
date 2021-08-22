@@ -96,7 +96,7 @@ class AuditLog:
             pass
         else:
             for thread_data in thread_datas:
-                thread = ChannelThread(thread_data, None, guild)
+                thread = ChannelThread(thread_data, None, guild.id)
                 threads[thread.id] = thread
         
         self.entries = entries = []
@@ -389,7 +389,7 @@ class AuditLogIterator:
             threads = self.threads
             
             for thread_data in thread_datas:
-                thread = ChannelThread(thread_data, None, self.guild)
+                thread = ChannelThread(thread_data, None, self.guild.id)
                 threads[thread.id] = thread
         
         entries = self.entries

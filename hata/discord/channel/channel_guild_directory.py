@@ -30,7 +30,7 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
     parent_id : `0`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
@@ -69,7 +69,7 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
     type = 14
     
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a directory channel from the channel data received from Discord. If the channel already exists and if
         it is partial, then updates it.
@@ -78,13 +78,11 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `None` or ``Guild``
+            The channel's guild's identifier.
         """
-        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -99,7 +97,7 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
         self._permission_cache = None
         self.name = data['name']
         
-        self._init_parent_and_position(data, guild)
+        self._init_parent_and_position(data, guild_id)
         self.permission_overwrites = parse_permission_overwrites(data)
         
         return self
@@ -108,8 +106,8 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
     """
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelTextBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelTextBase, cls)._create_empty(channel_id, channel_type, guild_id)
         return self
     """
     
@@ -250,7 +248,7 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.type, None)
+            self = cls._create_empty(channel_id, cls.type, 0)
             CHANNELS[channel_id] = self
             
         else:

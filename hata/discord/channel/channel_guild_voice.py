@@ -38,7 +38,7 @@ class ChannelVoiceBase(ChannelGuildMainBase):
     parent_id : `int`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
@@ -69,8 +69,8 @@ class ChannelVoiceBase(ChannelGuildMainBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelVoiceBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelVoiceBase, cls)._create_empty(channel_id, channel_type, guild_id)
         
         self.bitrate = 0
         self.region = None
@@ -118,7 +118,7 @@ class ChannelVoice(ChannelVoiceBase):
     parent_id : `int`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
@@ -151,7 +151,7 @@ class ChannelVoice(ChannelVoiceBase):
     INTERCHANGE = (2,)
     type = 2
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client=None, guild_id=0):
         """
         Creates a voice channel from the channel data received from Discord. If the channel already exists and if it is
         partial, then updates it.
@@ -162,11 +162,9 @@ class ChannelVoice(ChannelVoiceBase):
             Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`, Optional
+            The channel's guild's identifier.
         """
-        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -182,7 +180,7 @@ class ChannelVoice(ChannelVoiceBase):
         self._permission_cache = None
         self.name = data['name']
         
-        self._init_parent_and_position(data, guild)
+        self._init_parent_and_position(data, guild_id)
         self.permission_overwrites = parse_permission_overwrites(data)
         
         # Voice base
@@ -201,8 +199,8 @@ class ChannelVoice(ChannelVoiceBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelVoice, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelVoice, cls)._create_empty(channel_id, channel_type, guild_id)
         
         self.video_quality_mode = VideoQualityMode.auto
         
@@ -423,7 +421,7 @@ class ChannelVoice(ChannelVoiceBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, 0)
             CHANNELS[channel_id] = self
         
         else:
@@ -452,7 +450,7 @@ class ChannelStage(ChannelVoiceBase):
     parent_id : `int`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier.. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
@@ -486,7 +484,7 @@ class ChannelStage(ChannelVoiceBase):
     INTERCHANGE = (13,)
     type = 13
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a stage channel from the channel data received from Discord. If the channel already exists and if it is
         partial, then updates it.
@@ -495,13 +493,11 @@ class ChannelStage(ChannelVoiceBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`
+            The channel's guild's identifier.
         """
-        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -517,7 +513,7 @@ class ChannelStage(ChannelVoiceBase):
         self._permission_cache = None
         self.name = data['name']
         
-        self._init_parent_and_position(data, guild)
+        self._init_parent_and_position(data, guild_id)
         self.permission_overwrites = parse_permission_overwrites(data)
         
         # Voice base
@@ -535,8 +531,8 @@ class ChannelStage(ChannelVoiceBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelStage, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelStage, cls)._create_empty(channel_id, channel_type, guild_id)
         
         self.topic = None
         
@@ -774,7 +770,7 @@ class ChannelStage(ChannelVoiceBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, 0)
             CHANNELS[channel_id] = self
         
         else:

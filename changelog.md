@@ -8,6 +8,9 @@
 - Guild feature names now use space instead of underscore.
 - Add `GuildFeature.threads_enabled_testing`.
 
+##### ext.patchouli
+- `map_module` will no longer trigger warnings.
+
 #### Renames, Deprecation & Removals
 
 - Rename `GuildFeature.verification_screen` to `.verification_screen_enabled`.

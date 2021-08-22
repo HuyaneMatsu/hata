@@ -330,12 +330,12 @@ class Guild(DiscordEntity, immortal=True):
                 for channel_data in channel_datas:
                     channel_type = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)
                     if channel_type is ChannelCategory:
-                        channel_type(channel_data, client, self)
+                        channel_type(channel_data, client, guild_id)
                     else:
                         later.append((channel_type, channel_data),)
                 
                 for channel_type, channel_data in later:
-                    channel_type(channel_data, client, self)
+                    channel_type(channel_data, client, guild_id)
             
             self._update_attributes(data)
             
@@ -379,7 +379,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for thread_data in thread_datas:
-                    CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, self)
+                    CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, guild_id)
             
             stage_datas = data.get('stage_instances', None)
             if (stage_datas is not None) and stage_datas:
@@ -1147,7 +1147,7 @@ class Guild(DiscordEntity, immortal=True):
             channel_type = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)
             if channel_type is ChannelCategory:
                 #categories
-                channel = channel_type(channel_data, None, self)
+                channel = channel_type(channel_data, None, self.id)
                 channel_id = channel.id
                 try:
                     old_ids.remove(channel_id)
@@ -1161,7 +1161,7 @@ class Guild(DiscordEntity, immortal=True):
         
         #non category channels
         for channel_type, channel_data in later:
-            channel = channel_type(channel_data, None, self)
+            channel = channel_type(channel_data, None, self.id)
             channel_id = channel.id
             try:
                 old_ids.remove(channel_id)
@@ -1170,7 +1170,8 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 #old channel -> update
                 channel._update_attributes(channel_data)
-        #deleting
+        
+        # deleting
         for channel_id in old_ids:
             channels[channel_id]._delete()
     

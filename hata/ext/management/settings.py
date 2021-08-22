@@ -1,9 +1,10 @@
 from hata import from_json, to_json
 from os.path import exists, isfile as is_file
+from os import getcwd as get_current_working_directory
 
 from .checkout import checkout_list_structure, ELEMENT_TYPE_IDENTIFIER_STRING
 
-KEY_BOT_DIRECTORIES = 'bot_directories'
+KEY_BOT_DIRECTORIES = 'BOT_DIRECTORIES'
 
 class ProjectSettings:
     """
@@ -99,3 +100,30 @@ class ProjectSettings:
         self.path = path
         self.bot_directories = None
         return self
+    
+    
+    def _save(self):
+        """
+        Saves the settings to it's respective path.
+        """
+        data = {}
+        
+        bot_directories = self.bot_directories
+        if (bot_directories is not None):
+            data[KEY_BOT_DIRECTORIES] = bot_directories
+        
+        raw_data = to_json(data)
+        
+        with open(self.path, 'w') as file:
+            file.write(raw_data)
+
+
+def load_settings_from_current_working_directory():
+    """
+    Loads the settings from teh current working directory.
+    
+    Returns
+    -------
+    project_settings : ``ProjectSettings``
+    """
+    return ProjectSettings._from_path(get_current_working_directory())

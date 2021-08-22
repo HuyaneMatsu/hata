@@ -29,7 +29,7 @@ class ChannelStore(ChannelGuildMainBase):
     parent_id : `0`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
@@ -58,7 +58,7 @@ class ChannelStore(ChannelGuildMainBase):
     INTERCHANGE = (6,)
     type = 6
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a store channel from the channel data received from Discord. If the channel already exists and if
         it is partial, then updates it.
@@ -67,13 +67,11 @@ class ChannelStore(ChannelGuildMainBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`
+            The channel's guild's identifier.
         """
-        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -89,7 +87,7 @@ class ChannelStore(ChannelGuildMainBase):
         self.name = data['name']
         self.nsfw = data.get('nsfw', False)
         
-        self._init_parent_and_position(data, guild)
+        self._init_parent_and_position(data, guild_id)
         self.permission_overwrites = parse_permission_overwrites(data)
         
         return self
@@ -97,8 +95,8 @@ class ChannelStore(ChannelGuildMainBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelStore, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelStore, cls)._create_empty(channel_id, channel_type, guild_id)
         
         self.nsfw = False
         
@@ -121,7 +119,7 @@ class ChannelStore(ChannelGuildMainBase):
         self.nsfw = data.get('nsfw', False)
     
     
-    def _difference_update_attributes(self,data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.
@@ -260,7 +258,7 @@ class ChannelStore(ChannelGuildMainBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.type, None)
+            self = cls._create_empty(channel_id, cls.type, 0)
             CHANNELS[channel_id] = self
             
         else:

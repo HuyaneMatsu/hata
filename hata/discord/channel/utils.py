@@ -46,7 +46,7 @@ CHANNEL_TYPE_MAP = {
 export(CHANNEL_TYPE_MAP, 'CHANNEL_TYPE_MAP')
 
 
-def create_partial_channel_from_data(data, partial_guild=None):
+def create_partial_channel_from_data(data, guild_id):
     """
     Creates a partial channel from partial channel data.
     
@@ -54,8 +54,8 @@ def create_partial_channel_from_data(data, partial_guild=None):
     ----------
     data : `None` or `dict` of (`str`, `Any`) items
         Partial channel data received from Discord.
-    partial_guild : `None` or ``Guild``, Optional
-        A partial guild for the created channel.
+    guild_id : `int`
+        The channel's guild's identifier.
     
     Returns
     -------
@@ -71,16 +71,14 @@ def create_partial_channel_from_data(data, partial_guild=None):
     except KeyError:
         pass
     
-    cls = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-    
-    channel = cls._from_partial_data(data, channel_id, partial_guild)
+    channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)._from_partial_data(data, channel_id, guild_id)
     CHANNELS[channel_id] = channel
     
     return channel
 
 
 @export
-def create_partial_channel_from_id(channel_id, channel_type, partial_guild=None):
+def create_partial_channel_from_id(channel_id, channel_type, guild_id):
     """
     Creates a new partial channel from the given identifier.
     
@@ -90,17 +88,16 @@ def create_partial_channel_from_id(channel_id, channel_type, partial_guild=None)
         The channel's identifier.
     channel_type : `int`
         The channel's type identifier.
-    partial_guild : `None` or ``Guild``, Optional
-        A partial guild for the created channel.
+    guild_id : `int`
+        A guild's identifier of the created channel.
     """
     try:
         return CHANNELS[channel_id]
     except KeyError:
         pass
     
-    cls = CHANNEL_TYPE_MAP.get(channel_type, ChannelGuildUndefined)
-    
-    channel = cls._create_empty(channel_id, channel_type, partial_guild)
+    channel_type = CHANNEL_TYPE_MAP.get(channel_type, ChannelGuildUndefined)
+    channel = channel_type._create_empty(channel_id, channel_type, guild_id)
     CHANNELS[channel_id] = channel
     
     return channel

@@ -37,7 +37,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     DEFAULT_TYPE = 0
     INTERCHANGE = ()
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client=None, guild_id=0):
         """
         Creates a new channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -48,8 +48,8 @@ class ChannelBase(DiscordEntity, immortal=True):
             Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`, Optional
+            The guild's identifier of the channel.
         
         Raises
         -------
@@ -537,7 +537,7 @@ class ChannelBase(DiscordEntity, immortal=True):
 
     
     @classmethod
-    def _from_partial_data(cls, data, channel_id, partial_guild):
+    def _from_partial_data(cls, data, channel_id, guild_id):
         """
         Creates a channel from partial data. Called by ``create_partial_channel_from_data`` when a new
         partial channel is needed to be created.
@@ -548,8 +548,8 @@ class ChannelBase(DiscordEntity, immortal=True):
             Partial channel data.
         channel_id : `int`
             The channel's id.
-        partial_guild : ``Guild`` or `None`
-            The channel's guild if applicable.
+        guild_id : `int`
+            The channel's guild's identifier if applicable.
         
         Returns
         -------
@@ -560,12 +560,12 @@ class ChannelBase(DiscordEntity, immortal=True):
         except KeyError:
             channel_type = cls.DEFAULT_TYPE
         
-        self = cls._create_empty(channel_id, channel_type, partial_guild)
+        self = cls._create_empty(channel_id, channel_type, guild_id)
         
         return self
     
     @classmethod
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
+    def _create_empty(cls, channel_id, channel_type, guild_id):
         """
         Creates a partial channel from the given parameters.
         
@@ -575,8 +575,8 @@ class ChannelBase(DiscordEntity, immortal=True):
             The channel's identifier.
         channel_type : `int`
             The channel's type identifier.
-        partial_guild : `None` or ``Guild``
-            A partial guild for the created channel.
+        guild_id : `int`
+            A partial guild's identifier for the created channel.
         
         Returns
         -------

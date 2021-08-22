@@ -2515,7 +2515,7 @@ class Client(ClientUserPBase):
         
         data = {'recipients': user_ids}
         data = await self.http.channel_group_create(self.id, data)
-        return ChannelGroup(data, self)
+        return ChannelGroup(data, self, 0)
     
     async def channel_private_create(self, user):
         """
@@ -2549,7 +2549,7 @@ class Client(ClientUserPBase):
             channel = self.private_channels[user_id]
         except KeyError:
             data = await self.http.channel_private_create({'recipient_id': user_id})
-            channel = ChannelPrivate(data, self)
+            channel = ChannelPrivate(data, self, 0)
         
         return channel
     
@@ -2575,7 +2575,7 @@ class Client(ClientUserPBase):
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self)
+                channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self, 0)
                 channels.append(channel)
         
         return channels
@@ -3117,8 +3117,7 @@ class Client(ClientUserPBase):
         data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
         data = await self.http.channel_create(guild_id, data, reason)
         
-        if (guild is not None):
-            return CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, self, guild)
+        return CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, self, guild_id)
     
     
     async def channel_delete(self, channel, *, reason=None):
@@ -3185,16 +3184,12 @@ class Client(ClientUserPBase):
         """
         source_channel, source_channel_id = get_channel_and_id(source_channel, ChannelText)
         if source_channel is None:
-            source_channel = create_partial_channel_from_id(source_channel_id, 5)
+            source_channel = create_partial_channel_from_id(source_channel_id, 5, 0)
         else:
             if __debug__:
                 if source_channel.type != 5:
                     raise AssertionError(f'`source_channel` must be type 5 (announcements) channel, got '
                         f'`{source_channel}`.')
-        
-        target_channel, target_channel_id = get_channel_and_id(target_channel, ChannelText)
-        if target_channel is None:
-            target_channel = create_partial_channel_from_id(target_channel_id, 0)
         
         data = {
             'webhook_channel_id': target_channel_id,
@@ -8135,17 +8130,14 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
         data = await self.http.guild_thread_get_all_active(guild_id)
-        
-        if guild is None:
-            guild = GUILDS.get(guild_id, None)
         
         thread_channel_datas = data['threads']
         
         thread_channels = [
-            ChannelThread(thread_channel_data, self, guild) for thread_channel_data in thread_channel_datas
+            ChannelThread(thread_channel_data, self, guild_id) for thread_channel_data in thread_channel_datas
         ]
         
         thread_user_datas = data['members']
@@ -8305,7 +8297,7 @@ class Client(ClientUserPBase):
                 guild_id = int(guild_id)
                 guild = GUILDS.get(guild_id, None)
         
-        return ChannelThread(channel_data, self, guild)
+        return ChannelThread(channel_data, self, guild.id)
     
     
     async def thread_join(self, thread_channel):
@@ -8454,7 +8446,7 @@ class Client(ClientUserPBase):
         thread_user_datas = await self.http.thread_user_get_all(channel_id)
         
         if thread_channel is None:
-            thread_channel = create_partial_channel_from_id(channel_id, 12)
+            thread_channel = create_partial_channel_from_id(channel_id, 12, 0)
         
         users = []
         for thread_user_data in thread_user_datas:
@@ -9889,7 +9881,7 @@ class Client(ClientUserPBase):
                     break
             
             channel_id = int(message_data['channel_id'])
-            channel = create_partial_channel_from_id(channel_id, 0)
+            channel = create_partial_channel_from_id(channel_id, 0, 0)
             break
         
         return channel._create_new_message(message_data)

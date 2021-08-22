@@ -53,7 +53,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     INTERCHANGE = (1,)
     type = 1
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a private channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -62,13 +62,11 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`
+            The channel's guild's identifier.
         """
-        assert (client is not None), f'`client` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -89,23 +87,25 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             user = User(user_data)
             users.append(user)
         
-        if client not in users:
-            users.append(client)
+        if (client is not None):
+            if client not in users:
+                users.append(client)
+            
+            users.sort()
+            
+            user = users[0]
+            if user is client:
+                user = users[1]
+                
+            client.private_channels[user.id] = self
         
-        users.sort()
-        
-        user = users[0]
-        if user is client:
-            user = users[1]
-        
-        client.private_channels[user.id] = self
         return self
     
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelPrivate, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelPrivate, cls)._create_empty(channel_id, channel_type, guild_id)
         self._messageable_init()
         self.users = []
         
@@ -237,7 +237,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.type, None)
+            self = cls._create_empty(channel_id, cls.type, 0)
             CHANNELS[channel_id] = self
         
         return self
@@ -294,7 +294,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     INTERCHANGE = (3,)
     type = 3
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client=None, guild_id=0):
         """
         Creates a channel from the channel data received from Discord. If the channel already exists and if it is
         partial, then updates it.
@@ -305,11 +305,9 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             Channel data receive from Discord.
         client : `None` or ``Client``, Optional
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`, Optional
+            The channel's guild's identifier.
         """
-        assert (client is not None), f'`client` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -337,7 +335,9 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         users.sort()
         
-        client.group_channels[channel_id] = self
+        if (client is not None):
+            client.group_channels[channel_id] = self
+        
         return self
     
     
@@ -361,8 +361,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     
     @classmethod
     @copy_docs(ChannelBase._from_partial_data)
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        self = super(ChannelGroup, cls)._from_partial_data(data, channel_id, partial_guild)
+    def _from_partial_data(cls, data, channel_id, guild_id):
+        self = super(ChannelGroup, cls)._from_partial_data(data, channel_id, guild_id)
         
         name = data.get('name', None)
         if (name is not None):
@@ -373,8 +373,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelGroup, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelGroup, cls)._create_empty(channel_id, channel_type, guild_id)
         self._messageable_init()
         
         self.users = []
@@ -550,7 +550,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.type, None)
+            self = cls._create_empty(channel_id, cls.type, 0)
             CHANNELS[channel_id] = self
             
         else:

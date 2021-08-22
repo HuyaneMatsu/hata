@@ -488,7 +488,7 @@ class ContentFilterLevel(PreinstancedBase):
 class GuildFeature(PreinstancedBase):
     """
     Represents a ``Guild``'s feature.
-
+    
     Attributes
     ----------
     value : `str`
@@ -604,7 +604,7 @@ class GuildFeature(PreinstancedBase):
     
     # predefined
     animated_icon = P('ANIMATED_ICON', 'animated icon')
-    announcement_channels = P('NEWS', 'announcement_channels')
+    announcement_channels = P('NEWS', 'announcement channels')
     banner = P('BANNER', 'banner')
     commerce = P('COMMERCE', 'commerce')
     community = P('COMMUNITY', 'community')

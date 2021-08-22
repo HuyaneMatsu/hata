@@ -33,7 +33,7 @@ class ChannelGuildBase(ChannelBase):
     parent_id : `int`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     
@@ -245,8 +245,8 @@ class ChannelGuildBase(ChannelBase):
     
     @classmethod
     @copy_docs(ChannelBase._from_partial_data)
-    def _from_partial_data(cls, data, channel_id, partial_guild):
-        self = super(ChannelGuildBase, cls)._from_partial_data(data, channel_id, partial_guild)
+    def _from_partial_data(cls, data, channel_id, guild_id):
+        self = super(ChannelGuildBase, cls)._from_partial_data(data, channel_id, guild_id)
         
         try:
             name = data['name']
@@ -260,14 +260,10 @@ class ChannelGuildBase(ChannelBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelGuildBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelGuildBase, cls)._create_empty(channel_id, channel_type, guild_id)
         self._permission_cache = None
         self.parent_id = 0
-        if partial_guild is None:
-            guild_id = 0
-        else:
-            guild_id = partial_guild.id
         self.guild_id = guild_id
         self.name = ''
         return self
@@ -338,7 +334,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
     parent_id : `int`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
@@ -457,7 +453,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
         return NotImplemented
     
     
-    def _init_parent_and_position(self, data, guild):
+    def _init_parent_and_position(self, data, guild_id):
         """
         Initializes the `.parent` and the `.position` of the channel. If a channel is under the ``Guild``,
         and not in a parent (parent channels are all like these), then their `.parent` is the ``Guild`` itself.
@@ -469,8 +465,14 @@ class ChannelGuildMainBase(ChannelGuildBase):
         guild : ``Guild``
             The guild of the channel.
         """
-        self.guild_id = guild.id
-        guild.channels[self.id] = self
+        self.guild_id = guild_id
+        
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            pass
+        else:
+            guild.channels[self.id] = self
         
         parent_id = data.get('parent_id', None)
         if (parent_id is None):
@@ -495,10 +497,6 @@ class ChannelGuildMainBase(ChannelGuildBase):
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord
         """
-        guild = self.guild
-        if guild is None:
-            return
-        
         new_parent_id = data.get('parent_id', None)
         if new_parent_id is None:
             new_parent_id = 0
@@ -613,7 +611,6 @@ class ChannelGuildMainBase(ChannelGuildBase):
             return PERMISSION_NONE
         
         # Apply everyone's
-        guild_id = guild.id
         role_everyone = guild.roles.get(guild_id, None)
         if role_everyone is None:
             permissions = 0
@@ -755,8 +752,8 @@ class ChannelGuildMainBase(ChannelGuildBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelGuildMainBase, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelGuildMainBase, cls)._create_empty(channel_id, channel_type, guild_id)
         self.permission_overwrites = {}
         self.position = 0
         return self

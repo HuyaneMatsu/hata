@@ -4,6 +4,7 @@ import sys
 from sys import platform as PLATFORM
 from os import  getpid as get_process_identifier
 from threading import current_thread
+from math import floor
 
 from ...backend.utils import to_json, from_json
 from ...backend.event_loop import EventThread
@@ -13,7 +14,7 @@ from ...discord.preconverters import preconvert_snowflake
 from ...discord.client.request_helpers import get_user_id, get_guild_id, get_channel_id
 from ...discord.activity import ActivityRich
 from ...discord.user import ZEROUSER
-from ...discord.channel import ChannelTextBase
+from ...discord.channel import ChannelTextBase, ChannelVoiceBase
 
 from .certified_device import CertifiedDevice
 from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, OPERATION_FRAME, IPC_VERSION, \
@@ -22,10 +23,13 @@ from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, 
     PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT, PAYLOAD_COMMAND_ACTIVITY_SET, PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT, \
     PAYLOAD_COMMAND_UNSUBSCRIBE, PAYLOAD_COMMAND_SUBSCRIBE, RECONNECT_INTERVAL, RECONNECT_RATE_LIMITED_INTERVAL, \
     CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_CODES_FATAL, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, \
-    PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET
+    PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, \
+    PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, \
+    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL
 from .command_handling import COMMAND_HANDLERS
 from .utils import get_ipc_path, check_for_error
 from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode
+from .user_voice_settings import AudioBalance
 
 PROCESS_IDENTIFIER = get_process_identifier()
 
@@ -384,6 +388,168 @@ class RPCClient:
         """
         self.running = False
     
+    
+    async def user_guild_channel_get_all(self, guild):
+        """
+        Gets the guild's channels.
+        
+        > The user must be in the guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild or it's identifier.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelGuildBase``
+        
+        Raises
+        ------
+        TypeError
+            `guild` is neither `int`, nor ``Guild`` instance.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        guild_id = get_guild_id(guild)
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL,
+            PAYLOAD_KEY_PARAMETERS: {
+                guild_id : str(guild_id),
+            },
+        }
+        
+        return await self._send_request(data)
+    
+    
+    async def user_voice_settings_set(self, *, audio_balance=None, mute=None, volume=None):
+        """
+        Changes the user's voice settings.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        audio_balance : `None`, ``AudioBalance``, Optional (Keyword only)
+            Audio balance.
+        mute : `None` or `bool`
+            Whether the user is muted.
+        volume : `None` or `float`
+            The user's volume.
+            
+            Can be in range [0.0:2.0].
+        
+        Returns
+        -------
+        user_voice_settings : ``UserVoiceSettings``
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        AssertionError
+            - If `audio_balance` is neither `None` nor ``AudioBalance`` instance.
+            - If `mute` is neither `None` nor `int` instance.
+            - If `volume` is neither `None` nor `float` instance.
+            - If `volume` is out of range [0.0:2.0].
+        """
+        parameters = {
+            'user_id': str(self.user.id),
+        }
+        
+        if (audio_balance is not None):
+            if not isinstance(audio_balance, AudioBalance):
+                raise AssertionError(f'`audio_balance` can  be either `None` nor `{AudioBalance.__name__}` instance, got '
+                    f'{audio_balance.__class__.__name__}.')
+            
+            audio_balance_data = audio_balance.to_data()
+            if audio_balance_data:
+                parameters['pan'] = audio_balance_data
+        
+        if (mute is not None):
+            if not isinstance(mute, bool):
+                raise AssertionError(f'`mute` can be either `None` or `bool` instance, got {mute.__class__.__name__}.')
+            
+            parameters['mute'] = mute
+        
+        if (volume is not None):
+            if not isinstance(mute, float):
+                raise AssertionError(f'`mute` can be either `None` or `float` instance, got '
+                    f'{float.__class__.__name__}.')
+            
+            if (volume < 0.0) or (volume > 2.0):
+                raise AssertionError(f'`volume` can be in range [0.0:2.0], got {}.')
+            
+            parameters['volume'] = floor(volume*100.0)
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET,
+            PAYLOAD_KEY_PARAMETERS: parameters,
+        }
+        
+        return await self._send_request(data)
+    
+    
+    async def channel_voice_select(self, channel, *, force=False):
+        """
+        Selects the given voice channel joining it.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : `None`, ``ChannelVoiceBase`` or `int`
+            The channel to select or `None` to leave.
+        force : `bool`, Optional (Keyword only)
+            Forces the user to join the voice channel.
+            
+            Defaults to `False`.
+        
+        Returns
+        -------
+        channel : ``ChannelTextBase`` or `None`
+        
+        Raises
+        ------
+        TypeError
+            If `channel` is neither `None`, ``ChannelVoiceBase`` nor `int`.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        AssertionError
+            If `force` is not `bool` instance.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = str(channel_id)
+        
+        if __debug__:
+            if not isinstance(force, bool):
+                raise AssertionError(f'`force` can be given as `bool` instance, got {force.__class__.__name__}.')
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT,
+            PAYLOAD_KEY_PARAMETERS: {
+                'channel_id': channel_id,
+                'timeout': REQUEST_TIMEOUT,
+                'force': force,
+            },
+        }
+        
+        return await self._send_request(data)
     
     
     async def channel_voice_get(self):

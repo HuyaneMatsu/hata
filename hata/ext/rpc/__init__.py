@@ -5,6 +5,7 @@ from .constants import *
 from .dispatch_handling import *
 from .exceptions import *
 from .preinstanced import *
+from .user_voice_settings import *
 from .utils import *
 from .voice_settings import *
 
@@ -16,6 +17,7 @@ __all__ = (
     *dispatch_handling.__all__,
     *exceptions.__all__,
     *preinstanced.__all__,
+    *user_voice_settings.__all__,
     *utils.__all__,
     *voice_settings.__all__,
 )

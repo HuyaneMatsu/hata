@@ -25,7 +25,7 @@ class ChannelCategory(ChannelGuildMainBase):
     parent_id : `int`
         The channel's parent's identifier.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
@@ -52,7 +52,7 @@ class ChannelCategory(ChannelGuildMainBase):
     INTERCHANGE = (4,)
     type = 4
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a category channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -61,13 +61,11 @@ class ChannelCategory(ChannelGuildMainBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`
+            The guild's identifier of the channel.
         """
-        assert (guild is not None), f'`guild` parameter cannot be `None` when calling `{cls.__name__}.__new__`.'
-        
         channel_id = int(data['id'])
         try:
             self = CHANNELS[channel_id]
@@ -82,7 +80,7 @@ class ChannelCategory(ChannelGuildMainBase):
         self._permission_cache = None
         self.name = data['name']
         
-        self._init_parent_and_position(data, guild)
+        self._init_parent_and_position(data, guild_id)
         self.permission_overwrites = parse_permission_overwrites(data)
         
         return self
@@ -203,7 +201,7 @@ class ChannelCategory(ChannelGuildMainBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.type, None)
+            self = cls._create_empty(channel_id, cls.type, 0)
             CHANNELS[channel_id] = self
             
         else:

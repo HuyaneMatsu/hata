@@ -43,7 +43,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     parent : `None` or ``ChannelText``
         The text channel from where the thread is created from.
     guild_id : `int`
-        The channel's guild's identifier. If the channel is deleted, set to `None`.
+        The channel's guild's identifier.
     name : `str`
         The channel's name.
     _message_history_collector :  `None` or ``MessageHistoryCollector``
@@ -98,7 +98,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     INTERCHANGE = ()
     REPRESENTED_TYPES = (10, 11, 12,)
     
-    def __new__(cls, data, client=None, guild=None):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a guild thread channel from the channel data received from Discord. If the channel already exists and
         if it is partial, then updates it.
@@ -107,10 +107,10 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild : `None` or ``Guild``, Optional
-            The guild of the channel.
+        guild_id : `int`
+            The channel's guild's identifier.
         """
         channel_id = int(data['id'])
         try:
@@ -131,7 +131,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         if update:
             self._permission_cache = None
             self.type = data['type']
-            self._init_parent(data, guild)
+            self._init_parent(data, guild_id)
             self._update_attributes(data)
             
             owner_id = data.get('owner_id', None)
@@ -227,7 +227,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         return (self.type == 12)
     
     
-    def _init_parent(self, data, guild):
+    def _init_parent(self, data, guild_id):
         """
         Initializes the `.parent` attribute of the channel. If a channel is under the ``Guild``, and not in a parent
         (parent channels are all like these), then their `.parent` is the ``Guild`` itself.
@@ -239,11 +239,13 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         guild : ``Guild``
             The guild of the channel.
         """
-        if (guild is None):
-            guild_id = 0
-        else:
-            guild.threads[self.id] = self
-            guild_id = guild.id
+        if guild_id:
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                pass
+            else:
+                guild.threads[self.id] = self
         
         self.guild_id = guild_id
         
@@ -258,8 +260,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     
     @classmethod
     @copy_docs(ChannelBase._create_empty)
-    def _create_empty(cls, channel_id, channel_type, partial_guild):
-        self = super(ChannelThread, cls)._create_empty(channel_id, channel_type, partial_guild)
+    def _create_empty(cls, channel_id, channel_type, guild_id):
+        self = super(ChannelThread, cls)._create_empty(channel_id, channel_type, guild_id)
         self._messageable_init()
         
         self.archived = False
@@ -600,7 +602,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, None)
+            self = cls._create_empty(channel_id, cls.DEFAULT_TYPE, 0)
             CHANNELS[channel_id] = self
         
         else:

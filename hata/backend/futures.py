@@ -4986,22 +4986,22 @@ class Lock:
     
     def __repr__(self):
         """Returns the lock's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' locked=',
-                ]
+        ]
         
         count = len(self._waiters)
         if count:
-            result.append('True, waiting=')
-            result.append(repr(count))
+            repr_parts.append('True, waiting=')
+            repr_parts.append(repr(count))
         else:
-            result.append('False')
+            repr_parts.append('False')
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 class ScarletLock(Lock):
     """
@@ -5135,29 +5135,29 @@ class ScarletLock(Lock):
     
     def __repr__(self):
         """Returns the scarlet lock's representation."""
-        result = [
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' size=',
-                ]
+        ]
         
         size = self._size
-        result.append(repr(size))
+        repr_parts.append(repr(size))
         
-        result.append(', locked=')
+        repr_parts.append(', locked=')
         count = len(self._waiters)
         if count >= size:
-            result.append('True')
+            repr_parts.append('True')
         else:
-            result.append('False')
+            repr_parts.append('False')
         
         if count:
-            result.append(', waiting=')
-            result.append(repr(count))
+            repr_parts.append(', waiting=')
+            repr_parts.append(repr(count))
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
 
 
 class Event:

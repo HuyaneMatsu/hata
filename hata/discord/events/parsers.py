@@ -70,7 +70,7 @@ def READY(client, data):
         pass
     else:
         for channel_private_data in channel_private_datas:
-            CHANNEL_TYPE_MAP.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client)
+            CHANNEL_TYPE_MAP.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client, 0)
     
     old_application_id = client.application.id
     client.application._create_update(data['application'], True)
@@ -1563,17 +1563,11 @@ def CHANNEL_CREATE__CAL(client, data):
     
     guild_id = data.get('guild_id', None)
     if guild_id is None:
-        channel_type(data, client, None)
+        channel_type(data, client, 0)
         return
     
     guild_id = int(guild_id)
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'CHANNEL_CREATE')
-        return
-    
-    channel = channel_type(data, client, guild)
+    channel = channel_type(data, client, guild_id)
     
     Task(client.events.channel_create(client, channel), KOKORO)
 
@@ -1582,17 +1576,11 @@ def CHANNEL_CREATE__OPT(client, data):
     
     guild_id = data.get('guild_id', None)
     if guild_id is None:
-        channel_type(data, client, None)
-        return
+        guild_id = 0
+    else:
+        guild_id = int(guild_id)
     
-    guild_id = int(guild_id)
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'CHANNEL_CREATE')
-        return
-    
-    channel_type(data, client, guild)
+    channel_type(data, client, guild_id)
 
 
 add_parser(
@@ -3669,15 +3657,10 @@ del STAGE_INSTANCE_DELETE__CAL_SC, \
 
 def THREAD_LIST_SYNC(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'THREAD_LIST_SYNC')
-        return
     
     thread_channel_datas = data['threads']
     for thread_channel_data in thread_channel_datas:
-        ChannelThread(thread_channel_data, client, guild)
+        ChannelThread(thread_channel_data, client, guild_id)
     
     thread_user_datas = data['members']
     for thread_user_data in thread_user_datas:

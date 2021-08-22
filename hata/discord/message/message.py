@@ -384,7 +384,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             thread = None
         else:
-            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id)
         self.thread = thread
     
     @property
@@ -626,7 +626,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             thread = None
         else:
-            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id)
         self.thread = thread
         
         MESSAGES[self.id] = self
@@ -862,7 +862,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             thread = None
         else:
-            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild)
+            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id)
         self.thread = thread
         
         MESSAGES[self.id] = self

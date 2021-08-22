@@ -131,7 +131,7 @@ class ApplicationCommandInteraction(DiscordEntity):
                     resolved_channels = {}
                     
                     for channel_data in resolved_channel_datas.values():
-                        channel = create_partial_channel_from_data(channel_data, guild)
+                        channel = create_partial_channel_from_data(channel_data, guild.id)
                         if (channel is not None):
                             resolved_channels[channel.id] = channel
                     

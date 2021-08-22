@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 __all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit',
     'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module',
     'search_paths')
 
-import sys, re
+import sys, re, warnings
 from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, \
     MemberDescriptorType
 from difflib import get_close_matches
@@ -1070,7 +1069,10 @@ def map_module(module_name):
         if (module_name_pattern.fullmatch(name) is not None):
             modules.append(module_object)
     
-    root = ModuleUnit(module_name, QualPath(module_name), main_module_object, modules)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        root = ModuleUnit(module_name, QualPath(module_name), main_module_object, modules)
+    
     return root
 
 

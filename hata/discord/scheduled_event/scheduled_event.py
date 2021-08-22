@@ -185,7 +185,7 @@ class ScheduledEvent(DiscordEntity):
             if entity_type is ScheduledEventEntityType.none:
                 entity = None
             elif entity_type is ScheduledEventEntityType.stage:
-                entity = create_partial_channel_from_id(entity_id, CHANNEL_TYPES.guild_stage, self.guild)
+                entity = create_partial_channel_from_id(entity_id, CHANNEL_TYPES.guild_stage, self.guild_id)
             else:
                 entity = None
         else:

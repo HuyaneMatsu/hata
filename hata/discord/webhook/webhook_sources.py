@@ -172,7 +172,7 @@ class WebhookSourceChannel(DiscordEntity):
         -------
         channel : ``ChannelText``
         """
-        channel = create_partial_channel_from_id(self.id, 5)
+        channel = create_partial_channel_from_id(self.id, 5, 0)
         if channel.partial:
             channel.name = self.name
         

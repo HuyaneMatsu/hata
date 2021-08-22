@@ -56,7 +56,7 @@ class Stage(DiscordEntity):
             self = object.__new__(cls)
             guild = create_partial_guild_from_id(int(data['guild_id']))
             
-            self.channel = create_partial_channel_from_id(int(data['channel_id']), 13, guild)
+            self.channel = create_partial_channel_from_id(int(data['channel_id']), 13, guild.id)
             self.guild = guild
             self.id = stage_id
             

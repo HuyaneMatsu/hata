@@ -140,7 +140,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             channel = None
         else:
-            channel = create_partial_channel_from_data(channel_data, guild)
+            channel = create_partial_channel_from_data(channel_data, guild.id)
         self.channel = channel
         self.approximate_online_count = 0
         self.approximate_user_count = 0
@@ -209,7 +209,7 @@ class Invite(DiscordEntity, immortal=True):
                 channel_id = int(channel_id)
                 channel = CHANNELS.get(channel_id, None)
         else:
-            channel = create_partial_channel_from_data(channel_data, guild)
+            channel = create_partial_channel_from_data(channel_data, guild.id)
         self.channel = channel
         
         try:
@@ -320,7 +320,7 @@ class Invite(DiscordEntity, immortal=True):
                     channel_id = int(channel_id)
                     channel = CHANNELS.get(channel_id, None)
             else:
-                channel = create_partial_channel_from_data(channel_data, guild)
+                channel = create_partial_channel_from_data(channel_data, guild.id)
             
             self.channel = channel
         

@@ -151,7 +151,7 @@ class ChannelVoice(ChannelVoiceBase):
     INTERCHANGE = (2,)
     type = 2
     
-    def __new__(cls, data, client=None, guild_id=0):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a voice channel from the channel data received from Discord. If the channel already exists and if it is
         partial, then updates it.
@@ -160,9 +160,9 @@ class ChannelVoice(ChannelVoiceBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild_id : `int`, Optional
+        guild_id : `int`
             The channel's guild's identifier.
         """
         channel_id = int(data['id'])

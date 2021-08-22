@@ -37,7 +37,7 @@ class ChannelBase(DiscordEntity, immortal=True):
     DEFAULT_TYPE = 0
     INTERCHANGE = ()
     
-    def __new__(cls, data, client=None, guild_id=0):
+    def __new__(cls, data, client, guild_id):
         """
         Creates a new channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -46,9 +46,9 @@ class ChannelBase(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``, Optional
+        client : `None` or ``Client``
             The client, who received the channel's data, if any.
-        guild_id : `int`, Optional
+        guild_id : `int`
             The guild's identifier of the channel.
         
         Raises

@@ -120,7 +120,7 @@ class ProjectSettings:
 
 def load_settings_from_current_working_directory():
     """
-    Loads the settings from teh current working directory.
+    Loads the settings from the current working directory.
     
     Returns
     -------

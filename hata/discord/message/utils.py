@@ -53,48 +53,51 @@ def process_message_chunk(message_datas, channel):
     index = 0
     limit = len(message_datas)
     
-    if index == limit:
-        return received
-    
-    message_data = message_datas[index]
-    index += 1
-    message, exists = channel._create_find_message(message_data, False)
-    received.append(message)
-    
-    if exists:
-        while True:
-            if index == limit:
-                break
-            
+    if index != limit:
+        if channel is None:
+            for message_data in message_datas:
+                message = Message(message_data)
+                received.append(message)
+        else:
             message_data = message_datas[index]
             index += 1
-            message, exists = channel._create_find_message(message_data, True)
+            message, exists = channel._create_find_message(message_data, False)
             received.append(message)
             
             if exists:
-                continue
-            
-            while True:
-                if index == limit:
+                while True:
+                    if index == limit:
+                        break
+                    
+                    message_data = message_datas[index]
+                    index += 1
+                    message, exists = channel._create_find_message(message_data, True)
+                    received.append(message)
+                    
+                    if exists:
+                        continue
+                    
+                    while True:
+                        if index == limit:
+                            break
+                        
+                        message_data = message_datas[index]
+                        index += 1
+                        message = channel._create_old_message(message_data)
+                        received.append(message)
+                        continue
+                    
                     break
-                
-                message_data = message_datas[index]
-                index += 1
-                message = channel._create_old_message(message_data)
-                received.append(message)
-                continue
-            
-            break
-    else:
-        while True:
-            if index == limit:
-                break
-            
-            message_data = message_datas[index]
-            index += 1
-            message = Message(message_data)
-            received.append(message)
-            continue
+            else:
+                while True:
+                    if index == limit:
+                        break
+                    
+                    message_data = message_datas[index]
+                    index += 1
+                    message = Message(message_data)
+                    received.append(message)
+                    continue
     
     return received
 

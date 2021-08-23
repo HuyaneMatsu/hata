@@ -14,7 +14,9 @@ from ...discord.preconverters import preconvert_snowflake
 from ...discord.client.request_helpers import get_user_id, get_guild_id, get_channel_id
 from ...discord.activity import ActivityRich
 from ...discord.user import ZEROUSER
-from ...discord.channel import ChannelTextBase, ChannelVoiceBase
+from ...discord.channel import ChannelTextBase, ChannelVoiceBase, CHANNEL_TYPE_MAP, ChannelGuildUndefined, ChannelBase
+from ...discord.message.utils import process_message_chunk
+from ...discord.guild import create_partial_guild_from_data
 
 from .certified_device import CertifiedDevice
 from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, OPERATION_FRAME, IPC_VERSION, \
@@ -24,12 +26,13 @@ from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, 
     PAYLOAD_COMMAND_UNSUBSCRIBE, PAYLOAD_COMMAND_SUBSCRIBE, RECONNECT_INTERVAL, RECONNECT_RATE_LIMITED_INTERVAL, \
     CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_CODES_FATAL, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, \
     PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, \
-    PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, \
-    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL
+    PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, PAYLOAD_COMMAND_CHANNEL_GET, \
+    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET
 from .command_handling import COMMAND_HANDLERS
 from .utils import get_ipc_path, check_for_error
-from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode
-from .user_voice_settings import AudioBalance
+from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode, VoiceSettings
+from .user_voice_settings import AudioBalance, UserVoiceSettings
+from .rich_voice_state import RichVoiceState
 
 PROCESS_IDENTIFIER = get_process_identifier()
 
@@ -69,9 +72,9 @@ class RPCClient:
         Raises
         ------
         TypeError
-            - If any parameter's type is incorrect.
+            If any parameter's type is incorrect.
         ValueError
-            - If any parameter's value is incorrect.
+            If any parameter's value is incorrect.
         """
         application_id = preconvert_snowflake(application_id, 'application_id')
         
@@ -389,7 +392,112 @@ class RPCClient:
         self.running = False
     
     
-    async def user_guild_channel_get_all(self, guild):
+    async def guild_get(self, guild):
+        """
+        gets the guild.
+        
+        > The user must be in the guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild or it's identifier.
+        
+        Returns
+        -------
+        guild : ``Guild``
+        
+        Raises
+        ------
+        TypeError
+            If `guild` is neither `int`, nor ``Guild`` instance.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        guild_id = get_guild_id(guild)
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_GUILD_GET,
+            PAYLOAD_KEY_PARAMETERS: {
+                'channel_id': str(guild_id),
+                'timeout': REQUEST_TIMEOUT,
+            },
+        }
+        
+        data = await self._send_request(data)
+        return create_partial_guild_from_data(data)
+    
+    async def channel_get(self, channel):
+        """
+        Gets the channel.
+        
+        > The user must be in the channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelBase`` or `int`
+            The channel or it's identifier.
+        
+        Returns
+        -------
+        channel : ``ChannelBase``
+            The response channel.
+        messages : `None` or `list` of ``Message``
+            Messages sent to the channel if applicable.
+        rich_voice_states : `None` or `dict` of (`int`, ``RichVoiceState``) items
+            Voice states of the users inside of the channel if applicable.
+        
+        Raises
+        ------
+        TypeError
+            If `channel` is neither `int`, nor ``ChannelBase`` instance.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelBase)
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_GET,
+            PAYLOAD_KEY_PARAMETERS: {
+                'channel_id': str(channel_id),
+            },
+        }
+        
+        data = await self._send_request(data)
+        channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+        
+        message_datas = data.get('messages', None)
+        if (message_datas is not None) and message_datas:
+            messages = process_message_chunk(data, channel)
+        else:
+            messages = None
+        
+        rich_voice_state_datas = data.get('voice_states', None)
+        if (rich_voice_state_datas is not None) and rich_voice_state_datas:
+            rich_voice_states = {}
+            
+            for rich_voice_state_data in rich_voice_state_datas:
+                rich_voice_state = RichVoiceState.from_data(rich_voice_state_data)
+                rich_voice_states[rich_voice_state.user.id] = rich_voice_state
+        else:
+            rich_voice_states = None
+        
+        return channel, messages, rich_voice_states
+    
+    
+    async def guild_channel_get_all(self, guild):
         """
         Gets the guild's channels.
         
@@ -409,7 +517,7 @@ class RPCClient:
         Raises
         ------
         TypeError
-            `guild` is neither `int`, nor ``Guild`` instance.
+            If `guild` is neither `int`, nor ``Guild`` instance.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -422,11 +530,18 @@ class RPCClient:
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL,
             PAYLOAD_KEY_PARAMETERS: {
-                guild_id : str(guild_id),
+                'guild_id': str(guild_id),
             },
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+    
+        channels = []
+        for channel_data in data['channels']:
+            channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, None, guild_id)
+            channels.append(channel)
+        
+        return channels
     
     
     async def user_voice_settings_set(self, *, audio_balance=None, mute=None, volume=None):
@@ -489,7 +604,7 @@ class RPCClient:
                     f'{float.__class__.__name__}.')
             
             if (volume < 0.0) or (volume > 2.0):
-                raise AssertionError(f'`volume` can be in range [0.0:2.0], got {}.')
+                raise AssertionError(f'`volume` can be in range [0.0:2.0], got {volume!r}.')
             
             parameters['volume'] = floor(volume*100.0)
         
@@ -498,7 +613,8 @@ class RPCClient:
             PAYLOAD_KEY_PARAMETERS: parameters,
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        return UserVoiceSettings.from_data(data)
     
     
     async def channel_voice_select(self, channel, *, force=False):
@@ -518,7 +634,7 @@ class RPCClient:
         
         Returns
         -------
-        channel : ``ChannelTextBase`` or `None`
+        channel : ``ChannelVoiceBase`` or `None`
         
         Raises
         ------
@@ -549,7 +665,13 @@ class RPCClient:
             },
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        if (data is None):
+            channel = None
+        else:
+            channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+        
+        return channel
     
     
     async def channel_voice_get(self):
@@ -562,6 +684,10 @@ class RPCClient:
         -------
         voice_settings : ``VoiceSettings``
             The new voice settings of the user.
+        
+        Returns
+        -------
+        channel : ``ChannelVoiceBase`` or `None`
         
         Raises
         ------
@@ -576,7 +702,13 @@ class RPCClient:
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_VOICE_GET,
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        if (data is None):
+            channel = None
+        else:
+            channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+        
+        return channel
     
     
     async def channel_text_select(self, channel):
@@ -609,17 +741,22 @@ class RPCClient:
             channel_id = None
         else:
             channel_id = get_channel_id(channel, ChannelTextBase)
-            channel_id = str(channel_id)
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT,
             PAYLOAD_KEY_PARAMETERS: {
-                'channel_id': channel_id,
+                'channel_id': str(channel_id),
                 'timeout': REQUEST_TIMEOUT,
             },
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        if (data is None):
+            channel = None
+        else:
+            channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+        
+        return channel
     
     
     async def voice_settings_get(self):
@@ -646,7 +783,8 @@ class RPCClient:
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_VOICE_SETTINGS_GET,
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        return VoiceSettings.from_data(data)
     
     
     async def voice_settings_set(self, *, input_=None, output=None, mode=None, automatic_gain_control=None,
@@ -795,8 +933,8 @@ class RPCClient:
             PAYLOAD_KEY_PARAMETERS: parameters,
         }
         
-        return await self._send_request(data)
-    
+        data = await self._send_request(data)
+        return VoiceSettings.from_data(data)
     
     
     async def subscribe(self, event, guild):
@@ -905,7 +1043,8 @@ class RPCClient:
             },
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        return None
     
     
     async def activity_set(self, activity):
@@ -944,7 +1083,8 @@ class RPCClient:
             },
         }
         
-        return await self._send_request(data)
+        data = await self._send_request(data)
+        return ActivityRich.from_data(data)
     
     
     async def activity_join_accept(self, user):

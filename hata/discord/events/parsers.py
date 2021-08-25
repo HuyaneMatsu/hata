@@ -13,8 +13,8 @@ from ..user import User, create_partial_user_from_id, thread_user_create, thread
     thread_user_delete
 from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift
-from ..guild import EMOJI_UPDATE_NEW, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
-    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_NEW, STICKER_UPDATE_DELETE
+from ..guild import EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
+    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE
 from ..role import Role
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
@@ -320,9 +320,9 @@ if ALLOW_DEAD_EVENTS:
                 message = MessageRepr(message_id, channel)
                 messages.append(message)
         
-        event = client.events.message_delete
+        event_handler = client.events.message_delete
         for message in messages:
-            Task(event(client, message), KOKORO)
+            Task(event_handler(client, message), KOKORO)
     
     def MESSAGE_DELETE_BULK__CAL_MC(client, data):
         channel_id = int(data['channel_id'])
@@ -362,9 +362,9 @@ else:
         message_ids = [int(message_id) for message_id in data['ids']]
         messages, missed = channel._pop_multiple(message_ids)
         
-        event = client.events.message_delete
+        event_handler = client.events.message_delete
         for message in messages:
-            Task(event(client, message), KOKORO)
+            Task(event_handler(client, message), KOKORO)
     
     def MESSAGE_DELETE_BULK__CAL_MC(client, data):
         channel_id = int(data['channel_id'])
@@ -1222,11 +1222,11 @@ if CACHE_PRESENCE:
             return
         
         if presence:
-            coro = client.events.user_presence_update
+            event_handler = client.events.user_presence_update
         else:
-            coro = client.events.user_edit
+            event_handler = client.events.user_edit
         
-        Task(coro(client, user, old_attributes), KOKORO)
+        Task(event_handler(client, user, old_attributes), KOKORO)
     
     def PRESENCE_UPDATE__CAL_MC(client, data):
         user_data = data['user']
@@ -1453,10 +1453,10 @@ def CHANNEL_DELETE__CAL_MC(client, data):
         
         channel._delete()
         
-        for client_ in clients.clients:
+        for client_ in clients:
             event_handler = client_.events.channel_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, channel), KOKORO)
+                Task(event_handler(client_, channel), KOKORO)
         
     else:
         channel._delete(client)
@@ -1724,27 +1724,21 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
     
     for action, emoji, old_attributes in changes:
         if action == EMOJI_UPDATE_EDIT:
-            coro = client.events.emoji_edit
-            if coro is DEFAULT_EVENT_HANDLER:
-                continue
-            
-            Task(coro(client, emoji, old_attributes), KOKORO)
+            event_handler = client.events.emoji_edit
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, emoji, old_attributes), KOKORO)
             continue
             
-        if action == EMOJI_UPDATE_NEW:
-            coro = client.events.emoji_create
-            if coro is DEFAULT_EVENT_HANDLER:
-                continue
-            
-            Task(coro(client, emoji), KOKORO)
+        if action == EMOJI_UPDATE_CREATE:
+            event_handler = client.events.emoji_create
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, emoji), KOKORO)
             continue
         
         if action == EMOJI_UPDATE_DELETE:
-            coro = client.events.emoji_delete
-            if coro is DEFAULT_EVENT_HANDLER:
-                continue
-            
-            Task(coro(client, emoji), KOKORO)
+            event_handler = client.events.emoji_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, emoji), KOKORO)
             continue
         
         # no more case
@@ -1773,19 +1767,19 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
             if action == EMOJI_UPDATE_EDIT:
                 event_handler = client_.events.emoji_edit
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, emoji, old_attributes), KOKORO)
+                    Task(event_handler(client_, emoji, old_attributes), KOKORO)
                 continue
-                
-            if action == EMOJI_UPDATE_NEW:
+            
+            if action == EMOJI_UPDATE_CREATE:
                 event_handler = client_.events.emoji_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, emoji), KOKORO)
+                    Task(event_handler(client_, emoji), KOKORO)
                 continue
             
             if action == EMOJI_UPDATE_DELETE:
                 event_handler = client_.events.emoji_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, emoji), KOKORO)
+                    Task(event_handler(client_, emoji), KOKORO)
                 continue
             
             continue
@@ -1841,27 +1835,21 @@ def GUILD_STICKERS_UPDATE__CAL_SC(client, data):
     
     for action, sticker, old_attributes in changes:
         if action == STICKER_UPDATE_EDIT:
-            coro = client.events.sticker_edit
-            if coro is DEFAULT_EVENT_HANDLER:
-                continue
-            
-            Task(coro(client, sticker, old_attributes), KOKORO)
+            event_handler = client.events.sticker_edit
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, sticker, old_attributes), KOKORO)
             continue
             
-        if action == STICKER_UPDATE_NEW:
-            coro = client.events.sticker_create
-            if coro is DEFAULT_EVENT_HANDLER:
-                continue
-            
-            Task(coro(client, sticker), KOKORO)
+        if action == STICKER_UPDATE_CREATE:
+            event_handler = client.events.sticker_create
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, sticker), KOKORO)
             continue
         
         if action == STICKER_UPDATE_DELETE:
-            coro = client.events.sticker_delete
-            if coro is DEFAULT_EVENT_HANDLER:
-                continue
-            
-            Task(coro(client, sticker), KOKORO)
+            event_handler = client.events.sticker_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, sticker), KOKORO)
             continue
         
         # no more case
@@ -1890,19 +1878,19 @@ def GUILD_STICKERS_UPDATE__CAL_MC(client, data):
             if action == STICKER_UPDATE_EDIT:
                 event_handler = client_.events.sticker_edit
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, sticker, old_attributes), KOKORO)
+                    Task(event_handler(client_, sticker, old_attributes), KOKORO)
                 continue
                 
-            if action == STICKER_UPDATE_NEW:
+            if action == STICKER_UPDATE_CREATE:
                 event_handler = client_.events.sticker_create
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, sticker), KOKORO)
+                    Task(event_handler(client_, sticker), KOKORO)
                 continue
             
             if action == STICKER_UPDATE_DELETE:
                 event_handler = client_.events.sticker_delete
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, sticker), KOKORO)
+                    Task(event_handler(client_, sticker), KOKORO)
                 continue
             
             continue
@@ -2990,19 +2978,19 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
     
     if action == VOICE_STATE_JOIN:
-        event = client.events.user_voice_join
-        if (event is not DEFAULT_EVENT_HANDLER):
-            Task(event(client, voice_state), KOKORO)
+        event_handler = client.events.user_voice_join
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, voice_state), KOKORO)
     
     elif action == VOICE_STATE_LEAVE:
-        event = client.events.user_voice_leave
-        if (event is not DEFAULT_EVENT_HANDLER):
-            Task(event(client, voice_state), KOKORO)
+        event_handler = client.events.user_voice_leave
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, voice_state), KOKORO)
         
     elif action == VOICE_STATE_UPDATE:
-        event = client.events.user_voice_update
-        if (event is not DEFAULT_EVENT_HANDLER):
-            Task(event(client, voice_state, old_attributes), KOKORO)
+        event_handler = client.events.user_voice_update
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, voice_state, old_attributes), KOKORO)
 
 def VOICE_STATE_UPDATE__CAL_MC(client, data):
     try:
@@ -3052,19 +3040,19 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
         if action == VOICE_STATE_JOIN:
             event_handler = client_.events.user_voice_join
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, voice_state), KOKORO)
+                Task(event_handler(client_, voice_state), KOKORO)
             continue
         
         if action == VOICE_STATE_LEAVE:
             event_handler = client_.events.user_voice_leave
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, voice_state), KOKORO)
+                Task(event_handler(client_, voice_state), KOKORO)
             continue
         
         if action == VOICE_STATE_UPDATE:
             event_handler = client_.events.user_voice_update
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, voice_state, old_attributes), KOKORO)
+                Task(event_handler(client_, voice_state, old_attributes), KOKORO)
             continue
 
 def VOICE_STATE_UPDATE__OPT_SC(client, data):
@@ -3257,10 +3245,10 @@ def RELATIONSHIP_ADD__CAL(client, data):
     new_relationship = Relationship(client, data, user_id)
     
     if old_relationship is None:
-        coro = client.events.relationship_add(client, new_relationship)
+        coroutine = client.events.relationship_add(client, new_relationship)
     else:
-        coro = client.events.relationship_change(client, old_relationship, new_relationship)
-    Task(coro, KOKORO)
+        coroutine = client.events.relationship_change(client, old_relationship, new_relationship)
+    Task(coroutine, KOKORO)
 
 def RELATIONSHIP_ADD__OPT(client, data):
     user_id = int(data['id'])
@@ -3579,7 +3567,7 @@ def STAGE_INSTANCE_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.stage_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, stage, old_attributes), KOKORO)
+            Task(event_handler(client_, stage, old_attributes), KOKORO)
 
 
 def STAGE_INSTANCE_UPDATE__OPT(client, data):
@@ -3631,7 +3619,7 @@ def STAGE_INSTANCE_DELETE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.events.stage_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, stage), KOKORO)
+            Task(event_handler(client_, stage), KOKORO)
 
 
 def STAGE_INSTANCE_DELETE__OPT(client, data):
@@ -3719,7 +3707,7 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
     for client_ in clients:
         event_handler = client_.user_thread_profile_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, thread_channel, client, old_attributes), KOKORO)
+            Task(event_handler(client_, thread_channel, client, old_attributes), KOKORO)
 
 
 def THREAD_MEMBER_UPDATE__OPT(client, data):
@@ -3823,18 +3811,18 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
                 thread_user_additions.append(user)
     
     
-    for client in clients:
+    for client_ in clients:
         if (thread_user_deletions is not None):
-            event_handler = client.events.thread_user_delete
+            event_handler = client_.events.thread_user_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 for thread_user_deletion in thread_user_deletions:
-                    Task(event_handler(client, thread_channel, *thread_user_deletion), KOKORO)
+                    Task(event_handler(client_, thread_channel, *thread_user_deletion), KOKORO)
         
         if (thread_user_additions is not None):
-            event_handler = client.events.thread_user_add
+            event_handler = client_.events.thread_user_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 for user in thread_user_additions:
-                    Task(event_handler(client, thread_channel, user), KOKORO)
+                    Task(event_handler(client_, thread_channel, user), KOKORO)
 
 
 def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):

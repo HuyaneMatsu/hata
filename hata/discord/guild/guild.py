@@ -1,5 +1,5 @@
-__all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_NEW', 'EMOJI_UPDATE_NONE',
-    'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT', 'STICKER_UPDATE_NEW',
+__all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_CREATE', 'EMOJI_UPDATE_NONE',
+    'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT', 'STICKER_UPDATE_CREATE',
     'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE', 'VOICE_STATE_UPDATE')
 
 from re import compile as re_compile, I as re_ignore_case, escape as re_escape
@@ -34,13 +34,13 @@ Stage = include('Stage')
 LARGE_GUILD_LIMIT = 250 # can be between 50 and 250
 
 EMOJI_UPDATE_NONE = 0
-EMOJI_UPDATE_NEW = 1
+EMOJI_UPDATE_CREATE = 1
 EMOJI_UPDATE_DELETE = 2
 EMOJI_UPDATE_EDIT = 3
 
 
 STICKER_UPDATE_NONE = 0
-STICKER_UPDATE_NEW = 1
+STICKER_UPDATE_CREATE = 1
 STICKER_UPDATE_DELETE = 2
 STICKER_UPDATE_EDIT = 3
 
@@ -2281,7 +2281,7 @@ class Guild(DiscordEntity, immortal=True):
             +=======================+=======+
             | EMOJI_UPDATE_NONE     | `0`   |
             +-----------------------+-------+
-            | EMOJI_UPDATE_NEW      | `1`   |
+            | EMOJI_UPDATE_CREATE   | `1`   |
             +-----------------------+-------+
             | EMOJI_UPDATE_DELETE   | `2`   |
             +-----------------------+-------+
@@ -2318,7 +2318,7 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 emoji = Emoji(emoji_data, self)
                 emojis[emoji_id] = emoji
-                changes.append((EMOJI_UPDATE_NEW, emoji, None),)
+                changes.append((EMOJI_UPDATE_CREATE, emoji, None),)
             else:
                 old_attributes = emoji._difference_update_attributes(emoji_data)
                 if old_attributes:
@@ -2327,7 +2327,7 @@ class Guild(DiscordEntity, immortal=True):
         
         for emoji_id in old_ids:
             try:
-                emoji = emojis[emoji_id]
+                emoji = emojis.pop(emoji_id)
             except KeyError:
                 pass
             else:
@@ -2397,7 +2397,7 @@ class Guild(DiscordEntity, immortal=True):
             +=======================+=======+
             | STICKER_UPDATE_NONE   | `0`   |
             +-----------------------+-------+
-            | STICKER_UPDATE_NEW    | `1`   |
+            | STICKER_UPDATE_CREATE | `1`   |
             +-----------------------+-------+
             | STICKER_UPDATE_DELETE | `2`   |
             +-----------------------+-------+
@@ -2432,7 +2432,7 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 sticker = Sticker(sticker_data)
                 stickers[sticker_id] = sticker
-                changes.append((STICKER_UPDATE_NEW, sticker, None),)
+                changes.append((STICKER_UPDATE_CREATE, sticker, None),)
             else:
                 old_attributes = sticker._difference_update_attributes(sticker_data)
                 if old_attributes:

@@ -1,5 +1,9 @@
 ## 1.1.97 *\[2021-08-19\]*
 
+### Summary
+
+Guild feature rework.
+
 #### Improvements
 
 - `GuildFeature._from_value` now correctly transforms `.name`.
@@ -10,6 +14,15 @@
 
 ##### ext.patchouli
 - `map_module` will no longer trigger warnings.
+
+#### Bug Fixes
+
+- Fix a `NameError` in `ComponentSelect.copy_with`.
+- `Client.events.emoji_{}`, `Client.events.sticker_{}`, `Client.events.user_voice_{}`, `Client.events.stage_{}`
+    `Client.events.user_thread_profile_edit` and  `Client.events.channel_delete` handlers were called incorrectly '
+    (typo in a recent update maybe?).
+- Fix `AttributeError` in `CHANNEL_DELETE__CAL_MC`.
+- `Guild._update_emojis` was not cleaning up old emojis correctly.
 
 #### Renames, Deprecation & Removals
 

@@ -1698,14 +1698,14 @@ class ComponentSelect(ComponentBase):
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
-        self = object.__new__(type(self))
-        self.custom_id = custom_id
-        self.options = options
-        self.placeholder = placeholder
-        self.min_values = min_values
-        self.max_values = max_values
+        new = object.__new__(type(self))
+        new.custom_id = custom_id
+        new.options = options
+        new.placeholder = placeholder
+        new.min_values = min_values
+        new.max_values = max_values
         new.enabled = enabled
-        return self
+        return new
     
     
     @copy_docs(ComponentBase.__eq__)

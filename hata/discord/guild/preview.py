@@ -43,17 +43,23 @@ class GuildPreview(DiscordEntity):
     """
     __slots__ = ('description', 'emojis', 'features', 'name', 'approximate_online_count', 'approximate_user_count', )
     
-    icon = IconSlot('icon', 'icon',
+    icon = IconSlot(
+        'icon',
+        'icon',
         module_urls.guild_icon_url,
         module_urls.guild_icon_url_as,
     )
     
-    invite_splash = IconSlot('invite_splash', 'splash',
+    invite_splash = IconSlot(
+        'invite_splash',
+        'splash',
         module_urls.guild_invite_splash_url,
         module_urls.guild_invite_splash_url_as,
     )
     
-    discovery_splash = IconSlot('discovery_splash', 'discovery_splash',
+    discovery_splash = IconSlot(
+        'discovery_splash',
+        'discovery_splash',
         module_urls.guild_discovery_splash_url,
         module_urls.guild_discovery_splash_url_as,
     )

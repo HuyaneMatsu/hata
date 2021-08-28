@@ -27,12 +27,14 @@ from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, 
     CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_CODES_FATAL, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, \
     PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, \
     PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, PAYLOAD_COMMAND_CHANNEL_GET, \
-    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET
+    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET, PAYLOAD_COMMAND_GUILD_GET_ALL, \
+    PAYLOAD_COMMAND_AUTHENTICATE
 from .command_handling import COMMAND_HANDLERS
 from .utils import get_ipc_path, check_for_error
 from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode, VoiceSettings
 from .user_voice_settings import AudioBalance, UserVoiceSettings
 from .rich_voice_state import RichVoiceState
+from .authenticate import AuthenticateResponse
 
 PROCESS_IDENTIFIER = get_process_identifier()
 
@@ -392,9 +394,81 @@ class RPCClient:
         self.running = False
     
     
+    
+    async def authenticate(self, access_token):
+        """
+        Gets all the guild of the user.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        response : ``AuthenticateResponse``
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        AssertionError
+            If `access_token` is not `str` instance.
+        """
+        if __debug__:
+            if not isinstance(access_token, str):
+                raise AssertionError(f'`access_token` can be given as `str` instance, got '
+                    f'{access_token.__class__.__name__}.')
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_AUTHENTICATE,
+            PAYLOAD_KEY_PARAMETERS: {
+                'access_token': access_token,
+            },
+        }
+        
+        data = await self._send_request(data)
+        return AuthenticateResponse.from_data(data)
+    
+    
+    async def guild_get_all(self):
+        """
+        Gets all the guild of the user.
+        
+        This method is a coroutine.
+        
+        Returns
+        -------
+        guilds : `list` of ``Guild``
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        """
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_GUILD_GET_ALL,
+            PAYLOAD_KEY_PARAMETERS: {},
+        }
+        
+        data = await self._send_request(data)
+        
+        guilds = []
+        for guild_data in data['guilds']:
+            guild = create_partial_guild_from_data(guild_data)
+            guilds.append(guild)
+        
+        return guilds
+    
+    
     async def guild_get(self, guild):
         """
-        gets the guild.
+        Gets the guild.
         
         > The user must be in the guild.
         
@@ -432,6 +506,7 @@ class RPCClient:
         
         data = await self._send_request(data)
         return create_partial_guild_from_data(data)
+    
     
     async def channel_get(self, channel):
         """

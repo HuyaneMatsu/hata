@@ -1,3 +1,4 @@
+from .authenticate import *
 from .certified_device import *
 from .client import *
 from .command_handling import *
@@ -11,6 +12,7 @@ from .utils import *
 from .voice_settings import *
 
 __all__ = (
+    *authenticate.__all__,
     *certified_device.__all__,
     *client.__all__,
     *command_handling.__all__,

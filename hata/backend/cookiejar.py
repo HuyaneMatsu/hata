@@ -10,6 +10,149 @@ from .url import URL
 from .helpers import is_ip_address
 from .event_loop import LOOP_TIME
 
+DATE_TOKENS_RP = re.compile(
+    '[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E]*(?P<token>[\x00-\x08\x0A-\x1F\d:a-zA-Z\x7F-\xFF]+)')
+DATE_HMS_TIME_RP = re.compile('(\d{1,2}):(\d{1,2}):(\d{1,2})')
+DATE_DAY_OF_MONTH_RP = re.compile('\d{1,2}')
+DATE_MONTH_RP = re.compile('jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec', re.I)
+DATE_YEAR_RP = re.compile('\d{2,4}')
+MAX_TIME = 2051215261.0 # (2035-01-01)
+
+
+def parse_cookie_date(date_str):
+    """
+    Implements date string parsing adhering to RFC 6265.
+    
+    Parameters
+    ----------
+    date_str : `str`
+        Datetime string.
+    
+    Returns
+    -------
+    date : `None` or `datetime`
+        The parsed date. If no date is given or if the `date_str` is invalid, returns `None`,
+    """
+    if not date_str:
+        return
+    
+    found_time = found_day = found_month = found_year = False
+    
+    hour = minute = second = day = month = year = 0
+    
+    for token_match in DATE_TOKENS_RP.finditer(date_str):
+        
+        token = token_match.group('token')
+        
+        if not found_time:
+            time_match = DATE_HMS_TIME_RP.match(token)
+            if (time_match is not None):
+                found_time = True
+                hour, minute, second = time_match.groups()
+                hour = int(hour)
+                minute = int(minute)
+                second = int(second)
+                continue
+        
+        if not found_day:
+            day_match = DATE_DAY_OF_MONTH_RP.match(token)
+            if (day_match is not None):
+                found_day = True
+                day = int(day_match.group())
+                continue
+        
+        if not found_month:
+            month_match = DATE_MONTH_RP.match(token)
+            if (month_match is not None):
+                found_month = True
+                month = month_match.lastindex
+                continue
+        
+        if not found_year:
+            year_match = DATE_YEAR_RP.match(token)
+            if (year_match is not None):
+                found_year = True
+                year = int(year_match.group())
+    
+    if 70 <= year <= 99:
+        year += 1900
+    elif 0 <= year <= 69:
+        year += 2000
+    
+    if (not found_day) or (not found_month) or (not found_year) or (not found_time) or (year < 1601) or (day < 1) \
+            or (day > 31) or (hour > 23) or (minute > 59) or (second > 59):
+        return None
+    
+    return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)
+
+
+
+def do_domains_match(domain, hostname):
+    """
+    Implements domain matching adhering to RFC 6265.
+    
+    Parameters
+    ----------
+    domain : `str`
+        The domain's name to match.
+    hostname : `str`
+        The hostname to match.
+    
+    Returns
+    -------
+    domain_matching : `bool`
+    """
+    if hostname == domain:
+        return True
+
+    if not hostname.endswith(domain):
+        return False
+
+    non_matching = hostname[:-len(domain)]
+
+    if not non_matching.endswith('.'):
+        return False
+
+    return not is_ip_address(hostname)
+
+def do_paths_match(request_path, cookie_path):
+    """
+    Implements path matching adhering to RFC 6265.
+    
+    Parameters
+    ----------
+    request_path : `str`
+        The request's path.
+    cookie_path : `str`
+        The cookie's path.
+    
+    Returns
+    -------
+    path_matching : `bool`
+    """
+    if not request_path.startswith('/'):
+        request_path = '/'
+    
+    if request_path == cookie_path:
+        return True
+    
+    if not request_path.startswith(cookie_path):
+        return False
+
+    if cookie_path.endswith('/'):
+        return True
+    
+    cookie_path_length = len(cookie_path)
+    if cookie_path_length >= len(request_path):
+        return False
+    
+    if request_path[cookie_path_length] == '/':
+        return True
+    
+    return False
+
+
+
 class CookieJar:
     """
     Implements cookie storage adhering to RFC 6265.
@@ -27,14 +170,6 @@ class CookieJar:
     unsafe : `bool`
         Whether the jar accepts unsafe cookies as well.
     """
-    DATE_TOKENS_RE = re.compile(
-        '[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E]*(?P<token>[\x00-\x08\x0A-\x1F\d:a-zA-Z\x7F-\xFF]+)')
-    DATE_HMS_TIME_RE = re.compile('(\d{1,2}):(\d{1,2}):(\d{1,2})')
-    DATE_DAY_OF_MONTH_RE = re.compile('(\d{1,2})')
-    DATE_MONTH_RE = re.compile('(jan)|(feb)|(mar)|(apr)|(may)|(jun)|(jul)|(aug)|(sep)|(oct)|(nov)|(dec)', re.I)
-    DATE_YEAR_RE = re.compile('(\d{2,4})')
-    MAX_TIME = 2051215261.0 # (2035-01-01)
-    
     __slots__ = ('cookies', 'expirations', 'host_only_cookies', 'next_expiration', 'unsafe', )
     
     def __init__(self, unsafe=False):
@@ -90,8 +225,8 @@ class CookieJar:
         value : `str`
         """
         self._do_expiration()
-        for val in self.cookies.values():
-            yield from val.values()
+        for cookie in self.cookies.values():
+            yield from cookie.values()
     
     def __len__(self):
         """Returns the length of the cookie-jar."""
@@ -113,7 +248,7 @@ class CookieJar:
         if not expirations:
             return
         
-        next_expiration = self.MAX_TIME
+        next_expiration = MAX_TIME
         to_del = []
         cookies = self.cookies
         
@@ -159,7 +294,7 @@ class CookieJar:
         """
         hostname = response_url.raw_host
         
-        if not self.unsafe and is_ip_address(hostname):
+        if (not self.unsafe) and is_ip_address(hostname):
             # Don't accept cookies from IPs
             return
         
@@ -186,7 +321,7 @@ class CookieJar:
                 domain = domain[1:]
                 cookie['domain'] = domain
             
-            if hostname and not self._is_domain_match(domain, hostname):
+            if hostname and (not do_domains_match(domain, hostname)):
                 # Setting cookies for different domains is not allowed
                 continue
             
@@ -194,11 +329,12 @@ class CookieJar:
             if not path or not path.startswith('/'):
                 # Set the cookie's path to the response path
                 path = response_url.path
-                if not path.startswith('/'):
-                    path = '/'
-                else:
+                if path.startswith('/'):
                     # Cut everything from the last slash to the end
                     path = f'/{path[1:path.rfind("/")]}'
+                else:
+                    path = '/'
+                
                 cookie['path'] = path
             
             max_age = cookie['max-age']
@@ -211,8 +347,8 @@ class CookieJar:
             
             else:
                 expires = cookie['expires']
-                if expires:
-                    expire_time = self._parse_date(expires)
+                if (expires is not None):
+                    expire_time = parse_cookie_date(expires)
                     if expire_time is None:
                         cookie['expires'] = ''
                     else:
@@ -261,10 +397,10 @@ class CookieJar:
                 if domain != hostname:
                     continue
             
-            elif not self._is_domain_match(domain, hostname):
+            elif not do_domains_match(domain, hostname):
                 continue
             
-            if not self._is_path_match(request_url.path, cookie['path']):
+            if not do_paths_match(request_url.path, cookie['path']):
                 continue
             
             if is_not_secure and cookie['secure']:
@@ -276,136 +412,3 @@ class CookieJar:
             filtered[name] = morsel_value
         
         return filtered
-    
-    @staticmethod
-    def _is_domain_match(domain, hostname):
-        """
-        Implements domain matching adhering to RFC 6265.
-        
-        Parameters
-        ----------
-        domain : `str`
-            The domain's name to match.
-        hostname : `str`
-            The hostname to match.
-        
-        Returns
-        -------
-        domain_matching : `bool`
-        """
-        if hostname == domain:
-            return True
-
-        if not hostname.endswith(domain):
-            return False
-
-        non_matching = hostname[:-len(domain)]
-
-        if not non_matching.endswith('.'):
-            return False
-
-        return not is_ip_address(hostname)
-
-    @staticmethod
-    def _is_path_match(request_path, cookie_path):
-        """
-        Implements path matching adhering to RFC 6265.
-        
-        Parameters
-        ----------
-        request_path : `str`
-            The request's path.
-        cookie_path : `str`
-            The cookie's path.
-        
-        Returns
-        -------
-        path_matching : `bool`
-        """
-        if not request_path.startswith('/'):
-            request_path = '/'
-        
-        if request_path == cookie_path:
-            return True
-        
-        if not request_path.startswith(cookie_path):
-            return False
-
-        if cookie_path.endswith('/'):
-            return True
-        
-        cookie_path_length = len(cookie_path)
-        if cookie_path_length >= len(request_path):
-            return False
-        
-        if request_path[cookie_path_length] == '/':
-            return True
-        
-        return False
-    
-    @classmethod
-    def _parse_date(cls, date_str):
-        """
-        Implements date string parsing adhering to RFC 6265.
-        
-        Parameters
-        ----------
-        date_str : `str`
-            Datetime string.
-        
-        Returns
-        -------
-        date : `None` or `datetime`
-            The parsed date. If no date is given or if the `date_str` is invalid, returns `None`,
-        """
-        if not date_str:
-            return
-        
-        found_time = found_day = found_month = found_year = False
-        
-        hour = minute = second = day = month = year = 0
-        
-        for token_match in cls.DATE_TOKENS_RE.finditer(date_str):
-            
-            token = token_match.group('token')
-            
-            if not found_time:
-                time_match = cls.DATE_HMS_TIME_RE.match(token)
-                if time_match:
-                    found_time = True
-                    hour, minute, second = time_match.groups()
-                    hour = int(hour)
-                    minute = int(minute)
-                    second = int(second)
-                    continue
-            
-            if not found_day:
-                day_match = cls.DATE_DAY_OF_MONTH_RE.match(token)
-                if day_match:
-                    found_day = True
-                    day = int(day_match.group())
-                    continue
-            
-            if not found_month:
-                month_match = cls.DATE_MONTH_RE.match(token)
-                if month_match:
-                    found_month = True
-                    month = month_match.lastindex
-                    continue
-            
-            if not found_year:
-                year_match = cls.DATE_YEAR_RE.match(token)
-                if year_match:
-                    found_year = True
-                    year = int(year_match.group())
-        
-        if 70 <= year <= 99:
-            year += 1900
-        elif 0 <= year <= 69:
-            year += 2000
-        
-        if (not found_day) or (not found_month) or (not found_year) or (not found_time) or (year < 1601) or (day < 1) \
-                or (day > 31) or (hour > 23) or (minute > 59) or (second > 59):
-            return None
-        
-        return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)

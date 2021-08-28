@@ -1,10 +1,12 @@
 from hata import from_json, to_json
-from os.path import exists, isfile as is_file
-from os import getcwd as get_current_working_directory
+from os.path import exists, isfile as is_file, join as join_paths, isdir, is_directory
+from os import getcwd as get_current_working_directory, listdir as list_directory
 
 from .checkout import checkout_list_structure, ELEMENT_TYPE_IDENTIFIER_STRING
 
 KEY_BOT_DIRECTORIES = 'BOT_DIRECTORIES'
+SETTINGS_FILE_NAME = '.settings.json'
+
 
 class ProjectSettings:
     """
@@ -14,19 +16,19 @@ class ProjectSettings:
     ----------
     bot_directories : `list` of `str`
         Directories of each bot folder.
-    path : `str`
+    directory_path : `str`
         Path to the project settings file.
     """
-    __slots__ = ('bot_directories', 'path', )
+    __slots__ = ('bot_directories', 'directory_path', )
     
     @classmethod
-    def _from_path(cls, path):
+    def _from_path(cls, directory_path):
         """
         Tries to create a project setting instance from the given directory.
         
         Parameters
         ----------
-        path : `str`
+        directory_path : `str`
             Path to the file.
         
         Returns
@@ -39,17 +41,19 @@ class ProjectSettings:
             - If `path` refers to not a file.
             - Unexpected file content or structure.
         """
-        if not exists(path):
-            return cls._create_empty(path)
+        file_path = join_paths(directory_path, SETTINGS_FILE_NAME)
         
-        if not is_file(path):
-            raise RuntimeError(f'Settings path is not a file: {path!r}.')
+        if not exists(file_path):
+            return cls._create_empty(file_path)
         
-        with open(path, 'r') as file:
+        if not is_file(file_path):
+            raise RuntimeError(f'Settings path is not a file: {file_path!r}.')
+        
+        with open(file_path, 'r') as file:
             file_content = file.read()
         
         if not file_content:
-            return cls._create_empty(path)
+            return cls._create_empty(file_path)
         
         try:
             json = from_json(file_content)
@@ -59,7 +63,7 @@ class ProjectSettings:
             ) from err
         
         if json is None:
-            return cls._create_empty(path)
+            return cls._create_empty(file_path)
         
         
         if not isinstance(json, dict):
@@ -80,8 +84,25 @@ class ProjectSettings:
                 False,
             )
         
+        # Check bot directories to list only the existing ones.
+        if (bot_directories is not None):
+            bot_directories = set(bot_directories)
+            directories = set()
+            
+            for name in list_directory(directory_path):
+                path = join_paths(directory_path, name)
+                if is_directory(path):
+                    directories.add(name)
+            
+            bot_directories.intersection_update(directories)
+            if bot_directories:
+                bot_directories = list(bot_directories)
+            else:
+                bot_directories = None
+        
+        
         self = object.__new__(cls)
-        self.path = path
+        self.directory_path = directory_path
         self.bot_directories = bot_directories
         return self
     
@@ -97,7 +118,7 @@ class ProjectSettings:
             Path to the file.
         """
         self = object.__new__(cls)
-        self.path = path
+        self.directory_path = path
         self.bot_directories = None
         return self
     
@@ -114,7 +135,7 @@ class ProjectSettings:
         
         raw_data = to_json(data)
         
-        with open(self.path, 'w') as file:
+        with open(join_paths(self.directory_path, SETTINGS_FILE_NAME), 'w') as file:
             file.write(raw_data)
 
 

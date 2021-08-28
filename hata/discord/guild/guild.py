@@ -212,19 +212,27 @@ class Guild(DiscordEntity, immortal=True):
         'system_channel_id', 'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code',
         'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled')
     
-    banner = IconSlot('banner', 'banner',
+    banner = IconSlot(
+        'banner',
+        'banner',
         module_urls.guild_banner_url,
         module_urls.guild_banner_url_as,
     )
-    icon = IconSlot('icon', 'icon',
+    icon = IconSlot(
+        'icon',
+        'icon',
         module_urls.guild_icon_url,
         module_urls.guild_icon_url_as,
     )
-    invite_splash = IconSlot('invite_splash', 'splash',
+    invite_splash = IconSlot(
+        'invite_splash',
+        'splash',
         module_urls.guild_invite_splash_url,
         module_urls.guild_invite_splash_url_as,
     )
-    discovery_splash = IconSlot('discovery_splash', 'discovery_splash',
+    discovery_splash = IconSlot(
+        'discovery_splash',
+        'discovery_splash',
         module_urls.guild_discovery_splash_url,
         module_urls.guild_discovery_splash_url_as,
     )

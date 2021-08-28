@@ -60,7 +60,7 @@ else:
     load_dotenv()
 
 
-def get_bool_env(name, default):
+def get_bool_env(name, default, *, warn_if_empty=True):
     """
     Gets the given environmental variable.
     
@@ -72,6 +72,8 @@ def get_bool_env(name, default):
         The name of an environmental variable.
     default : `bool`
         The default value of the respective variable.
+    warn_if_empty : `bool`, Optional (Keyword only)
+        Whether warning should be dropped if empty environmental variable is received.
     
     Returns
     -------
@@ -87,10 +89,13 @@ def get_bool_env(name, default):
     if env_variable == 'False':
         return False
     
-    warnings.warn(f'{name!r} is specified as non bool: {env_variable!r}, defaulting to {default!r}!')
+    if warn_if_empty:
+        warnings.warn(f'{name!r} is specified as non bool: {env_variable!r}, defaulting to {default!r}!')
+    
     return default
 
-def get_str_env(name, default=None):
+
+def get_str_env(name, default=None, *, warn_if_empty=True):
     """
     Gets the given environmental variable.
     
@@ -101,7 +106,9 @@ def get_str_env(name, default=None):
     name : `str`
         The name of an environmental variable.
     default : `Any`, Optional
-        The default value of the respective variable. Defaults to `None`
+        The default value of the respective variable. Defaults to `None`.
+    warn_if_empty : `bool`, Optional (Keyword only)
+        Whether warning should be dropped if empty environmental variable is received.
     
     Returns
     -------
@@ -114,10 +121,13 @@ def get_str_env(name, default=None):
     if env_variable:
         return env_variable
     
-    warnings.warn(f'{name!r} is specified as empty string: {env_variable!r}, defaulting to {default!r}!')
+    if warn_if_empty:
+        warnings.warn(f'{name!r} is specified as empty string: {env_variable!r}, defaulting to {default!r}!')
+    
     return default
 
-def get_int_env(name, default):
+
+def get_int_env(name, default, *, warn_if_empty=True):
     """
     Gets the given environmental variable.
     
@@ -128,6 +138,9 @@ def get_int_env(name, default):
     name : `str`
         The name of an environmental variable.
     default : `int`
+        The default value of the respective variable.
+    warn_if_empty : `bool`, Optional (Keyword only)
+        Whether warning should be dropped if empty environmental variable is received.
     
     Returns
     -------
@@ -147,7 +160,9 @@ def get_int_env(name, default):
     else:
         return variable
     
-    warnings.warn(f'{name!r} is specified as non `int`: {env_variable!r}, defaulting to {default!r}!')
+    if warn_if_empty:
+        warnings.warn(f'{name!r} is specified as non `int`: {env_variable!r}, defaulting to {default!r}!')
+    
     return default
 
 

@@ -25,7 +25,9 @@ class WebhookSourceGuild(DiscordEntity):
     """
     __slots__ = ('name',)
     
-    icon = IconSlot('icon', 'icon',
+    icon = IconSlot(
+        'icon',
+        'icon',
         module_urls.guild_icon_url,
         module_urls.guild_icon_url_as,
     )
@@ -111,7 +113,9 @@ class WebhookSourceChannel(DiscordEntity):
     """
     __slots__ = ('name',)
     
-    icon = IconSlot('icon', 'icon',
+    icon = IconSlot(
+        'icon',
+        'icon',
         module_urls.guild_icon_url,
         module_urls.guild_icon_url_as,
     )

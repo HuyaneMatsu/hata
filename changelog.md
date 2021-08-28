@@ -1,4 +1,11 @@
-## 1.1.97 *\[2021-08-19\]*
+## 1.1.97 *\[2021-08-??\]*
+
+#### Improvements
+
+- Add `escape_markdown`.
+- Add `invitable` parameter to `Client.thread_create`.
+
+## 1.1.97 *\[2021-08-25\]*
 
 ### Summary
 

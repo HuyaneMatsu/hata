@@ -27,8 +27,20 @@ class MessageApplication(DiscordEntity):
     """
     __slots__ = ('description', 'name',)
     
-    cover = IconSlot('cover', 'cover_image', module_urls.application_cover_url, module_urls.application_cover_url_as, add_updater=False)
-    icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as, add_updater=False)
+    cover = IconSlot(
+        'cover',
+        'cover_image',
+        module_urls.application_cover_url,
+        module_urls.application_cover_url_as,
+        add_updater = False,
+    )
+    icon = IconSlot(
+        'icon',
+        'icon',
+        module_urls.application_icon_url,
+        module_urls.application_icon_url_as,
+        add_updater = False,
+    )
     
     def __init__(self, data):
         """

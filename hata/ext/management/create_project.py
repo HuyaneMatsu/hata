@@ -4,7 +4,8 @@ from os import makedirs as make_directories
 
 from dotenv import dotenv_values as load_into_dictionary
 
-from .utils import render_exception
+from .utils import render_exception, create_file_structure
+from .settings import SETTINGS_FILE_NAME
 
 FILE_CONTENT_MANAGE_PY = (
 """# hata's command-line utility for administrative tasks.
@@ -40,12 +41,12 @@ SHARED_EXTENSIONS_DIRECTORY_NAME = 'shared_extensions'
 """
 )
 
-PROJECT_TEMPLATE = (
+PROJECT_STRUCTURE = (
     (('manage.py', ), FILE_CONTENT_MANAGE_PY, ),
     (('.env', ), FILE_CONTENT_ENV, ),
     (('config.py', ), CONFIG_PY, ),
     (('shared_extensions', None), None, ),
-    (('.project.json'), None, ),
+    ((SETTINGS_FILE_NAME, ), None, ),
 )
 
 
@@ -65,30 +66,6 @@ def create_project(project_name, project_path):
     except OSError as err:
         return render_exception(err)
     
-    for paths, file_content in PROJECT_TEMPLATE:
-        paths_length = len(paths)
-        
-        file_name = paths[paths_length-1]
-        
-        if paths_length == 1:
-            paths = None
-        else:
-            paths = paths[:paths_length-1]
-        
-        if (paths is None):
-            folder_path = project_directory
-        else:
-            folder_path = join_paths(project_directory, *paths)
-            make_directories(folder_path, exist_ok=True)
-        
-        if (file_name is not None):
-            file_path = join_paths(folder_path, file_name)
-            
-            file = open(file_path, 'w')
-            
-            if (file_content is not None):
-                file.write(file_content)
-            
-            file.close()
+    create_file_structure(project_directory, PROJECT_STRUCTURE)
     
     return f'Project created at: {project_name!r}'

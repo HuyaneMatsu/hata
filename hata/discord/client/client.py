@@ -26,7 +26,7 @@ from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPE_MAP, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
-    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory
+    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory, CHANNEL_TYPES
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
@@ -8156,7 +8156,7 @@ class Client(ClientUserPBase):
         return thread_channels
     
     
-    async def thread_create(self, message_or_channel, name, *, auto_archive_after=None, type_=None):
+    async def thread_create(self, message_or_channel, name, *, auto_archive_after=None, type_=None, invitable=True):
         """
         Creates a new thread derived from the given message or channel.
         
@@ -8182,6 +8182,10 @@ class Client(ClientUserPBase):
         type_ : `None`, `int`, Optional (Keyword only)
             The thread channel's type to create. Can be either `10`,`11`,`12`.
         
+        invitable : `bool`, Optional (Keyword only)
+            Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
+            
+            Applicable for private threads. Defaults to `True`.
         
         Returns
         -------
@@ -8200,6 +8204,7 @@ class Client(ClientUserPBase):
             - If `name`'s length is out of range [2:100].
             - If `auto_archive_after` is neither `int`, nor `bool` instance.
             - If `auto_archive_after` is not any of the expected ones.
+            - If `invitable` is not `bool` instance.
         """
         # Message check order
         # 1.: Message
@@ -8273,15 +8278,23 @@ class Client(ClientUserPBase):
                         f'{AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after}.')
         
         if type_ is None:
-            type_ = 11
+            type_ = CHANNEL_TYPES.guild_thread_public
         else:
-            type_ = preconvert_int_options(type_, 'type_', frozenset((10, 11, 12)))
+            type_ = preconvert_int_options(type_, 'type_', CHANNEL_TYPES.GROUP_THREAD)
+        
+        if __debug__:
+            if not isinstance(invitable, bool):
+                raise AssertionError(f'`invitable` can be `bool` instance, got {invitable.__class__.__name__}.')
         
         data = {
             'name': name,
             'auto_archive_duration': auto_archive_after//60,
             'type': type_,
         }
+        
+        if (type_ == CHANNEL_TYPES.guild_thread_private) and (not invitable):
+            data['invitable'] = invitable
+        
         
         if message_id is None:
             coroutine = self.http.thread_create(channel_id, data)
@@ -10821,9 +10834,9 @@ class Client(ClientUserPBase):
             if channel is not None:
                 break
             
-            for channel_type in (0, 2):
+            for channel_type in (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_voice):
                 for channel in guild.channels.values():
-                    if channel.type == 4:
+                    if channel.type == CHANNEL_TYPES.guild_category:
                         for channel in channel.channels:
                             if channel.type == channel_type:
                                 break

@@ -33,7 +33,13 @@ class Team(DiscordEntity, immortal=True):
     """
     __slots__ = ('members', 'name', 'owner_id',)
     
-    icon = IconSlot('icon', 'icon', module_urls.team_icon_url, module_urls.team_icon_url_as, add_updater = False)
+    icon = IconSlot(
+        'icon',
+        'icon',
+        module_urls.team_icon_url,
+        module_urls.team_icon_url_as,
+        add_updater = False,
+    )
     
     def __new__(cls, data):
         """

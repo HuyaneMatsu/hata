@@ -27,7 +27,7 @@ class OA2Access:
         
         Can be empty string if application's owner's access was requested.
     scopes : `set` of `str`
-        A list of the scopes, what the user granted with the access token.
+        A set of the scopes, what the user granted with the access token.
     
     Class Attributes
     ----------------
@@ -55,10 +55,9 @@ class OA2Access:
         self.expires_in = data['expires_in'] # default is 604800 (s) (1 week)
         self.scopes = scopes = set()
         for scope in data['scope'].split():
-            try:
-                scopes.add(OAUTH2_SCOPES[scope])
-            except KeyError:
-                pass
+            scope = OAUTH2_SCOPES.get(scope, scope)
+            scopes.add(scope)
+        
         self.created_at = datetime.utcnow() #important for renewing
     
     def _renew(self, data):

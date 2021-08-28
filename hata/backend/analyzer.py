@@ -1,11 +1,11 @@
-__all__ = ('CallableAnalyzer', )
+__all__ = ('CallableAnalyzer', 'RichAnalyzer')
 
 import sys
 
 from .utils import FunctionType, MethodLike
 from .export import include
 
-IS_PYTHON_STUPID = sys.version_info >= (3, 10, 0)
+IS_PYTHON_STULTUS = sys.version_info >= (3, 10, 0)
 
 is_coroutine_function = include('is_coroutine_function')
 is_coroutine_generator_function = include('is_coroutine_generator_function')
@@ -24,17 +24,25 @@ CO_ASYNC_GENERATOR = 512
 # matches `async def` functions and `@coroutine` functions.
 CO_COROUTINE_ALL = CO_COROUTINE|CO_ITERABLE_COROUTINE
 
-INSTANCE_TO_ASYNC_FALSE = 0
-INSTANCE_TO_ASYNC_TRUE = 1
-INSTANCE_TO_ASYNC_CANNOT = 2
-INSTANCE_TO_ASYNC_GENERATOR_FALSE = 3
-INSTANCE_TO_ASYNC_GENERATOR_TRUE = 4
+INSTANCE_TO_ASYNC_FALSE = 1
+INSTANCE_TO_ASYNC_TRUE = 2
+INSTANCE_TO_ASYNC_CANNOT = 3
+INSTANCE_TO_ASYNC_GENERATOR_FALSE = 4
+INSTANCE_TO_ASYNC_GENERATOR_TRUE = 5
 
-PARAMETER_POSITIONAL_ONLY = 0
-PARAMETER_POSITIONAL_AND_KEYWORD = 1
-PARAMETER_KEYWORD_ONLY = 2
-PARAMETER_ARGS = 3
-PARAMETER_KWARGS = 4
+PARAMETER_TYPE_POSITIONAL_ONLY = 1
+PARAMETER_TYPE_POSITIONAL_AND_KEYWORD = 2
+PARAMETER_TYPE_KEYWORD_ONLY = 3
+PARAMETER_TYPE_ARGS = 4
+PARAMETER_TYPE_KWARGS = 5
+
+PARAMETER_TYPE_NAMES = {
+    PARAMETER_TYPE_POSITIONAL_ONLY: 'positional only',
+    PARAMETER_TYPE_POSITIONAL_AND_KEYWORD: 'positional',
+    PARAMETER_TYPE_KEYWORD_ONLY: 'keyword only',
+    PARAMETER_TYPE_ARGS: 'args',
+    PARAMETER_TYPE_KWARGS: 'kwargs',
+}
 
 class Parameter:
     """
@@ -56,19 +64,19 @@ class Parameter:
         Whether the parameter is positional, keyword or such.
         
         Can be set one of the following:
-        +-----------------------------------+-----------+
-        | Respective Name                   | Value     |
-        +===================================+===========+
-        | PARAMETER_POSITIONAL_ONLY         | 0         |
-        +-----------------------------------+-----------+
-        | PARAMETER_POSITIONAL_AND_KEYWORD  | 1         |
-        +-----------------------------------+-----------+
-        | PARAMETER_KEYWORD_ONLY            | 2         |
-        +-----------------------------------+-----------+
-        | PARAMETER_ARGS                    | 3         |
-        +-----------------------------------+-----------+
-        | PARAMETER_KWARGS                  | 4         |
-        +-----------------------------------+-----------+
+        +----------------------------------------+-----------+
+        | Respective Name                        | Value     |
+        +========================================+===========+
+        | PARAMETER_TYPE_POSITIONAL_ONLY         | 1         |
+        +----------------------------------------+-----------+
+        | PARAMETER_TYPE_POSITIONAL_AND_KEYWORD  | 2         |
+        +----------------------------------------+-----------+
+        | PARAMETER_TYPE_KEYWORD_ONLY            | 3         |
+        +----------------------------------------+-----------+
+        | PARAMETER_TYPE_ARGS                    | 4         |
+        +----------------------------------------+-----------+
+        | PARAMETER_TYPE_KWARGS                  | 5         |
+        +----------------------------------------+-----------+
     reserved : `bool`
         Whether the parameter is reserved.
         
@@ -81,11 +89,12 @@ class Parameter:
         result = []
         result.append('<')
         result.append(self.__class__.__name__)
+        result.append(' ')
         
         if self.reserved:
-            result.append(' reserved ,')
+            result.append('reserved, ')
         
-        result.append(('positional only', ' positional', ' keyword only', ' args', ' kwargs')[self.positionality])
+        result.append(PARAMETER_TYPE_NAMES[self.positionality])
         
         result.append(', name=')
         result.append(repr(self.name))
@@ -110,7 +119,7 @@ class Parameter:
         is_positional_only : `bool`
         """
         positionality = self.positionality
-        if positionality == PARAMETER_POSITIONAL_ONLY:
+        if positionality == PARAMETER_TYPE_POSITIONAL_ONLY:
             return True
         
         return False
@@ -124,10 +133,10 @@ class Parameter:
         is_positional : `bool`
         """
         positionality = self.positionality
-        if positionality == PARAMETER_POSITIONAL_ONLY:
+        if positionality == PARAMETER_TYPE_POSITIONAL_ONLY:
             return True
         
-        if positionality == PARAMETER_POSITIONAL_AND_KEYWORD:
+        if positionality == PARAMETER_TYPE_POSITIONAL_AND_KEYWORD:
             return True
         
         return False
@@ -141,10 +150,10 @@ class Parameter:
         is_keyword : `bool`
         """
         positionality = self.positionality
-        if positionality == PARAMETER_POSITIONAL_AND_KEYWORD:
+        if positionality == PARAMETER_TYPE_POSITIONAL_AND_KEYWORD:
             return True
         
-        if positionality == PARAMETER_KEYWORD_ONLY:
+        if positionality == PARAMETER_TYPE_KEYWORD_ONLY:
             return True
         
         return False
@@ -158,7 +167,7 @@ class Parameter:
         is_keyword_only : `bool`
         """
         positionality = self.positionality
-        if positionality == PARAMETER_KEYWORD_ONLY:
+        if positionality == PARAMETER_TYPE_KEYWORD_ONLY:
             return True
         
         return False
@@ -172,7 +181,7 @@ class Parameter:
         is_args : `bool`
         """
         positionality = self.positionality
-        if positionality == PARAMETER_ARGS:
+        if positionality == PARAMETER_TYPE_ARGS:
             return True
         
         return False
@@ -186,12 +195,12 @@ class Parameter:
         is_kwargs : `bool`
         """
         positionality = self.positionality
-        if positionality == PARAMETER_KWARGS:
+        if positionality == PARAMETER_TYPE_KWARGS:
             return True
         
         return False
 
-if IS_PYTHON_STUPID:
+if IS_PYTHON_STULTUS:
     def compile_annotations(real_function, annotations):
         new_annotations = {}
         if not annotations:
@@ -234,12 +243,12 @@ class CallableAnalyzer:
         +---------------------------+-----------+-------------------------------------------+
         | Respective Name           | Value     | Description                               |
         +===========================+===========+===========================================+
-        | INSTANCE_TO_ASYNC_FALSE   | 0         | Whether the object is async.              |
+        | INSTANCE_TO_ASYNC_FALSE   | 1         | Whether the object is async.              |
         +---------------------------+-----------+-------------------------------------------+
-        | INSTANCE_TO_ASYNC_TRUE    | 1         | Whether the object is on async callable,  |
+        | INSTANCE_TO_ASYNC_TRUE    | 2         | Whether the object is on async callable,  |
         |                           |           | but after instancing it, returns one.     |
         +---------------------------+-----------+-------------------------------------------+
-        | INSTANCE_TO_ASYNC_CANNOT  | 2         | Whether the object is not async.          |
+        | INSTANCE_TO_ASYNC_CANNOT  | 3         | Whether the object is not async.          |
         +---------------------------+-----------+-------------------------------------------+
     kwargs_parameter : `None` or ``Parameter``
         If the analyzed callable has `**kwargs`, then this attribute is set to it. Defaults to `None`.
@@ -248,8 +257,8 @@ class CallableAnalyzer:
     real_function : `callable`
         The function wrapped by the given callable.
     """
-    __slots__ = ('args_parameter', 'parameters', 'callable', 'instance_to_async', 'kwargs_parameter', 'method_allocation',
-        'real_function', )
+    __slots__ = ('args_parameter', 'parameters', 'callable', 'instance_to_async', 'kwargs_parameter',
+        'method_allocation', 'real_function', )
     
     def __repr__(self):
         """Returns the callable analyzer's representation."""
@@ -451,7 +460,7 @@ class CallableAnalyzer:
             annotations = getattr(real_function, '__annotations__', None)
             if (annotations is None):
                 annotations = {}
-            elif IS_PYTHON_STUPID:
+            elif IS_PYTHON_STULTUS:
                 annotations = compile_annotations(real_function, annotations)
             
             start = 0
@@ -525,9 +534,9 @@ class CallableAnalyzer:
                     parameter.default = default
                 
                 if index<positional_only_argcount:
-                    parameter.positionality = PARAMETER_POSITIONAL_ONLY
+                    parameter.positionality = PARAMETER_TYPE_POSITIONAL_ONLY
                 else:
-                    parameter.positionality = PARAMETER_POSITIONAL_AND_KEYWORD
+                    parameter.positionality = PARAMETER_TYPE_POSITIONAL_AND_KEYWORD
                 
                 parameter.reserved = (index<method_allocation)
                 parameters.append(parameter)
@@ -550,7 +559,7 @@ class CallableAnalyzer:
 
                 args_parameter.has_default = False
                 args_parameter.default = None
-                args_parameter.positionality = PARAMETER_ARGS
+                args_parameter.positionality = PARAMETER_TYPE_ARGS
                 
                 if method_allocation > parameter_count:
                     args_parameter.reserved = True
@@ -582,7 +591,7 @@ class CallableAnalyzer:
                     parameter.has_default = True
                     parameter.default = default
                 
-                parameter.positionality = PARAMETER_KEYWORD_ONLY
+                parameter.positionality = PARAMETER_TYPE_KEYWORD_ONLY
                 parameter.reserved = False
                 parameters.append(parameter)
                 index = index+1
@@ -603,7 +612,7 @@ class CallableAnalyzer:
                 
                 kwargs_parameter.has_default = False
                 kwargs_parameter.default = None
-                kwargs_parameter.positionality = PARAMETER_KWARGS
+                kwargs_parameter.positionality = PARAMETER_TYPE_KWARGS
                 kwargs_parameter.reserved = False
                 parameters.append(kwargs_parameter)
         
@@ -856,3 +865,93 @@ class CallableAnalyzer:
         accepts_kwargs : `bool`
         """
         return (self.kwargs_parameter is not None)
+
+
+class RichAnalyzerParameterAccess:
+    """
+    Parameter access of a ``RichAnalyzer``.
+    
+    Attributes
+    ----------
+    _analyzer : ``CallableAnalyzer``
+        Analyzer analyzing the respective function.
+    """
+    def __new__(cls, analyzer):
+        self = object.__new__(cls)
+        self._analyzer = analyzer
+        return self
+    
+    def __getattr__(self, attribute_name):
+        """
+        Tries to find the specified attribute of the respective function.
+        
+        Returns
+        -------
+        parameter : ``Parameter``
+        
+        Raises
+        ------
+        AttributeError
+            - If the parameter by teh specified name is nto found.
+        """
+        for parameter in self.parameters:
+            if parameter.name == attribute_name:
+                return parameter
+        
+        raise AttributeError(attribute_name)
+
+
+class RichAnalyzer:
+    """
+    Analyzer supporting rich access.
+    
+    Attributes
+    ----------
+    _analyzer : ``CallableAnalyzer``
+        Analyzer analyzing the respective function.
+    """
+    def __new__(cls, callable_, as_method=False):
+        """
+        Analyzes the given callable.
+        
+        Parameters
+        ----------
+        callable_ : `callable`
+            The callable to analyze.
+        as_method : `bool`, Optional
+            Whether the given `callable` is given as a `function`, but it should be analyzed as a `method`. Defaults
+            to `False`.
+        
+        Raises
+        ------
+        TypeError
+            If the given object is not callable, or could not be used as probably intended.
+        """
+        analyzer = CallableAnalyzer(callable_, as_method=as_method)
+        
+        self = object.__new__(cls)
+        self._analyzer = analyzer
+        return self
+    
+    
+    @property
+    def name(self):
+        """
+        Returns the name of the analyzed callable.
+        
+        Returns
+        -------
+        name : `str`
+        """
+        return self._analyzer.__name__
+    
+    
+    @property
+    def parameters(self):
+        """
+        Returns parameter access to the 
+        Returns
+        -------
+        parameter_access : RichAnalyzerParameterAccess
+        """
+        return RichAnalyzerParameterAccess(self._analyzer)

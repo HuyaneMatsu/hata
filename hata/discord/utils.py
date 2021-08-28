@@ -1,9 +1,9 @@
 ﻿__all__ = ('CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
     'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'USER_MENTION_RP', 'Unknown', 'cchunkify',
-    'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time', 'filter_content',
-    'id_to_datetime', 'id_to_time', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention',
-    'is_url', 'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id',
-    'sanitize_content', 'sanitize_mentions', 'time_to_id', 'unix_time_to_id')
+    'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time', 'escape_markdown',
+    'filter_content', 'id_to_datetime', 'id_to_time', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention',
+    'is_role_mention', 'is_url', 'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta',
+    'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'time_to_id', 'unix_time_to_id')
 
 import sys, warnings
 from random import random
@@ -1223,6 +1223,24 @@ def sanitize_content(content, guild=None):
     -------
     content : `None` or `str`
     """
+    content = escape_markdown(content)
+    content = sanitize_mentions(content, guild=guild)
+    return content
+
+
+def escape_markdown(content):
+    """
+    Escapes markdown from the given content.
+    
+    Parameters
+    ----------
+    content : `None` or `str`
+        The content to sanitize.
+    
+    Returns
+    -------
+    content : `None` or `str`
+    """
     if (content is None):
         return
     
@@ -1232,7 +1250,8 @@ def sanitize_content(content, guild=None):
     content = content.replace('|', '\\|')
     content = content.replace('~', '\\~')
     content = content.replace('`', '\\`')
-    content = sanitize_mentions(content, guild=guild)
+    content = content.replace('>', '\\>')
+    content = content.replace(':', '\\:')
     return content
 
 

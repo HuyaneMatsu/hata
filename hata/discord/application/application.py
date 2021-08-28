@@ -96,17 +96,27 @@ class Application(DiscordEntity, immortal=True):
         'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'summary', 'terms_of_service_url',
         'third_party_skus', 'verify_key')
     
-    cover = IconSlot('cover', 'cover_image',
+    cover = IconSlot(
+        'cover',
+        'cover_image',
         module_urls.application_cover_url,
         module_urls.application_cover_url_as,
-        add_updater=False,
+        add_updater = False,
     )
-    icon = IconSlot('icon', 'icon',
+    icon = IconSlot(
+        'icon',
+        'icon',
         module_urls.application_icon_url,
         module_urls.application_icon_url_as,
-        add_updater=False,
+        add_updater = False,
     )
-    splash = IconSlot('splash', 'splash', None, None, add_updater=False)
+    splash = IconSlot(
+        'splash',
+        'splash',
+        None,
+        None,
+        add_updater = False,
+    )
     
     @classmethod
     def _create_empty(cls):

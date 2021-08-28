@@ -2415,9 +2415,9 @@ class Message(DiscordEntity, immortal=True):
         partial : `bool`
         """
         if self.channel_id:
-            return True
+            return False
         
-        return False
+        return True
     
     
     @property

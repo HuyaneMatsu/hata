@@ -1,9 +1,13 @@
-## 1.1.97 *\[2021-08-??\]*
+## 1.1.97 *\[2021-08-28\]*
 
 #### Improvements
 
 - Add `escape_markdown`.
 - Add `invitable` parameter to `Client.thread_create`.
+
+#### Bug Fixes
+
+- `Message.partial` returned reversed value causing different kind of issues.
 
 ## 1.1.97 *\[2021-08-25\]*
 

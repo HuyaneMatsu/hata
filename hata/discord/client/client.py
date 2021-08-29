@@ -5287,6 +5287,9 @@ class Client(ClientUserPBase):
         else:
             reactions = message.reactions
             
+            if reactions is None:
+                return []
+            
             try:
                 line = reactions[emoji]
             except KeyError:
@@ -5361,7 +5364,7 @@ class Client(ClientUserPBase):
         else:
             reactions = message.reactions
             
-            if not reactions:
+            if (reactions is None):
                 return []
             
             try:
@@ -5426,7 +5429,7 @@ class Client(ClientUserPBase):
             message = await self.message_get(channel_id, message_id)
         
         reactions = message.reactions
-        if reactions:
+        if (reactions is not None) and reactions:
             users = []
             data = {'limit': 100}
             
@@ -5446,7 +5449,7 @@ class Client(ClientUserPBase):
                     
                     data['after'] = users[-1].id
                 
-                message.reactions._update_all_users(emoji, users)
+                reactions._update_all_users(emoji, users)
                 users.clear()
         
         return message

@@ -592,7 +592,7 @@ async def collect_reactions():
     await sleep(60.0)
     
     reactions = message.reactions
-    if reactions:
+    if (reactions is not None) and reactions:
         emojis = list(reactions)
         # Limit reactions to 16 to avoid error from Discord
         del emojis[16:]

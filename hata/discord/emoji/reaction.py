@@ -81,7 +81,7 @@ class reaction_mapping(dict):
         ----------
         emoji : ``Emoji``
             The reacted emoji.
-        user : ``User`` or ``Client``
+        user : ``ClientUserBase``
             The reactor user.
         """
         try:
@@ -100,7 +100,7 @@ class reaction_mapping(dict):
         ----------
         emoji : ``Emoji``
             The removed reacted emoji.
-        user : ``User`` or ``Client``
+        user : ``ClientUserBase``
             The removed reactor user.
         """
         try:

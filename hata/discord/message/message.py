@@ -108,7 +108,7 @@ class Message(DiscordEntity, immortal=True):
         be shown up at the message's received payload as well.
     pinned : `bool`
         Whether the message is pinned.
-    reactions : ``reaction_mapping``
+    reactions : `None` or ``reaction_mapping``
         A dictionary like object, which contains the reactions on the message.
     role_mention_ids : `None` or `tuple` of `int`
         The mentioned roles's identifier by the message if any.
@@ -2758,3 +2758,56 @@ class Message(DiscordEntity, immortal=True):
         has_user_mentions : `bool
         """
         return (self.user_mentions is not None)
+    
+    
+    def _add_reaction(self, emoji, user):
+        """
+        Adds a reaction to the message.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The reacted emoji.
+        user : ``ClientUserBase``
+            The reactor user.
+        """
+        reactions = self.reactions
+        if reactions is None:
+            reactions = reaction_mapping(None)
+            self.reactions = reactions
+        
+        return reactions.add(emoji, user)
+    
+    
+    def _remove_reaction(self, emoji, user):
+        """
+        Removes a reaction to the message.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The removed emoji.
+        user : ``ClientUserBase``
+            The user who removed their reaction.
+        """
+        reactions = self.reactions
+        if (reactions is not None):
+            return reactions.remove(emoji, user)
+    
+    
+    def _remove_reaction_emoji(self, emoji):
+        """
+        Removes all reactions of an emoji from the message.
+        
+        Parameters
+        ----------
+        emoji : ``Emoji``
+            The emoji to remove it's reactions.
+        
+        Returns
+        -------
+        line :
+        """
+        reactions = self.reactions
+        if (reactions is not None):
+            return reactions.remove_emoji(emoji)

@@ -1,3 +1,10 @@
+## 1.1.98 *\[2021-09-??\]*
+
+#### Improvements
+
+- `Message.reactions` now defaults to `None` (saves 64 bytes if the message has no reactions, which is like 99% of
+    the cases).
+
 ## 1.1.97 *\[2021-08-28\]*
 
 #### Improvements

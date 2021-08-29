@@ -182,7 +182,7 @@ def str_message(message, index=None, **kwargs):
         result.append(f'- application_id: {application_id}', 1)
     
     reactions = message.reactions
-    if reactions:
+    if (reactions is not None) and reactions:
         result.append(str_reaction_mapping(reactions), 1)
     
     application = message.application

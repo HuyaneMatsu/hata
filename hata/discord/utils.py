@@ -1372,7 +1372,7 @@ def is_url(url):
 class TIMESTAMP_STYLES:
     """
     Contains timestamp format styles, which can be used within Discord's markdown format.
-    You may be use these styles at `format_datetime`, `format_id` and at `format_unix_time`.
+    You may be use these styles at ``format_datetime``, ``format_id`` and at ``format_unix_time``.
     
     The style formats are the following:
     

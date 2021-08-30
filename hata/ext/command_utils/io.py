@@ -221,8 +221,8 @@ class ChannelOutputStream:
                 del chunks[0]
                 break
             
-            data_parts.append(part[:-data_parts_size])
-            chunks[0] = part[-data_parts_size:]
+            data_parts.append(part[:data_parts_size])
+            chunks[0] = part[data_parts_size:]
             break
         
         if data_parts:

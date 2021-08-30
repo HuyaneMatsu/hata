@@ -2806,7 +2806,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        line :
+        line : `None` or ``reaction_mapping_line``
         """
         reactions = self.reactions
         if (reactions is not None):

@@ -1,11 +1,17 @@
-## 1.1.98 *\[2021-09-??\]*
+## 1.1.99 *\[2021-09-??\]*
 
 #### Improvements
 
 - `Message.reactions` now defaults to `None` (saves 64 bytes if the message has no reactions, which is like 99% of
     the cases).
+- Add `ERROR_CODES.cannot_reply_without_read_message_history_permission`.
 
-## 1.1.97 *\[2021-08-28\]*
+#### Bug Fixes
+
+##### ext.command_utils
+- `ChannelOutputStream` made chunks of bad size.
+
+## 1.1.98 *\[2021-08-28\]*
 
 #### Improvements
 

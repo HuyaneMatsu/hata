@@ -5773,8 +5773,8 @@ class Client(ClientUserPBase):
                     
                     description_length = len(description)
                     if description_length > 300:
-                        raise AssertionError(f'`description` length can be in range [0:300], got {description_length!r}; '
-                            f'{description!r}.')
+                        raise AssertionError(f'`description` length can be in range [0:300], got '
+                            f'{description_length!r}; {description!r}.')
             
             if (description is not None) and (not description):
                 description = None
@@ -13636,8 +13636,8 @@ class Client(ClientUserPBase):
             
                     description_length = len(description)
                     if (description_length > 100):
-                        raise AssertionError(f'`description` length can be in range [0:100], got {description_length!r}; '
-                            f'{description!r}.')
+                        raise AssertionError(f'`description` length can be in range [0:100], got '
+                            f'{description_length!r}; {description!r}.')
             
             if (description is None):
                 description = ''

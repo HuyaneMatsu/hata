@@ -7,7 +7,8 @@ from ...backend.export import export
 from ...backend.futures import Future, shield, future_or_timeout
 
 from ..bases import EventBase, DiscordEntity
-from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS, CHANNELS, GUILDS
+from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS, CHANNELS, GUILDS, \
+    APPLICATION_ID_TO_CLIENT
 from ..channel import ChannelPrivate, ChannelText, create_partial_channel_from_data
 from ..message import Message
 from ..permission import Permission
@@ -993,6 +994,49 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         guild_id = self.guild_id
         if guild_id:
             return GUILDS.get(guild_id, None)
+    
+    
+    @property
+    def client(self):
+        """
+        Returns the interaction's client.
+        
+        Returns
+        -------
+        client : `Client`
+        
+        Raises
+        ------
+        RuntimeError
+            Client could not be identified.
+        """
+        try:
+            return APPLICATION_ID_TO_CLIENT[self.application_id]
+        except KeyError:
+            raise RuntimeError(f'Client of {self!r} could not be identified.') from None
+    
+    
+    @property
+    def voice_client(self):
+        """
+        Returns the voice client of the interaction's client in it's guild.
+        
+        Returns
+        -------
+        voice_client : `None` or ``VoiceClient``
+        """
+        try:
+            client = APPLICATION_ID_TO_CLIENT[self.application_id]
+        except KeyError:
+            voice_client = None
+        else:
+            guild_id = self.message.guild_id
+            if guild_id:
+                voice_client = client.voice_clients.get(guild_id, None)
+            else:
+                voice_client = None
+        
+        return voice_client
 
 
 class InteractionResponseContext:

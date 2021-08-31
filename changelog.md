@@ -5,11 +5,21 @@
 - `Message.reactions` now defaults to `None` (saves 64 bytes if the message has no reactions, which is like 99% of
     the cases).
 - Add `ERROR_CODES.cannot_reply_without_read_message_history_permission`.
+- Add `mention_channel_by_id`.
+- Add `mention_role_by_id`.
+- Add `mention_user_by_id`.
+- Add `mention_user_nick_by_id`.
+- Add `InteractionEvent.client`.
+- Add `InteractionEvent.voice_client`.
+
+
+##### ext.command_utils
+- `ChannelOutputStream.flush` now forces newly written content to new message. (Zeref Draganeel#3581)
 
 #### Bug Fixes
 
 ##### ext.command_utils
-- `ChannelOutputStream` made chunks of bad size.
+- `ChannelOutputStream` made chunks of bad size. (Zeref Draganeel#3581)
 
 ## 1.1.98 *\[2021-08-28\]*
 

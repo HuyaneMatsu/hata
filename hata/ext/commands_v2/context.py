@@ -154,11 +154,11 @@ class CommandContext(object):
         -------
         voice_client : `None` or ``VoiceClient``
         """
-        guild = self.message.guild
-        if guild is None:
-            voice_client = None
+        guild_id = self.message.guild_id
+        if guild_id:
+            voice_client = self.client.voice_clients.get(guild_id, None)
         else:
-            voice_client = self.client.voice_clients.get(guild.id, None)
+            voice_client = None
         
         return voice_client
     

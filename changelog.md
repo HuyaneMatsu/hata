@@ -1,15 +1,41 @@
 ## 1.1.99 *\[2021-09-??\]*
 
+### Summary
+
+Use dynamic fields for messages in favor
+
 #### Improvements
 
 - `Message.reactions` now defaults to `None` (saves 64 bytes if the message has no reactions, which is like 99% of
     the cases).
 - Add `ERROR_CODES.cannot_reply_without_read_message_history_permission`.
+- Add `mention_channel_by_id`.
+- Add `mention_role_by_id`.
+- Add `mention_user_by_id`.
+- Add `mention_user_nick_by_id`.
+- Add `InteractionEvent.client`.
+- Add `InteractionEvent.voice_client`.
+- `Message.partial` works accordingly.
+- Add `Message.has_partial`.
+- Add `Messsage.has_channel_mentions`.
+- Add `Messsage.has_type`.
+- Add `Message._create_empty`.
+- Add `Message._clear_cache`.
+
+##### ext.command_utils
+- `ChannelOutputStream.flush` now forces newly written content to new message. (Zeref Draganeel#3581)
 
 #### Bug Fixes
 
 ##### ext.command_utils
-- `ChannelOutputStream` made chunks of bad size.
+- `ChannelOutputStream` made chunks of bad size. (Zeref Draganeel#3581)
+
+#### Renames, Deprecation & Removals
+
+- Rename `Message._parse_channel_mentions` to `._get_channel_mentions`.
+- Add `Message._get_role_mentions`.
+- Remove unused `Message._create_unlinked`.
+- Remove unused `Message._finish_init`.
 
 ## 1.1.98 *\[2021-08-28\]*
 

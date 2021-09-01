@@ -2,7 +2,8 @@
     'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'USER_MENTION_RP', 'Unknown', 'cchunkify',
     'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time', 'escape_markdown',
     'filter_content', 'id_to_datetime', 'id_to_time', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention',
-    'is_role_mention', 'is_url', 'is_user_mention', 'now_as_id', 'parse_message_reference', 'parse_rdelta',
+    'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id', 'mention_role_by_id',
+    'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference', 'parse_rdelta',
     'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'time_to_id', 'unix_time_to_id')
 
 import sys, warnings
@@ -380,6 +381,70 @@ FILTER_RP = re_compile('("(.+?)"|\S+)')
 INVITE_CODE_RP = re_compile('([a-zA-Z0-9-]+)')
 
 
+def mention_channel_by_id(channel_id):
+    """
+    Mentions the channel by it's identifier.
+    
+    Parameters
+    ----------
+    channel_id : `int`
+        The channel's identifier.
+    
+    Returns
+    -------
+    channel_mention : `str`
+    """
+    return f'<#{channel_id}>'
+
+
+def mention_role_by_id(role_id):
+    """
+    Mentions the role by it's identifier.
+    
+    Parameters
+    ----------
+    role_id : `int`
+        The role's identifier.
+    
+    Returns
+    -------
+    role_mention : `str`
+    """
+    return f'<@&{role_id}>'
+
+
+def mention_user_by_id(user_id):
+    """
+    Mentions the user by it's identifier.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        The user's identifier.
+    
+    Returns
+    -------
+    user_mention : `str`
+    """
+    return f'<@{user_id}>'
+
+
+def mention_user_nick_by_id(user_id):
+    """
+    Mentions the user's "nick" by the user's identifier.
+    
+    Parameters
+    ----------
+    user_id : `int`
+        The user's identifier.
+    
+    Returns
+    -------
+    user_nick_mention : `str`
+    """
+    return f'<@!{user_id}>'
+
+
 def is_valid_application_command_name(name):
     """
     Returns whether the given application command name is valid.
@@ -403,6 +468,7 @@ def is_id(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -418,6 +484,7 @@ def is_mention(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -433,6 +500,7 @@ def is_user_mention(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -448,6 +516,7 @@ def is_channel_mention(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -463,6 +532,7 @@ def is_role_mention(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -478,6 +548,7 @@ def is_application_command_mention(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -493,6 +564,7 @@ def is_invite_code(text):
     Parameters
     ----------
     text : `str`
+        The text to check.
     
     Returns
     -------
@@ -520,6 +592,7 @@ def filter_content(content):
     Parameters
     ----------
     content : `str`
+        The text to check.
     
     Returns
     -------

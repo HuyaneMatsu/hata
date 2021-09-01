@@ -441,46 +441,57 @@ class Guild(DiscordEntity, immortal=True):
             The guild's banner.
             
             > Mutually exclusive with `banner_type` and `banner_hash` parameters.
+        
         banner_type : ``IconType``, Optional (Keyword only)
             The guild's banner's type.
             
             > Mutually exclusive with the `banner` parameter.
+        
         banner_hash : `int`, Optional (Keyword only)
             The guild's banner's hash.
             
             > Mutually exclusive with the `banner` parameter.
+        
         invite_splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The guild's invite splash.
             
             > Mutually exclusive with the `invite_splash_type` and `invite_splash_hash` parameters.
+        
         invite_splash_type : `IconType``, Optional (Keyword only)
             The guild's invite splash's type.
             
             > Mutually exclusive with the `invite_splash` parameter.
+        
         invite_splash_hash : `int`, Optional (Keyword only)
             The guild's invite splash's hash.
             
             > Mutually exclusive with the `invite_splash` parameter.
+        
         discovery_splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The guild's discovery splash.
             
             Mutually exclusive with the `discovery_splash_type` and  `discovery_splash_hash` parameters.
+        
         discovery_splash_type : `IconType``, Optional (Keyword only)
             The guild's discovery splash's type.
             
             > Mutually exclusive with the `discovery_splash` parameter.
+        
         discovery_splash_hash : `int`, Optional (Keyword only)
             The guild's discovery splash's hash.
             
             > Mutually exclusive with the `discovery_splash` parameter.
+        
         icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The guild's icon.
             
             > Mutually exclusive with `icon_type` and `icon_hash`.
+        
         icon_type : ``IconType``, Optional (Keyword only)
             The guild's icon's type.
             
             > Mutually exclusive with `icon`.
+        
         icon_hash : `int`, Optional (Keyword only)
             The guild's icon's hash.
             
@@ -554,6 +565,7 @@ class Guild(DiscordEntity, immortal=True):
                 setattr(self, *item)
         
         return self
+    
     
     @classmethod
     def _create_empty(cls, guild_id):

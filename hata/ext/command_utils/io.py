@@ -103,6 +103,8 @@ class ChannelOutputStream:
         """
         Force the text in the buffer into the raw stream.
         
+        After flushing the newly written content will be forced to new message as well.
+        
         This method is a coroutine.
         
         Raises
@@ -115,6 +117,9 @@ class ChannelOutputStream:
         transfer_task = self._transfer_task
         if (transfer_task is not None):
             await transfer_task
+        
+        self._last_message = None
+        self._last_chunk = None
     
     
     async def _do_transfer(self):
@@ -159,7 +164,7 @@ class ChannelOutputStream:
                     
                     request_start = LOOP_TIME()
                     if should_edit:
-                        await  client.message_edit(message, data)
+                        await client.message_edit(message, data)
                     else:
                         message = await client.message_create(self._channel, data)
                     

@@ -388,10 +388,6 @@ class EventHandlerManager:
         +-------------------+-----------------------------------------------------------------------+
         | Keys              | Values                                                                |
         +===================+=======================================================================+
-        | activity          | `None` or ``MessageActivity``                                         |
-        +-------------------+-----------------------------------------------------------------------+
-        | application       | `None` or ``MessageApplication``                                      |
-        +-------------------+-----------------------------------------------------------------------+
         | attachments       | `None` or (`tuple` of ``Attachment``)                                 |
         +-------------------+-----------------------------------------------------------------------+
         | components        | `None` or (`tuple` of ``ComponentBase``)                              |
@@ -400,11 +396,11 @@ class EventHandlerManager:
         +-------------------+-----------------------------------------------------------------------+
         | cross_mentions    | `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMention``))   |
         +-------------------+-----------------------------------------------------------------------+
-        | edited_at         | `None`  or `datetime`                                                 |
+        | edited_at         | `None` or `datetime`                                                  |
         +-------------------+-----------------------------------------------------------------------+
-        | embeds            | `None`  or `(tuple` of ``EmbedCore``)                                 |
+        | embeds            | `None` or `(tuple` of ``EmbedCore``)                                  |
         +-------------------+-----------------------------------------------------------------------+
-        | flags             | `UserFlag`                                                            |
+        | flags             | ``UserFlag``                                                          |
         +-------------------+-----------------------------------------------------------------------+
         | mention_everyone  | `bool`                                                                |
         +-------------------+-----------------------------------------------------------------------+
@@ -429,10 +425,10 @@ class EventHandlerManager:
         > uncached message, then `message` is given as ``MessageRepr``.
     
     reaction_clear(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
-            old_reactions: {`None`, ``reaction_mapping``}):
+            reactions: {`None`, ``reaction_mapping``}):
         Called when the reactions of a message are cleared. The passed `old_reactions` parameter are the old reactions
         of the message.
-    
+        
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
         > and uncached message, then `message` is given as ``MessageRepr`` and `old_reactions` as `None`.
     

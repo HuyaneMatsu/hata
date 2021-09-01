@@ -48,6 +48,152 @@ EMBED_UPDATE_SIZE_UPDATE = 1
 EMBED_UPDATE_EMBED_ADD = 2
 EMBED_UPDATE_EMBED_REMOVE = 3
 
+MESSAGE_FLAGS_EMPTY = MessageFlag()
+MESSAGE_TYPE_DEFAULT = MessageType.default
+MESSAGE_TYPE_DEFAULT_VALUE = MESSAGE_TYPE_DEFAULT.value
+
+MESSAGE_FIELD_KEY_ACTIVITY = 1
+MESSAGE_FIELD_KEY_APPLICATION = 2
+MESSAGE_FIELD_KEY_APPLICATION_ID = 3
+MESSAGE_FIELD_KEY_ATTACHMENTS = 4
+MESSAGE_FIELD_KEY_CHANNEL_MENTIONS = 5
+MESSAGE_FIELD_KEY_COMPONENTS = 6
+MESSAGE_FIELD_KEY_CONTENT = 7
+MESSAGE_FIELD_KEY_CROSS_MENTIONS = 8
+MESSAGE_FIELD_KEY_REFERENCED_MESSAGE = 9
+MESSAGE_FIELD_KEY_DELETED = 10
+MESSAGE_FIELD_KEY_EDITED_AT = 11
+MESSAGE_FIELD_KEY_EMBEDS = 12
+MESSAGE_FIELD_KEY_EVERYONE_MENTION = 13
+MESSAGE_FIELD_KEY_FLAGS = 14
+MESSAGE_FIELD_KEY_INTERACTION = 15
+MESSAGE_FIELD_KEY_PARTIAL = 16
+MESSAGE_FIELD_KEY_NONCE = 17
+MESSAGE_FIELD_KEY_PINNED = 18
+MESSAGE_FIELD_KEY_REACTIONS = 19
+MESSAGE_FIELD_KEY_ROLE_MENTION_IDS = 20
+MESSAGE_FIELD_KEY_ROLE_MENTIONS = 21
+MESSAGE_FIELD_KEY_STICKERS = 22
+MESSAGE_FIELD_KEY_THREAD = 23
+MESSAGE_FIELD_KEY_TTS = 24
+MESSAGE_FIELD_KEY_TYPE = 25
+MESSAGE_FIELD_KEY_USER_MENTIONS = 26
+
+MESSAGE_CACHE_FIELD_KEYS = (
+    MESSAGE_FIELD_KEY_CHANNEL_MENTIONS,
+    MESSAGE_FIELD_KEY_ROLE_MENTIONS,
+)
+
+def _set_message_field(message, field_key, value):
+    """
+    Stores the given value in the message's fields.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        The message to store the value in it's fields.
+    field_key : `int`
+        Message field key.
+    value : `Any``
+        The value to store.
+    """
+    fields = message._fields
+    if fields is None:
+        message._fields = fields = {}
+    
+    fields[field_key] = value
+
+
+def _remove_message_field(message, field_key):
+    """
+    Tries to remove the given from a message's fields.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        The message to remove the value from.
+    field_key : `int`
+        Message field key.
+    """
+    fields = message._fields
+    if (fields is not None):
+        try:
+            del fields[field_key]
+        except KeyError:
+            pass
+        else:
+            if not fields:
+                message._fields = None
+
+
+def _get_message_field(message, field_key):
+    """
+    Tries to get the given field of the message.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        The message to get the field from.
+    field_key : `int`
+        Message field key to get.
+    
+    Returns
+    -------
+    value : `None` or `Any`
+    """
+    fields = message._fields
+    if (fields is not None):
+        return fields.get(field_key, None)
+
+
+def _get_first_message_field(message, field_key):
+    """
+    Tries to get the first element given field of the message.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        The message to get the field from.
+    field_key : `int`
+        Message field key to get.
+    
+    Returns
+    -------
+    value : `None` or `Any`
+    """
+    fields = message._fields
+    if (fields is not None):
+        try:
+            field_value = fields[field_key]
+        except KeyError:
+            pass
+        else:
+            return field_value[0]
+
+
+def _has_message_field(message, field_key):
+    """
+    Returns whether the message has the given field.
+    
+    
+    Parameters
+    ----------
+    message : ``Message``
+        The message to check whether it has the field.
+    field_key : `int`
+        Message field key to check.
+    
+    Returns
+    -------
+    has_field : `bool`
+    """
+    fields = message._fields
+    if (fields is None):
+        has_field = False
+    else:
+        has_field = (field_key in fields)
+    
+    return has_field
 
 
 @export
@@ -59,76 +205,57 @@ class Message(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the message.
-    _channel_mentions : `None` or `list` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
-        Cache used by the ``.channel_mentions` property.
-    activity : `None` or ``MessageActivity``
-        Sent with rich presence related embeds.
-    application : `None` or ``MessageApplication``
-        Sent with rich presence related embeds.
-    application_id : `int`
-        The application's identifier who sent the message. Defaults to `0`.
-    attachments : `None` or `tuple` of ``Attachment``
-        Attachments sent with the message.
+    _fields : `bool`
+        Optional fields of the message.
     author : ``UserBase`` instance
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
     channel_id : `int`
         The channel's identifier where the message is sent.
-    components : `None` or `tuple` of ``ComponentBase``
-        Message components.
-    content : `None` or `str`
-        The message's content.
-    cross_mentions : `None` or `tuple` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
-        Cross guild channel mentions of a crosspost message if applicable. If a channel is not loaded by the wrapper,
-        then it will be represented with a ``UnknownCrossMention`` instead.
-    referenced_message : `None`, ``Message`` or ``MessageReference``
-        the referenced message. Set as ``Message`` instance if the message is cached, else as ``MessageReference``.
-        
-        Set when the message is a reply, a crosspost or when is a pin message.
-    deleted : `bool`
-        Whether the message is deleted.
-    edited_at : `None` or `datetime`
-        The time when the message was edited, or `None` if it was not.
-        
-        Pinning or (un)suppressing a message will not change it's edited value.
-    embeds : `None` or `tuple` of ``EmbedCore``
-        List of embeds included with the message if any.
-        
-        If a message contains links, then those embeds' might not be included with the source payload and those
-        will be added only later.
-    everyone_mention : `bool`
-        Whether the message contains `@everyone` or `@here`.
-    flags : ``MessageFlag``
-        The message's flags.
     guild_id : `int`
         The channel's guild's identifier.
-    interaction : `None` or ``MessageInteraction``
-        Present if the message is a response to an ``InteractionEvent``.
-    nonce : `None` or `str`
-        A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
-        be shown up at the message's received payload as well.
-    pinned : `bool`
-        Whether the message is pinned.
-    reactions : `None` or ``reaction_mapping``
-        A dictionary like object, which contains the reactions on the message.
-    role_mention_ids : `None` or `tuple` of `int`
-        The mentioned roles's identifier by the message if any.
-    stickers : `None` or `tuple` of ``Sticker``
-        The stickers sent with the message.
-        
-        Bots currently can only receive messages with stickers, not send.
-    thread : `None` or ``ChannelThread``
-        The thread which was started from this message. Defaults to `None`.
-    tts : `bool`
-        Whether the message is "text to speech".
-    type : ``MessageType``
-        The type of the message.
-    user_mentions : `None` or `tuple` of ``UserBase``
-        The mentioned users by the message if any.
+    
+    Notes
+    -----
+    Message instances are weakreferable.
+    
+    Structure
+    ---------
+    Not like other Discord entities, message attributes can be accessed mainly through properties, which are the
+    following:
+    
+    - ``.activity``
+    - ``.channel_mentions`` (cache field)
+    - ``.application``
+    - ``.application_id``
+    - ``.attachments``
+    - ``.components``
+    - ``.content``
+    - ``.cross_mentions``
+    - ``.deleted`` (internal field)
+    - ``.edited_at``
+    - ``.embeds``
+    - ``.everyone_mention``
+    - ``.flags``
+    - ``.interaction``
+    - ``.nonce``
+    - ``.partial`` (internal field)
+    - ``.pinned``
+    - ``.reactions``
+    - ``.referenced_message``
+    - ``.role_mentions`` (cache field)
+    - ``.role_mention_ids``
+    - ``.stickers``
+    - ``.thread``
+    - ``.tts``
+    - ``.type``
+    - ``.user_mentions``
+    
+    In average only 1.5 field of a message is used, which makes keeping up over 20 allocated field questionable.
+    The message type have high field increase tendency, making the dynamic attribute allocation more and more worth it.
+    At the current moment a message usually has 1-6 extra fields used, but in the close future in 2022 with message
+    content intent, it will decrease to 0-6, making the system save a lot of memory.
     """
-    __slots__ = ('_channel_mentions', 'activity', 'application', 'application_id', 'attachments', 'author',
-        'channel_id', 'components', 'content', 'cross_mentions', 'deleted', 'edited_at', 'embeds', 'everyone_mention',
-        'flags', 'guild_id', 'interaction', 'nonce', 'pinned', 'reactions', 'referenced_message', 'role_mention_ids',
-        'stickers', 'thread', 'tts', 'type', 'user_mentions',)
+    __slots__ = ('_fields', 'author', 'channel_id', 'guild_id')
     
     def __new__(cls, data):
         """
@@ -145,6 +272,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
+            self._fields = None
             MESSAGES[self.id] = self
         else:
             if not self.partial:
@@ -177,6 +305,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
+            self._fields = None
             MESSAGES[self.id] = self
         else:
             if not self.partial:
@@ -195,8 +324,6 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data.
         """
-        self.deleted = False
-        
         channel_id = int(data['channel_id'])
         self.channel_id = channel_id
         
@@ -218,9 +345,14 @@ class Message(DiscordEntity, immortal=True):
             application_id = 0
         else:
             application_id = int(application_id)
+            
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_APPLICATION_ID,
+                application_id,
+            )
         
         if application_id or (webhook_id is None):
-            cross_mentions = None
             if author_data is None:
                 author = ZEROUSER
             else:
@@ -234,17 +366,18 @@ class Message(DiscordEntity, immortal=True):
             webhook_id = int(webhook_id)
             if (data.get('message_reference', None) is not None):
                 cross_mention_datas = data.get('mention_channels', None)
-                if (cross_mention_datas is None) or (not cross_mention_datas):
-                    cross_mentions = None
-                else:
-                    cross_mentions = tuple(sorted(
-                        (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                        key = id_sort_key,
-                    ))
+                if (cross_mention_datas is not None) and cross_mention_datas:
+                    _set_message_field(
+                        self,
+                        MESSAGE_FIELD_KEY_CROSS_MENTIONS,
+                        tuple(sorted(
+                            (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
+                            key = id_sort_key,
+                        )),
+                    )
                 
                 webhook_type = WebhookType.server
             else:
-                cross_mentions = None
                 webhook_type = WebhookType.bot
             
             if author_data is None:
@@ -253,11 +386,16 @@ class Message(DiscordEntity, immortal=True):
                 author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel_id)
         
         self.author = author
-        self.application_id = application_id
-        self.cross_mentions = cross_mentions
         
-        self.reactions = reaction_mapping(data.get('reactions', None))
+        # At this point every static field is set, now we switch to dynamic ones.
         
+        reactions_data = data.get('reactions', None)
+        if (reactions_data is not None) and reactions_data:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_REACTIONS,
+                reaction_mapping(reactions_data),
+            )
         
         referenced_message_data = data.get('referenced_message', None)
         if referenced_message_data is None:
@@ -272,600 +410,174 @@ class Message(DiscordEntity, immortal=True):
             
             referenced_message = Message(referenced_message_data)
         
-        self.referenced_message = referenced_message
+        if (referenced_message is not None):
+            _set_message_field(self, MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, referenced_message)
         
         
-        try:
-            application_data = data['application']
-        except KeyError:
-            application = None
-        else:
-            application = MessageApplication(application_data)
-        self.application = application
+        application_data = data.get('application', None)
+        if (application_data is not None):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_APPLICATION,
+                MessageApplication(application_data),
+            )
         
-        try:
-            activity_data = data['activity']
-        except KeyError:
-            activity = None
-        else:
-            activity = MessageActivity(activity_data)
-        self.activity = activity
+        
+        activity_data = data.get('activity', None)
+        if (activity_data is not None):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ACTIVITY,
+                MessageActivity(activity_data),
+            )
+        
         
         edited_timestamp = data.get('edited_timestamp', None)
-        if (edited_timestamp is None):
-            edited_at = None
-        else:
+        if (edited_timestamp is not None):
             edited_at = timestamp_to_datetime(edited_timestamp)
-        self.edited_at = edited_at
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EDITED_AT,
+                edited_at,
+            )
         
-        self.pinned = data.get('pinned', False)
-        self.everyone_mention = data.get('mention_everyone', False)
-        self.tts = data.get('tts', False)
-        self.flags = flags = MessageFlag(data.get('flags', 0))
         
-        try:
-            message_type_value = data['type']
-        except KeyError:
-            if flags.invoking_user_only:
-                message_type = MessageType.application_command
-            else:
-                message_type = MessageType.default
-        else:
-            message_type = MessageType.get(message_type_value)
+        if data.get('pinned', False):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_PINNED,
+                None,
+            )
         
-        self.type = message_type
+        
+        if data.get('mention_everyone', False):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EVERYONE_MENTION,
+                None,
+            )
+        
+        
+        if data.get('tts', False):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_TTS,
+                None,
+            )
+        
+        
+        flags = data.get('flags', 0)
+        if flags:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_FLAGS,
+                MessageFlag(flags),
+            )
+        
+        
+        message_type_value = data.get('type', MESSAGE_TYPE_DEFAULT_VALUE)
+        if message_type_value != MESSAGE_TYPE_DEFAULT_VALUE:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_TYPE,
+                MessageType.get(message_type_value),
+            )
+        
         
         attachment_datas = data.get('attachments', None)
         if (attachment_datas is not None) and attachment_datas:
-            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
-        else:
-            attachments = None
-        self.attachments = attachments
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ATTACHMENTS,
+                tuple(Attachment(attachment) for attachment in attachment_datas),
+            )
+        
         
         embed_datas = data.get('embeds', None)
         if (embed_datas is not None) and embed_datas:
-            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
-        else:
-            embeds = None
-        self.embeds = embeds
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EMBEDS,
+                tuple(EmbedCore.from_data(embed) for embed in embed_datas),
+            )
         
-        self.nonce = data.get('nonce', None)
+        
+        nonce = data.get('nonce', None)
+        if (nonce is not None):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_NONCE,
+                nonce,
+            )
+        
         
         content = data.get('content', None)
-        if (content is not None) and (not content):
-            content = None
-        self.content = content
+        if (content is not None) and content:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_CONTENT,
+                content,
+            )
+        
         
         interaction_data = data.get('interaction', None)
-        if interaction_data is None:
-            interaction = None
-        else:
+        if (interaction_data is not None):
             interaction = MessageInteraction(interaction_data)
             try_resolve_interaction_message(self, interaction)
-        
-        self.interaction = interaction
-        
-        component_datas = data.get('components', None)
-        if (component_datas is None) or (not component_datas):
-            components = None
-        else:
-            components = tuple(create_component(component_data) for component_data in component_datas)
-        self.components = components
-        
-        sticker_datas = data.get('sticker_items', None)
-        if sticker_datas is None:
-            stickers = None
-        else:
-            stickers = tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas)
-        self.stickers = stickers
-        
-        user_mention_datas = data.get('mentions', None)
-        if (user_mention_datas is not None) and user_mention_datas:
-            user_mentions = tuple(sorted(
-                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                key = id_sort_key,
-            ))
-        else:
-            user_mentions = None
-        self.user_mentions = user_mentions
-        
-        self._channel_mentions = ...
-        
-        role_mention_ids = data.get('mention_roles', None)
-        if (role_mention_ids is None) or (not role_mention_ids):
-            role_mention_ids = None
-        else:
-            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
-    
-        self.role_mention_ids = role_mention_ids
-        
-        try:
-            thread_data = data['thread']
-        except KeyError:
-            thread = None
-        else:
-            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id)
-        self.thread = thread
-    
-    @property
-    def role_mentions(self):
-        """
-        Returns the mentioned roles by the message.
-        
-        Returns
-        -------
-        role_mentions : `None` or `tuple` of ``Role``
-        """
-        role_mention_ids = self.role_mention_ids
-        if role_mention_ids is None:
-            role_mentions = None
-        else:
-            role_mentions = tuple(create_partial_role_from_id(role_id) for role_id in role_mention_ids)
-        
-        return role_mentions
-    
-    
-    def _finish_init(self, data, channel):
-        """
-        This method is called after a message object is created and it's id is set. Fills up the message's attributes
-        from the given message data and stores the message at `MESSAGES` weak value dictionary.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Message data.
-        channel : ``ChannelTextBase`` instance
-            Source channel.
-        """
-        self.deleted = False
-        self.channel_id = channel.id
-        guild = channel.guild
-        
-        guild_id = data.get('guild_id', None)
-        
-        if guild_id is None:
-            guild_id = 0
-        else:
-            guild_id = int(guild_id)
-        
-        self.guild_id = guild_id
-        
-        author_data = data.get('author', None)
-        webhook_id = data.get('webhook_id', None)
-        application_id = data.get('application_id', None)
-        
-        if (application_id is None):
-            application_id = 0
-        else:
-            application_id = int(application_id)
-        
-        if application_id or (webhook_id is None):
-            cross_mentions = None
-            if author_data is None:
-                author = ZEROUSER
-            else:
-                try:
-                     author_data['member'] = data['member']
-                except KeyError:
-                    pass
-                author = User(author_data, guild)
-        else:
-            webhook_id = int(webhook_id)
-            if (data.get('message_reference', None) is not None):
-                cross_mention_datas = data.get('mention_channels', None)
-                if (cross_mention_datas is None) or (not cross_mention_datas):
-                    cross_mentions = None
-                else:
-                    cross_mentions = tuple(sorted(
-                        (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                        key = id_sort_key,
-                    ))
-                
-                webhook_type = WebhookType.server
-            else:
-                cross_mentions = None
-                webhook_type = WebhookType.bot
             
-            if author_data is None:
-                author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
-            else:
-                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel.id)
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_INTERACTION,
+                interaction,
+            )
         
-        self.author = author
-        self.application_id = application_id
-        self.cross_mentions = cross_mentions
-        
-        self.reactions = reaction_mapping(data.get('reactions', None))
-        
-        # Most common case is reply
-        # First always check the `referenced_message` payload, and then second the `message_reference` one.
-        #
-        # Note, that `referenced_message` wont contain an another `referenced_message`, but only `message_reference`
-        # one.
-        
-        referenced_message_data = data.get('referenced_message', None)
-        if referenced_message_data is None:
-            referenced_message_data = data.get('message_reference', None)
-            if referenced_message_data is None:
-                referenced_message = None
-            else:
-                referenced_message = MessageReference(referenced_message_data)
-        else:
-            referenced_message = Message(referenced_message_data)
-        
-        self.referenced_message = referenced_message
-        
-        
-        try:
-            application_data = data['application']
-        except KeyError:
-            application = None
-        else:
-            application = MessageApplication(application_data)
-        self.application = application
-        
-        try:
-            activity_data = data['activity']
-        except KeyError:
-            activity = None
-        else:
-            activity = MessageActivity(activity_data)
-        self.activity = activity
-        
-        edited_timestamp = data.get('edited_timestamp', None)
-        if (edited_timestamp is None):
-            edited_at = None
-        else:
-            edited_at = timestamp_to_datetime(edited_timestamp)
-        self.edited_at = edited_at
-        
-        self.pinned = data.get('pinned', False)
-        self.everyone_mention = data.get('mention_everyone', False)
-        self.tts = data.get('tts', False)
-        self.flags = flags = MessageFlag(data.get('flags', 0))
-        
-        try:
-            message_type_value = data['type']
-        except KeyError:
-            if flags.invoking_user_only:
-                message_type = MessageType.application_command
-            else:
-                message_type = MessageType.default
-        else:
-            message_type = MessageType.get(message_type_value)
-        
-        self.type = message_type
-        
-        attachment_datas = data.get('attachments', None)
-        if (attachment_datas is not None) and attachment_datas:
-            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
-        else:
-            attachments = None
-        self.attachments = attachments
-        
-        embed_datas = data.get('embeds', None)
-        if (embed_datas is not None) and embed_datas:
-            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
-        else:
-            embeds = None
-        self.embeds = embeds
-        
-        self.nonce = data.get('nonce', None)
-        
-        content = data.get('content', None)
-        if (content is not None) and (not content):
-            content = None
-        self.content = content
-        
-        interaction_data = data.get('interaction', None)
-        if interaction_data is None:
-            interaction = None
-        else:
-            interaction = MessageInteraction(interaction_data)
-            try_resolve_interaction_message(self, interaction)
-        
-        self.interaction = interaction
         
         component_datas = data.get('components', None)
-        if (component_datas is None) or (not component_datas):
-            components = None
-        else:
-            components = tuple(create_component(component_data) for component_data in component_datas)
-        self.components = components
+        if (component_datas is not None) and component_datas:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_COMPONENTS,
+                tuple(create_component(component_data) for component_data in component_datas),
+            )
+        
         
         sticker_datas = data.get('sticker_items', None)
-        if sticker_datas is None:
-            stickers = None
-        else:
-            stickers = tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas)
-        self.stickers = stickers
+        if (sticker_datas is not None) and sticker_datas:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_STICKERS,
+                tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas),
+            )
+        
         
         user_mention_datas = data.get('mentions', None)
         if (user_mention_datas is not None) and user_mention_datas:
-            user_mentions = tuple(sorted(
-                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                key = id_sort_key,
-            ))
-        else:
-            user_mentions = None
-        self.user_mentions = user_mentions
-        
-        if guild is None:
-            channel_mentions = None
-        else:
-            channel_mentions = ...
-        
-        self._channel_mentions = channel_mentions
-        
-        if guild is None:
-            role_mentions = None
-        else:
-            role_mention_ids = data.get('mention_roles', None)
-            if (role_mention_ids is None) or (not role_mention_ids):
-                role_mentions = None
-            else:
-                roles = guild.roles
-                role_mentions = []
-                
-                for role_id in role_mention_ids:
-                    role_id = int(role_id)
-                    try:
-                        role = roles[role_id]
-                    except KeyError:
-                        continue
-                    
-                    role_mentions.append(role)
-                
-                role_mentions.sort(key=id_sort_key)
-                role_mentions = tuple(role_mentions)
-        
-        self.role_mentions = role_mentions
-        
-        try:
-            thread_data = data['thread']
-        except KeyError:
-            thread = None
-        else:
-            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id)
-        self.thread = thread
-        
-        MESSAGES[self.id] = self
-    
-    
-    @classmethod
-    def _create_unlinked(cls, message_id, data, channel):
-        """
-        Creates an unlinked message.
-        
-        Parameters
-        ----------
-        message_id : `int`
-            The message's unique identifier number.
-        data : `dict` of (`str`, `Any`) items
-            Message data.
-        channel : ``ChannelTextBase`` instance
-            Source channel.
-        
-        Returns
-        -------
-        self : ``Message``
-        """
-        self = object.__new__(cls)
-        self.id = message_id
-        self._finish_init(data, channel)
-        return self
-    
-    
-    def _finish_init(self, data, channel):
-        """
-        This method is called after a message object is created and it's id is set. Fills up the message's attributes
-        from the given message data and stores the message at `MESSAGES` weak value dictionary.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Message data.
-        channel : ``ChannelTextBase`` instance
-            Source channel.
-        """
-        self.deleted = False
-        self.channel_id = channel.id
-        guild = channel.guild
-        
-        guild_id = data.get('guild_id', None)
-        
-        if guild_id is None:
-            guild_id = 0
-        else:
-            guild_id = int(guild_id)
-        
-        self.guild_id = guild_id
-        
-        author_data = data.get('author', None)
-        webhook_id = data.get('webhook_id', None)
-        application_id = data.get('application_id', None)
-        
-        if (application_id is None):
-            application_id = 0
-        else:
-            application_id = int(application_id)
-        
-        if application_id or (webhook_id is None):
-            cross_mentions = None
-            if author_data is None:
-                author = ZEROUSER
-            else:
-                try:
-                     author_data['member'] = data['member']
-                except KeyError:
-                    pass
-                author = User(author_data, guild)
-        else:
-            webhook_id = int(webhook_id)
-            if (data.get('message_reference', None) is not None):
-                cross_mention_datas = data.get('mention_channels', None)
-                if (cross_mention_datas is None) or (not cross_mention_datas):
-                    cross_mentions = None
-                else:
-                    cross_mentions = tuple(sorted(
-                        (UnknownCrossMention(cross_mention_data) for cross_mention_data in cross_mention_datas),
-                        key = id_sort_key,
-                    ))
-                
-                webhook_type = WebhookType.server
-            else:
-                cross_mentions = None
-                webhook_type = WebhookType.bot
-            
-            if author_data is None:
-                author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
-            else:
-                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel.id)
-        
-        self.author = author
-        self.application_id = application_id
-        self.cross_mentions = cross_mentions
-        
-        self.reactions = reaction_mapping(data.get('reactions', None))
-        
-        # Most common case is reply
-        # First always check the `referenced_message` payload, and then second the `message_reference` one.
-        #
-        # Note, that `referenced_message` wont contain an another `referenced_message`, but only `message_reference`
-        # one.
-        
-        referenced_message_data = data.get('referenced_message', None)
-        if referenced_message_data is None:
-            referenced_message_data = data.get('message_reference', None)
-            if referenced_message_data is None:
-                referenced_message = None
-            else:
-                referenced_message = MessageReference(referenced_message_data)
-        else:
-            referenced_message = Message(referenced_message_data)
-        
-        self.referenced_message = referenced_message
-        
-        
-        try:
-            application_data = data['application']
-        except KeyError:
-            application = None
-        else:
-            application = MessageApplication(application_data)
-        self.application = application
-        
-        try:
-            activity_data = data['activity']
-        except KeyError:
-            activity = None
-        else:
-            activity = MessageActivity(activity_data)
-        self.activity = activity
-        
-        edited_timestamp = data.get('edited_timestamp', None)
-        if (edited_timestamp is None):
-            edited_at = None
-        else:
-            edited_at = timestamp_to_datetime(edited_timestamp)
-        self.edited_at = edited_at
-        
-        self.pinned = data.get('pinned', False)
-        self.everyone_mention = data.get('mention_everyone', False)
-        self.tts = data.get('tts', False)
-        self.flags = flags = MessageFlag(data.get('flags', 0))
-        
-        try:
-            message_type_value = data['type']
-        except KeyError:
-            if flags.invoking_user_only:
-                message_type = MessageType.application_command
-            else:
-                message_type = MessageType.default
-        else:
-            message_type = MessageType.get(message_type_value)
-        
-        self.type = message_type
-        
-        attachment_datas = data.get('attachments', None)
-        if (attachment_datas is not None) and attachment_datas:
-            attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
-        else:
-            attachments = None
-        self.attachments = attachments
-        
-        embed_datas = data.get('embeds', None)
-        if (embed_datas is not None) and embed_datas:
-            embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
-        else:
-            embeds = None
-        self.embeds = embeds
-        
-        self.nonce = data.get('nonce', None)
-        
-        content = data.get('content', None)
-        if (content is not None) and (not content):
-            content = None
-        self.content = content
-        
-        interaction_data = data.get('interaction', None)
-        if interaction_data is None:
-            interaction = None
-        else:
-            interaction = MessageInteraction(interaction_data)
-            try_resolve_interaction_message(self, interaction)
-        
-        self.interaction = interaction
-        
-        component_datas = data.get('components', None)
-        if (component_datas is None) or (not component_datas):
-            components = None
-        else:
-            components = tuple(create_component(component_data) for component_data in component_datas)
-        self.components = components
-        
-        sticker_datas = data.get('sticker_items', None)
-        if sticker_datas is None:
-            stickers = None
-        else:
-            stickers = tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas)
-        self.stickers = stickers
-        
-        user_mention_datas = data.get('mentions', None)
-        if (user_mention_datas is not None) and user_mention_datas:
-            user_mentions = tuple(sorted(
-                (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
-                key = id_sort_key,
-            ))
-        else:
-            user_mentions = None
-        self.user_mentions = user_mentions
-        
-        if guild is None:
-            channel_mentions = None
-        else:
-            channel_mentions = ...
-        
-        self._channel_mentions = channel_mentions
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_USER_MENTIONS,
+                tuple(sorted(
+                    (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                    key = id_sort_key,
+                )),
+            )
         
         
         role_mention_ids = data.get('mention_roles', None)
-        if (role_mention_ids is None) or (not role_mention_ids):
-            role_mention_ids = None
-        else:
-            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+        if (role_mention_ids is not None) and role_mention_ids:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+                tuple(sorted(int(role_id) for role_id in role_mention_ids)),
+            )
         
-        self.role_mention_ids = role_mention_ids
         
-        try:
-            thread_data = data['thread']
-        except KeyError:
-            thread = None
-        else:
-            thread = CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id)
-        self.thread = thread
-        
-        MESSAGES[self.id] = self
+        thread_data = data.get('thread', None)
+        if (thread_data is not None):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_THREAD,
+                CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id),
+            )
     
     
     def _late_init(self, data):
@@ -878,31 +590,56 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data.
         """
-        if (self.content is None):
-            try:
-                content = data['content']
-            except KeyError:
-                pass
-            else:
-                if (content is not None) and content:
-                    self.content = content
+        fields = self._fields
+        if (fields is None):
+            update_content = True
+            update_interaction = True
+            update_components = True
+            update_embeds = True
+        else:
+            update_content = (MESSAGE_FIELD_KEY_CONTENT in fields)
+            update_interaction = (MESSAGE_FIELD_KEY_INTERACTION in fields)
+            update_components = (MESSAGE_FIELD_KEY_COMPONENTS in fields)
+            update_embeds = (MESSAGE_FIELD_KEY_EMBEDS in fields)
         
-        if (self.interaction is None):
+        if update_content:
+            content = data.get('content', None)
+            if (content is not None) and content:
+                _set_message_field(
+                    self,
+                    MESSAGE_FIELD_KEY_CONTENT,
+                    content,
+                )
+        
+        if update_interaction:
             interaction_data = data.get('interaction', None)
             if (interaction_data is not None):
                 interaction = MessageInteraction(interaction_data)
                 try_resolve_interaction_message(self, interaction)
-                self.interaction = interaction
+                
+                _set_message_field(
+                    self,
+                    MESSAGE_FIELD_KEY_INTERACTION,
+                    interaction,
+                )
         
-        if (self.components is None):
+        if update_components:
             component_datas = data.get('components', None)
             if (component_datas is not None) and component_datas:
-                self.components = tuple(create_component(component_data) for component_data in component_datas)
-        
-        if (self.embeds is None):
+                _set_message_field(
+                    self,
+                    MESSAGE_FIELD_KEY_COMPONENTS,
+                    tuple(create_component(component_data) for component_data in component_datas),
+                )
+            
+        if update_embeds:
             embed_datas = data.get('embeds', None)
             if (embed_datas is not None) and embed_datas:
-                self.embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+                _set_message_field(
+                    self,
+                    MESSAGE_FIELD_KEY_EMBEDS,
+                    tuple(EmbedCore.from_data(embed) for embed in embed_datas),
+                )
     
     
     @BaseMethodDescriptor
@@ -1075,12 +812,6 @@ class Message(DiscordEntity, immortal=True):
             if not isinstance(channel, ChannelTextBase):
                 raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclass\'s instance, got '
                     f'`{channel!r}`')
-        
-        # `_channel_mentions` is internal, we wont check kwargs
-        if isinstance(channel, ChannelGuildBase):
-            _channel_mentions = None
-        else:
-            _channel_mentions = ...
         
         try:
             activity = kwargs.pop('activity')
@@ -1573,8 +1304,8 @@ class Message(DiscordEntity, immortal=True):
             raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
         
         self = object.__new__(cls)
+        self._fields = None
         
-        self._channel_mentions = _channel_mentions
         self.activity = activity
         self.application = application
         self.application_id = application_id
@@ -1606,67 +1337,7 @@ class Message(DiscordEntity, immortal=True):
         return self
     
     
-    def _parse_channel_mentions(self):
-        """
-        Looks up the ``.contents`` of the message and searches channel mentions in them. If non, then sets
-        ``.channel_mentions`` as `None`, else as a `list` of ``ChannelBase`` (and ``UnknownCrossMention``) instances.
-        
-        Invalid channel mentions are ignored.
-        
-        Returns
-        -------
-        channel_mentions : `None` or `tuple` of (``GuildChannelBase``, ``UnknownCrossMention``) instances.
-            The parsed channel mentions.
-        """
-        content = self.content
-        if content is None:
-            channel_mentions = None
-        else:
-            channel_mentions = []
-            channels = self.channel.guild.channels
-            cross_mentions = self.cross_mentions
-    
-            for channel_id in CHANNEL_MENTION_RP.findall(content):
-                channel_id = int(channel_id)
-                try:
-                    channel = channels[channel_id]
-                except KeyError:
-                    if cross_mentions is None:
-                        continue
-                    try:
-                        channel = cross_mentions[channel_id]
-                    except KeyError:
-                        continue
-                
-                if channel not in channel_mentions:
-                    channel_mentions.append(channel)
-            
-            if channel_mentions:
-                channel_mentions.sort(key=id_sort_key)
-                channel_mentions = tuple(channel_mentions)
-            else:
-                channel_mentions = None
-        
-        self._channel_mentions = channel_mentions
-        return channel_mentions
-    
     url = property(module_urls.message_jump_url)
-    
-    
-    @property
-    def channel_mentions(self):
-        """
-        The mentioned channels by the message. If there is non, returns `None`.
-        
-        Returns
-        -------
-        channel_mentions : `None` or (`list` of (``ChannelBase`` or ``UnknownCrossMentions`` instances))
-        """
-        channel_mentions = self._channel_mentions
-        if channel_mentions is ...:
-            channel_mentions = self._parse_channel_mentions()
-        
-        return channel_mentions
     
     
     def __repr__(self):
@@ -1773,10 +1444,6 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | Keys              | Values                                                                |
         +===================+=======================================================================+
-        | activity          | `None` or ``MessageActivity``                                         |
-        +-------------------+-----------------------------------------------------------------------+
-        | application       | `None` or ``MessageApplication``                                      |
-        +-------------------+-----------------------------------------------------------------------+
         | attachments       | `None` or (`tuple` of ``Attachment``)                                 |
         +-------------------+-----------------------------------------------------------------------+
         | components        | `None` or (`tuple` of ``ComponentBase``)                              |
@@ -1800,6 +1467,7 @@ class Message(DiscordEntity, immortal=True):
         | role_mention_ids  | `None` or (`tuple` of `int`)                                          |
         +-------------------+-----------------------------------------------------------------------+
         """
+        self._clear_cache()
         old_attributes = {}
         
         try:
@@ -1807,14 +1475,16 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            if self.pinned != pinned:
-                old_attributes['pinned'] = self.pinned
+            self_pinned = self.pinned
+            if self_pinned != pinned:
+                old_attributes['pinned'] = self_pinned
                 self.pinned = pinned
         
         flags = data.get('flags', 0)
-        flag_difference = self.flags^flags
+        self_flags = self.flags
+        flag_difference = self_flags^flags
         if flag_difference:
-            old_attributes['flags'] = self.flags
+            old_attributes['flags'] = self_flags
             self.flags = MessageFlag(flags)
             
             if MessageFlag(flag_difference).embeds_suppressed:
@@ -1828,8 +1498,9 @@ class Message(DiscordEntity, immortal=True):
                     else:
                         embeds = None
                     
-                    if self.embeds != embeds:
-                        old_attributes['embeds'] = self.embeds
+                    self_embeds = self.embeds
+                    if self_embeds != embeds:
+                        old_attributes['embeds'] = self_embeds
                         self.embeds = embeds
         
         # at the case of pin update edited is None
@@ -1842,39 +1513,23 @@ class Message(DiscordEntity, immortal=True):
                 return old_attributes
             
             edited_at = timestamp_to_datetime(edited_timestamp)
-        
-            if self.edited_at == edited_at:
+            
+            self_edited_at = self.edited_at
+            if self_edited_at == edited_at:
                 return old_attributes
             
-            old_attributes['edited_at'] = self.edited_at
+            old_attributes['edited_at'] = self_edited_at
             self.edited_at = edited_at
         
         try:
-            application_data = data['application']
+            everyone_mention = data['mention_everyone']
         except KeyError:
-            application = None
+            pass
         else:
-            application = MessageApplication(application_data)
-        
-        if self.application != application:
-            old_attributes['application'] = self.application
-            self.application = self.application
-        
-        try:
-            activity_data = data['activity']
-        except KeyError:
-            activity = None
-        else:
-            activity = MessageActivity(activity_data)
-        
-        if self.activity != activity:
-            old_attributes['activity'] = self.activity
-            self.activity = activity
-        
-        everyone_mention = data.get('mention_everyone', False)
-        if self.everyone_mention != everyone_mention:
-            old_attributes['everyone_mention'] = self.everyone_mention
-            self.everyone_mention = everyone_mention
+            self_everyone_mention = self.everyone_mention
+            if self_everyone_mention != everyone_mention:
+                old_attributes['everyone_mention'] = self_everyone_mention
+                self.everyone_mention = everyone_mention
         
         # ignoring tts
         # ignoring type
@@ -1885,13 +1540,14 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            if attachment_datas:
+            if (attachment_datas is not None) and attachment_datas:
                 attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
             else:
                 attachments = None
             
-            if self.attachments != attachments:
-                old_attributes['attachments'] = self.attachments
+            self_attachments = self.attachments
+            if self_attachments != attachments:
+                old_attributes['attachments'] = self_attachments
                 self.attachments = attachments
         
         try:
@@ -1904,8 +1560,9 @@ class Message(DiscordEntity, immortal=True):
             else:
                 embeds = None
             
-            if self.embeds != embeds:
-                old_attributes['embeds'] = self.embeds
+            self_embeds = self.embeds
+            if self_embeds != embeds:
+                old_attributes['embeds'] = self_embeds
                 self.embeds = embeds
         
         try:
@@ -1916,8 +1573,9 @@ class Message(DiscordEntity, immortal=True):
             if (content is not None) and (not content):
                 content = None
             
-            if self.content != content:
-                old_attributes['content'] = self.content
+            self_content = self.content
+            if self_content != content:
+                old_attributes['content'] = self_content
                 self.content = content
         
         try:
@@ -1935,8 +1593,9 @@ class Message(DiscordEntity, immortal=True):
                     key = id_sort_key,
                 ))
             
-            if self.user_mentions != user_mentions:
-                old_attributes['user_mentions'] = self.user_mentions
+            self_user_mentions = self.user_mentions
+            if self_user_mentions != user_mentions:
+                old_attributes['user_mentions'] = self_user_mentions
                 self.user_mentions = user_mentions
         
         try:
@@ -1949,12 +1608,11 @@ class Message(DiscordEntity, immortal=True):
             else:
                 components = tuple(create_component(component_data) for component_data in component_datas)
             
-            if self.components != components:
-                old_attributes['components'] = self.components
+            self_components = self.components
+            if self_components != components:
+                old_attributes['components'] = self_components
                 self.components = components
         
-        
-        self._channel_mentions = ...
         
         try:
             cross_mention_datas = data['mention_channels']
@@ -1969,19 +1627,25 @@ class Message(DiscordEntity, immortal=True):
                     key = id_sort_key,
                 ))
             
-            if self.cross_mentions != cross_mentions:
-                old_attributes['cross_mentions'] = self.cross_mentions
+            self_cross_mentions = self.cross_mentions
+            if self_cross_mentions != cross_mentions:
+                old_attributes['cross_mentions'] = self_cross_mentions
                 self.cross_mentions = cross_mentions
         
-        role_mention_ids = data.get('mention_roles', None)
-        if (role_mention_ids is None) or (not role_mention_ids):
-            role_mention_ids = None
+        try:
+            role_mention_ids = data['mention_roles']
+        except KeyError:
+            pass
         else:
-            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
-        
-        if self.role_mention_ids != role_mention_ids:
-            old_attributes['role_mention_ids'] = self.role_mention_ids
-            self.role_mention_ids = role_mention_ids
+            if (role_mention_ids is None) or (not role_mention_ids):
+                role_mention_ids = None
+            else:
+                role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+            
+            self_role_mention_ids = self.role_mention_ids
+            if self_role_mention_ids != role_mention_ids:
+                old_attributes['role_mention_ids'] = self_role_mention_ids
+                self.role_mention_ids = role_mention_ids
         
         return old_attributes
     
@@ -1995,6 +1659,8 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data received from Discord.
         """
+        self._clear_cache()
+        
         try:
             pinned = data['pinned']
         except KeyError:
@@ -2019,6 +1685,7 @@ class Message(DiscordEntity, immortal=True):
                         embeds = None
                     self.embeds = embeds
         
+        
         try:
             edited_timestamp = data['edited_timestamp']
         except KeyError:
@@ -2032,28 +1699,15 @@ class Message(DiscordEntity, immortal=True):
                 return
             
             self.edited_at = edited_at
-
-        try:
-            application_data = data['application']
-        except KeyError:
-            application = None
-        else:
-            application = MessageApplication(application_data)
-        self.application = application
+        
         
         try:
-            activity_data = data['activity']
+            everyone_mention = data['mention_everyone']
         except KeyError:
-            activity = None
+            pass
         else:
-            activity = MessageActivity(activity_data)
-        self.activity = activity
+            self.everyone_mention = everyone_mention
         
-        self.everyone_mention = data['mention_everyone']
-
-        # ignoring tts
-        # ignoring type
-        # ignoring nonce
         
         try:
             attachment_datas = data['attachments']
@@ -2066,6 +1720,7 @@ class Message(DiscordEntity, immortal=True):
                 attachments = None
             self.attachments = attachments
         
+        
         try:
             embed_datas = data['embeds']
         except KeyError:
@@ -2077,6 +1732,7 @@ class Message(DiscordEntity, immortal=True):
                 embeds = None
             self.embeds = embeds
         
+        
         try:
             content = data['content']
         except KeyError:
@@ -2085,6 +1741,7 @@ class Message(DiscordEntity, immortal=True):
             if (content is not None) and (not content):
                 content = None
             self.content = content
+        
         
         try:
             component_datas = data['components']
@@ -2114,8 +1771,6 @@ class Message(DiscordEntity, immortal=True):
             
             self.user_mentions = user_mentions
         
-        self._channel_mentions = ...
-        
         try:
             cross_mention_datas = data['mention_channels']
         except KeyError:
@@ -2131,13 +1786,34 @@ class Message(DiscordEntity, immortal=True):
             
             self.cross_mentions = cross_mentions
         
-        role_mention_ids = data.get('mention_roles', None)
-        if (role_mention_ids is None) or (not role_mention_ids):
-            role_mention_ids = None
+        try:
+            role_mention_ids = data['mention_roles']
+        except KeyError:
+            pass
         else:
-            role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
-        
-        self.role_mention_ids = role_mention_ids
+            if (role_mention_ids is None) or (not role_mention_ids):
+                role_mention_ids = None
+            else:
+                role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
+            
+            self.role_mention_ids = role_mention_ids
+    
+    
+    def _clear_cache(self):
+        """
+        Clears the message's cache fields.
+        """
+        fields = self._fields
+        if (fields is not None):
+            for field_key in MESSAGE_CACHE_FIELD_KEYS:
+                try:
+                    del fields[field_key]
+                except KeyError:
+                    pass
+                else:
+                    if not fields:
+                        self._fields = None
+                        break
     
     
     def _update_embed(self, data):
@@ -2230,8 +1906,8 @@ class Message(DiscordEntity, immortal=True):
         self.embeds = embeds
         
         return EMBED_UPDATE_EMBED_ADD
-
-
+    
+    
     def _update_embed_no_return(self, data):
         """
         Updates the message's embeds.
@@ -2294,47 +1970,6 @@ class Message(DiscordEntity, immortal=True):
             )
         
         self.embeds = embeds
-    
-    @property
-    def embed(self):
-        """
-        Returns the first embed in the message.
-
-        Returns
-        -------
-        embed : `None` or ``EmbedCore``
-        """
-        embeds = self.embeds
-        if (embeds is not None):
-            return embeds[0]
-    
-    
-    @property
-    def attachment(self):
-        """
-        Returns the first attachment in the message.
-
-        Returns
-        -------
-        attachment : `None` or ``Attachment``
-        """
-        attachments = self.attachments
-        if (attachments is not None):
-            return attachments[0]
-    
-    
-    @property
-    def sticker(self):
-        """
-        Returns the first sticker in the message.
-
-        Returns
-        -------
-        sticker : `None` or ``Sticker``
-        """
-        stickers = self.stickers
-        if (stickers is not None):
-            return stickers[0]
     
     
     @property
@@ -2404,22 +2039,6 @@ class Message(DiscordEntity, immortal=True):
 
         return contents
     
-    
-    @property
-    def partial(self):
-        """
-        Returns whether the message is partial.
-        
-        Returns
-        -------
-        partial : `bool`
-        """
-        if self.channel_id:
-            return False
-        
-        return True
-    
-    
     @property
     def mentions(self):
         """
@@ -2443,7 +2062,7 @@ class Message(DiscordEntity, immortal=True):
             mentions.extend(role_mentions)
         
         channel_mentions = self.channel_mentions
-        if channel_mentions is not None:
+        if (channel_mentions is not None):
             mentions.extend(channel_mentions)
         
         return mentions
@@ -2527,239 +2146,6 @@ class Message(DiscordEntity, immortal=True):
         return (user in reactors)
     
     
-    # Methods for testing purposes
-    
-    def has_activity(self):
-        """
-        Returns whether the message has ``.activity`` set.
-        
-        Returns
-        -------
-        has_activity : `bool`
-        """
-        return (self.activity is not None)
-    
-    
-    def has_application(self):
-        """
-        Returns whether the message has ``.application`` set.
-        
-        Returns
-        -------
-        has_application : `bool`
-        """
-        return (self.application is not None)
-    
-    
-    def has_application_id(self):
-        """
-        Returns whether the message has ``.application_id`` set.
-        
-        Returns
-        -------
-        has_application_id : `bool`
-        """
-        return (self.application_id != 0)
-    
-    
-    def has_attachments(self):
-        """
-        Returns whether the message has ``.attachments`` set.
-        
-        Returns
-        -------
-        has_attachments : `bool`
-        """
-        return (self.attachments is not None)
-    
-    
-    def has_components(self):
-        """
-        Returns whether the message has ``.components`` set.
-        
-        Returns
-        -------
-        has_components : `bool`
-        """
-        return (self.components is not None)
-    
-    
-    def has_content(self):
-        """
-        Returns whether the message has ``.content`` set.
-        
-        Returns
-        -------
-        has_content : `bool`
-        """
-        return (self.content is not None)
-    
-    
-    def has_cross_mentions(self):
-        """
-        Returns whether the message has ``.cross_mentions`` set.
-        
-        Returns
-        -------
-        has_cross_mentions : `bool`
-        """
-        return (self.cross_mentions is not None)
-    
-    
-    def has_referenced_message(self):
-        """
-        Returns whether the message has ``.referenced_message`` set.
-        
-        Returns
-        -------
-        has_referenced_message : `bool`
-        """
-        return (self.referenced_message is not None)
-    
-    
-    def has_deleted(self):
-        """
-        Returns whether the message has ``.deleted`` set.
-        
-        Returns
-        -------
-        has_deleted : `bool`
-        """
-        return self.deleted
-    
-    
-    def has_edited_at(self):
-        """
-        Returns whether the message has ``.edited_at`` set.
-        
-        Returns
-        -------
-        has_edited_at : `bool`
-        """
-        return (self.edited_at is not None)
-    
-    
-    def has_embeds(self):
-        """
-        Returns whether the message has ``.embeds`` set.
-        
-        Returns
-        -------
-        has_embeds : `bool`
-        """
-        return (self.embeds is not None)
-    
-    
-    def has_everyone_mention(self):
-        """
-        Returns whether the message has ``.everyone_mention`` set.
-        
-        Returns
-        -------
-        has_everyone_mention : `bool`
-        """
-        return self.everyone_mention
-    
-    
-    def has_interaction(self):
-        """
-        Returns whether the message has ``.interaction`` set.
-        
-        Returns
-        -------
-        has_interaction : `bool`
-        """
-        return (self.interaction is not None)
-    
-    
-    def has_nonce(self):
-        """
-        Returns whether the message has ``.nonce`` set.
-        
-        Returns
-        -------
-        has_nonce : `bool`
-        """
-        return (self.nonce is not None)
-    
-    
-    def has_pinned(self):
-        """
-        Returns whether the message has ``.pinned`` set.
-        
-        Returns
-        -------
-        has_pinned : `bool`
-        """
-        return self.pinned
-    
-    
-    def has_reactions(self):
-        """
-        Returns whether the message has ``.reactions`` set.
-        
-        Returns
-        -------
-        has_reactions : `bool`
-        """
-        return (True if self.reactions else False)
-    
-    
-    def has_role_mention_ids(self):
-        """
-        Returns whether the message has ``.role_mention_ids`` set.
-        
-        Returns
-        -------
-        has_role_mention_ids : `bool`
-        """
-        return (self.role_mention_ids is not None)
-    
-    
-    def has_stickers(self):
-        """
-        Returns whether the message has ``.stickers`` set.
-        
-        Returns
-        -------
-        has_stickers : `bool`
-        """
-        return (self.stickers is not None)
-    
-    
-    def has_thread(self):
-        """
-        Returns whether the message has ``.thread`` set.
-        
-        Returns
-        -------
-        has_thread : `bool`
-        """
-        return (self.thread is not None)
-    
-    
-    def has_tts(self):
-        """
-        Returns whether the message has ``.tts`` set.
-        
-        Returns
-        -------
-        has_tts : `bool`
-        """
-        return self.tts
-    
-    
-    def has_user_mentions(self):
-        """
-        Returns whether the message has ``.has_user_mentions`` set.
-        
-        Returns
-        -------
-        has_user_mentions : `bool
-        """
-        return (self.user_mentions is not None)
-    
-    
     def _add_reaction(self, emoji, user):
         """
         Adds a reaction to the message.
@@ -2811,3 +2197,1637 @@ class Message(DiscordEntity, immortal=True):
         reactions = self.reactions
         if (reactions is not None):
             return reactions.remove_emoji(emoji)
+    
+    
+    @classmethod
+    def precreate(cls, message_id, **kwargs):
+        """
+        Precreates the message with the given parameters. Precreated messages are picked up when the message's data is
+        received with the same id.
+        
+        First tries to find whether a message exists with the given id. If it does and it is partial, updates it with
+        the given parameters, else it creates a new one.
+        
+        > Note, that message partial check is not working same as other entity's and may cause misbehaviour.
+        >
+        > This classmethod is for future usage, when the partial check will be resolved.
+        
+        Parameters
+        ----------
+        guild_id : `snowflake`
+            The message's id.
+        **kwargs : keyword parameters
+            Additional predefined attributes for the message.
+        
+        Other Parameters
+        ----------------
+        activity : `None` or ``MessageActivity``
+        
+        Returns
+        -------
+        message : ``Message``
+        
+        Raises
+        ------
+        TypeError
+            If any parameter's type is bad or if unexpected parameter is passed.
+        ValueError
+            If an parameter's type is good, but it's value is unacceptable.
+        """
+        message_id = preconvert_snowflake(message_id, 'message_id')
+        
+        if kwargs:
+            processable = []
+            processable_by_field = []
+            
+            for variable_field_key, variable_type, variable_name in (
+                (MESSAGE_FIELD_KEY_ACTIVITY, MessageActivity, 'activity'),
+                (MESSAGE_FIELD_KEY_APPLICATION, MessageApplication, 'application'),
+            ):
+                try:
+                    variable_value = kwargs.pop(variable_name)
+                except KeyError:
+                    pass
+                else:
+                    if (variable_value is not None):
+                        if not isinstance(variable_value, variable_type):
+                            raise TypeError(f'`{variable_name}` can be either `None` or {variable_type.__name__}, got '
+                                f'{variable_value.__class__.__name__}.')
+                        
+                        processable_by_field.append((variable_field_key, variable_value))
+                
+                try:
+                    application_id = kwargs.pop('application_id')
+                except KeyError:
+                    pass
+                else:
+                    application_id = preconvert_snowflake(application_id, 'application_id')
+                    if application_id:
+                        processable_by_field.append((MESSAGE_FIELD_KEY_APPLICATION_ID, application_id))
+                
+                # Work in progress
+            
+            if kwargs:
+                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            
+        else:
+            processable = None
+            processable_by_field = None
+        
+        try:
+            self = MESSAGES[message_id]
+        except KeyError:
+            self = cls._create_empty(message_id)
+            MESSAGES[message_id] = self
+        else:
+            if not self.partial:
+                return self
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(self, *item)
+        
+        if (processable_by_field is not None):
+            for item in processable_by_field:
+                _set_message_field(self, *item)
+        
+        return self
+    
+    
+    @classmethod
+    def _create_empty(cls, message_id):
+        """
+        Creates a message with default parameters set.
+        
+        Parameters
+        ----------
+        message_id : `int`
+            The message's identifier.
+        
+        Returns
+        -------
+        self : ``Message``
+        """
+        self = object.__new__(cls)
+        self.id = message_id
+        self.channel_id = 0
+        self.guild_id = 0
+        self.author = ZEROUSER
+        self._fields = {MESSAGE_FIELD_KEY_PARTIAL: None}
+        return self
+    
+    # Message.activity
+    
+    @property
+    def activity(self):
+        """
+        Sent with rich presence related embeds.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        activity : `None` or ``MessageActivity``
+        """
+        fields = self._fields
+        if (fields is not None):
+            return fields.get(MESSAGE_FIELD_KEY_ACTIVITY, None)
+    
+    @activity.setter
+    def activity(self, activity):
+        fields = self._fields
+        
+        if (fields is None):
+            if (activity is None):
+                return
+            
+            self._fields = fields = {}
+        else:
+            if (activity is None):
+                try:
+                    del fields[MESSAGE_FIELD_KEY_ACTIVITY]
+                except KeyError:
+                    pass
+                else:
+                    if not fields:
+                        self._fields = None
+            return
+        
+        fields[MESSAGE_FIELD_KEY_ACTIVITY] = activity
+    
+    @activity.deleter
+    def activity(self):
+        fields = self._fields
+        if (fields is not None):
+            try:
+                del fields[MESSAGE_FIELD_KEY_ACTIVITY]
+            except KeyError:
+                pass
+            else:
+                if not fields:
+                    self._fields = None
+    
+    
+    def has_activity(self):
+        """
+        Returns whether the message has ``.activity`` set.
+        
+        Returns
+        -------
+        has_activity : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ACTIVITY,
+        )
+    
+    # Message.application
+    
+    @property
+    def application(self):
+        """
+        Sent with rich presence related embeds.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        application : `None` or ``MessageApplication``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_APPLICATION,
+        )
+    
+    @application.setter
+    def application(self, application):
+        if application is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_APPLICATION,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_APPLICATION,
+                application,
+            )
+    
+    @application.deleter
+    def application(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_APPLICATION,
+        )
+    
+    
+    def has_application(self):
+        """
+        Returns whether the message has ``.application`` set.
+        
+        Returns
+        -------
+        has_application : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_APPLICATION,
+        )
+    
+    # Message.application_id
+    
+    @property
+    def application_id(self):
+        """
+        The application's identifier who sent the message.
+        
+        Defaults to `0`.
+        
+        Returns
+        -------
+        application_id : `int`
+        """
+        fields = self._fields
+        if (fields is not None):
+            return fields.get(MESSAGE_FIELD_KEY_APPLICATION_ID, 0)
+    
+    @application_id.setter
+    def application_id(self, application_id):
+        if application_id:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_APPLICATION_ID,
+                application_id,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_APPLICATION_ID,
+            )
+    
+    @application_id.deleter
+    def application_id(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_APPLICATION_ID,
+        )
+    
+    
+    def has_application_id(self):
+        """
+        Returns whether the message has ``.application_id`` set.
+        
+        Returns
+        -------
+        has_application_id : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_APPLICATION_ID,
+        )
+    
+    # Message.attachments
+    
+    @property
+    def attachments(self):
+        """
+        Attachments sent with the message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        attachments : `None` or `tuple` of ``Attachment``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ATTACHMENTS,
+        )
+    
+    @attachments.setter
+    def attachments(self, attachments):
+        if attachments is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ATTACHMENTS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ATTACHMENTS,
+                attachments,
+            )
+    
+    @attachments.deleter
+    def attachments(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ATTACHMENTS,
+        )
+    
+    
+    def has_attachments(self):
+        """
+        Returns whether the message has ``.attachments`` set.
+        
+        Returns
+        -------
+        has_attachments : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ATTACHMENTS,
+        )
+    
+    
+    @property
+    def attachment(self):
+        """
+        Returns the first attachment in the message.
+
+        Returns
+        -------
+        attachment : `None` or ``Attachment``
+        """
+        return _get_first_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ATTACHMENTS,
+        )
+    
+    # Message.channel_mentions
+    
+    def _get_channel_mentions(self):
+        """
+        Looks up the ``.contents`` of the message and searches channel mentions in them.
+        
+        Invalid channel mentions are ignored.
+        
+        Returns
+        -------
+        channel_mentions : `None` or `tuple` of (``GuildChannelBase``, ``UnknownCrossMention``) instances.
+            The parsed channel mentions.
+        """
+        content = self.content
+        if content is None:
+            channel_mentions = None
+        else:
+            channel_mentions = []
+            channels = self.channel.guild.channels
+            cross_mentions = self.cross_mentions
+    
+            for channel_id in CHANNEL_MENTION_RP.findall(content):
+                channel_id = int(channel_id)
+                try:
+                    channel = channels[channel_id]
+                except KeyError:
+                    if cross_mentions is None:
+                        continue
+                    try:
+                        channel = cross_mentions[channel_id]
+                    except KeyError:
+                        continue
+                
+                if channel not in channel_mentions:
+                    channel_mentions.append(channel)
+            
+            if channel_mentions:
+                channel_mentions.sort(key=id_sort_key)
+                channel_mentions = tuple(channel_mentions)
+            else:
+                channel_mentions = None
+        
+        return channel_mentions
+    
+    
+    @property
+    def channel_mentions(self):
+        """
+        The mentioned channels by the message. If there is non, returns `None`.
+        
+        Returns
+        -------
+        channel_mentions : `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMentions`` instances))
+        """
+        fields = self._fields
+        if fields is None:
+            self._fields = fields = {}
+        else:
+            try:
+                return fields[MESSAGE_FIELD_KEY_CHANNEL_MENTIONS]
+            except KeyError:
+                pass
+        
+        channel_mentions = self._get_channel_mentions()
+        fields[MESSAGE_FIELD_KEY_CHANNEL_MENTIONS] = channel_mentions
+        return channel_mentions
+    
+    @channel_mentions.deleter
+    def channel_mentions(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CHANNEL_MENTIONS,
+        )
+    
+    
+    def has_channel_mentions(self):
+        """
+        Returns whether the message has ``.channel_mentions`` set.
+        
+        Returns
+        -------
+        has_channel_mentions : `bool`
+        """
+        return (self.channel_mentions is not None)
+    
+    # Message.components
+    
+    @property
+    def components(self):
+        """
+        Message components.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        components : `None` or `tuple` of ``ComponentBase``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_COMPONENTS,
+        )
+    
+    @components.setter
+    def components(self, components):
+        if components is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_COMPONENTS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_COMPONENTS,
+                components,
+            )
+    
+    @components.deleter
+    def components(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_COMPONENTS,
+        )
+    
+    
+    def has_components(self):
+        """
+        Returns whether the message has ``.components`` set.
+        
+        Returns
+        -------
+        has_components : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_COMPONENTS,
+        )
+    
+    # Message.content
+    
+    @property
+    def content(self):
+        """
+        The message's content.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        content : `None` or `str`
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CONTENT,
+        )
+    
+    @content.setter
+    def content(self, content):
+        if content is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_CONTENT,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_CONTENT,
+                content,
+            )
+    
+    @content.deleter
+    def content(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CONTENT,
+        )
+    
+    
+    def has_content(self):
+        """
+        Returns whether the message has ``.content`` set.
+        
+        Returns
+        -------
+        has_content : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CONTENT,
+        )
+    
+    # cross mentions
+    
+    @property
+    def cross_mentions(self):
+        """
+        Cross guild channel mentions of a crosspost message if applicable. If a channel is not loaded by the wrapper,
+        then it will be represented with a ``UnknownCrossMention`` instead.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        cross_mentions : `None` or `tuple` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CROSS_MENTIONS,
+        )
+    
+    @cross_mentions.setter
+    def cross_mentions(self, cross_mentions):
+        if cross_mentions is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_CROSS_MENTIONS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_CROSS_MENTIONS,
+                cross_mentions,
+            )
+    
+    @cross_mentions.deleter
+    def cross_mentions(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CROSS_MENTIONS,
+        )
+    
+    
+    def has_cross_mentions(self):
+        """
+        Returns whether the message has ``.cross_mentions`` set.
+        
+        Returns
+        -------
+        has_cross_mentions : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_CROSS_MENTIONS,
+        )
+    
+    # Message.referenced_message
+    
+    @property
+    def referenced_message(self):
+        """
+        The referenced message. Set as ``Message`` instance if the message is cached, else as ``MessageReference``.
+        
+        Set when the message is a reply, a crosspost or when is a pin message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        referenced_message : `None`, ``Message`` or ``MessageReference``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_REFERENCED_MESSAGE,
+        )
+    
+    @referenced_message.setter
+    def referenced_message(self, referenced_message):
+        if referenced_message is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_REFERENCED_MESSAGE,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_REFERENCED_MESSAGE,
+                referenced_message,
+            )
+    
+    @referenced_message.deleter
+    def referenced_message(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_REFERENCED_MESSAGE,
+        )
+    
+    
+    def has_referenced_message(self):
+        """
+        Returns whether the message has ``.referenced_message`` set.
+        
+        Returns
+        -------
+        has_referenced_message : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_REFERENCED_MESSAGE,
+        )
+    
+    # Message.deleted
+    
+    @property
+    def deleted(self):
+        """
+        Returns whether the message is deleted.
+        
+        Defaults to `False`.
+        
+        Returns
+        -------
+        deleted : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_DELETED,
+        )
+    
+    @deleted.setter
+    def deleted(self, deleted):
+        if deleted:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_DELETED,
+                None,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_DELETED,
+            )
+    
+    @deleted.deleter
+    def deleted(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_DELETED,
+        )
+    
+    
+    def has_deleted(self):
+        """
+        Returns whether the message has ``.deleted`` set.
+        
+        Returns
+        -------
+        has_deleted : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_DELETED,
+        )
+    
+    # Message.exited_at
+    
+    @property
+    def edited_at(self):
+        """
+        The time when the message was edited, or `None` if it was not.
+        
+        Pinning or (un)suppressing a message will not change it's edited value.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        edited_at : `None` or `datetime`
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EDITED_AT,
+        )
+    
+    @edited_at.setter
+    def edited_at(self, edited_at):
+        if edited_at is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EDITED_AT,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EDITED_AT,
+                edited_at,
+            )
+    
+    @edited_at.deleter
+    def edited_at(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EDITED_AT,
+        )
+    
+    
+    def has_edited_at(self):
+        """
+        Returns whether the message has ``.edited_at`` set.
+        
+        Returns
+        -------
+        has_edited_at : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EDITED_AT,
+        )
+    
+    # Message.embeds
+    
+    @property
+    def embeds(self):
+        """
+        A tuple of embeds included with the message if any.
+        
+        If a message contains links, then those embeds' might not be included with the source payload and those
+        will be added only later.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        embeds : `None` or `tuple` of ``EmbedCore``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EMBEDS,
+        )
+    
+    @embeds.setter
+    def embeds(self, embeds):
+        if embeds is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EMBEDS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EMBEDS,
+                embeds,
+            )
+    
+    @embeds.deleter
+    def embeds(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EMBEDS,
+        )
+    
+    
+    def has_embeds(self):
+        """
+        Returns whether the message has ``.embeds`` set.
+        
+        Returns
+        -------
+        has_embeds : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EMBEDS,
+        )
+    
+    
+    @property
+    def embed(self):
+        """
+        Returns the first embed in the message.
+
+        Returns
+        -------
+        embed : `None` or ``EmbedCore``
+        """
+        return _get_first_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EMBEDS,
+        )
+    
+    # Message.everyone_mention
+    
+    @property
+    def everyone_mention(self):
+        """
+        Whether the message contains `@everyone` or `@here`.
+        
+        Defaults to `False`.
+        
+        Returns
+        -------
+        everyone_mention : `bool`
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EVERYONE_MENTION,
+        )
+    
+    @everyone_mention.setter
+    def everyone_mention(self, everyone_mention):
+        if everyone_mention:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EVERYONE_MENTION,
+                None,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_EVERYONE_MENTION,
+            )
+    
+    @everyone_mention.deleter
+    def everyone_mention(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EVERYONE_MENTION,
+        )
+    
+    
+    def has_everyone_mention(self):
+        """
+        Returns whether the message has ``.everyone_mention`` set.
+        
+        Returns
+        -------
+        has_everyone_mention : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EVERYONE_MENTION,
+        )
+    
+    # Message.flags
+    
+    @property
+    def flags(self):
+        """
+        The message's flags.
+        
+        Defaults to `MessageFlag(0)`.
+        
+        Returns
+        -------
+        flags : ``MessageFlag``
+        """
+        fields = self._fields
+        if fields is None:
+            flags = MESSAGE_FLAGS_EMPTY
+        else:
+            flags = fields.get(MESSAGE_FIELD_KEY_FLAGS, MESSAGE_FLAGS_EMPTY)
+        
+        return flags
+    
+    @flags.setter
+    def flags(self, flags):
+        if flags:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_FLAGS,
+                flags,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_FLAGS,
+            )
+    
+    @flags.deleter
+    def flags(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_FLAGS,
+        )
+    
+    
+    def has_flags(self):
+        """
+        Returns whether the message has ``.flags`` set.
+        
+        Returns
+        -------
+        has_flags : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_FLAGS,
+        )
+    
+    # Message.interaction
+    
+    @property
+    def interaction(self):
+        """
+        Present if the message is a response to an ``InteractionEvent``.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        interaction : `None` or ``MessageInteraction``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_INTERACTION,
+        )
+    
+    @interaction.setter
+    def interaction(self, interaction):
+        if interaction is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_INTERACTION,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_INTERACTION,
+                interaction,
+            )
+    
+    @interaction.deleter
+    def interaction(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_INTERACTION,
+        )
+    
+    
+    def has_interaction(self):
+        """
+        Returns whether the message has ``.interaction`` set.
+        
+        Returns
+        -------
+        has_interaction : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_INTERACTION,
+        )
+    
+    # Message.partial
+    
+    @property
+    def partial(self):
+        """
+        Returns whether the message is partial.
+        
+        Defaults to `False`.
+        
+        Returns
+        -------
+        partial : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_PARTIAL,
+        )
+    
+    @partial.setter
+    def partial(self, partial):
+        if partial:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_PARTIAL,
+                None,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_PARTIAL,
+            )
+    
+    @partial.deleter
+    def partial(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_PARTIAL,
+        )
+    
+    
+    def has_partial(self):
+        """
+        Returns whether the message has ``.partial`` set.
+        
+        Returns
+        -------
+        has_partial : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_PARTIAL,
+        )
+    
+    # Message.nonce
+    
+    @property
+    def nonce(self):
+        """
+        A nonce that is used for optimistic message sending. If a message is created with a nonce, then it should
+        be shown up at the message's received payload as well.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        nonce : `None` or `str`
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_NONCE,
+        )
+    
+    @nonce.setter
+    def nonce(self, nonce):
+        if nonce is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_NONCE,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_NONCE,
+                nonce,
+            )
+    
+    @nonce.deleter
+    def nonce(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_NONCE,
+        )
+    
+    
+    def has_nonce(self):
+        """
+        Returns whether the message has ``.nonce`` set.
+        
+        Returns
+        -------
+        has_nonce : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_NONCE,
+        )
+    
+    # Message.pinned
+    
+    @property
+    def pinned(self):
+        """
+        Whether the message is pinned.
+        
+        Defaults to `False`.
+        
+        Returns
+        -------
+        pinned : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_PINNED,
+        )
+    
+    @pinned.setter
+    def pinned(self, pinned):
+        if pinned:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_PINNED,
+                None,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_PINNED,
+            )
+    
+    @pinned.deleter
+    def pinned(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_PINNED,
+        )
+    
+    
+    def has_pinned(self):
+        """
+        Returns whether the message has ``.pinned`` set.
+        
+        Returns
+        -------
+        has_pinned : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_PINNED,
+        )
+    
+    # Message.reactions
+    
+    @property
+    def reactions(self):
+        """
+        A dictionary like object, which contains the reactions on the message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        reactions : `None` or ``reaction_mapping``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_REACTIONS,
+        )
+    
+    @reactions.setter
+    def reactions(self, reactions):
+        if reactions is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_REACTIONS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_REACTIONS,
+                reactions,
+            )
+    
+    @reactions.deleter
+    def reactions(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_REACTIONS,
+        )
+    
+    
+    def has_reactions(self):
+        """
+        Returns whether the message has ``.reactions`` set.
+        
+        Returns
+        -------
+        has_reactions : `bool`
+        """
+        fields = self._fields
+        if (fields is None):
+            has_reactions = False
+        else:
+            try:
+                reactions = fields[MESSAGE_FIELD_KEY_REACTIONS]
+            except KeyError:
+                has_reactions = False
+            else:
+                if reactions:
+                    has_reactions = True
+                else:
+                    has_reactions = False
+        
+        return has_reactions
+    
+
+    # Message.role_mention_ids
+    
+    @property
+    def role_mention_ids(self):
+        """
+        The mentioned roles's identifier by the message if any.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        role_mention_ids : `None` or `tuple` of `int`
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+        )
+    
+    @role_mention_ids.setter
+    def role_mention_ids(self, role_mention_ids):
+        if role_mention_ids is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+                role_mention_ids,
+            )
+    
+    @role_mention_ids.deleter
+    def role_mention_ids(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+        )
+    
+    
+    def has_role_mention_ids(self):
+        """
+        Returns whether the message has ``.role_mention_ids`` set.
+        
+        Returns
+        -------
+        has_role_mention_ids : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+        )
+    
+    # Message.role_mentions
+    
+    def _get_role_mentions(self):
+        """
+        Creates role instances from the the mentioned role id-s. If a mentioned role is not found, creates a new
+        partial one.
+        
+        Returns
+        -------
+        role_mentions : `None` or `tuple` of ``Role``
+        """
+        fields = self._fields
+        if (fields is None):
+            role_mentions = None
+        else:
+            try:
+                role_mention_ids = fields[MESSAGE_FIELD_KEY_ROLE_MENTION_IDS]
+            except KeyError:
+                role_mentions = None
+            else:
+                role_mentions = tuple(create_partial_role_from_id(role_id) for role_id in role_mention_ids)
+        
+        return role_mentions
+    
+    
+    @property
+    def role_mentions(self):
+        """
+        The mentioned roles by the message. If there is non, returns `None`.
+        
+        Returns
+        -------
+        role_mentions : `None` or `tuple` of ``Role``
+        """
+        fields = self._fields
+        if fields is None:
+            self._fields = fields = {}
+        else:
+            try:
+                return fields[MESSAGE_FIELD_KEY_ROLE_MENTIONS]
+            except KeyError:
+                pass
+        
+        role_mentions = self._get_role_mentions()
+        fields[MESSAGE_FIELD_KEY_ROLE_MENTIONS] = role_mentions
+        return role_mentions
+    
+    @role_mentions.deleter
+    def role_mentions(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_MENTIONS,
+        )
+    
+    
+    def has_role_mentions(self):
+        """
+        Returns whether the message has ``.role_mentions`` set.
+        
+        Returns
+        -------
+        has_role_mentions : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
+        )
+    
+    # Message.stickers
+    
+    @property
+    def stickers(self):
+        """
+        The stickers sent with the message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        stickers : `None` or `tuple` of ``Sticker``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_STICKERS,
+        )
+    
+    @stickers.setter
+    def stickers(self, stickers):
+        if stickers is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_STICKERS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_STICKERS,
+                stickers,
+            )
+    
+    @stickers.deleter
+    def stickers(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_STICKERS,
+        )
+    
+    
+    def has_stickers(self):
+        """
+        Returns whether the message has ``.stickers`` set.
+        
+        Returns
+        -------
+        has_stickers : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_STICKERS,
+        )
+    
+    
+    @property
+    def sticker(self):
+        """
+        Returns the first sticker in the message.
+
+        Returns
+        -------
+        sticker : `None` or ``Sticker``
+        """
+        return _get_first_message_field(
+            self,
+            MESSAGE_FIELD_KEY_STICKERS,
+        )
+    
+    # Message.thread
+    
+    @property
+    def thread(self):
+        """
+        The thread which was started from this message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        thread : `None` or ``ChannelThread``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_THREAD,
+        )
+    
+    @thread.setter
+    def thread(self, thread):
+        if thread is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_THREAD,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_THREAD,
+                thread,
+            )
+    
+    @thread.deleter
+    def thread(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_THREAD,
+        )
+    
+    
+    def has_thread(self):
+        """
+        Returns whether the message has ``.thread`` set.
+        
+        Returns
+        -------
+        has_thread : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_THREAD,
+        )
+    
+    # Message.tts
+    
+    @property
+    def tts(self):
+        """
+        Whether the message is "text to speech".
+        
+        Defaults to `False`.
+        
+        Returns
+        -------
+        tts : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_TTS,
+        )
+    
+    @tts.setter
+    def tts(self, tts):
+        if tts:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_TTS,
+                None,
+            )
+        else:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_TTS,
+            )
+    
+    @tts.deleter
+    def tts(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_TTS,
+        )
+    
+    
+    def has_tts(self):
+        """
+        Returns whether the message has ``.tts`` set.
+        
+        Returns
+        -------
+        has_tts : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_TTS,
+        )
+    
+    # Message.type
+    
+    @property
+    def type(self):
+        """
+        The type of the message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        type : ``MessageType``
+        """
+        fields = self._fields
+        if (fields is None):
+            type_ = MESSAGE_TYPE_DEFAULT
+        else:
+            type_ = fields.get(MESSAGE_FIELD_KEY_TYPE, MESSAGE_TYPE_DEFAULT)
+        
+        return type_
+    
+    @type.setter
+    def type(self, type_):
+        fields = self._fields
+        
+        if (fields is None):
+            if (type_ is MESSAGE_TYPE_DEFAULT):
+                return
+            
+            self._fields = fields = {}
+        else:
+            if (type_ is MESSAGE_TYPE_DEFAULT):
+                try:
+                    del fields[MESSAGE_FIELD_KEY_TYPE]
+                except KeyError:
+                    pass
+                else:
+                    if not fields:
+                        self._fields = None
+            return
+        
+        fields[MESSAGE_FIELD_KEY_TYPE] = type_
+    
+    @type.deleter
+    def type(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_TYPE,
+        )
+    
+    
+    def has_type(self):
+        """
+        Returns whether the message has ``.type`` set.
+        
+        Returns
+        -------
+        has_type : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_TYPE,
+        )
+    
+    # Message.user_mentions
+    
+    @property
+    def user_mentions(self):
+        """
+        The mentioned users by the message if any.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        user_mentions : `None` or `tuple` of ``UserBase``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_USER_MENTIONS,
+        )
+    
+    @user_mentions.setter
+    def user_mentions(self, user_mentions):
+        if user_mentions is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_USER_MENTIONS,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_USER_MENTIONS,
+                user_mentions,
+            )
+    
+    @user_mentions.deleter
+    def user_mentions(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_USER_MENTIONS,
+        )
+    
+    
+    def has_user_mentions(self):
+        """
+        Returns whether the message has ``.user_mentions`` set.
+        
+        Returns
+        -------
+        has_user_mentions : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_USER_MENTIONS,
+        )

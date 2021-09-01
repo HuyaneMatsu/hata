@@ -15,16 +15,12 @@ Use dynamic fields for messages in favor
 - Add `mention_user_nick_by_id`.
 - Add `InteractionEvent.client`.
 - Add `InteractionEvent.voice_client`.
-<<<<<<< HEAD
 - `Message.partial` works accordingly.
 - Add `Message.has_partial`.
 - Add `Messsage.has_channel_mentions`.
 - Add `Messsage.has_type`.
 - Add `Message._create_empty`.
 - Add `Message._clear_cache`.
-=======
-
->>>>>>> 266e233c8fee4fd95697e5a1e36cad62823e36b4
 
 ##### ext.command_utils
 - `ChannelOutputStream.flush` now forces newly written content to new message. (Zeref Draganeel#3581)
@@ -33,7 +29,6 @@ Use dynamic fields for messages in favor
 
 ##### ext.command_utils
 - `ChannelOutputStream` made chunks of bad size. (Zeref Draganeel#3581)
-<<<<<<< HEAD
 
 #### Renames, Deprecation & Removals
 
@@ -41,8 +36,6 @@ Use dynamic fields for messages in favor
 - Add `Message._get_role_mentions`.
 - Remove unused `Message._create_unlinked`.
 - Remove unused `Message._finish_init`.
-=======
->>>>>>> 266e233c8fee4fd95697e5a1e36cad62823e36b4
 
 ## 1.1.98 *\[2021-08-28\]*
 

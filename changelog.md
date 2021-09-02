@@ -29,6 +29,7 @@ Use dynamic fields for messages in favor
 - `ChannelOutputStream.flush` now forces newly written content to new message. (Zeref Draganeel#3581)
 
 #### Bug Fixes
+- `unix_time_to_datetime` raised `ValueError` if received value out of the expected range. (Tari#0002)
 
 ##### ext.command_utils
 - `ChannelOutputStream` made chunks of bad size. (Zeref Draganeel#3581)

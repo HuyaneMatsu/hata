@@ -9,7 +9,7 @@
 import sys, warnings
 from random import random
 from re import compile as re_compile, I as re_ignore_case, U as re_unicode
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, MAXYEAR as DATETIME_YEAR_MAX, MINYEAR as DATETIME_YEAR_MIN
 from base64 import b64encode
 from time import time as time_now
 from math import floor
@@ -276,7 +276,14 @@ def unix_time_to_datetime(unix_time):
     -------
     date_time : `datetime`
     """
-    return datetime.utcfromtimestamp(unix_time/1000.0)
+    try:
+        return datetime.utcfromtimestamp(unix_time/1000.0)
+    except ValueError:
+        # Can happen if max or min year is passed.
+        if unix_time >= UNIX_TIME_MAX:
+            return DATETIME_MAX
+        else:
+            return DATETIME_MIN
 
 
 def time_to_id(time):
@@ -320,6 +327,12 @@ def datetime_to_unix_time(date_time):
     unit_time : `int`
     """
     return floor(date_time.timestamp()*1000.0)
+
+DATETIME_MIN = unix_time_to_datetime(0)
+DATETIME_MAX = datetime(year=DATETIME_YEAR_MAX, month=1, day=1)
+
+UNIX_TIME_MIN = 0
+UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
 
 
 def random_id():

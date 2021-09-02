@@ -1018,8 +1018,8 @@ async def about(target):
     return Embed(f'{target.full_name}\'s avatar', url=avatar_url).add_image(avatar_url)
 ```
 
-Context commands support only one additional parameter which is'nt client and event, the context's target.
-when defining a command, the first parameter which is'nt client or event, will be marked as the target parameter.
+Context commands support only one additional parameter which isn't client and event, the context's target.
+when defining a command, the first parameter which isn't client or event, will be marked as the target parameter.
 Defining any other parameter will yield error, since context commands do not support any Discord side parameters.
 Sub commands are also not supported.
 

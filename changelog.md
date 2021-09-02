@@ -1,8 +1,8 @@
-## 1.1.99 *\[2021-09-??\]*
+## 1.1.99 *\[2021-09-02\]*
 
 ### Summary
 
-Use dynamic fields for messages in favor
+Use dynamic fields for messages in favor of the incoming message content intent.
 
 #### Improvements
 

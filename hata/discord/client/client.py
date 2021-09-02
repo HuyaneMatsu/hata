@@ -784,44 +784,6 @@ class Client(ClientUserPBase):
         self.activities = None
         self.ready_state = None
     
-    async def download_url(self, url):
-        """
-        Requests an url and returns the response's content. A shortcut option for doing a get request with the
-        client's http and reading it.
-        
-        This method is a coroutine.
-        
-        > Deprecated and will be removed in 2021 August, please use `client.http.get` instead.
-        
-        Parameters
-        ----------
-        url : `str` or ``URL`` instance
-            The url to request.
-        
-        Returns
-        -------
-        response_data : `bytes`
-        
-        Raises
-        ------
-        AssertionError
-            If `url` was not given as `str`, nor ``URL`` instance.
-        ConnectionError
-            No internet connection.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.download_url` is deprecated, and will be removed in 2021 August. Please use '
-            '`client.http.get` instead.',
-            FutureWarning)
-        
-        if __debug__:
-            if not isinstance(url, (str, URL)):
-                raise AssertionError(f'`url` can be given as `str` or `{URL.__name__}` instance, got '
-                    f'{url.__class__.__name__}.')
-        
-        async with self.http.get(url) as response:
-            return (await response.read())
-    
     
     async def download_attachment(self, attachment):
         """

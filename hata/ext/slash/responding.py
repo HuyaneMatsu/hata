@@ -1,4 +1,4 @@
-__all__ = ('abort', 'InteractionResponse', 'SlashResponse',)
+__all__ = ('abort', 'InteractionResponse',)
 
 import warnings
 
@@ -315,7 +315,7 @@ class InteractionResponse:
     __slots__ = ('_event', '_is_abort', '_message', '_parameters',)
     
     def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
-            show_for_invoking_user_only=..., force_new_message=..., message=..., event=None):
+            show_for_invoking_user_only=..., message=..., event=None):
         """
         Creates a new ``InteractionResponse`` instance with the given parameters.
         
@@ -345,22 +345,12 @@ class InteractionResponse:
             the command.
             
             If given as `True` only the message's content will be processed by Discord.
-        force_new_message : `bool`, Optional (Keyword only)
-            Whether a new message should be forced out from Discord allowing the client to retrieve a new ``Message``
-            object as well. Defaults to `False`.
-            
-            Deprecated and will be removed in 2021 August.
         
         message : `None`, ``Message``, Optional (Keyword only)
             Whether the interaction's message should be edited.
         event : `None`, ``InteractionEvent``, Optional (Keyword only)
             A specific event ot answer instead of the command's.
         """
-        if force_new_message is not ...:
-            warnings.warn(f'`{self.__class__.__name__}.__init__`\'s `show_for_invoking_user_only` parameter is '
-                f'deprecated. Defaults to `True`. Will be removed in 2021 August.',
-                FutureWarning)
-        
         self._is_abort = False
         self._parameters = parameters = {}
         self._message = message
@@ -505,17 +495,6 @@ class InteractionResponse:
             repr_parts.append('>')
         
         return ''.join(repr_parts)
-
-
-def SlashResponse(*args, **kwargs):
-    """
-    ``SlashResponse`` is deprecated and will be removed in 2021 August. Please use ``InteractionResponse`` instead.
-    """
-    warnings.warn(f'`SlashResponse` is deprecated and will be removed in 2021 August. Please use'
-          f'`InteractionResponse` instead.',
-        FutureWarning)
-        
-    return InteractionResponse(*args, **kwargs)
 
 
 def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,

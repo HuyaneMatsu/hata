@@ -89,7 +89,7 @@ class HTTPClient:
         ------
         ConnectionError
             - Too many redirects.
-            - Would be redirected to not `http or `https`.
+            - Would be redirected to not `http` or `https`.
             - Connector closed.
         ValueError
             - Host could not be detected from `url`.
@@ -230,7 +230,7 @@ class HTTPClient:
         ------
         ConnectionError
             - Too many redirects.
-            - Would be redirected to not `http or `https`.
+            - Would be redirected to not `http` or `https`.
             - Connector closed.
         TypeError
             - `proxy_auth`'s type is incorrect.

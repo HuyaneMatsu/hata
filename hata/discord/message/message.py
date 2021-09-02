@@ -15,7 +15,7 @@ from ..embed import EmbedCore, EXTRA_EMBED_TYPES, EmbedBase
 from ..webhook import WebhookRepr, create_partial_webhook_from_id, WebhookType, Webhook
 from ..role import Role, create_partial_role_from_id
 from ..preconverters import preconvert_flag, preconvert_bool, preconvert_snowflake, preconvert_str, \
-    preconvert_preinstanced_type
+    preconvert_preinstanced_type, get_type_names, preconvert_snowflake_array
 from ..sticker import Sticker
 
 from ..http import urls as module_urls
@@ -272,12 +272,12 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
-            self._fields = None
             MESSAGES[self.id] = self
         else:
             if not self.partial:
                 return self
         
+        self._fields = None
         self._set_attributes(data)
         return self
     
@@ -305,12 +305,12 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
-            self._fields = None
             MESSAGES[self.id] = self
         else:
             if not self.partial:
                 return True, self
         
+        self._fields = None
         self._set_attributes(data)
         return False, self
     
@@ -866,17 +866,11 @@ class Message(DiscordEntity, immortal=True):
                 
                 attachments = tuple(attachments)
                 
-                attachments_length = len(attachments)
-                
-                if validate:
-                    if attachments_length > 10:
-                        raise ValueError(f'`attachments` should have maximal length of `10`, got `{attachments_length!r}`')
-                
-                if attachments_length:
+                if attachments:
                     for attachment in attachments:
                         if not isinstance(attachment, Attachment):
-                            raise TypeError(f'`attachments` `list` contains a non `{Attachment.__name__}` '
-                                f'instance, `{attachment!r}`')
+                            raise TypeError(f'`attachments` contains a non `{Attachment.__name__}` '
+                                f'instance, `{attachment.__class__.__name__}`.')
                 else:
                     # We should not have empty attachment list, lets fix it
                     attachments = None
@@ -898,7 +892,7 @@ class Message(DiscordEntity, immortal=True):
             else:
                 raise TypeError(
                     f'`author` can be type `None`, `{ClientUserBase.__name__}`, `{Webhook.__name__}` or '
-                    f'`{WebhookRepr.__name__}`, got `{author!r}`')
+                    f'`{WebhookRepr.__name__}`, got `{author!r}`.')
         
         try:
             content = kwargs.pop('content')
@@ -936,16 +930,24 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (cross_mentions is not None):
                 if not isinstance(cross_mentions, (tuple, list)):
-                    raise TypeError(f'`cross_mentions` should be `None` or `tuple`, `list` of '
+                    raise TypeError(f'`cross_mentions` can be `None` or `tuple`, `list` of '
                         f'`{ChannelGuildBase.__name__}` or `{UnknownCrossMention.__name__}` instances, got '
                         f'`{cross_mentions.__class__.__name__}`.')
+                
+                cross_mentions_processed = []
                 
                 for channel_ in cross_mentions:
                     if not isinstance(channel_, (ChannelGuildBase, UnknownCrossMention)):
                         raise TypeError(f'`cross_mentions` contains a non `{ChannelGuildBase.__name__}` or '
                             f'`{UnknownCrossMention.__name__}` instance: `{channel_.__class__.__name__}`.')
+                    
+                    cross_mentions_processed.append(channel_)
                 
-                cross_mentions = tuple(sorted(cross_mentions, key=id_sort_key))
+                if cross_mentions_processed:
+                    cross_mentions_processed.sort(key=id_sort_key)
+                    cross_mentions = tuple(cross_mentions_processed)
+                else:
+                    cross_mentions = None
         
         if validate:
             if (referenced_message is None) and (cross_mentions is not None):
@@ -1005,8 +1007,8 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (embeds is not None):
                 if not isinstance(embeds, (list, tuple)):
-                    raise TypeError(f'`embeds` can be `None` or `list` of type `{EmbedCore.__name__}`, got '
-                        f'`{embeds.__class__.__name__}`.')
+                    raise TypeError(f'`embeds` can be `None`, `tuple` or`list` of `{EmbedBase.__name__}` instances, '
+                        f'got `{embeds.__class__.__name__}`.')
                 
                 embeds = list(embeds)
                 
@@ -1028,7 +1030,7 @@ class Message(DiscordEntity, immortal=True):
                             embeds[index] = embed
                             continue
                         
-                        raise TypeError(f'`embeds` `list` contains a non `{EmbedBase.__name__}` instance: '
+                        raise TypeError(f'`embeds` contains a non `{EmbedBase.__name__}` instance: '
                             f'`{embeds.__class__.__name__}`.')
                     
                     embeds = tuple(embeds)
@@ -1219,7 +1221,7 @@ class Message(DiscordEntity, immortal=True):
             type_ = preconvert_preinstanced_type(type_, 'type_', MessageType)
         else:
             if base is None:
-                type_ = MessageType.default
+                type_ = MESSAGE_TYPE_DEFAULT
             else:
                 type_ = base.type
         
@@ -1277,13 +1279,14 @@ class Message(DiscordEntity, immortal=True):
                     raise TypeError(f'`components` should be `None` or `tuple`, `list` of `{ComponentBase.__name__}` '
                         f'instances, got `{components.__class__.__name__}`.')
                 
+                components = tuple(components)
+                
                 if components:
                     for component in components:
                         if not isinstance(component, ComponentBase):
                             raise TypeError(f'`components` contains at least 1 non `{ComponentBase.__name__}` '
                                 f'instance; `{component.__class__.__name__}`.')
                     
-                    components = tuple(components)
                 else:
                     components = None
         
@@ -1305,14 +1308,14 @@ class Message(DiscordEntity, immortal=True):
         
         self = object.__new__(cls)
         self._fields = None
+        self.author = author
+        self.channel_id = channel.id
+        self.guild_id = 0
         
         self.activity = activity
         self.application = application
         self.application_id = application_id
         self.attachments = attachments
-        self.author = author
-        self.channel_id = channel.id
-        self.guild_id = 0
         self.content = content
         self.cross_mentions = cross_mentions
         self.referenced_message = referenced_message
@@ -2122,6 +2125,39 @@ class Message(DiscordEntity, immortal=True):
         
         return clean_embeds
     
+    def is_deletable(self):
+        """
+        Returns whether the message can be deleted.
+        
+        Returns
+        -------
+        is_deletable : `bool`
+        """
+        # Use goto
+        while True:
+            fields = self._fields
+            if fields is None:
+                is_deletable = True
+                break
+            
+            if MESSAGE_FIELD_KEY_DELETED in fields:
+                is_deletable = False
+                break
+            
+            try:
+                flags = fields[MESSAGE_FIELD_KEY_FLAGS]
+            except KeyError:
+                pass
+            else:
+                if flags.invoking_user_only:
+                    is_deletable = False
+                    break
+            
+            is_deletable = True
+            break
+        
+        return is_deletable
+    
     
     def did_react(self, emoji, user):
         """
@@ -2238,11 +2274,38 @@ class Message(DiscordEntity, immortal=True):
         
         if kwargs:
             processable = []
+            
+            try:
+                author = kwargs.pop('author')
+            except KeyError:
+                pass
+            else:
+                if not isinstance(author, UserBase):
+                    raise TypeError(f'`author` can be `{UserBase.__name__}` instance, got '
+                        f'`{author.__class__.__name__}`.')
+                
+                processable.append(('author', author))
+            
+            for variable_name in ('channel_id', 'guild_id'):
+                try:
+                    variable_value = kwargs.pop(variable_name)
+                except KeyError:
+                    pass
+                else:
+                    variable_value = preconvert_snowflake(variable_value, variable_name)
+                    processable.append((variable_name, variable_value))
+            
+            
             processable_by_field = []
             
             for variable_field_key, variable_type, variable_name in (
                 (MESSAGE_FIELD_KEY_ACTIVITY, MessageActivity, 'activity'),
                 (MESSAGE_FIELD_KEY_APPLICATION, MessageApplication, 'application'),
+                (MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, (Message, MessageReference), 'referenced_message'),
+                (MESSAGE_FIELD_KEY_EDITED_AT, datetime, 'edited_at'),
+                (MESSAGE_FIELD_KEY_INTERACTION, MessageInteraction, 'interaction'),
+                (MESSAGE_FIELD_KEY_REACTIONS, reaction_mapping, 'reactions'),
+                (MESSAGE_FIELD_KEY_THREAD, ChannelThread, 'thread'),
             ):
                 try:
                     variable_value = kwargs.pop(variable_name)
@@ -2251,21 +2314,158 @@ class Message(DiscordEntity, immortal=True):
                 else:
                     if (variable_value is not None):
                         if not isinstance(variable_value, variable_type):
-                            raise TypeError(f'`{variable_name}` can be either `None` or {variable_type.__name__}, got '
-                                f'{variable_value.__class__.__name__}.')
+                            raise TypeError(f'`{variable_name}` can be either {get_type_names(variable_type)} or '
+                                f'`None`, got {variable_value.__class__.__name__}.')
                         
                         processable_by_field.append((variable_field_key, variable_value))
-                
+            
+            
+            try:
+                application_id = kwargs.pop('application_id')
+            except KeyError:
+                pass
+            else:
+                application_id = preconvert_snowflake(application_id, 'application_id')
+                if application_id:
+                    processable_by_field.append((MESSAGE_FIELD_KEY_APPLICATION_ID, application_id))
+            
+            
+            for variable_field_key, variable_element_type, variable_name, is_sorted in (
+                (MESSAGE_FIELD_KEY_ATTACHMENTS, Attachment, 'attachments', False),
+                (MESSAGE_FIELD_KEY_COMPONENTS, ComponentBase, 'components', False),
+                (MESSAGE_FIELD_KEY_STICKERS, Sticker, 'stickers', False),
+                (MESSAGE_FIELD_KEY_CROSS_MENTIONS, (ChannelGuildBase, UnknownCrossMention), 'cross_mentions', True),
+                (MESSAGE_FIELD_KEY_USER_MENTIONS, ClientUserBase, 'user_mentions', True),
+            ):
                 try:
-                    application_id = kwargs.pop('application_id')
+                    variable_value = kwargs.pop(variable_name)
                 except KeyError:
                     pass
                 else:
-                    application_id = preconvert_snowflake(application_id, 'application_id')
-                    if application_id:
-                        processable_by_field.append((MESSAGE_FIELD_KEY_APPLICATION_ID, application_id))
-                
-                # Work in progress
+                    if (variable_value is not None):
+                        if not isinstance(variable_value, (list, tuple, set)):
+                            raise TypeError(f'`{variable_name}` should be `None` or `tuple`, `list` or `set` of '
+                                f'{get_type_names(variable_element_type)} instances, got '
+                                f'`{variable_value.__class__.__name__}`.')
+                        
+                        variable_values_processed = []
+                        
+                        for variable_element_value in variable_value:
+                            if not isinstance(variable_element_value, variable_element_type):
+                                raise TypeError(f'`{variable_name}` contains a non '
+                                    f'{get_type_names(variable_element_type)} instance, got '
+                                    f'`{variable_element_value.__class__.__name__}`.')
+                            
+                            variable_values_processed.append(variable_element_value)
+                        
+                        if variable_values_processed:
+                            if is_sorted:
+                                variable_values_processed.sort(key=id_sort_key)
+                            
+                            variable_values_processed = tuple(variable_values_processed)
+                            processable_by_field.append((variable_field_key, variable_values_processed))
+            
+            
+            for variable_field_key, variable_name in (
+                (MESSAGE_FIELD_KEY_CONTENT, 'content'),
+                (MESSAGE_FIELD_KEY_NONCE, 'nonce'),
+            ):
+                try:
+                    variable_value = kwargs.pop(variable_name)
+                except KeyError:
+                    pass
+                else:
+                    if (variable_value is not None):
+                        variable_type = type(variable_value)
+                        if variable_type is str:
+                            pass
+                        elif issubclass(variable_type, str):
+                            variable_value = str(variable_value)
+                        else:
+                            raise TypeError(f'`{variable_name}` can be either as `None` or `str` instance, got '
+                                f'{variable_type.__name__}.')
+                        
+                        if variable_value:
+                            processable_by_field.append((variable_field_key, variable_value))
+            
+            
+            try:
+                embeds = kwargs.pop('embeds')
+            except KeyError:
+                pass
+            else:
+                if (embeds is not None):
+                    if not isinstance(embeds, (list, tuple)):
+                        raise TypeError(f'`embeds` can be `None`, `tuple` or `list` of `{EmbedBase.__name__}` '
+                            f'instances, got `{embeds.__class__.__name__}`.')
+                    
+                    embeds_processed = []
+                    
+                    for embed in embeds:
+                        if isinstance(embed, EmbedCore):
+                            pass
+                        
+                        elif isinstance(embed, EmbedBase):
+                            # Embed compatible, lets convert it
+                            embed = EmbedCore.from_data(embed.to_data())
+                        
+                        else:
+                            raise TypeError(f'`embeds` contains a non `{EmbedBase.__name__}` instance: '
+                                f'`{embeds.__class__.__name__}`.')
+                    
+                        embeds_processed.append(embed)
+                    
+                    if embeds_processed:
+                        embeds_processed = tuple(embeds_processed)
+                        
+                        processable_by_field.append((MESSAGE_FIELD_KEY_EMBEDS, embeds_processed))
+            
+            for variable_field_key, variable_name in (
+                (MESSAGE_FIELD_KEY_EVERYONE_MENTION, 'everyone_mention'),
+                (MESSAGE_FIELD_KEY_PINNED, 'pinned'),
+                (MESSAGE_FIELD_KEY_TTS, 'tss'),
+            ):
+                try:
+                    variable_value = kwargs.pop(variable_name)
+                except KeyError:
+                    pass
+                else:
+                    if not isinstance(variable_value, bool):
+                        raise TypeError(f'`{variable_name}` can be `bool` instance, got '
+                            f'`{variable_value.__class__.__name__}`.')
+                    
+                    if variable_value:
+                        processable_by_field.append((variable_field_key, variable_value))
+            
+            
+            try:
+                flags = kwargs.pop('flags')
+            except KeyError:
+                pass
+            else:
+                flags = preconvert_flag(flags, 'flags', MessageFlag)
+                processable_by_field.append((MESSAGE_FIELD_KEY_FLAGS, flags))
+            
+            
+            try:
+                role_mention_ids = kwargs.pop('role_mention_ids')
+            except KeyError:
+                pass
+            else:
+                if (role_mention_ids is not None):
+                    role_mention_ids = preconvert_snowflake_array(role_mention_ids, 'role_mention_ids')
+                    processable_by_field.append((MESSAGE_FIELD_KEY_ROLE_MENTION_IDS, role_mention_ids))
+            
+            
+            try:
+                type_ = kwargs.pop('type')
+            except KeyError:
+                pass
+            else:
+                type_ = preconvert_preinstanced_type(type_, 'type_', MessageType)
+                if type_ is not MESSAGE_TYPE_DEFAULT:
+                    processable_by_field.append((MESSAGE_FIELD_KEY_TYPE, type_))
+            
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -2280,7 +2480,7 @@ class Message(DiscordEntity, immortal=True):
             self = cls._create_empty(message_id)
             MESSAGES[message_id] = self
         else:
-            if not self.partial:
+            if self.partial:
                 return self
         
         if (processable is not None):

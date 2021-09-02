@@ -3626,18 +3626,18 @@ class Client(ClientUserPBase):
         if (message is None):
             author = None
         else:
-            if message.deleted:
+            if not message.is_deletable():
                 return
             
             author = message.author
         
         if (author is self) or (message_id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
             # own or new
-            coro = self.http.message_delete(channel_id, message_id, reason)
+            coroutine = self.http.message_delete(channel_id, message_id, reason)
         else:
-            coro = self.http.message_delete_b2wo(channel_id, message_id, reason)
+            coroutine = self.http.message_delete_b2wo(channel_id, message_id, reason)
         
-        await coro
+        await coroutine
         # If the coro raises, do not switch `message.deleted` to `True`.
         if (message is not None):
             message.deleted = True
@@ -3686,7 +3686,7 @@ class Client(ClientUserPBase):
         
         for message in messages:
             channel_id, message_id, message = validate_message_to_delete(message)
-            if (message is not None) and message.deleted:
+            if (message is not None) and (not message.is_deletable()):
                 continue
             
             if message is None:
@@ -3851,6 +3851,10 @@ class Client(ClientUserPBase):
                     
                     message_ = messages_[before_index]
                     before_index += 1
+                    
+                    # Ignore invoking user only messages! Desu!
+                    if not message.is_deletable():
+                        continue
                     
                     if (filter is not None):
                         if not filter(message_):

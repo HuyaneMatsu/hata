@@ -1173,7 +1173,7 @@ class WSClient(WebSocketCommonProtocol):
         ------
         ConnectionError
             - Too many redirects.
-            - Would be redirected to not `http or `https`.
+            - Would be redirected to not `http` or `https`.
             - Connector closed.
         TypeError
             `extra_response_headers` is not given as `None`, neither as `dict-like`.

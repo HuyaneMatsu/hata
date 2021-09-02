@@ -21,6 +21,9 @@ Use dynamic fields for messages in favor
 - Add `Messsage.has_type`.
 - Add `Message._create_empty`.
 - Add `Message._clear_cache`.
+- Add `message.is_deletable`.
+- Add `Message.precreate`.
+- Add `preconvert_snowflake_array`.
 
 ##### ext.command_utils
 - `ChannelOutputStream.flush` now forces newly written content to new message. (Zeref Draganeel#3581)

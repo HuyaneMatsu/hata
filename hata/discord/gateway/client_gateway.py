@@ -245,7 +245,7 @@ class DiscordGateway:
             try:
                 await self.websocket.ensure_open()
             except ConnectionClosed:
-                #websocket got closed so let's just do a regular IDENTIFY connect.
+                # websocket got closed so let's just do a regular IDENTIFY connect.
                 self.session_id = None
                 self.sequence = None
                 continue
@@ -291,7 +291,7 @@ class DiscordGateway:
                 raise err
             return True
         except zlib.error as err:
-            #we need a full reset
+            # we need a full reset
             return True
     
     async def _received_message(self, message):

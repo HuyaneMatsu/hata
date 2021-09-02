@@ -25,7 +25,7 @@ def preconvert_snowflake(snowflake, name):
         - If `snowflake` was passed as `str` and cannot be converted to `int`.
         - If the converted `snowflake` is negative or it's bit length is over 64.
     """
-    snowflake_type = snowflake.__class__
+    snowflake_type = type(snowflake)
     if snowflake_type is int:
         pass
     if issubclass(snowflake_type, int):
@@ -44,6 +44,68 @@ def preconvert_snowflake(snowflake, name):
         raise ValueError(f'`{name}` can be only uint64, got {snowflake!r}.')
     
     return snowflake
+
+
+def preconvert_snowflake_array(snowflake_array, name):
+    """
+    Converts the given `snowflake_array` to an acceptable value by the wrapper.
+    
+    Parameters
+    ----------
+    snowflake : `None` or (`tuple`, `list` or `set`) of (`str` or `int`)
+        The snowflakes to convert.
+    name : `str`
+        The name of the snowflake array.
+    Returns
+    -------
+    snowflake_array : `tuple` of `int`
+        The returned value is always sorted.
+    
+    Raises
+    ------
+    TypeError
+        - If `snowflake_array` is neither `None`, `list`, `tuple` nor `set`.
+        - If `snowflake_array` contains a non `int` nor `str` instance.
+    ValueError
+        - If `snowflake_array`contains a `str`, what cannot be converted to `int`.
+        - If a converted `snowflake` is negative or it's bit length is over 64.
+    """
+    if (snowflake_array is not None):
+        if not isinstance(snowflake_array, (list, tuple, set)):
+            raise TypeError(f'`{name}` can be either `list`, `tuple` or `set`, got '
+                f'`{snowflake_array.__class__.__name__}`.')
+        
+        snowflake_array_processed = []
+        
+        for snowflake in snowflake_array:
+            snowflake_type = type(snowflake)
+            if snowflake_type is int:
+                pass
+            if issubclass(snowflake_type, int):
+                snowflake = int(snowflake)
+            # JSON uint64 is str
+            elif issubclass(snowflake_type, str):
+                if 6 < len(snowflake) < 21 and snowflake.isdigit():
+                    snowflake = int(snowflake)
+                else:
+                    raise ValueError(f'`{name}`\'s elements can be passed as `int` or `str` instance, got `str` '
+                        f'instance, but not a valid snowflake (7-20 length, digit only), got {snowflake!r}.')
+            else:
+                raise TypeError(f'`{name}`\'s elements can be passed as `int` or `str` instance, got '
+                    f'{snowflake_type.__name__}.')
+            
+            if snowflake < 0 or snowflake > ((1<<64)-1):
+                raise ValueError(f'`{name}`\'s elements can be only uint64, got {snowflake!r}.')
+            
+            snowflake_array_processed.append(snowflake)
+        
+        if snowflake_array_processed:
+            snowflake_array_processed.sort()
+            snowflake_array = tuple(snowflake_array_processed)
+        else:
+            snowflake_array = None
+    
+    return snowflake_array
 
 
 def preconvert_discriminator(discriminator):
@@ -484,3 +546,43 @@ def preconvert_float(value, name, lower_limit, upper_limit):
         raise ValueError(f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.')
     
     return value
+
+
+def get_type_names(type_or_types):
+    """
+    Gets the given type(s)'s name closed within \` characters.
+    
+    Parameters
+    ----------
+    type_or_types : `type` or `tuple` of `type`
+        The type(s) to get name of.
+    
+    Returns
+    -------
+    type_names : `str`
+    """
+    type_name_parts = []
+    
+    if isinstance(type_or_types, type):
+        type_name_parts.append('`')
+        type_name_parts.append(type_or_types.__name__)
+        type_name_parts.append('`')
+    else:
+        length = len(type_or_types)
+        if length:
+            index = 0
+            while True:
+                type_ = type_or_types[index]
+                index += 1
+                
+                type_name_parts.append('`')
+                type_name_parts.append(type_.__name__)
+                type_name_parts.append('`')
+                
+                if index == length:
+                    break
+                
+                type_name_parts.append(', ')
+                continue
+    
+    return ''.join(type_name_parts)

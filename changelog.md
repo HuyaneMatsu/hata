@@ -1,3 +1,9 @@
+## 1.1.100 *\[2021-09-??\]*
+
+#### Bug Fixes
+
+- `https://bugs.python.org/issue29097` can pop up. (catzoo#3026)
+
 ## 1.1.99 *\[2021-09-02\]*
 
 ### Summary

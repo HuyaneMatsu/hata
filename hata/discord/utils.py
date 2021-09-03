@@ -9,7 +9,7 @@
 import sys, warnings
 from random import random
 from re import compile as re_compile, I as re_ignore_case, U as re_unicode
-from datetime import datetime, timedelta, timezone, MAXYEAR as DATETIME_YEAR_MAX, MINYEAR as DATETIME_YEAR_MIN
+from datetime import datetime, timedelta, timezone
 from base64 import b64encode
 from time import time as time_now
 from math import floor
@@ -21,7 +21,7 @@ except ImportError:
     relativedelta = None
 
 from ..backend.export import export, include
-from ..backend.utils import modulize
+from ..backend.utils import modulize, IS_UNIX, set_docs
 
 from .bases import DiscordEntity
 from .core import USERS, CHANNELS, ROLES
@@ -313,7 +313,21 @@ def datetime_to_id(date_time):
     return (floor(date_time.timestamp()*1000.)-DISCORD_EPOCH)<<22
 
 
-def datetime_to_unix_time(date_time):
+if IS_UNIX:
+    def datetime_to_unix_time(date_time):
+        return floor(date_time.timestamp()*1000.0)
+else:
+    def datetime_to_unix_time(date_time):
+        try:
+            return floor(date_time.timestamp()*1000.0)
+        except OSError:
+            if date_time <= DATETIME_MIN:
+                return UNIX_TIME_MIN
+            else:
+                return UNIX_TIME_MAX
+
+
+set_docs(datetime_to_unix_time,
     """
     Converts the given time to it's unix time value.
     
@@ -326,12 +340,13 @@ def datetime_to_unix_time(date_time):
     -------
     unit_time : `int`
     """
-    return floor(date_time.timestamp()*1000.0)
+)
 
-DATETIME_MIN = unix_time_to_datetime(0)
-DATETIME_MAX = datetime(year=DATETIME_YEAR_MAX, month=1, day=1)
 
 UNIX_TIME_MIN = 0
+DATETIME_MIN = unix_time_to_datetime(UNIX_TIME_MIN)
+
+DATETIME_MAX = datetime(year=3000, month=1, day=1)
 UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
 
 

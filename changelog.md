@@ -1,8 +1,13 @@
-## 1.1.100 *\[2021-09-??\]*
+## 1.1.100 *\[2021-09-04\]*
+
+### Summary
+
+Fixing bugs.
 
 #### Bug Fixes
 
 - `https://bugs.python.org/issue29097` can pop up. (catzoo#3026)
+- `Role._delete` could raise error (`tuple.index` raises instead of returning `-1`).
 
 ## 1.1.99 *\[2021-09-02\]*
 
@@ -48,6 +53,10 @@ Use dynamic fields for messages in favor of the incoming message content intent.
 - Remove unused `Message._finish_init`.
 
 ## 1.1.98 *\[2021-08-28\]*
+
+### Summary
+
+Fixing bugs.
 
 #### Improvements
 

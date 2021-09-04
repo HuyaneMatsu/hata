@@ -471,8 +471,11 @@ class Role(DiscordEntity, immortal=True):
                     else:
                         role_ids = guild_profile.role_ids
                         if (role_ids is not None):
-                            index = role_ids.index(role_id)
-                            if (index != -1):
+                            try:
+                                index = role_ids.index(role_id)
+                            except ValueError:
+                                pass
+                            else:
                                 if len(role_ids) == 1:
                                     role_ids = None # It is so deep! (that's what she said)
                                 else:

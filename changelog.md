@@ -1,3 +1,21 @@
+## 1.1.101 *\[2021-09-??\]*
+
+#### Improvements
+
+- Add `GuildFeature.new_thread_permissions`.
+
+##### ext.slash
+
+- Add `CommandState.get_active_command_count`.
+- Add `Slasher.get_global_command_count`.
+- Add `Slasher.get_guild_command_count`.
+
+#### Bug Fixes
+
+##### ext.commands_v2
+
+Fix an `AttributeError` caused from `CommandProcessor._add_category`.
+
 ## 1.1.100 *\[2021-09-04\]*
 
 ### Summary

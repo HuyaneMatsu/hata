@@ -697,7 +697,7 @@ class CommandProcessor(EventWaitforBase):
         if (command_processor is not None) and (command_processor is not self):
             raise RuntimeError(f'{Category.__name__}: {command_processor!r} is bound to an other command processor.')
         
-        category.set_command_processor(category)
+        category.set_command_processor(self)
     
     
     def _remove_category(self, category):

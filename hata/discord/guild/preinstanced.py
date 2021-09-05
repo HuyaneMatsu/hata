@@ -539,6 +539,8 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+-----------------------------------+
     | more_sticker                  | more sticker                      | MORE_STICKERS                     |
     +-------------------------------+-----------------------------------+-----------------------------------+
+    | new_thread_permissions        | new thread permissions            | NEW_THREAD_PERMISSIONS            |
+    +-------------------------------+-----------------------------------+-----------------------------------+
     | partnered                     | partnered                         | PARTNERED                         |
     +-------------------------------+-----------------------------------+-----------------------------------+
     | public                        | public                            | PUBLIC                            |
@@ -618,6 +620,7 @@ class GuildFeature(PreinstancedBase):
     monetization_enabled = P('MONETIZATION_ENABLED', 'monetization enabled')
     more_emoji = P('MORE_EMOJI', 'more emoji')
     more_sticker = P('MORE_STICKERS', 'more sticker')
+    new_thread_permissions = P('NEW_THREAD_PERMISSIONS', 'new thread permissions')
     partnered = P('PARTNERED', 'partnered')
     preview_enabled = P('PREVIEW_ENABLED', 'preview enabled')
     private_threads = P('PRIVATE_THREADS', 'private threads')

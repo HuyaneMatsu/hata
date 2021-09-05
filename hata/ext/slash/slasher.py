@@ -10,6 +10,7 @@ from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import Router, asynclist, EventHandlerBase
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client import Client
+from ...discord.client.request_helpers import get_guild_id
 from ...discord.interaction import ApplicationCommand, InteractionEvent, InteractionType
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
@@ -715,6 +716,24 @@ class CommandState:
         change = CommandChange(False, command)
         changes.append(change)
         return command, COMMAND_STATE_IDENTIFIER_REMOVED
+    
+    
+    def get_active_command_count(self):
+        """
+        Gets the active commands of the command state.
+        
+        Returns
+        -------
+        active_command_count : `int`
+        """
+        active = self._active
+        if active is None:
+            active_command_count = 0
+        else:
+            active_command_count = len(active)
+        
+        return active_command_count
+
 
 
 class Slasher(EventHandlerBase):
@@ -2513,3 +2532,46 @@ class Slasher(EventHandlerBase):
                 for regex_custom_id in regex_custom_ids:
                     if regex_custom_id_to_component_command[regex_custom_id] is component_command:
                         del regex_custom_id_to_component_command[regex_custom_id]
+    
+    
+    def get_global_command_count(self):
+        """
+        Gets the global command count of the slasher.
+        
+        Returns
+        -------
+        global_command_count : `int`
+        """
+        try:
+            command_state = self._command_states[SYNC_ID_GLOBAL]
+        except KeyError:
+            global_command_count = 0
+        else:
+            global_command_count = command_state.get_active_command_count()
+        
+        return global_command_count
+    
+    
+    def get_guild_command_count(self, guild):
+        """
+        Gets the command count of the slasher for the specified guild.
+        
+        Returns
+        -------
+        guild_command_count : `int`
+        
+        Raises
+        ------
+        TypeError
+            If `guild` is neither ``Guild``, nor `int` instance.
+        """
+        guild_id = get_guild_id(guild)
+        
+        try:
+            command_state = self._command_states[guild_id]
+        except KeyError:
+            guild_command_count = 0
+        else:
+            guild_command_count = command_state.get_active_command_count()
+        
+        return guild_command_count

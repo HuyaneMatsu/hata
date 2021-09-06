@@ -123,6 +123,7 @@ class CommandChange:
         """Helper for unpacking."""
         return 2
 
+
 class CommandState:
     """
     Represents command's state inside of a guild.
@@ -733,6 +734,24 @@ class CommandState:
             active_command_count = len(active)
         
         return active_command_count
+    
+    
+    def get_active_command_count_with_sub_commands(self):
+        """
+        Gets the active commands of the command state including the sub command count as well.
+        
+        Returns
+        -------
+        active_command_count_with_sub_commands : `int`
+        """
+        active_command_count_with_sub_commands = 0
+        
+        active = self._active
+        if (active is not None):
+            for command in active:
+                active_command_count_with_sub_commands += command.get_real_command_count()
+        
+        return active_command_count_with_sub_commands
 
 
 
@@ -2542,19 +2561,28 @@ class Slasher(EventHandlerBase):
         -------
         global_command_count : `int`
         """
-        try:
-            command_state = self._command_states[SYNC_ID_GLOBAL]
-        except KeyError:
-            global_command_count = 0
-        else:
-            global_command_count = command_state.get_active_command_count()
+        return self._get_command_count(SYNC_ID_GLOBAL)
+    
+    
+    def get_global_command_count_with_sub_commands(self):
+        """
+        Returns the global command count including sub commands.
         
-        return global_command_count
+        Returns
+        ------
+        global_command_count_with_sub_commands : `int`
+        """
+        return self._get_command_count_with_sub_commands(SYNC_ID_GLOBAL)
     
     
     def get_guild_command_count(self, guild):
         """
         Gets the command count of the slasher for the specified guild.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild to gets command count of.
         
         Returns
         -------
@@ -2566,12 +2594,72 @@ class Slasher(EventHandlerBase):
             If `guild` is neither ``Guild``, nor `int` instance.
         """
         guild_id = get_guild_id(guild)
+        return self._get_command_count(guild_id)
+    
+    
+    def get_guild_command_count_with_sub_commands(self, guild):
+        """
+        Returns the command count including sub commands for teh specified guild.
         
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild to gets command count of.
+        
+        Returns
+        ------
+        guild_command_count_with_sub_commands : `int`
+        
+        Raises
+        ------
+        TypeError
+            If `guild` is neither ``Guild``, nor `int` instance.
+        """
+        guild_id = get_guild_id(guild)
+        return self._get_command_count_with_sub_commands(guild_id)
+    
+    
+    def _get_command_count(self, sync_id):
+        """
+        Gets command count for the specified sync-id.
+        
+        Parameters
+        ----------
+        sync_id : `int`
+            Sync id to get commands of.
+        
+        Returns
+        -------
+        command_count : `int`
+        """
         try:
-            command_state = self._command_states[guild_id]
+            command_state = self._command_states[sync_id]
         except KeyError:
-            guild_command_count = 0
+            command_count = 0
         else:
-            guild_command_count = command_state.get_active_command_count()
+            command_count = command_state.get_active_command_count()
         
-        return guild_command_count
+        return command_count
+    
+    
+    def _get_command_count_with_sub_commands(self, sync_id):
+        """
+        Gets command count including sub commands for the specified sync-id.
+        
+        Parameters
+        ----------
+        sync_id : `int`
+            Sync id to get commands of.
+        
+        Returns
+        -------
+        command_count_with_sub_commands : `int`
+        """
+        try:
+            command_state = self._command_states[sync_id]
+        except KeyError:
+            command_count_with_sub_commands = 0
+        else:
+            command_count_with_sub_commands = command_state.get_active_command_count_with_sub_commands()
+        
+        return command_count_with_sub_commands

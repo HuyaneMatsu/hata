@@ -445,7 +445,8 @@ class SlasherApplicationCommand:
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    _sub_commands: `None` or `dict` of (`str`, ``SlasherApplicationCommandFunction`` or ``SlashSubCommand``) items
+    _sub_commands: `None` or `dict` of (`str`, (``SlasherApplicationCommandFunction`` or \
+            ``SlasherApplicationCommandCategory``)) items
         Sub-commands of the slash command.
         
         Mutually exclusive with the ``._command`` parameter.
@@ -1312,6 +1313,32 @@ class SlasherApplicationCommand:
             permission_sync_ids.update(guild_ids)
         
         return permission_sync_ids
+    
+    
+    def get_real_command_count(self):
+        """
+        Gets the real command count of the slasher application command. This includes every sub attached to it as well.
+        
+        Returns
+        -------
+        real_command_count: `int`
+        """
+        if (self._command is None):
+            sub_commands = self._sub_commands
+            real_command_count = 0
+            
+            if (sub_commands is not None):
+                for sub_command_or_category in sub_commands.values():
+                    if isinstance(sub_command_or_category, SlasherApplicationCommandFunction):
+                        real_command_count += 1
+                    else:
+                        # Nesting more is not allowed by Discord.
+                        real_command_count += len(sub_command_or_category._sub_commands)
+        
+        else:
+            real_command_count = 1
+        
+        return real_command_count
 
 
 class SlasherApplicationCommandFunction:

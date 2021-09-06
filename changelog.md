@@ -9,6 +9,12 @@
 - Add `CommandState.get_active_command_count`.
 - Add `Slasher.get_global_command_count`.
 - Add `Slasher.get_guild_command_count`.
+- Add `Slasher._get_command_count`.
+- Add `Slasher.get_global_command_count_with_sub_commands`.
+- Add `Slasher._get_command_count_with_sub_commands`.
+- Add `Slasher.get_guild_command_count_with_sub_commands`.
+- Add `CommandState.get_active_command_count_with_sub_commands`
+- Add `SlasherApplicationCommand.get_real_command_count`.
 
 #### Bug Fixes
 

@@ -75,7 +75,7 @@ from ..message.utils import process_message_chunk
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
     _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, \
-    ForceUpdateCache
+    ForceUpdateCache, channel_move_sort_key, role_move_key, role_reorder_valid_roles_sort_key
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -2705,7 +2705,7 @@ class Client(ClientUserPBase):
         # Move, yayyy
         move_to.insert(visual_position, channel_key_to_move)
         # Reorder
-        move_to.sort(key=lambda channel_key_: channel_key_[0])
+        move_to.sort(key=channel_move_sort_key)
         
         # Now we resort every channel in the guild and categories, mostly for security issues
         to_sort_all = [display_new]
@@ -11289,11 +11289,12 @@ class Client(ClientUserPBase):
             if position == 0:
                 raise ValueError(f'Role cannot be moved to position `0`.')
         
-        data = change_on_switch(guild.role_list, role, position, key=lambda role_, pos:{'id': role_.id, 'position': pos})
+        data = change_on_switch(guild.role_list, role, position, key=role_move_key)
         if not data:
             return
         
         await self.http.role_move(guild_id, data, reason)
+    
     
     async def _role_reorder_roles_element_validator(self, item):
         """
@@ -11384,6 +11385,7 @@ class Client(ClientUserPBase):
             raise TypeError(
                 f'`roles` should have been passed as dict-like with (`{Role.__name__}, `int`) items, or as other '
                 f'iterable with (`{Role.__name__}, `int`) elements, but got `{roles!r}`')
+    
     
     async def role_reorder(self, roles, *, reason=None):
         """
@@ -11485,7 +11487,7 @@ class Client(ClientUserPBase):
             continue
         
         # Now that we have the roles, lets order them
-        roles_valid.sort(key = lambda item : item[1])
+        roles_valid.sort(key=role_reorder_valid_roles_sort_key)
         
         # Cut out non roles.
         limit = len(roles_valid)
@@ -11584,7 +11586,7 @@ class Client(ClientUserPBase):
             if index == position:
                 continue
             
-            data.append({'id': role.id, 'position': index})
+            data.append(role_move_key(role, index))
             continue
         
         # Nothing to move

@@ -285,6 +285,96 @@ RETRIEVED = 'RETRIEVED'
 # also remove the `__del__` notifications and the `__silence__` methods too. Also bad Task awaiting cases are removed
 # too. That's why more methods, which interact with these variables have 2 versions. 1 optimized and 1 debug :^)
 
+
+def try_get_raw_exception_representation(exception):
+    """
+    Tries to get raw exception representation.
+    
+    Parameters
+    ----------
+    exception : ``BaseException``
+        The respective exception instance.
+    
+    Returns
+    -------
+    raw_exception_representation : `str`
+    """
+    raw_exception_representation_parts = [
+        '> repr(exception) raised, trying to get raw representation.'
+    ]
+    
+    exception_name = getattr(type(exception), '__name__')
+    if type(exception_name) is str:
+        pass
+    elif isinstance(exception_name, str):
+        try:
+            exception_name = str(exception_name)
+        except:
+            exception_name = '<Exception>'
+    else:
+        exception_name = '<Exception>'
+    
+    raw_exception_representation_parts.append(exception_name)
+    raw_exception_representation_parts.append('(')
+    
+    try:
+        args = getattr(exception, 'args', None)
+    except:
+        pass
+    else:
+        if (args is not None) and (type(args) is tuple):
+            length = len(args)
+            if length:
+                index = 0
+                while True:
+                    element = args[index]
+                    
+                    try:
+                        element_representation = repr(element)
+                    except:
+                        element_representation = f'<parameter_{index}>'
+                    else:
+                        if type(element_representation) is not str:
+                            try:
+                                element_representation = str(element_representation)
+                            except:
+                                element_representation = f'<parameter_{index}>'
+                    
+                    raw_exception_representation_parts.append(element_representation)
+                    
+                    index += 1
+                    if index == length:
+                        break
+                    
+                    raw_exception_representation_parts.append(', ')
+                    continue
+        
+    
+    raw_exception_representation_parts.append(')')
+    return ''.join(raw_exception_representation_parts)
+
+
+def get_exception_representation(exception):
+    """
+    Gets the exception's representation.
+    
+    Parameters
+    ----------
+    exception : ``BaseException``
+        The respective exception instance.
+    
+    Returns
+    -------
+    exception_representation : `str`
+    """
+    try:
+        exception_representation = repr(exception)
+    except:
+        exception_representation = try_get_raw_exception_representation(exception)
+    
+    return exception_representation
+
+
 _IGNORED_FRAME_INFOS = {}
 def _ignore_frame(file, name, line):
     """
@@ -601,7 +691,7 @@ def render_exc_to_list(exception, extend=None):
         frames = _get_exc_frames(exception)
         extend.append('Traceback (most recent call last):\n')
         extend = render_frames_to_list(frames, extend=extend)
-        extend.append(repr(exception))
+        extend.append(get_exception_representation(exception))
         extend.append('\n')
         
         if reason_type == 0:

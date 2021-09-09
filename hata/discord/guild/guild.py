@@ -72,6 +72,20 @@ MAX_PRESENCES_DEFAULT = 0
 MAX_USERS_DEFAULT = 250000
 MAX_VIDEO_CHANNEL_USERS_DEFAULT = 25
 
+def user_date_sort_key(item):
+    """
+    Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specfiied date.
+    
+    Parameters
+    ----------
+    item : `tuple` of (`datetime`, ``ClientUserBase``)
+        The user and it's specific date.
+    
+    Returns
+    -------
+    date : `datetime`
+    """
+    return item[0]
 
 # discord does not send `widget_channel_id`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 
@@ -1415,7 +1429,7 @@ class Guild(DiscordEntity, immortal=True):
         if not to_sort:
             return to_sort
         
-        to_sort.sort(key=lambda x: x[0])
+        to_sort.sort(key=user_date_sort_key)
         return [x[1] for x in to_sort]
     
     
@@ -2619,7 +2633,7 @@ class Guild(DiscordEntity, immortal=True):
                     
                     boosters_ordered.append((boosts_since, user),)
                     
-                boosters_ordered.sort(key=lambda element: element[0])
+                boosters_ordered.sort(key=user_date_sort_key)
                 boosters = [element[1] for element in boosters_ordered]
             else:
                 boosters=[]

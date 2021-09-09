@@ -14,6 +14,7 @@ from base64 import b64encode
 from time import time as time_now
 from math import floor
 from email._parseaddr import _parsedate_tz as parse_date_timezone
+from functools import partial as partial_func
 
 try:
     from dateutil.relativedelta import relativedelta
@@ -1252,6 +1253,25 @@ def parse_message_reference(text):
     return guild_id, channel_id, message_id
 
 
+def sanitise_mention_escaper(transformations, match):
+    """
+    used inside of ``sanitize_mentions`` to escape mentions.
+    
+    Parameters
+    ----------
+    transformations : `dict` of (`str`, `str`) items
+        Escape table.
+    match : `re.Match`
+        The matched mention to escape.
+    
+    Returns
+    -------
+    escaped : `str`
+    """
+    mention = match.group(0)
+    return transformations.get(mention, mention)
+
+
 def sanitize_mentions(content, guild=None):
     """
     Sanitizes the given content, removing the mentions from it.
@@ -1306,7 +1326,7 @@ def sanitize_mentions(content, guild=None):
         
         transformations[f'<@&{id_}>'] = sanitized_mention
     
-    return re_compile('|'.join(transformations)).sub(lambda mention: transformations[mention.group(0)], content)
+    return re_compile('|'.join(transformations)).sub(partial_func(sanitise_mention_escaper, transformations), content)
 
 
 def sanitize_content(content, guild=None):

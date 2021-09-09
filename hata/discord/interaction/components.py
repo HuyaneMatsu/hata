@@ -1780,11 +1780,19 @@ class ComponentSelect(ComponentBase):
             yield from options
 
 
+def dynamic_component_style_serializer(style):
+    if isinstance(style, PreinstancedBase):
+        style = style.value
+    
+    return style
+
+
 COMPONENT_DYNAMIC_SERIALIZERS = {
     'emoji': create_partial_emoji_data,
-    'style': lambda style: style.value if isinstance(style, PreinstancedBase) else style,
+    'style': dynamic_component_style_serializer,
 }
 
+del dynamic_component_style_serializer
 
 COMPONENT_DYNAMIC_DESERIALIZERS = {
     'emoji': create_partial_emoji_from_data,

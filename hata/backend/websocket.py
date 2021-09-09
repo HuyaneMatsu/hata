@@ -8,6 +8,7 @@ from collections import OrderedDict
 from binascii import Error as BinasciiError
 from email.utils import formatdate
 from os import urandom
+from functools import partial as partial_func
 
 from .utils import imultidict
 from .futures import Future, Task, AsyncQueue, future_or_timeout, shield, CancelledError, WaitTillAll, is_coroutine, Lock
@@ -41,6 +42,9 @@ WS_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 EXTERNAL_CLOSE_CODES = (1000, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011,)
 
 HTTPClient = include('HTTPClient')
+
+DECODER = codecs.getincrementaldecoder('utf-8')(errors='strict')
+
 
 class WebSocketCommonProtocol(ProtocolBase):
     """
@@ -605,31 +609,41 @@ class WebSocketCommonProtocol(ProtocolBase):
         
         # we got a whole frame, nice
         if frame.fin:
-            return frame.data.decode('utf-8') if text else frame.data
+            message = frame.data
+            
+            if text:
+                message = message.decode('utf-8')
+            
+            return message
         
         max_size = self.max_size # set max size to BIG number to ignore it
-        chunks = []
         
-        if text:
-            decoder = codecs.getincrementaldecoder('utf-8')(errors='strict')
-            append = lambda frame: chunks.append(decoder.decode(frame.data, frame.fin))
-        else:
-            append = lambda frame: chunks.append(frame.data)
-        
+        frames = []
         while True:
-            append(frame)
             max_size -= len(frame.data)
             
+            frames.append(frame)
             if frame.fin:
                 break
             
             frame = await self.read_data_frame(max_size=max_size)
             if frame is None:
                 raise WebSocketProtocolError('Incomplete fragmented message.')
+            
             if frame.op_code != WS_OP_CONT:
                 raise WebSocketProtocolError(f'Unexpected op_code, got {frame.op_code!r}, expected {WS_OP_CONT!r}.')
         
-        return ('' if text else b'').join(chunks)
+        if text:
+            try:
+                message = ''.join(DECODER.decode(frame.data, frame.fin) for frame in frames)
+            except:
+                DECODER.reset()
+                raise
+        else:
+            message = b''.join(frame.data for frame in frames)
+        
+        return message
+    
     
     async def read_data_frame(self, max_size):
         """
@@ -1722,11 +1736,16 @@ class WSServerProtocol(WebSocketCommonProtocol):
                 if not subprotocols:
                     selected_subprotocol = None
                     break
-                    
-                selected_subprotocol = sorted(subprotocols,
-                    key = lambda priority:(parsed_header_subprotocols.index(priority) \
-                                           + available_subprotocols.index(priority))
-                        )[0]
+                
+                lowest_priority = len(parsed_header_subprotocols) + len(available_subprotocols)
+                selected_subprotocol = None
+                
+                for subprotocol in subprotocols:
+                    priority = parsed_header_subprotocols.index(subprotocol)+available_subprotocols.index(subprotocol)
+                    if priority < lowest_priority:
+                        lowest_priority = priority
+                        selected_subprotocol = subprotocol
+                
                 break
             
             self.subprotocol = selected_subprotocol

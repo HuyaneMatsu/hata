@@ -1076,6 +1076,22 @@ def map_module(module_name):
     return root
 
 
+def qual_path_sort_key(qual_path):
+    """
+    Sort key to sort ``QualPath`` instances.
+    
+    Parameters
+    ----------
+    qual_path : ``QualPath``
+        The respective path.
+    
+    Returns
+    -------
+    sort_key : `str`
+    """
+    return str(qual_path)
+
+
 class CachedSearcher:
     """
     Cached unit path searcher.
@@ -1130,7 +1146,7 @@ class CachedSearcher:
                 if isinstance(value, QualPath):
                     continue
                 
-                value.sort(key=lambda path: str(path))
+                value.sort(key=qual_path_sort_key)
         
         return cached_possibilities, cached_relations
     

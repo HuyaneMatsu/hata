@@ -310,12 +310,15 @@ def str_message(message, index=None, **kwargs):
     
     return result
 
+def reaction_item_sor_key(item):
+    return item[0]
+
 def str_reaction_mapping(reactions, index=None, **kwargs): #ignore index, 1 message can have only 1
     result = PrettyBlock()
     reaction_count = len(reactions)
     result.append(f'Reactions: ({reaction_count})')
-    reaction_ordering = list((len(v),k) for k, v in reactions.items())
-    reaction_ordering.sort(reverse=True,key=lambda x:x[0])
+    reaction_ordering = list((len(v), k) for k, v in reactions.items())
+    reaction_ordering.sort(reverse=True, key=reaction_item_sor_key)
     for times, emoji in reaction_ordering:
         if emoji.is_unicode_emoji():
             animated = ''

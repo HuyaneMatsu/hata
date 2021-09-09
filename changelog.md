@@ -3,6 +3,7 @@
 #### Improvements
 
 - Add `GuildFeature.new_thread_permissions`.
+- Ignore raised exceptions from `repr(exception)` inside of `render_exc_to_list`.
 
 ##### ext.slash
 
@@ -16,11 +17,20 @@
 - Add `CommandState.get_active_command_count_with_sub_commands`
 - Add `SlasherApplicationCommand.get_real_command_count`.
 
+##### hata.ext.asyncio
+
+- Add `LifoQueue.get_nowait`.
+- Add `Queue.get_nowait`.
+
 #### Bug Fixes
 
 ##### ext.commands_v2
 
 Fix an `AttributeError` caused from `CommandProcessor._add_category`.
+
+##### hata.ext.asyncio
+
+- `LifoQueue` and `Queue` `.get` method was not coroutine as expected.
 
 ## 1.1.100 *\[2021-09-04\]*
 

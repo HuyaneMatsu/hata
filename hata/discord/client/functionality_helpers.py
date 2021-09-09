@@ -995,3 +995,61 @@ class ForceUpdateCache:
         """
         self.value = value
         self.synced = True
+
+
+def channel_move_sort_key(channel_key):
+    """
+    Channel move sort key sued at `Client.channel_move`.
+    
+    Parameters
+    ----------
+    channel_key : `tuple` of (`int`, `int`, `int`, (`None` or `list` of `...`))
+    
+        Channel sort keys have the following structure:
+        - channel order group
+        - position
+        - channel identifier
+        - sub channel key
+    
+    Returns
+    -------
+    order_group : `int`
+    """
+    return channel_key[0]
+
+
+def role_move_key(role, position):
+    """
+    Used at ``Client.role_move`` and ``Client.role_reorder`` to create a json serializible change key from the given
+    `role` and `position`.
+    
+    Parameters
+    ----------
+    role : ``Role``
+        Respective role.
+    position : `int`
+        The role's new position.
+    
+    Returns
+    -------
+    change_key : `dict` of (`str`, `int`)
+    """
+    return {
+        'id': role.id,
+        'position': position,
+    }
+
+
+def role_reorder_valid_roles_sort_key(item):
+    """
+    Kes used inside of ``Client.role_reorder`` to sort out roles based on their position.
+    
+    Parameters
+    ----------
+    item : `tuple` of (``Role``, `int`)
+        
+        The item contains the following elements:
+        - role
+        - position
+    """
+    return item[1]

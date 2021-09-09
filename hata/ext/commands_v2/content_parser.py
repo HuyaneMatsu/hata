@@ -51,7 +51,7 @@ class ContentParameterParserContextBase:
     ----------
     _cache : `dict` of (`str`, `Any`)
         Cache used by cached properties.
-    _parsed : re.Match
+    _parsed : `re.Match`
         The parsed regex.
     """
     __slots__ = ('_cache', '_parsed')
@@ -61,7 +61,7 @@ class ContentParameterParserContextBase:
         
         Parameters
         ----------
-        parsed : re.Match
+        parsed : `re.Match`
             The parsed regex.
         """
         self = object.__new__(cls)
@@ -132,7 +132,7 @@ class ContentParameterParserContextSeparator(ContentParameterParserContextBase):
     ----------
     _cache : `dict` of (`str`, `Any`)
         Cache used by cached properties.
-    _parsed : re.Match
+    _parsed : `re.Match`
         The parsed regex.
     """
     __slots__ = ()
@@ -160,7 +160,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
     ----------
     _cache : `dict` of (`str`, `Any`)
         Cache used by cached properties.
-    _parsed : re.Match
+    _parsed : `re.Match`
         The parsed regex.
     """
     __slots__ = ()

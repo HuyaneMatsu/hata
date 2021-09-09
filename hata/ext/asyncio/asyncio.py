@@ -18,7 +18,7 @@ __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'Abstra
 import os, sys, warnings
 from threading import current_thread, enumerate as list_threads, main_thread
 from subprocess import PIPE
-from functools import partial
+from functools import partial, partial as partial_func
 
 from ...env import BACKEND_ONLY
 from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
@@ -791,7 +791,10 @@ class Queue(AsyncQueue):
         
         self.set_result(element)
     
-    def get(self):
+    async def get(self):
+        return await self.result()
+    
+    def get_nowait(self):
         try:
             return self.result_no_wait()
         except IndexError:
@@ -805,6 +808,7 @@ def PriorityQueue(maxsize=0, *, loop=None):
     Entries are typically tuples of the form: (priority number, data).
     """
     raise NotImplementedError
+
 
 class LifoQueue(AsyncLifoQueue):
     def __new__(cls, maxsize=0, *, loop=None):
@@ -825,7 +829,11 @@ class LifoQueue(AsyncLifoQueue):
         
         self.set_result(element)
     
-    def get(self):
+    async def get(self):
+        return await self.result()
+    
+    
+    def get_nowait(self):
         try:
             return self.result_no_wait()
         except IndexError:
@@ -951,6 +959,25 @@ async def staggered_race(coro_fns, delay, *, loop=None):
 
 _DEFAULT_LIMIT = 1<<16
 
+def protocol_itself_factory(protocol):
+    """
+    Uses to return the protocol itself when calling ``EventThread.open_connection``. This function is wrapped as a
+    partial function when used.
+    
+    > Only available for `asyncio` extension.
+    
+    Parameters
+    ----------
+    protocol : ``StreamReaderProtocol``
+        The protocol to return
+    
+    Returns
+    -------
+    protocol : ``StreamReaderProtocol``
+    """
+    return protocol
+
+
 async def open_connection(host=None, port=None, *, loop=None, limit=_DEFAULT_LIMIT, **kwds):
     """
     A wrapper for create_connection() returning a (reader, writer) pair.
@@ -974,7 +1001,7 @@ async def open_connection(host=None, port=None, *, loop=None, limit=_DEFAULT_LIM
     
     reader = StreamReader(limit=limit, loop=loop)
     protocol = StreamReaderProtocol(reader, loop=loop)
-    transport, _ = await loop.create_connection(lambda: protocol, host, port, **kwds)
+    transport, _ = await loop.create_connection(partial_func(protocol_itself_factory, protocol), host, port, **kwds)
     writer = StreamWriter(transport, protocol, reader, loop)
     return reader, writer
 

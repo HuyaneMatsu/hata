@@ -440,11 +440,10 @@ class Emoji(DiscordEntity, immortal=True):
         
         role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
-            roles = None
+            role_ids = None
         else:
-            roles = tuple(sorted((create_partial_role_from_id(int(role_id)) for role_id in role_ids), key=id_sort_key))
-        
-        self.roles = roles
+            role_ids = tuple(sorted(int(role_id) for role_id in role_ids))
+        self.role_ids = role_ids
         
         try:
             user_data = data['user']

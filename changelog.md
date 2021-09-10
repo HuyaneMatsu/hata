@@ -4,6 +4,11 @@
 
 - Add `Embed.copy`.
 
+#### Bug Fixes
+
+- Fix an `AttributeError` in `EMoji._update_attributes`.
+
+
 ## 1.1.101 *\[2021-09-10\]*
 
 ### Summary

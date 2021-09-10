@@ -300,7 +300,7 @@ def try_get_raw_exception_representation(exception):
     raw_exception_representation : `str`
     """
     raw_exception_representation_parts = [
-        '> repr(exception) raised, trying to get raw representation.'
+        '> repr(exception) raised, trying to get raw representation.\n'
     ]
     
     exception_name = getattr(type(exception), '__name__')

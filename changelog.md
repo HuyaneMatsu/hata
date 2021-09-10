@@ -1,4 +1,11 @@
-## 1.1.101 *\[2021-09-??\]*
+## 1.1.102 *\[2021-09-??\]*
+
+
+## 1.1.101 *\[2021-09-10\]*
+
+### Summary
+
+Stop creating functions runtime, but now we remove lambdas.
 
 #### Improvements
 
@@ -30,7 +37,7 @@ Fix an `AttributeError` caused from `CommandProcessor._add_category`.
 
 ##### hata.ext.asyncio
 
-- `LifoQueue` and `Queue` `.get` method was not coroutine as expected.
+- `LifoQueue` and `Queue` `.get` method was not coroutine as expected. (catzoo#3026)
 
 ## 1.1.100 *\[2021-09-04\]*
 

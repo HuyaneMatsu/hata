@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 __all__ = ('WSClient', 'WSServer', )
 
-import hashlib, codecs, functools
+import hashlib, codecs
 import http as module_http
 from base64 import b64encode, b64decode
 from collections import OrderedDict
@@ -2045,7 +2044,7 @@ class WSServer:
         self.protocol_parameters = (handler, host, port, is_ssl, origin, available_extensions, available_subprotocols,
             extra_response_headers, request_processor, subprotocol_selector, websocket_kwargs)
         
-        factory = functools.partial(protocol, self,)
+        factory = partial_func(protocol, self,)
         server = await loop.create_server(factory, host, port, ssl=ssl, **server_kwargs)
         
         self.server = server

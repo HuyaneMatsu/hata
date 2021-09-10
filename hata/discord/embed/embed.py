@@ -7,6 +7,16 @@ from ..utils import timestamp_to_datetime, datetime_to_timestamp
 from .embed_base import EmbedBase, EmbedFooter, EmbedImage, EmbedThumbnail, EmbedVideo, EmbedProvider, EmbedAuthor, \
     EmbedField
 
+RICH_EMBED_FIELDS = frozenset((
+    'author',
+    'fields',
+    'footer',
+    'image',
+    'provider',
+    'thumbnail',
+    'video',
+))
+
 class Embed(EmbedBase):
     """
     Represents Discord embedded content. There are two defined embed classes, the other one is ``EmbedCore``.
@@ -254,6 +264,34 @@ class Embed(EmbedBase):
         if (fields is not None):
             fields.clear()
             data['fields'] = fields
+    
+    
+    def copy(self):
+        """
+        Copies the embed returning a new one.
+        
+        Returns
+        -------
+        new : ``Embed``
+        """
+        new_data = {}
+        
+        for key, value in self._data.items():
+            if value is None:
+                continue
+            
+            if key in RICH_EMBED_FIELDS:
+                if key == 'fields':
+                    value = [field.copy() for field in value]
+                
+                else:
+                    value = value.copy()
+            
+            new_data[key] = value
+        
+        new = object.__new__(Embed)
+        new._data = new_data
+        return new
     
     # Properties
     
@@ -963,14 +1001,15 @@ class _EmbedFieldsProxy:
             Whether this field should display inline.
         """
         field_data = {
-            'name' : name,
-            'value' : value,
-                }
+            'name': name,
+            'value': value,
+        }
         
         if inline:
             field_data['inline'] = inline
         
         self._data.append(field_data)
+    
     
     def insert_field(self, index, name, value, inline=False):
         """
@@ -997,6 +1036,7 @@ class _EmbedFieldsProxy:
         
         self._data.insert(index, field_data)
     
+    
     def __iter__(self):
         """
         Iterates over the respective embed's fields.
@@ -1005,6 +1045,7 @@ class _EmbedFieldsProxy:
         """
         for field_data in self._data:
             yield EmbedField.from_data(field_data)
+    
     
     def __reversed__(self):
         """

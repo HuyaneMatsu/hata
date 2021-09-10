@@ -469,7 +469,7 @@ class EmbedCore(EmbedBase):
         new.url = self.url
         new.video = self.video
         
-        return self
+        return new
     
     
     @copy_docs(EmbedBase.copy_with)
@@ -572,4 +572,4 @@ class EmbedCore(EmbedBase):
         new.url = url
         new.video = video
         
-        return self
+        return new

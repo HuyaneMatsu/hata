@@ -93,6 +93,7 @@ class Embed(EmbedBase):
         if (type_ is not None):
             data['type'] = type_
     
+    
     @copy_docs(EmbedBase.__len__)
     def __len__(self):
         data = self._data
@@ -141,6 +142,7 @@ class Embed(EmbedBase):
                 result += len(field_data['value'])
         
         return result
+    
     
     @copy_docs(EmbedBase.__bool__)
     def __bool__(self):
@@ -225,6 +227,7 @@ class Embed(EmbedBase):
         
         return result
     
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -243,6 +246,7 @@ class Embed(EmbedBase):
         self._data = data
         return self
     
+    
     def to_data(self):
         """
         Returns the embed's `._data`.
@@ -256,6 +260,7 @@ class Embed(EmbedBase):
         """
         return self._data
     
+    
     @copy_docs(EmbedBase.clear)
     def clear(self):
         data = self._data
@@ -266,14 +271,8 @@ class Embed(EmbedBase):
             data['fields'] = fields
     
     
+    @copy_docs(EmbedBase.copy)
     def copy(self):
-        """
-        Copies the embed returning a new one.
-        
-        Returns
-        -------
-        new : ``Embed``
-        """
         new_data = {}
         
         for key, value in self._data.items():
@@ -282,14 +281,187 @@ class Embed(EmbedBase):
             
             if key in RICH_EMBED_FIELDS:
                 if key == 'fields':
-                    value = [field.copy() for field in value]
+                    value = [field_data.copy() for field_data in value]
                 
                 else:
                     value = value.copy()
             
             new_data[key] = value
         
-        new = object.__new__(Embed)
+        new = object.__new__(type(self))
+        new._data = new_data
+        return new
+    
+    
+    @copy_docs(EmbedBase.copy_with)
+    def copy_with(self, **kwargs):
+        data = self._data
+        
+        try:
+            author = kwargs.pop('author')
+        except KeyError:
+            author_data = data.get('author', None)
+            if (author_data is not None):
+                author_data = author_data.copy()
+        else:
+            if (author is None):
+                author_data = None
+            else:
+                author_data = author.to_data()
+        
+        try:
+            color = kwargs.pop('color')
+        except KeyError:
+            color = data.get('color', None)
+        
+        try:
+            description = kwargs.pop('description')
+        except KeyError:
+            description = data.get('description', None)
+        
+        try:
+            fields = kwargs.pop('fields')
+        except KeyError:
+            field_datas = data.get('fields', None)
+            if (field_datas is not None):
+                field_datas = [field_data.copy() for field_data in field_datas]
+        else:
+            if (fields is None):
+                field_datas = None
+            else:
+                field_datas = [field.to_data() for field in fields]
+        
+        try:
+            footer = kwargs.pop('footer')
+        except KeyError:
+            footer_data = data.get('footer', None)
+            if (footer_data is not None):
+                footer_data = footer_data.copy()
+        else:
+            if (footer is None):
+                footer_data = None
+            else:
+                footer_data = footer.to_data()
+        
+        try:
+            image = kwargs.pop('image')
+        except KeyError:
+            image_data = data.get('image', None)
+            if (image_data is not None):
+                image_data = image_data.copy()
+        else:
+            if (image is None):
+                image_data = None
+            else:
+                image_data = image.to_data()
+        
+        try:
+            provider = kwargs.pop('provider')
+        except KeyError:
+            provider_data = data.get('provider', None)
+            if (provider_data is not None):
+                provider_data = provider_data.copy()
+        else:
+            if (provider is None):
+                provider_data = None
+            else:
+                provider_data = provider.to_data()
+        
+        try:
+            thumbnail = kwargs.pop('thumbnail')
+        except KeyError:
+            thumbnail_data = data.get('thumbnail', None)
+            if (thumbnail_data is not None):
+                thumbnail_data = thumbnail_data.copy()
+        else:
+            if (thumbnail is None):
+                thumbnail_data = None
+            else:
+                thumbnail_data  = thumbnail.to_data()
+        
+        try:
+            timestamp = kwargs.pop('timestamp')
+        except KeyError:
+            timestamp_data = data.get('timestamp', None)
+        else:
+            if (timestamp is None):
+                timestamp_data = None
+            else:
+                timestamp_data = datetime_to_timestamp(timestamp)
+        
+        try:
+            title = kwargs.pop('title')
+        except KeyError:
+            title = data.get('title', None)
+        
+        try:
+            type_ = kwargs.pop('type')
+        except KeyError:
+            type_ = data.get('type_', None)
+        
+        try:
+            url = kwargs.pop('url')
+        except KeyError:
+            url = data.get('url', None)
+        
+        try:
+            video = kwargs.pop('video')
+        except KeyError:
+            video_data = data.get('video', None)
+            if (video_data is not None):
+                video_data = video_data.copy()
+        else:
+            if (video is None):
+                video_data = None
+            else:
+                video_data = video.to_data()
+        
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: `{kwargs}`')
+        
+        
+        new_data = {}
+        
+        if (author_data is not None):
+            new_data['author'] = author_data
+        
+        if (color is not None):
+            new_data['color'] = color
+        
+        if (description is not None):
+            new_data['description'] = description
+        
+        if (field_datas is not None):
+            new_data['fields'] = field_datas
+        
+        if (footer_data is not None):
+            new_data['footer'] = footer_data
+        
+        if (image_data is not None):
+            new_data['image'] = image_data
+        
+        if (provider_data is not None):
+            new_data['provider'] = provider_data
+        
+        if (thumbnail_data is not None):
+            new_data['thumbnail'] = thumbnail_data
+        
+        if (timestamp_data is not None):
+            new_data['timestamp'] = timestamp_data
+        
+        if (title is not None):
+            new_data['title'] = title
+        
+        if (type_ is not None):
+            new_data['type_'] = type_
+        
+        if (url is not None):
+            new_data['url'] = url
+        
+        if (video_data is not None):
+            new_data['video'] = video_data
+        
+        new = object.__new__(type(self))
         new._data = new_data
         return new
     

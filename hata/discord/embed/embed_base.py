@@ -25,6 +25,7 @@ class EmbedThumbnail:
         The width of the thumbnail. Defaults to `0`.
     """
     __slots__ = ('height', 'proxy_url', 'url', 'width',)
+    
     def __init__(self, url):
         """
         Creates an embed thumbnail with the given `url`.
@@ -39,13 +40,16 @@ class EmbedThumbnail:
         self.height = 0
         self.width = 0
     
+    
     def __len__(self):
         """Returns the embed thumbnail's contents' length."""
         return 0
     
+    
     def __bool__(self):
         """Returns whether the embed thumbnail is not empty."""
         return (self.url is not None)
+    
     
     def __repr__(self):
         """Returns the representation of the embed thumbnail."""
@@ -73,12 +77,14 @@ class EmbedThumbnail:
         
         return ''.join(repr_parts)
     
+    
     def __eq__(self, other):
         """Returns whether the two embed thumbnails are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
         return (self.url == other.url)
+    
     
     @classmethod
     def from_data(cls, data):
@@ -102,6 +108,7 @@ class EmbedThumbnail:
         
         return self
     
+    
     def to_data(self):
         """
         Converts the embed thumbnail to json serializable `dict` representing it.
@@ -113,6 +120,48 @@ class EmbedThumbnail:
         return {
             'url' : self.url,
         }
+    
+    def copy(self):
+        """
+        Copies the ``EmbedThumbnail`` returning a new one.
+        
+        Returns
+        -------
+        new : ``EmbedThumbnail``
+        """
+        new = object.__new__(type(self))
+        
+        new.url = self.url
+        new.proxy_url = None
+        new.height = 0
+        new.width = 0
+        
+        return self
+    
+    
+    def copy_with(self, *, url=...):
+        """
+        Copies the ``EmbedThumbnail`` and updates it with the given parameters.
+        
+        Parameters
+        ----------
+        url : `str`, Optional (Keyword only)
+            The url of the thumbnail. Can be http(s) or attachment.
+        
+        Returns
+        -------
+        new : ``EmbedThumbnail``
+        """
+        if url is ...:
+            url = self.url
+        
+        new = object.__new__(type(self))
+        new.url = url
+        new.proxy_url = None
+        new.height = 0
+        new.width = 0
+        
+        return self
 
 
 class EmbedVideo:
@@ -144,13 +193,16 @@ class EmbedVideo:
         self.height = 0
         self.width = 0
     
+    
     def __len__(self):
         """Returns the embed video's contents' length."""
         return 0
     
+    
     def __bool__(self):
         """Returns whether the embed video is not empty."""
         return (self.url is not None)
+    
     
     def __repr__(self):
         """Returns the representation of the embed video."""
@@ -178,12 +230,14 @@ class EmbedVideo:
         
         return ''.join(repr_parts)
     
+    
     def __eq__(self, other):
         """Returns whether the two embed videos are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
         return (self.url == other.url)
+    
     
     @classmethod
     def from_data(cls, data):
@@ -207,6 +261,7 @@ class EmbedVideo:
         
         return self
     
+    
     def to_data(self):
         """
         Converts the embed video to json serializable `dict` representing it.
@@ -218,6 +273,32 @@ class EmbedVideo:
         video_data : `dict` of (`str`, `Any`) items
         """
         return {}
+    
+    
+    def copy(self):
+        """
+        Copies the ``EmbedVideo`` returning a new one.
+        
+        > Since embed videos are receive only, the method will return the instance itself.
+        
+        Returns
+        -------
+        new : ``EmbedVideo``
+        """
+        return self
+    
+    
+    def copy_with(self):
+        """
+        Copies the ``EmbedVideo`` and updates it with the given parameters.
+        
+        > Since embed videos are receive only, the method will return the instance itself.
+        
+        Returns
+        -------
+        new : ``EmbedVideo``
+        """
+        return self
 
 
 class EmbedImage:
@@ -251,13 +332,16 @@ class EmbedImage:
         self.height = 0
         self.width = 0
     
+    
     def __len__(self):
         """Returns the embed image's contents' length."""
         return 0
     
+    
     def __bool__(self):
         """Returns whether the embed image is not empty."""
         return (self.url is not None)
+    
     
     def __repr__(self):
         """Returns the representation of the embed image."""
@@ -285,12 +369,14 @@ class EmbedImage:
         
         return ''.join(repr_parts)
     
+    
     def __eq__(self, other):
         """Returns whether the two embed images are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
         return (self.url == other.url)
+    
     
     @classmethod
     def from_data(cls,data):
@@ -314,6 +400,7 @@ class EmbedImage:
         
         return self
     
+    
     def to_data(self):
         """
         Converts the embed image to json serializable `dict` representing it.
@@ -325,6 +412,49 @@ class EmbedImage:
         return {
             'url' : self.url,
         }
+    
+
+    def copy(self):
+        """
+        Copies the ``EmbedImage`` returning a new one.
+        
+        Returns
+        -------
+        new : ``EmbedImage``
+        """
+        new = object.__new__(type(self))
+        
+        new.url = self.url
+        new.proxy_url = None
+        new.height = 0
+        new.width = 0
+        
+        return self
+    
+    
+    def copy_with(self, *, url=...):
+        """
+        Copies the ``EmbedImage`` and updates it with the given parameters.
+        
+        Parameters
+        ----------
+        url : `str`, Optional (Keyword only)
+            The url of the image. Can be http(s) or attachment.
+        
+        Returns
+        -------
+        new : ``EmbedImage``
+        """
+        if url is ...:
+            url = self.url
+        
+        new = object.__new__(type(self))
+        new.url = url
+        new.proxy_url = None
+        new.height = 0
+        new.width = 0
+        
+        return self
 
 
 class EmbedProvider:
@@ -346,6 +476,7 @@ class EmbedProvider:
         self.name = None
         self.url = None
     
+    
     def __len__(self):
         """Returns the embed provider's contents' length."""
         name = self.name
@@ -353,6 +484,7 @@ class EmbedProvider:
             return 0
         
         return len(name)
+    
     
     def __bool__(self):
         """Returns whether the embed provider is not empty."""
@@ -364,6 +496,7 @@ class EmbedProvider:
             return True
         
         return False
+    
     
     def __repr__(self):
         """Returns the representation of the embed provider."""
@@ -388,6 +521,7 @@ class EmbedProvider:
         
         return ''.join(repr_parts)
     
+    
     def __eq__(self, other):
         """Returns whether the two embed providers are equal."""
         if type(self) is not type(other):
@@ -401,17 +535,23 @@ class EmbedProvider:
         
         return True
     
+    
     @classmethod
     def from_data(cls, data):
         """
         Creates a new embed provider object. Because embed providers cannot be sent, it accepts no parameters and just
         creates an empty embed provider object with default attributes.
+        
+        Returns
+        -------
+        self : ``EmbedProvider``
         """
         self = object.__new__(cls)
         self.name = data.get('name', None)
         self.url = data.get('url', None)
         
         return self
+    
     
     def to_data(self):
         """
@@ -424,6 +564,32 @@ class EmbedProvider:
         provider_data : `dict` of (`str`, `Any`) items
         """
         return {}
+
+
+    def copy(self):
+        """
+        Copies the ``EmbedProvider`` returning a new one.
+        
+        > Since embed providers are receive only, the method will return the instance itself.
+        
+        Returns
+        -------
+        new : ``EmbedProvider``
+        """
+        return self
+    
+    
+    def copy_with(self):
+        """
+        Copies the ``EmbedProvider`` and updates it with the given parameters.
+        
+        > Since embed providers are receive only, the method will return the instance itself.
+        
+        Returns
+        -------
+        new : ``EmbedProvider``
+        """
+        return self
 
 
 class EmbedAuthor:
@@ -460,6 +626,7 @@ class EmbedAuthor:
         self.url = url
         self.proxy_icon_url = None
     
+    
     def __len__(self):
         """Returns the embed author's contents' length."""
         name = self.name
@@ -467,6 +634,7 @@ class EmbedAuthor:
             return 0
         
         return len(name)
+    
     
     def __bool__(self):
         """Returns whether the embed author is not empty."""
@@ -481,6 +649,7 @@ class EmbedAuthor:
             return True
         
         return False
+    
     
     def __repr__(self):
         """Returns the representation of the embed author."""
@@ -531,6 +700,7 @@ class EmbedAuthor:
         
         return True
     
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -552,6 +722,7 @@ class EmbedAuthor:
         self.proxy_icon_url = data.get('proxy_icon_url', None)
         
         return self
+    
     
     def to_data(self):
         """
@@ -576,7 +747,61 @@ class EmbedAuthor:
             author_data['icon_url'] = icon_url
         
         return author_data
-
+    
+    
+    def copy(self):
+        """
+        Copies the ``EmbedAuthor`` returning a new one.
+        
+        Returns
+        -------
+        new : ``EmbedAuthor``
+        """
+        new = object.__new__(type(self))
+        
+        new.icon_url = self.icon_url
+        new.name = self.name
+        new.url = self.url
+        new.proxy_icon_url = None
+        
+        return self
+    
+    
+    def copy_with(self, *, icon_url=..., name=..., url=...):
+        """
+        Copies the ``EmbedAuthor`` and updates it with the given parameters.
+        
+        Parameters
+        ----------
+        icon_url : `str`, Optional (Keyword only)
+            An url of the author's icon. Can be http(s) or attachment.
+        name : `str`, Optional (Keyword only)
+            The name of the author.
+        url : `str`, Optional (Keyword only)
+            The url of the author.
+        
+        Returns
+        -------
+        new : ``EmbedAuthor``
+        """
+        if icon_url is ...:
+            icon_url = self.icon_url
+        
+        if name is ...:
+            name = self.name
+        
+        if url is ...:
+            url = self.url
+        
+        new = object.__new__(type(self))
+        
+        new.icon_url = icon_url
+        new.name = name
+        new.url = url
+        new.proxy_icon_url = None
+        
+        return self
+    
 
 class EmbedFooter:
     """
@@ -593,6 +818,7 @@ class EmbedFooter:
     """
     __slots__ = ('icon_url', 'proxy_icon_url', 'text',)
     
+    
     def __init__(self, text, icon_url=None):
         """
         Creates an embed footer with the given parameters.
@@ -608,9 +834,11 @@ class EmbedFooter:
         self.icon_url = icon_url
         self.proxy_icon_url = None
     
+    
     def __len__(self):
         """Returns the embed footer's contents' length."""
         return len(self.text)
+    
     
     def __bool__(self):
         """Returns whether the embed footer is not empty."""
@@ -621,6 +849,7 @@ class EmbedFooter:
             return True
         
         return False
+    
     
     def __repr__(self):
         """Returns the representation of the embed footer."""
@@ -645,6 +874,7 @@ class EmbedFooter:
         
         return ''.join(repr_parts)
     
+    
     def __eq__(self, other):
         """Returns whether the two embed footers are equal."""
         if type(self) is not type(other):
@@ -657,6 +887,7 @@ class EmbedFooter:
             return False
         
         return True
+    
     
     @classmethod
     def from_data(cls, data):
@@ -679,6 +910,7 @@ class EmbedFooter:
         
         return self
     
+    
     def to_data(self):
         """
         Converts the embed footer to json serializable `dict` representing it.
@@ -696,6 +928,53 @@ class EmbedFooter:
             footer_data['icon_url'] = icon_url
             
         return footer_data
+    
+    
+    def copy(self):
+        """
+        Copies the ``EmbedFooter`` returning a new one.
+        
+        Returns
+        -------
+        new : ``EmbedFooter``
+        """
+        new = object.__new__(type(self))
+        
+        new.text = self.text
+        new.icon_url = self.icon_url
+        new.proxy_icon_url = None
+        
+        return self
+    
+    
+    def copy_with(self, *, text=..., icon_url=...):
+        """
+        Copies the ``EmbedFooter`` and updates it with the given parameters.
+        
+        Parameters
+        ----------
+        text : `str`, Optional (Keyword only)
+            The footer's text.
+        icon_url : `str`, Optional (Keyword only)
+            An url of the footer's icon. Can be http(s) or attachment.
+        
+        Returns
+        -------
+        new : ``EmbedFooter``
+        """
+        if text is ...:
+            text = self.text
+        
+        if icon_url is ...:
+            icon_url = self.icon_url
+        
+        new = object.__new__(type(self))
+        
+        new.text = text
+        new.icon_url = icon_url
+        new.proxy_icon_url = None
+        
+        return self
 
 
 class EmbedField:
@@ -712,6 +991,7 @@ class EmbedField:
         The value of the field.
     """
     __slots__ = ('inline', 'name', 'value',)
+    
     def __init__(self, name, value, inline=False):
         """
         Creates an embed field with the given parameters.
@@ -729,9 +1009,11 @@ class EmbedField:
         self.value = value
         self.inline = inline
     
+    
     def __len__(self):
         """Returns the embed field's contents' length."""
         return len(self.name)+len(self.value)
+    
     
     def __bool__(self):
         """Returns whether the embed field is not empty."""
@@ -743,10 +1025,12 @@ class EmbedField:
         
         return False
     
+    
     def __repr__(self):
         """Returns the representation of the embed field."""
         return f'<{self.__class__.__name__} length={len(self)}, inline={self.inline}>'
-
+    
+    
     def __eq__(self, other):
         """Returns whether the two embed fields are equal."""
         if type(self) is not type(other):
@@ -762,6 +1046,7 @@ class EmbedField:
             return False
         
         return True
+    
     
     @classmethod
     def from_data(cls, data):
@@ -785,6 +1070,7 @@ class EmbedField:
         
         return self
     
+    
     def to_data(self):
         """
         Converts the embed field to json serializable `dict` representing it.
@@ -794,9 +1080,9 @@ class EmbedField:
         field_data : `dict` of (`str`, `Any`) items
         """
         field_data = {
-            'name' : self.name,
-            'value' : self.value,
-                }
+            'name': self.name,
+            'value': self.value,
+        }
         
         inline = self.inline
         if inline:
@@ -804,6 +1090,74 @@ class EmbedField:
         
         return field_data
 
+
+    def copy(self):
+        """
+        Copies the ``EmbedField`` returning a new one.
+        
+        Returns
+        -------
+        new : ``EmbedField``
+        """
+        new = object.__new__(type(self))
+        
+        new.name = self.name
+        new.value = self.value
+        new.inline = self.inline
+        
+        return self
+    
+    
+    def copy_with(self, *, name=..., value=..., inline=...):
+        """
+        Copies the ``EmbedField`` and updates it with the given parameters.
+        
+        Parameters
+        ----------
+        name : `str`, Optional (Keyword only)
+            The name of the field.
+        value : `str`, Optional (Keyword only)
+            The value of the field.
+        inline : `bool`, Optional (Keyword only)
+            Whether this field should display inline.
+        
+        Returns
+        -------
+        new : ``EmbedField``
+        """
+        if name is ...:
+            name = self.name
+        
+        if value is ...:
+            value = self.value
+        
+        if inline is ...:
+            inline = self.inline
+        
+        new = object.__new__(type(self))
+        
+        new.name = name
+        new.value = value
+        new.inline = inline
+        
+        return self
+
+
+EMBED_ATTRIBUTES = frozenset((
+    'author',
+    'color',
+    'description',
+    'fields',
+    'footer',
+    'image',
+    'provider',
+    'thumbnail',
+    'timestamp',
+    'title',
+    'type',
+    'url',
+    'video',
+))
 
 class EmbedBase:
     """
@@ -986,6 +1340,7 @@ class EmbedBase:
         
         return True
     
+    
     def from_data(self, data):
         """
         Creates a new embed from the given data received from Discord.
@@ -997,6 +1352,7 @@ class EmbedBase:
         NotImplementedError
         """
         raise NotImplementedError
+    
     
     def to_data(self):
         """
@@ -1010,10 +1366,12 @@ class EmbedBase:
         """
         return {}
     
+    
     def clear(self):
         """
         Clears the embed.
         """
+    
     
     @property
     def contents(self):
@@ -1035,3 +1393,63 @@ class EmbedBase:
         contents : `list` of `str`
         """
         return []
+    
+    
+    def copy(self):
+        """
+        Copies the embed returning a new one.
+        
+        Returns
+        -------
+        new : ``EmbedBase``
+        """
+        return
+    
+    
+    def copy_with(self, **kwargs):
+        """
+        Copies the embed and updates it with the given parameters.
+        
+        Parameters
+        ----------
+        **kwargs : Keyword parameters
+             Keyword parameters referencing attributes.
+         
+        Other Parameters
+        ----------------
+        author : `None` or ``EmbedAuthor``, Optional (Keyword only)
+            Author information.
+        color : `None`, ``Color`` or `int`, Optional (Keyword only)
+            The color code of the embed. Passing `0` means black, not like at the case of roles.
+        description : `None` or `str`, Optional (Keyword only)
+            The main content of the embed.
+        fields : `list` of ``EmbedField``, Optional (Keyword only)
+            Fields' information.
+        footer : `None` or ``EmbedFooter``, Optional (Keyword only)
+            Footer information.
+        image : `None` or ``EmbedImage``, Optional (Keyword only)
+            Image information.
+        provider : `None` or ``EmbedProvider``, Optional (Keyword only)
+            Provider information.
+        thumbnail : `None` or ``EmbedThumbnail``, Optional (Keyword only)
+            Thumbnail information.
+        timestamp : `None` or `datetime`, Optional (Keyword only)
+            Timestamp of the embed's content. Shows up next to the ``.footer`` separated with a `'|'` character.
+        title : `None` or `str`, Optional (Keyword only)
+            The title of the embed. Shows at the top with intense white characters.
+        type : `None` or `str`, Optional (Keyword only)
+            The type of the embed. Can be one of `EXTRA_EMBED_TYPES`'s elements. Webhook embeds' type must be `'rich'`.
+        url : `None` or `str`, Optional (Keyword only)
+            Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
+        video : `None` or `EmbedVideo`, Optional (Keyword only)
+            Video information.
+        
+        Returns
+        -------
+        new : ``EmbedBase``
+        """
+        for key in kwargs:
+            if key not in EMBED_ATTRIBUTES:
+                raise TypeError(f'Unused or unsettable attribute: `{key}`')
+        
+        return

@@ -1943,7 +1943,7 @@ class ComponentDynamic(ComponentBase):
         new : ``ComponentDynamic``
         """
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            raise TypeError(f'Unused or unsettable attributes: `{kwargs}`')
         
         return self.copy()
     

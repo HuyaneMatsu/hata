@@ -2,12 +2,28 @@
 
 #### Improvements
 
+- Add `EmbedThumbnail.copy`.
+- Add `EmbedThumbnail.copy_with`.
+- Add `EmbedVideo.copy`.
+- Add `EmbedVideo.copy_with`.
+- Add `EmbedImage.copy`.
+- Add `EmbedImage.copy_with`.
+- Add `EmbedAuthor.copy`.
+- Add `EmbedAuthor.copy_with`.
+- Add `EmbedFooter.copy`.
+- Add `EmbedFooter.copy_with`.
+- Add `EmbedField.copy`.
+- Add `EmbedField.copy_with`.
+- Add `EmbedBase.copy`.
+- Add `EmbedBase.copy_with`.
+- Add `EmbedCore.copy`.
+- Add `EmbedCore.copy_with`.
 - Add `Embed.copy`.
+- Add `Embed.copy_with`.
 
 #### Bug Fixes
 
-- Fix an `AttributeError` in `EMoji._update_attributes`.
-
+- Fix an `AttributeError` in `Emoji._update_attributes`.
 
 ## 1.1.101 *\[2021-09-10\]*
 

@@ -81,6 +81,7 @@ class EmbedCore(EmbedBase):
         self.author = None
         self.fields = []
     
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -175,7 +176,8 @@ class EmbedCore(EmbedBase):
         self.fields = fields
         
         return self
-
+    
+    
     def to_data(self):
         """
         Converts the embed core to json serializable `dict` representing it.
@@ -232,12 +234,15 @@ class EmbedCore(EmbedBase):
         
         return data
     
+    
     @copy_docs(EmbedBase.clear)
     def clear(self):
         self.author = None
         self.color = None
         self.description = None
-        self.fields.clear()
+        fields = self.fields
+        if (fields is not None):
+            fields.clear()
         self.footer = None
         self.image = None
         self.provider = None
@@ -247,6 +252,7 @@ class EmbedCore(EmbedBase):
         self.type = None
         self.url = None
         self.video = None
+    
     
     @property
     def contents(self):
@@ -290,6 +296,7 @@ class EmbedCore(EmbedBase):
             contents.append(field.value)
         
         return contents
+    
     
     def _update_sizes(self, data):
         """
@@ -352,6 +359,7 @@ class EmbedCore(EmbedBase):
         
         return changed
     
+    
     def _set_sizes(self, data):
         """
         Updates the size information of the embed.
@@ -399,6 +407,7 @@ class EmbedCore(EmbedBase):
                 video.height = video_data.get('height', 0)
                 video.width = video_data.get('width', 0)
     
+    
     def _clean_copy(self, message):
         """
         Creates a clean copy of the embed by removing the mentions in it's contents.
@@ -435,3 +444,132 @@ class EmbedCore(EmbedBase):
                 for field in self.fields]
         
         return new
+    
+    
+    @copy_docs(EmbedBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        
+        new.author = self.author
+        new.color = self.color
+        new.description = self.description
+        
+        fields = self.fields
+        if (fields is not None):
+            fields = [field.copy() for field in fields]
+        new.fields = fields
+        
+        new.footer = self.footer
+        new.image = self.image
+        new.provider = self.provider
+        new.thumbnail = self.thumbnail
+        new.timestamp = self.timestamp
+        new.title = self.title
+        new.type = self.type
+        new.url = self.url
+        new.video = self.video
+        
+        return self
+    
+    
+    @copy_docs(EmbedBase.copy_with)
+    def copy_with(self, **kwargs):
+        try:
+            author = kwargs.pop('author')
+        except KeyError:
+            author = self.author
+            if (author is not None):
+                author = author.copy()
+        
+        try:
+            color = kwargs.pop('color')
+        except KeyError:
+            color = self.color
+        
+        try:
+            description = kwargs.pop('description')
+        except KeyError:
+            description = self.description
+        
+        try:
+            fields = kwargs.pop('fields')
+        except KeyError:
+            fields = self.fields
+            if (fields is not None):
+                fields = [field.copy() for field in fields]
+        
+        try:
+            footer = kwargs.pop('footer')
+        except KeyError:
+            footer = self.footer
+            if (footer is not None):
+                footer = footer.copy()
+        
+        try:
+            image = kwargs.pop('image')
+        except KeyError:
+            image = self.image
+            if (image is not None):
+                image = image.copy()
+        
+        try:
+            provider = kwargs.pop('provider')
+        except KeyError:
+            provider = self.provider
+            if (provider is not None):
+                provider = provider.copy()
+        
+        try:
+            thumbnail = kwargs.pop('thumbnail')
+        except KeyError:
+            thumbnail = self.thumbnail
+            if (thumbnail is not None):
+                thumbnail = thumbnail.copy()
+        
+        try:
+            timestamp = kwargs.pop('timestamp')
+        except KeyError:
+            timestamp = self.timestamp
+        
+        try:
+            title = kwargs.pop('title')
+        except KeyError:
+            title = self.title
+        
+        try:
+            type_ = kwargs.pop('type')
+        except KeyError:
+            type_ = self.type
+        
+        try:
+            url = kwargs.pop('url')
+        except KeyError:
+            url = self.url
+        
+        try:
+            video = kwargs.pop('video')
+        except KeyError:
+            video = self.video
+            if (video is not None):
+                video = video.copy()
+        
+        if kwargs:
+            raise TypeError(f'Unused or unsettable attributes: `{kwargs}`')
+        
+        new = object.__new__(type(self))
+        
+        new.author = author
+        new.color = color
+        new.description = description
+        new.fields = fields
+        new.footer = footer
+        new.image = image
+        new.provider = provider
+        new.thumbnail = thumbnail
+        new.timestamp = timestamp
+        new.title = title
+        new.type = type_
+        new.url = url
+        new.video = video
+        
+        return self

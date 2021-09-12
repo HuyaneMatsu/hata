@@ -42,6 +42,7 @@ PERMISSION_SHIFT_CREATE_PUBLIC_THREADS = 35
 PERMISSION_SHIFT_CREATE_PRIVATE_THREADS = 36
 PERMISSION_SHIFT_USE_EXTERNAL_STICKERS = 37
 PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS = 38
+PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES = 39
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1<<PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -82,7 +83,7 @@ PERMISSION_MASK_CREATE_PUBLIC_THREADS = 1<<PERMISSION_SHIFT_CREATE_PUBLIC_THREAD
 PERMISSION_MASK_CREATE_PRIVATE_THREADS = 1<<PERMISSION_SHIFT_CREATE_PRIVATE_THREADS
 PERMISSION_MASK_USE_EXTERNAL_STICKERS = 1<<PERMISSION_SHIFT_USE_EXTERNAL_STICKERS
 PERMISSION_MASK_SEND_MESSAGES_IN_THREADS = 1<<PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS
-
+PERMISSION_MASK_START_EMBEDDED_ACTIVITIES = 1 <<PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES
 
 class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
     """
@@ -167,6 +168,8 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-------------------------------+-------------------+
     | send_messages_in_threads      | 38                |
     +-------------------------------+-------------------+
+    | start_embedded_activities     | 39                |
+    +-------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -210,6 +213,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'create_private_threads': PERMISSION_SHIFT_CREATE_PRIVATE_THREADS,
         'use_external_stickers': PERMISSION_SHIFT_USE_EXTERNAL_STICKERS,
         'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
+        'start_embedded_activities': PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES,
     }
     
     
@@ -380,6 +384,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     create_private_threads = True,
     use_external_stickers = True,
     send_messages_in_threads = True,
+    start_embedded_activities = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -421,6 +426,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     request_to_speak = False,
     use_external_stickers = True,
     send_messages_in_threads = False,
+    start_embedded_activities = False,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -474,6 +480,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     create_private_threads = True,
     use_external_stickers = True,
     send_messages_in_threads = True,
+    start_embedded_activities = False,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -529,6 +536,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     create_private_threads = False,
     use_external_stickers = False,
     send_messages_in_threads = False,
+    start_embedded_activities = True,
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)

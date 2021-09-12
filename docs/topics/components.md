@@ -333,6 +333,16 @@ can do it by first acknowledging the event, then creating a followup message.
 
 
 ```py
+
+ORIN_DANCE_IMAGES = [
+    'https://cdn.discordapp.com/attachments/850843243695439892/850843328127959060/5e672f97dc555.gif',
+    'https://cdn.discordapp.com/attachments/850843243695439892/850843331516039218/1559518453_Ringood.gif',
+    'https://cdn.discordapp.com/attachments/850843243695439892/850843831967547402/orin.gif',
+    'https://cdn.discordapp.com/attachments/850843243695439892/850843849642606612/orinpok.gif',
+    'https://cdn.discordapp.com/attachments/753424871760855122/884417334427660348/what-the-orin.gif',
+    'https://cdn.discordapp.com/attachments/753424871760855122/886549772457095198/orin-dance-0000.gif',
+]
+
 from random import choice
 from hata import Emoji, Embed
 from hata.ext.slash import Button, ButtonStyle, InteractionResponse
@@ -352,6 +362,7 @@ async def orindance():
         embed = Embed('Party!', url='https://orindance.party/').add_image(choice(ORIN_DANCE_IMAGES)),
         components = BUTTON_ORIN_DANCE,
     )
+
 
 @Nitori.interactions(custom_id=TEST_GUILD)
 async def party(client, event):

@@ -36,7 +36,7 @@ def is_only_embed(maybe_embeds):
     return True
 
 
-async def get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
+async def get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response, is_return):
     """
     Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
     
@@ -52,6 +52,8 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         Whether the response message should only be shown for the invoking user.
     response : `Any`
         Any object yielded or returned by the command coroutine.
+    is_return : `bool`
+        Whether the response is used in a return and we do not require response message.
     
     Yields
     -------
@@ -63,8 +65,11 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         if interaction_event.is_unanswered():
             
             if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
-                yield client.interaction_application_command_acknowledge(interaction_event,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
+                yield client.interaction_application_command_acknowledge(
+                    interaction_event,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
+            
             elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
                 yield client.interaction_component_acknowledge(interaction_event)
         
@@ -73,14 +78,20 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
         if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
             if interaction_event.is_unanswered():
-                yield client.interaction_response_message_create(interaction_event, response,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
+                yield client.interaction_response_message_create(
+                    interaction_event,
+                    response,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
             
             elif interaction_event.is_deferred():
                 yield client.interaction_followup_message_create(interaction_event, response)
             elif interaction_event.is_responded():
-                yield client.interaction_followup_message_create(interaction_event, response,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
+                yield client.interaction_followup_message_create(
+                    interaction_event,
+                    response,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
         
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
             yield client.interaction_component_message_edit(interaction_event, response)
@@ -89,16 +100,31 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         return
     
     if is_coroutine_generator(response):
-        response = await process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only,
-            response)
-        async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only,
-                response):
+        response = await process_command_coroutine_generator(
+            client,
+            interaction_event,
+            show_for_invoking_user_only,
+            response,
+        )
+        
+        async for request_coro in get_request_coroutines(
+            client,
+            interaction_event,
+            show_for_invoking_user_only,
+            response,
+            is_return,
+        ):
             yield request_coro
         
         return
     
     if isinstance(response, InteractionResponse):
-        for request_coro in response.get_request_coroutines(client, interaction_event, show_for_invoking_user_only):
+        for request_coro in response.get_request_coroutines(
+            client,
+            interaction_event,
+            show_for_invoking_user_only,
+            is_return,
+        ):
             yield request_coro
         
         return
@@ -111,13 +137,19 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         
         if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
             if interaction_event.is_unanswered():
-                yield client.interaction_response_message_create(interaction_event, response,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
+                yield client.interaction_response_message_create(
+                    interaction_event,
+                    response,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
             elif interaction_event.is_deferred():
                 yield client.interaction_response_message_edit(interaction_event, response)
             elif interaction_event.is_responded():
-                yield client.interaction_followup_message_create(interaction_event, response,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
+                yield client.interaction_followup_message_create(
+                    interaction_event,
+                    response,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
             yield client.interaction_component_message_edit(interaction_event, response)
         
@@ -127,8 +159,10 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
         if interaction_event.is_unanswered():
             
             if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
-                yield client.interaction_response_message_create(interaction_event,
-                    show_for_invoking_user_only=show_for_invoking_user_only)
+                yield client.interaction_response_message_create(
+                    interaction_event,
+                    show_for_invoking_user_only = show_for_invoking_user_only
+                )
             elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
                 yield client.interaction_component_acknowledge(interaction_event)
             
@@ -138,7 +172,12 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
     return
 
 
-async def process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only, coroutine_generator):
+async def process_command_coroutine_generator(
+    client,
+    interaction_event,
+    show_for_invoking_user_only,
+    coroutine_generator,
+):
     """
     Processes a slash command coroutine generator.
     
@@ -200,10 +239,10 @@ async def process_command_coroutine_generator(client, interaction_event, show_fo
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
-                        ERROR_CODES.missing_access, # Client removed.
-                        ERROR_CODES.unknown_interaction, # We times out, do not drop error.
-                            ):
+                    ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
+                    ERROR_CODES.missing_access, # Client removed.
+                    ERROR_CODES.unknown_interaction, # We times out, do not drop error.
+                ):
                     return
             
             raise
@@ -213,8 +252,13 @@ async def process_command_coroutine_generator(client, interaction_event, show_fo
             response_message = None
             response_exception = None
             
-            async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only,
-                    response):
+            async for request_coro in get_request_coroutines(
+                client,
+                interaction_event,
+                show_for_invoking_user_only,
+                response,
+                False,
+            ):
                 try:
                     response_message = await request_coro
                 except BaseException as err:
@@ -252,14 +296,25 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
         Any exception raised by `coro`.
     """
     if is_coroutine_generator(coroutine):
-        response = await process_command_coroutine_generator(client, interaction_event, show_for_invoking_user_only, coroutine)
+        response = await process_command_coroutine_generator(
+            client,
+            interaction_event,
+            show_for_invoking_user_only,
+            coroutine,
+        )
     else:
         try:
             response = await coroutine
         except InteractionAbortedError as err:
             response = err.response
     
-    async for request_coro in get_request_coroutines(client, interaction_event, show_for_invoking_user_only, response):
+    async for request_coro in get_request_coroutines(
+        client,
+        interaction_event,
+        show_for_invoking_user_only,
+        response,
+        True,
+    ):
         try:
             await request_coro
         except BaseException as err:
@@ -403,7 +458,7 @@ class InteractionResponse:
         
         return response_parameters
     
-    def get_request_coroutines(self, client, interaction_event, show_for_invoking_user_only):
+    def get_request_coroutines(self, client, interaction_event, show_for_invoking_user_only, is_return):
         """
         Gets request coroutine buildable from the ``InteractionResponse``.
         
@@ -415,6 +470,8 @@ class InteractionResponse:
             The respective event to respond on.
         show_for_invoking_user_only : `bool`
             Whether the response message should only be shown for the invoking user.
+        is_return : `bool`
+            Whether the response is used in a return and we do not require response message.
         
         Yields
         -------
@@ -437,32 +494,36 @@ class InteractionResponse:
                     yield client.interaction_followup_message_edit(interaction_event, message, **response_parameters)
                 return
             
-            if self._is_abort:
-                show_for_invoking_user_only = \
-                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                
-                if interaction_event.is_unanswered() or ('file' in self._parameters):
-                    yield client.interaction_response_message_create(interaction_event,
-                        show_for_invoking_user_only=show_for_invoking_user_only)
-                
-                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                    'file', 'tts', 'components'))
-                
-                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+            show_for_invoking_user_only = self._parameters.get(
+                'show_for_invoking_user_only',
+                show_for_invoking_user_only,
+            )
             
+            if ('file' in self._parameters):
+                need_acknowledging = True
+            elif self._is_abort:
+                need_acknowledging = False
+            elif is_return:
+                need_acknowledging = False
+            elif interaction_event.is_unanswered():
+                need_acknowledging = True
             else:
-                show_for_invoking_user_only = \
-                    self._parameters.get('show_for_invoking_user_only', show_for_invoking_user_only)
-                
-                if interaction_event.is_unanswered():
-                    yield client.interaction_response_message_create(interaction_event,
-                        show_for_invoking_user_only= show_for_invoking_user_only)
-                
-                response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
-                    'file', 'tts', 'components',))
+                need_acknowledging = False
+            
+            if need_acknowledging:
+                yield client.interaction_response_message_create(
+                    interaction_event,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
+            
+            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
+                'file', 'tts', 'components'))
+            
+            if (not need_acknowledging):
                 response_parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
-                
-                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+            
+            
+            yield client.interaction_followup_message_create(interaction_event, **response_parameters)
             return
         
         elif interaction_event.type is INTERACTION_TYPE_MESSAGE_COMPONENT:

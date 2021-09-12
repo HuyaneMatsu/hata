@@ -597,10 +597,10 @@ class Message(DiscordEntity, immortal=True):
             update_components = True
             update_embeds = True
         else:
-            update_content = (MESSAGE_FIELD_KEY_CONTENT in fields)
-            update_interaction = (MESSAGE_FIELD_KEY_INTERACTION in fields)
-            update_components = (MESSAGE_FIELD_KEY_COMPONENTS in fields)
-            update_embeds = (MESSAGE_FIELD_KEY_EMBEDS in fields)
+            update_content = (MESSAGE_FIELD_KEY_CONTENT not in fields)
+            update_interaction = (MESSAGE_FIELD_KEY_INTERACTION not in fields)
+            update_components = (MESSAGE_FIELD_KEY_COMPONENTS not in fields)
+            update_embeds = (MESSAGE_FIELD_KEY_EMBEDS not in fields)
         
         if update_content:
             content = data.get('content', None)

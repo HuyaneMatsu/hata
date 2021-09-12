@@ -758,11 +758,12 @@ class DiscordHTTPClient(HTTPClient):
     
     # guild
     
-    async def guild_get(self, guild_id):
+    async def guild_get(self, guild_id, params):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_get, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}',
+            params = params,
         )
     
     async def guild_preview_get(self, guild_id):

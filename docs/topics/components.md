@@ -268,6 +268,112 @@ async def poison_edit_cake(event):
         return emoji.as_emoji
 ```
 
+#### Deleting the component's message
+
+The source message can be deleted, by first acknowledging it, then using the
+`.interaction_response_message_delete` client method.
+
+```py
+from hata import BUILTIN_EMOJIS, Embed, DATETIME_FORMAT_CODE, elapsed_time
+from hata.ext.slash import Button, InteractionResponse
+
+CUSTOM_ID_USER_INFO_CLOSE = 'user_info.close'
+EMOJI_X = BUILTIN_EMOJIS['x']
+
+BUTTON_USER_INFO_CLOSE = Button(
+    emoji = EMOJI_X,
+    custom_id = CUSTOM_ID_USER_INFO_CLOSE,
+)
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def user_info(client, event,
+        user: ('user', 'Check out someone other user?') = None,
+            ):
+    if user is None:
+        user = event.user
+    
+    embed = Embed(
+        user.full_name,
+    ).add_thumbnail(
+        user.avatar_url,
+    )
+    
+    created_at = user.created_at
+    embed.add_field(
+        'User Information',
+        (
+            f'Created: {created_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(created_at)} ago*]\n'
+            f'Profile: {user:m}\n'
+            f'ID: {user.id}'
+        ),
+    )
+    
+    # We ignore guild specific information to keep it short.
+    
+    return InteractionResponse(
+        embed = embed,
+        components = BUTTON_USER_INFO_CLOSE,
+    )
+
+@Nitori.interactions(custom_id=CUSTOM_ID_USER_INFO_CLOSE)
+async def close_user_info(client, event):
+    # Allow closing for the source user
+    if event.user is not event.message.interaction.user:
+        return
+    
+    # We can use `yield` as well for acknowledging it.
+    await client.interaction_component_acknowledge(event)
+    await client.interaction_response_message_delete(event)
+```
+
+#### Sending notification
+
+Sometimes you do not want to edit the source message, but want to notify the user, about anything in general. You
+can do it by first acknowledging the event, then creating a followup message.
+
+
+```py
+from random import choice
+from hata import Emoji, Embed
+from hata.ext.slash import Button, ButtonStyle, InteractionResponse
+
+CUSTOM_ID_ORIN_DANCE = 'orin_dance_please'
+EMOJI_ORIN_DANCE = Emoji.precreate(704392145330634812)
+
+BUTTON_ORIN_DANCE = Button(
+    emoji = EMOJI_ORIN_DANCE,
+    custom_id = CUSTOM_ID_ORIN_DANCE,
+    style = ButtonStyle.green,
+)
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def orindance():
+    return InteractionResponse(
+        embed = Embed('Party!', url='https://orindance.party/').add_image(choice(ORIN_DANCE_IMAGES)),
+        components = BUTTON_ORIN_DANCE,
+    )
+
+@Nitori.interactions(custom_id=TEST_GUILD)
+async def party(client, event):
+    if event.user is event.message.interaction.user:
+        
+        old_url = event.message.embed.image.url
+        orin_dance_images = ORIN_DANCE_IMAGES.copy()
+        try:
+            orin_dance_images.remove(old_url)
+        except ValueError:
+            pass
+        
+        return Embed('Party!', url='https://orindance.party/').add_image(choice(orin_dance_images))
+    
+    # Notify the user; we also could use `yield` to acknowledging it.
+    await client.interaction_component_acknowledge(event)
+    await client.interaction_followup_message_create(
+        event,
+        'Please start your own party to dance!',
+        show_for_invoking_user_only = True,
+    )
+```
 
 ## Waiting for component interaction
 

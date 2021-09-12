@@ -388,7 +388,7 @@ class MessageType(PreinstancedBase):
     
     def __repr__(self):
         """Returns the representation of the message type."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, covert={self.convert!r})'
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, convert={self.convert!r})'
     
     # predefined
     default = P(0, 'default', MESSAGE_DEFAULT_CONVERTER)

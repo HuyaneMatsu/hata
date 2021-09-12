@@ -5864,6 +5864,46 @@ class Client(ClientUserPBase):
         await self.http.guild_ban_delete(guild_id, user_id, reason)
     
     
+    async def guild_get(self, guild):
+        """
+        Gets or updates the guild.
+        
+        > The client must be in the guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild to request.
+        
+        Returns
+        -------
+        guild : ``Guild``
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as ``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+        """
+        guild, guild_id = get_guild_and_id(guild)
+        data = await self.http.guild_get(guild_id, {'with_counts': True})
+        
+        if guild is None:
+            channel_datas = await self.http.guild_channel_get_all(guild_id)
+            data['channels'] = channel_datas
+            user_data = await self.http.guild_user_get(guild_id, self.id)
+            data['members'] = [user_data]
+            guild = Guild(data, self)
+        else:
+            guild._sync(data)
+        
+        return guild
+    
+    
     async def guild_sync(self, guild):
         """
         Syncs a guild by it's id with the wrapper. Used internally if de-sync is detected when parsing dispatch events.
@@ -5892,14 +5932,14 @@ class Client(ClientUserPBase):
         guild, guild_id = get_guild_and_id(guild)
         
         if guild is None:
-            data = await self.http.guild_get(guild_id)
+            data = await self.http.guild_get(guild_id, None)
             channel_datas = await self.http.guild_channel_get_all(guild_id)
             data['channels'] = channel_datas
             user_data = await self.http.guild_user_get(guild_id, self.id)
             data['members'] = [user_data]
             guild = Guild(data, self)
         else:
-            data = await self.http.guild_get(guild_id)
+            data = await self.http.guild_get(guild_id, None)
             guild._sync(data)
             channel_datas = await self.http.guild_channel_get_all(guild_id)
             guild._sync_channels(channel_datas)

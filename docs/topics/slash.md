@@ -178,12 +178,14 @@ are also other interaction related client methods, which are mentioned [later](#
 
 An interaction event has the following top level attributes, which you may use up to produce a proper response:
 
-| Name              | Type                              | Notes                                                                     |
-|-------------------|-----------------------------------|---------------------------------------------------------------------------|
-| channel           | `ChannelText` or `ChannelPrivate` | The channel from where the interaction was called. Might be a partial.    |
-| guild             | `None` or `Guild`                 | The channel's guild. Might be partial or `None`                           |
-| user              | `Client` or `User`                | The user who called the interaction.                                      |
-| user_permissions  | `Permission`                      | The user's permissions in the respective channel.                         |
+| Name              | Type                                                          | Notes                                                                                                         |
+|-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| channel           | `None`, `ChannelText`, `ChannelThread` or `ChannelPrivate`    | The channel from where the interaction was called. Might be a partial or `None`.                              |
+| channel_id        | `int`                                                         | The interaction event's channel's identifier.                                                                 |
+| guild             | `None` or `Guild`                                             | The channel's guild. Might be partial or `None`                                                               |
+| guild_id          | `int`                                                         | The interaction event's guild's identifier. Set as `0` if the interaction is received from a private channel. |
+| user              | `Client` or `User`                                            | The user who called the interaction.                                                                          |
+| user_permissions  | `Permission`                                                  | The user's permissions in the respective channel.                                                             |
 
 > The rest of the attributes should be ignored if you are **not** writing your own interaction handler.
 
@@ -1012,7 +1014,7 @@ decorator. The `target` parameter can be given either as `'user'` or `'message'`
 > `'chat'` target works as well, but that refers to regular slash commands and will ot make any difference.
 
 ```py
-@Nitori.interactions(is_global=True, target='user')
+@Nitori.interactions(guild=TEST_GUILD, target='user')
 async def about(target):
     avatar_url = target.avatar_url_as(size=4096)
     return Embed(f'{target.full_name}\'s avatar', url=avatar_url).add_image(avatar_url)
@@ -1024,10 +1026,53 @@ Defining any other parameter will yield error, since context commands do not sup
 Sub commands are also not supported.
 
 ```py
-@Nitori.interactions(is_global=True, target='message')
+@Nitori.interactions(guild=TEST_GUILD, target='message')
 async def length(target):
     return len(target)
 ```
+
+
+## Getting command count
+
+The amount of active commands can be get with using the `Client.slasher.get_global_command_count()` and with the
+`client.slasher.get_guild_command_count(guild_or_guild_id)` methods.
+
+> Non-global commands do not count as active commands.
+
+```py
+@Nitori.interactions(guild=TEST_GUILD)
+async def command_count(client, event):
+    global_command_count = client.slasher.get_global_command_count()
+    
+    guild_id = event.guild_id
+    if guild_id:
+        guild_command_count = client.slasher.get_guild_command_count(guild_id)
+    else:
+        guild_command_count = 0
+    
+    return Embed(
+        f'{client.full_name}\'s command count'
+    ).add_field(
+        'Global',
+        (
+            f'```\n'
+            f'{global_command_count}\n'
+            f'```'
+        ),
+        inline = True,
+    ).add_field(
+        'Guild',
+        (
+            f'```\n'
+            f'{guild_command_count}\n'
+            f'```'
+        ),
+        inline = True,
+    )
+```
+
+To include sub-command count as well, there are the `.get_global_command_count_with_sub_commands()` and the
+`.get_guild_command_count_with_sub_commands(guild_or_guild_id)` methods.
 
 ## FAQ
 

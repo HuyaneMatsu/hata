@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('HTTPClient', )
+﻿__all__ = ('HTTPClient', )
 from .utils import imultidict
 
 from .helpers import Timeout, tcp_nodelay

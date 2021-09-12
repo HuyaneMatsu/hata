@@ -1,3 +1,16 @@
+## 1.1.103 *\[2021-09-??\]*
+
+#### Improvements
+
+- `DiscordHTTPClient.guild_get` now supports query string parameters.
+- Add `Client.guild_get` even tho `Client.guild_sync` exists, just to request guild specific data
+    (especially user counts).
+
+#### Bug Fixes
+
+- `Message._late_init` had a few bad checks, making embed and such fields to not update if needed.
+
+
 ## 1.1.102 *\[2021-09-??\]*
 
 #### Improvements

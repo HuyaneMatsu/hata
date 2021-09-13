@@ -477,6 +477,8 @@ class EventHandlerManager:
         +===============+===================+
         | color         | ``Color``         |
         +---------------+-------------------+
+        | icon          | ``Icon``          |
+        +---------------+-------------------+
         | managed       | `bool`            |
         +---------------+-------------------+
         | mentionable   | `bool`            |
@@ -490,13 +492,13 @@ class EventHandlerManager:
         | separated     | `bool`            |
         +---------------+-------------------+
     
-    stage_create(client: ``Client``, stage:: ``Stage``):
+    stage_create(client: ``Client``, stage: ``Stage``):
         Called when a stage is created.
     
-    stage_delete(client: ``Client``, stage:: ``Stage``):
+    stage_delete(client: ``Client``, stage: ``Stage``):
         Called when a stage is deleted.
     
-    stage_edit(client: ``Client``, stage:: ``Stage``, old_attributes: `dict`):
+    stage_edit(client: ``Client``, stage: ``Stage``, old_attributes: `dict`):
         Called when a stage is edited.
     
         Every item in `old_attributes` is optional and they can be any of the following:

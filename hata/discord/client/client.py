@@ -11041,7 +11041,7 @@ class Client(ClientUserPBase):
     # Role management
     
     async def role_edit(self, role, *, name=None, color=None, separated=None, mentionable=None, permissions=None,
-            position=None, reason=None):
+            position=None, icon=..., reason=None):
         """
         Edits the role with the given parameters.
         
@@ -11063,6 +11063,11 @@ class Client(ClientUserPBase):
             The new permission value of the role.
         position : `None`, `int`, Optional (Keyword only)
             The role's new position.
+        icon : `None` or `bytes-like`, Optional (Keyword only)
+            The new icon of the role. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data.
+            
+            Pass it as `None` to remove the role's current icon.
+        
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -11070,6 +11075,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `role` was not given neither as ``Role`` nor as `tuple` of (`int`, `int`).
+            - If `icon` is neither `None` or `bytes-like`.
         ValueError
             - If default role would be moved.
             - If any role would be moved to position `0`.
@@ -11084,6 +11090,7 @@ class Client(ClientUserPBase):
             - If `separated` was not given as `None`, nor as `bool` instance.
             - If `mentionable` was not given as `None`, nor as `bool˛` instance.
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int` instance.
+            - If `icon` was passed as `bytes-like`, but it's format is not any of the expected formats.
         """
         snowflake_pair = get_guild_id_and_role_id(role)
         if snowflake_pair is None:
@@ -11139,8 +11146,26 @@ class Client(ClientUserPBase):
             
             data['permissions'] = permissions
         
+        if (icon is not ...):
+            if icon is None:
+                icon_data = None
+            else:
+                if not isinstance(icon, (bytes, bytearray, memoryview)):
+                    raise TypeError(f'`icon` can be passed as `None` or `bytes-like`, got {icon.__class__.__name__}.')
+                
+                if __debug__:
+                    media_type = get_image_media_type(icon)
+                    
+                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                        raise AssertionError(f'Invalid icon type for the role: `{media_type}`.')
+                
+                icon_data = image_to_base64(icon)
+            
+            data['icon'] = icon_data
+        
         if data:
             await self.http.role_edit(guild_id, role_id, data, reason)
+    
     
     async def role_delete(self, role, *, reason=None):
         """
@@ -11172,7 +11197,7 @@ class Client(ClientUserPBase):
         await self.http.role_delete(guild_id, role_id, reason)
     
     async def role_create(self, guild, *, name=None, permissions=None, color=None, separated=None, mentionable=None,
-            reason=None):
+            icon=None, reason=None):
         """
         Creates a role at the given guild.
         
@@ -11192,13 +11217,16 @@ class Client(ClientUserPBase):
             Whether the created role should be mentionable.
         permissions : ``Permission`` or `int`, Optional (Keyword only)
             The permission value of the created role.
+        icon : `None` or `bytes-like`, Optional (Keyword only)
+            The icon for the role.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild`` nor as `int` instance.
+            - If `guild` was not given neither as ``Guild`` nor as `int` instance.
+            - If `icon` is neither `None` or `bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11210,6 +11238,7 @@ class Client(ClientUserPBase):
             - If `separated` was not given as `None`, nor as `bool` instance.
             - If `mentionable` was not given as `None`, nor as `bool˛` instance.
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int` instance.
+            - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
         """
         guild, guild_id = get_guild_and_id(guild)
         
@@ -11258,6 +11287,18 @@ class Client(ClientUserPBase):
                         f'{mentionable.__class__.__name__}.')
             
             data['mentionable'] = mentionable
+        
+        if (icon is not None):
+            icon_type = icon.__class__
+            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+            
+            if __debug__:
+                media_type = get_image_media_type(icon)
+                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                    raise AssertionError(f'Invalid icon type: `{media_type}`.')
+            
+            data['icon'] = image_to_base64(icon)
         
         data = await self.http.role_create(guild_id, data, reason)
         

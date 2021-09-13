@@ -397,7 +397,7 @@ def guild_banner_url_as(guild, ext=None, size=None):
     guild : ``Guild``
         The respective guild.
     ext : `str`, Optional
-        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'gif'`.
     size : `int`, Optional
         The preferred minimal size of the image's url.
     
@@ -1638,3 +1638,84 @@ def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
             raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
     
     return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{sticker_pack.banner_id}.{ext}{end}'
+
+
+def role_icon_url(role):
+    """
+    Returns the role's icon's image's url. If the role has no icon, then returns `None`.
+    
+    Parameters
+    ----------
+    role : ``Role``
+        The respective role.
+    
+    Returns
+    -------
+    url : `None` or `str`
+    """
+    icon_type = role.icon_type
+    if icon_type is ICON_TYPE_NONE:
+        return None
+    
+    if icon_type is ICON_TYPE_STATIC:
+        prefix = ''
+        ext = 'png'
+    else:
+        prefix = 'a_'
+        ext = 'gif'
+    
+    return f'{CDN_ENDPOINT}/role-icons/{role.id}/{prefix}{role.icon_hash:0>32x}.{ext}'
+
+
+def role_icon_url_as(role, ext=None, size=None):
+    """
+    Returns the role's icon's image's url. If the role has no icon, then returns `None`.
+    
+    Parameters
+    ----------
+    role : ``Role``
+        The respective role.
+    ext : `str`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'gif'`.
+    size : `int`, Optional
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None` or `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext` or `size` was not passed as any of the expected values.
+    """
+    icon_type = role.icon_type
+    if icon_type is ICON_TYPE_NONE:
+        return None
+    
+    if size is None:
+        end = ''
+    elif size in VALID_ICON_SIZES:
+        end = f'?size={size}'
+    else:
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+    
+    if ext is None:
+        if icon_type is ICON_TYPE_STATIC:
+            prefix = ''
+            ext = 'png'
+        else:
+            prefix = 'a_'
+            ext = 'gif'
+    
+    else:
+        if icon_type is ICON_TYPE_STATIC:
+            if ext not in VALID_ICON_FORMATS:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+            prefix = ''
+        else:
+            if ext not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
+            prefix = 'a_'
+
+    return f'{CDN_ENDPOINT}/role-icons/{role.id}/{prefix}{role.icon_hash:0>32x}.{ext}{end}'

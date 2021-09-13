@@ -6,6 +6,16 @@
 - Add `Client.guild_get` even tho `Client.guild_sync` exists, just to request guild specific data
     (especially user counts).
 - Add `Permission.start_embedded_activities`.
+- Add `role_icon_url`.
+- Add `role_icon_url_as`.
+- Add `Role.icon_url`.
+- Add `Role.icon_url_as`.
+- Add `Role.icon`.
+- Add `role.icon_type`.
+- Add `role.icon_type`.
+- Add `icon` parameter to `Role.precreate`.
+- Add `icon` parameter to `client.role_edit`.
+- Add `icon` parameter to `Client.role_create`.
 
 ##### ext.slash
 

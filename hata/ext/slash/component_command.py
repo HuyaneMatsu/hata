@@ -156,7 +156,7 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
 
 class ComponentCommand:
     """
-    A command, which is called if a command interaction is executed wit ha specific `custom_id`.
+    A command, which is called if a command interaction is executed with a specific `custom_id`.
     
     Attributes
     ----------

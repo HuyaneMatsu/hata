@@ -16,6 +16,19 @@ from ..http import urls as module_urls
 from .preinstanced import InviteTargetType
 from .invite_stage import InviteStage
 
+# Experimental addition
+
+EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID = {
+    'Betrayal.io': 773336526917861400,
+    'Chess in The Park': 832012774040141894,
+    'Fishington.io': 814288819477020702,
+    'Poker Night': 755827207812677713,
+    'YouTube Together': 755600276941176913,
+}
+
+EMBEDDED_ACTIVITY_APPLICATION_ID_TO_NAME = {
+    value: key for key, value in EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID.items()
+}
 
 class Invite(DiscordEntity, immortal=True):
     """

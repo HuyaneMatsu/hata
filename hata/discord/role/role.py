@@ -2,7 +2,7 @@ __all__ = ('Role', )
 
 from ...backend.export import export, include
 
-from ..bases import DiscordEntity
+from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..core import ROLES, GUILDS
 from ..utils import DATETIME_FORMAT_CODE
 from ..color import Color
@@ -11,6 +11,7 @@ from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_col
     preconvert_flag
 from ..permission.utils import PERMISSION_KEY
 from ..permission.permission import Permission, PERMISSION_NONE
+from ..http import urls as module_urls
 
 from .preinstanced import RoleManagerType
 
@@ -36,6 +37,10 @@ class Role(DiscordEntity, immortal=True):
     color : ``Color``
         The role's color. If the color equals to ``Color(0)``, then it is ignored meanwhile calculating towards a
         user's display color.
+    icon_hash : `int`
+        The guild's icon's hash in `uint128`.
+    icon_type : ``IconType``
+        The guild's icon's type.
     guild_id : ``Guild`` or `None`
         The guild of the role. If the role is partial, including already deleted roles, then it's `.guild` is set to
         `None`.
@@ -56,6 +61,13 @@ class Role(DiscordEntity, immortal=True):
     """
     __slots__ = ('color', 'guild_id', 'separated', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions',
         'position',)
+    
+    icon = IconSlot(
+        'icon',
+        'icon',
+        module_urls.role_icon_url,
+        module_urls.role_icon_url_as,
+    )
     
     def __new__(cls, data, guild):
         """
@@ -86,7 +98,7 @@ class Role(DiscordEntity, immortal=True):
         
         if update:
             
-            guild.roles[self.id] = self
+            guild.roles[role_id] = self
             self.guild_id = guild.id
             
             self.name = data['name']
@@ -98,6 +110,8 @@ class Role(DiscordEntity, immortal=True):
             self.permissions = Permission(data[PERMISSION_KEY])
             
             self.separated = data.get('hoist', False)
+            
+            self._set_icon(data)
             
             if data.get('managed', False):
                 self._set_managed(data)
@@ -142,6 +156,20 @@ class Role(DiscordEntity, immortal=True):
             The role's ``.permissions``.
         color : `int` or ``Color``, Optional (Keyword only)
             The role's ``.color``.
+        icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
+            The role's icon.
+            
+            > Mutually exclusive with `icon_type` and `icon_hash`.
+        
+        icon_type : ``IconType``, Optional (Keyword only)
+            The role's icon's type.
+            
+            > Mutually exclusive with `icon`.
+        
+        icon_hash : `int`, Optional (Keyword only)
+            The role's icon's hash.
+            
+            > Mutually exclusive with `icon`.
         
         Returns
         -------
@@ -215,7 +243,9 @@ class Role(DiscordEntity, immortal=True):
                 if manager_type_type is not RoleManagerType:
                     raise TypeError(f'`manager_type` can be given as `{RoleManagerType.__class__}` instance, got '
                         f'{manager_type_type.__name__}')
-                
+            
+            cls.icon.preconvert(kwargs, processable)
+            
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
@@ -236,6 +266,8 @@ class Role(DiscordEntity, immortal=True):
             self.name = ''
             self.permissions = PERMISSION_NONE
             self.position = 1
+            self.icon_type = ICON_TYPE_NONE
+            self.icon_hash = 0
             ROLES[role_id] = self
         else:
             if (not self.partial):
@@ -326,6 +358,8 @@ class Role(DiscordEntity, immortal=True):
         
         self.mentionable = data['mentionable']
         
+        self._set_icon(data)
+        
         if clear_permission_cache:
             guild_id = self.guild_id
             if guild_id:
@@ -372,6 +406,8 @@ class Role(DiscordEntity, immortal=True):
         | Keys          | Values            |
         +===============+===================+
         | color         | ``Color``         |
+        +---------------+-------------------+
+        | icon          | ``Icon``          |
         +---------------+-------------------+
         | managed       | `bool`            |
         +---------------+-------------------+
@@ -429,6 +465,8 @@ class Role(DiscordEntity, immortal=True):
         if self.mentionable != mentionable:
             old_attributes['mentionable'] = self.mentionable
             self.mentionable = mentionable
+        
+        self._update_icon(data, old_attributes)
         
         if clear_permission_cache:
             guild_id = self.guild_id

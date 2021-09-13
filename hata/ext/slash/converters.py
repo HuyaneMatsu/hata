@@ -968,7 +968,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         try:
             annotation_type = STR_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
-            raise ValueError(f'Parameter `{parameter_name}` has annotation not refers to any expected type, '
+            raise ValueError(f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
                 f'got {annotation_value!r}.') from None
         
         choices = None
@@ -976,7 +976,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         try:
             annotation_type = TYPE_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
-            raise ValueError(f'Parameter `{parameter_name}` has annotation not refers to any expected type, '
+            raise ValueError(f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
                 f'got {annotation_value!r}.') from None
         
         choices = None

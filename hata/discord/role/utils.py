@@ -7,6 +7,8 @@ from ..color import Color
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE
 from ..utils import random_id, ROLE_MENTION_RP, ID_RP
+from ..bases import ICON_TYPE_NONE
+
 from .preinstanced import RoleManagerType
 from .role import Role
 
@@ -44,6 +46,8 @@ def create_partial_role_from_id(role_id):
     role.name = ''
     role.permissions = PERMISSION_NONE
     role.position = 1 # 0 is default role, so we go for 1
+    role.icon_hash = 0
+    role.icon_type = ICON_TYPE_NONE
     
     ROLES[role_id] = role
     

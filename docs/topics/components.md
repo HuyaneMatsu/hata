@@ -364,7 +364,7 @@ async def orindance():
     )
 
 
-@Nitori.interactions(custom_id=TEST_GUILD)
+@Nitori.interactions(custom_id=CUSTOM_ID_ORIN_DANCE)
 async def party(client, event):
     if event.user is event.message.interaction.user:
         

@@ -33,22 +33,7 @@ def create_partial_role_from_id(role_id):
     except KeyError:
         pass
     
-    role = object.__new__(Role)
-    role.id = role_id
-    
-    role.color = Color()
-    role.guild_id = 0
-    role.separated = False
-    # id is set up
-    role.manager_type = ROLE_MANAGER_TYPE_NONE
-    role.manager_id = 0
-    role.mentionable = False
-    role.name = ''
-    role.permissions = PERMISSION_NONE
-    role.position = 1 # 0 is default role, so we go for 1
-    role.icon_hash = 0
-    role.icon_type = ICON_TYPE_NONE
-    
+    role = Role._create_empty(role_id)
     ROLES[role_id] = role
     
     return role

@@ -255,19 +255,7 @@ class Role(DiscordEntity, immortal=True):
         try:
             self = ROLES[role_id]
         except KeyError:
-            self = object.__new__(cls)
-            self.id = role_id
-            
-            self.color = Color()
-            self.guild_id = 0
-            self.separated = False
-            self.manager_type = ROLE_MANAGER_TYPE_NONE
-            self.mentionable = False
-            self.name = ''
-            self.permissions = PERMISSION_NONE
-            self.position = 1
-            self.icon_type = ICON_TYPE_NONE
-            self.icon_hash = 0
+            self = cls._create_empty(role_id)
             ROLES[role_id] = self
         else:
             if (not self.partial):
@@ -757,3 +745,35 @@ class Role(DiscordEntity, immortal=True):
             return False
         
         return NotImplemented
+
+
+    @classmethod
+    def _create_empty(cls, role_id):
+        """
+        Creates an empty role with the given identifier.
+        
+        Parameters
+        ----------
+        role_id : `int`
+            The role's identifier.
+        
+        Returns
+        -------
+        self : ``Role``
+            The created role.
+        """
+        self = object.__new__(cls)
+        self.id = role_id
+        
+        self.color = Color()
+        self.guild_id = 0
+        self.separated = False
+        self.manager_type = ROLE_MANAGER_TYPE_NONE
+        self.mentionable = False
+        self.name = ''
+        self.permissions = PERMISSION_NONE
+        self.position = 1
+        self.icon_type = ICON_TYPE_NONE
+        self.icon_hash = 0
+        
+        return self

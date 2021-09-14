@@ -3,6 +3,8 @@
 #### Improvements
 
 - Add `client.events.shutdown`.
+- Add `ERROR_CODES.rate_limit_widget_update`.
+- Add `Role._create_empty`.
 
 ##### ext.extension_loader
 

@@ -4,13 +4,13 @@ import sys
 from functools import partial as partial_func
 
 from ...backend.utils import FunctionType, RemovedDescriptor, MethodLike, WeakKeyDictionary, NEEDS_DUMMY_INIT
-from ...backend.futures import Task, is_coroutine_function
+from ...backend.futures import Task, is_coroutine_function, WaitTillAll
 from ...backend.analyzer import CallableAnalyzer
 
 from ..core import KOKORO
 from ..message import Message
 
-from .core import EVENT_HANDLER_NAME_TO_PARSER_NAMES
+from .core import EVENT_HANDLER_NAME_TO_PARSER_NAMES, DEFAULT_EVENT_HANDLER
 
 def _check_name_should_break(name):
     """
@@ -2372,3 +2372,39 @@ async def _with_error(client, task):
         await task
     except BaseException as err:
         await client.events.error(client, repr(task), err)
+    finally:
+        task = None # clear references
+
+
+async def ensure_shutdown_event_handlers(client):
+    """
+    Ensures the client's shutdown event handlers.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    """
+    # call client.events.shutdown if has any.
+    shutdown_event_handler = client.events.shutdown
+    if (shutdown_event_handler is not DEFAULT_EVENT_HANDLER):
+        
+        # We use `WaitTillAll` even for 1 task, since we do not want any raised exceptions to be forwarded.
+        tasks = []
+        
+        if type(shutdown_event_handler) is asynclist:
+            for event_handler in list.__iter__(shutdown_event_handler):
+                tasks.append(Task(_with_error(client, event_handler(client)), KOKORO))
+            
+            event_handler = None # clear references
+        else:
+            tasks.append(Task(_with_error(client, shutdown_event_handler(client)), KOKORO))
+        
+        shutdown_event_handler = None # clear references
+        
+        future = WaitTillAll(tasks, KOKORO)
+        tasks = None # clear references
+        await future
+        future = None # clear references

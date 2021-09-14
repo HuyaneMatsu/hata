@@ -38,6 +38,7 @@ from ..webhook import Webhook, create_partial_webhook_from_id
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
     PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
 from ..events.event_handler_manager import EventHandlerManager
+from ..events.handling_helpers import ensure_shutdown_event_handlers
 from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
 from ..invite import Invite, InviteTargetType
@@ -14811,9 +14812,13 @@ class Client(ClientUserPBase):
             await future
             future = None # clear references
         
+        
+        # Log off if user account
         if (not self.is_bot):
             await self.http.client_logout()
         
+        
+        # Close gateways
         if shard_count:
             tasks = []
             for gateway in self.gateway.gateways:
@@ -14828,11 +14833,17 @@ class Client(ClientUserPBase):
                 future = None # clear references
             else:
                 tasks = None # clear references
-        
+            
         else:
             websocket = self.gateway.websocket
             if (websocket is not None) and websocket.open:
                 await self.gateway.close()
+        
+        gateway = None # clear references
+        websocket = None # clear references
+        
+        await ensure_shutdown_event_handlers(self)
+    
     
     def voice_client_for(self, message):
         """

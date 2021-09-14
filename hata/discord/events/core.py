@@ -105,6 +105,7 @@ def get_event_parser_parameter_count(name):
 
 add_event_handler('error', 3, None,)
 add_event_handler('launch', 1, None,)
+add_event_handler('shutdown', 1, None,)
 
 add_event_handler('ready', 1, 'READY',)
 add_event_handler('client_edit', 2, 'USER_UPDATE',)

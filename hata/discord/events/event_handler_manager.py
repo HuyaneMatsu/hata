@@ -492,6 +492,10 @@ class EventHandlerManager:
         | separated     | `bool`            |
         +---------------+-------------------+
     
+    shutdown(client : ``Client``):
+        Called when ``Client.stop`` or ``Client.disconnect`` is called indicating, that the client is logging off and
+        all data should be saved if needed.
+    
     stage_create(client: ``Client``, stage: ``Stage``):
         Called when a stage is created.
     

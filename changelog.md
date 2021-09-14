@@ -1,5 +1,13 @@
 ## 1.1.104 *\[2021-09-??\]*
 
+#### Improvements
+
+- Add `client.events.shutdown`.
+
+#### Bug Fixes
+
+- Clients could reconnect after disconnecting them with bad timing.
+
 ## 1.1.103 *\[2021-09-14\]*
 
 #### Improvements

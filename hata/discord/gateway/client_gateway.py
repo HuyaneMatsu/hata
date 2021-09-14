@@ -173,13 +173,15 @@ class DiscordGateway:
                         return
                     
                     if should_reconnect:
+                        if not client.running:
+                            return
+                        
                         task = Task(self._connect(resume=True,), KOKORO)
                         future_or_timeout(task, 30.0)
                         await task
             
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
                     ValueError) as err:
-                
                 if not client.running:
                     return
                 
@@ -194,7 +196,7 @@ class DiscordGateway:
                 if isinstance(err, TimeoutError):
                     continue
                 
-                if isinstance(err, ConnectionError): #no internet
+                if isinstance(err, ConnectionError): # no internet
                     return
                 
                 await sleep(1.0, KOKORO)
@@ -283,7 +285,8 @@ class DiscordGateway:
                         buffer.clear()
                     else:
                         message = self._decompressor.decompress(message).decode('utf-8')
-                    return (await self._received_message(message))
+                    b = (await self._received_message(message))
+                    return b
                 else:
                     buffer.extend(message)
         except ConnectionClosed as err:

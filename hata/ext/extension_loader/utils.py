@@ -1,9 +1,9 @@
 __all__ = ('require', )
 
 from sys import path as route_paths, _getframe as get_frame
-from os.path import join as join_paths, isdir as is_folder, isfile as is_file, exists
+from os.path import join as join_paths, isdir as is_folder, isfile as is_file, exists, basename as base_name, \
+    isabs as is_absolute_path_name
 from os import listdir as list_directory
-
 from ...backend.utils import HybridValueDictionary
 from ...backend.analyzer import CallableAnalyzer
 from .exceptions import DoNotLoadExtension
@@ -49,6 +49,7 @@ def _validate_entry_or_exit(point):
             'to pass `1`.')
     
     return False
+
 
 def validate_extension_parameters(entry_point=None, exit_point=None, extend_default_variables=True, locked=False,
         take_snapshot_difference=True, **variables):
@@ -185,7 +186,7 @@ PYTHON_EXTENSION_NAMES = (
 )
 
 
-def _iter_extension_names(name):
+def _iter_extension_names_and_paths(name):
     """
     Fetches the names
     
@@ -200,6 +201,8 @@ def _iter_extension_names(name):
     ------
     name : `str`
         Extension names.
+    path : `str`
+        Path of the extension file.
     
     Raises
     ------
@@ -209,6 +212,9 @@ def _iter_extension_names(name):
         If `name` is not `str` nor an `iterable` of `str` instances.
     """
     for name in _iter_name_maybe_iterable(name):
+        if name.startswith(ABSOLUTE_PATH_EXTENSION_NAME_PREFIX):
+            return name
+        
         yield from _lookup_path(name)
 
 
@@ -253,7 +259,7 @@ def _iter_name_maybe_iterable(name):
             f'{name_type.__name__}.')
 
 
-def _lookup_path(import_name):
+def _lookup_path(import_name_or_path):
     """
     Detects the root of the given name.
     
@@ -261,54 +267,70 @@ def _lookup_path(import_name):
     
     Parameters
     ----------
-    import_name : `str`
-        An extension's import name.
+    import_name_or_path : `str`
+        An extension's import name, or it's absolute path.
     
     Yields
     ------
-    import_name : `str`
+    import_name : `None` or `str`
         Import name to an extension file.
+    path : `str`
+        Path of the file.
     
     Raise
     -----
     ImportError
-        If `name` name could not be detected as en extension.
+        If `import_name_or_path` name could not be detected as en extension.
     """
-    path_end = join_paths(*import_name.split('.'))
-    for base_path in route_paths:
-        path = join_paths(base_path, path_end)
-        if exists(path) and is_folder(path):
-            yield from _iter_folder(import_name, path)
-            return
-        
-        for python_extension_name in PYTHON_EXTENSION_NAMES:
-            file_path = path+python_extension_name
-            if exists(file_path) and is_file(file_path):
-                yield import_name
+    if is_absolute_path_name(import_name_or_path):
+        if exists(import_name_or_path):
+            if is_folder(import_name_or_path):
+                yield from _iter_folder(None, import_name_or_path)
                 return
+            
+            if is_file(import_name_or_path):
+                yield None, import_name_or_path
+                return
+    else:
+        path_end = join_paths(*import_name_or_path.split('.'))
+        for base_path in route_paths:
+            path = join_paths(base_path, path_end)
+            if exists(path) and is_folder(path):
+                yield from _iter_folder(import_name_or_path, path)
+                return
+            
+            for python_extension_name in PYTHON_EXTENSION_NAMES:
+                file_path = path+python_extension_name
+                if exists(file_path) and is_file(file_path):
+                    yield import_name_or_path, file_path
+                    return
     
-    raise TypeError(f'The given `import_name` could not be detected as an extension, got {import_name!r}.')
+    raise ImportError(f'The given `import_name_or_path` could not be detected as an extension nor an absolute path, '
+        f'got {import_name_or_path!r}.')
 
 
 def _iter_folder(import_name, folder_path):
     """
     Iterates over a folder's import names.
+    
     Parameters
     ----------
-    import_name : `str`
+    import_name : `None` or `str`
         The name of the extension if we would import it.
     folder_path : `str`
         Path to the folder
     
     Yields
     ------
-    import_name : `str`
+    import_name : `None` or `str`
         Detected import names for each applicable file in the folder.
+    path : `str`
+        Path of the file.
     """
     for python_extension_name in PYTHON_EXTENSION_NAMES:
         file_path = join_paths(folder_path, f'__init__{python_extension_name}')
         if exists(file_path) and is_file(file_path):
-            yield import_name
+            yield import_name, file_path
             return
     
     for file_name in list_directory(folder_path):
@@ -320,14 +342,21 @@ def _iter_folder(import_name, folder_path):
         if is_file(path):
             for python_extension_name in PYTHON_EXTENSION_NAMES:
                 if file_name.endswith(python_extension_name):
-                    value = f'{import_name}.{file_name[:-len(python_extension_name)]}'
-                    yield value
+                    if import_name is None:
+                        import_name_value = None
+                    else:
+                        import_name_value = f'{import_name}.{file_name[:-len(python_extension_name)]}'
+                    yield import_name_value, path
                     break
             
             continue
         
         if is_folder(path):
-            yield from _iter_folder(f'{import_name}.{file_name}', path)
+            if import_name is None:
+                import_name_value = None
+            else:
+                import_name_value = f'{import_name}.{file_name}'
+            yield from _iter_folder(import_name_value, path)
             continue
         
         # no more cases
@@ -365,3 +394,26 @@ def require(*args, **kwargs):
             continue
         
         raise DoNotLoadExtension(variable_name, variable_value, expected_value)
+
+
+ABSOLUTE_PATH_EXTENSION_NAME_PREFIX = '<extension>.'
+
+def _get_path_extension_name(path):
+    """
+    Creates extension name from the given path.
+    
+    Parameter
+    ---------
+    path : `str`
+        Path to a file.
+    
+    Returns
+    -------
+    extension_name : `str`
+    """
+    file_name = base_name(path)
+    dot_index = file_name.rfind('.')
+    if dot_index != -1:
+        file_name = file_name[:dot_index]
+    
+    return ABSOLUTE_PATH_EXTENSION_NAME_PREFIX+file_name

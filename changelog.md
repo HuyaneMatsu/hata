@@ -4,6 +4,10 @@
 
 - Add `client.events.shutdown`.
 
+##### ext.extension_loader
+
+- Absolute paths are supported.
+
 #### Bug Fixes
 
 - Clients could reconnect after disconnecting them with bad timing.

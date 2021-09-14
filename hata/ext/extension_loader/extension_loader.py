@@ -12,7 +12,8 @@ from ...backend.export import export
 from ...discord.core import KOKORO
 
 from .extension import EXTENSIONS, Extension, EXTENSION_STATE_LOADED
-from .utils import PROTECTED_NAMES, _iter_extension_names, _validate_entry_or_exit, validate_extension_parameters
+from .utils import PROTECTED_NAMES, _iter_extension_names_and_paths, _validate_entry_or_exit, \
+    validate_extension_parameters, _get_path_extension_name
 from .exceptions import ExtensionError
 
 
@@ -36,8 +37,12 @@ def _get_extensions(name):
         If an extension could not be found.
     """
     extensions = set()
-    extension_names = set(_iter_extension_names(name))
-    for extension_name in extension_names:
+    
+    extension_names_and_paths = set(_iter_extension_names_and_paths(name))
+    for extension_name, extension_path in extension_names_and_paths:
+        if extension_name is None:
+            extension_name = _get_path_extension_name(extension_path)
+        
         try:
             extension = EXTENSION_LOADER._extensions_by_name[extension_name]
         except KeyError:
@@ -501,24 +506,26 @@ class ExtensionLoader:
         ValueError
             If a variable name is would be used, what is `module` attribute.
         """
-        extension_names = set(_iter_extension_names(name))
+        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
             validate_extension_parameters(*args, **kwargs)
         
-        for extension_name in extension_names:
-            self._add(extension_name, entry_point, exit_point, extend_default_variables, locked,
+        for extension_name, extension_path in extension_names_and_paths:
+            self._add(extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables)
     
     
-    def _add(self, extension_name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
-            default_variables):
+    def _add(self, extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
+            take_snapshot_difference, default_variables):
         """
         Adds an extension to the extension loader.
         
         Parameters
         ----------
-        extension_name : `str`
+        extension_name : `None` or `str`
             The extension's name to add.
+        extension_path : `None` or `str`
+            Path of the extension to add.
         entry_point : `None`, `str` or `callable`
             Extension specific entry point, to use over the extension loader's default.
         exit_point : `None`, `str` or `callable`
@@ -533,11 +540,14 @@ class ExtensionLoader:
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.
             If would be empty, is set as `None` instead.
         """
-        extension = Extension(extension_name, entry_point, exit_point, extend_default_variables, locked,
-            take_snapshot_difference, default_variables)
+        extension = Extension(extension_name, extension_path, entry_point, exit_point, extend_default_variables,
+            locked, take_snapshot_difference, default_variables)
         
-        self._extensions_by_name[extension_name] = extension
-        self._extensions_by_name.setdefault(extension.short_name, extension)
+        self._extensions_by_name[extension.name] = extension
+        
+        short_name = extension.short_name
+        if (short_name is not None):
+            self._extensions_by_name.setdefault(extension.short_name, extension)
     
     
     def remove(self, name):
@@ -558,9 +568,12 @@ class ExtensionLoader:
         RuntimeError
             If a loaded extension would be removed.
         """
-        extension_names = set(_iter_extension_names(name))
+        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
         
-        for extension_name in extension_names:
+        for extension_name, extension_path in extension_names_and_paths:
+            if (extension_name is None):
+                extension_name = _get_path_extension_name(extension_path)
+            
             try:
                 extension = self._extensions_by_name[extension_name]
             except KeyError:
@@ -569,7 +582,10 @@ class ExtensionLoader:
             if extension._state == EXTENSION_STATE_LOADED:
                 raise RuntimeError(f'Extension `{name!r}` can not be removed, meanwhile it is loaded.')
         
-        for extension_name in extension_names:
+        for extension_name, extension_path in extension_names_and_paths:
+            if (extension_name is None):
+                extension_name = _get_path_extension_name(extension_path)
+            
             try:
                 extension = self._extensions_by_name[extension_name]
             except KeyError:
@@ -623,12 +639,12 @@ class ExtensionLoader:
         ExtensionError
             The extension failed to load correctly.
         """
-        extension_names = set(_iter_extension_names(name))
+        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
             validate_extension_parameters(*args, **kwargs)
         
-        for extension_name in extension_names:
-            self._add(extension_name, entry_point, exit_point, extend_default_variables, locked,
+        for extension_name, extension_path in extension_names_and_paths:
+            self._add(extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables)
             
             return self.load(extension_name)

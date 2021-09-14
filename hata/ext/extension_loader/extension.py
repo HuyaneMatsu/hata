@@ -1,14 +1,14 @@
 __all__ = ('EXTENSIONS', )
 
 import sys
-from importlib.util import find_spec, module_from_spec
+from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from importlib import reload as reload_module
 
 from ...backend.utils import HybridValueDictionary, WeakValueDictionary
 from ...backend.export import include
 
 from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snapshot
-from .utils import _validate_entry_or_exit, PROTECTED_NAMES
+from .utils import _validate_entry_or_exit, PROTECTED_NAMES, _get_path_extension_name
 from .exceptions import DoNotLoadExtension
 
 EXTENSION_LOADER = include('EXTENSION_LOADER')
@@ -72,7 +72,7 @@ class Extension:
         '_extend_default_variables', '_lib', '_locked', '_snapshot_difference', '_spec', '_state',
         '_take_snapshot', )
     
-    def __new__(cls, name, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
+    def __new__(cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
             default_variables, ):
         """
         Creates an extension with the given parameters. If an extension already exists with the given name, returns
@@ -80,8 +80,10 @@ class Extension:
         
         Parameters
         ----------
-        name : `str`
+        name : `None` or `str`
             The extension's name (or import path).
+        path : `str`
+            Path to the extension file.
         entry_point : `None`, `str` or `callable`
             The entry point of the extension.
         exit_point : `None`, `str` or `callable`
@@ -106,12 +108,23 @@ class Extension:
         ModuleNotFoundError
             If the extension was not found.
         """
+        if (name is None):
+            name = _get_path_extension_name(path)
+            
+            from_path = True
+        else:
+            from_path = False
+        
         try:
             return EXTENSIONS[name]
         except KeyError:
             pass
         
-        spec = find_spec(name)
+        if from_path:
+            spec = spec_from_file_location(name, path)
+        else:
+            spec = find_spec(name)
+        
         if spec is None:
             raise ModuleNotFoundError(name)
         
@@ -500,7 +513,6 @@ class Extension:
         name : `str`
         """
         name = self._spec.name
-        
         dot_index = name.rfind('.')
         if dot_index == -1:
             short_name = None

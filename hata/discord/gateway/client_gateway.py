@@ -285,8 +285,7 @@ class DiscordGateway:
                         buffer.clear()
                     else:
                         message = self._decompressor.decompress(message).decode('utf-8')
-                    b = (await self._received_message(message))
-                    return b
+                    return (await self._received_message(message))
                 else:
                     buffer.extend(message)
         except ConnectionClosed as err:

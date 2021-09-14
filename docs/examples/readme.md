@@ -10,7 +10,7 @@ Examples should be completed in order, as you might miss some notes from previou
  2 => Multiple clients: Using multiple clients parallelly. 
  3 => Utilities: Mentioning top and low level rest interaction.
  4 => Building message content: Tips to create message content.
- 5 => Commands framework: Demonstrates how to use Hatas command framewrok with many other utilities.
+ 5 => Commands framework: Demonstrates how to use Hatas command framework with many other utilities.
  6 => Simple Bot Stucture: An example showing the recommended file structure to use mentioning the `extension_loader`
       as well.
  7 => Building embed: Sending an embed with diffent kinds of fields and with an attachmnet.

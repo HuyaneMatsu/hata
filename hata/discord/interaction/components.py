@@ -655,7 +655,7 @@ class ComponentRow(ComponentBase):
             if not components:
                 components = None
         
-        self = object.__new__(cls)
+        self = object.__new__(type(self))
         self.components = components
         return self
     

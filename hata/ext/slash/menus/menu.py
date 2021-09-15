@@ -13,7 +13,7 @@ from ....discord.interaction.components import _debug_component_components, _deb
     _debug_component_description, _debug_component_default, _debug_component_options, _debug_component_placeholder, \
     _debug_component_min_values, _debug_component_max_values
 from ....discord.interaction import ComponentBase, ComponentRow, ComponentButton, ComponentSelect, InteractionEvent, \
-    ComponentSelectOption, ComponentType
+    ComponentSelectOption, ComponentType, InteractionType
 from ....discord.message import Message
 from ....discord.channel import ChannelTextBase
 from ....discord.embed import EmbedBase
@@ -29,6 +29,9 @@ GUI_STATE_EDITING = 2
 GUI_STATE_CANCELLING = 3
 GUI_STATE_CANCELLED = 4
 GUI_STATE_SWITCHING_CONTEXT = 5
+
+INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
+INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 
 class ComponentSourceIdentityHasher:
     """
@@ -1455,9 +1458,6 @@ class Menu(metaclass=MenuType):
         if (init is not None):
             init(self, client, target, *args, **kwargs)
         
-        if is_interaction and interaction_event.is_unanswered():
-            await client.interaction_application_command_acknowledge(interaction_event)
-        
         await menu_structure.initial_invoke(self)
         
         tracked_changes = self._tracked_changes
@@ -1475,15 +1475,30 @@ class Menu(metaclass=MenuType):
         kwargs['components'] = self._components
         
         if is_interaction:
-            message = await client.interaction_followup_message_create(interaction_event, **kwargs)
+            interaction_event_type = interaction_event.type
+            if interaction_event_type == INTERACTION_TYPE_APPLICATION_COMMAND:
+                if target_message is None:
+                    if interaction_event.is_unanswered():
+                        await client.interaction_application_command_acknowledge(interaction_event)
+                    
+                    target_message = await client.interaction_followup_message_create(interaction_event, **kwargs)
+                else:
+                    await client.interaction_response_message_edit(interaction_event, **kwargs)
+            
+            elif interaction_event_type == INTERACTION_TYPE_MESSAGE_COMPONENT:
+                await client.interaction_component_message_edit(interaction_event, **kwargs)
+            
+            else:
+                # nani desu ka?
+                return
+        
         else:
             if target_message is None:
-                message = await client.message_create(target_channel_id, **kwargs)
+                target_message = await client.message_create(target_channel_id, **kwargs)
             else:
                 await client.message_edit(target_message, **kwargs)
-                message = target_message
         
-        self.message = message
+        self.message = target_message
         
         get_timeout = menu_structure.get_timeout
         if (get_timeout is None):
@@ -1497,7 +1512,7 @@ class Menu(metaclass=MenuType):
         self._gui_state = GUI_STATE_READY
         self._canceller = cls._canceller_function
         
-        client.slasher.add_component_interaction_waiter(message, self)
+        client.slasher.add_component_interaction_waiter(target_message, self)
         
         return self
     

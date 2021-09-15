@@ -1,4 +1,4 @@
-## 1.1.104 *\[2021-09-??\]*
+## 1.1.104 *\[2021-09-15\]*
 
 #### Improvements
 
@@ -13,6 +13,7 @@
 #### Bug Fixes
 
 - Clients could reconnect after disconnecting them with bad timing.
+- `ComponentRow.copy_with` raised `NameError`. (catzoo#3026)
 
 ## 1.1.103 *\[2021-09-14\]*
 

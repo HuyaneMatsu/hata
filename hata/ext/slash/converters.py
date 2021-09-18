@@ -10,7 +10,9 @@ from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.client import Client
 from ...discord.user import UserBase, User
 from ...discord.role import Role
-from ...discord.channel import ChannelBase
+from ...discord.channel import ChannelBase, ChannelGuildBase, CHANNEL_TYPES, ChannelCategory, ChannelDirectory, \
+    ChannelGuildMainBase, ChannelStore, ChannelText, ChannelVoiceBase, ChannelVoice, ChannelStage, ChannelPrivate, \
+    ChannelGroup, ChannelThread, ChannelTextBase
 from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, InteractionType, \
     ApplicationCommandOptionType, InteractionEvent
 from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
@@ -455,25 +457,115 @@ TARGET_ANNOTATION_NAMES = frozenset((
     'target',
 ))
 
+CHANNEL_TYPES_GUILD = tuple(CHANNEL_TYPES.GROUP_GUILD)
+CHANNEL_TYPES_GUILD_CATEGORY = (CHANNEL_TYPES.guild_category, )
+CHANNEL_TYPES_GUILD_DIRECTORY = (CHANNEL_TYPES.guild_directory, )
+CHANNEL_TYPES_GUILD_STORE = (CHANNEL_TYPES.guild_store, )
+CHANNEL_TYPES_GUILD_TEXT_LIKE = tuple(CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE)
+CHANNEL_TYPES_GUILD_TEXT = (CHANNEL_TYPES.guild_text, )
+CHANNEL_TYPES_GUILD_ANNOUNCEMENTS = (CHANNEL_TYPES.guild_announcements, )
+CHANNEL_TYPES_GUILD_CONNECTABLE = tuple(CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE)
+CHANNEL_TYPES_GUILD_VOICE = (CHANNEL_TYPES.guild_voice, )
+CHANNEL_TYPES_GUILD_STAGE = (CHANNEL_TYPES.guild_stage, )
+CHANNEL_TYPES_PRIVATE_ALL = tuple(CHANNEL_TYPES.GROUP_PRIVATE)
+CHANNEL_TYPES_PRIVATE = (CHANNEL_TYPES.private, )
+CHANNEL_TYPES_PRIVATE_GROUP = (CHANNEL_TYPES.private_group, )
+CHANNEL_TYPES_THREAD_ALL = tuple(CHANNEL_TYPES.GROUP_THREAD)
+CHANNEL_TYPES_THREAD_ANNOUNCEMENTS = (CHANNEL_TYPES.guild_thread_announcements, )
+CHANNEL_TYPES_THREAD_PUBLIC = (CHANNEL_TYPES.guild_thread_public, )
+CHANNEL_TYPES_THREAD_PRIVATE = (CHANNEL_TYPES.guild_thread_private, )
+CHANNEL_TYPES_MESSAGEABLE = tuple(CHANNEL_TYPES.GROUP_MESSAGEABLE)
+CHANNEL_TYPES_GUILD_MESSAGEABLE = tuple(CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE)
+CHANNEL_TYPES_CONNECTABLE = tuple(CHANNEL_TYPES.GROUP_CONNECTABLE)
+
 STR_ANNOTATION_TO_ANNOTATION_TYPE = {
-    'str': ANNOTATION_TYPE_STR,
-    'int': ANNOTATION_TYPE_INT,
-    'bool': ANNOTATION_TYPE_BOOL,
-    'user': ANNOTATION_TYPE_USER,
-    'user_id': ANNOTATION_TYPE_USER_ID,
-    'role': ANNOTATION_TYPE_ROLE,
-    'role_id': ANNOTATION_TYPE_ROLE_ID,
-    'channel': ANNOTATION_TYPE_CHANNEL,
-    'channel_id': ANNOTATION_TYPE_CHANNEL_ID,
-    'number': ANNOTATION_TYPE_NUMBER,
-    'mentionable': ANNOTATION_TYPE_MENTIONABLE,
-    'mentionable_id': ANNOTATION_TYPE_MENTIONABLE_ID,
-    'expression': ANNOTATION_TYPE_EXPRESSION,
-    'float': ANNOTATION_TYPE_FLOAT,
+    # Generic
+    'str': (ANNOTATION_TYPE_STR, None),
+    'int': (ANNOTATION_TYPE_INT, None),
+    'bool': (ANNOTATION_TYPE_BOOL, None),
+    'user': (ANNOTATION_TYPE_USER, None),
+    'user_id': (ANNOTATION_TYPE_USER_ID, None),
+    'role': (ANNOTATION_TYPE_ROLE, None),
+    'role_id': (ANNOTATION_TYPE_ROLE_ID, None),
+    'channel': (ANNOTATION_TYPE_CHANNEL, None),
+    'channel_id': (ANNOTATION_TYPE_CHANNEL_ID, None),
+    'number': (ANNOTATION_TYPE_NUMBER, None),
+    'mentionable': (ANNOTATION_TYPE_MENTIONABLE, None),
+    'mentionable_id': (ANNOTATION_TYPE_MENTIONABLE_ID, None),
+    'expression': (ANNOTATION_TYPE_EXPRESSION, None),
+    'float': (ANNOTATION_TYPE_FLOAT, None),
     
-    **un_map_pack((name, ANNOTATION_TYPE_SELF_CLIENT) for name in CLIENT_ANNOTATION_NAMES),
-    **un_map_pack((name, ANNOTATION_TYPE_SELF_INTERACTION_EVENT) for name in INTERACTION_EVENT_ANNOTATION_NAMES),
-    **un_map_pack((name, ANNOTATION_TYPE_SELF_TARGET) for name in TARGET_ANNOTATION_NAMES),
+    # Channel type specific
+    # - by channel name
+    'channelguildbase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    'channelguildmainbase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    'channelcategory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
+    'channeldirectory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
+    'channelstore': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
+    'channeltext': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT_LIKE),
+    'channelvoicebase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
+    'channelvoice': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_VOICE),
+    'channelstage': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
+    'channelprivate': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
+    'channelgroup': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
+    'channelthread': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
+    'channeltextbase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MESSAGEABLE),
+    # - by generic name
+    'channel_guild_text': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT),
+    'channel_private': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
+    'channel_guild_voice': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_VOICE),
+    'channel_private_group': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
+    'channel_guild_category': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
+    'channel_guild_announcements': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_ANNOUNCEMENTS),
+    'channel_guild_store': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
+    'channel_guild_thread_announcements': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ANNOUNCEMENTS),
+    'channel_guild_thread_public': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_PUBLIC),
+    'channel_guild_thread_private': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_PRIVATE),
+    'channel_guild_stage': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
+    'channel_guild_directory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
+    'channel_group_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_MESSAGEABLE),
+    'channel_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MESSAGEABLE),
+    'channel_group_guild_text_like': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT_LIKE),
+    'channel_group_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_CONNECTABLE),
+    'channel_group_private': (ANNOTATION_TYPE_CHANNEL, ),
+    'channel_group_guild_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
+    'channel_group_guild': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    'channel_group_thread': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
+    # - id + by generic name
+    'channel_id_guild_text': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXT),
+    'channel_id_private': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_PRIVATE),
+    'channel_id_guild_voice': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_VOICE),
+    'channel_id_private_group': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_PRIVATE_GROUP),
+    'channel_id_guild_category': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_CATEGORY),
+    'channel_id_guild_announcements': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_ANNOUNCEMENTS),
+    'channel_id_guild_store': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_STORE),
+    'channel_id_guild_thread_announcements': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_ANNOUNCEMENTS),
+    'channel_id_guild_thread_public': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_PUBLIC),
+    'channel_id_guild_thread_private': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_PRIVATE),
+    'channel_id_guild_stage': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_STAGE),
+    'channel_id_guild_directory': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_DIRECTORY),
+    'channel_id_group_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_MESSAGEABLE),
+    'channel_id_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_MESSAGEABLE),
+    'channel_id_group_guild_text_like': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXT_LIKE),
+    'channel_id_group_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_CONNECTABLE),
+    'channel_id_group_private': (ANNOTATION_TYPE_CHANNEL_ID, ),
+    'channel_id_group_guild_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_CONNECTABLE),
+    'channel_id_group_guild': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD),
+    'channel_id_group_thread': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_ALL),
+    
+    # Internal
+    **un_map_pack((
+        (name, (ANNOTATION_TYPE_SELF_CLIENT, None))
+        for name in CLIENT_ANNOTATION_NAMES
+    )),
+    **un_map_pack((
+        (name, (ANNOTATION_TYPE_SELF_INTERACTION_EVENT, None))
+        for name in INTERACTION_EVENT_ANNOTATION_NAMES
+    )),
+    **un_map_pack((
+        (name, (ANNOTATION_TYPE_SELF_TARGET, None))
+        for name in TARGET_ANNOTATION_NAMES
+    )),
 }
 
 # Used at repr
@@ -499,17 +591,34 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
 }
 
 TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
-    str: ANNOTATION_TYPE_STR,
-    int: ANNOTATION_TYPE_INT,
-    bool: ANNOTATION_TYPE_BOOL,
-    UserBase: ANNOTATION_TYPE_USER,
-    User: ANNOTATION_TYPE_USER,
-    Role: ANNOTATION_TYPE_ROLE,
-    ChannelBase: ANNOTATION_TYPE_CHANNEL,
-    float: ANNOTATION_TYPE_FLOAT,
+    # Generic
+    str: (ANNOTATION_TYPE_STR, None),
+    int: (ANNOTATION_TYPE_INT, None),
+    bool: (ANNOTATION_TYPE_BOOL, None),
+    UserBase: (ANNOTATION_TYPE_USER, None),
+    User: (ANNOTATION_TYPE_USER, None),
+    Role: (ANNOTATION_TYPE_ROLE, None),
+    ChannelBase: (ANNOTATION_TYPE_CHANNEL, None),
+    float: (ANNOTATION_TYPE_FLOAT, None),
     
-    Client: ANNOTATION_TYPE_SELF_CLIENT,
-    InteractionEvent: ANNOTATION_TYPE_SELF_INTERACTION_EVENT,
+    # Channel type specific
+    ChannelGuildBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    ChannelGuildMainBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    ChannelCategory: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
+    ChannelDirectory: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
+    ChannelStore: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
+    ChannelText: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT_LIKE),
+    ChannelVoiceBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
+    ChannelVoice: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_VOICE),
+    ChannelStage: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
+    ChannelPrivate: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
+    ChannelGroup: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
+    ChannelThread: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
+    ChannelTextBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MESSAGEABLE),
+    
+    # Internal
+    Client: (ANNOTATION_TYPE_SELF_CLIENT, None),
+    InteractionEvent: (ANNOTATION_TYPE_SELF_INTERACTION_EVENT, None),
 }
 
 ANNOTATION_TYPE_TO_CONVERTER = {
@@ -521,7 +630,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_ROLE: (converter_role, False),
     ANNOTATION_TYPE_ROLE_ID: (converter_snowflake, False),
     ANNOTATION_TYPE_CHANNEL: (converter_channel, False),
-    ANNOTATION_TYPE_CHANNEL_ID : (converter_snowflake, False),
+    ANNOTATION_TYPE_CHANNEL_ID: (converter_snowflake, False),
     ANNOTATION_TYPE_NUMBER: (converter_int, False),
     ANNOTATION_TYPE_MENTIONABLE: (converter_mentionable, False),
     ANNOTATION_TYPE_MENTIONABLE_ID: (converter_snowflake, False),
@@ -949,6 +1058,8 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         Internal identifier about the annotation.
     choices : `None` or `dict` of (`int` or `str`, `str`) items
         Choices if applicable.
+    channel_types : `None` or `tuple` of `int`
+        The accepted channel types.
     
     TypeError
         - If `annotation_value` is `list` instance, but it's elements do not match the `tuple`
@@ -966,7 +1077,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
     if isinstance(annotation_value, str):
         annotation_value = annotation_value.lower()
         try:
-            annotation_type = STR_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
+            annotation_type, channel_types = STR_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
             raise ValueError(f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
                 f'got {annotation_value!r}.') from None
@@ -974,7 +1085,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         choices = None
     elif isinstance(annotation_value, type):
         try:
-            annotation_type = TYPE_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
+            annotation_type, channel_types = TYPE_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
             raise ValueError(f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
                 f'got {annotation_value!r}.') from None
@@ -1044,8 +1155,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             annotation_type = ANNOTATION_TYPE_FLOAT
         
         choices = {value:name for name, value in choice_elements}
+        
+        channel_types = None
     
-    return annotation_type, choices
+    return annotation_type, choices, channel_types
 
 
 def parse_annotation_description(description, parameter_name):
@@ -1143,6 +1256,8 @@ def parse_annotation_tuple(parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
+    channel_types : `None` or `tuple` of `int`
+        The accepted channel types.
     
     Raises
     ------
@@ -1158,7 +1273,7 @@ def parse_annotation_tuple(parameter):
             f'range [1:3], got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
     
     annotation_value = annotation[0]
-    annotation_type, choices = parse_annotation_type_and_choice(annotation_value, parameter_name)
+    annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter_name)
     
     if annotation_type in INTERNAL_ANNOTATION_TYPES:
         raise ValueError(f'`Internal annotations cannot be given inside of a tuple, got annotation for: '
@@ -1178,7 +1293,7 @@ def parse_annotation_tuple(parameter):
         name = None
     
     name = parse_annotation_name(name, parameter_name)
-    return choices, description, name, annotation_type
+    return choices, description, name, annotation_type, channel_types
 
 
 def parse_annotation_internal(annotation):
@@ -1235,6 +1350,8 @@ def parse_annotation(parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
+    channel_types : `None` or `tuple` of `int`
+        The accepted channel types.
     
     Raises
     ------
@@ -1260,11 +1377,12 @@ def parse_annotation(parameter):
     else:
         annotation_type = parse_annotation_internal(annotation_value)
         if annotation_type is None:
-            annotation_type, choices = parse_annotation_type_and_choice(annotation_value, parameter.name)
+            annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter.name)
         else:
             choices = None
+            channel_types = None
     
-    return choices, None, parameter.name, annotation_type
+    return choices, None, parameter.name, annotation_type, channel_types
 
 
 class ParameterConverter:
@@ -1452,6 +1570,8 @@ class SashCommandParameterConverter(ParameterConverter):
     
     Attributes
     ----------
+    channel_types : `None` or `tuple` of `int`
+        The accepted channel types.
     choices : `None` or `dict` of (`str` or `int`, `str`)
         The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
     converter : `func`
@@ -1467,9 +1587,9 @@ class SashCommandParameterConverter(ParameterConverter):
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('choices', 'converter', 'default', 'description', 'required', 'type', 'name')
+    __slots__ = ('channel_types', 'choices', 'converter', 'default', 'description', 'required', 'type', 'name')
     
-    def __new__(cls, type_, converter, name, description, default, required, choices):
+    def __new__(cls, type_, converter, name, description, default, required, choices, channel_types):
         """
         Creates a new ``SashCommandParameterConverter`` instance from the given parameters.
         
@@ -1489,6 +1609,8 @@ class SashCommandParameterConverter(ParameterConverter):
             Whether the the parameter is required.
         choices : `None` or `dict` of (`str` or `int`, `str`)
             The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
+        channel_types : `None` or `tuple` of `int`
+            The accepted channel types.
         """
         self = object.__new__(cls)
         self.choices = choices
@@ -1498,7 +1620,9 @@ class SashCommandParameterConverter(ParameterConverter):
         self.name = name
         self.required = required
         self.type = type_
+        self.channel_types = channel_types
         return self
+    
     
     @copy_docs(ParameterConverter.__call__)
     async def __call__(self, client, interaction_event, value):
@@ -1541,9 +1665,15 @@ class SashCommandParameterConverter(ParameterConverter):
             repr_parts.append(', choices=')
             repr_parts.append(repr(choices))
         
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            repr_parts.append(', channel_types=')
+            repr_parts.append(repr(channel_types))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
     
     @copy_docs(ParameterConverter.as_option)
     def as_option(self):
@@ -1556,7 +1686,7 @@ class SashCommandParameterConverter(ParameterConverter):
         option_type = ANNOTATION_TYPE_TO_OPTION_TYPE[self.type]
         
         return ApplicationCommandOption(self.name, self.description, option_type, required=self.required,
-            choices=option_choices)
+            choices=option_choices, channel_types=self.channel_types)
 
 
 def create_parameter_converter(parameter, parameter_configurer):
@@ -1594,12 +1724,13 @@ def create_parameter_converter(parameter, parameter_configurer):
         - If `annotation`'s 1st element's (description's) length is out of the expected range [2:100].
     """
     if parameter_configurer is None:
-        choices, description, name, annotation_type = parse_annotation(parameter)
+        choices, description, name, annotation_type, channel_types = parse_annotation(parameter)
     else:
         choices = parameter_configurer._choices
         description = parameter_configurer._description
         name = parameter_configurer._name
         annotation_type = parameter_configurer._type
+        channel_types = parameter_configurer._channel_types
         
     if description is None:
         description = raw_name_to_display(name)
@@ -1617,7 +1748,7 @@ def create_parameter_converter(parameter, parameter_configurer):
         parameter_converter = InternalParameterConverter(annotation_type, converter)
     else:
         parameter_converter = SashCommandParameterConverter(annotation_type, converter, name, description, default,
-            required, choices)
+            required, choices, channel_types)
     
     return parameter_converter
 

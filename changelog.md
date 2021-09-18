@@ -1,3 +1,13 @@
+## 1.1.105 *\[2021-09-??\]*
+
+#### Improvements
+
+- Add `ApplicationCommandOption.channel_types`.
+- Add `channel_types` parameter to `ApplicationCommandOption.__new__`.
+- Add `CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE`.
+- Add `CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE`.
+- Add `CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE`.
+
 ## 1.1.104 *\[2021-09-15\]*
 
 #### Improvements

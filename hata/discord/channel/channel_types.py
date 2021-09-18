@@ -35,42 +35,52 @@ Contains channel type identifiers.
 
 In addition also extra groups are defined:
 
-+-------------------------------+-------------------------------+
-| Name                          | Elements                      |
-+===============================+===============================+
-| GROUP_MESSAGEABLE             | guild_text,                   |
-|                               | private,                      |
-|                               | private_group,                |
-|                               | thread,                       |
-|                               | guild_thread_announcements,   |
-|                               | guild_thread_public,          |
-|                               | guild_thread_private,         |
-|                               | guild_directory               |
-+-------------------------------+-------------------------------+
-| GROUP_CONNECTABLE             | private,                      |
-|                               | guild_voice,                  |
-|                               | private_group,                |
-|                               | guild_stage                   |
-+-------------------------------+-------------------------------+
-| GROUP_PRIVATE                 | private,                      |
-|                               | private_group                 |
-+-------------------------------+-------------------------------+
-| GROUP_GUILD                   | guild_text,                   |
-|                               | guild_voice,                  |
-|                               | guild_category,               |
-|                               | guild_announcements,          |
-|                               | guild_store,                  |
-|                               | guild_thread_announcements,   |
-|                               | guild_thread_public,          |
-|                               | guild_thread_private,         |
-|                               | guild_stage,                  |
-|                               | guild_directory               |
-+-------------------------------+-------------------------------+
-| GROUP_THREAD                  | thread,                       |
-|                               | guild_thread_announcements,   |
-|                               | guild_thread_public,          |
-|                               | guild_thread_private          |
-+-------------------------------+-------------------------------+
++---------------------------------------+-------------------------------+
+| Name                                  | Elements                      |
++=======================================+===============================+
+| GROUP_MESSAGEABLE                     | guild_text,                   |
+|                                       | private,                      |
+|                                       | private_group,                |
+|                                       | guild_announcements,          |
+|                                       | guild_thread_announcements,   |
+|                                       | guild_thread_public,          |
+|                                       | guild_thread_private          |
++---------------------------------------+-------------------------------+
+| GROUP_GUILD_MESSAGEABLE               | guild_text,                   |
+|                                       | guild_announcements,          |
+|                                       | guild_thread_announcements,   |
+|                                       | guild_thread_public,          |
+|                                       | guild_thread_private          |
++---------------------------------------+-------------------------------+
+| GROUP_GUILD_TEXT_LIKE                 | guild_text,                   |
+|                                       | guild_announcements           |
++---------------------------------------+-------------------------------+
+| GROUP_CONNECTABLE                     | private,                      |
+|                                       | guild_voice,                  |
+|                                       | private_group,                |
+|                                       | guild_stage                   |
++---------------------------------------+-------------------------------+
+| GROUP_GUILD_CONNECTABLE               | guild_voice,                  |
+|                                       | guild_stage                   |
++---------------------------------------+-------------------------------+
+| GROUP_PRIVATE                         | private,                      |
+|                                       | private_group                 |
++---------------------------------------+-------------------------------+
+| GROUP_GUILD                           | guild_text,                   |
+|                                       | guild_voice,                  |
+|                                       | guild_category,               |
+|                                       | guild_announcements,          |
+|                                       | guild_store,                  |
+|                                       | guild_thread_announcements,   |
+|                                       | guild_thread_public,          |
+|                                       | guild_thread_private,         |
+|                                       | guild_stage,                  |
+|                                       | guild_directory               |
++---------------------------------------+-------------------------------+
+| GROUP_THREAD                          | guild_thread_announcements,   |
+|                                       | guild_thread_public,          |
+|                                       | guild_thread_private          |
++---------------------------------------+-------------------------------+
 """
 guild_text = 0
 private = 1
@@ -93,11 +103,24 @@ GROUP_MESSAGEABLE = frozenset((
     guild_text,
     private,
     private_group,
-    thread,
+    guild_announcements,
     guild_thread_announcements,
     guild_thread_public,
     guild_thread_private,
-    guild_directory,
+))
+
+GROUP_GUILD_MESSAGEABLE = frozenset((
+    guild_text,
+    guild_announcements,
+    guild_thread_announcements,
+    guild_thread_public,
+    guild_thread_private,
+))
+
+
+GROUP_GUILD_TEXT_LIKE = frozenset((
+    guild_text,
+    guild_announcements,
 ))
 
 
@@ -105,6 +128,12 @@ GROUP_CONNECTABLE = frozenset((
     private,
     guild_voice,
     private_group,
+    guild_stage,
+))
+
+
+GROUP_GUILD_CONNECTABLE = frozenset((
+    guild_voice,
     guild_stage,
 ))
 
@@ -129,7 +158,6 @@ GROUP_GUILD = frozenset((
 ))
 
 GROUP_THREAD = frozenset((
-    thread,
     guild_thread_announcements,
     guild_thread_public,
     guild_thread_private,

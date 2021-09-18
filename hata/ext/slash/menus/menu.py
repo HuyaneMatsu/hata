@@ -1476,7 +1476,7 @@ class Menu(metaclass=MenuType):
         
         if is_interaction:
             interaction_event_type = interaction_event.type
-            if interaction_event_type == INTERACTION_TYPE_APPLICATION_COMMAND:
+            if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
                 if target_message is None:
                     if interaction_event.is_unanswered():
                         await client.interaction_application_command_acknowledge(interaction_event)
@@ -1485,7 +1485,7 @@ class Menu(metaclass=MenuType):
                 else:
                     await client.interaction_response_message_edit(interaction_event, **kwargs)
             
-            elif interaction_event_type == INTERACTION_TYPE_MESSAGE_COMPONENT:
+            elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
                 await client.interaction_component_message_edit(interaction_event, **kwargs)
             
             else:

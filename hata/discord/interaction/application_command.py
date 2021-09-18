@@ -759,6 +759,10 @@ class ApplicationCommandOption:
     
     Attributes
     ----------
+    channel_types : `None` or `tuple` of `int`
+        The accepted channel types by the option.
+        
+        Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
     choices : `None` or `list` of ``ApplicationCommandOptionChoice``
         Choices for `str` and `int` types for the user to pick from.
     default : `bool`
@@ -775,9 +779,10 @@ class ApplicationCommandOption:
     type : ``ApplicationCommandOptionType``
         The option's type.
     """
-    __slots__ = ('choices', 'default', 'description', 'name', 'options', 'required', 'type')
+    __slots__ = ('channel_types', 'choices', 'default', 'description', 'name', 'options', 'required', 'type')
     
-    def __new__(cls, name, description, type_, *, default=False, required=False, choices=None, options=None):
+    def __new__(cls, name, description, type_, *, default=False, required=False, choices=None, options=None,
+            channel_types=None):
         """
         Creates a new ``ApplicationCommandOption`` instance with the given parameters.
         
@@ -797,6 +802,10 @@ class ApplicationCommandOption:
             The choices of the command for string or integer types. It's length can be in range [0:25].
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
+        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
+            The accepted channel types by the option.
+            
+            Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
         
         Raises
         ------
@@ -805,9 +814,11 @@ class ApplicationCommandOption:
             - If `choices` was given meanwhile `type_` is neither string nor integer option type.
             - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
+            - If `channel_types` is neither `None` nor `iterable` of `int`.
         ValueError
             - If `type_` was given as `int` instance, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
+            - If `channel_types` contains an unknown channel type value.
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name` length is out of range [1:32].
@@ -822,6 +833,7 @@ class ApplicationCommandOption:
                 ``ApplicationCommandOptionChoice`` instances.
             - If `choices`'s length is out of range [0:25].
             - If an option is a sub command group option.
+            - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
         """
         if __debug__:
             if not isinstance(name, str):
@@ -927,6 +939,40 @@ class ApplicationCommandOption:
                         f'{type_!r}')
                 pass
         
+        if (channel_types is None):
+            channel_types_processed = None
+        else:
+            channel_types_processed = None
+            
+            iterator = getattr(type(channel_types), '__iter__', None)
+            if (iterator is None):
+                raise TypeError(f'`channel_types` is neither `None` nor `iterable`, got '
+                    f'{channel_types.__class__.__anme__}.')
+            
+            for channel_type in iterator(channel_types):
+                if type(channel_type) is int:
+                    pass
+                elif isinstance(channel_type, int):
+                    channel_type = int(channel_type)
+                else:
+                    raise TypeError(f'`channel_types` may include only `int` instances, got '
+                        f'{channel_type.__class__.__name__}; {channel_type!r}.')
+                
+                if channel_types_processed is None:
+                    channel_types_processed = set()
+                
+                channel_types_processed.add(channel_type)
+        
+            if channel_types_processed:
+                channel_types_processed = tuple(sorted(channel_types_processed))
+            else:
+                channel_types_processed = None
+        
+        if __debug__:
+            if (channel_types_processed is not None) and (type_ is not ApplicationCommandOptionType.channel):
+                raise AssertionError(f'`channel_types` is only meaningful if `type_` is '
+                    f'`{ApplicationCommandOptionType.__name__}.channel`.')
+        
         self = object.__new__(cls)
         self.name = name
         self.description = description
@@ -935,7 +981,9 @@ class ApplicationCommandOption:
         self.required = required
         self.choices = choices_processed
         self.options = options_processed
+        self.channel_types = channel_types_processed
         return self
+    
     
     def add_option(self, option):
         """
@@ -983,6 +1031,7 @@ class ApplicationCommandOption:
         
         options.append(option)
         return self
+    
     
     def add_choice(self, choice):
         """
@@ -1047,6 +1096,7 @@ class ApplicationCommandOption:
         choices.append(choice)
         return self
     
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -1084,8 +1134,16 @@ class ApplicationCommandOption:
         
         self.required = data.get('required', False)
         
+        channel_types = data.get('channel_types', None)
+        if (channel_types is None) or (not channel_types):
+            channel_types = None
+        else:
+            channel_types = tuple(sorted(channel_types))
+        self.channel_types = channel_types
+        
         self.type = ApplicationCommandOptionType.get(data['type'])
         return self
+    
     
     def to_data(self):
         """
@@ -1116,7 +1174,12 @@ class ApplicationCommandOption:
         if self.required:
             data['required'] = True
         
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            data['channel_types'] = channel_types
+        
         return data
+    
     
     def __repr__(self):
         """Returns the application command option's representation."""
@@ -1177,9 +1240,30 @@ class ApplicationCommandOption:
             
             repr_parts.append(']')
         
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            repr_parts.append(', channel_types=[')
+            
+            index = 0
+            limit = len(channel_types)
+            
+            while True:
+                channel_type = channel_types[index]
+                index += 1
+                repr_parts.append(repr(channel_type))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
     
     def copy(self):
         """
@@ -1207,6 +1291,12 @@ class ApplicationCommandOption:
         
         new.required = self.required
         new.type = self.type
+        
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            channel_types = tuple(channel_types)
+        new.channel_types = channel_types
+        
         return new
     
     def __eq__(self, other):
@@ -1233,6 +1323,9 @@ class ApplicationCommandOption:
             return False
         
         if self.type is not other.type:
+            return False
+        
+        if self.channel_types != other.channel_types:
             return False
         
         return True

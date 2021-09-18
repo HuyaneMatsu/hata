@@ -204,6 +204,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     ----------
     _wrapped : `Any`
         The slash command or other wrapper to wrap.
+    _channel_types : `None` or `tuple` of `int`
+        The accepted channel types.
     _choices : `None` or `dict` of (`str` or `int`, `str`) items
         Parameter's choices.
     _description : `None` or `str`
@@ -215,9 +217,9 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     _type : `int`
         The parameter's internal type identifier.
     """
-    __slots__ = ('_choices', '_description', '_name', '_parameter_name', '_type')
+    __slots__ = ('_channel_types', '_choices', '_description', '_name', '_parameter_name', '_type')
     
-    def __new__(cls, parameter_name, type_or_choice, description=None, name=None):
+    def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, channel_types=None):
         """
         Creates a partial function to wrap a slash command.
         
@@ -231,6 +233,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             Description for the annotation.
         name : `None` or `str`, Optional
             Name to use instead of the parameter's.
+        channel_types : `None` or `iterable` of `int`
+            The accepted channel types.
         
         Returns
         -------
@@ -247,6 +251,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
                 pattern.
             - If `parameter_type_or_choice` is unexpected.
             - If `name`'s is neither `None` or `str` instance.
+            - If `channel_types` is neither `None` nor `iterable` of `int`.
         ValueError
             - If `description`'s length is out of the expected range [2:100].
             - If `parameter_type_or_choice` is `str` instance, but not any of the expected ones.
@@ -254,6 +259,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             - If `choice` amount is out of the expected range [1:25].
             - If `type_or_choice` is a choice, and a `choice` name is duped.
             - If `type_or_choice` is a choice, and a `choice` values are mixed types.
+            - If received `channel_types` from both `type_or_choice` and `channel_types` parameters.
         """
         if type(parameter_name) is str:
             pass
@@ -262,15 +268,54 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         else:
             raise TypeError(f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}.')
         
-        type_, choices = parse_annotation_type_and_choice(type_or_choice, parameter_name)
+        if (channel_types is None):
+            channel_types_processed = None
+        else:
+            channel_types_processed = None
+            
+            iterator = getattr(type(channel_types), '__iter__', None)
+            if (iterator is None):
+                raise TypeError(f'`channel_types` is neither `None` nor `iterable`, got '
+                    f'{channel_types.__class__.__anme__}.')
+            
+            for channel_type in iterator(channel_types):
+                if type(channel_type) is int:
+                    pass
+                elif isinstance(channel_type, int):
+                    channel_type = int(channel_type)
+                else:
+                    raise TypeError(f'`channel_types` may include only `int` instances, got '
+                        f'{channel_type.__class__.__name__}; {channel_type!r}.')
+                
+                if channel_types_processed is None:
+                    channel_types_processed = set()
+                
+                channel_types_processed.add(channel_type)
+        
+            if channel_types_processed:
+                channel_types_processed = tuple(sorted(channel_types_processed))
+            else:
+                channel_types_processed = None
+        
+        type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
+        
+        if (parsed_channel_types is not None):
+            if (channel_types_processed is not None):
+                raise ValueError(f'`received `channel_types` from both `type_or_choice` and `channel_types` '
+                    f'parameters.')
+            
+            channel_types = parsed_channel_types
+        else:
+            channel_types = channel_types_processed
+            
         if (description is not None):
             description = parse_annotation_description(description, parameter_name)
         name = parse_annotation_name(name, parameter_name)
         
-        return partial_func(cls._decorate, cls, choices, description, name, parameter_name, type_)
+        return partial_func(cls._decorate, cls, choices, description, name, parameter_name, type_, channel_types)
     
     
-    def _decorate(cls, choices, description, name, parameter_name, type_, wrapped):
+    def _decorate(cls, choices, description, name, parameter_name, type_, channel_types, wrapped):
         """
         Wraps given command.
         
@@ -286,6 +331,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             The parameter's internal name.
         type_ : `int`
             The parameter's internal type identifier.
+        channel_types : `None` or `tuple` of `int`
+            The accepted channel types.
         wrapped : `Any`
             The slash command or other wrapper to wrap.
         
@@ -300,6 +347,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         self._name = name
         self._parameter_name = parameter_name
         self._type = type_
+        self._channel_types = channel_types
         self._wrapped = wrapped
         
         return self
@@ -335,6 +383,11 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         if (name is not None):
             repr_parts.append(', name=')
             repr_parts.append(repr(name))
+        
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            repr_parts.append(', channel_types=')
+            repr_parts.append(repr(channel_types))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

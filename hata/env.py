@@ -36,7 +36,7 @@ HATA_DISCORD_ENDPOINT : `None`, `str` = `None`
 HATA_STATUS_ENDPOINT : `None`, `str` = `None`
     Discord status endpoint.
 
-HATA_API_VERSION : `int` = `8`
+HATA_API_VERSION : `int` = `9`
     The Discord api version used by hata. The accepted values are `6`, `7`, `8` and `9`.
     
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still

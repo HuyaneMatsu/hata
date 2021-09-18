@@ -9426,7 +9426,7 @@ class Client(ClientUserPBase):
         -----
         No request is done, if the passed channel is partial, or if the channel's guild's webhooks are up to date.
         """
-        channel, channel_id = get_channel_and_id(channel, ChannelText)
+        channel_id = get_channel_id(channel, ChannelText)
         
         data = await self.http.webhook_get_all_channel(channel_id)
         return [Webhook(webhook_data) for webhook_data in data]

@@ -555,6 +555,8 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+-----------------------------------+
     | role_icons                    | role icons                        | ROLE_ICONS                        |
     +-------------------------------+-----------------------------------+-----------------------------------+
+    | role_subscriptions_enabled    | role subscriptions enabled        | ROLE_SUBSCRIPTIONS_ENABLED        |
+    +-------------------------------+-----------------------------------+-----------------------------------+
     | thread_archive_seven_day      | thread archive seven day          | SEVEN_DAY_THREAD_ARCHIVE          |
     +-------------------------------+-----------------------------------+-----------------------------------+
     | thread_archive_three_day      | thread archive three day          | THREE_DAY_THREAD_ARCHIVE          |
@@ -628,6 +630,7 @@ class GuildFeature(PreinstancedBase):
     public_disabled = P('PUBLIC_DISABLED', 'public disabled')
     relay_enabled = P('RELAY_ENABLED', 'relay enabled')
     role_icons = P('ROLE_ICONS', 'role icons')
+    role_subscriptions_enabled = P('ROLE_SUBSCRIPTIONS_ENABLED', 'role subscriptions enabled')
     thread_archive_seven_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread archive seven day')
     thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread archive three day')
     threads_enabled = P('THREADS_ENABLED', 'threads enabled')

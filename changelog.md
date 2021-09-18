@@ -7,6 +7,14 @@
 - Add `CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE`.
 - Add `CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE`.
 - Add `CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE`.
+- Add `GuildFeature.role_subscriptions_enabled`.
+- Add `Attachment.temporary`.
+
+##### ext.slash
+
+- Add support for channel type specific annotations for slash commands.
+- `configure_parameter` now accepts `channel_types` parameter.
+
 
 ## 1.1.104 *\[2021-09-15\]*
 

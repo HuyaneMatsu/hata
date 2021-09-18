@@ -19,13 +19,20 @@ class Attachment(DiscordEntity):
     proxy_url : `str`
         Proxied url of the attachment.
     size : `int`
-        The attachment's size in bytes,
+        The attachment's size in bytes.
+    temporary : `bool`
+        Whether the attachment is temporary and is removed after a set period of time.
+        
+        Temporary attachments are guaranteed to be available as long as their message itself exists.
+        
+        Defaults to `False`.
+    
     url : `str`
         The attachment's url.
     width : `int`
         The attachment's width if applicable. Defaults to `0`.
     """
-    __slots__ = ('content_type', 'height', 'name', 'proxy_url', 'size', 'url', 'width',)
+    __slots__ = ('content_type', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url', 'width')
     
     def __init__(self, data):
         """
@@ -44,14 +51,20 @@ class Attachment(DiscordEntity):
         self.url = data['url']
         self.height = data.get('height', 0)
         self.width = data.get('width', 0)
+        self.temporary = data.get('ephemeral', False)
     
     def __repr__(self):
         """Returns the representation of the attachment."""
         repr_parts = [
             '<', self.__class__.__name__,
             ' id=', repr(self.id),
-            ', name=', repr(self.name),
         ]
+        
+        if self.temporary:
+            repr_parts.append(' (temporary)')
+        
+        repr_parts.append(', name=')
+        repr_parts.append(repr(self.name))
         
         x = self.width
         y = self.height

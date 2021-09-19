@@ -339,6 +339,11 @@ class Message(DiscordEntity, immortal=True):
         
         author_data = data.get('author', None)
         webhook_id = data.get('webhook_id', None)
+        if webhook_id is None:
+            webhook_id = 0
+        else:
+            webhook_id = int(webhook_id)
+        
         application_id = data.get('application_id', None)
         
         if (application_id is None):
@@ -352,7 +357,7 @@ class Message(DiscordEntity, immortal=True):
                 application_id,
             )
         
-        if application_id or (webhook_id is None):
+        if (not webhook_id) or (application_id and ((webhook_id == application_id) or (not webhook_id))):
             if author_data is None:
                 author = ZEROUSER
             else:
@@ -363,7 +368,6 @@ class Message(DiscordEntity, immortal=True):
                 
                 author = User(author_data, guild)
         else:
-            webhook_id = int(webhook_id)
             if (data.get('message_reference', None) is not None):
                 cross_mention_datas = data.get('mention_channels', None)
                 if (cross_mention_datas is not None) and cross_mention_datas:

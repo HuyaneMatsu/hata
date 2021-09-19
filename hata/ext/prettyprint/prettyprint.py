@@ -278,13 +278,8 @@ def str_message(message, index=None, **kwargs):
     if (referenced_message is not None):
         if isinstance(referenced_message, Message):
             referenced_message_message_id = referenced_message.id
-            referenced_message_channel = referenced_message.channel
-            referenced_message_channel_id = referenced_message_channel.id
-            referenced_message_guild = referenced_message_channel.guild
-            if referenced_message_guild is None:
-                referenced_message_guild_id = 0
-            else:
-                referenced_message_guild_id = referenced_message_guild.id
+            referenced_message_channel_id = referenced_message.channel_id
+            referenced_message_guild_id = referenced_message.guild_id
         else:
             referenced_message_message_id = referenced_message.message_id
             referenced_message_channel_id = referenced_message.channel_id

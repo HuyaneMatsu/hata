@@ -9,6 +9,13 @@
 - Add `CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE`.
 - Add `GuildFeature.role_subscriptions_enabled`.
 - Add `Attachment.temporary`.
+- Add `MessageRepr.guild_id`.
+- Add `MessageRepr.channel_id`.
+
+#### Bug Fixes
+
+- `User` could be created with webhook id.
+- `get_channel_id_and_message_id` could raise `AttributeError`.
 
 ##### ext.slash
 
@@ -1057,8 +1064,8 @@ Fix up components in slash.
 
 - Add `UserBase.custom_activity`.
 - Rework `UserBase.custom_activity`.
-- Add `componnets` parameter to `Client.interaction_response_message_edit`.
-- Add `componnets` parameter to `Client.interaction_followup_message_edit`.
+- Add `components` parameter to `Client.interaction_response_message_edit`.
+- Add `components` parameter to `Client.interaction_followup_message_edit`.
 
 ##### ext.slash
 - Add `event` parameter to `InteractionResponse`.

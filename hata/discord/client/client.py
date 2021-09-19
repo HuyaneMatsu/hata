@@ -3431,8 +3431,8 @@ class Client(ClientUserPBase):
             channel_id = channel.id
         elif isinstance(channel, Message):
             message_id = channel.id
-            channel = channel.channel
-            channel_id = channel.id
+            channel_id = channel.channel_id
+            channel = CHANNELS.get(channel_id, None)
         else:
             channel_id = maybe_snowflake(channel)
             if (channel_id is not None):
@@ -3440,11 +3440,11 @@ class Client(ClientUserPBase):
                 channel = CHANNELS.get(channel_id, None)
             elif isinstance(channel, MessageRepr):
                 message_id = channel.id
-                channel = channel.channel
-                channel_id = channel.id
-            elif isinstance(channel, MessageReference):
                 channel_id = channel.channel_id
+                channel = CHANNELS.get(channel_id, None)
+            elif isinstance(channel, MessageReference):
                 message_id = channel.message_id
+                channel_id = channel.channel_id
                 channel = CHANNELS.get(channel_id, None)
             else:
                 snowflake_pair = maybe_snowflake_pair(channel)
@@ -8233,8 +8233,8 @@ class Client(ClientUserPBase):
             guild = channel.guild
         elif isinstance(message_or_channel, Message):
             message_id = message_or_channel.id
-            channel = message_or_channel.channel
-            channel_id = channel.id
+            channel_id = message_or_channel.channel_id
+            channel = CHANNELS.get(channel_id, None)
             guild = channel.guild
         else:
             channel_id = maybe_snowflake(message_or_channel)
@@ -8244,13 +8244,13 @@ class Client(ClientUserPBase):
                 guild = None
             elif isinstance(message_or_channel, MessageRepr):
                 message_id = message_or_channel.id
-                channel = message_or_channel.channel
-                channel_id = channel.id
-                guild = channel.id
-            elif isinstance(message_or_channel, MessageReference):
                 channel_id = message_or_channel.channel_id
                 channel = CHANNELS.get(channel_id, None)
+                guild = message_or_channel.guild
+            elif isinstance(message_or_channel, MessageReference):
                 message_id = message_or_channel.message_id
+                channel_id = message_or_channel.channel_id
+                channel = CHANNELS.get(channel_id, None)
                 guild = message_or_channel.guild
             else:
                 snowflake_pair = maybe_snowflake_pair(message_or_channel)

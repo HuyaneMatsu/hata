@@ -4,7 +4,8 @@ TOKEN = ''
 
 # Intents are bit flags thus bitwise operations can be used to dictate which intents are used.
 # By default all gateway intents are used.
-Sakuya = Client(TOKEN,
+Sakuya = Client(
+    TOKEN,
     intents = IntentFlag(0).update_by_keys(guilds=True, guild_messages=True)
 )
 

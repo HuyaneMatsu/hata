@@ -132,11 +132,11 @@ def validate_message_to_delete(message):
         `tuple` (`int`, `int`).
     """
     if isinstance(message, Message):
-        channel_id = message.channel.id
+        channel_id = message.channel_id
         message_id = message.id
     else:
         if isinstance(message, MessageRepr):
-            channel_id = message.channel.id
+            channel_id = message.channel_id
             message_id = message.id
         elif isinstance(message, MessageReference):
             channel_id = message.channel_id
@@ -931,10 +931,10 @@ def get_channel_id_and_message_id(message):
     # 5.: `tuple` (`int`, `int`)
     # 6.: raise
     if isinstance(message, Message):
-        channel_id = message.channel.id
+        channel_id = message.channel_id
         message_id = message.id
     elif isinstance(message, MessageRepr):
-        channel_id = message.channel.id
+        channel_id = message.channel_id
         message_id = message.id
     elif isinstance(message, MessageReference):
         channel_id = message.channel_id

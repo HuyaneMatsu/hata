@@ -102,7 +102,7 @@ class RateLimitProxy:
                         break
                     
                     if isinstance(limiter, Message):
-                        limiter_id = limiter.channel.id
+                        limiter_id = limiter.channel_id
                         break
             
             elif group_limiter is LIMITER_GUILD:

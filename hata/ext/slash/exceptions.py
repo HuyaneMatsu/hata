@@ -222,6 +222,42 @@ ERROR_MESSAGES = [
     ),
 ]
 
+def default_slasher_random_error_message_getter():
+    """
+    Returns random error message getter of ``Slasher``.
+    
+    Returns
+    -------
+    error_message : `str`
+    """
+    return choice(ERROR_MESSAGES)
+
+
+def _validate_random_error_message_getter(random_error_message_getter):
+    """
+    Validates the given `random_error_message_getter`. It should accept no parameters and return a string.
+    
+    Parameters
+    ----------
+    random_error_message_getter : `callable`
+        The random message getter to validate.
+    
+    Raises
+    ------
+    TypeError
+        - If `random_error_message_getter` is not callable.
+        - If `random_error_message_getter` is not async.
+        - If `random_error_message_getter` excepts not `0` parameters.
+    """
+    analyzer = CallableAnalyzer(random_error_message_getter)
+    if analyzer.is_async():
+        raise TypeError(f'`random_error_message_getter` cannot be async, got {random_error_message_getter!r}.')
+    
+    min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
+    if (min_ > 0):
+        raise TypeError(f'A `{random_error_message_getter}` should accept `0` parameters, meanwhile '
+            f'{random_error_message_getter!r} accepts between `{min_}` and `{max_}`.')
+
 
 async def default_slasher_exception_handler(client, interaction_event, command, exception):
     """
@@ -252,7 +288,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         forward = None
         render = True
     elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
-        forward = choice(ERROR_MESSAGES)
+        forward = client.slasher._random_error_message_getter()
         render = True
     else:
         forward = None
@@ -276,6 +312,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         await _render_application_command_exception(client, command, exception)
     
     return True
+
 
 async def _render_application_command_exception(client, command, exception):
     """
@@ -343,17 +380,17 @@ def test_exception_handler(exception_handler):
         
         The following parameters are passed to it:
         
-        +-------------------+-------------------------------------------+
-        | Name              | Type                                      |
-        +===================+===========================================+
-        | client            | ``Client``                                |
-        +-------------------+-------------------------------------------+
-        | interaction_event | ``InteractionEvent``                      |
-        +-------------------+-------------------------------------------+
-        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``    |
-        +-------------------+-------------------------------------------+
-        | exception         | `BaseException`                           |
-        +-------------------+-------------------------------------------+
+        +-------------------+-------------------------------------------------------+
+        | Name              | Type                                                  |
+        +===================+=======================================================+
+        | client            | ``Client``                                            |
+        +-------------------+-------------------------------------------------------+
+        | interaction_event | ``InteractionEvent``                                  |
+        +-------------------+-------------------------------------------------------+
+        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``   |
+        +-------------------+-------------------------------------------------------+
+        | exception         | `BaseException`                                       |
+        +-------------------+-------------------------------------------------------+
         
         Should return the following parameters:
         

@@ -142,6 +142,31 @@ The default slasher exception handler forwards `SlasherCommandError`-s' prettifi
 are raised meanwhile looking up, or validating slash command parameters. If any other exception occurs, it will forward
 a random not related error message, and call `client.events.error`.
 
+##### random_error_message_getter
+
+Used by the default exception handler to get a random error message to forward if something goes wrong.
+
+The default one returns some touhou relating error messages, and if you do not get the jokes, make sure to define your
+own.
+
+Here is an example how to define one.
+
+```py
+from random import choice
+
+ERROR_MESSAGES = (
+    'Something went wrong, please try again later.',
+    'Error occurred.',
+    # ...
+)
+
+def random_error_message_getter():
+    return choice(ERROR_MESSAGES)
+
+
+# Then pass it to the client contructor ...
+```
+
 ## Adding commands & responding
 
 After the extension is setuped, commands can be added using the `client.interaction` decorator.

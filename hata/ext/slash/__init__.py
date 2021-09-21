@@ -110,5 +110,6 @@ register_setup_function(
     (
         'delete_commands_on_unload',
         'use_default_exception_handler',
+        'random_error_message_getter',
     ),
 )

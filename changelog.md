@@ -1,4 +1,4 @@
-## 1.1.105 *\[2021-09-??\]*
+## 1.1.105 *\[2021-09-21\]*
 
 #### Improvements
 
@@ -11,6 +11,7 @@
 - Add `Attachment.temporary`.
 - Add `MessageRepr.guild_id`.
 - Add `MessageRepr.channel_id`.
+- Add `ERROR_CODES.not_enough_guild_boosters`.
 
 #### Bug Fixes
 

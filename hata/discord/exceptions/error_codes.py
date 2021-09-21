@@ -313,6 +313,8 @@ These are the following:
 +-------------------------------------------------------+-----------+-----------+
 | guild_monetization_required                           | 50097     | -         |
 +-------------------------------------------------------+-----------+-----------+
+| not_enough_guild_boosters                             | 50101     | -         |
++-------------------------------------------------------+-----------+-----------+
 | MFA_enabled                                           | 60001     | -         |
 +-------------------------------------------------------+-----------+-----------+
 | MFA_disabled                                          | 60002     | -         |
@@ -560,6 +562,7 @@ before_value_earlier_than_creation_time = 50085
 invalid_country_code = 50095
 cannot_friend_self = 50096
 guild_monetization_required = 50097
+not_enough_guild_boosters = 50101
 
 MFA_enabled = 60001
 MFA_disabled = 60002

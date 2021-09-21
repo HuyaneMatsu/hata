@@ -17,7 +17,8 @@ from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
 from .application_command import SlasherApplicationCommand
 from .component_command import ComponentCommand
-from .exceptions import handle_command_exception, test_exception_handler, default_slasher_exception_handler
+from .exceptions import handle_command_exception, test_exception_handler, default_slasher_exception_handler, \
+    default_slasher_random_error_message_getter, _validate_random_error_message_getter
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -839,15 +840,17 @@ class Slasher(EventHandlerBase):
     ``Slasher`` instances are weakreferable.
     """
     __slots__ = ('__weakref__', '_call_later', '_client_reference', '_component_commands', '_command_states',
-        '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers', '_sync_done',
-        '_sync_permission_tasks', '_sync_should', '_sync_tasks', '_synced_permissions', 'command_id_to_command',
-        'regex_custom_id_to_component_command', 'string_custom_id_to_component_command')
+        '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers',
+        '_random_error_message_getter', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
+        '_synced_permissions', 'command_id_to_command', 'regex_custom_id_to_component_command',
+        'string_custom_id_to_component_command')
     
     __event_name__ = 'interaction_create'
     
     SUPPORTED_TYPES = (SlasherApplicationCommand, ComponentCommand)
     
-    def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True):
+    def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
+            random_error_message_getter=None):
         """
         Creates a new interaction event handler.
         
@@ -859,6 +862,8 @@ class Slasher(EventHandlerBase):
             Whether commands should be deleted when unloaded.
         use_default_exception_handler : `bool`, Optional
             Whether the default slash exception handler should be added as an exception handler.
+        random_error_message_getter : `None` or `FunctionType`, Optional
+            Random error message getter used by the default exception handler.
         
         Raises
         ------
@@ -900,6 +905,10 @@ class Slasher(EventHandlerBase):
         else:
             exception_handlers = None
         
+        if random_error_message_getter is None:
+            random_error_message_getter = default_slasher_random_error_message_getter
+        else:
+            _validate_random_error_message_getter(random_error_message_getter)
         
         self = object.__new__(cls)
         self._call_later = None
@@ -913,6 +922,7 @@ class Slasher(EventHandlerBase):
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
         self._exception_handlers = exception_handlers
+        self._random_error_message_getter = random_error_message_getter
         self._component_commands = set()
         
         self.command_id_to_command = {}

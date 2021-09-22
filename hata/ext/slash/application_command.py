@@ -1,5 +1,7 @@
 __all__ = ('SlasherApplicationCommand', )
 
+from functools import partial as partial_func
+
 from ...backend.utils import WeakReferer
 from ...backend.export import export
 
@@ -17,12 +19,13 @@ from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIO
     APPLICATION_COMMAND_NAME_LENGTH_MAX
 
 
-from .responding import process_command_coroutine
+from .responding import process_command_coroutine, process_auto_completer_coroutine
 from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlasherCommandWrapper, get_parameter_configurers
 from .converters import get_slash_command_parameter_converters, InternalParameterConverter, \
-    get_context_command_parameter_converters
+    get_context_command_parameter_converters, SashCommandParameterConverter, \
+    get_application_command_parameter_auto_completer_converters
 from .exceptions import SlasherApplicationCommandParameterConversionError
 
 # Routers
@@ -410,6 +413,39 @@ def _generate_description_from(command, name, description):
             f'{description_length!r}; {description!r}.')
     
     return description
+
+
+def _register_autocomplete_function(slasher_application_command, parameter_converter, function):
+    """
+    Registers autocomplete function to the given slasher application command.
+    
+    This function is wrapped inside `functools.partial` and only `function` parameter is passable.
+    
+    Parameters
+    ----------
+    slasher_application_command : ``SlasherApplicationCommand``
+        The respective slasher application command.
+    parameter_converter : ``SashCommandParameterConverter``
+        The parameter's converter.
+    function : `callable`
+        Function to register as auto completer.
+    
+    Returns
+    -------
+    function : `callable`
+        The registered function.
+    
+    Raises
+    ------
+    RuntimeError
+        If `function` parameter is given as `None`.
+    TypeError
+        If `function is not an asynchronous function.
+    """
+    if (function is None):
+        raise RuntimeError(f'`function` parameter is required as non-`None`.')
+    
+    return slasher_application_command._register_autocomplete_function(parameter_converter, function)
 
 
 @export
@@ -942,6 +978,27 @@ class SlasherApplicationCommand:
         
         await sub_command(client, interaction_event, option.options)
     
+    
+    async def call_auto_completion(self, client, interaction_event, auto_complete_option):
+        """
+        Calls the auto completion function of the slasher application command.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        auto_complete_option : ``ApplicationCommandAutocompleteInteractionOption``
+            The option to autocomplete.
+        """
+        command_function = self._command
+        if (command_function is not None):
+            await command_function.call_auto_completion(client, interaction_event, auto_complete_option)
+    
+    
     def get_schema(self):
         """
         Returns an application command schema representing the slash command.
@@ -955,6 +1012,7 @@ class SlasherApplicationCommand:
             schema = self._schema = self.as_schema()
         
         return schema
+    
     
     def as_schema(self):
         """
@@ -1051,6 +1109,7 @@ class SlasherApplicationCommand:
         new.target = self.target
         
         return new
+    
     
     @property
     def interactions(self):
@@ -1339,6 +1398,105 @@ class SlasherApplicationCommand:
             real_command_count = 1
         
         return real_command_count
+    
+    
+    def autocomplete(self, parameter_name, function=None):
+        """
+        Registers an auto completer function to the application command.
+        
+        Can be used as a decorator, as:
+        
+        ```py
+        @bot.interactions(is_global=True)
+        async def buy(
+            item: ('str', 'Select an item to buy.'),
+        ):
+            return 'Great success.'
+        
+        AUTO_COMPLETE_CHOICES = (
+            'cake',
+            'shrimp fry',
+        )
+        
+        @buy.autocomplete('item')
+        async def autocomplete_item_parameter(value):
+            if value is None:
+                return AUTO_COMPLETE_CHOICES[:20]
+            
+            value = value.lower()
+            
+            return [choice for choice in AUTO_COMPLETE_CHOICES if choice.startswith(value)]
+        ```
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        function : `None` or `callable`, Optional
+            The function to register as auto completer.
+        
+        Returns
+        -------
+        function / wrapper : `callable` or `functools.partial`
+            The registered function if given or a wrapper to register the function with.
+        
+        Raises
+        ------
+        RuntimeError
+            - Only available for commands without sub commands for now.
+            - The parameter already has a auto completer defined.
+        TypeError
+            If `function is not an asynchronous function.
+        """
+        command_function = self._command
+        if (command_function is None):
+            raise RuntimeError(f'Auto completion only available for commands without sub commands for now.')
+        
+        if not isinstance(parameter_name, str):
+            raise TypeError(f'`name` can be given as `str` instance, got {parameter_name.__class__.__name__}.')
+        
+        parameter_converter = command_function._get_parameter_converter_by_name(parameter_name)
+        
+        if (parameter_converter.auto_completer is not None):
+            raise RuntimeError(f'The parameter already has an auto completer defined.')
+        
+        if (function is None):
+            return partial_func(_register_autocomplete_function, self, parameter_converter)
+        
+        return self._register_autocomplete_function(parameter_converter, function)
+    
+    
+    def _register_autocomplete_function(self, parameter_converter, function):
+        """
+        Registers and auto completer for the application command. Called either by ``.autocomplete`` or by
+        ``_register_autocomplete_function``.
+        
+        Parameters
+        ----------
+        parameter_converter : ``SashCommandParameterConverter``
+            The parameter's converter.
+        function : `None` or `callable`
+            The function to register as auto completer.
+        
+        Raises
+        ------
+        RuntimeError
+            Only available for commands without sub commands for now.
+        TypeError
+            If `function is not an asynchronous function.
+        """
+        command_function = self._command
+        if (command_function is None):
+            raise RuntimeError(f'Auto completion only available for commands without sub commands for now.')
+        
+        command, parameter_converters = get_application_command_parameter_auto_completer_converters(function)
+        
+        parameter_converter.auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+            command,
+            parameter_converters,
+        )
+        
+        return function
 
 
 class SlasherApplicationCommandFunction:
@@ -1347,10 +1505,10 @@ class SlasherApplicationCommandFunction:
     
     Attributes
     ----------
-    _parameter_converters : `tuple` of ``ParameterConverter``
-        Parsers to parse command parameters.
     _command : `async-callable˛
         The command's function to call.
+    _parameter_converters : `tuple` of ``ParameterConverter``
+        Parsers to parse command parameters.
     description : `str`
         The slash command's description.
     is_default : `bool`
@@ -1360,12 +1518,12 @@ class SlasherApplicationCommandFunction:
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoker user.
     """
-    __slots__ = ('_parameter_converters', '_command', 'category', 'description', 'is_default', 'name',
+    __slots__ = ('_command', '_parameter_converters', 'category', 'description', 'is_default', 'name',
         'show_for_invoking_user_only')
     
     def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
-        Creates a new ``SlasherApplicationCommandFunction`` instance with the given parameters-
+        Creates a new ``SlasherApplicationCommandFunction`` instance with the given parameters.
         
         Parameters
         ----------
@@ -1434,18 +1592,84 @@ class SlasherApplicationCommandFunction:
         await process_command_coroutine(client, interaction_event, self.show_for_invoking_user_only, command_coroutine)
     
     
+    async def call_auto_completion(self, client, interaction_event, auto_complete_option):
+        """
+        Calls the auto completion function of the slasher application command function.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        auto_complete_option : ``ApplicationCommandAutocompleteInteractionOption``
+            The option to autocomplete.
+        """
+        parameter_name = auto_complete_option.name
+        
+        for parameter_converter in self._parameter_converters:
+            if isinstance(parameter_converter, SashCommandParameterConverter):
+                if parameter_converter.name == parameter_name:
+                    break
+        else:
+            return
+        
+        auto_completer = parameter_converter.auto_completer
+        if (auto_completer is not None):
+            await auto_completer(client, interaction_event)
+        
+    
+    def _get_parameter_converter_by_name(self, parameter_name):
+        """
+        Tries to get parameter converter by name. Only returns Discord parameters.
+        
+        Parameters
+        ----------
+        parameter_name : `str` or `None`
+            The parameter's name.
+        
+        Returns
+        -------
+        parameter_converter : ``SashCommandParameterConverter`` of `None`
+            The found parameter converter if any.
+        """
+        parameter_converters = self._parameter_converters
+        
+        for parameter_converter in parameter_converters:
+            if isinstance(parameter_converter, SashCommandParameterConverter):
+                if (parameter_converter.parameter_name == parameter_name):
+                    return parameter_converter
+        
+        parameter_name = raw_name_to_display(parameter_name)
+        
+        for parameter_converter in parameter_converters:
+            if isinstance(parameter_converter, SashCommandParameterConverter):
+                if (parameter_converter.name == parameter_name):
+                    return parameter_converter
+        
+        return None
+    
+    
     def __repr__(self):
         """Returns the application command option's representation."""
-        result = ['<', self.__class__.__name__, ' name=', repr(self.name), ', description=', repr(self.description)]
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' name=', repr(self.name),
+            ', description=', repr(self.description),
+        ]
+        
         if self.is_default:
-            result.append(', is_default=True')
+            repr_parts.append(', is_default=True')
         
         if self.show_for_invoking_user_only:
-            result.append(', show_for_invoking_user_only=True')
+            repr_parts.append(', show_for_invoking_user_only=True')
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+    
     
     def as_option(self):
         """
@@ -1765,3 +1989,65 @@ class SlasherApplicationCommandCategory:
             return False
         
         return True
+
+
+class SlasherApplicationCommandParameterAutoCompleter:
+    """
+    Represents an application command parameter's auto completer.
+    
+    Attributes
+    ----------
+    _command : `async-callable˛
+        The command's function to call.
+    _parameter_converters : `tuple` of ``ParameterConverter``
+        Parsers to parse command parameters.
+    """
+    __slots__ = ('_command', '_parameter_converters')
+    
+    def __new__(cls, command, parameter_converters):
+        """
+        Creates a new ``SlasherApplicationCommandParameterAutoCompleter`` instance with the given parameters.
+        
+        Parameters
+        ----------
+        command : `async-callable`
+            The command's function to call.
+        parameter_converters : `tuple` of ``ParameterConverter``
+            Parsers to parse command parameters.
+        """
+        self = object.__new__(cls)
+        self._command = command
+        self._parameter_converters = parameter_converters
+        return self
+    
+    
+    async def __call__(self, client, interaction_event):
+        """
+        Calls the parameter auto completer.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the event.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        parameters = []
+        
+        for parameter_converter in self._parameter_converters:
+            parameter = await parameter_converter(client, interaction_event, None)
+            
+            parameters.append(parameter)
+        
+        auto_completer_coroutine = self._command(*parameters)
+        
+        await process_auto_completer_coroutine(client, interaction_event, auto_completer_coroutine)
+    
+    
+    def __repr__(self):
+        """Returns the parameter auto completer's representation."""
+        repr_parts = ['<', self.__class__.__name__, '>']
+        
+        return ''.join(repr_parts)

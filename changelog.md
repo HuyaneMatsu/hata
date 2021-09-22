@@ -1,3 +1,18 @@
+## 1.1.106 *\[2021-09-??\]*
+
+#### Improvements
+
+- Add `HATA_MESSAGE_CACHE_SIZE` environmental variable for easier message cache size configuration.
+- Add `InteractionType.application_command_autocomplete`.
+- Add `ApplicationCommandOption.autocomplete`.
+- Add `INTERACTION_RESPONSE_TYPES.application_command_autocomplete_result`.
+- Add `ApplicationCommandAutocompleteInteractionOption`.
+- Add `ApplicationCommandAutocompleteInteraction`.
+
+##### ext.slash
+
+- `Slasher` now supports auto completion feature (this includes many new classes and functions).
+
 ## 1.1.105 *\[2021-09-21\]*
 
 #### Improvements

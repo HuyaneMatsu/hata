@@ -1373,7 +1373,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `Scopes` wasn't neither as `str` not `list` of `str` instances.
+            If `Scopes` is neither `str` nor `list` of `str` instances.
         ConnectionError
             No internet connection.
         DiscordException
@@ -12530,6 +12530,74 @@ class Client(ClientUserPBase):
             data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
         
         with InteractionResponseContext(interaction, True, show_for_invoking_user_only):
+            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+    
+    
+    async def interaction_application_command_autocomplete(self, interaction, choices):
+        """
+        Forwards auto completion choices for the user.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent``
+            Interaction to acknowledge
+        choices : `None` or `iterable` of `str`
+            Choices to show for the user.
+        
+        Raises
+        ------
+        TypeError
+            If `choice` is neither `None` nor `iterable`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            If `interaction` was not given an ``InteractionEvent``.
+        
+        Notes
+        -----
+        If the interaction is already timed or out or was used, you will get:
+        
+        ```
+        DiscordException Not Found (404), code=10062: Unknown interaction
+        ```
+        """
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        # Do not auto complete twice
+        if not interaction.is_unanswered():
+            return
+        
+        
+        choices_processed = []
+        
+        if (choices is not None):
+            iterator = getattr(type(choices), '__iter__', None)
+            if (iterator is None):
+                raise TypeError(f'`choices` can be either `None` or `iterable` of `str`.')
+            
+            choices_processed = []
+            for choice in iterator(choices):
+                choices_processed.append({
+                    'name': choice,
+                    'value': choice,
+            })
+        
+        
+        data = {
+            'type': INTERACTION_RESPONSE_TYPES.application_command_autocomplete_result,
+            'data': {
+                'choices': choices_processed,
+            },
+        }
+        
+        with InteractionResponseContext(interaction, True, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     

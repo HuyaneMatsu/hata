@@ -1,5 +1,7 @@
-__all__ = ('ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction',
-    'InteractionEvent', 'InteractionResponseContext', 'InteractionType')
+__all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutocompleteInteractionOption',
+    'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction', 'InteractionEvent',
+    'InteractionResponseContext', 'InteractionType')
+
 
 import reprlib
 
@@ -27,12 +29,12 @@ RESPONSE_FLAG_RESPONDING = 1<<2
 RESPONSE_FLAG_RESPONDED = 1<<3
 RESPONSE_FLAG_EPHEMERAL = 1<<4
 
-RESPONSE_FLAG_IS_NONE = 0
-RESPONSE_FLAG_IS_ACKNOWLEDGING = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_RESPONDING
-RESPONSE_FLAG_IS_ACKNOWLEDGED = RESPONSE_FLAG_DEFERRED|RESPONSE_FLAG_RESPONDED
-RESPONSE_FLAG_IS_DEFERRING_OR_DEFERRED = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_DEFERRED
-RESPONSE_FLAG_IS_RESPONDING_OR_RESPONDED = RESPONSE_FLAG_RESPONDING|RESPONSE_FLAG_RESPONDED
-RESPONSE_FLAG_IS_ACKNOWLEDGING_OR_ACKNOWLEDGED = RESPONSE_FLAG_IS_ACKNOWLEDGING|RESPONSE_FLAG_IS_ACKNOWLEDGED
+RESPONSE_FLAG_NONE = 0
+RESPONSE_FLAG_ACKNOWLEDGING = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_RESPONDING
+RESPONSE_FLAG_ACKNOWLEDGED = RESPONSE_FLAG_DEFERRED|RESPONSE_FLAG_RESPONDED
+RESPONSE_FLAG_DEFERRING_OR_DEFERRED = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_DEFERRED
+RESPONSE_FLAG_RESPONDING_OR_RESPONDED = RESPONSE_FLAG_RESPONDING|RESPONSE_FLAG_RESPONDED
+RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED = RESPONSE_FLAG_ACKNOWLEDGING|RESPONSE_FLAG_ACKNOWLEDGED
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 
@@ -47,7 +49,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         The represented application command's identifier number.
     name : `str`
         The name of the command. It's length can be in range [1:32].
-    options : `None` or `tuple` of ApplicationCommandInteractionOption
+    options : `None` or `tuple` of ``ApplicationCommandInteractionOption``
         The parameters and values from the user if any. Defaults to `None` if non is received.
     resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
         Resolved received channels stored by their identifier as keys if any.
@@ -536,10 +538,200 @@ class ComponentInteraction:
         return hash_value
 
 
+class ApplicationCommandAutocompleteInteractionOption:
+    """
+    Application auto complete option representing an auto completable parameters.
+    
+    Attributes
+    ----------
+    focused : `bool`
+        Whether this field is focused by the user.
+    name : `str`
+        The name of the parameter.
+    value : `None` or `str`
+        The value, the user has been typed.
+    """
+    __slots__ = ('focused', 'name', 'type', 'value')
+    
+    def __new__(cls, data):
+        """
+        Creates a new ``ApplicationCommandAutocompleteOption`` instance from the data received from Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`)
+            Application command autocomplete option data.
+        """
+        name = data['name']
+        
+        value = data.get('value', None)
+        if (value is not None) and (not value):
+            value = None
+        
+        focused = data['focused']
+        
+        self = object.__new__(cls)
+        self.focused = focused
+        self.name = name
+        self.value = value
+        return self
+    
+    
+    def __repr__(self):
+        """Returns the application command autocomplete option's representation."""
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' name=', repr(self.name),
+        ]
+        
+        if self.focused:
+            repr_parts.append(' (focused)')
+        
+        value = self.value
+        if (value is not None):
+            repr_parts.append(', value=')
+            repr_parts.append(reprlib.repr(value))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+
+
+class ApplicationCommandAutocompleteInteraction(DiscordEntity):
+    """
+    Represents an ``ApplicationCommand``'s auto completion interaction.
+    
+    Attributes
+    ----------
+    id : `int`
+        The represented application command's identifier number.
+    name : `str`
+        The name of the command. It's length can be in range [1:32].
+    options : `None` or `tuple` of ``ApplicationCommandAutocompleteOption``
+        Parameter auto completion options.
+    """
+    __slots__ = ('name', 'options',)
+    
+    def __new__(cls, data, guild, cached_users):
+        """
+        Creates a new ``ApplicationCommandAutocompleteInteraction`` from the data received from Discord.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The received application command interaction data.
+        guild : `None` or ``Guild``
+            The respective guild.
+        cached_users : `None` or `list` of ``ClientUserBase``
+            Users, which might need temporary caching.
+        
+        Returns
+        -------
+        self : ``ApplicationCommandInteraction``
+            The created object.
+        cached_users : `None` or `list` of ``ClientUserBase``
+            Users, which might need temporary caching.
+        """
+        id_ = int(data['id'])
+        name = data['name']
+        
+        option_datas = data.get('options', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = tuple(
+                ApplicationCommandAutocompleteInteractionOption(option_data) for option_data in option_datas
+            )
+        
+        self = object.__new__(cls)
+        self.id = id_
+        self.name = name
+        self.options = options
+        
+        return self, cached_users
+    
+    
+    def __repr__(self):
+        """Returns the application command interaction auto completion's representation."""
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' id=', repr(self.id),
+            ', name=', repr(self.name),
+        ]
+        
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=[')
+            
+            index = 0
+            limit = len(options)
+            
+            while True:
+                option = options[index]
+                index += 1
+                repr_parts.append(repr(option))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @property
+    def focused(self):
+        """
+        Returns the focused option of the application command autocomplete interaction.
+        
+        Returns
+        -------
+        option : `None` or ``ApplicationCommandAutocompleteInteractionOption``
+        """
+        options = self.options
+        if options is None:
+            option = None
+        else:
+            for option in options:
+                if option.focused:
+                    break
+            else:
+                option = None
+        
+        return option
+    
+    
+    @property
+    def value(self):
+        """
+        Returns the focused option's value of the application command autocomplete interaction.
+        
+        Returns
+        -------
+        value : `None` or `str`
+        """
+        options = self.options
+        if options is None:
+            value = None
+        else:
+            for option in options:
+                if option.focused:
+                    value = option.value
+                    break
+            else:
+                value = None
+        
+        return value
+
+
 INTERACTION_TYPE_TABLE = {
     InteractionType.ping.value: None,
     InteractionType.application_command.value: ApplicationCommandInteraction,
     InteractionType.message_component.value: ComponentInteraction,
+    InteractionType.application_command_autocomplete.value: ApplicationCommandAutocompleteInteraction,
 }
 
 
@@ -581,7 +773,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     guild : `None` or ``Guild`
         The from where the interaction was called from. Might be `None` if the interaction was called from a private
         channel.
-    interaction : `None` or ``ApplicationCommandInteraction`` or ``ComponentInteraction``
+    interaction : `None` or ``ApplicationCommandInteraction``, ``ComponentInteraction`` or \
+            ``ApplicationCommandAutocompleteInteraction``
+        
         The called interaction by it's route by the user.
     message : `None` or ``Message``
         The message from where the interaction was received. Applicable for message components.
@@ -685,7 +879,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         # We ignore `type` field, since we always get only `InteractionType.application_command`.
         self.user = invoker_user
         self.user_permissions = user_permissions
-        self._response_flag = RESPONSE_FLAG_IS_NONE
+        self._response_flag = RESPONSE_FLAG_NONE
         self._cached_users = cached_users
         self.message = message
         
@@ -803,7 +997,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         response_state_names = None
         response_state = self._response_flag
-        if response_state == RESPONSE_FLAG_IS_NONE:
+        if response_state == RESPONSE_FLAG_NONE:
             pass
         elif response_state & RESPONSE_FLAG_DEFERRING:
             if response_state_names is None:
@@ -889,7 +1083,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         -------
         is_unanswered : `bool`
         """
-        return True if (self._response_flag == RESPONSE_FLAG_IS_NONE) else False
+        return True if (self._response_flag == RESPONSE_FLAG_NONE) else False
     
     
     def is_acknowledging(self):
@@ -900,7 +1094,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         -------
         is_acknowledging : `bool`
         """
-        return True if (self._response_flag & RESPONSE_FLAG_IS_ACKNOWLEDGING) else False
+        return True if (self._response_flag & RESPONSE_FLAG_ACKNOWLEDGING) else False
     
     
     def is_acknowledged(self):
@@ -911,7 +1105,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         -------
         is_acknowledged : `bool`
         """
-        return True if (self._response_flag & RESPONSE_FLAG_IS_ACKNOWLEDGED) else False
+        return True if (self._response_flag & RESPONSE_FLAG_ACKNOWLEDGED) else False
     
     
     def is_deferred(self):
@@ -1077,11 +1271,11 @@ class InteractionResponseContext:
         response_flag = interaction._response_flag
         
         if self.is_deferring:
-            if not (response_flag&RESPONSE_FLAG_IS_ACKNOWLEDGING_OR_ACKNOWLEDGED):
+            if not (response_flag&RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED):
                 response_flag |= RESPONSE_FLAG_DEFERRING
         else:
-            if (not response_flag&RESPONSE_FLAG_IS_RESPONDING_OR_RESPONDED) and \
-                    (not response_flag&RESPONSE_FLAG_IS_DEFERRING_OR_DEFERRED):
+            if (not response_flag&RESPONSE_FLAG_RESPONDING_OR_RESPONDED) and \
+                    (not response_flag&RESPONSE_FLAG_DEFERRING_OR_DEFERRED):
                 response_flag |= RESPONSE_FLAG_RESPONDING
         
         interaction._response_flag = response_flag
@@ -1094,7 +1288,7 @@ class InteractionResponseContext:
         response_flag = interaction._response_flag
         if exc_type is None:
             if self.is_ephemeral:
-                if not response_flag&RESPONSE_FLAG_IS_ACKNOWLEDGED:
+                if not response_flag&RESPONSE_FLAG_ACKNOWLEDGED:
                     response_flag ^= RESPONSE_FLAG_EPHEMERAL
             
             if self.is_deferring:

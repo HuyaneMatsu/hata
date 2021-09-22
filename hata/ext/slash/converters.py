@@ -23,6 +23,7 @@ from .exceptions import SlasherApplicationCommandParameterConversionError
 from .expression_parser import evaluate_text
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
+INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
 
 async def converter_self_client(client, interaction_event):
     """
@@ -66,7 +67,7 @@ async def converter_self_interaction_event(client, interaction_event):
 
 async def converter_self_interaction_target(client, interaction_event):
     """
-    Internal converter for returning the received interaction event target. Applicable for context application
+    Internal converter for returning the received interaction event's target. Applicable for context application
     commands.
     
     This function is a coroutine.
@@ -88,6 +89,31 @@ async def converter_self_interaction_target(client, interaction_event):
     
     return interaction_event.interaction.target
     
+
+async def converter_self_interaction_value(client, interaction_event):
+    """
+    Internal converter for returning the received interaction event's value. Applicable for auto completed application
+    commands parameters.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    
+    Returns
+    -------
+    target : `None` or `str`
+        The received value if any.
+    """
+    if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
+        return None
+    
+    return interaction_event.interaction.value
+
 
 async def converter_int(client, interaction_event, value):
     """
@@ -440,21 +466,29 @@ ANNOTATION_TYPE_SELF_INTERACTION_EVENT = 14
 ANNOTATION_TYPE_EXPRESSION = 15
 ANNOTATION_TYPE_FLOAT = 16
 ANNOTATION_TYPE_SELF_TARGET = 17
+ANNOTATION_TYPE_SELF_VALUE = 18
 
-CLIENT_ANNOTATION_NAMES = frozenset((
+ANNOTATION_NAMES_CLIENT = frozenset((
     'c',
     'client',
 ))
 
-INTERACTION_EVENT_ANNOTATION_NAMES = frozenset((
+ANNOTATION_NAMES_INTERACTION_EVENT = frozenset((
     'e',
     'event',
     'interaction_event',
 ))
 
-TARGET_ANNOTATION_NAMES = frozenset((
+ANNOTATION_NAMES_TARGET = frozenset((
     't',
     'target',
+))
+
+
+ANNOTATION_NAMES_VALUE = frozenset((
+    'v',
+    'val',
+    'value',
 ))
 
 CHANNEL_TYPES_GUILD = tuple(CHANNEL_TYPES.GROUP_GUILD)
@@ -556,15 +590,19 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     # Internal
     **un_map_pack((
         (name, (ANNOTATION_TYPE_SELF_CLIENT, None))
-        for name in CLIENT_ANNOTATION_NAMES
+        for name in ANNOTATION_NAMES_CLIENT
     )),
     **un_map_pack((
         (name, (ANNOTATION_TYPE_SELF_INTERACTION_EVENT, None))
-        for name in INTERACTION_EVENT_ANNOTATION_NAMES
+        for name in ANNOTATION_NAMES_INTERACTION_EVENT
     )),
     **un_map_pack((
         (name, (ANNOTATION_TYPE_SELF_TARGET, None))
-        for name in TARGET_ANNOTATION_NAMES
+        for name in ANNOTATION_NAMES_TARGET
+    )),
+    **un_map_pack((
+        (name, (ANNOTATION_TYPE_SELF_VALUE, None))
+        for name in ANNOTATION_NAMES_VALUE
     )),
 }
 
@@ -640,6 +678,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_SELF_CLIENT: (converter_self_client, True),
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: (converter_self_interaction_event, True),
     ANNOTATION_TYPE_SELF_TARGET: (converter_self_interaction_target, True),
+    ANNOTATION_TYPE_SELF_VALUE: (converter_self_interaction_value, True)
 }
 
 INTERNAL_ANNOTATION_TYPES = frozenset((
@@ -667,6 +706,8 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     
     ANNOTATION_TYPE_SELF_CLIENT: ApplicationCommandOptionType.none,
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: ApplicationCommandOptionType.none,
+    ANNOTATION_TYPE_SELF_TARGET: ApplicationCommandOptionType.none,
+    ANNOTATION_TYPE_SELF_VALUE: ApplicationCommandOptionType.none,
 }
 
 ANNOTATION_TYPE_TO_REPRESENTATION = {
@@ -1319,9 +1360,9 @@ def parse_annotation_internal(annotation):
             annotation_type = None
     else:
         annotation = annotation.lower()
-        if annotation in CLIENT_ANNOTATION_NAMES:
+        if annotation in ANNOTATION_NAMES_CLIENT:
             annotation_type = ANNOTATION_TYPE_SELF_CLIENT
-        elif annotation in INTERACTION_EVENT_ANNOTATION_NAMES:
+        elif annotation in ANNOTATION_NAMES_INTERACTION_EVENT:
             annotation_type = ANNOTATION_TYPE_SELF_INTERACTION_EVENT
         else:
             annotation_type = None
@@ -1388,14 +1429,26 @@ def parse_annotation(parameter):
 class ParameterConverter:
     """
     Base class for parameter converters.
-    """
-    __slots__ = ()
     
-    def __new__(cls):
+    Attributes
+    ----------
+    parameter_name : `str`
+        The parameter's name.
+    """
+    __slots__ = ('parameter_name',)
+    
+    def __new__(cls, parameter_name):
         """
         Creates a new parameter converter from the given parameter.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
         """
-        return object.__new__(cls)
+        self = object.__new__(cls)
+        self.parameter_name = parameter_name
+        return self
     
     
     async def __call__(self, client, interaction_event, value):
@@ -1424,11 +1477,11 @@ class ParameterConverter:
             The parameter cannot be parsed.
         """
         pass
-
+    
     def __repr__(self):
         """Returns the parameter converter's representation."""
-        return f'<{self.__class__.__name__}>'
-
+        return f'<{self.__class__.__name__}, parameter_name={self.parameter_name!r}>'
+    
     def as_option(self):
         """
         Converts the parameter to an application command option if applicable.
@@ -1446,16 +1499,16 @@ class RegexParameterConverter(ParameterConverter):
     
     Attributes
     ----------
+    parameter_name : `str`
+        The parameter's name.
     default : `Any`
         Default value of the parameter.
     index : `int`
         the index of the regex pattern to take.
     required : `bool`
         Whether the parameter is required.
-    name : `str`
-        The parameter's name.
     """
-    __slots__ = ('default', 'index', 'required', 'name')
+    __slots__ = ('default', 'index', 'required')
     
     def __new__(cls, parameter, index):
         """
@@ -1470,7 +1523,7 @@ class RegexParameterConverter(ParameterConverter):
         """
         self = object.__new__(cls)
         self.index = index
-        self.name = parameter.name
+        self.parameter_name = parameter.name
         self.required = parameter.has_default
         self.default = parameter.default
         return self
@@ -1483,9 +1536,9 @@ class RegexParameterConverter(ParameterConverter):
         else:
             groups = value.groups
             if value.is_group_dict:
-                name = self.name
+                parameter_name = self.parameter_name
                 try:
-                    converted_value = groups[name]
+                    converted_value = groups[parameter_name]
                 except KeyError:
                     converted_value = self.default
             else:
@@ -1503,8 +1556,8 @@ class RegexParameterConverter(ParameterConverter):
         repr_parts =[
             '<',
             self.__class__.__name__,
-            ' name=',
-            repr(self.name),
+            ' parameter_name=',
+            repr(self.parameter_name),
             ', index=',
             repr(self.index),
         ]
@@ -1524,6 +1577,8 @@ class InternalParameterConverter(ParameterConverter):
     
     Attributes
     ----------
+    parameter_name : `str`
+        The parameter's name.
     converter : `func`
         The converter to use to convert a value to it's desired type.
     type : `int`
@@ -1531,18 +1586,21 @@ class InternalParameterConverter(ParameterConverter):
     """
     __slots__ = ('converter', 'type')
     
-    def __new__(cls, type_, converter):
+    def __new__(cls, parameter_name, type_, converter):
         """
         Creates a new ``InternalParameterConverter`` instance with the given parameters.
         
         Parameters
         ----------
+        parameter_name : `str`
+            The parameter's name.
         type_ : `int`
             Internal identifier of the converter.
         converter : `func`
             The converter to use to convert a value to it's desired type.
         """
         self = object.__new__(cls)
+        self.parameter_name = parameter_name
         self.type = type_
         self.converter = converter
         return self
@@ -1558,7 +1616,9 @@ class InternalParameterConverter(ParameterConverter):
         return ''.join([
             '<',
             self.__class__.__name__,
-            ' type=',
+            'parameter_name=',
+            repr(self.parameter_name),
+            ', type=',
             ANNOTATION_TYPE_TO_STR_ANNOTATION[self.type],
             '>',
         ])
@@ -1570,6 +1630,10 @@ class SashCommandParameterConverter(ParameterConverter):
     
     Attributes
     ----------
+    parameter_name : `str`
+        The parameter's name.
+    auto_completer : `None` or ``SlasherApplicationCommandParameterAutoCompleter``
+        Auto completer if registered.
     channel_types : `None` or `tuple` of `int`
         The accepted channel types.
     choices : `None` or `dict` of (`str` or `int`, `str`)
@@ -1587,14 +1651,17 @@ class SashCommandParameterConverter(ParameterConverter):
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('channel_types', 'choices', 'converter', 'default', 'description', 'required', 'type', 'name')
+    __slots__ = ('channel_types', 'auto_completer', 'choices', 'converter', 'default', 'description', 'required',
+        'type', 'name')
     
-    def __new__(cls, type_, converter, name, description, default, required, choices, channel_types):
+    def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types):
         """
         Creates a new ``SashCommandParameterConverter`` instance from the given parameters.
         
         Parameters
         ----------
+        parameter_name : `str`
+            The parameter's name.
         type_ : `int`
             Internal identifier of the converter.
         converter : `func`
@@ -1613,6 +1680,8 @@ class SashCommandParameterConverter(ParameterConverter):
             The accepted channel types.
         """
         self = object.__new__(cls)
+        self.parameter_name = parameter_name
+        self.auto_completer = None
         self.choices = choices
         self.converter = converter
         self.default = default
@@ -1648,13 +1717,22 @@ class SashCommandParameterConverter(ParameterConverter):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' name=',
-            repr(self.name),
-            ', type=',
-            ANNOTATION_TYPE_TO_STR_ANNOTATION[self.type],
-            ', description=',
-            reprlib.repr(self.description)
         ]
+        
+        parameter_name = self.parameter_name
+        repr_parts.append(' parameter_name=')
+        repr_parts.append(repr(self.parameter_name))
+        
+        name = self.name
+        if (parameter_name != name):
+            repr_parts.append(', name=')
+            repr_parts.append(repr(self.name))
+        
+        repr_parts.append(', type=')
+        repr_parts.append(ANNOTATION_TYPE_TO_STR_ANNOTATION[self.type])
+        
+        repr_parts.append(', description=')
+        repr_parts.append(reprlib.repr(self.description))
         
         if not self.required:
             repr_parts.append(', default=')
@@ -1664,6 +1742,11 @@ class SashCommandParameterConverter(ParameterConverter):
         if (choices is not None):
             repr_parts.append(', choices=')
             repr_parts.append(repr(choices))
+        
+        auto_completer = self.auto_completer
+        if (auto_completer is not None):
+            repr_parts.append(', auto_completer=')
+            repr_parts.append(repr(auto_completer))
         
         channel_types = self.channel_types
         if (channel_types is not None):
@@ -1685,8 +1768,15 @@ class SashCommandParameterConverter(ParameterConverter):
         
         option_type = ANNOTATION_TYPE_TO_OPTION_TYPE[self.type]
         
-        return ApplicationCommandOption(self.name, self.description, option_type, required=self.required,
-            choices=option_choices, channel_types=self.channel_types)
+        return ApplicationCommandOption(
+            self.name,
+            self.description,
+            option_type,
+            autocomplete = (self.auto_completer is not None),
+            channel_types = self.channel_types,
+            choices = option_choices,
+            required = self.required,
+        )
 
 
 def create_parameter_converter(parameter, parameter_configurer):
@@ -1745,10 +1835,10 @@ def create_parameter_converter(parameter, parameter_configurer):
     converter, is_internal = ANNOTATION_TYPE_TO_CONVERTER[annotation_type]
     
     if is_internal:
-        parameter_converter = InternalParameterConverter(annotation_type, converter)
+        parameter_converter = InternalParameterConverter(parameter.name, annotation_type, converter)
     else:
-        parameter_converter = SashCommandParameterConverter(annotation_type, converter, name, description, default,
-            required, choices, channel_types)
+        parameter_converter = SashCommandParameterConverter(parameter.name, annotation_type, converter, name,
+            description, default, required, choices, channel_types)
     
     return parameter_converter
 
@@ -1781,15 +1871,14 @@ def create_internal_parameter_converter(parameter):
         return None
     
     converter, is_internal = ANNOTATION_TYPE_TO_CONVERTER[annotation_type]
-    return InternalParameterConverter(annotation_type, converter)
+    return InternalParameterConverter(parameter.name, annotation_type, converter)
 
 
 def create_target_parameter_converter(parameter):
     """
     Creates an internal target parameter converter.
     
-    > Not like other converters creators, this converter will result a parameter converter, so make sure to call it
-    > only once.
+    Applicable for context application commands.
     
     Parameters
     ----------
@@ -1800,10 +1889,28 @@ def create_target_parameter_converter(parameter):
     -------
     parameter_converter : ``ParameterConverter``
     """
-    return InternalParameterConverter(ANNOTATION_TYPE_SELF_TARGET, converter_self_interaction_target)
+    return InternalParameterConverter(parameter.name, ANNOTATION_TYPE_SELF_TARGET, converter_self_interaction_target)
 
 
-def check_command_coroutine(func):
+def create_value_parameter_converter(parameter):
+    """
+    Creates an internal value parameter converter.
+    
+    Applicable for application command parameters with auto completion enabled.
+    
+    Parameters
+    ----------
+    parameter : ``Parameter``
+        The parameter to create converter from.
+    
+    Returns
+    -------
+    parameter_converter : ``ParameterConverter``
+    """
+    return InternalParameterConverter(parameter.name, ANNOTATION_TYPE_SELF_VALUE, converter_self_interaction_value)
+
+
+def check_command_coroutine(func, allow_coroutine_generator_functions):
     """
     Checks whether the given `func` is a coroutine and whether it accepts only positional only parameters.
     
@@ -1830,11 +1937,14 @@ def check_command_coroutine(func):
         - If `func` accepts `**kwargs`.
     """
     analyzer = CallableAnalyzer(func)
-    if analyzer.is_async() or analyzer.is_async_generator():
+    if analyzer.is_async() or (allow_coroutine_generator_functions and analyzer.is_async_generator()):
         real_analyzer = analyzer
         should_instance = False
     
-    elif analyzer.can_instance_to_async_callable() or analyzer.can_instance_to_async_generator():
+    elif (
+        analyzer.can_instance_to_async_callable() or
+        (allow_coroutine_generator_functions and analyzer.can_instance_to_async_generator())
+    ):
         real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
         if (not real_analyzer.is_async()) and (not real_analyzer.is_async_generator()):
             raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got '
@@ -1843,7 +1953,11 @@ def check_command_coroutine(func):
         should_instance = True
     
     else:
-        raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.')
+        raise TypeError(
+            f'`func` is not `async-callable` '
+            f'{"nor a coroutine generator function " if allow_coroutine_generator_functions else ""}'
+            f'and cannot be instanced to `async` either, got {func!r}.'
+        )
     
     
     keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_parameter_count()
@@ -1899,7 +2013,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
         - If a parameter's `choice` name is duped.
         - If a parameter's `choice` values are mixed types.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -1956,7 +2070,7 @@ def get_component_command_parameter_converters(func):
         - If `func` accepts `*args`.
         - If `func` accepts `**kwargs`.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2011,7 +2125,7 @@ def get_context_command_parameter_converters(func):
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2028,6 +2142,61 @@ def get_context_command_parameter_converters(func):
             else:
                 parameter_converter = create_target_parameter_converter(parameter)
                 target_converter_detected = True
+        
+        parameter_converters.append(parameter_converter)
+    
+    
+    parameter_converters = tuple(parameter_converters)
+    
+    if should_instance:
+        func = analyzer.instance()
+    
+    return func, parameter_converters
+
+
+def get_application_command_parameter_auto_completer_converters(func):
+    """
+    Parses the given `func`'s parameters.
+    
+    Parameters
+    ----------
+    func : `async-callable`
+        The function used by a ``SlasherApplicationCommand``.
+    
+    Returns
+    -------
+    func : `async-callable`
+        The converted function.
+    parameter_converters : `tuple` of ``ParameterConverter``
+        Parameter converters for the given `func` in order.
+    
+    Raises
+    ------
+    TypeError
+        - If `func` is not async callable, neither cannot be instanced to async.
+        - If `func` accepts keyword only parameters.
+        - If `func` accepts `*args`.
+        - If `func` accepts `**kwargs`.
+    ValueError
+        - If any parameter is not internal.
+    """
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, False)
+    
+    parameters = real_analyzer.get_non_reserved_positional_parameters()
+    
+    parameter_converters = []
+    
+    value_converter_detected = False
+    for parameter in parameters:
+        parameter_converter = create_internal_parameter_converter(parameter)
+        
+        if (parameter_converter is None):
+            if value_converter_detected:
+                raise TypeError(f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
+                    f'expected internal parameters. Context commands do not accept any additional parameters.')
+            else:
+                parameter_converter = create_value_parameter_converter(parameter)
+                value_converter_detected = True
         
         parameter_converters.append(parameter_converter)
     

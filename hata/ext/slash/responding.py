@@ -4,7 +4,6 @@ import warnings
 
 from ...backend.futures import is_coroutine_generator
 
-from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
 from ...discord.client import Client
 from ...discord.interaction import InteractionType
@@ -237,14 +236,6 @@ async def process_command_coroutine_generator(
             if isinstance(err, ConnectionError):
                 return
             
-            if isinstance(err, DiscordException):
-                if err.code in (
-                    ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
-                    ERROR_CODES.missing_access, # Client removed.
-                    ERROR_CODES.unknown_interaction, # We times out, do not drop error.
-                ):
-                    return
-            
             raise
         
         else:
@@ -273,7 +264,7 @@ async def process_command_coroutine_generator(
 
 async def process_command_coroutine(client, interaction_event, show_for_invoking_user_only, coroutine):
     """
-    Processes a slash command coroutine.
+    Processes a slasher application command coroutine.
     
     If the coroutine returns or yields a string or an embed like then sends it to the respective channel.
     
@@ -288,12 +279,12 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoking user.
     coroutine : `Coroutine`
-        A coroutine with will send command response.
+        A coroutine which will produce command response.
     
     Raises
     ------
     BaseException
-        Any exception raised by `coro`.
+        Any exception raised by `coroutine`.
     """
     if is_coroutine_generator(coroutine):
         response = await process_command_coroutine_generator(
@@ -320,16 +311,6 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 return
-            
-            if isinstance(err, DiscordException):
-                if err.code in (
-                        ERROR_CODES.unknown_channel, # message's channel deleted; Can we get this?
-                        ERROR_CODES.missing_access, # client removed.
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile; Can we get this?
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed; Can we get this?
-                        ERROR_CODES.unknown_interaction, # we timed out, do not drop error.
-                            ):
-                    return
             
             raise
 
@@ -638,3 +619,27 @@ class InteractionAbortedError(BaseException):
     def __repr__(self):
         """Returns the exception's representation."""
         return f'{self.__class__.__name__}({self.response!r})'
+
+
+async def process_auto_completer_coroutine(client, interaction_event, coroutine):
+    """
+    Processes a slasher application command coroutine.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who will send the responses if applicable.
+    interaction_event : ``InteractionEvent``
+        The respective event to respond on.
+    coroutine : `Coroutine`
+        A coroutine which will produce command response.
+    
+    Raises
+    ------
+    BaseException
+        Any exception raised by `coroutine`.
+    """
+    response = await coroutine
+    await client.interaction_application_command_autocomplete(interaction_event, response)

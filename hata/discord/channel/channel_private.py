@@ -42,8 +42,6 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     INTERCHANGE : `tuple` of `int` = `(1,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
-    MESSAGE_KEEP_LIMIT : `int` = `10`
-        The default amount of messages to store at `.messages`.
     type : `int` = `1`
         The channel's Discord side type.
     """
@@ -280,8 +278,6 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     INTERCHANGE : `tuple` of `int` = `(3,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
-    MESSAGE_KEEP_LIMIT : `int` = `10`
-        The default amount of messages to store at `.messages`.
     type : `int` = `3`
         The channel's Discord side type.
     """

@@ -8,6 +8,8 @@ try:
 except ImportError:
     from weakref import WeakSet
 
+from ...env import MESSAGE_CACHE_SIZE
+
 from ...backend.utils import WeakReferer
 from ...backend.event_loop import LOOP_TIME
 from ...backend.export import export
@@ -152,13 +154,7 @@ class ChannelTextBase:
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
-    
-    Class Attributes
-    ----------------
-    MESSAGE_KEEP_LIMIT : `int` = `10`
-        The default amount of messages to store at `.messages`.
     """
-    MESSAGE_KEEP_LIMIT = 10
     __slots__ = ()
     __slots = ('_message_keep_limit', '_message_history_collector', 'message_history_reached_end', 'messages', )
     
@@ -169,8 +165,7 @@ class ChannelTextBase:
         #discord side bug: we cant check last message
         self.message_history_reached_end = False
         self._message_history_collector = None
-        limit = self.MESSAGE_KEEP_LIMIT
-        self._message_keep_limit = limit
+        self._message_keep_limit = MESSAGE_CACHE_SIZE
         self.messages = None
     
     @property

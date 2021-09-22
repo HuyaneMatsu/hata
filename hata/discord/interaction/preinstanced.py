@@ -100,17 +100,19 @@ class InteractionType(PreinstancedBase):
     
     Every predefined interaction type can be accessed as class attribute as well:
     
-    +-----------------------+-----------------------+-------+
-    | Class attribute name  | Name                  | Value |
-    +=======================+=======================+=======+
-    | none                  | none                  | 0     |
-    +-----------------------+-----------------------+-------+
-    | ping                  | ping                  | 1     |
-    +-----------------------+-----------------------+-------+
-    | application_command   | application_command   | 2     |
-    +-----------------------+-----------------------+-------+
-    | message_component     | message_component     | 3     |
-    +-----------------------+-----------------------+-------+
+    +-----------------------------------+-----------------------------------+-------+
+    | Class attribute name              | Name                              | Value |
+    +===================================+===================================+=======+
+    | none                              | none                              | 0     |
+    +-----------------------------------+-----------------------------------+-------+
+    | ping                              | ping                              | 1     |
+    +-----------------------------------+-----------------------------------+-------+
+    | application_command               | application_command               | 2     |
+    +-----------------------------------+-----------------------------------+-------+
+    | message_component                 | message_component                 | 3     |
+    +-----------------------------------+-----------------------------------+-------+
+    | application_command_autocomplete  | application_command_autocomplete  | 4     |
+    +-----------------------------------+-----------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -122,6 +124,7 @@ class InteractionType(PreinstancedBase):
     ping = P(1, 'ping')
     application_command = P(2, 'application_command')
     message_component = P(3, 'message_component')
+    application_command_autocomplete = P(4, 'application_command_autocomplete')
 
 
 class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):

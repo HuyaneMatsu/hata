@@ -79,8 +79,6 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         them.
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
-    MESSAGE_KEEP_LIMIT : `int` = `10`
-        The default amount of messages to store at `.messages`.
     """
     __slots__ = ('default_auto_archive_after', 'nsfw', 'slowmode', 'topic', 'type',) # guild text channel related
     

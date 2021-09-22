@@ -56,8 +56,6 @@ class ChannelDirectory(ChannelGuildMainBase, ChannelTextBase):
         them.
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
-    MESSAGE_KEEP_LIMIT : `int` = `14`
-        The default amount of messages to store at `.messages`.
     type : `int` = `14`
         The channel's Discord side type.
     """

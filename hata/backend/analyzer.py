@@ -892,7 +892,7 @@ class RichAnalyzerParameterAccess:
         Raises
         ------
         AttributeError
-            - If the parameter by teh specified name is nto found.
+            - If the parameter by the specified name is nto found.
         """
         for parameter in self.parameters:
             if parameter.name == attribute_name:

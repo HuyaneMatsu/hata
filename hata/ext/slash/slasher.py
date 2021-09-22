@@ -22,6 +22,7 @@ from .exceptions import handle_command_exception, test_exception_handler, defaul
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
+INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
     """
@@ -946,13 +947,16 @@ class Slasher(EventHandlerBase):
         """
         interaction_event_type = interaction_event.type
         if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
-            await self._dispatch_command_event(client, interaction_event)
+            await self._dispatch_application_command_event(client, interaction_event)
         
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
             await self._dispatch_component_event(client, interaction_event)
+        
+        elif interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
+            await self._dispatch_application_command_autocomplete_event(client, interaction_event)
+            
     
-    
-    async def _dispatch_command_event(self, client, interaction_event):
+    async def _dispatch_application_command_event(self, client, interaction_event):
         """
         Dispatches an application command interaction event.
         
@@ -970,7 +974,7 @@ class Slasher(EventHandlerBase):
         except ConnectionError:
             return
         except BaseException as err:
-            await client.events.error(client, f'{self!r}.__call__', err)
+            await client.events.error(client, f'{self!r}._dispatch_application_command_event', err)
         else:
             if (command is not None):
                 try:
@@ -1026,6 +1030,37 @@ class Slasher(EventHandlerBase):
         except BaseException as err:
             await handle_command_exception(self._exception_handlers, client, interaction_event, component_command,
                 err)
+    
+    
+    async def _dispatch_application_command_autocomplete_event(self, client, interaction_event):
+        """
+        Dispatches an application command interaction event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the interaction.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        auto_complete_option = interaction_event.interaction.focused
+        if (auto_complete_option is None):
+            return
+        
+        try:
+            command = await self._try_get_command_by_id(client, interaction_event)
+        except ConnectionError:
+            return
+        except BaseException as err:
+            await client.events.error(client, f'{self!r}._dispatch_application_command_autocomplete_event', err)
+        else:
+            if (command is not None):
+                try:
+                    await command.call_auto_completion(client, interaction_event, auto_complete_option)
+                except BaseException as err:
+                    await handle_command_exception(self._exception_handlers, client, interaction_event, command, err)
     
     
     def add_component_interaction_waiter(self, message, waiter):
@@ -2609,7 +2644,7 @@ class Slasher(EventHandlerBase):
     
     def get_guild_command_count_with_sub_commands(self, guild):
         """
-        Returns the command count including sub commands for teh specified guild.
+        Returns the command count including sub commands for the specified guild.
         
         Parameters
         ----------

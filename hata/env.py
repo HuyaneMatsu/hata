@@ -24,6 +24,9 @@ HATA_CACHE_PRESENCE : `bool` = `True`
 HATA_CACHE_USERS : `bool` = `True`
     Whether hata should cache users. Disabling it can cause many hata features to disappear.
 
+HATA_MESSAGE_CACHE_SIZE : `int` = `10`
+    The default message cache size per channel.
+
 HATA_API_ENDPOINT : `None`, `str` = `None`
     The api endpoint to use instead of the Discord's default.
 
@@ -169,6 +172,11 @@ def get_int_env(name, default, *, warn_if_empty=True):
 BACKEND_ONLY = get_bool_env('HATA_BACKEND_ONLY', False)
 CACHE_PRESENCE = get_bool_env('HATA_CACHE_PRESENCE', True)
 CACHE_USER = get_bool_env('HATA_CACHE_USERS', True)
+MESSAGE_CACHE_SIZE = get_int_env('HATA_MESSAGE_CACHE_SIZE', 10)
+
+if (MESSAGE_CACHE_SIZE < 0):
+    MESSAGE_CACHE_SIZE = 0
+
 DOCS_ENABLED = get_bool_env('HATA_DOCS_ENABLED', (get_bool_env is not None))
 if not DOCS_ENABLED:
     get_bool_env.__doc__ = None

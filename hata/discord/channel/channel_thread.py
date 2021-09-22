@@ -85,8 +85,6 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         them.
     ORDER_GROUP : `int` = `9`
         An order group what defined which guild channel type comes after the other one.
-    MESSAGE_KEEP_LIMIT : `int` = `10`
-        The default amount of messages to store at `.messages`.
     REPRESENTED_TYPES : `tuple` = (`10`, `11`, `12`,)
         The type values which ``ChannelThread`` might represent.
     """

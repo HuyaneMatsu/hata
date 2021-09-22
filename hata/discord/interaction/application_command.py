@@ -759,12 +759,21 @@ class ApplicationCommandOption:
     
     Attributes
     ----------
+    autocomplete : `bool`
+        Whether the option supports auto completion.
+        
+        Mutually exclusive with the ``.choices``.
+    
     channel_types : `None` or `tuple` of `int`
         The accepted channel types by the option.
         
         Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
+    
     choices : `None` or `list` of ``ApplicationCommandOptionChoice``
         Choices for `str` and `int` types for the user to pick from.
+        
+        Mutually exclusive with the ``.autocomplete``.
+    
     default : `bool`
         Whether the option is the default one. Only one option can be `default`.
     description : `str`
@@ -779,10 +788,11 @@ class ApplicationCommandOption:
     type : ``ApplicationCommandOptionType``
         The option's type.
     """
-    __slots__ = ('channel_types', 'choices', 'default', 'description', 'name', 'options', 'required', 'type')
+    __slots__ = ('autocomplete', 'channel_types', 'choices', 'default', 'description', 'name', 'options', 'required',
+        'type')
     
-    def __new__(cls, name, description, type_, *, default=False, required=False, choices=None, options=None,
-            channel_types=None):
+    def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, default=False,
+            required=False, choices=None, options=None):
         """
         Creates a new ``ApplicationCommandOption`` instance with the given parameters.
         
@@ -794,18 +804,27 @@ class ApplicationCommandOption:
             The command's description. It's length can be in range [2:100].
         type_ : `int` or ``ApplicationCommandOptionType``
             The application command option's type.
+        autocomplete : `bool`
+            Whether the option supports auto completion.
+            
+            Mutually exclusive with the `choices` parameter.
+        
+        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
+            The accepted channel types by the option.
+            
+            Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
+        
         default : `bool`, Optional (Keyword only)
             Whether the option is the default one. Defaults to `False`.
         required : `bool`, Optional (Keyword only)
             Whether the parameter is required. Defaults to `False`.
         choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
+            
+            Mutually exclusive with the `autocomplete` parameter.
+            
         options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
-        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
-            The accepted channel types by the option.
-            
-            Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
         
         Raises
         ------
@@ -834,6 +853,8 @@ class ApplicationCommandOption:
             - If `choices`'s length is out of range [0:25].
             - If an option is a sub command group option.
             - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
+            - If `autocomplete` is not `bool` instance.
+            - If both `autocomplete` and `choices` are defined.
         """
         if __debug__:
             if not isinstance(name, str):
@@ -973,6 +994,13 @@ class ApplicationCommandOption:
                 raise AssertionError(f'`channel_types` is only meaningful if `type_` is '
                     f'`{ApplicationCommandOptionType.__name__}.channel`.')
         
+            if not isinstance(autocomplete, bool):
+                raise AssertionError(f'`autocomplete` can be `bool` instance, got {autocomplete.__class__.__name__}.')
+            
+            if autocomplete and (choices_processed is not None):
+                raise AssertionError(f'`autocomplete` and `choices` parameters are mutually exclusive.')
+        
+        
         self = object.__new__(cls)
         self.name = name
         self.description = description
@@ -982,6 +1010,7 @@ class ApplicationCommandOption:
         self.choices = choices_processed
         self.options = options_processed
         self.channel_types = channel_types_processed
+        self.autocomplete = autocomplete
         return self
     
     
@@ -1141,6 +1170,8 @@ class ApplicationCommandOption:
             channel_types = tuple(sorted(channel_types))
         self.channel_types = channel_types
         
+        self.autocomplete = data.get('autocomplete', False)
+        
         self.type = ApplicationCommandOptionType.get(data['type'])
         return self
     
@@ -1178,6 +1209,9 @@ class ApplicationCommandOption:
         if (channel_types is not None):
             data['channel_types'] = channel_types
         
+        if self.autocomplete:
+            data['autocomplete'] = True
+        
         return data
     
     
@@ -1186,9 +1220,14 @@ class ApplicationCommandOption:
         repr_parts = [
             '<', self.__class__.__name__,
             ', name=', repr(self.name),
-            ', description=', repr(self.description),
-            ', type=',
         ]
+        
+        if self.autocomplete:
+            repr_parts.append(' (auto completed)')
+        
+        repr_parts.append(', description=')
+        repr_parts.append(repr(self.description))
+        repr_parts.append(', type=')
         
         type_ = self.type
         repr_parts.append(repr(type_.value))
@@ -1297,6 +1336,8 @@ class ApplicationCommandOption:
             channel_types = tuple(channel_types)
         new.channel_types = channel_types
         
+        new.autocomplete = self.autocomplete
+        
         return new
     
     def __eq__(self, other):
@@ -1326,6 +1367,9 @@ class ApplicationCommandOption:
             return False
         
         if self.channel_types != other.channel_types:
+            return False
+        
+        if self.autocomplete != other.autocomplete:
             return False
         
         return True

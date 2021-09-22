@@ -28,7 +28,7 @@ from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, 
     PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, \
     PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, PAYLOAD_COMMAND_CHANNEL_GET, \
     PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET, PAYLOAD_COMMAND_GUILD_GET_ALL, \
-    PAYLOAD_COMMAND_AUTHENTICATE
+    PAYLOAD_COMMAND_AUTHENTICATE, PAYLOAD_COMMAND_AUTHORIZE
 from .command_handling import COMMAND_HANDLERS
 from .utils import get_ipc_path, check_for_error
 from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode, VoiceSettings
@@ -393,6 +393,89 @@ class RPCClient:
         """
         self.running = False
     
+    
+    async def authorize(self, scopes, rpc_token, name):
+        """
+        Authorizes a new client with your application.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scopes : `list` of `str`
+            Oauth2 to authorize the user with.
+        rpc_token : `str`
+            One time user rpc token.
+        name : `str`
+            User name to create a guest account with, if the user is not registered to Discord.
+        
+        Returns
+        -------
+        code : `str`
+            OAuth2 authorization code.
+        
+        Raises
+        ------
+        TypeError
+            If `Scopes` is neither `str` nor `list` of `str` instances.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped by back the discord client.
+        AssertionError
+            - If `rpc_token` is not `str` instance.
+            - If `name` is not `str` instance.
+            - If `scopes` is empty.
+            - If `scopes` contains empty string.
+        """
+        if isinstance(scopes, str):
+            if __debug__:
+                if not scopes:
+                    raise AssertionError(f'`scopes` was given as an empty string.')
+        
+        elif isinstance(scopes, list):
+            if __debug__:
+                if not scopes:
+                    raise AssertionError(f'`scopes` cannot be empty.')
+                
+                for index, scope in enumerate(scopes):
+                    if not isinstance(scope, str):
+                        raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
+                            f'{scope.__class__.__name__}; got {scopes!r}.')
+                    
+                    if not scope:
+                        raise AssertionError(f'`scopes` element `{index}` is an empty string; got {scopes!r}.')
+            
+            scopes = ' '.join(scopes)
+        
+        else:
+            raise TypeError(f'`scopes` can be given as `str` or `list` of `str` instances, got '
+                f'{scopes.__class__.__name__}; {scopes!r}.')
+        
+        
+        if __debug__:
+            if not isinstance(rpc_token, str):
+                raise AssertionError(f'`rpc_token` can be given as `str` instance, got {rpc_token.__class__.__name__}.')
+            
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+        
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_AUTHORIZE,
+            PAYLOAD_KEY_PARAMETERS: {
+                'scopes': scopes,
+                'client_id': str(self.application_id),
+                'rpc_token': rpc_token,
+                'username': name,
+            },
+        }
+        
+        data = await self._send_request(data)
+        
+        return data['code']
     
     
     async def authenticate(self, access_token):

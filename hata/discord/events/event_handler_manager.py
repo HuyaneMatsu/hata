@@ -7,8 +7,9 @@ from ...backend.utils import WeakReferer
 
 from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, get_event_parser_parameter_count, \
     PARSER_SETTINGS
-from .handling_helpers import ChunkWaiter, default_error_event, check_parameter_count_and_convert, asynclist, \
+from .handling_helpers import ChunkWaiter, check_parameter_count_and_convert, asynclist, \
     check_name
+from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler
 
 class EventHandlerManager:
     """
@@ -213,7 +214,7 @@ class EventHandlerManager:
         The `name` parameter should be a `str` what tell where the error occurred, and `err` should be a `BaseException`
         instance or an error message (can be other as type `str` as well.)
         
-        > This event has a default handler called ``default_error_event``, which writes the error message to
+        > This event has a default handler called ``default_error_event_handler``, which writes the error message to
         > `sys.stderr`.
     
     gift_update(client: ``Client``, gift: ``Gift``):
@@ -629,6 +630,14 @@ class EventHandlerManager:
         | self_video            | `bool`                |
         +-----------------------+-----------------------+
     
+    voice_server_update(client: ``Client``, event: ``VoiceServerUpdateEvent``)
+        Called initially when the client connects to a voice channels of a guild. Also called when a guild's voice
+        server is updated.
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+    
     webhook_update(client: ``Client``, channel: ``ChannelGuildBase``):
         Called when a webhook of a channel is updated. Discord not provides further details tho.
     """
@@ -646,9 +655,10 @@ class EventHandlerManager:
         object.__setattr__(self, 'client_reference', client_reference)
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
             object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
-        object.__setattr__(self, 'error', default_error_event)
+        object.__setattr__(self, 'error', default_error_event_handler)
         object.__setattr__(self, '_launch_called', False)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
+        object.__setattr__(self, 'voice_server_update', default_voice_server_update_event_handler)
     
     def __call__(self, func=None, name=None, overwrite=False):
         """
@@ -724,8 +734,9 @@ class EventHandlerManager:
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
             delete(self, name)
         
-        object.__setattr__(self, 'error', default_error_event)
+        object.__setattr__(self, 'error', default_error_event_handler)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
+        object.__setattr__(self, 'voice_server_update', default_voice_server_update_event_handler)
     
     def __setattr__(self, name, value):
         """

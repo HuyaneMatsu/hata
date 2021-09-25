@@ -2229,41 +2229,6 @@ class ChunkWaiter(EventHandlerBase):
         if waiter(event):
             del waiters[nonce]
 
-
-async def default_error_event(client, name, err):
-    """
-    Defaults error event for client. Renders the given exception to `sys.stderr`.
-    
-    This function is a generator.
-    
-    Parameters
-    ----------
-    client : ``client``
-        The client who caught the error.
-    name : `str`
-        Identifier name of the place where the error occurred.
-    err : `Any`
-        The caught exception. Can be given as non `BaseException` instance as well.
-    """
-    extracted = [
-        client.full_name,
-        ' ignores occurred exception at ',
-        name,
-        '\n',
-    ]
-    
-    if isinstance(err, BaseException):
-        await KOKORO.render_exc_async(err, extracted)
-        return
-    
-    if not isinstance(err, str):
-        err = repr(err)
-    
-    extracted.append(err)
-    extracted.append('\n')
-    
-    sys.stderr.write(''.join(extracted))
-
 class asynclist(list):
     """
     Container used by events to call more events and by waitfor events to call more waiters.

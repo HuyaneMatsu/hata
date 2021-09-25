@@ -1,4 +1,5 @@
 from .core import *
+from .default_event_handlers import *
 from .event_handler_manager import *
 from .event_types import *
 from .filters import *
@@ -9,6 +10,7 @@ from .parsers import *
 
 __all__ = (
     *core.__all__,
+    *default_event_handlers.__all__,
     *event_handler_manager.__all__,
     *event_types.__all__,
     *filters.__all__,

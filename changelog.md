@@ -1,5 +1,9 @@
 ## 1.1.107 *\[2021-09-??\]*
 
+#### Improvements
+
+- Add `VoiceServerUpdateEvent`.
+- Add `Client.events.voice_server_update`.
 
 ## 1.1.106 *\[2021-09-25\]*
 

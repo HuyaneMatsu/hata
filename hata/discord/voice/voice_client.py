@@ -1194,7 +1194,8 @@ class VoiceClient:
         if (kokoro is not None):
             kokoro.terminate()
     
-    async def _create_socket(self, data):
+    
+    async def _create_socket(self, event):
         """
         Called when voice server update data is received from Discord.
         
@@ -1207,8 +1208,8 @@ class VoiceClient:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
-            Voice server update data.
+        data : ``GuildUserChunkEvent``
+            Voice server update event.
         """
         self.connected.clear()
         
@@ -1220,9 +1221,9 @@ class VoiceClient:
         gateway = self.client._gateway_for(guild_id)
         
         self._session_id = gateway.session_id
-        token = data.get('token', None)
+        token = event.token
         self._token = token
-        endpoint = data.get('endpoint', None)
+        endpoint = event.endpoint
         
         if (endpoint is None) or (token is None):
             return

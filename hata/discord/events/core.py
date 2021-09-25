@@ -169,6 +169,7 @@ add_event_handler('stage_edit', 3, 'STAGE_INSTANCE_UPDATE',)
 add_event_handler('stage_delete', 2, 'STAGE_INSTANCE_DELETE',)
 add_event_handler('thread_user_add', 4, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
 add_event_handler('thread_user_delete', 3, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
+add_event_handler('voice_server_update', 2, 'VOICE_SERVER_UPDATE',)
 
 
 class ParserSettingOption:

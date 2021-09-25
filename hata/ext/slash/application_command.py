@@ -24,7 +24,7 @@ from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BE
     UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
 from .wrappers import SlasherCommandWrapper, get_parameter_configurers
 from .converters import get_slash_command_parameter_converters, InternalParameterConverter, \
-    get_context_command_parameter_converters, SashCommandParameterConverter, \
+    get_context_command_parameter_converters, SlashCommandParameterConverter, \
     get_application_command_parameter_auto_completer_converters
 from .exceptions import SlasherApplicationCommandParameterConversionError
 
@@ -425,7 +425,7 @@ def _register_autocomplete_function_decorator(parameter_converter, function):
     
     Parameters
     ----------
-    parameter_converter : ``SashCommandParameterConverter``
+    parameter_converter : ``SlashCommandParameterConverter``
         The parameter's converter.
     function : `callable`
         Function to register as auto completer.
@@ -456,7 +456,7 @@ def _register_autocomplete_function(parameter_converter, function):
     
     Parameters
     ----------
-    parameter_converter : ``SashCommandParameterConverter``
+    parameter_converter : ``SlashCommandParameterConverter``
         The parameter's converter.
     function : `None` or `callable`
         The function to register as auto completer.
@@ -1493,6 +1493,7 @@ class SlasherApplicationCommand:
             - If the command has no direct command defined under itself.
             - If the parameter already has a auto completer defined.
             - If the application command function has no parameter named, like `parameter_name`.
+            - If the parameter cannot be auto completed.
         TypeError
             If `function` is not an asynchronous.
         """
@@ -1509,8 +1510,7 @@ class SlasherApplicationCommand:
             raise RuntimeError(f'Application command function `{self.name}` has no parameter named as '
                 f'`{parameter_name}`.')
         
-        if (parameter_converter.auto_completer is not None):
-            raise RuntimeError(f'The parameter already has an auto completer defined.')
+        parameter_converter.check_can_autocomplete()
         
         if (function is None):
             return partial_func(_register_autocomplete_function_decorator, parameter_converter)
@@ -1633,7 +1633,7 @@ class SlasherApplicationCommandFunction:
         parameter_name = focused_option.name
         
         for parameter_converter in self._parameter_converters:
-            if isinstance(parameter_converter, SashCommandParameterConverter):
+            if isinstance(parameter_converter, SlashCommandParameterConverter):
                 if parameter_converter.name == parameter_name:
                     break
         else:
@@ -1655,20 +1655,20 @@ class SlasherApplicationCommandFunction:
         
         Returns
         -------
-        parameter_converter : ``SashCommandParameterConverter`` of `None`
+        parameter_converter : ``SlashCommandParameterConverter`` of `None`
             The found parameter converter if any.
         """
         parameter_converters = self._parameter_converters
         
         for parameter_converter in parameter_converters:
-            if isinstance(parameter_converter, SashCommandParameterConverter):
+            if isinstance(parameter_converter, SlashCommandParameterConverter):
                 if (parameter_converter.parameter_name == parameter_name):
                     return parameter_converter
         
         parameter_name = raw_name_to_display(parameter_name)
         
         for parameter_converter in parameter_converters:
-            if isinstance(parameter_converter, SashCommandParameterConverter):
+            if isinstance(parameter_converter, SlashCommandParameterConverter):
                 if (parameter_converter.name == parameter_name):
                     return parameter_converter
         
@@ -1776,6 +1776,7 @@ class SlasherApplicationCommandFunction:
         RuntimeError
             - If the parameter already has a auto completer defined.
             - If the application command function has no parameter named, like `parameter_name`.
+            - If the parameter cannot be auto completed.
         TypeError
             If `function` is not an asynchronous.
         """
@@ -1787,8 +1788,7 @@ class SlasherApplicationCommandFunction:
             raise RuntimeError(f'Application command function `{self.name}` has no parameter named as '
                 f'`{parameter_name}`.')
         
-        if (parameter_converter.auto_completer is not None):
-            raise RuntimeError(f'The parameter already has an auto completer defined.')
+        parameter_converter.check_can_autocomplete()
         
         if (function is None):
             return partial_func(_register_autocomplete_function_decorator, parameter_converter)

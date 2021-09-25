@@ -762,7 +762,7 @@ class ApplicationCommandOption:
     autocomplete : `bool`
         Whether the option supports auto completion.
         
-        Mutually exclusive with the ``.choices``.
+        Mutually exclusive with the ``.choices``. Only applicable for string type parameters.
     
     channel_types : `None` or `tuple` of `int`
         The accepted channel types by the option.
@@ -807,7 +807,7 @@ class ApplicationCommandOption:
         autocomplete : `bool`
             Whether the option supports auto completion.
             
-            Mutually exclusive with the `choices` parameter.
+            Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
         channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
             The accepted channel types by the option.
@@ -855,6 +855,7 @@ class ApplicationCommandOption:
             - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
             - If `autocomplete` is not `bool` instance.
             - If both `autocomplete` and `choices` are defined.
+            - If `autocomplete` is defined, but the parameters's type is not string.
         """
         if __debug__:
             if not isinstance(name, str):
@@ -997,9 +998,12 @@ class ApplicationCommandOption:
             if not isinstance(autocomplete, bool):
                 raise AssertionError(f'`autocomplete` can be `bool` instance, got {autocomplete.__class__.__name__}.')
             
-            if autocomplete and (choices_processed is not None):
-                raise AssertionError(f'`autocomplete` and `choices` parameters are mutually exclusive.')
-        
+            if autocomplete:
+                if (choices_processed is not None):
+                    raise AssertionError(f'`autocomplete` and `choices` parameters are mutually exclusive.')
+                
+                if (type_ is not ApplicationCommandOptionType.string):
+                    raise AssertionError(f'`autocomplete` is only available for string option type, got {type_!r}')
         
         self = object.__new__(cls)
         self.name = name

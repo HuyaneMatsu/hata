@@ -728,6 +728,12 @@ ANNOTATION_TYPE_TO_REPRESENTATION = {
 }
 
 
+ANNOTATION_AUTO_COMPLETE_AVAILABILITY = frozenset((
+    ANNOTATION_TYPE_STR,
+    ANNOTATION_TYPE_INT,
+    ANNOTATION_TYPE_EXPRESSION,
+))
+
 class RegexMatcher:
     """
     `custom_id` matcher for component commands.
@@ -1624,7 +1630,7 @@ class InternalParameterConverter(ParameterConverter):
         ])
 
 
-class SashCommandParameterConverter(ParameterConverter):
+class SlashCommandParameterConverter(ParameterConverter):
     """
     Converter class for slash command options.
     
@@ -1656,7 +1662,7 @@ class SashCommandParameterConverter(ParameterConverter):
     
     def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types):
         """
-        Creates a new ``SashCommandParameterConverter`` instance from the given parameters.
+        Creates a new ``SlashCommandParameterConverter`` instance from the given parameters.
         
         Parameters
         ----------
@@ -1777,6 +1783,28 @@ class SashCommandParameterConverter(ParameterConverter):
             choices = option_choices,
             required = self.required,
         )
+    
+    
+    def check_can_autocomplete(self):
+        """
+        Checks whether the parameter can be auto completed.
+        
+        Raises
+        ------
+        RuntimeError
+            - If the parameter already has a auto completer defined.
+            - If the parameter cannot be auto completed.
+        """
+        if (self.auto_completer is not None):
+            raise RuntimeError(f'Parameter `{self.name}` already has an auto completer defined.')
+        
+        if (self.type not in ANNOTATION_AUTO_COMPLETE_AVAILABILITY):
+            raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. Only string base type parameters '
+                f'can be (str, int, expression).')
+        
+        if (self.choices is not None):
+            raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. `choices` and `autocomplete` are'
+               f'mutually exclusive.')
 
 
 def create_parameter_converter(parameter, parameter_configurer):
@@ -1837,7 +1865,7 @@ def create_parameter_converter(parameter, parameter_configurer):
     if is_internal:
         parameter_converter = InternalParameterConverter(parameter.name, annotation_type, converter)
     else:
-        parameter_converter = SashCommandParameterConverter(parameter.name, annotation_type, converter, name,
+        parameter_converter = SlashCommandParameterConverter(parameter.name, annotation_type, converter, name,
             description, default, required, choices, channel_types)
     
     return parameter_converter
@@ -2030,7 +2058,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     
     slash_command_option_count = 0
     for parameter_converter in parameter_converters:
-        if isinstance(parameter_converter, SashCommandParameterConverter):
+        if isinstance(parameter_converter, SlashCommandParameterConverter):
             slash_command_option_count += 1
         
     if slash_command_option_count > APPLICATION_COMMAND_OPTIONS_MAX:

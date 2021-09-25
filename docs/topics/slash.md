@@ -279,10 +279,10 @@ from hata import Embed
 @Nitori.interactions(guild=TEST_GUILD)
 async def guild_icon(event,
         choice: ({
-            'Icon'             : 'icon'             ,
-            'Banner'           : 'banner'           ,
-            'Discovery-splash' : 'discovery_splash' ,
-            'Invite-splash'    : 'invite_splash'    ,
+            'Icon': 'icon',
+            'Banner': 'banner',
+            'Discovery-splash': 'discovery_splash',
+            'Invite-splash': 'invite_splash',
         }, 'Which icon of the guild?' ) = 'icon',
             ):
     """Shows the guild's icon or it's selected splash."""
@@ -320,10 +320,10 @@ a variable and annotate that instead.
 
 ```py
 GUILD_ICON_CHOICES = {
-    'Icon'             : 'icon'             ,
-    'Banner'           : 'banner'           ,
-    'Discovery-splash' : 'discovery_splash' ,
-    'Invite-splash'    : 'invite_splash'    ,
+    'Icon': 'icon',
+    'Banner': 'banner',
+    'Discovery-splash': 'discovery_splash',
+    'Invite-splash': 'invite_splash',
 }
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -334,7 +334,7 @@ async def guild_icon(event,
     # Code goes brr..
 ```
 
-Same as list:
+Same as list (using table-like formatting):
 
 ```py
 GUILD_ICON_CHOICES = [
@@ -344,6 +344,7 @@ GUILD_ICON_CHOICES = [
     ('Invite-splash'    , 'invite_splash'    ),
 ]
 ```
+
 
 When defining annotations only as `value`-s, the `name`-s will set as `str(value)`.
 
@@ -361,6 +362,41 @@ async def roll(
     
     return str(amount)
 ```
+
+### Auto completed parameters
+
+String parameters can be auto-completed by using the `.autocomplete(...)` decorator after adding the command.
+
+> Since hata's slash extension uses string type for `int` and for the internal `expression` one as well, those can be
+> auto completed too.
+
+```py
+from hata import BUILTIN_EMOJIS
+
+EMOJI_CAKE = BUILTIN_EMOJIS['cake']
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def cake_love(
+    cake_type: ('str', 'Please define a cake type to pick from.')
+):
+    return f'Hmmm, yes, I love {cake_type} {EMOJI_CAKE:e} as well.'
+
+CAKE_NAMES = ['butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless',
+    'unbaked flourless', 'carrot', 'red velvet', ]
+
+@cake_love.autocomplete('cake_type') # Define which parameter we want to auto-complete.
+async def autocomplete_cake_type(value):
+    if value is None:
+        return CAKE_NAMES
+    
+    value = value.lower()
+    return [cake_name for cake_name in CAKE_NAMES if cake_name.startswith(value)]
+```
+
+Autocomplete functions support 1 additional parameter outside of client and event, which is the value what the user
+already typed. This value defaults to `None` if the user didn't yet type anything.
+
+Choice parameters cannot be auto completed.
 
 ### Required & not required parameters
 
@@ -1031,6 +1067,64 @@ async def kaboom_mixed(client, event):
         await client.interaction_followup_message_delete(event, message)
 ```
 
+## Specifying channel parameter types
+
+The accepted channel types by channel parameters can be defined by 2 ways for now. Either by modifying the
+annotation or by using the `configure_parameter` decorator.
+
+The annotation accepts all channel types, like `ChannelText`, `ChannelVoiceBase` and their name sas well.
+
+Or an another consideration can be using their system name:
+
+- `channel_guild_text`
+- `channel_private`
+- `channel_guild_voice`
+- `channel_private_group`
+- `channel_guild_category`
+- `channel_guild_announcements`
+- `channel_guild_store`
+- `channel_guild_thread_announcements`
+- `channel_guild_thread_public`
+- `channel_guild_thread_private`
+- `channel_guild_stage`
+- `channel_guild_directory`
+
+Or a group covering multiple one.
+
+- `channel_group_messageable`
+- `channel_group_guild_messageable`
+- `channel_group_guild_text_like`
+- `channel_group_connectable`
+- `channel_group_private`
+- `channel_group_guild_connectable`
+- `channel_group_guild`
+- `channel_group_thread`
+
+> Using `channel_id` prefix instead of `channel`, will give back their id instead.
+
+```py
+@Nitori.interactions(guild=TEST_GUILD)
+async def thread_channel_name_length(
+    channel: ('channel_group_thread', 'Select a thread channel.')
+):
+    """Returns the selected thread channel's name's length."""
+    return len(channel.name)
+```
+
+When using the `configure_parameter`, the `channel_types` keyword only parameter can be used to define the accepted
+channel types.
+
+```py
+from hata import CHANNEL_TYPES
+from hata.ext.slash import configure_parameter
+
+@Nitori.interactions(guild=TEST_GUILD)
+@configure_parameter('channel', 'channel', 'Select a text channel', channel_types=[CHANNEL_TYPES.guild_text])
+async def text_channel_name_length(channel):
+    """Returns the selected text channel's name's length."""
+    return len(channel.name)
+```
+
 ## Context commands
 
 Context commands can be defined by passing the `target` parameter when registering a command with the `.interactions`
@@ -1040,7 +1134,7 @@ decorator. The `target` parameter can be given either as `'user'` or `'message'`
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD, target='user')
-async def about(target):
+async def avatar(target):
     avatar_url = target.avatar_url_as(size=4096)
     return Embed(f'{target.full_name}\'s avatar', url=avatar_url).add_image(avatar_url)
 ```

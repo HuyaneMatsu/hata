@@ -2,7 +2,7 @@ __all__ = ('SlasherApplicationCommand', )
 
 from functools import partial as partial_func
 
-from ...backend.utils import WeakReferer
+from ...backend.utils import WeakReferer, copy_docs
 from ...backend.export import export
 
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
@@ -36,6 +36,8 @@ SLASH_COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'show_for_inv
 SLASH_COMMAND_NAME_NAME = 'name'
 SLASH_COMMAND_COMMAND_NAME = 'command'
 
+APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND = ApplicationCommandOptionType.sub_command
+APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY = ApplicationCommandOptionType.sub_command_group
 
 
 def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
@@ -415,7 +417,7 @@ def _generate_description_from(command, name, description):
     return description
 
 
-def _register_autocomplete_function(slasher_application_command, parameter_converter, function):
+def _register_autocomplete_function_decorator(parameter_converter, function):
     """
     Registers autocomplete function to the given slasher application command.
     
@@ -423,8 +425,6 @@ def _register_autocomplete_function(slasher_application_command, parameter_conve
     
     Parameters
     ----------
-    slasher_application_command : ``SlasherApplicationCommand``
-        The respective slasher application command.
     parameter_converter : ``SashCommandParameterConverter``
         The parameter's converter.
     function : `callable`
@@ -445,7 +445,37 @@ def _register_autocomplete_function(slasher_application_command, parameter_conve
     if (function is None):
         raise RuntimeError(f'`function` parameter is required as non-`None`.')
     
-    return slasher_application_command._register_autocomplete_function(parameter_converter, function)
+    return _register_autocomplete_function(parameter_converter, function)
+
+
+def _register_autocomplete_function(parameter_converter, function):
+    """
+    Registers and auto completer for the application command. Called either by
+    ``SlasherApplicationCommand.autocomplete`` by ``SlasherApplicationCommandFunction.autocomplete`` or by
+    ``_register_autocomplete_function_decorator``.
+    
+    Parameters
+    ----------
+    parameter_converter : ``SashCommandParameterConverter``
+        The parameter's converter.
+    function : `None` or `callable`
+        The function to register as auto completer.
+    
+    Raises
+    ------
+    RuntimeError
+        If the command has no direct command defined under itself.
+    TypeError
+        If `function is not an asynchronous function.
+    """
+    command, parameter_converters = get_application_command_parameter_auto_completer_converters(function)
+    
+    parameter_converter.auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+        command,
+        parameter_converters,
+    )
+    
+    return function
 
 
 @export
@@ -896,7 +926,7 @@ class SlasherApplicationCommand:
     
     def __repr__(self):
         """returns the slash command's representation."""
-        result = ['<', self.__class__.__name__, ' name=', repr(self.name), ' type=']
+        result = ['<', self.__class__.__name__, ' name=', repr(self.name), ', type=']
         
         guild_ids = self.guild_ids
         if guild_ids is None:
@@ -994,9 +1024,26 @@ class SlasherApplicationCommand:
         auto_complete_option : ``ApplicationCommandAutocompleteInteractionOption``
             The option to autocomplete.
         """
-        command_function = self._command
-        if (command_function is not None):
-            await command_function.call_auto_completion(client, interaction_event, auto_complete_option)
+        auto_complete_option_type = auto_complete_option.type
+        if (
+            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND) or
+            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY)
+        ):
+            options = auto_complete_option.options
+            if (options is not None):
+                option = options[0]
+                sub_commands = self._sub_commands
+                if (sub_commands is not None):
+                    try:
+                        sub_command = sub_commands[auto_complete_option.name]
+                    except KeyError:
+                        pass
+                    else:
+                        await sub_command.call_auto_completion(client, interaction_event, option)
+        else:
+            command_function = self._command
+            if (command_function is not None):
+                await command_function.call_auto_completion(client, interaction_event, auto_complete_option)
     
     
     def get_schema(self):
@@ -1146,7 +1193,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        self : ``SlasherApplicationCommand``
+        self : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
         
         Raises
         ------
@@ -1175,7 +1222,7 @@ class SlasherApplicationCommand:
             command = command[0]
         
         self._add_application_command(command)
-        return self
+        return command
     
     
     def create_event_from_class(self, klass):
@@ -1189,7 +1236,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        self : ``SlasherApplicationCommand``
+        self : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
          
         Raises
         ------
@@ -1208,7 +1255,7 @@ class SlasherApplicationCommand:
             command = command[0]
         
         self._add_application_command(command)
-        return self
+        return command
     
     
     def _add_application_command(self, command):
@@ -1443,60 +1490,32 @@ class SlasherApplicationCommand:
         Raises
         ------
         RuntimeError
-            - Only available for commands without sub commands for now.
-            - The parameter already has a auto completer defined.
+            - If the command has no direct command defined under itself.
+            - If the parameter already has a auto completer defined.
+            - If the application command function has no parameter named, like `parameter_name`.
         TypeError
-            If `function is not an asynchronous function.
+            If `function` is not an asynchronous.
         """
         command_function = self._command
         if (command_function is None):
-            raise RuntimeError(f'Auto completion only available for commands without sub commands for now.')
+            raise RuntimeError(f'Please register auto completer to a direct command and not to a sub command '
+                f'category.')
         
         if not isinstance(parameter_name, str):
             raise TypeError(f'`name` can be given as `str` instance, got {parameter_name.__class__.__name__}.')
         
         parameter_converter = command_function._get_parameter_converter_by_name(parameter_name)
+        if (parameter_converter is None):
+            raise RuntimeError(f'Application command function `{self.name}` has no parameter named as '
+                f'`{parameter_name}`.')
         
         if (parameter_converter.auto_completer is not None):
             raise RuntimeError(f'The parameter already has an auto completer defined.')
         
         if (function is None):
-            return partial_func(_register_autocomplete_function, self, parameter_converter)
+            return partial_func(_register_autocomplete_function_decorator, parameter_converter)
         
-        return self._register_autocomplete_function(parameter_converter, function)
-    
-    
-    def _register_autocomplete_function(self, parameter_converter, function):
-        """
-        Registers and auto completer for the application command. Called either by ``.autocomplete`` or by
-        ``_register_autocomplete_function``.
-        
-        Parameters
-        ----------
-        parameter_converter : ``SashCommandParameterConverter``
-            The parameter's converter.
-        function : `None` or `callable`
-            The function to register as auto completer.
-        
-        Raises
-        ------
-        RuntimeError
-            Only available for commands without sub commands for now.
-        TypeError
-            If `function is not an asynchronous function.
-        """
-        command_function = self._command
-        if (command_function is None):
-            raise RuntimeError(f'Auto completion only available for commands without sub commands for now.')
-        
-        command, parameter_converters = get_application_command_parameter_auto_completer_converters(function)
-        
-        parameter_converter.auto_completer = SlasherApplicationCommandParameterAutoCompleter(
-            command,
-            parameter_converters,
-        )
-        
-        return function
+        return _register_autocomplete_function(parameter_converter, function)
 
 
 class SlasherApplicationCommandFunction:
@@ -1594,7 +1613,7 @@ class SlasherApplicationCommandFunction:
     
     async def call_auto_completion(self, client, interaction_event, auto_complete_option):
         """
-        Calls the auto completion function of the slasher application command function.
+        Calls the respective auto completion function of the slasher application command function.
         
         This method is a coroutine.
         
@@ -1607,7 +1626,11 @@ class SlasherApplicationCommandFunction:
         auto_complete_option : ``ApplicationCommandAutocompleteInteractionOption``
             The option to autocomplete.
         """
-        parameter_name = auto_complete_option.name
+        focused_option = auto_complete_option.focused_option
+        if (focused_option is None):
+            return
+        
+        parameter_name = focused_option.name
         
         for parameter_converter in self._parameter_converters:
             if isinstance(parameter_converter, SashCommandParameterConverter):
@@ -1730,6 +1753,47 @@ class SlasherApplicationCommandFunction:
             return False
         
         return True
+    
+
+    def autocomplete(self, parameter_name, function=None):
+        """
+        Registers an auto completer function to the application command.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        function : `None` or `callable`, Optional
+            The function to register as auto completer.
+        
+        Returns
+        -------
+        function / wrapper : `callable` or `functools.partial`
+            The registered function if given or a wrapper to register the function with.
+        
+        Raises
+        ------
+        RuntimeError
+            - If the parameter already has a auto completer defined.
+            - If the application command function has no parameter named, like `parameter_name`.
+        TypeError
+            If `function` is not an asynchronous.
+        """
+        if not isinstance(parameter_name, str):
+            raise TypeError(f'`name` can be given as `str` instance, got {parameter_name.__class__.__name__}.')
+        
+        parameter_converter = self._get_parameter_converter_by_name(parameter_name)
+        if (parameter_converter is None):
+            raise RuntimeError(f'Application command function `{self.name}` has no parameter named as '
+                f'`{parameter_name}`.')
+        
+        if (parameter_converter.auto_completer is not None):
+            raise RuntimeError(f'The parameter already has an auto completer defined.')
+        
+        if (function is None):
+            return partial_func(_register_autocomplete_function_decorator, parameter_converter)
+        
+        return _register_autocomplete_function(parameter_converter, function)
 
 
 class SlasherApplicationCommandCategory:
@@ -1805,6 +1869,26 @@ class SlasherApplicationCommandCategory:
             )
         
         await sub_command(client, interaction_event, option.options)
+    
+    
+    @copy_docs(SlasherApplicationCommand.call_auto_completion)
+    async def call_auto_completion(self, client, interaction_event, auto_complete_option):
+        auto_complete_option_type = auto_complete_option.type
+        if (
+            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND) or
+            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY)
+        ):
+            options = auto_complete_option.options
+            if (options is not None):
+                option = options[0]
+                sub_commands = self._sub_commands
+                if (sub_commands is not None):
+                    try:
+                        sub_command = sub_commands[auto_complete_option.name]
+                    except KeyError:
+                        pass
+                    else:
+                        await sub_command.call_auto_completion(client, interaction_event, option)
     
     
     def as_option(self):
@@ -1895,7 +1979,7 @@ class SlasherApplicationCommandCategory:
             command = command[0]
         
         self._add_application_command(command)
-        return self
+        return command
     
     
     def create_event_from_class(self, klass):
@@ -1929,7 +2013,7 @@ class SlasherApplicationCommandCategory:
             command = command[0]
         
         self._add_application_command(command)
-        return self
+        return command
     
     
     def _add_application_command(self, command):
@@ -1989,6 +2073,25 @@ class SlasherApplicationCommandCategory:
             return False
         
         return True
+
+
+    def autocomplete(self, parameter_name, function=None):
+        """
+        Registers an auto completer function to the application command.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        function : `None` or `callable`, Optional
+            The function to register as auto completer.
+        
+        Raises
+        ------
+        RuntimeError
+            If the command has no direct command defined under itself.
+        """
+        raise RuntimeError(f'Please register auto completer to a direct command and not to a sub command category.')
 
 
 class SlasherApplicationCommandParameterAutoCompleter:

@@ -76,7 +76,8 @@ from ..message.utils import process_message_chunk
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
     _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, \
-    ForceUpdateCache, channel_move_sort_key, role_move_key, role_reorder_valid_roles_sort_key
+    ForceUpdateCache, channel_move_sort_key, role_move_key, role_reorder_valid_roles_sort_key, \
+    application_command_autocomplete_choice_parser
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -12574,26 +12575,12 @@ class Client(ClientUserPBase):
         if not interaction.is_unanswered():
             return
         
-        
-        choices_processed = []
-        
-        if (choices is not None):
-            iterator = getattr(type(choices), '__iter__', None)
-            if (iterator is None):
-                raise TypeError(f'`choices` can be either `None` or `iterable` of `str`.')
-            
-            choices_processed = []
-            for choice in iterator(choices):
-                choices_processed.append({
-                    'name': choice,
-                    'value': choice,
-            })
-        
+        choices = application_command_autocomplete_choice_parser(choices)
         
         data = {
             'type': INTERACTION_RESPONSE_TYPES.application_command_autocomplete_result,
             'data': {
-                'choices': choices_processed,
+                'choices': choices,
             },
         }
         

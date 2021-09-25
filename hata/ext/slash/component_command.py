@@ -399,8 +399,8 @@ class ComponentCommand:
         new : ``ComponentCommand``
         """
         new = object.__new__(type(self))
-        new._command_function = self.command
-        new._parameter_converters = self.parameter_converters
+        new._command_function = self._command_function
+        new._parameter_converters = self._parameter_converters
         new._string_custom_ids = self._string_custom_ids
         new._regex_custom_ids = self._regex_custom_ids
         return new

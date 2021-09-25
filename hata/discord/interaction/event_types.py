@@ -548,10 +548,14 @@ class ApplicationCommandAutocompleteInteractionOption:
         Whether this field is focused by the user.
     name : `str`
         The name of the parameter.
+    options : `None` or `tuple` of ``ApplicationCommandAutocompleteInteractionOption``
+        Nested functions.
+    type : ``ApplicationCommandOptionType``
+        The represented option's type.
     value : `None` or `str`
         The value, the user has been typed.
     """
-    __slots__ = ('focused', 'name', 'type', 'value')
+    __slots__ = ('focused', 'name', 'options', 'type', 'value')
     
     def __new__(cls, data):
         """
@@ -568,11 +572,23 @@ class ApplicationCommandAutocompleteInteractionOption:
         if (value is not None) and (not value):
             value = None
         
-        focused = data['focused']
+        focused = data.get('focused', False)
+        
+        option_datas = data.get('options', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = tuple(
+                ApplicationCommandAutocompleteInteractionOption(option_data) for option_data in option_datas
+            )
+        
+        type_ = ApplicationCommandOptionType.get(data['type'])
         
         self = object.__new__(cls)
         self.focused = focused
         self.name = name
+        self.options = options
+        self.type = type_
         self.value = value
         return self
     
@@ -592,8 +608,55 @@ class ApplicationCommandAutocompleteInteractionOption:
             repr_parts.append(', value=')
             repr_parts.append(reprlib.repr(value))
         
+        type_ = self.type
+        repr_parts.append(', type=')
+        repr_parts.append(type_.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(type_.value))
+        repr_parts.append(')')
+        
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=[')
+            
+            index = 0
+            limit = len(options)
+            
+            while True:
+                option = options[index]
+                index += 1
+                repr_parts.append(repr(option))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    @property
+    def focused_option(self):
+        """
+        Returns the focused option of the application command autocomplete interaction option.
+        
+        Returns
+        -------
+        option : `None` or ``ApplicationCommandAutocompleteInteractionOption``
+        """
+        if self.focused:
+            return self
+        
+        options = self.options
+        if (options is not None):
+            for option in options:
+                focused_option =  option.focused_option
+                if (focused_option is not None):
+                    return focused_option
 
 
 class ApplicationCommandAutocompleteInteraction(DiscordEntity):
@@ -683,7 +746,7 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
     
     
     @property
-    def focused(self):
+    def focused_option(self):
         """
         Returns the focused option of the application command autocomplete interaction.
         
@@ -693,15 +756,16 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
         """
         options = self.options
         if options is None:
-            option = None
+            focused_option = None
         else:
             for option in options:
-                if option.focused:
+                focused_option = option.focused_option
+                if (focused_option is not None):
                     break
             else:
-                option = None
+                focused_option = None
         
-        return option
+        return focused_option
     
     
     @property
@@ -713,16 +777,11 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
         -------
         value : `None` or `str`
         """
-        options = self.options
-        if options is None:
+        focused_option = self.focused_option
+        if (focused_option is None):
             value = None
         else:
-            for option in options:
-                if option.focused:
-                    value = option.value
-                    break
-            else:
-                value = None
+            value = focused_option.value
         
         return value
 

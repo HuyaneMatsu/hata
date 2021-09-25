@@ -1,5 +1,9 @@
 ## 1.1.106 *\[2021-09-??\]*
 
+### Summary
+
+Add auto completion for slash commands.
+
 #### Improvements
 
 - Add `HATA_MESSAGE_CACHE_SIZE` environmental variable for easier message cache size configuration.
@@ -11,7 +15,17 @@
 
 ##### ext.slash
 
-- `Slasher` now supports auto completion feature (this includes many new classes and functions).
+- `Slasher` now supports auto completion feature (this includes many new classes and functions). Use the
+    `.autocomplete(parameter_name)` decorator on slash command to register an auto completion function.
+
+#### Bug Fixes
+
+##### ext.slash
+
+- `SlasherApplicationCommand.create_event`, `SlasherApplicationCommand.create_event_from_class`
+    `SlasherApplicationCommandCategory.create_event` and `SlasherApplicationCommandCategory.create_event_from_class`
+    returned itself instead of the registered sub-command / sub-command-category.
+
 
 ## 1.1.105 *\[2021-09-21\]*
 

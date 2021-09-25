@@ -863,7 +863,7 @@ class Guild(DiscordEntity, immortal=True):
                     old_attributes = None
                     action = VOICE_STATE_JOIN
                 else:
-                    old_attributes = voice_state._difference_update_attributes(data,channel)
+                    old_attributes = voice_state._difference_update_attributes(data, channel)
                     if old_attributes:
                         action = VOICE_STATE_UPDATE
                     else:

@@ -1053,3 +1053,171 @@ def role_reorder_valid_roles_sort_key(item):
         - position
     """
     return item[1]
+
+
+def application_command_autocomplete_choice_parser(choices):
+    """
+    Tries to build application command autocomplete choices from the given `choices`.
+    
+    Parameters
+    ----------
+    choices : `None` or `iterable` of (`str`, `int`, `float`)
+        Application command autocomplete choices to parse.
+    
+    Returns
+    -------
+    choices_processed : `list` of `dict` of (`str`, `str`)
+        Json serializable application command autocomplete choices.
+    
+    Raises
+    ------
+    TypeError
+        - If `choices` is neither `None`, `tuple`, `list`, `set` ,`dict` nor other `iterable`.
+        - If a choice is neither `str`, `int`, `float` nor a `name` - `value` pair.
+    """
+    choices_processed = []
+    
+    if choices is None:
+        pass
+    
+    elif isinstance(choices, (list, tuple)):
+        for choice in choices:
+            choices_processed.append(application_command_autocomplete_choice_validator(choice))
+    
+    elif isinstance(choices, set):
+        for choice in choices:
+            choices_processed.append(application_command_autocomplete_choice_validator(choice))
+        
+        choices_processed.sort(key=application_command_autocomplete_choice_sort_key)
+    
+    elif isinstance(choices, dict):
+        for choice_item in choices.items():
+            choices_processed.append(application_command_autocomplete_choice_validator_tuple_item(choice_item))
+        
+        choices_processed.sort(key=application_command_autocomplete_choice_sort_key)
+    
+    elif hasattr(type(choices), '__iter__'):
+        for choice in choices:
+            choices_processed.append(application_command_autocomplete_choice_validator(choice))
+        
+        # Should we sort it?
+    
+    else:
+        raise TypeError(f'`{choices}` can be either `None` or `list`, `tuple`, `set`, `dict` including any other '
+            f'iterables, got {choices.__class__.__name__}; {choices!r}.')
+    
+    del choices_processed[20:]
+    
+    return choices_processed
+
+
+def application_command_autocomplete_choice_validator(choice):
+    """
+    Validates an application autocomplete choice given as a tuple item of 2 elements.
+    
+    Parameters
+    ----------
+    choice : `str`, `int`, `float`, `tuple` (`str`, (`str`, `int`, `float`))
+        The choice or a `name` - `value` pair.
+    
+    Returns
+    -------
+    choice : `dict` of (`str`, `str`)
+        Json serializable application command autocomplete choice.
+    
+    Raises
+    ------
+    TypeError
+        If `choice`'s type is incorrect.
+    """
+    if isinstance(choice, tuple):
+        choice_tuple_length = len(choice)
+        if choice_tuple_length == 2:
+            return application_command_autocomplete_choice_validator_tuple_item(choice)
+        
+        raise TypeError(f'Tuple autocomplete choice can have length `2`, got {choice_tuple_length}; {choice!r}.')
+    
+    if isinstance(choice, str):
+        pass
+    elif isinstance(choice, (int, float)):
+        choice = str(choice)
+    else:
+        raise TypeError(f'An autocomplete choice can be either a `name` - `value` pai or a `str`, `int` or a `float` '
+            f'instance, got {choice.__class__.__name__}; {choice!r}.')
+    
+    return application_command_autocomplete_choice_builder(choice, choice)
+
+
+def application_command_autocomplete_choice_validator_tuple_item(item):
+    """
+    Validates an application autocomplete choice given as a tuple item of 2 elements.
+    
+    Parameters
+    ----------
+    item : `tuple` (`str`, (`str`, `int`, `float`))
+        A `name` - `value` pair.
+    
+    Returns
+    -------
+    choice : `dict` of (`str`, `str`)
+        Json serializable application command autocomplete choice.
+    
+    Raises
+    ------
+    TypeError
+        - If `item[0]` is not `str` instance.
+        - If `item[1]` is neither `str`, `int` nor `float` instance.
+    """
+    name, value = item
+    if not isinstance(name, str):
+        raise TypeError(f'Tuple item autocomplete choice name should be `str` instance, got '
+            f'{name.__class__.__name__}; {name!r}.')
+    
+    if isinstance(value, str):
+        pass
+    elif isinstance(value, (int, float)):
+        value = str(value)
+    else:
+        raise TypeError(f'Tuple item autocomplete choice value should be either `str`, `int` or `float` instance, got '
+            f'{value.__class__.__name__}, {value!r}.')
+    
+    return application_command_autocomplete_choice_builder(name, value)
+
+
+def application_command_autocomplete_choice_builder(name, value):
+    """
+    Builds an application autocomplete choice from the given `name` - `value` pair.
+    
+    Parameters
+    ----------
+    name : `str`
+        Choice name.
+    value : `str`, `int` or `float`
+        Choice value.
+    
+    Returns
+    -------
+    choice : `dict` of (`str`, `str`)
+        Json serializable application command autocomplete choice.
+    """
+    return {
+        'name': name,
+        'value': value,
+    }
+
+
+def application_command_autocomplete_choice_sort_key(choice):
+    """
+    Choice sort key used to sort unsorted application command autocomplete keys.
+    
+    Parameters
+    ----------
+    choice : `dict` of (`str`, `str`)
+        Json serializable application command autocomplete choice.
+    
+    Returns
+    -------
+    choice_sort_key : `str`
+        The choice's name.
+    """
+    return choice['name']

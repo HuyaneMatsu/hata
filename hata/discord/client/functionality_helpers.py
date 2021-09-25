@@ -1142,7 +1142,7 @@ def application_command_autocomplete_choice_validator(choice):
     elif isinstance(choice, (int, float)):
         choice = str(choice)
     else:
-        raise TypeError(f'An autocomplete choice can be either a `name` - `value` pai or a `str`, `int` or a `float` '
+        raise TypeError(f'An autocomplete choice can be either a `name` - `value` pair or a `str`, `int` or a `float` '
             f'instance, got {choice.__class__.__name__}; {choice!r}.')
     
     return application_command_autocomplete_choice_builder(choice, choice)

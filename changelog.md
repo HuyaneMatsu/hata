@@ -1,4 +1,7 @@
-## 1.1.106 *\[2021-09-??\]*
+## 1.1.107 *\[2021-09-??\]*
+
+
+## 1.1.106 *\[2021-09-25\]*
 
 ### Summary
 
@@ -25,7 +28,6 @@ Add auto completion for slash commands.
 - `SlasherApplicationCommand.create_event`, `SlasherApplicationCommand.create_event_from_class`
     `SlasherApplicationCommandCategory.create_event` and `SlasherApplicationCommandCategory.create_event_from_class`
     returned itself instead of the registered sub-command / sub-command-category.
-
 
 ## 1.1.105 *\[2021-09-21\]*
 

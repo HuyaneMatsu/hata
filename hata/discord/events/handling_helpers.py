@@ -2229,6 +2229,7 @@ class ChunkWaiter(EventHandlerBase):
         if waiter(event):
             del waiters[nonce]
 
+
 class asynclist(list):
     """
     Container used by events to call more events and by waitfor events to call more waiters.
@@ -2260,11 +2261,13 @@ class asynclist(list):
         for coro in list.__iter__(self):
             Task(coro(*args), KOKORO)
     
+    
     def __repr__(self):
         """Returns the asynclist's representation."""
-        result = [
+        repr_parts = [
             self.__class__.__name__,
-            '([']
+            '(['
+        ]
         
         
         limit = list.__len__(self)
@@ -2272,18 +2275,19 @@ class asynclist(list):
             index = 0
             while True:
                 element = list.__getitem__(self, index)
-                result.append(repr(element))
+                repr_parts.append(repr(element))
                 
                 index += 1
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
         
-        result.append('])')
+        repr_parts.append('])')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+    
     
     def __getattribute__(self, name):
         """Gets the given attribute from the elements of the asynclist."""

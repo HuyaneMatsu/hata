@@ -8,6 +8,7 @@ try:
 except ImportError:
     from weakref import WeakSet
 
+from ...backend.export import export
 from ...backend.futures import Task
 
 from ..core import KOKORO
@@ -106,6 +107,11 @@ def get_event_parser_parameter_count(name):
 add_event_handler('error', 3, None,)
 add_event_handler('launch', 1, None,)
 add_event_handler('shutdown', 1, None,)
+add_event_handler('voice_client_ghost', 2, None,)
+add_event_handler('voice_client_join', 2, None,)
+add_event_handler('voice_client_move', 3, None,)
+add_event_handler('voice_client_leave', 3, None,)
+add_event_handler('voice_client_update', 3, None,)
 
 add_event_handler('ready', 1, 'READY',)
 add_event_handler('client_edit', 2, 'USER_UPDATE',)
@@ -150,8 +156,9 @@ add_event_handler('role_delete', 3, 'GUILD_ROLE_DELETE',)
 add_event_handler('role_edit', 3, 'GUILD_ROLE_UPDATE',)
 add_event_handler('webhook_update', 2, 'WEBHOOKS_UPDATE',)
 add_event_handler('user_voice_join', 2, 'VOICE_STATE_UPDATE',)
-add_event_handler('user_voice_leave', 2, 'VOICE_STATE_UPDATE',)
+add_event_handler('user_voice_leave', 3, 'VOICE_STATE_UPDATE',)
 add_event_handler('user_voice_update', 3, 'VOICE_STATE_UPDATE',)
+add_event_handler('user_voice_move', 3, 'VOICE_STATE_UPDATE',)
 add_event_handler('typing', 4, 'TYPING_START',)
 add_event_handler('invite_create', 2, 'INVITE_CREATE',)
 add_event_handler('invite_delete', 2, 'INVITE_DELETE',)
@@ -496,3 +503,20 @@ def maybe_ensure_launch(client):
         event_handler = client.events.launch
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client), KOKORO)
+
+
+@export
+def trigger_voice_client_ghost_event(client, voice_state):
+    """
+    Triggers `Client.events.voice_client_ghost` if set.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client instance.
+    voice_state : ``VoiceState``
+        The client's ghost voice state.
+    """
+    event_handler = client.events.voice_client_ghost
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, voice_state), KOKORO)

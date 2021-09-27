@@ -14,7 +14,8 @@ from ..user import User, create_partial_user_from_id, thread_user_create, thread
 from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
-    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE
+    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, \
+    VOICE_STATE_MOVE
 from ..role import Role
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
@@ -28,7 +29,7 @@ from .filters import filter_clients, filter_clients_or_me, first_client, first_c
 from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, \
     INTENT_MASK_GUILD_VOICE_STATES, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_MESSAGES, \
     INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS, INTENT_SHIFT_GUILD_USERS
-from .event_types import GuildUserChunkEvent
+from .event_types import GuildUserChunkEvent, VoiceServerUpdateEvent
 from .guild_sync import guild_sync, check_channel
 
 Client = include('Client')
@@ -3021,38 +3022,64 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     
     user = User(user_data)
     
-    action, voice_state, old_attributes = guild._update_voice_state(data, user)
+    if user is client:
+        for action, voice_state, old_attributes in guild._update_voice_state(data, user):
     
     if action == VOICE_STATE_NONE:
         return
     
     if user is client:
-        try:
-            voice_client = client.voice_clients[guild_id]
-        except KeyError:
-            pass
-        else:
-            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
-                # If the action is join or update, set the voice client's channel.
-                voice_client.channel = voice_state.channel
-            elif action == VOICE_STATE_LEAVE:
-                # If the user is client, then disconnect it.
-                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
+        for action, voice_state, change in guild._update_voice_state(data, user.id):
+            if action == VOICE_STATE_JOIN:
+                event_handler = client.events.voice_client_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_MOVE:
+                event_handler = client.events.voice_client_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_LEAVE:
+                event_handler = client.events.voice_client_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_UPDATE:
+                event_handler = client.events.voice_client_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(client, voice_state, change), KOKORO)
+            continue
     
-    if action == VOICE_STATE_JOIN:
-        event_handler = client.events.user_voice_join
-        if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, voice_state), KOKORO)
-    
-    elif action == VOICE_STATE_LEAVE:
-        event_handler = client.events.user_voice_leave
-        if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, voice_state), KOKORO)
-        
-    elif action == VOICE_STATE_UPDATE:
-        event_handler = client.events.user_voice_update
-        if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client, voice_state, old_attributes), KOKORO)
+    else:
+        for action, voice_state, change in guild._update_voice_state(data, user.id):
+            if action == VOICE_STATE_JOIN:
+                event_handler = client.events.user_voice_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_MOVE:
+                event_handler = client.events.user_voice_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_LEAVE:
+                event_handler = client.events.user_voice_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_UPDATE:
+                event_handler = client.events.user_voice_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state, VOICE_STATE_JOIN), KOKORO)
+                continue
+
 
 def VOICE_STATE_UPDATE__CAL_MC(client, data):
     try:
@@ -3060,13 +3087,13 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     except KeyError:
         # Do not handle outside of guild calls
         return
-    else:
-        guild_id = int(guild_id)
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            guild_sync(client, data, 'VOICE_STATE_UPDATE')
-            return
+    
+    guild_id = int(guild_id)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        # Ignore this case
+        return
     
     clients = filter_clients(guild.clients, INTENT_MASK_GUILD_VOICE_STATES)
     if clients.send(None) is not client:
@@ -3080,42 +3107,63 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     
     user = User(user_data)
     
-    action, voice_state, old_attributes = guild._update_voice_state(data, user)
-    
-    if action == VOICE_STATE_NONE:
+    actions = list(guild._update_voice_state(data, user.id))
+    if not actions:
+        clients.close()
         return
     
     if isinstance(user, Client):
-        try:
-            voice_client = user.voice_clients[guild_id]
-        except KeyError:
-            pass
-        else:
-            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
-                # If the action is join or update, set the voice client's channel.
-                voice_client.channel = voice_state.channel
-            elif action == VOICE_STATE_LEAVE:
-                # If the user is client, then disconnect it.
-                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
+        for action, voice_state, change in actions:
+            if action == VOICE_STATE_JOIN:
+                event_handler = user.events.voice_client_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(user, voice_state), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_MOVE:
+                event_handler = user.events.voice_client_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(user, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_LEAVE:
+                event_handler = user.events.voice_client_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(user, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_UPDATE:
+                event_handler = user.events.voice_client_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(user, voice_state, change), KOKORO)
+                continue
     
     for client_ in clients:
-        if action == VOICE_STATE_JOIN:
-            event_handler = client_.events.user_voice_join
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, voice_state), KOKORO)
-            continue
-        
-        if action == VOICE_STATE_LEAVE:
-            event_handler = client_.events.user_voice_leave
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, voice_state), KOKORO)
-            continue
-        
-        if action == VOICE_STATE_UPDATE:
-            event_handler = client_.events.user_voice_update
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, voice_state, old_attributes), KOKORO)
-            continue
+        for action, voice_state, change in actions:
+            if action == VOICE_STATE_JOIN:
+                event_handler = client_.events.user_voice_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, voice_state), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_MOVE:
+                event_handler = client_.events.user_voice_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_LEAVE:
+                event_handler = client_.events.user_voice_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_UPDATE:
+                event_handler = client_.events.user_voice_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client_, voice_state, change), KOKORO)
+                continue
+
 
 def VOICE_STATE_UPDATE__OPT_SC(client, data):
     try:
@@ -3123,38 +3171,47 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
     except KeyError:
         # Do not handle outside of guild calls
         return
-    else:
-        guild_id = int(guild_id)
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            guild_sync(client, data, 'VOICE_STATE_UPDATE')
-            return
+    
+    guild_id = int(guild_id)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
     
     try:
         user_data = data['member']
     except KeyError:
         user_data = data['user']
     
-    user = User(user_data)
-    
-    action, voice_state = guild._update_voice_state_restricted(data, user)
-    
-    if action == VOICE_STATE_NONE:
-        return
+    user = User(user_data, guild)
     
     if user is client:
-        try:
-            voice_client = client.voice_clients[guild_id]
-        except KeyError:
-            pass
-        else:
-            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
-                # If the action is join or update, set the voice client's channel.
-                voice_client.channel = voice_state.channel
-            elif action == VOICE_STATE_LEAVE:
-                # If the user is client, then disconnect it.
-                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
+        for action, voice_state, change in guild._update_voice_state(data, user.id):
+            if action == VOICE_STATE_JOIN:
+                event_handler = client.events.voice_client_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_MOVE:
+                event_handler = client.events.voice_client_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_LEAVE:
+                event_handler = client.events.voice_client_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_UPDATE:
+                event_handler = client.events.voice_client_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(client, voice_state, change), KOKORO)
+                continue
+    else:
+        guild._update_voice_state_restricted(data, user.id)
 
 
 def VOICE_STATE_UPDATE__OPT_MC(client, data):
@@ -3163,13 +3220,11 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     except KeyError:
         # Do not handle outside of guild calls
         return
-    else:
-        guild_id = int(guild_id)
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            guild_sync(client, data, 'VOICE_STATE_UPDATE')
-            return
+    
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
     
     if first_client(guild.clients, INTENT_MASK_GUILD_VOICE_STATES) is not client:
         return
@@ -3181,23 +3236,35 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     
     user = User(user_data)
     
-    action, voice_state = guild._update_voice_state_restricted(data, user)
-    
-    if action == VOICE_STATE_NONE:
-        return
-    
     if isinstance(user, Client):
-        try:
-            voice_client = user.voice_clients[guild_id]
-        except KeyError:
-            pass
-        else:
-            if action == VOICE_STATE_JOIN or action == VOICE_STATE_UPDATE:
-                # If the action is join or update, set the voice client's channel.
-                voice_client.channel = voice_state.channel
-            elif action == VOICE_STATE_LEAVE:
-                # If the user is client, then disconnect it.
-                Task(voice_client._disconnect(force=True, terminate=False), KOKORO)
+        for action, voice_state, change in guild._update_voice_state(data, user.id):
+            if action == VOICE_STATE_JOIN:
+                event_handler = user.events.voice_client_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(user, voice_state), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_MOVE:
+                event_handler = user.events.voice_client_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(user, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_LEAVE:
+                event_handler = user.events.voice_client_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(user, voice_state, change), KOKORO)
+                continue
+            
+            if action == VOICE_STATE_UPDATE:
+                event_handler = user.events.voice_client_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                     Task(event_handler(user, voice_state, change), KOKORO)
+                continue
+    
+    else:
+        guild._update_voice_state_restricted(data, user.id)
+
 
 add_parser(
     'VOICE_STATE_UPDATE',
@@ -3210,29 +3277,36 @@ del VOICE_STATE_UPDATE__CAL_SC, \
     VOICE_STATE_UPDATE__OPT_SC, \
     VOICE_STATE_UPDATE__OPT_MC
 
-def VOICE_SERVER_UPDATE(client, data):
-    try:
-        voice_client_id = data['guild_id']
-    except KeyError:
-        voice_client_id = data['channel_id']
+
+def VOICE_SERVER_UPDATE_CAL(client, data):
+    guild_id = data.get('guild_id', None)
+    if guild_id is None:
+        guild_id = 0
+    else:
+        guild_id = int(guild_id)
     
-    voice_client_id = int(voice_client_id)
+    endpoint = data.get('endpoint', None)
+    token = data.get('token', None)
     
-    try:
-        voice_client = client.voice_clients[voice_client_id]
-    except KeyError:
-        return
+    event = VoiceServerUpdateEvent()
+    event.endpoint = endpoint
+    event.guild_id = guild_id
+    event.token = token
     
-    Task(voice_client._create_socket(data), KOKORO)
-    #should we add event to this?
+    Task(client.events.voice_server_update(client, event), KOKORO)
+
+def VOICE_SERVER_UPDATE_OPT(client, data):
+    pass
 
 add_parser(
     'VOICE_SERVER_UPDATE',
-    VOICE_SERVER_UPDATE,
-    VOICE_SERVER_UPDATE,
-    VOICE_SERVER_UPDATE,
-    VOICE_SERVER_UPDATE)
-del VOICE_SERVER_UPDATE
+    VOICE_SERVER_UPDATE_CAL,
+    VOICE_SERVER_UPDATE_CAL,
+    VOICE_SERVER_UPDATE_OPT,
+    VOICE_SERVER_UPDATE_OPT)
+del VOICE_SERVER_UPDATE_CAL, \
+    VOICE_SERVER_UPDATE_OPT
+
 
 if CACHE_PRESENCE:
     def TYPING_START__CAL(client, data):

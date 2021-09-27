@@ -14521,8 +14521,8 @@ class Client(ClientUserPBase):
             voice_client = await VoiceClient(self, channel)
         else:
             if voice_client.channel is not channel:
-                gateway = self._gateway_for(guild_id)
-                await gateway._change_voice_state(guild_id, channel.id)
+                gateway = self.gateway_for(guild_id)
+                await gateway.change_voice_state(guild_id, channel.id)
         
         return voice_client
     
@@ -14738,7 +14738,7 @@ class Client(ClientUserPBase):
             },
         }
         
-        gateway = self._gateway_for(guild_id)
+        gateway = self.gateway_for(guild_id)
         await gateway.send_as_json(data)
         
         try:
@@ -14822,7 +14822,7 @@ class Client(ClientUserPBase):
             },
         }
         
-        gateway = self._gateway_for(guild_id)
+        gateway = self.gateway_for(guild_id)
         await gateway.send_as_json(data)
         
         try:
@@ -15329,7 +15329,7 @@ class Client(ClientUserPBase):
         return [rs for rs in self.relationships.values() if rs.type is type_]
     
     
-    def _gateway_for(self, guild_id):
+    def gateway_for(self, guild_id):
         """
         Returns the corresponding gateway of the client to the passed guild.
         

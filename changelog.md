@@ -4,6 +4,24 @@
 
 - Add `VoiceServerUpdateEvent`.
 - Add `Client.events.voice_server_update`.
+- `VoiceState.channel` is now a property.
+- Add `VoiceState.channel_id`.
+- `VoiceState.user` is now a property.
+- Add `VoiceState.user_id`.
+- Add `Client.events.voice_client_ghost`.
+- Add `VoiceState._update_channel`.
+- Add `Client.events.voice_client_join`.
+- Add `Client.events.voice_client_move`.
+- Add `Client.events.voice_client_leave`.
+- Add `Client.events.user_voice_move`.
+- `Client.events.user_voice_leave` now accepts 3 parameters (from 2).
+- `Guild._update_voice_state` is now a generator.
+- Add `Client.events.voice_client_update`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `Client._gateway_for` to `.gateway_for`.
+- Rename `DiscordGateway._change_voice_state` to `.change_voice_state`.
 
 ## 1.1.106 *\[2021-09-25\]*
 

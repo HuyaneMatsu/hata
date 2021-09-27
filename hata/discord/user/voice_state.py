@@ -5,6 +5,7 @@ from datetime import datetime
 from ...backend.export import include
 
 from ..utils import timestamp_to_datetime
+from ..core import CHANNELS, GUILDS
 
 from .utils import create_partial_user_from_id
 
@@ -16,10 +17,12 @@ class VoiceState:
     
     Attributes
     ----------
-    channel : ``ChannelVoice``
-        The channel to where the user is connected to.
+    channel_id : `int`
+        The channel's identifier to where the user is connected to.
     deaf : `bool`
         Whether the user is deafen.
+    guild_id : `int`
+        The guild's identifier where the user is connected to.
     is_speaker : `bool`
         Whether the user is suppressed inside of the voice channel.
         
@@ -40,13 +43,13 @@ class VoiceState:
         Whether the user sends video from a camera source.
     session_id : `str`
         The user's voice session id.
-    user : ``User`` or ``Client``
-        The voice state's respective user. If user caching is disabled it will be set as a partial user.
+    user_id : ``ClientUserBase``
+        The voice state's respective user's identifier.
     """
-    __slots__ = ('channel', 'deaf', 'is_speaker', 'mute', 'requested_to_speak_at', 'self_deaf', 'self_mute', 'self_stream',
-        'self_video', 'session_id', 'user', )
+    __slots__ = ('channel_id', 'deaf', 'guild_id', 'is_speaker', 'mute', 'requested_to_speak_at', 'self_deaf',
+        'self_mute', 'self_stream', 'self_video', 'session_id', 'user_id')
     
-    def __init__(self, data, channel):
+    def __new__(cls, data, guild_id):
         """
         Creates a ``VoiceState`` object from the given data.
         
@@ -54,11 +57,29 @@ class VoiceState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Voice state data received from Discord.
-        channel : ``ChannelVoiceBase``
-            The channel of the voice state.
+        channel_id : `int`
+            The channel's identifier of the voice state.
         """
-        self.channel = channel
-        self.user = create_partial_user_from_id(int(data['user_id']))
+        channel_id = data.get('channel_id', None)
+        if channel_id is None:
+            return
+        
+        user_id = int(data['user_id'])
+        
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            guild = None
+        else:
+            try:
+                return guild.voice_states[user_id]
+            except KeyError:
+                pass
+        
+        self = object.__new__(cls)
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+        self.user_id = user_id
         self.session_id = data['session_id']
         self.mute = data['mute']
         self.deaf = data['deaf']
@@ -74,6 +95,36 @@ class VoiceState:
         self.is_speaker = not data.get('suppress', False)
         
         self.requested_to_speak_at = requested_to_speak_at
+        
+        if (guild is not None):
+            guild.voice_states[user_id] = self
+        
+        return self
+    
+    @property
+    def user(self):
+        """
+        Returns the voice state's user.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+        """
+        return create_partial_user_from_id(self.user_id)
+    
+    
+    @property
+    def channel(self):
+        """
+        Returns the voice state's channel, where the user is connected to.
+        
+        Returns
+        -------
+        channel : `None` or ``ChannelVoiceBase``
+        """
+        channel_id = self.channel_id
+        if channel_id:
+            return CHANNELS[channel_id]
     
     @property
     def guild(self):
@@ -84,9 +135,45 @@ class VoiceState:
         -------
         guild : `None` or ``Guild``
         """
-        return self.channel.guild
+        channel = self.channel
+        if (channel is not None):
+            return channel.guild
     
-    def _difference_update_attributes(self, data, channel):
+    
+    def _update_channel(self, data):
+        """
+        Updates the voice state's channel.
+        
+        Returns
+        -------
+        old_channel_id : `int`
+            The voice state's old channel's identifier.
+        new_channel_id : `int`
+            The voice state's new channel's identifier.
+        """
+        channel_id = data.get('channel_id', None)
+        if channel_id is None:
+            channel_id = 0
+            
+            try:
+                guild = GUILDS[self.guild_id]
+            except KeyError:
+                pass
+            else:
+                try:
+                    del guild.voice_states[self.user_id]
+                except KeyError:
+                    pass
+        else:
+            channel_id = int(channel_id)
+        
+        old_channel_id = self.channel_id
+        self.channel_id = channel_id
+        
+        return old_channel_id, channel_id
+    
+    
+    def _difference_update_attributes(self, data):
         """
         Updates the voice state and returns it's overwritten attributes as a `dict` with a `attribute-name` -
         `old-value` relation.
@@ -95,8 +182,6 @@ class VoiceState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Voice state data received from Discord.
-        channel : ``ChannelVoice``
-            The channel of the voice state.
         
         Returns
         -------
@@ -108,8 +193,6 @@ class VoiceState:
         +-----------------------+-----------------------+
         | Keys                  | Values                |
         +=======================+=======================+
-        | channel               | ``ChannelVoice``      |
-        +-----------------------+-----------------------+
         | deaf                  | `str`                 |
         +-----------------------+-----------------------+
         | is_speaker            | `bool`                |
@@ -128,10 +211,6 @@ class VoiceState:
         +-----------------------+-----------------------+
         """
         old_attributes = {}
-        
-        if (self.channel is not channel):
-            old_attributes['channel'] = self.channel
-            self.channel = channel
         
         deaf = data['deaf']
         if self.deaf != deaf:
@@ -178,7 +257,8 @@ class VoiceState:
         
         return old_attributes
     
-    def _update_attributes(self, data, channel):
+    
+    def _update_attributes(self, data):
         """
         Updates the voice state with overwriting it's old attributes.
         
@@ -186,10 +266,7 @@ class VoiceState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Voice state data received from Discord.
-        channel : ``ChannelVoice``
-            The channel of the voice state.
         """
-        self.channel = channel
         self.deaf = data['deaf']
         self.mute = data['mute']
         self.self_deaf = data['self_deaf']
@@ -207,4 +284,7 @@ class VoiceState:
     
     def __repr__(self):
         """Returns the voice state's representation."""
-        return f'<{self.__class__.__name__} user={self.user.full_name!r}, channel={self.channel!r}>'
+        return (
+            f'<{self.__class__.__name__} user_id={self.user_id}, guild_id={self.guild_id}, '
+            f'channel_id={self.channel_id}>'
+        )

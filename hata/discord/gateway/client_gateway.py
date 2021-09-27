@@ -41,7 +41,7 @@ IDENTIFY : `int` = `2`
 PRESENCE : `int` = `3`
     Send only, used at ``Client.client_edit_presence``.
 VOICE_STATE : `int` = `4`
-    Send only, used at ``DiscordGateway._change_voice_state``
+    Send only, used at ``DiscordGateway.change_voice_state``
 VOICE_PING : `int` = `5`
     Removed.
 RESUME : `int` = `6`
@@ -573,7 +573,7 @@ class DiscordGateway:
         
         await self.send_as_json(data)
 
-    async def _change_voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
+    async def change_voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
         """
         Sends a `VOICE_STATE` packet to Discord.
         

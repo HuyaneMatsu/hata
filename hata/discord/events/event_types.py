@@ -47,7 +47,7 @@ class GuildUserChunkEvent(EventBase):
 
 class VoiceServerUpdateEvent(EventBase):
     """
-    Represents an `VOICE_SERVER_UPDATE` event.
+    Represents a `VOICE_SERVER_UPDATE` event.
     
     Attributes
     ----------

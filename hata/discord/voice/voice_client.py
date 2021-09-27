@@ -9,7 +9,7 @@ from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, Inva
 from ...backend.protocol import DatagramMergerReadProtocol
 from ...backend.export import export
 
-from ..core import KOKORO
+from ..core import KOKORO, GUILDS, CHANNELS
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
 from ..channel import ChannelVoiceBase, ChannelStage
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
@@ -95,7 +95,7 @@ class VoiceClient:
          - ``._loop_actual``
          - ``._loop_queue``
      
-    channel : ``ChannelVoice``
+    channel : ``ChannelVoiceBase``
         The channel where the voice client currently is.
     client : ``Client``
         The voice client's owner client.
@@ -103,7 +103,7 @@ class VoiceClient:
         Used to communicate with the ``AudioPlayer`` thread.
     gateway : ``DiscordGatewayVoice``
         The gateway through what the voice client communicates with Discord.
-    guild : ``Guild``
+    guild : ``Guild```
         The guild where the voice client is.
     lock : `Lock`
         A lock used meanwhile changing the currently playing audio to not modifying it parallelly.
@@ -136,7 +136,7 @@ class VoiceClient:
         ----------
         client : ``Client``
             The parent client.
-        channel : ``ChannelVoice``
+        channel : ``ChannelVoiceBase``
             The channel where the client will connect to.
         
         Returns
@@ -160,12 +160,17 @@ class VoiceClient:
             raise RuntimeError('Opus is not loaded.')
         
         if isinstance(channel, ChannelVoiceBase):
-            guild = channel.guild
-            if guild is None:
-                raise RuntimeError('Cannot connect to partial channel.')
+            guild_id = channel.guild_id
+            if guild_id == 0:
+                guild = None
+            else:
+                guild = GUILDS.get(guild_id)
             
+            if guild is None:
+                raise RuntimeError(f'Cannot connect to partial channel: {channel!r}.')
         else:
-            raise TypeError(f'Can join only to {ChannelVoiceBase.__name__}, got {channel.__class__.__name__}.')
+            raise TypeError(f'`channel` can only be {ChannelVoiceBase.__name__}, or a `tuple` of (`guild_id`, '
+                f'`channel_id`) pair, got {channel.__class__.__name__}.')
         
         region = channel.region
         if region is None:
@@ -566,7 +571,7 @@ class VoiceClient:
     
     async def move_to(self, channel):
         """
-        Move the voice client to an another ``ChannelVoice``.
+        Move the voice client to an another ``ChannelVoiceBase``.
         
         This method is a coroutine.
         
@@ -591,14 +596,14 @@ class VoiceClient:
         
         guild = channel.guild
         if guild is None:
-            raise RuntimeError('Cannot connect to partial channel.')
+            raise RuntimeError(f'Cannot connect to partial channel: {channel!r}.')
         
         own_guild = self.guild
         if (own_guild is not guild):
             raise RuntimeError('Cannot move to an another guild.')
         
-        gateway = self.client._gateway_for(own_guild.id)
-        await gateway._change_voice_state(own_guild.id, channel.id)
+        gateway = self.client.gateway_for(own_guild.id)
+        await gateway.change_voice_state(own_guild.id, channel.id)
     
     
     async def join_speakers(self, *, request=False):
@@ -681,7 +686,7 @@ class VoiceClient:
         data = {
             'suppress': True,
             'channel_id': channel.id
-                }
+        }
         
         await self.client.http.voice_state_client_edit(guild.id, data)
         return
@@ -1013,8 +1018,9 @@ class VoiceClient:
         finally:
             self._maybe_close_socket()
     
+    
     @classmethod
-    async def _kill_ghost(cls, client, channel):
+    async def _kill_ghost(cls, client, voice_state):
         """
         When a client is restarted, it might happen that it will be in still in some voice channels. At this
         case this function is ensured to kill the ghost connection.
@@ -1025,15 +1031,16 @@ class VoiceClient:
         ----------
         client : ``Client``
             The owner client of the ghost connection.
-        channel : ``ChannelVoice``
-            The channel where the ghost voice client is connected to.
+        voice_state : ``VoiceState``
+            The ghost voice client's voice state.
         """
         try:
-            voice_client = await cls(client, channel)
+            voice_client = await cls(client, voice_state.channel)
         except (RuntimeError, TimeoutError):
             return
         
         await voice_client._disconnect(force=True)
+    
     
     async def play_next(self):
         """
@@ -1045,6 +1052,7 @@ class VoiceClient:
         """
         async with self.lock:
             await self._play_next(self, None)
+    
     
     @staticmethod
     async def _play_next(self, last_source):
@@ -1086,6 +1094,7 @@ class VoiceClient:
         if self.connected.is_set():
             Task(self.set_speaking(1), KOKORO)
     
+    
     @staticmethod
     async def _loop_actual(self, last_source):
         """
@@ -1117,6 +1126,7 @@ class VoiceClient:
         if self.connected.is_set():
             Task(self.set_speaking(1), KOKORO)
     
+    
     @staticmethod
     async def _loop_queue(self, last_source):
         """
@@ -1139,6 +1149,7 @@ class VoiceClient:
         
         await self._play_next(self, None)
     
+    
     async def _start_handshake(self):
         """
         Requests a gateway handshake from Discord. If we get answer on it, means, we can open the socket to send audio
@@ -1158,10 +1169,10 @@ class VoiceClient:
             guild_id = 0
         else:
             guild_id = guild.id
-        gateway = client._gateway_for(guild_id)
+        gateway = client.gateway_for(guild_id)
 
         # request joining
-        await gateway._change_voice_state(guild_id, self.channel.id)
+        await gateway.change_voice_state(guild_id, self.channel.id)
         future_or_timeout(self._handshake_complete, 60.0)
         
         try:
@@ -1169,6 +1180,7 @@ class VoiceClient:
         except TimeoutError:
             await self._terminate_handshake()
             raise
+    
     
     async def _terminate_handshake(self):
         """
@@ -1183,10 +1195,10 @@ class VoiceClient:
             guild_id = 0
         else:
             guild_id = guild.id
-        gateway = self.client._gateway_for(guild_id)
+        gateway = self.client.gateway_for(guild_id)
         
         try:
-            await gateway._change_voice_state(guild_id, None, self_mute=True)
+            await gateway.change_voice_state(guild_id, None, self_mute=True)
         except ConnectionClosed:
             pass
         
@@ -1218,7 +1230,7 @@ class VoiceClient:
             guild_id = 0
         else:
             guild_id = guild.id
-        gateway = self.client._gateway_for(guild_id)
+        gateway = self.client.gateway_for(guild_id)
         
         self._session_id = gateway.session_id
         token = event.token
@@ -1250,6 +1262,7 @@ class VoiceClient:
         else:
             handshake_complete.set_result(None)
     
+    
     def send_packet(self, packet):
         """
         Sends the given packet to Discord with the voice client's socket.
@@ -1280,6 +1293,7 @@ class VoiceClient:
         
         self._maybe_close_socket()
     
+    
     def _maybe_close_socket(self):
         """
         Closes the voice client's socket and transport if they are set.
@@ -1294,6 +1308,7 @@ class VoiceClient:
         if socket is not None:
             self._socket = None
             socket.close()
+    
     
     def _maybe_change_voice_region(self):
         """
@@ -1313,6 +1328,7 @@ class VoiceClient:
         
         self.region = region
         return True
+    
     
     def __repr__(self):
         """Returns the voice client's representation."""

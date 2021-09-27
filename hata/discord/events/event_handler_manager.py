@@ -9,7 +9,10 @@ from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, get
     PARSER_SETTINGS
 from .handling_helpers import ChunkWaiter, check_parameter_count_and_convert, asynclist, \
     check_name
-from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler
+from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler, \
+    default_voice_client_ghost_event_handler, default_voice_client_join_event_handler, \
+    default_voice_client_move_event_handler, default_voice_client_leave_event_handler, \
+    default_voice_client_update_event_handler
 
 class EventHandlerManager:
     """
@@ -600,8 +603,11 @@ class EventHandlerManager:
     user_voice_join(client: ``Client``, voice_state: ``VoiceState``)
         Called when a user joins a voice channel.
     
-    user_voice_leave(client: ``client``, voice_state: ``VoiceState``)
+    user_voice_leave(client: ``client``, voice_state: ``VoiceState``, old_channel_id : `int`)
         Called when a user leaves from a voice channel.
+    
+    user_voice_move(client: ``Client``, voice_state: ``VoiceState``, old_channel_id : `int`)
+        Called when a user moves between two voice channels
     
     user_voice_update(client: ``Client``, voice_state: ``VoiceState``, old_attributes: `dict`):
         Called when a voice state of a user is updated.
@@ -611,8 +617,6 @@ class EventHandlerManager:
         +-----------------------+-----------------------+
         | Keys                  | Values                |
         +=======================+=======================+
-        | channel               | ``ChannelVoice``      |
-        +-----------------------+-----------------------+
         | deaf                  | `str`                 |
         +-----------------------+-----------------------+
         | is_speaker            | `bool`                |
@@ -629,6 +633,67 @@ class EventHandlerManager:
         +-----------------------+-----------------------+
         | self_video            | `bool`                |
         +-----------------------+-----------------------+
+    
+    voice_client_join(client : ``Client``, voice_state : ``VoiceState``)
+        Called when the client join a voice channel.
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+    
+    voice_client_ghost(client : ``Client``, voice_state : ``VoiceState``)
+        Called when the client has a voice state in a channel, when logging in.
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+    
+    voice_client_leave(client : ``Client``, voice_state : ``VoiceState``, old_channel_id : `int`)
+        Called when the client leaves / is removed fro ma voice channel.
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+    
+    voice_client_move(client : ``Client``, voice_state : ``VoiceState``, old_channel_id : `int`)
+        Called when the client moves / is moved between two channels.
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+    
+    voice_client_update(client : ``Client``, voice_state : ``VoiceState``, old_attributes : `dict`)
+        Called when the client's state is updated.
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+        
+        Every item in `old_attributes` is optional and they can be the following:
+        
+        +-----------------------+-----------------------+
+        | Keys                  | Values                |
+        +=======================+=======================+
+        | deaf                  | `str`                 |
+        +-----------------------+-----------------------+
+        | is_speaker            | `bool`                |
+        +-----------------------+-----------------------+
+        | mute                  | `bool`                |
+        +-----------------------+-----------------------+
+        | requested_to_speak_at | `None` or `datetime`  |
+        +-----------------------+-----------------------+
+        | self_deaf             | `bool`                |
+        +-----------------------+-----------------------+
+        | self_mute             | `bool`                |
+        +-----------------------+-----------------------+
+        | self_stream           | `bool`                |
+        +-----------------------+-----------------------+
+        | self_video            | `bool`                |
+        +-----------------------+-----------------------+
+        
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
     
     voice_server_update(client: ``Client``, event: ``VoiceServerUpdateEvent``)
         Called initially when the client connects to a voice channels of a guild. Also called when a guild's voice
@@ -655,10 +720,17 @@ class EventHandlerManager:
         object.__setattr__(self, 'client_reference', client_reference)
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
             object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
+        
         object.__setattr__(self, 'error', default_error_event_handler)
         object.__setattr__(self, '_launch_called', False)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
         object.__setattr__(self, 'voice_server_update', default_voice_server_update_event_handler)
+        object.__setattr__(self, 'voice_client_ghost', default_voice_client_ghost_event_handler)
+        object.__setattr__(self, 'voice_client_join', default_voice_client_join_event_handler)
+        object.__setattr__(self, 'voice_client_move', default_voice_client_move_event_handler)
+        object.__setattr__(self, 'voice_client_leave', default_voice_client_leave_event_handler)
+        object.__setattr__(self, 'voice_client_update', default_voice_client_update_event_handler)
+    
     
     def __call__(self, func=None, name=None, overwrite=False):
         """
@@ -726,6 +798,7 @@ class EventHandlerManager:
         object.__setattr__(self, name, new)
         return func
     
+    
     def clear(self):
         """
         Clears the ``EventHandlerManager`` to the same state as it were just created.
@@ -737,6 +810,12 @@ class EventHandlerManager:
         object.__setattr__(self, 'error', default_error_event_handler)
         object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
         object.__setattr__(self, 'voice_server_update', default_voice_server_update_event_handler)
+        object.__setattr__(self, 'voice_client_ghost', default_voice_client_ghost_event_handler)
+        object.__setattr__(self, 'voice_client_join', default_voice_client_join_event_handler)
+        object.__setattr__(self, 'voice_client_move', default_voice_client_move_event_handler)
+        object.__setattr__(self, 'voice_client_leave', default_voice_client_leave_event_handler)
+        object.__setattr__(self, 'voice_client_update', default_voice_client_update_event_handler)
+    
     
     def __setattr__(self, name, value):
         """

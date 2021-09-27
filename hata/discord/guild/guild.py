@@ -1,16 +1,16 @@
-__all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_CREATE', 'EMOJI_UPDATE_NONE',
-    'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT', 'STICKER_UPDATE_CREATE',
-    'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE', 'VOICE_STATE_UPDATE')
+__all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_CREATE',
+    'EMOJI_UPDATE_NONE', 'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT',
+    'STICKER_UPDATE_CREATE', 'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE',
+    'VOICE_STATE_MOVE', 'VOICE_STATE_UPDATE')
 
 from re import compile as re_compile, I as re_ignore_case, escape as re_escape
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 from ...backend.utils import WeakValueDictionary
-from ...backend.futures import Task
 from ...backend.export import export, include
 
 from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from ..core import GUILDS, KOKORO
+from ..core import GUILDS
 from ..utils import EMOJI_NAME_RP, DATETIME_FORMAT_CODE
 from ..user import User, create_partial_user_from_id, VoiceState, ZEROUSER, ClientUserBase
 from ..role import Role
@@ -30,6 +30,7 @@ from .flags import SystemChannelFlag
 VoiceClient = include('VoiceClient')
 Client = include('Client')
 Stage = include('Stage')
+trigger_voice_client_ghost_event = include('trigger_voice_client_ghost_event')
 
 LARGE_GUILD_LIMIT = 250 # can be between 50 and 250
 
@@ -49,6 +50,7 @@ VOICE_STATE_NONE = 0
 VOICE_STATE_JOIN = 1
 VOICE_STATE_LEAVE = 2
 VOICE_STATE_UPDATE = 3
+VOICE_STATE_MOVE = 4
 
 
 STICKER_FORMAT_STATIC = StickerFormat.png
@@ -384,17 +386,8 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for voice_state_data in voice_state_datas:
-                    user = create_partial_user_from_id(int(voice_state_data['user_id']))
-                    if user.id in self.voice_states:
-                        continue
-                    
-                    channel_id = voice_state_data.get('channel_id', None)
-                    if channel_id is None:
-                        continue
-                    channel = self.channels[int(channel_id)]
-                    
-                    self.voice_states[user.id] = VoiceState(voice_state_data, channel)
-        
+                    VoiceState(voice_state_data, self.id)
+            
             try:
                 thread_datas = data['threads']
             except KeyError:
@@ -409,7 +402,7 @@ class Guild(DiscordEntity, immortal=True):
                     Stage(stage_data)
         
         if (not CACHE_PRESENCE):
-            #we get information about the client here
+            # we get information about the client here
             try:
                 user_datas = data['members']
             except KeyError:
@@ -424,7 +417,7 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                Task(VoiceClient._kill_ghost(client, ghost_state.channel), KOKORO)
+                trigger_voice_client_ghost_event(client, ghost_state)
             
             self.clients.append(client)
             client.guilds.add(self)
@@ -768,18 +761,21 @@ class Guild(DiscordEntity, immortal=True):
         self.roles.clear()
         self._boosters = None
     
-    def _update_voice_state(self, data, user):
+    
+    def _update_voice_state(self, data, user_id):
         """
-        Called by dispatch event. Updates the voice state of the `user` with the given `data`.
+        Called by dispatch event. Updates the voice state of the represented user by `user_id` with the given `data`.
+        
+        This method is an iterable generator.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`)
             Data received from Discord.
-        user : ``User`` or ``Client``
-            The user, who's voice state is updated.
+        user_id : `int`
+            The respective user's identifier.
         
-        Returns
+        Yields
         -------
         action : `int`
             The respective action.
@@ -797,21 +793,21 @@ class Guild(DiscordEntity, immortal=True):
             +-----------------------+-------+
             | VOICE_STATE_UPDATE    | 3     |
             +-----------------------+-------+
+            | VOICE_STATE_MOVE      | 4     |
+            +-----------------------+-------+
         
         voice_state : `None` or ``VoiceState``
             The user's respective voice state.
             
             Will be returned as `None` if action is `VOICE_STATE_NONE`.
         
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes / old_channel_id : `None` or (`dict` of (`str`, `Any`) items / `int`)
             If `action` is `VOICE_STATE_UPDATE`, then `old_attributes` is returned as a `dict` containing the changed
             attributes in `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
             
             +---------------+-------------------+
             | Keys          | Values            |
             +===============+===================+
-            | channel       | ``ChannelVoice``  |
-            +---------------+-------------------+
             | deaf          | `str`             |
             +---------------+-------------------+
             | mute          | `bool`            |
@@ -824,131 +820,48 @@ class Guild(DiscordEntity, immortal=True):
             +---------------+-------------------+
             | self_video    | `bool`            |
             +---------------+-------------------+
-        """
-        channel_id = data.get('channel_id', None)
-        if channel_id is None:
-            try:
-                voice_state = self.voice_states.pop(user.id)
-            except KeyError:
-                action = VOICE_STATE_NONE
-                voice_state = None
-                old_attributes = None
-            else:
-                action = VOICE_STATE_LEAVE
-                old_attributes = None
-                
-        else:
-            channel_id = int(channel_id)
             
-            try:
-                channel = self.channels[channel_id]
-            except KeyError:
-                # The channel is not present? Probably the channel was deleted. Handle it as a leave if there is a
-                # Voice state for the user.
-                try:
-                    voice_state = self.voice_states[user.id]
-                except KeyError:
-                    # No user state present, was probably called already
-                    action = VOICE_STATE_NONE
-                    voice_state = None
-                else:
-                    action = VOICE_STATE_LEAVE
-                
-                old_attributes = None
-            else:
-                try:
-                    voice_state = self.voice_states[user.id]
-                except KeyError:
-                    voice_state = self.voice_states[user.id] = VoiceState(data, channel)
-                    old_attributes = None
-                    action = VOICE_STATE_JOIN
-                else:
-                    old_attributes = voice_state._difference_update_attributes(data, channel)
-                    if old_attributes:
-                        action = VOICE_STATE_UPDATE
-                    else:
-                        action = VOICE_STATE_NONE
-                        voice_state = None
-                        old_attributes = None
-        
-        return action, voice_state, old_attributes
-    
-    
-    def _update_voice_state_restricted(self, data, user):
+            If `action` is `VOICE_STATE_LEAVE` or `VOICE_STATE_MOVE`, then the old channel's identifier is returned.
         """
-        Familiar to ``._update_voice_state``, but does not calculate changes and just returns a representation of the
-        action.
+        try:
+            voice_state = self.voice_states[user_id]
+        except KeyError:
+            voice_state = VoiceState(data, self.id)
+            if (voice_state is not None):
+                yield VOICE_STATE_JOIN, voice_state, None
+        
+        else:
+            old_channel_id, new_channel_id = voice_state._update_channel(data)
+            if new_channel_id == 0:
+                yield VOICE_STATE_LEAVE, voice_state, old_channel_id
+            
+            old_attributes = voice_state._difference_update_attributes(data)
+            if old_attributes:
+                yield VOICE_STATE_UPDATE, voice_state, old_attributes
+            
+            if old_channel_id != new_channel_id:
+                yield VOICE_STATE_MOVE, voice_state, old_channel_id
+    
+    
+    def _update_voice_state_restricted(self, data, user_id):
+        """
+        Called by dispatch event. Updates the voice state of the represented user by `user_id` with the given `data`.
+        
+        This method is an iterable generator.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`)
             Data received from Discord.
-        user : ``User`` or ``Client``
-            The user, who's voice state is updated.
-        
-        Returns
-        -------
-        action : `int`
-            The respective action.
-            
-            Can be one of the following:
-            
-            +-----------------------+-------+
-            | Respective name       | Value |
-            +=======================+=======+
-            | VOICE_STATE_NONE      | 0     |
-            +-----------------------+-------+
-            | VOICE_STATE_JOIN      | 1     |
-            +-----------------------+-------+
-            | VOICE_STATE_LEAVE     | 2     |
-            +-----------------------+-------+
-            | VOICE_STATE_UPDATE    | 3     |
-            +-----------------------+-------+
-        
-        voice_state : `None` or ``VoiceState``
-            The user's respective voice state.
-            
-            Will be returned as `None` if action is `VOICE_STATE_NONE`.
+        user_id : `int`
+            The respective user's identifier.
         """
-        channel_id = data.get('channel_id', None)
-        if channel_id is None:
-            try:
-                voice_state = self.voice_states.pop(user.id)
-            except KeyError:
-                action = VOICE_STATE_NONE
-                voice_state = None
-            else:
-                action = VOICE_STATE_LEAVE
-        
+        try:
+            voice_state = self.voice_states[user_id]
+        except KeyError:
+            VoiceState(data, self.id)
         else:
-            channel_id = int(channel_id)
-            
-            try:
-                channel = self.channels[channel_id]
-            except KeyError:
-                # The channel is not present? Probably the channel was deleted. Handle it as a leave if there is a
-                # Voice state for the user.
-                try:
-                    voice_state = self.voice_states[user.id]
-                except KeyError:
-                    # No user state present, was probably called already
-                    action = VOICE_STATE_NONE
-                    voice_state = None
-                else:
-                    action = VOICE_STATE_LEAVE
-                
-            else:
-                try:
-                    voice_state = self.voice_states[user.id]
-                except KeyError:
-                    voice_state = self.voice_states[user.id] = VoiceState(data, channel)
-                    action = VOICE_STATE_JOIN
-                else:
-                    action = VOICE_STATE_UPDATE
-                    voice_state._update_attributes(data, channel)
-        
-        return action, voice_state
-    
+            voice_state._update_channel(data)
     
     @property
     def text_channels(self):

@@ -1219,7 +1219,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        event : ``GuildUserChunkEvent``
+        event : ``VoiceServerUpdateEvent``
             Voice server update event.
         """
         self.connected.clear()

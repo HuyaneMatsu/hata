@@ -142,7 +142,7 @@ Voice client updated usually operate with voice states, which expose the followi
 
 ## Api usage
 
-To deal with voice client connections, you will need to get the respective guild's gateway.
+To deal with voice client connections, you will need to use the respective guild's gateway. To get it, do:
 
 ```py
 gateway = client.gateway_for(guild_id)
@@ -152,6 +152,9 @@ For modifying the a voice client's state, use `gateway.change_voice_state(...)`.
  
 For `IDENTIFY` and `RESUME` voice gateway operations, you will need the guilds gateways's `session_id`.
 It can be access as `gateway.session_id`.
+
+Do not forget to overwrite **all** `voice_client_...` events when dealing with voice clients.
+To overwrite (replace) one, use the `overwrite=True` parameter.
 
 ### Joining to voice channel
 
@@ -168,7 +171,9 @@ channel.
 ```py
 @client.events(overwrite=True)
 async def voice_client_join(client, voice_state):
-    voice_client.channel_id = voice_state.channel_id
+    voice_client = get_voice_client(voice_state.guild_id)
+    if (voice_client is not None):
+        voice_client.channel_id = voice_state.channel_id
 ```
 
 > Both `.channel` and `.channel_id` works.
@@ -185,7 +190,9 @@ await gateway.change_voice_state(guild_id, channel_id)
 ```py
 @client.events(overwrite=True)
 async def voice_client_move(client, voice_state, old_channel_id):
-    voice_client.channel_id = voice_state.channel_id
+    voice_client = get_voice_client(voice_state.guild_id)
+    if (voice_client is not None):
+        voice_client.channel_id = voice_state.channel_id
 ```
 
 ### Leaving from voice channel
@@ -200,12 +207,16 @@ await gateway.change_voice_state(guild_id, 0)
 ```py
 @client.events(overwrite=True)
 async def voice_client_leave(client, voice_state, old_channel_id):
-    await voice_client.disconnect()
+    voice_client = get_voice_client(voice_state.guild_id)
+    if (voice_client is not None):
+        await voice_client.disconnect()
 ```
 
 ### Editing voice state
 
 To edit voice state use the `self_mute` and the `self_deaf` parameters of `change_voice_state`.
+
+This event is optional to be handled, but recommended to overwrite.
 
 ```py
 gateway = client.gateway_for(guild_id)
@@ -218,10 +229,73 @@ async def voice_client_update(client, voice_state, old_attributes):
     ...
 ```
 
-TODO:
+### Ghost voice clients
 
-Mention `voice_client_ghost`
-Mention `voice_client_shutdown`
-Mention getting voice region.
-Mention getting entities from cache.
-Ask braindead for a rework.
+If you do not want to deal with ghost clients, just register an empty function, or just disconnect the client from the
+voice channel.
+
+```py
+@client.events(overwrite=True)
+async def voice_client_ghost(client, voice_state)
+    voice_client = await join_voice_client(voice_state)
+    await voice_client.disconnect()
+```
+
+### Shutting down voice clients
+
+Shutting down voice clients and awaiting their shutdown.
+
+Since after all `voice_client_shutdown` is completed, the client's gateways are disconnected, it is recommended to not
+only create parallel tasks of disconnects, but to wait for their completion as well.
+
+```py
+from hata import WaitTillAll
+
+@client.events(overwrite=True)
+async def voice_client_shutdown(client):
+    tasks = []
+    for voice_client in voice_clients:
+        task = client.loop.cretae_task(voice_client.disconnect())
+        tasks.append(task)
+    
+    await WaitTillAll(tasks, client.loop)
+```
+
+### Voice server update
+
+After connected to a voice channel, a `voice_server_update_event` is received. If the event has both `endpoint` and
+`token` set as non-`None`, you are free to create your datagram connection.
+
+```py
+@client.events(overwrite=True)
+async def voice_server_update(client, event):
+    voice_client = get_voice_client(event.guild_id)
+    if (voice_client is not None):
+        voice_cleint.create_socket(event)
+```
+
+## Tips
+
+### Track voice region
+
+The voice client is disconnected when it's channel's voice region changes.
+
+To get a channel's voice region, you might want to do `channel.region`. If the channel has no voice region, you can
+default to it's guild's.
+
+```py
+region = channel.region
+if (region is None):
+    region = channel.guild.region
+```
+
+### Getting entity from cache
+
+At cases you might need rich information about entities, but you only have their id available. Even tho most objects
+expose entity access too, like, they have `channel_id` attribute and a `channel` property, this may not be enough.
+
+At these cases, use `USERS`, `GUILDS`, `CHANNELS` caches to access the entities.
+
+```py
+channel = CHANNESL.get(channel_id, None)
+```

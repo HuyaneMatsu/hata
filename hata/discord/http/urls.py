@@ -55,16 +55,14 @@ def message_jump_url(message):
     -------
     url : `None` or `str`
     """
-    channel = message.channel
-    if isinstance(channel, ChannelGuildBase):
-        guild = channel.guild
-        if guild is None:
-            return None
-        guild_id = str(guild.id)
+    channel_id = message.channel_id
+    guild_id = message.guild_id
+    if guild_id:
+        guild_id = str(guild_id)
     else:
         guild_id = '@me'
     
-    return f'{DISCORD_ENDPOINT}/channels/{guild_id}/{channel.id}/{message.id}'
+    return f'{DISCORD_ENDPOINT}/channels/{guild_id}/{channel_id}/{message.id}'
 
 CDN_RP = re.compile(
     'https://(?:'

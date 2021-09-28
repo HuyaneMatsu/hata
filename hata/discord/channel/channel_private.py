@@ -32,7 +32,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
-    users : `list` of (``User`` or ``Client``) objects
+    users : `list` of ``ClientUserBase`` objects
         The channel's recipient.
     
     Class Attributes
@@ -142,7 +142,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         ----------
         client : ``Client``
             The client recipient of the channel.
-        user : ``User`` or ``Client``
+        user : ``ClientUserBase``
             The other recipient of the channel.
         """
         users = self.users
@@ -260,7 +260,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
-    users : `list` of (``User`` or ``Client``) objects
+    users : `list` of ``ClientUserBase`` objects
         The channel's recipient.
     icon_hash : `int`
         The channel's icon's hash in `uint128`.

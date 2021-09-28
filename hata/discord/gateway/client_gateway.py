@@ -590,8 +590,11 @@ class DiscordGateway:
         self_deaf : `bool`
             Whether the voice client is deafen.
         """
-        if guild_id == 0:
+        if (guild_id is not None) and (guild_id == 0):
             guild_id = None
+        
+        if (channel_id is not None) and (channel_id == 0):
+            channel_id = None
         
         data = {
             'op': VOICE_STATE,

@@ -17,11 +17,30 @@
 - `Client.events.user_voice_leave` now accepts 3 parameters (from 2).
 - `Guild._update_voice_state` is now a generator.
 - Add `Client.events.voice_client_update`.
+- Add `VoiceState._cache_user`.
+- Add `Client.events.voice_client_shutdown`.
+- `Client.client_login_static` could return string (instead of dict) when using custom host. (Mina Ashido]|[💻⭐#3506)
+- `Embed.title` and `Embed.description` is now casted to string. (Nova#3379)
+- `Embed.add_field`, `Embed.insert_field`, `_EmbedFieldsProxy.add_field` and `EmbedFieldsProxy.insert_field` now
+    casts `name` and `value` parameters to string. (Nova#3379)
+- `Embed.add_footer` now casts `text` parameter to string. (Nova#3379)
+- `Embed.add_author` now casts `name` parameter to string. (Nova#3379)
+- Add `ChannelBase.guild_id` property.
+
+#### Bug Fixes
+
+- Fix a `NameError` in `Client.application_command_permission_edit`. (Gojo#8953)
+- Fix a possible `AttributeError` in `Client.custom`. (Gojo#8953)
+- `Message.custom` was not setting `.guild_id` accordingly. (Gojo#8953)
+- Fix an `AttributeError` in `convert_thread_created`. (Gojo#8953)
+- `Message.custom` was not marking the message as partial accordingly.
 
 #### Renames, Deprecation & Removals
 
 - Rename `Client._gateway_for` to `.gateway_for`.
 - Rename `DiscordGateway._change_voice_state` to `.change_voice_state`.
+- Rename `Message.custom`'s `channel` parameter to `channel_id`.
+- Deprecate `Message.custom`'s `channel`.
 
 ## 1.1.106 *\[2021-09-25\]*
 
@@ -225,13 +244,13 @@ Use dynamic fields for messages in favor of the incoming message content intent.
 - Add `preconvert_snowflake_array`.
 
 ##### ext.command_utils
-- `ChannelOutputStream.flush` now forces newly written content to new message. (Zeref Draganeel#3581)
+- `ChannelOutputStream.flush` now forces newly written content to new message. (Gojo#8953)
 
 #### Bug Fixes
 - `unix_time_to_datetime` raised `ValueError` if received value out of the expected range. (Tari#0002)
 
 ##### ext.command_utils
-- `ChannelOutputStream` made chunks of bad size. (Zeref Draganeel#3581)
+- `ChannelOutputStream` made chunks of bad size. (Gojo#8953)
 
 #### Renames, Deprecation & Removals
 
@@ -898,7 +917,7 @@ Fix a few bugs.
 
 - Use `values` field instead of `options` when creating `ComponentInteraction` of a select.
 - `CHANNEL_PINS_UPDATE` was not listed under guild messages intent.
-- `'hata.discord.embed'` was not listed in `setup.py`. (Zeref Draganeel#3581)
+- `'hata.discord.embed'` was not listed in `setup.py`. (Gojo#8953)
 - Fix a `TypeError` in `Client.sticker_get`.
 
 #### Renames, Deprecation & Removals
@@ -983,7 +1002,7 @@ Regroup many code parts.
 - `instance_or_id_to_instance`, `instance_or_id_to_snowflake` and `maybe_snowflake` had bad string max length check.
 - `ClientUserBase._from_client` was not setting `avatar`.
 - Fix a `NameError` in `Client.thread_create`.
-- Fix a conversion error in `Client.thread_create`. (Zeref Draganeel#3581)
+- Fix a conversion error in `Client.thread_create`. (Gojo#8953)
 
 ##### ext.slash
 - Component commands regex parsers could be generated with bad parameter index.
@@ -1015,7 +1034,7 @@ Add sticker related endpoints and such.
 
 #### Improvements
 
-- Add `typer.__await__`. (Zeref Draganeel#3581)
+- Add `typer.__await__`. (Gojo#8953)
 - Add `GuildProfile.avatar`.
 - Add `UserBase.avatar_url_for`.
 - Add `UserBase.avatar_url_for_as`.
@@ -1226,8 +1245,8 @@ Add the rest of the thread endpoints to client.
 
 - Fix an `AttributeError` in `ChannelGroup._from_partial_data`.
 - `ChannelThread` has no attribute `thread_users`.
-- Fix a `NameError` in `_debug_component_custom_id`. (Zeref Draganeel#3581)
-- Fix a `TypeError` in `Client.message_edit`. (Zeref Draganeel#3581)
+- Fix a `NameError` in `_debug_component_custom_id`. (Gojo#8953)
+- Fix a `TypeError` in `Client.message_edit`. (Gojo#8953)
 
 #### Renames, Deprecation & Removals
 
@@ -1261,7 +1280,7 @@ Rework `role.py` and `permission.py`.
 - Add `PermissionOverwriteTargetType`.
 - Add `parse_role_mention`.
 - Add `parse_role`.
-- Convert nested component list to row. (Zeref Draganeel#3581)
+- Convert nested component list to row. (Gojo#8953)
 
 #### Bug Fixes
 
@@ -1324,14 +1343,14 @@ Update stages.
 
 #### Bug fixed
 
-- When removing all the options of an application command, they was not edited accordingly. (Zeref Draganeel#3581)
+- When removing all the options of an application command, they was not edited accordingly. (Gojo#8953)
 - `create_partial_guild` could drop `NameError`.
 - Fix `KeyError` in `create_component`.
 - `Client.interaction_response_message_create` ignored `show_for_invoking_user_only` if other fields were not present.
 
 ##### ext.slash
 - `name` could have higher priority when setting slash command description than `description` itself.
-    (Zeref Draganeel#3581)
+    (Gojo#8953)
 
 ## 1.1.78 *\[2021-05-18\]*
 
@@ -1341,10 +1360,10 @@ Fix some bugs and improve slash command creation.
 
 #### Improvements
 
-- Add `interaction` parameter to `message.custom`. (Zeref Draganeel#3581)
+- Add `interaction` parameter to `message.custom`. (Gojo#8953)
 - Increase `content`'s max length to 4k in `message.custom`.
-- Add `components` parameter to `message.custom`. (Zeref Draganeel#3581)
-- Add `thread` parameter to `message.custom`. (Zeref Draganeel#3581)
+- Add `components` parameter to `message.custom`. (Gojo#8953)
+- Add `thread` parameter to `message.custom`. (Gojo#8953)
 - Add `InteractionEvent.is_responding`.
 - Add `InteractionEvent.is_acknowledging`.
 - `InteractionEvent.wait_for_response_message` now raises `RuntimeError` if ephemeral message was sent.
@@ -1352,12 +1371,12 @@ Fix some bugs and improve slash command creation.
 - Add `UserFlag.certified_moderator`.
 
 ##### ext.slash
-- `abort` now supports `components` parameter in `show_for_invoking_user_only` mode. (Zeref Draganeel#3581)
-- Slash command description defaults to it's name instead of raising an exception. (Zeref Draganeel#3581)
-- Slash choices now can be any iterable object. (Zeref Draganeel#3581)
+- `abort` now supports `components` parameter in `show_for_invoking_user_only` mode. (Gojo#8953)
+- Slash command description defaults to it's name instead of raising an exception. (Gojo#8953)
+- Slash choices now can be any iterable object. (Gojo#8953)
 - `client` and `interaction_event` parameters are now optional for slash commands.
 - `get_request_coroutines` now converts unhandled objects into `str` instances and propagates them to be sent.
-    (Zeref Draganeel#3581)
+    (Gojo#8953)
 
 #### Bug fixed
 
@@ -1372,7 +1391,7 @@ Fix some bugs and improve slash command creation.
 - `Message._update` was not updating components of non guild messages.
 - `Message._update_no_return` was not updating components of non guild messages.
 - `IconType` `.name` and `.value` values were reversed.
-- Fix an `AttributeError` in `Guild._delete`. (Zeref Draganeel#3581)
+- Fix an `AttributeError` in `Guild._delete`. (Gojo#8953)
 
 #### Renames, Deprecation & Removals
 
@@ -1421,7 +1440,7 @@ Add `extensions` parameter to `Client`'s constructor.
 
 #### Bug fixed
 
-- Fix a typo on `ComponentSelect.to_data`. (Zeref Draganeel#3581)
+- Fix a typo on `ComponentSelect.to_data`. (Gojo#8953)
 - Threads were badly bound and unbound from a guild.
 
 ##### ext.extension_loader
@@ -1471,7 +1490,7 @@ Reduce `Message` entity size.
 
 ##### ext.slash
 - Update `abort`'s auto `show_for_invoking_user_only`, since now `show_for_invoking_user_only=True` supports embeds.
-    (Zeref Draganeel#3581)
+    (Gojo#8953)
 - Add `mentionable_id` parameter support for slash commands.
 - Add `configure_parameter` to overwrite slash command annotations.
 
@@ -1546,7 +1565,7 @@ Redo error code names, dispatch event parsing and add thread support.
 - Add extra `tts` type assertion to `Client.webhook_message_create`.
 - Add extra `wait` type assertion to `Client.webhook_message_create`.
 - Remove non-chad aliases. (ᓚᘏᗢ | NeKo Mancer#1477)
-- Improve `Guild.get_emoji_like` matching. (Zeref Draganeel#3581)
+- Improve `Guild.get_emoji_like` matching. (Gojo#8953)
 
 #### ext.slash
 - Add `mentionable` parameter support for slash commands.
@@ -1629,7 +1648,7 @@ Fix some bugs.
 #### Bug Fixes
 
 ##### ext.asyncio
-- Fix an `AttributeError` from `1.1.72`. (Zeref Draganeel#3581)
+- Fix an `AttributeError` from `1.1.72`. (Gojo#8953)
 - Add `Queue.put_nowait`. (ᓚᘏᗢ | NeKo Mancer#1477)
 - Add `LifoQueue.put_nowait`. (ᓚᘏᗢ | NeKo Mancer#1477)
 
@@ -1686,7 +1705,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 #### Improvements
 
 ##### ext.slash
-- `Button.default_style` should be `ButtonStyle.violet`. (Zeref Draganeel#3581)
+- `Button.default_style` should be `ButtonStyle.violet`. (Gojo#8953)
 
 #### Bug Fixes
 
@@ -1726,25 +1745,25 @@ Improve component usage.
 - Add `Button`.
 - Add `Row`.
 - Add `components` parameter to `InteractionResponse`.
-- Add `iter_component_interactions`. (ToxicKidz#6969) (Zeref Draganeel#3581)
+- Add `iter_component_interactions`. (ToxicKidz#6969) (Gojo#8953)
 - Add `Slasher.add_component_interaction_waiter`.
 - Add `Slasher.remove_component_interaction_waiter`.
 
 #### Improvements
 
 - Add `application_id` keyword to `Message.custom`.
-- Add `COMPONENT_LABEL_LENGTH_MAX`. (Zeref Draganeel#3581)
-- Add `COMPONENT_CUSTOM_ID_LENGTH_MAX`. (Zeref Draganeel#3581)
+- Add `COMPONENT_LABEL_LENGTH_MAX`. (Gojo#8953)
+- Add `COMPONENT_CUSTOM_ID_LENGTH_MAX`. (Gojo#8953)
 - `Component.style` defaults to `None`.
 - Extend `Component.__repr__`.
 
 #### Bug Fixes
 
-- Fix a `TypeError` in `Component.__repr__`. (Zeref Draganeel#3581)
+- Fix a `TypeError` in `Component.__repr__`. (Gojo#8953)
 - `Message.custom` was not checking `type_` parameter.
 - `is_coroutine_function` returned non-bool. (ToxicKidz#6969)
 - `is_coroutine_generator_function` returned non-bool. 
-- Handle python3.10 things correctly. (Zeref Draganeel#3581)
+- Handle python3.10 things correctly. (Gojo#8953)
 - Add a missing return to `ext.async.asyncio.LifoQueue`. (ᓚᘏᗢ | NeKo Mancer#1477)
 
 #### Renames, Deprecation & Removals
@@ -1841,8 +1860,8 @@ Add components.
 
 ##### ext.command_utils
 - Add `PaginationBase` base class for pagination-like objects.
-- Add `PaginationBase.is_active`. (Zeref Draganeel#3581)
-- Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Zeref Draganeel#3581)
+- Add `PaginationBase.is_active`. (Gojo#8953)
+- Add `UserMenuFactory`, `UserMenuRunner`, `UserPagination`. (Gojo#8953)
 
 #### Improvements
 
@@ -1871,8 +1890,8 @@ Add components.
 - Fix an inheritance error in `ClientUserPBase.from_client`.
 - `create_partial_guild` was not setting `.user_count`.
 - `Guild.precreate` was not setting `.user_count`.
-- `ActivityRich.__new__` was not picking up `url` correctly. (Zeref Draganeel#3581)
-- Fix a typo in `Client.role_edit` causing `AssertionError`. (Zeref Draganeel#3581)
+- `ActivityRich.__new__` was not picking up `url` correctly. (Gojo#8953)
+- Fix a typo in `Client.role_edit` causing `AssertionError`. (Gojo#8953)
 
 #### Renames, Deprecation & Removals
 
@@ -1964,9 +1983,9 @@ Use `export` & `include`.
 
 #### Improvements
 
-- Mark keyword only parameters as keyword only in docstrings as well. (Zeref Draganeel#3581)
+- Mark keyword only parameters as keyword only in docstrings as well. (Gojo#8953)
 - `export` & `include`. (sleep-cult#3040)
-- `_EventHandlerManager.remove`'s `name` parameter should be optional. (Zeref Draganeel#3581)
+- `_EventHandlerManager.remove`'s `name` parameter should be optional. (Gojo#8953)
 
 ##### ext.slash
 - Move slash sync coroutine creation to task creation to avoid resource warning at edge cases.
@@ -1974,7 +1993,7 @@ Use `export` & `include`.
 #### Bug Fixes
 
 ##### ext.slash
-- `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Zeref Draganeel#3581)
+- `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Gojo#8953)
 
 
 ## 1.1.65  *\[2021-04-14\]*
@@ -1986,7 +2005,7 @@ Lazy choice definition.
 #### New Features
 
 ##### ext.slash
-- Add lazy interaction choice definition. (Zeref Draganeel#3581)
+- Add lazy interaction choice definition. (Gojo#8953)
 
 #### Improvements
 
@@ -1997,12 +2016,12 @@ Lazy choice definition.
 
 #### Bug Fixes
 
-- Fix an `AttributeError` in `User._from_client`. (Zeref Draganeel#3581)
+- Fix an `AttributeError` in `User._from_client`. (Gojo#8953)
 - Fix typo `MAX_RERP_ELEMENT_LIMIT` -> `MAX_REPR_ELEMENT_LIMIT`.
 
 ##### ext.slash
-- `CommandState._try_purge_from_changes` returned values in bad order. (Zeref Draganeel#3581)
-- `CommandState._try_purge` returned values in bad order. (Zeref Draganeel#3581)
+- `CommandState._try_purge_from_changes` returned values in bad order. (Gojo#8953)
+- `CommandState._try_purge` returned values in bad order. (Gojo#8953)
 
 
 ## 1.1.64  *\[2021-04-12\]*
@@ -2023,9 +2042,9 @@ Fix duplicable client connections.
 
 - Fix some bad assignments in `Client._delete`.
 - `Icon.__repr__` did not upper case `IconType.name`. (Pichu#0357)
-- `Icon.__repr__` displayed incorrect names. (Zeref Draganeel#3581)
-- Dupe client check was not working. (Zeref Draganeel#3581)
-- Fix reading readme issue on windows. (Zeref Draganeel#3581)
+- `Icon.__repr__` displayed incorrect names. (Gojo#8953)
+- Dupe client check was not working. (Gojo#8953)
+- Fix reading readme issue on windows. (Gojo#8953)
 - Fix a `TypeError` in `User._update_presence`. (from 1.1.63)
 - `EventWaitforMeta._call_channel_edit` passed bad args to guild waiters.
 - Fix a `NameError` in `EventLoop.create_datagram_endpoint`. (Mina Ashido]|[💻⭐#3506)
@@ -2066,7 +2085,7 @@ Sync run-time added commands instantly.
 - Add `ExtensionLoader.is_processing_extension`.
 
 ##### ext.slash
-- Slash commands now instant sync if added runtime. (Zeref Draganeel#3581)
+- Slash commands now instant sync if added runtime. (Gojo#8953)
 
 #### Optimizations
 

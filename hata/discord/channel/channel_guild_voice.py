@@ -85,19 +85,22 @@ class ChannelVoiceBase(ChannelGuildMainBase):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase`` objects
         """
         users = []
         guild = self.guild
         if guild is None:
             return users
         
+        channel_id = self.id
+        
         for state in guild.voice_states.values():
-            if state.channel is self:
+            if state.channel_id == channel_id:
                 users.append(state.user)
         
         return users
-
+    
+    
     @property
     @copy_docs(ChannelBase.display_name)
     def display_name(self):
@@ -798,8 +801,9 @@ class ChannelStage(ChannelVoiceBase):
         if guild is None:
             return users
         
+        channel_id = self.id
         for state in guild.voice_states.values():
-            if (state.channel is self) and state.is_speaker:
+            if (state.channel_id == channel_id) and state.is_speaker:
                 users.append(state.user)
         
         return users
@@ -819,8 +823,9 @@ class ChannelStage(ChannelVoiceBase):
         if guild is None:
             return users
         
+        channel_id = self.id
         for state in guild.voice_states.values():
-            if (state.channel is self) and (not state.is_speaker):
+            if (state.channel_id == channel_id) and (not state.is_speaker):
                 users.append(state.user)
         
         return users
@@ -840,8 +845,9 @@ class ChannelStage(ChannelVoiceBase):
         if guild is None:
             return users
         
+        channel_id = self.id
         for state in guild.voice_states.values():
-            if (state.channel is self):
+            if (state.channel_id == channel_id):
                 user = state.user
                 if self.permissions_for(user) >= PERMISSION_STAGE_MODERATOR:
                     users.append(user)

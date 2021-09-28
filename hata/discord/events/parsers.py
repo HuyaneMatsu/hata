@@ -3023,13 +3023,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     user = User(user_data)
     
     if user is client:
-        for action, voice_state, old_attributes in guild._update_voice_state(data, user):
-    
-    if action == VOICE_STATE_NONE:
-        return
-    
-    if user is client:
-        for action, voice_state, change in guild._update_voice_state(data, user.id):
+        for action, voice_state, change in guild._update_voice_state(data, user):
             if action == VOICE_STATE_JOIN:
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3055,7 +3049,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
             continue
     
     else:
-        for action, voice_state, change in guild._update_voice_state(data, user.id):
+        for action, voice_state, change in guild._update_voice_state(data, user):
             if action == VOICE_STATE_JOIN:
                 event_handler = client.events.user_voice_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3107,7 +3101,7 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
     
     user = User(user_data)
     
-    actions = list(guild._update_voice_state(data, user.id))
+    actions = list(guild._update_voice_state(data, user))
     if not actions:
         clients.close()
         return
@@ -3186,7 +3180,7 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
     user = User(user_data, guild)
     
     if user is client:
-        for action, voice_state, change in guild._update_voice_state(data, user.id):
+        for action, voice_state, change in guild._update_voice_state(data, user):
             if action == VOICE_STATE_JOIN:
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3211,7 +3205,7 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
                      Task(event_handler(client, voice_state, change), KOKORO)
                 continue
     else:
-        guild._update_voice_state_restricted(data, user.id)
+        guild._update_voice_state_restricted(data, user)
 
 
 def VOICE_STATE_UPDATE__OPT_MC(client, data):
@@ -3237,7 +3231,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     user = User(user_data)
     
     if isinstance(user, Client):
-        for action, voice_state, change in guild._update_voice_state(data, user.id):
+        for action, voice_state, change in guild._update_voice_state(data, user):
             if action == VOICE_STATE_JOIN:
                 event_handler = user.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -3263,7 +3257,7 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
                 continue
     
     else:
-        guild._update_voice_state_restricted(data, user.id)
+        guild._update_voice_state_restricted(data, user)
 
 
 add_parser(

@@ -9,7 +9,7 @@ from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, Inva
 from ...backend.protocol import DatagramMergerReadProtocol
 from ...backend.export import export
 
-from ..core import KOKORO, GUILDS, CHANNELS
+from ..core import KOKORO, GUILDS
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
 from ..channel import ChannelVoiceBase, ChannelStage
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
@@ -169,8 +169,7 @@ class VoiceClient:
             if guild is None:
                 raise RuntimeError(f'Cannot connect to partial channel: {channel!r}.')
         else:
-            raise TypeError(f'`channel` can only be {ChannelVoiceBase.__name__}, or a `tuple` of (`guild_id`, '
-                f'`channel_id`) pair, got {channel.__class__.__name__}.')
+            raise TypeError(f'`channel` can only be {ChannelVoiceBase.__name__}, got {channel.__class__.__name__}.')
         
         region = channel.region
         if region is None:
@@ -539,7 +538,7 @@ class VoiceClient:
         
         Returns
         -------
-        streams : `list` of `tuple` (``User`` or ``Client``, ``AudioStream``)
+        streams : `list` of `tuple` (``ClientUserBase``, ``AudioStream``)
             Audio streams as a `list` of `tuples` of their respective listened `user` and `stream`.
         """
         streams = []
@@ -1170,7 +1169,7 @@ class VoiceClient:
         else:
             guild_id = guild.id
         gateway = client.gateway_for(guild_id)
-
+        
         # request joining
         await gateway.change_voice_state(guild_id, self.channel.id)
         future_or_timeout(self._handshake_complete, 60.0)
@@ -1198,7 +1197,7 @@ class VoiceClient:
         gateway = self.client.gateway_for(guild_id)
         
         try:
-            await gateway.change_voice_state(guild_id, None, self_mute=True)
+            await gateway.change_voice_state(guild_id, 0, self_mute=True)
         except ConnectionClosed:
             pass
         
@@ -1220,7 +1219,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        data : ``GuildUserChunkEvent``
+        event : ``GuildUserChunkEvent``
             Voice server update event.
         """
         self.connected.clear()

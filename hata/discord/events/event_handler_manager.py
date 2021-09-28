@@ -12,7 +12,7 @@ from .handling_helpers import ChunkWaiter, check_parameter_count_and_convert, as
 from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler, \
     default_voice_client_ghost_event_handler, default_voice_client_join_event_handler, \
     default_voice_client_move_event_handler, default_voice_client_leave_event_handler, \
-    default_voice_client_update_event_handler
+    default_voice_client_update_event_handler, default_voice_client_shutdown_event_handler
 
 class EventHandlerManager:
     """
@@ -662,6 +662,13 @@ class EventHandlerManager:
         >
         > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
     
+    voice_client_shutdown(client : ``Client``)
+        Called when the client disconnects. Should be used to disconnect the client's voice clients.
+    
+        > This event has a default handler defined, which is used by hata's ``VoiceClient``.
+        >
+        > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
+    
     voice_client_update(client : ``Client``, voice_state : ``VoiceState``, old_attributes : `dict`)
         Called when the client's state is updated.
         
@@ -730,6 +737,7 @@ class EventHandlerManager:
         object.__setattr__(self, 'voice_client_move', default_voice_client_move_event_handler)
         object.__setattr__(self, 'voice_client_leave', default_voice_client_leave_event_handler)
         object.__setattr__(self, 'voice_client_update', default_voice_client_update_event_handler)
+        object.__setattr__(self, 'voice_client_shutdown', default_voice_client_shutdown_event_handler)
     
     
     def __call__(self, func=None, name=None, overwrite=False):
@@ -815,7 +823,7 @@ class EventHandlerManager:
         object.__setattr__(self, 'voice_client_move', default_voice_client_move_event_handler)
         object.__setattr__(self, 'voice_client_leave', default_voice_client_leave_event_handler)
         object.__setattr__(self, 'voice_client_update', default_voice_client_update_event_handler)
-    
+        object.__setattr__(self, 'voice_client_shutdown', default_voice_client_shutdown_event_handler)
     
     def __setattr__(self, name, value):
         """

@@ -1,6 +1,7 @@
 __all__ = ('EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_NONE', 'EMBED_UPDATE_SIZE_UPDATE',
     'Message',)
 
+import warnings
 from datetime import datetime
 
 from ...backend.utils import BaseMethodDescriptor
@@ -683,8 +684,8 @@ class Message(DiscordEntity, immortal=True):
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
             
             If called as a classmethod, defaults to `ZEROUSER`.
-        channel : `ChannelTextBase` instance, Optional if called as method (Keyword only)
-            The ``.channel`` attribute of the message.
+        channel_id : ``ChannelTextBase`` or `int` instance, Optional if called as method (Keyword only)
+            The ``.channel_id`` attribute of the message.
             
             If called as a classmethod this attribute must be passed, or `TypeError` is raised.
         
@@ -808,14 +809,47 @@ class Message(DiscordEntity, immortal=True):
         try:
             channel = kwargs.pop('channel')
         except KeyError:
-            if base is None:
-                raise TypeError('Expected to be called as method, but was called as a classmethod and `channel` was '
-                    f'not passed.')
-            channel = base.channel
+            
+            try:
+                channel_id = kwargs.pop('channel_id')
+            except KeyError:
+                if base is None:
+                    raise TypeError('Expected to be called as method, but was called as a classmethod and `channel_id`'
+                        'was not passed.')
+                
+                channel_id = base.channel_id
+                channel = None
+            else:
+                if isinstance(channel_id, int):
+                    channel = None
+                elif isinstance(channel_id, ChannelTextBase):
+                    channel = channel_id
+                    channel_id = channel_id.id
+                else:
+                    raise TypeError(f'`channel_id` should be `int` or `{ChannelTextBase.__name__}` subclass\'s'
+                        f'instance, got `{channel_id!r}`.')
+            
+            if (channel is None):
+                channel = CHANNELS.get('channel_id', None)
+        
+            if channel is None:
+                guild_id = 0
+            else:
+                guild_id = channel.guild_id
+        
         else:
+            warnings.warn(
+                f'`{cls.__name__}.custom`\'s `channel` parameter is deprecated, and will be removed in 2022 January.'
+                f'Please use `channel_id` instead.',
+                FutureWarning)
+            
             if not isinstance(channel, ChannelTextBase):
-                raise TypeError(f'`channel` should be `{ChannelTextBase.__name__}` subclass\'s instance, got '
-                    f'`{channel!r}`')
+                raise TypeError(f'`channel` should be or `{ChannelTextBase.__name__}` subclass\'s'
+                    f'instance, got `{channel!r}`.')
+                
+            channel_id = channel.id
+            guild_id = channel.guild_id
+        
         
         try:
             activity = kwargs.pop('activity')
@@ -1126,8 +1160,10 @@ class Message(DiscordEntity, immortal=True):
             if base is None:
                 reactions = reaction_mapping(None)
             else:
-                # Copy it, because it might be modified
-                reactions = base.reactions.copy()
+                reactions = base.reactions
+                if (reactions is not None):
+                    # Copy it, because it might be modified
+                    reactions = reactions.copy()
         else:
             if reactions is None:
                 # Lets accept `None` and create an empty one
@@ -1313,8 +1349,8 @@ class Message(DiscordEntity, immortal=True):
         self = object.__new__(cls)
         self._fields = None
         self.author = author
-        self.channel_id = channel.id
-        self.guild_id = 0
+        self.channel_id = channel_id
+        self.guild_id = guild_id
         
         self.activity = activity
         self.application = application
@@ -1340,6 +1376,8 @@ class Message(DiscordEntity, immortal=True):
         self.interaction = interaction
         self.components = components
         self.thread = thread
+        
+        self.partial = True
         
         return self
     

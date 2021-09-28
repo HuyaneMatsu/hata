@@ -17,6 +17,8 @@ class VoiceState:
     
     Attributes
     ----------
+    _cache_user : ``ClientUserBase``
+        The voice state's respective user.
     channel_id : `int`
         The channel's identifier to where the user is connected to.
     deaf : `bool`
@@ -27,12 +29,14 @@ class VoiceState:
         Whether the user is suppressed inside of the voice channel.
         
         If the channel is a ``ChannelVoice``, it is always `False`, meanwhile it ``ChannelStage`` it can vary.
+    
     mute : `bool`
         Whether the user is muted.
     requested_to_speak_at : `None` or `datetime`
         When the user requested to speak.
         
-        Only applicable for ``ChannelStage``-s.
+        Only applicable if the user is connected to a ``ChannelStage`` instance.
+    
     self_deaf : `bool`
         Whether the user muted everyone else.
     self_mute : `bool`
@@ -41,13 +45,13 @@ class VoiceState:
         Whether the user screen shares with the go live option.
     self_video : `bool`
         Whether the user sends video from a camera source.
-    session_id : `str`
+    session_id : `str``
         The user's voice session id.
-    user_id : ``ClientUserBase``
+    user_id : `int`
         The voice state's respective user's identifier.
     """
-    __slots__ = ('channel_id', 'deaf', 'guild_id', 'is_speaker', 'mute', 'requested_to_speak_at', 'self_deaf',
-        'self_mute', 'self_stream', 'self_video', 'session_id', 'user_id')
+    __slots__ = ('_cache_user', 'channel_id', 'deaf', 'guild_id', 'is_speaker', 'mute', 'requested_to_speak_at',
+        'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user_id')
     
     def __new__(cls, data, guild_id):
         """
@@ -57,8 +61,8 @@ class VoiceState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Voice state data received from Discord.
-        channel_id : `int`
-            The channel's identifier of the voice state.
+        guild_id : `int`
+            The voice state's guild's identifier.
         """
         channel_id = data.get('channel_id', None)
         if channel_id is None:
@@ -101,6 +105,7 @@ class VoiceState:
         
         return self
     
+    
     @property
     def user(self):
         """
@@ -110,8 +115,23 @@ class VoiceState:
         -------
         user : ``ClientUserBase``
         """
-        return create_partial_user_from_id(self.user_id)
+        user = self._cache_user
+        if (user is None):
+            user = create_partial_user_from_id(self.user_id)
+            self._cache_user = user
+        
+        return user
     
+    def _set_cache_user(self, user):
+        """
+        Sets the cached user of the voice state.
+        
+        Parameters
+        ----------
+        user : ``ClientUserBase``
+            The respective user of the voice state.
+        """
+        self._cache_user = user
     
     @property
     def channel(self):
@@ -125,6 +145,7 @@ class VoiceState:
         channel_id = self.channel_id
         if channel_id:
             return CHANNELS[channel_id]
+    
     
     @property
     def guild(self):

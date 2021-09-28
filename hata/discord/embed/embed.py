@@ -76,11 +76,17 @@ class Embed(EmbedBase):
         self._data = data = {}
         
         if (title is not None):
+            if not isinstance(title, str):
+                title = str(title)
+            
             data['title'] = title
             
         if (description is not None):
-            data['description'] = description
+            if not isinstance(description, str):
+                description = str(description)
             
+            data['description'] = description
+        
         if (color is not None):
             data['color'] = color
             
@@ -429,6 +435,9 @@ class Embed(EmbedBase):
             new_data['color'] = color
         
         if (description is not None):
+            if not isinstance(description, str):
+                description = str(description)
+            
             new_data['description'] = description
         
         if (field_datas is not None):
@@ -450,6 +459,9 @@ class Embed(EmbedBase):
             new_data['timestamp'] = timestamp_data
         
         if (title is not None):
+            if not isinstance(title, str):
+                title = str(title)
+            
             new_data['title'] = title
         
         if (type_ is not None):
@@ -529,7 +541,16 @@ class Embed(EmbedBase):
     
     @description.setter
     def description(self, value):
-        self._data['description'] = value
+        if value is None:
+            try:
+                del self._data['description']
+            except KeyError:
+                pass
+        else:
+            if not isinstance(value, str):
+                value = str(value)
+            
+            self._data['description'] = value
     
     @description.deleter
     def description(self):
@@ -726,7 +747,16 @@ class Embed(EmbedBase):
     
     @title.setter
     def title(self, value):
-        self._data['title'] = value
+        if value is None:
+            try:
+                del self._data['title']
+            except KeyError:
+                pass
+        else:
+            if not isinstance(value, str):
+                value = str(value)
+            
+            self._data['title'] = value
     
     @title.deleter
     def title(self):
@@ -825,6 +855,9 @@ class Embed(EmbedBase):
         -------
         self : ``Embed``
         """
+        if not isinstance(name, str):
+            name = str(name)
+        
         author_data = {}
         
         if (name is not None):
@@ -858,6 +891,12 @@ class Embed(EmbedBase):
         -------
         self : ``Embed``
         """
+        if not isinstance(name, str):
+            name = str(name)
+        
+        if not isinstance(value, str):
+            value = str(value)
+        
         field_data = {
             'name': name,
             'value': value,
@@ -891,6 +930,12 @@ class Embed(EmbedBase):
         inline : `bool`, Optional
             Whether this field should display inline.
         """
+        if not isinstance(name, str):
+            name = str(name)
+        
+        if not isinstance(value, str):
+            value = str(value)
+        
         field_data = {
             'name': name,
             'value': value,
@@ -1032,6 +1077,9 @@ class Embed(EmbedBase):
         -------
         self : ``Embed``
         """
+        if not isinstance(text, str):
+            text = str(text)
+        
         footer_data = {
             'text': text,
         }
@@ -1172,6 +1220,12 @@ class _EmbedFieldsProxy:
         inline : `bool`, Optional
             Whether this field should display inline.
         """
+        if not isinstance(name, str):
+            name = str(name)
+        
+        if not isinstance(value, str):
+            value = str(value)
+        
         field_data = {
             'name': name,
             'value': value,
@@ -1198,6 +1252,12 @@ class _EmbedFieldsProxy:
         inline : `bool`, Optional
             Whether this field should display inline.
         """
+        if not isinstance(name, str):
+            name = str(name)
+        
+        if not isinstance(value, str):
+            value = str(value)
+        
         field_data = {
             'name' : name,
             'value' : value,

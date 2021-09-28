@@ -6,10 +6,11 @@ from collections import deque
 from threading import current_thread
 from math import inf
 from datetime import datetime
+from json import JSONDecodeError
 
 from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ...ext import get_and_validate_setup_functions, run_setup_functions
-from ...backend.utils import imultidict, methodize, change_on_switch
+from ...backend.utils import imultidict, methodize, change_on_switch, from_json
 from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, future_or_timeout
 from ...backend.event_loop import EventThread, LOOP_TIME
 from ...backend.headers import AUTHORIZATION
@@ -38,7 +39,7 @@ from ..webhook import Webhook, create_partial_webhook_from_id
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
     PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
 from ..events.event_handler_manager import EventHandlerManager
-from ..events.handling_helpers import ensure_shutdown_event_handlers
+from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
 from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
 from ..invite import Invite, InviteTargetType
@@ -7281,7 +7282,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase`` objects
         
         Raises
         ------
@@ -12362,7 +12363,7 @@ class Client(ClientUserPBase):
         return ApplicationCommandPermission.from_data(permission_data)
     
     
-    async def application_command_permission_edit(self, guild, application_command, permission_overwrite):
+    async def application_command_permission_edit(self, guild, application_command, permission_overwrites):
         """
         Edits the permissions of the given `application_command` in the given `guild`.
         
@@ -12378,7 +12379,7 @@ class Client(ClientUserPBase):
             The respective guild.
         application_command : ``ApplicationCommand`` or `int`
             The respective application command.
-        permission_overwrite : `None` or (`tuple`, `list` of `set`) of ``ApplicationCommandPermissionOverwrite``
+        permission_overwrites : `None` or (`tuple`, `list` of `set`) of ``ApplicationCommandPermissionOverwrite``
             The new permission overwrites of the given application command inside of the guild.
             
             Give it as `None` to remove all existing one.
@@ -12399,9 +12400,9 @@ class Client(ClientUserPBase):
         AssertionError
             - If the client's application is not yet synced.
             - If an application command was not given neither as ``ApplicationCommand`` or `int` instance.
-            - If `permission_overwrite` was not given as `None`, `tuple`, `list` or `set`.
-            - If `permission_overwrite` contains a non ``ApplicationCommandPermissionOverwrite`` element.
-            - If `permission_overwrite` contains more than 10 elements.
+            - If `permission_overwrites` was not given as `None`, `tuple`, `list` or `set`.
+            - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
+            - If `permission_overwrites` contains more than 10 elements.
         """
         application_id = self.application.id
         if __debug__:
@@ -14304,6 +14305,13 @@ class Client(ClientUserPBase):
             await KOKORO.render_exc_async(err, before, after)
             return False
         
+        # Some Discord implementations send string reesponse for some weird reason.
+        if isinstance(data, str):
+            try:
+                data = from_json(data)
+            except JSONDecodeError:
+                pass
+        
         if not isinstance(data, dict):
             sys.stderr.write(''.join([
                 'Connection failed, could not connect to Discord.\n'
@@ -14855,18 +14863,7 @@ class Client(ClientUserPBase):
         else:
             self.gateway.kokoro.cancel()
         
-        # Stop voice clients
-        voice_clients = self.voice_clients
-        if voice_clients:
-            tasks = []
-            for voice_client in self.voice_clients.values():
-                tasks.append(Task(voice_client._disconnect(), KOKORO))
-            
-            future = WaitTillAll(tasks, KOKORO)
-            tasks = None # clear references
-            await future
-            future = None # clear references
-        
+        await ensure_voice_client_shutdown_event_handlers(self)
         
         # Log off if user account
         if (not self.is_bot):

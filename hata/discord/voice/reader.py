@@ -30,7 +30,7 @@ class AudioStream(AudioSource):
         Whether the audio stream is stopped.
     source : `None` or `int`
         Identifier value of the respective user.
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         The user, who's audio is received.
     yield_decoded : `bool`
         Whether the audio stream should yield encoded data.
@@ -52,7 +52,7 @@ class AudioStream(AudioSource):
         ----------
         voice_client : ``VoiceClient``
             Parent ``AudioReader`` instance.
-        user : ``User`` or ``Client``
+        user : ``ClientUserBase``
             The user, who's audio is received.
         auto_decode : `bool`
             Whether the received packets should be auto decoded.

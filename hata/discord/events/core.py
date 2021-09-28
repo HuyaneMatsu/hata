@@ -112,6 +112,7 @@ add_event_handler('voice_client_join', 2, None,)
 add_event_handler('voice_client_move', 3, None,)
 add_event_handler('voice_client_leave', 3, None,)
 add_event_handler('voice_client_update', 3, None,)
+add_event_handler('voice_client_shutdown', 1, None,)
 
 add_event_handler('ready', 1, 'READY',)
 add_event_handler('client_edit', 2, 'USER_UPDATE',)

@@ -47,7 +47,7 @@ class Emoji(DiscordEntity, immortal=True):
     unicode : `None` or `str`
         At the case of custom emojis this attribute is always `None`, but at the case of builtin (unicode) emojis this
         attribute stores the emoji's unicode representation.
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         The creator of the custom emoji. The emoji must be requested from Discord's API, or it's user will be just
         the default `ZEROUSER`.
         

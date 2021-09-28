@@ -78,7 +78,7 @@ def check_user(user, event):
     
     Parameters
     ----------
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         The user who should be matched.
     event : ``ReactionAddEvent`` or ``ReactionDeleteEvent``
         The reaction addition or deletion event.

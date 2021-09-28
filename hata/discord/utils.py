@@ -855,7 +855,7 @@ class Relationship:
     ----------
     type : ``RelationshipType``
         The relationship's type.
-    user : ``User`` or ``Client`` instance
+    user : ``ClientUserBase``
         The target user of the relationship.
     """
     __slots__ = ('type', 'user',)

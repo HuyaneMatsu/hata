@@ -803,7 +803,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     ----------
     id : `int`
         The interaction's id.
-    _cached_users : `None` or `list` of (``User`` or ``Client``)
+    _cached_users : `None` or `list` of ``ClientUserBase``
         A list of users, which are temporary cached.
     _response_flag : `bool`
         The response order state of ``InteractionEvent``
@@ -842,7 +842,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         Interaction's token used when responding on it.
     type : ``InteractionType``
         The interaction's type.
-    user : ``Client`` or ``User``
+    user : ``ClientUserBase``
         The user who called the interaction.
     user_permissions : ``Permission``
         The user's permissions in the respective channel.

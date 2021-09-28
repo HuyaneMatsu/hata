@@ -11,7 +11,7 @@ class IntegrationApplication(DiscordEntity):
     
     Attributes
     ----------
-    bot : ``Client`` or ``User``
+    bot : ``ClientUserBase``
         The application's bot if applicable.
     description : `str`
         The description of the application. Defaults to empty string.

@@ -2357,23 +2357,50 @@ async def ensure_shutdown_event_handlers(client):
         The respective client.
     """
     # call client.events.shutdown if has any.
-    shutdown_event_handler = client.events.shutdown
-    if (shutdown_event_handler is not DEFAULT_EVENT_HANDLER):
-        
+    return await ensure_event_handlers(client, client.events.shutdown)
+
+
+async def ensure_voice_client_shutdown_event_handlers(client):
+    """
+    Ensures the client's voice client shutdown event handlers.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    """
+    return await ensure_event_handlers(client, client.events.voice_client_shutdown)
+
+
+async def ensure_event_handlers(client, event_handlers):
+    """
+    Ensures the given event handlers. Used by ``ensure_shutdown_event_handlers`` and
+    ``ensure_voice_client_shutdown_event_handlers``.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    event_handlers : `async-callable`
+        The event handlers to ensure.
+    """
+    if (event_handlers is not DEFAULT_EVENT_HANDLER):
         # We use `WaitTillAll` even for 1 task, since we do not want any raised exceptions to be forwarded.
         tasks = []
         
-        if type(shutdown_event_handler) is asynclist:
-            for event_handler in list.__iter__(shutdown_event_handler):
+        if type(event_handlers) is asynclist:
+            for event_handler in list.__iter__(event_handlers):
                 tasks.append(Task(_with_error(client, event_handler(client)), KOKORO))
-            
-            event_handler = None # clear references
-        else:
-            tasks.append(Task(_with_error(client, shutdown_event_handler(client)), KOKORO))
         
-        shutdown_event_handler = None # clear references
+        else:
+            tasks.append(Task(_with_error(client, event_handlers(client)), KOKORO))
+        
+        event_handlers = None # clear references
         
         future = WaitTillAll(tasks, KOKORO)
         tasks = None # clear references
         await future
-        future = None # clear references

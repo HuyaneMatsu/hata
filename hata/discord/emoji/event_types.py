@@ -53,7 +53,7 @@ class ReactionAddEvent(EventBase):
         ``MessageRepr`` instance, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The emoji used as reaction.
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         The user who added the reaction.
     
     Class Attributes
@@ -78,7 +78,7 @@ class ReactionAddEvent(EventBase):
             The respective message.
         emoji : ``Emoji``
             The emoji used.
-        user : ``User`` or ``Client``
+        user : ``ClientUserBase``
             The user who reacted.
         """
         self = object.__new__(cls)
@@ -155,7 +155,7 @@ class ReactionDeleteEvent(ReactionAddEvent):
         ``MessageRepr`` instance, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The removed emoji.
-    user : ``User`` or ``Client``
+    user : ``ClientUserBase``
         The user who's reaction was removed.
     
     Class Attributes

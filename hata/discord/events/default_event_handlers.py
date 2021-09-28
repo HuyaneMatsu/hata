@@ -2,6 +2,8 @@ __all__ = ()
 
 import sys
 
+from ...backend.futures import Task, WaitTillAll
+
 from ..core import KOKORO
 from ..voice import VoiceClient
 
@@ -184,3 +186,25 @@ async def default_voice_client_update_event_handler(client, voice_state, old_att
     """
     # We do nothing with it right now
     pass
+
+
+async def default_voice_client_shutdown_event_handler(client):
+    """
+    Default voice client shutdown event handler.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who is disconnected.
+    """
+    voice_clients = client.voice_clients
+    if voice_clients:
+        tasks = []
+        for voice_client in voice_clients.values():
+            tasks.append(Task(voice_client._disconnect(), KOKORO))
+        
+        future = WaitTillAll(tasks, KOKORO)
+        tasks = None # clear references
+        await future

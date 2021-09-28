@@ -100,7 +100,7 @@ class Guild(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the guild.
-    _boosters : `None` or `list` of (``User`` or ``Client``) objects
+    _boosters : `None` or `list` of ``ClientUserBase`` objects
         Cached slot for the boosters of the guild.
     _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
@@ -195,7 +195,7 @@ class Guild(DiscordEntity, immortal=True):
         Thread channels of the guild.
     user_count : `int`
         The amount of users at the guild.
-    users : `dict` r ``WeakValueDictionary`` of (`int`, (``User`` or ``Client``)) items
+    users : `dict` r ``WeakValueDictionary`` of (`int`, ``ClientUserBase``) items
         The users at the guild stored within `user_id` - `user` relation.
     vanity_code : `None` or `str`
         The guild's vanity invite's code if it has.
@@ -762,7 +762,7 @@ class Guild(DiscordEntity, immortal=True):
         self._boosters = None
     
     
-    def _update_voice_state(self, data, user_id):
+    def _update_voice_state(self, data, user):
         """
         Called by dispatch event. Updates the voice state of the represented user by `user_id` with the given `data`.
         
@@ -770,10 +770,10 @@ class Guild(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `Any`) items
             Data received from Discord.
-        user_id : `int`
-            The respective user's identifier.
+        user : ``ClientUserBase``
+            The respective user.
         
         Yields
         -------
@@ -824,13 +824,15 @@ class Guild(DiscordEntity, immortal=True):
             If `action` is `VOICE_STATE_LEAVE` or `VOICE_STATE_MOVE`, then the old channel's identifier is returned.
         """
         try:
-            voice_state = self.voice_states[user_id]
+            voice_state = self.voice_states[user.id]
         except KeyError:
             voice_state = VoiceState(data, self.id)
             if (voice_state is not None):
+                voice_state._set_cache_user(user)
                 yield VOICE_STATE_JOIN, voice_state, None
         
         else:
+            voice_state._set_cache_user(user)
             old_channel_id, new_channel_id = voice_state._update_channel(data)
             if new_channel_id == 0:
                 yield VOICE_STATE_LEAVE, voice_state, old_channel_id
@@ -841,9 +843,9 @@ class Guild(DiscordEntity, immortal=True):
             
             if old_channel_id != new_channel_id:
                 yield VOICE_STATE_MOVE, voice_state, old_channel_id
+        
     
-    
-    def _update_voice_state_restricted(self, data, user_id):
+    def _update_voice_state_restricted(self, data, user):
         """
         Called by dispatch event. Updates the voice state of the represented user by `user_id` with the given `data`.
         
@@ -851,17 +853,21 @@ class Guild(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `Any`) items
             Data received from Discord.
-        user_id : `int`
-            The respective user's identifier.
+        user : ``ClientUserBase``
+            The respective user.
         """
         try:
-            voice_state = self.voice_states[user_id]
+            voice_state = self.voice_states[user.id]
         except KeyError:
-            VoiceState(data, self.id)
+            voice_state = VoiceState(data, self.id)
+            if (voice_state is not None):
+                voice_state._set_cache_user(user)
         else:
+            voice_state._set_cache_user(user)
             voice_state._update_channel(data)
+            voice_state._update_attributes(data)
     
     @property
     def text_channels(self):
@@ -1265,7 +1271,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase`` objects
         """
         result = []
         if (not 1 < len(name) < 38):
@@ -1314,7 +1320,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase`` objects
         """
         to_sort = []
         if (not 1 < len(name) < 33):
@@ -2527,7 +2533,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        boosters : `list` of (``User`` or ``Client``)
+        boosters : `list` of ``ClientUserBase``
         """
         boosters = self._boosters
         if boosters is None:

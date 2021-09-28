@@ -251,7 +251,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``User`` or ``Client``) objects
+        users : `list` of ``ClientUserBase`` objects
         """
         result = []
         if (not 1 < len(name) < 38):
@@ -290,7 +290,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of (``Client`` or ``User``)
+        users : `list` of ``ClientUserBase``
         """
         return []
     
@@ -302,7 +302,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Yields
         ------
-        user : ``Client`` or ``User``
+        user : ``ClientUserBase``
         """
         yield from self.users
     
@@ -484,6 +484,17 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         return PERMISSION_NONE
     
+    
+    @property
+    def guild_id(self):
+        """
+        Returns the channel's guild's identifier. At the case of private channels, this always returns `0`.
+        
+        Returns
+        -------
+        channel_id : `int`
+        """
+        return 0
     
     @property
     def guild(self):

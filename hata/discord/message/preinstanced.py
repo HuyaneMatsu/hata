@@ -241,7 +241,7 @@ def convert_thread_created(self):
     
     if guild_id:
         try:
-            guild_profile = user.guild_profiiles[guild_id]
+            guild_profile = user.guild_profiles[guild_id]
         except KeyError:
             user_name = user.name
         else:

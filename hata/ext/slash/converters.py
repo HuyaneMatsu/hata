@@ -269,7 +269,7 @@ async def converter_user(client, interaction_event, value):
     
     Returns
     -------
-    user : `None`, ``User`` or ``Client``
+    user : `None`, ``ClientUserBase``
         If conversion fails, then returns `None`.
     """
     user_id = await converter_snowflake(client, interaction_event, value)

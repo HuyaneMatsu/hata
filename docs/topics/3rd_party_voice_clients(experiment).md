@@ -271,14 +271,15 @@ After connected to a voice channel, a `voice_server_update_event` is received. I
 async def voice_server_update(client, event):
     voice_client = get_voice_client(event.guild_id)
     if (voice_client is not None):
-        voice_cleint.create_socket(event)
+        await voice_client.create_socket(event)
 ```
 
 ## Tips
 
 ### Track voice region
 
-The voice client is disconnected when it's channel's voice region changes.
+The voice client is disconnected when it's channel's voice region changes. To avoid this, you might wanna check whether
+indeed that was the case.
 
 To get a channel's voice region, you might want to do `channel.region`. If the channel has no voice region, you can
 default to it's guild's.

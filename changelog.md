@@ -34,6 +34,7 @@
 - `Message.custom` was not setting `.guild_id` accordingly. (Gojo#8953)
 - Fix an `AttributeError` in `convert_thread_created`. (Gojo#8953)
 - `Message.custom` was not marking the message as partial accordingly.
+- Fix a `NameError` in `Client.message_delete_sequence`. (Gojo#8953)
 
 #### Renames, Deprecation & Removals
 

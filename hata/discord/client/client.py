@@ -3818,7 +3818,7 @@ class Client(ClientUserPBase):
                     before_index += 1
                     
                     # Ignore invoking user only messages! Desu!
-                    if not message.is_deletable():
+                    if not message_.is_deletable():
                         continue
                     
                     if (filter is not None):

@@ -1094,6 +1094,10 @@ class RPCClient:
         data = await self._send_request(data)
         return VoiceSettings.from_data(data)
     
+    async def subscribe_ready(self, event_handler):
+        """
+        Subscribes to ready dispatch event handler.
+        """
     
     async def subscribe(self, event, guild):
         """

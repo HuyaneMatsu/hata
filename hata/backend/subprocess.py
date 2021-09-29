@@ -324,6 +324,8 @@ class UnixWritePipeTransport:
         """
         Creates a new ``UnixWritePipeTransport`` instance with the given parameters.
         
+        This method is a coroutine.
+        
         Parameters
         ----------
         loop : ``EventThread``
@@ -1105,6 +1107,8 @@ class AsyncProcess:
             process_open_kwargs):
         """
         Creates a new ``AsyncProcess`` instance.
+        
+        This method is a coroutine.
         
         Parameters
         ----------

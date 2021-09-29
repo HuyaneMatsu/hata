@@ -26,6 +26,9 @@
 - `Embed.add_footer` now casts `text` parameter to string. (Nova#3379)
 - `Embed.add_author` now casts `name` parameter to string. (Nova#3379)
 - Add `ChannelBase.guild_id` property.
+- Add `ActivityFlag.party_privacy_friends`.
+- Add `ActivityFlag.party_privacy_voice_channel`.
+- Add `ActivityFlag.embedded`.
 
 #### Bug Fixes
 

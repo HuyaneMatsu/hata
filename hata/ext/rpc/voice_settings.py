@@ -959,7 +959,7 @@ class VoiceSettings:
         self.echo_cancellation = data['echo_cancellation']
         self.input = VoiceSettingsInput.from_data(data['input'])
         self.mode = VoiceSettingsMode.from_data(data['mode'])
-        self.mute = data['mute']
+        self.mute = data.get('mute', False)
         self.noise_suppression = data['noise_suppression']
         self.output = VoiceSettingsOutput.from_data(data['output'])
         self.quality_of_service = data['qos']

@@ -1,7 +1,6 @@
 __all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent',)
 
 from ..bases import EventBase
-from ..user import User
 from ..guild import Guild
 
 

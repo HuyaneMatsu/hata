@@ -18,6 +18,7 @@ Examples should be completed in order, as you might miss some notes from previou
  9 => Loops: Using cycling tasks.
 10 => Slash commands: Demonstrates a few usages of Hatas slash extension.
 11 => Basic voice: Basic usage of voice clients.
+12 => Slash exception handler: Example of how to create a slash error handler.
 ```
 
 ## Questions

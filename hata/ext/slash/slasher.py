@@ -1,6 +1,7 @@
 __all__ = ('Slasher', )
 
 from threading import current_thread
+from functools import partial as partial_func
 
 from ...backend.futures import Task, WaitTillAll
 from ...backend.event_loop import EventThread
@@ -755,6 +756,36 @@ class CommandState:
         
         return active_command_count_with_sub_commands
 
+
+def _register_exception_handler(slasher, first, exception_handler):
+    """
+    Registers an exception handler to the slasher. This function is wrapped inside of `functools.partial` with it's
+    `slasher` and `first` parameters.
+    
+    Parameters
+    ----------
+    slasher : ``Slasher``
+        The slasher to register the exception handler to.
+        
+        This parameter is passed by
+    first : `bool`
+        Whether the exception handler should run first.
+    exception_handler : `CoroutineFunction`
+        Exception handler to register.
+    
+    Returns
+    -------
+    exception_handler : `CoroutineFunction`
+    
+    Raises
+    ------
+    RuntimeError
+        If `exception_handler` is given as `None`.
+    """
+    if (exception_handler is None):
+        raise RuntimeError('`exception_handler` cannot be `None`.')
+    
+    return slasher._register_exception_handler(exception_handler, first)
 
 
 class Slasher(EventHandlerBase):
@@ -2468,13 +2499,38 @@ class Slasher(EventHandlerBase):
         Task(self._do_main_sync(client), KOKORO)
     
     
-    def error(self, exception_handler):
+    def error(self, exception_handler=None, *, first=False):
         """
         Registers an exception handler to the slasher.
         
         Parameters
         ----------
+        exception_handler : `None` or `CoroutineFunction`, Optional
+            Exception handler to register.
+        first : `bool`, Optional (Keyword Only)
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
+            If `exception_handler` is not given, returns a wrapper.
+        """
+        if exception_handler is None:
+            return partial_func(self, first)
+        
+        return self._register_exception_handler(exception_handler, first)
+    
+    
+    def _register_exception_handler(self, exception_handler, first):
+        """
+        Registers an exception handler to the ``Slasher``.
+        
+        Parameters
+        ----------
         exception_handler : `CoroutineFunction`
+            Exception handler to register.
+        first : `bool`
+            Whether the exception handler should run first.
         
         Returns
         -------
@@ -2486,7 +2542,12 @@ class Slasher(EventHandlerBase):
         if exception_handlers is None:
             self._exception_handlers = exception_handlers = []
         
-        exception_handlers.append(exception_handler)
+        if first:
+            exception_handlers.insert(0, exception_handler)
+        else:
+            exception_handlers.append(exception_handler)
+        
+        return exception_handler
     
     
     def _add_component_command(self, component_command):

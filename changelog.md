@@ -1,4 +1,17 @@
+## 1.1.108 *\[2021-10-??\]*
+
+#### Improvements
+
+##### hata.ext.slash
+
+- Add `first` parameter to `Slasher.error`.
+
+
 ## 1.1.107 *\[2021-09-30\]*
+
+### Summary
+
+Voice rework to support 3rd party libraries.
 
 #### Improvements
 

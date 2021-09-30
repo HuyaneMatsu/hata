@@ -7,7 +7,7 @@ class EventBase:
     __slots__ = ()
     
     def __new__(cls, *args, **kwargs):
-        raise RuntimeError(f'Create {cls.__name__} with `object.__new__(cls)` and assign variables from outside.')
+        return None
     
     def __repr__(self):
         """Returns the event's representation."""

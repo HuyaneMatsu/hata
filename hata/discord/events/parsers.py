@@ -2550,55 +2550,10 @@ del GUILD_BAN_REMOVE__CAL, \
     GUILD_BAN_REMOVE__OPT
 
 
-if CACHE_PRESENCE:
-    def GUILD_MEMBERS_CHUNK(client, data):
-        guild_id = int(data['guild_id'])
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            return
-        
-        users = []
-        for user_data in data['members']:
-            user = User(user_data, guild)
-            users.append(user)
-        
-        try:
-            presence_datas = data['presences']
-        except KeyError:
-            pass
-        else:
-            guild._apply_presences(presence_datas)
-        
-        event = object.__new__(GuildUserChunkEvent)
-        event.guild = guild
-        event.users = users
-        event.nonce = data.get('nonce', None)
-        event.index = data['chunk_index']
-        event.count = data['chunk_count']
-        
-        Task(client.events.guild_user_chunk(client, event), KOKORO)
-else:
-    def GUILD_MEMBERS_CHUNK(client, data):
-        guild_id = int(data['guild_id'])
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            return
-        
-        users = []
-        for user_data in data['members']:
-            user = User(user_data, guild)
-            users.append(user)
-        
-        event = object.__new__(GuildUserChunkEvent)
-        event.guild = guild
-        event.users = users
-        event.nonce = data.get('nonce', None)
-        event.index = data['chunk_index']
-        event.count = data['chunk_count']
-        
-        Task(client.events.guild_user_chunk(client, event), KOKORO)
+def GUILD_MEMBERS_CHUNK(client, data):
+    event = GuildUserChunkEvent(data)
+    
+    Task(client.events.guild_user_chunk(client, event), KOKORO)
 
 add_parser(
     'GUILD_MEMBERS_CHUNK',
@@ -3273,19 +3228,7 @@ del VOICE_STATE_UPDATE__CAL_SC, \
 
 
 def VOICE_SERVER_UPDATE_CAL(client, data):
-    guild_id = data.get('guild_id', None)
-    if guild_id is None:
-        guild_id = 0
-    else:
-        guild_id = int(guild_id)
-    
-    endpoint = data.get('endpoint', None)
-    token = data.get('token', None)
-    
-    event = VoiceServerUpdateEvent()
-    event.endpoint = endpoint
-    event.guild_id = guild_id
-    event.token = token
+    event = VoiceServerUpdateEvent(data)
     
     Task(client.events.voice_server_update(client, event), KOKORO)
 

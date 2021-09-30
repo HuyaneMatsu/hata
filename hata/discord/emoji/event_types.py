@@ -68,6 +68,7 @@ class ReactionAddEvent(EventBase):
         ``ReactionAddEvent``.
     """
     __slots__ = ('message', 'emoji', 'user')
+    
     def __new__(cls, message, emoji, user):
         """
         Creates a new ``ReactionAddEvent`` instance (or it's subclass's instance).

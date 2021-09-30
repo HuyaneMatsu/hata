@@ -15,6 +15,22 @@ class GuildCreateEvent(EventBase):
     """
     __slots__ = ('id', 'name')
     
+    def __new__(cls, guild_id, guild_name):
+        """
+        Creates a new guild create event from the given parameters
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The guild's identifier.
+        guild_name : `str`
+            The created guilds name.
+        """
+        self = object.__new__(cls)
+        self.id = guild_id
+        self.name = guild_name
+        return self
+    
     def __repr__(self):
         """Returns the representation of the guild create event."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
@@ -48,6 +64,25 @@ class ChannelCreateEvent(EventBase):
     """
     __slots__ = ('id', 'name', 'type')
     
+    def __new__(cls, channel_id, channel_name, channel_type):
+        """
+        Creates a new channel create event from the given parameters.
+        
+        Parameters
+        ----------
+        channel_id : `int`
+            The channel's identifier.
+        channel_name : `str`
+            The created channel name.
+        channel_type : `int`
+            The channel's type.
+        """
+        self = object.__new__(cls)
+        self.id = channel_id
+        self.name = channel_name
+        self.type = channel_type
+        return self
+    
     def __repr__(self):
         """Returns the representation of the channel create event."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}, type={self.type}>'
@@ -79,6 +114,22 @@ class ChannelVoiceSelectEvent(EventBase):
         The respective guild's identifier, or `0` for private channels.
     """
     __slots__ = ('channel_id', 'guild_id')
+    
+    def __new__(cls, channel_id, guild_id):
+        """
+        Creates a new channel voice select event from teh given parameters.
+        
+        Parameters
+        ----------
+        channel_id : `int`
+            The respective channel's identifier.
+        guild_id : `int`
+            The respective guild's identifier.
+        """
+        self = object.__new__(cls)
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+        return self
     
     def __repr__(self):
         """Returns the representation of the channel voice select event."""

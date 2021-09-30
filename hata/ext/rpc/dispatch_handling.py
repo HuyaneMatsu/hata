@@ -31,12 +31,10 @@ def handle_dispatch_guild_status_update(rpc_client, data):
 
 def handle_dispatch_guild_create(rpc_client, data):
     guild_id = int(data['id'])
-    channel_name = data['name']
+    guild_name = data['name']
     
-    event = GuildCreateEvent()
-    event.id = guild_id
-    event.name = channel_name
-
+    event = GuildCreateEvent(guild_id, guild_name)
+    
     Task(rpc_client.events.guild_create(rpc_client, event), KOKORO)
 
 
@@ -45,10 +43,7 @@ def handle_dispatch_channel_create(rpc_client, data):
     channel_name = data['name']
     channel_type = data['type']
     
-    event = ChannelCreateEvent()
-    event.id = channel_id
-    event.name = channel_name
-    event.type = channel_type
+    event = ChannelCreateEvent(channel_id, channel_name, channel_type)
     
     Task(rpc_client.events.channel_create(rpc_client, event), KOKORO)
 
@@ -66,9 +61,7 @@ def handle_dispatch_voice_channel_select(rpc_client, data):
     else:
         guild_id = int(guild_id)
     
-    event = ChannelVoiceSelectEvent()
-    event.channel_id = channel_id
-    event.guild_id = guild_id
+    event = ChannelVoiceSelectEvent(channel_id, guild_id)
     
     Task(rpc_client.events.voice_channel_select(rpc_client, event), KOKORO)
 

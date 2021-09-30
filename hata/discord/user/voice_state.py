@@ -68,6 +68,8 @@ class VoiceState:
         if channel_id is None:
             return
         
+        channel_id = int(channel_id)
+        
         user_id = int(data['user_id'])
         
         try:

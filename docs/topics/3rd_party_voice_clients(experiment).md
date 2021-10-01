@@ -1,20 +1,20 @@
 # 3rd party voice clients (VIP)
 
-When using python and want to play music, you might meet a big problem, which is python's GIL. Single core processing
-power is not a good thing, when you have CPU intensive tasks.
+If you ever wanted to play music with Python you might have stumbled upon a big problem - Python GIL.
 
-For this purpose, you may integrate 3rd party voice playing libraries to hata, and soon you will see, how to.
+For CPU intensive tasks, relying on single core is not optimal and for this purpose you might want to integrate 3rd
+party voice libraries which will be explained below.
 
 ## Getting started
 
-First check, what python bindings you, or the 3rd party library uses.
-- If it uses blocking io code, make sure to executors, or start other threads.
-- If it is asyncio based, make sure to import `hata.ext.asyncio`, which adds support for asyncio based modules when
-using hata.
+First check which Python bindings you or the 3rd party library use:
+- If it's blocking IO code then make sure to executors or start other threads.
+- If it's asyncio based then make sure to import `hata.ext.asyncio`, which adds support for asyncio based modules when
+using Hata.
 
 ## Related events
 
-Hata separates many different voice related events, which can be separated to 4 groups:
+Hata separates many voice related events, which are separated in 4 groups:
 
 ### Internal
     
@@ -33,7 +33,7 @@ Hata separates many different voice related events, which can be separated to 4 
     
     Called when the client logs out.
     
-    Pretty self explanatory, the user should log their voice clients and / or store their details, for reconnect.
+    Pretty self-explanatory - the user should log their voice clients and / or store their details for reconnect.
     
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
@@ -42,13 +42,13 @@ Hata separates many different voice related events, which can be separated to 4 
 
 - `voice_server_update`
 
-    Called initially when a voice client joins, and when a guild's voice server is updated.
+    Initially called when the voice client joins and when the guilds voice server is updated.
     
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceServerUpdateEvent](https://www.astil.dev/project/hata/docs/hata/discord/events/event_types/VoiceServerUpdateEvent)
     
-    Voice server update event exposes the following attributes:
+   The event exposes the following attributes:
     ```
     .endpoint
     .guild_id
@@ -57,10 +57,10 @@ Hata separates many different voice related events, which can be separated to 4 
 
 ### Voice client updates
 
-Voice client updates relate directly to the client, not like [user voice updates](#user-voice-updates), which are
+Voice client updates relate directly to the client unlike [user voice updates](#user-voice-updates) which are
 related to every user.
 
-Voice client updated usually operate with voice states, which expose the following related attributes:
+Voice client update usually operate with voice states which expose the following related attributes:
 ```
 .channel_id
 .guild_id
@@ -83,7 +83,7 @@ Voice client updated usually operate with voice states, which expose the followi
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
-    - `old_channel_id` (`int`) The channel's identifier from where the client left from.
+    - `old_channel_id` (`int`) The channels identifier from where the client left from.
 
 - `voice_client_move`
     
@@ -92,16 +92,16 @@ Voice client updated usually operate with voice states, which expose the followi
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
-    - `old_channel_id` (`int`) The channel's identifier from where the client moved from.
+    - `old_channel_id` (`int`) The channels identifier from where the client moved out from.
 
 - `voice_client_update`
     
-    Called when the client's voice state is updated.
+    Called when the client voice state is updated.
     
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
-    - `old_attributes` (`dict`) `attribute-name` - `old_value` pairs of the client voice state's changed attributes.
+    - `old_attributes` (`dict`) `attribute-name` - `old_value` pairs of the client voice state changed attributes.
 
 ### User voice updates
 
@@ -115,12 +115,12 @@ Voice client updated usually operate with voice states, which expose the followi
 
 - `user_voice_leave`
     
-    Called when a user leaves from a voice channel.
+    Called when a user leaves voice channel.
     
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
-    - `old_channel_id` (`int`) The channel's identifier from where the user left from.
+    - `old_channel_id` (`int`) The channels identifier from where the user left from.
 
 - `user_voice_move`
     
@@ -129,43 +129,43 @@ Voice client updated usually operate with voice states, which expose the followi
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
-    - `old_channel_id` (`int`) The channel's identifier from where the user moved from.
+    - `old_channel_id` (`int`) The channels identifier from where the user moved out from.
 
 - `user_voice_update`
     
-    Called when a user's voice state is updated.
+    Called when a user voice state is updated.
     
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
-    - `old_attributes` (`dict`) `attribute-name` - `old_value` pairs of the voice state's changed attributes.
+    - `old_attributes` (`dict`) `attribute-name` - `old_value` pairs of the voice state changed attributes.
 
 ## Api usage
 
-To deal with voice client connections, you will need to use the respective guild's gateway. To get it, do:
+To deal with voice client connections you will need to use the respective guild gateway. To get it, do:
 
 ```py
 gateway = client.gateway_for(guild_id)
 ```
 
-For modifying the a voice client's state, use `gateway.change_voice_state(...)`.
+For modifying the voice client state use `gateway.change_voice_state(...)`.
  
-For `IDENTIFY` and `RESUME` voice gateway operations, you will need the guilds gateways's `session_id`.
-It can be access as `gateway.session_id`.
+For `IDENTIFY` and `RESUME` voice gateway operations you will need the guilds gateway `session_id`.
+It can be accessed trough `gateway.session_id`.
 
-Do not forget to overwrite **all** `voice_client_...` events when dealing with voice clients.
-To overwrite (replace) one, use the `overwrite=True` parameter.
+Don't forget to overwrite **all** `voice_client_...` events when dealing with voice clients.
+To overwrite (replace) one use the `overwrite=True` parameter.
 
 ### Joining to voice channel
 
-For joining, first get the gateway of the guild where you wish to join, then call it's `.change_voice_state`.
+For joining, first get the gateway of the guild where you wish to join then call its `.change_voice_state`.
 
 ```py
 gateway = client.gateway_for(guild_id)
 await gateway.change_voice_state(guild_id, channel_id)
 ```
 
-When you joined the channel, `client.events.voice_client_join` is called, where you should update the voice client's
+When you join the channel, `client.events.voice_client_join` will be called, in which you should update the voice client
 channel.
 
 ```py
@@ -180,7 +180,7 @@ async def voice_client_join(client, voice_state):
 
 ### Moving between voice channels.
 
-Moving between voice channel is familiar to joining.
+Moving between voice channel is similar to joining.
 
 ```py
 gateway = client.gateway_for(guild_id)
@@ -197,7 +197,7 @@ async def voice_client_move(client, voice_state, old_channel_id):
 
 ### Leaving from voice channel
 
-To leave from a voice channel, pass `channel_id` parameter of `change_voice_state` as `0`.
+To leave from a voice channel, pass parameter `channel_id` as `0` to the `change_voice_state` method.
 
 ```py
 gateway = client.gateway_for(guild_id)
@@ -216,7 +216,7 @@ async def voice_client_leave(client, voice_state, old_channel_id):
 
 To edit voice state use the `self_mute` and the `self_deaf` parameters of `change_voice_state`.
 
-This event is optional to be handled, but recommended to overwrite.
+Handling this event is optional, but its recommended overwriting it.
 
 ```py
 gateway = client.gateway_for(guild_id)
@@ -231,7 +231,7 @@ async def voice_client_update(client, voice_state, old_attributes):
 
 ### Ghost voice clients
 
-If you do not want to deal with ghost clients, just register an empty function, or just disconnect the client from the
+If you do not want to deal with ghost clients, just register an empty function or just disconnect the client from the
 voice channel.
 
 ```py
@@ -245,8 +245,8 @@ async def voice_client_ghost(client, voice_state)
 
 Shutting down voice clients and awaiting their shutdown.
 
-Since after all `voice_client_shutdown` is completed, the client's gateways are disconnected, it is recommended to not
-only create parallel tasks of disconnects, but to wait for their completion as well.
+Since only after all `voice_client_shutdown` events are completed will the clients gateways disconnect, it is recommended to
+create parallel tasks for disconnects and to wait for their completion.
 
 ```py
 from hata import WaitTillAll
@@ -263,8 +263,8 @@ async def voice_client_shutdown(client):
 
 ### Voice server update
 
-After connected to a voice channel, a `voice_server_update_event` is received. If the event has both `endpoint` and
-`token` set as non-`None`, you are free to create your datagram connection.
+After connecting to a voice channel the `voice_server_update_event` is received. If the event has both `endpoint` and
+`token` set as non-`None` you are free to create your datagram connection.
 
 ```py
 @client.events(overwrite=True)
@@ -278,11 +278,11 @@ async def voice_server_update(client, event):
 
 ### Track voice region
 
-The voice client is disconnected when it's channel's voice region changes. To avoid this, you might wanna check whether
-indeed that was the case.
+The voice client is disconnected when its channel voice region changes. To avoid this, you might want to check whether
+the client got disconnected indeed because ofg region change or just normal disconnect.
 
-To get a channel's voice region, you might want to do `channel.region`. If the channel has no voice region, you can
-default to it's guild's.
+To get the channel voice region you can use `channel.region`. If the channel does not have voice region you can
+set it to guild default.
 
 ```py
 region = channel.region
@@ -292,10 +292,10 @@ if (region is None):
 
 ### Getting entity from cache
 
-At cases you might need rich information about entities, but you only have their id available. Even tho most objects
-expose entity access too, like, they have `channel_id` attribute and a `channel` property, this may not be enough.
+In certain cases you might need rich information about entities, but you only have their ID available.
+Even tho most objects will expose entity access too, e.g. they have `channel_id` attribute and a `channel` property, this may not be enough.
 
-At these cases, use `USERS`, `GUILDS`, `CHANNELS` caches to access the entities.
+In these cases use `USERS`, `GUILDS`, `CHANNELS` caches to access the entities.
 
 ```py
 channel = CHANNESL.get(channel_id, None)

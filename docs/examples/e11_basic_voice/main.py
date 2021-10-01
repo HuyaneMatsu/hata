@@ -9,14 +9,14 @@
 # => Playing audio from youtube.
 # => Disconnecting.
 
-from hata import Client, YTAudio, DownloadError
-from hata.ext.commands_v2 import checks
+from hata import Client, YTAudio, DownloadError, Guild
 
 TOKEN = ''
 
-Sakuya = Client(TOKEN,
-    extensions = 'commands_v2',
-    prefix = '!',
+
+Sakuya = Client(
+    TOKEN,
+    extensions = 'slash',
 )
 
 
@@ -24,19 +24,20 @@ Sakuya = Client(TOKEN,
 async def ready(client):
     print(f'{client:f} is connected!')
 
+MY_GUILD = Guild.precreate(12345)
 
-@Sakuya.commands
-@checks.guild_only()
-async def join(ctx):
+
+@Sakuya.interactions(guild=MY_GUILD)
+async def join(client, event):
     """Joins to voice channel."""
     # Getting the author voice state
-    voice_state = ctx.voice_state
+    voice_state = event.voice_state
     if voice_state is None:
         return 'You are not at a voice channel!'
     
     # Connecting the client to the same channel, where the user is.
     try:
-        await ctx.client.join_voice(voice_state.channel)
+        await client.join_voice(voice_state.channel)
     except TimeoutError:
         # Could not connect.
         return 'Timed out meanwhile tried to connect.'
@@ -49,9 +50,10 @@ async def join(ctx):
     return f'Joined to {voice_state.channel.name}'
 
 
-@Sakuya.commands
-@checks.guild_only()
-async def yt(ctx, url=None):
+@Sakuya.interactions(guild=MY_GUILD)
+async def yt(event,
+    url: ('str', 'The name or the url of a track') = None,
+):
     """Plays from youtube."""
     # Checking whether `youtube_dl` is installed.
     if YTAudio is None:
@@ -60,7 +62,7 @@ async def yt(ctx, url=None):
     if url is None:
         return 'Please define what to play.'
     
-    voice_client = ctx.voice_client
+    voice_client = event.voice_client
     if voice_client is None:
         return 'There is no voice client at your guild.'
 
@@ -81,11 +83,12 @@ async def yt(ctx, url=None):
 
 
 # Tailing `_` are removed from command names.
-@Sakuya.commands
-@checks.guild_only()
-async def volume_(ctx, volume:int=None):
+@Sakuya.interactions(guild=MY_GUILD)
+async def volume_(event,
+    volume: ('int', 'Volume to set to.') = None,
+):
     """Changes the player\'s volume."""
-    voice_client = ctx.voice_client
+    voice_client = event.voice_client
     if voice_client is None:
         return 'There is no voice client at your guild.'
     
@@ -104,15 +107,14 @@ async def volume_(ctx, volume:int=None):
     return f'Volume set to {volume*100.:.0f}%'
 
 
-@Sakuya.commands
-@checks.guild_only()
-async def disconnect(ctx):
+@Sakuya.interactions(guild=MY_GUILD)
+async def disconnect(event):
     """Disconnects the bot from voice."""
-    voice_client = ctx.voice_client
+    voice_client = event.voice_client
     if voice_client is None:
         return 'There is no voice client at your guild.'
     
     await voice_client.disconnect()
-
+    return 'Disconnected.'
 
 Sakuya.start()

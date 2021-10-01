@@ -48,8 +48,8 @@ async def message_me(client, event):
 # description.
 @Sakuya.interactions(is_global=True)
 async def id_(
-        user: ('user', 'The user to lookup')
-            ):
+    user: ('user', 'The user to lookup')
+):
     """A ping command"""
     return user.id
 
@@ -57,8 +57,8 @@ async def id_(
 # Use default values to mark a parameter as optional
 @Sakuya.interactions(is_global=True)
 async def id_(event,
-        user: ('user', 'The user to lookup') = None,
-            ):
+    user: ('user', 'The user to lookup') = None,
+):
     """Shows the user\'s id"""
     if user is None:
         user = event.user
@@ -74,9 +74,9 @@ WELCOME_MESSAGES = [
 
 @Sakuya.interactions(is_global=True)
 async def welcome(event,
-        user: ('user', 'The user to welcome'),
-        message: (WELCOME_MESSAGES, 'The message to send'),
-            ):
+    user: ('user', 'The user to welcome'),
+    message: (WELCOME_MESSAGES, 'The message to send'),
+):
     """Welcome a user."""
     return f'{event.user:m} welcomes {user:m} to the guild.\n{message}'
 

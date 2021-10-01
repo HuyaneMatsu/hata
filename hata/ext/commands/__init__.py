@@ -1,3 +1,10 @@
+import warnings
+
+warnings.warn(
+    '`commands` extension is deprecated and will be removed in 2022',
+    FutureWarning,
+)
+
 from . import checks
 from .command import *
 from .content_parser import *

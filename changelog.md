@@ -15,7 +15,7 @@
 #### Bug Fixes
 
 - `create_partial_emoji_from_data` could return `Emoji` without all attribute set.
-- `Client.role_edit` could raise `TypeError` if `postion` is given.
+- `Client.role_edit` could raise `TypeError` if `position` is given.
 
 ## 1.1.107 *\[2021-09-30\]*
 

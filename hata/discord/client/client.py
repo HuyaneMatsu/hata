@@ -11179,7 +11179,7 @@ class Client(ClientUserPBase):
             raise TypeError(f'`icon` can be passed as `None`, `{Emoji.__name__}` or `bytes-like`, got '
                 f'{icon.__class__.__name__}.')
         
-
+        
         if data:
             await self.http.role_edit(guild_id, role_id, data, reason)
     

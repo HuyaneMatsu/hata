@@ -226,8 +226,8 @@ from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def cookie(event,
-        user : ('user', 'To who?'),
-            ):
+    user : ('user', 'To who?'),
+):
     """Gifts a cookie!"""
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !')
 ```
@@ -278,13 +278,13 @@ from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def guild_icon(event,
-        choice: ({
-            'Icon': 'icon',
-            'Banner': 'banner',
-            'Discovery-splash': 'discovery_splash',
-            'Invite-splash': 'invite_splash',
-        }, 'Which icon of the guild?' ) = 'icon',
-            ):
+    choice: ({
+        'Icon': 'icon',
+        'Banner': 'banner',
+        'Discovery-splash': 'discovery_splash',
+        'Invite-splash': 'invite_splash',
+    }, 'Which icon of the guild?' ) = 'icon',
+):
     """Shows the guild's icon or it's selected splash."""
     guild = event.guild
     if (guild is None) or guild.partial:
@@ -328,8 +328,8 @@ GUILD_ICON_CHOICES = {
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def guild_icon(event,
-        choice: (GUILD_ICON_CHOICES, 'Which icon of the guild?' ) = 'icon',
-            ):
+    choice: (GUILD_ICON_CHOICES, 'Which icon of the guild?' ) = 'icon',
+):
     """Shows the guild's icon."""
     # Code goes brr..
 ```
@@ -353,8 +353,8 @@ from random import random
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def roll(
-        dice_count: (range(1, 7), 'With how much dice do you wanna roll?') = 1,
-            ):
+    dice_count: (range(1, 7), 'With how much dice do you wanna roll?') = 1,
+):
     """Rolls with dices."""
     amount = 0
     for _ in range(dice_count):
@@ -413,8 +413,8 @@ from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def cookie(client, event,
-        user : ('user', 'To who?') = None,
-            ):
+    user : ('user', 'To who?') = None,
+):
     """Gifts a cookie!"""
     if user is None:
         source_user = client
@@ -479,8 +479,8 @@ from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitro.interactions(guild=TEST_GUILD, name='id-to-time')
 async def idtotime(
-        snowflake : ('int', 'Id please!'),
-            ):
+    snowflake : ('int', 'Id please!'),
+):
     """Converts the given Discord snowflake to time."""
     time = id_to_datetime(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
@@ -731,8 +731,8 @@ from hata.ext.slash import abort
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def is_banned(client, event,
-        user: ('user', 'Who should I check?')
-            ):
+    user: ('user', 'Who should I check?')
+):
     """Checks whether the user is banned."""
     if not event.user_permissions.can_ban_users:
         abort('You need to have `ban users` permissions to do this.')
@@ -776,8 +776,8 @@ annotation tuple.
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
 async def user_id(event,
-        user_id: ('user_id', 'Get the id of an other user?', 'user') = None,
-            ):
+    user_id: ('user_id', 'Get the id of an other user?', 'user') = None,
+):
     """Shows your or the selected user's id."""
     if user_id is None:
         user_id = event.user.id
@@ -1006,8 +1006,8 @@ acknowledge the event.
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
 async def repeat(client, event,
-        text: ('str', 'Uhum?')
-            ):
+    text: ('str', 'Uhum?')
+):
     """What should I exactly repeat?"""
     await client.interaction_response_message_create(event, text, allowed_mentions=None)
 ```

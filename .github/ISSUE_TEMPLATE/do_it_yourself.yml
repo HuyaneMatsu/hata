@@ -1,0 +1,7 @@
+name: Do-it-yourself
+description: Do-it-yourself (empty) template
+title: ""
+body:
+  - type: textarea
+    validations:
+      required: true

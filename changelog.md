@@ -5,7 +5,17 @@
 ##### hata.ext.slash
 
 - Add `first` parameter to `Slasher.error`.
+- Add `create_unicode_emoji`.
+- Add `Role.unicode_emoji`.
+- Add `unicode_emoji` parameter to `Role.precreate`.
+- Add `unicode_emoji` transformer to audit logs.
+- `Client.role_edit`'s `icon` parameter now can be `Emoji` instance as well.
+- `Client.role_create`'s `icon` parameter now can be `Emoji` instance as well.
 
+#### Bug Fixes
+
+- `create_partial_emoji_from_data` could return `Emoji` without all attribute set.
+- `Client.role_edit` could raise `TypeError` if `postion` is given.
 
 ## 1.1.107 *\[2021-09-30\]*
 

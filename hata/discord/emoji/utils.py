@@ -1,9 +1,10 @@
-__all__ = ('create_partial_emoji_from_data', 'create_partial_emoji_data', 'parse_emoji', 'parse_custom_emojis',
-    'parse_reaction',)
+__all__ = ('create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji',
+    'parse_custom_emojis', 'parse_emoji', 'parse_reaction')
+
+import warnings
 
 from ...backend.export import export
 
-from ..core import EMOJIS
 from ..utils import EMOJI_RP, REACTION_RP
 
 from .emoji import UNICODE_TO_EMOJI, Emoji
@@ -24,9 +25,9 @@ def create_partial_emoji_from_data(data):
     emoji : ``Emoji``
     """
     try:
-        name = data['name']
+        emoji_name = data['name']
     except KeyError:
-        name = data['emoji_name']
+        emoji_name = data['emoji_name']
         emoji_id = data.get('emoji_id', None)
         emoji_animated = data.get('emoji_animated', False)
     else:
@@ -35,28 +36,20 @@ def create_partial_emoji_from_data(data):
     
     if emoji_id is None:
         try:
-            return UNICODE_TO_EMOJI[name]
+            emoji = UNICODE_TO_EMOJI[emoji_name]
         except KeyError:
-            raise RuntimeError(f'Undefined emoji : {name.encode()!r}\nPlease open an issue with this message.') \
-                from None
+            warnings.warn(
+                f'Undefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
+                RuntimeWarning,
+            )
+            emoji = Emoji._create_unicode('', emoji_name, ())
     
-    emoji_id = int(emoji_id)
-    
-    try:
-        emoji = EMOJIS[emoji_id]
-    except KeyError:
-        emoji = object.__new__(Emoji)
-        emoji.id = emoji_id
-        emoji.animated = emoji_animated
-        EMOJIS[emoji_id] = emoji
-        emoji.unicode = None
-        emoji.guild_id = 0
-    
-    # name can change
-    if name is None:
-        name = ''
-    
-    emoji.name = name
+    else:
+        # name can change
+        if emoji_name is None:
+            emoji_name = ''
+            
+        emoji = Emoji._create_partial(int(emoji_id), emoji_name, emoji_animated)
     
     return emoji
 
@@ -161,3 +154,29 @@ def parse_reaction(text):
             emoji = Emoji._create_partial(emoji_id, name, False)
     
     return emoji
+
+
+@export
+def create_unicode_emoji(unicode):
+    """
+    Creates an emoji from the given unicode value.
+    
+    Parameters
+    ----------
+    unicode : `str`
+        Unicode value.
+    
+    Returns
+    -------
+    emoji : ``Emoji``
+    """
+    try:
+        unicode_emoji = UNICODE_TO_EMOJI[unicode]
+    except KeyError:
+        warnings.warn(
+            f'Undefined emoji : {unicode.encode()!r}\nPlease open an issue with this message.',
+            RuntimeWarning,
+        )
+        unicode_emoji = Emoji._create_unicode('', unicode, ())
+    
+    return unicode_emoji

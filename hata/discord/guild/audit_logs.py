@@ -15,6 +15,7 @@ from ..integration import Integration
 from ..bases import Icon, maybe_snowflake
 from ..channel import VideoQualityMode, ChannelThread
 from ..scheduled_event import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel
+from ..emoji import create_unicode_emoji
 
 from .utils import create_partial_guild_from_id
 from .guild import SystemChannelFlag, Guild
@@ -1171,6 +1172,22 @@ def transform_snowflake_array(name, data):
     return AuditLogChange(name, before, after)
 
 
+def transform_unicode_emoji(name, data):
+    before = data.get('old_value', None)
+    if (before is None):
+        before = None
+    else:
+        before = create_unicode_emoji(before)
+    
+    after = data.get('new_value', None)
+    if (after is None):
+        after = None
+    else:
+        after = create_unicode_emoji(after)
+    
+    return AuditLogChange(name, before, after)
+
+
 TRANSFORMERS = {
     '$add': transform_roles,
     '$remove': transform_roles,
@@ -1232,6 +1249,7 @@ TRANSFORMERS = {
     # temporary (bool)
     # topic (str)
     'type': transform_type,
+    'unicode_emoji': transform_unicode_emoji,
     # uses (int)
     'vanity_url_code': transform_str__vanity_code,
     'verification_level': transform_verification_level,
@@ -1268,6 +1286,7 @@ del transform_privacy_level
 del transform_scheduled_event_status
 del transform_scheduled_event_entity_type
 del transform_snowflake_array
+del transform_unicode_emoji
 
 
 class AuditLogChange:
@@ -1397,6 +1416,8 @@ class AuditLogChange:
     | topic                         | `None` or `str`                               |
     +-------------------------------+-----------------------------------------------+
     | type                          | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | unicode_emoji                 | `None` or ``Emoji``                           |
     +-------------------------------+-----------------------------------------------+
     | uses                          | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+

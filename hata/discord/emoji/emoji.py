@@ -1,6 +1,6 @@
 ﻿__all__ = ('Emoji',)
 
-from ...backend.export import include
+from ...backend.export import include, export
 
 from ..bases import DiscordEntity, id_sort_key
 from ..core import EMOJIS, GUILDS, BUILTIN_EMOJIS, UNICODE_TO_EMOJI
@@ -17,6 +17,7 @@ Guild = include('Guild')
 UNICODE_EMOJI_LIMIT = 1<<21
 
 
+@export
 class Emoji(DiscordEntity, immortal=True):
     """
     Represents a Discord emoji. It can be custom or builtin (unicode) emoji as well. Builtin emojis are loaded when the
@@ -50,7 +51,12 @@ class Emoji(DiscordEntity, immortal=True):
     user : ``ClientUserBase``
         The creator of the custom emoji. The emoji must be requested from Discord's API, or it's user will be just
         the default `ZEROUSER`.
-        
+    
+    Class Attributes
+    ----------------
+    _last_unicode_id : `int`
+        The most recently created unicode emoji's identifier.
+    
     See Also
     --------
     - ``create_partial_emoji`` : A function to create an emoji object from partial emoji data.
@@ -58,6 +64,8 @@ class Emoji(DiscordEntity, immortal=True):
     """
     __slots__ = ('animated', 'available', 'guild_id', 'managed', 'name', 'require_colons', 'role_ids', 'unicode',
         'user', )
+    
+    _last_unicode_id = 0
     
     def __new__(cls, data, guild):
         """
@@ -201,9 +209,9 @@ class Emoji(DiscordEntity, immortal=True):
             
             
             for attribute_name, attribute_type, converter in (
-                        ('guild_id', Guild, instance_or_id_to_snowflake),
-                        ('user', (User, Client), instance_or_id_to_instance),
-                    ):
+                ('guild_id', Guild, instance_or_id_to_snowflake),
+                ('user', (User, Client), instance_or_id_to_instance),
+            ):
                 try:
                     attribute_value = kwargs.pop(attribute_name)
                 except KeyError:
@@ -601,14 +609,12 @@ class Emoji(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def _create_unicode(cls, emoji_id, name, unicode, aliases):
+    def _create_unicode(cls, name, unicode, aliases):
         """
         Creates a new unicode emoji with the given identifier.
         
         Parameters
         ----------
-        emoji_id : `int`
-            The emoji's identifier.
         name : `str`
             The emoji's name.
         unicode : `str`
@@ -621,6 +627,9 @@ class Emoji(DiscordEntity, immortal=True):
         self : ``Emoji``
             The created emoji.
         """
+        emoji_id = cls._last_unicode_id+1
+        cls._last_unicode_id = emoji_id
+        
         self = object.__new__(cls)
         self.id = emoji_id
         self.animated = False

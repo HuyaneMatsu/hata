@@ -16,6 +16,8 @@ from ..http import urls as module_urls
 from .preinstanced import RoleManagerType
 
 create_partial_integration_from_id = include('create_partial_integration_from_id')
+create_unicode_emoji = include('create_unicode_emoji')
+Emoji = include('Emoji')
 
 ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
 ROLE_MANAGER_TYPE_UNSET = RoleManagerType.unset
@@ -39,13 +41,17 @@ class Role(DiscordEntity, immortal=True):
         user's display color.
     icon_hash : `int`
         The guild's icon's hash in `uint128`.
+        
+        Mutually exclusive with ``.unicode_emoji``
+        
     icon_type : ``IconType``
         The guild's icon's type.
+        
+        Mutually exclusive with ``.unicode_emoji``
+    
     guild_id : ``Guild`` or `None`
         The guild of the role. If the role is partial, including already deleted roles, then it's `.guild` is set to
         `None`.
-    separated : `bool`
-        Users show up in separated groups by their highest `separated` role.
     manager_id : `int`
         If the role is managed, then it's manager's id if applicable. Defaults to `0`.
     manager_type : `RoleManagerType`
@@ -58,9 +64,15 @@ class Role(DiscordEntity, immortal=True):
         The permissions of the users having the role.
     position : `int`
         The role's position.
+    separated : `bool`
+        Users show up in separated groups by their highest `separated` role.
+    unicode_emoji : `None` or ``Emoji``
+        Unicode emoji icon of the role.
+        
+        Mutually exclusive with ``.icon_hash`` and ``.icon_type``.
     """
-    __slots__ = ('color', 'guild_id', 'separated', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions',
-        'position',)
+    __slots__ = ('color', 'guild_id', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions', 'position',
+        'separated', 'unicode_emoji')
     
     icon = IconSlot(
         'icon',
@@ -120,6 +132,14 @@ class Role(DiscordEntity, immortal=True):
                 self.manager_type = ROLE_MANAGER_TYPE_NONE
             
             self.mentionable = data.get('mentionable', False)
+            
+            unicode = data.get('unicode_emoji', None)
+            if (unicode is None):
+                unicode_emoji = None
+            else:
+                unicode_emoji = create_unicode_emoji(unicode)
+            
+            self.unicode_emoji = unicode_emoji
         
         return self
     
@@ -159,17 +179,22 @@ class Role(DiscordEntity, immortal=True):
         icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The role's icon.
             
-            > Mutually exclusive with `icon_type` and `icon_hash`.
+            > Mutually exclusive with `icon_type`, `icon_hash` and with `unicode_emoji`.
         
         icon_type : ``IconType``, Optional (Keyword only)
             The role's icon's type.
             
-            > Mutually exclusive with `icon`.
-        
+            > Mutually exclusive with `icon` and with `unicode_emoji`.
+            
         icon_hash : `int`, Optional (Keyword only)
             The role's icon's hash.
             
-            > Mutually exclusive with `icon`.
+            > Mutually exclusive with `icon`  and with `unicode_emoji`.
+        
+        unicode_emoji : `None` or ``Emoji``
+            The role's icon as an unicode emoji.
+            
+            > Mutually exclusive with the `icon`, `icon_type` and `icon_hash` parameters.
         
         Returns
         -------
@@ -245,6 +270,22 @@ class Role(DiscordEntity, immortal=True):
                         f'{manager_type_type.__name__}')
             
             cls.icon.preconvert(kwargs, processable)
+            
+            try:
+                unicode_emoji = kwargs.pop('unicode_emoji')
+            except KeyError:
+                pass
+            else:
+                if (unicode_emoji is not None):
+                    if not isinstance(unicode_emoji, Emoji):
+                        raise TypeError(f'`unicode_emoji` can be only `{Emoji.__name__}` instance, got '
+                            f'{unicode_emoji.__class__.__name__}.')
+                    
+                    if not unicode_emoji.is_unicode_emoji():
+                        raise ValueError(f'`unicode_emoji` can be only unicode emoji, got {unicode_emoji!r}.')
+                    
+                    processable.append(('unicode_emoji', unicode_emoji))
+                    
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -348,6 +389,14 @@ class Role(DiscordEntity, immortal=True):
         
         self._set_icon(data)
         
+        unicode = data.get('unicode_emoji', None)
+        if (unicode is None):
+            unicode_emoji = None
+        else:
+            unicode_emoji = create_unicode_emoji(unicode)
+        
+        self.unicode_emoji = unicode_emoji
+        
         if clear_permission_cache:
             guild_id = self.guild_id
             if guild_id:
@@ -390,25 +439,27 @@ class Role(DiscordEntity, immortal=True):
         
         Returned Data Structure
         -----------------------
-        +---------------+-------------------+
-        | Keys          | Values            |
-        +===============+===================+
-        | color         | ``Color``         |
-        +---------------+-------------------+
-        | icon          | ``Icon``          |
-        +---------------+-------------------+
-        | managed       | `bool`            |
-        +---------------+-------------------+
-        | mentionable   | `bool`            |
-        +---------------+-------------------+
-        | name          | `str`             |
-        +---------------+-------------------+
-        | permissions   | ``Permission``    |
-        +---------------+-------------------+
-        | position      | `int`             |
-        +---------------+-------------------+
-        | separated     | `bool`            |
-        +---------------+-------------------+
+        +---------------+-----------------------+
+        | Keys          | Values                |
+        +===============+=======================+
+        | color         | ``Color``             |
+        +---------------+-----------------------+
+        | icon          | ``Icon``              |
+        +---------------+-----------------------+
+        | managed       | `bool`                |
+        +---------------+-----------------------+
+        | mentionable   | `bool`                |
+        +---------------+-----------------------+
+        | name          | `str`                 |
+        +---------------+-----------------------+
+        | permissions   | ``Permission``        |
+        +---------------+-----------------------+
+        | position      | `int`                 |
+        +---------------+-----------------------+
+        | separated     | `bool`                |
+        +---------------+-----------------------+
+        | unicode_emoji | `None` or ``Emoji``   |
+        +---------------+-----------------------+
         """
         old_attributes = {}
         
@@ -455,6 +506,16 @@ class Role(DiscordEntity, immortal=True):
             self.mentionable = mentionable
         
         self._update_icon(data, old_attributes)
+        
+        unicode = data.get('unicode_emoji', None)
+        if (unicode is None):
+            unicode_emoji = None
+        else:
+            unicode_emoji = create_unicode_emoji(unicode)
+        
+        if self.unicode_emoji is not unicode_emoji:
+            old_attributes['unicode_emoji'] = self.unicode_emoji
+            self.unicode_emoji = unicode_emoji
         
         if clear_permission_cache:
             guild_id = self.guild_id
@@ -775,5 +836,6 @@ class Role(DiscordEntity, immortal=True):
         self.position = 1
         self.icon_type = ICON_TYPE_NONE
         self.icon_hash = 0
+        self.unicode_emoji = None
         
         return self

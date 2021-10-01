@@ -11066,8 +11066,10 @@ class Client(ClientUserPBase):
             The new permission value of the role.
         position : `None`, `int`, Optional (Keyword only)
             The role's new position.
-        icon : `None` or `bytes-like`, Optional (Keyword only)
+        icon : `None`, ``Emoji`` or  `bytes-like`, Optional (Keyword only)
             The new icon of the role. Can be `'jpg'`, `'png'`, `'webp'` or `'gif'` image's raw data.
+            
+            Pass it as an ``Emoji`` to set role's icon to it.
             
             Pass it as `None` to remove the role's current icon.
         
@@ -11101,7 +11103,7 @@ class Client(ClientUserPBase):
         guild_id, role_id = get_guild_id_and_role_id
         
         if (position is not None):
-            await self.role_move((guild_id, role_id), position, reason)
+            await self.role_move((guild_id, role_id), position, reason=reason)
         
         data = {}
         
@@ -11151,21 +11153,33 @@ class Client(ClientUserPBase):
         
         if (icon is not ...):
             if icon is None:
-                icon_data = None
-            else:
-                if not isinstance(icon, (bytes, bytearray, memoryview)):
-                    raise TypeError(f'`icon` can be passed as `None` or `bytes-like`, got {icon.__class__.__name__}.')
+                data['icon'] = None
+            
+            elif isinstance(icon, Emoji):
+                if icon.is_unicode_emoji():
+                    data['unicode_emoji'] = icon.unicode
+                elif icon.is_custom_emoji():
+                    async with self.http.get(icon.url) as response:
+                        icon = await response.read()
+                    
+                    data['icon'] = image_to_base64(icon)
                 
+                # no more cases
+            
+            elif not isinstance(icon, (bytes, bytearray, memoryview)):
                 if __debug__:
                     media_type = get_image_media_type(icon)
                     
                     if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
                         raise AssertionError(f'Invalid icon type for the role: `{media_type}`.')
                 
-                icon_data = image_to_base64(icon)
-            
-            data['icon'] = icon_data
+                data['icon'] = image_to_base64(icon)
         
+        else:
+            raise TypeError(f'`icon` can be passed as `None`, `{Emoji.__name__}` or `bytes-like`, got '
+                f'{icon.__class__.__name__}.')
+        
+
         if data:
             await self.http.role_edit(guild_id, role_id, data, reason)
     
@@ -11199,6 +11213,7 @@ class Client(ClientUserPBase):
         
         await self.http.role_delete(guild_id, role_id, reason)
     
+    
     async def role_create(self, guild, *, name=None, permissions=None, color=None, separated=None, mentionable=None,
             icon=None, reason=None):
         """
@@ -11220,7 +11235,7 @@ class Client(ClientUserPBase):
             Whether the created role should be mentionable.
         permissions : ``Permission`` or `int`, Optional (Keyword only)
             The permission value of the created role.
-        icon : `None` or `bytes-like`, Optional (Keyword only)
+        icon : `None`, ``Emoji`` or `bytes-like`, Optional (Keyword only)
             The icon for the role.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
@@ -11229,7 +11244,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `guild` was not given neither as ``Guild`` nor as `int` instance.
-            - If `icon` is neither `None` or `bytes-like`.
+            - If `icon` is neither `None`, ``Emoji``,  or `bytes-like`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11291,17 +11306,32 @@ class Client(ClientUserPBase):
             
             data['mentionable'] = mentionable
         
-        if (icon is not None):
-            icon_type = icon.__class__
-            if not issubclass(icon_type, (bytes, bytearray, memoryview)):
-                raise TypeError(f'`icon` can be passed as `bytes-like`, got {icon_type.__name__}.')
+        if icon is None:
+            pass
+        
+        elif isinstance(icon, Emoji):
+            if icon.is_unicode_emoji():
+                data['unicode_emoji'] = icon.unicode
+            elif icon.is_custom_emoji():
+                async with self.http.get(icon.url) as response:
+                    icon = await response.read()
+                
+                data['icon'] = image_to_base64(icon)
             
+            # no more cases
+        
+        elif not isinstance(icon, (bytes, bytearray, memoryview)):
             if __debug__:
                 media_type = get_image_media_type(icon)
+                
                 if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                    raise AssertionError(f'Invalid icon type: `{media_type}`.')
+                    raise AssertionError(f'Invalid icon type for the role: `{media_type}`.')
             
             data['icon'] = image_to_base64(icon)
+        else:
+            raise TypeError(f'`icon` can be passed as `None`, `{Emoji.__name__}` or `bytes-like`, got '
+                f'{icon.__class__.__name__}.')
+        
         
         data = await self.http.role_create(guild_id, data, reason)
         

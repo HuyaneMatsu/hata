@@ -172,7 +172,7 @@ channel.
 @client.events(overwrite=True)
 async def voice_client_join(client, voice_state):
     voice_client = get_voice_client(voice_state.guild_id)
-    if (voice_client is not None):
+    if voice_client is not None:
         voice_client.channel_id = voice_state.channel_id
 ```
 
@@ -191,7 +191,7 @@ await gateway.change_voice_state(guild_id, channel_id)
 @client.events(overwrite=True)
 async def voice_client_move(client, voice_state, old_channel_id):
     voice_client = get_voice_client(voice_state.guild_id)
-    if (voice_client is not None):
+    if voice_client is not None:
         voice_client.channel_id = voice_state.channel_id
 ```
 
@@ -208,7 +208,7 @@ await gateway.change_voice_state(guild_id, 0)
 @client.events(overwrite=True)
 async def voice_client_leave(client, voice_state, old_channel_id):
     voice_client = get_voice_client(voice_state.guild_id)
-    if (voice_client is not None):
+    if voice_client is not None:
         await voice_client.disconnect()
 ```
 
@@ -236,7 +236,7 @@ voice channel.
 
 ```py
 @client.events(overwrite=True)
-async def voice_client_ghost(client, voice_state)
+async def voice_client_ghost(client, voice_state):
     voice_client = await join_voice_client(voice_state)
     await voice_client.disconnect()
 ```
@@ -270,7 +270,7 @@ After connecting to a voice channel the `voice_server_update_event` is received.
 @client.events(overwrite=True)
 async def voice_server_update(client, event):
     voice_client = get_voice_client(event.guild_id)
-    if (voice_client is not None):
+    if voice_client is not None:
         await voice_client.create_socket(event)
 ```
 
@@ -286,7 +286,7 @@ set it to guild default.
 
 ```py
 region = channel.region
-if (region is None):
+if region is None:
     region = channel.guild.region
 ```
 
@@ -298,5 +298,5 @@ Even tho most objects will expose entity access too, e.g. they have `channel_id`
 In these cases use `USERS`, `GUILDS`, `CHANNELS` caches to access the entities.
 
 ```py
-channel = CHANNESL.get(channel_id, None)
+channel = CHANNELS.get(channel_id, None)
 ```

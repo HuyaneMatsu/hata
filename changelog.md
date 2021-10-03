@@ -1,4 +1,8 @@
-## 1.1.108 *\[2021-10-??\]*
+## 1.1.108 *\[2021-10-01\]*
+
+### Summary
+
+Add unicode emoji support for roles.
 
 #### Improvements
 

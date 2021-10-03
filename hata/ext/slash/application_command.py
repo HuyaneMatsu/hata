@@ -305,7 +305,7 @@ APPLICATION_COMMAND_TARGET_TYPES_BY_VALUE = {
 }
 
 
-def  _validate_target(target):
+def _validate_target(target):
     """
     Validates the given `TargetType` value.
     
@@ -417,65 +417,27 @@ def _generate_description_from(command, name, description):
     return description
 
 
-def _register_autocomplete_function_decorator(parameter_converter, function):
+def _create_auto_completer(function):
     """
-    Registers autocomplete function to the given slasher application command.
-    
-    This function is wrapped inside `functools.partial` and only `function` parameter is passable.
+    Creates an auto completer.
     
     Parameters
     ----------
-    parameter_converter : ``SlashCommandParameterConverter``
-        The parameter's converter.
-    function : `callable`
-        Function to register as auto completer.
+    function : `async-callable`
+        The function to create auto completer from.
     
     Returns
     -------
-    function : `callable`
-        The registered function.
-    
-    Raises
-    ------
-    RuntimeError
-        If `function` parameter is given as `None`.
-    TypeError
-        If `function is not an asynchronous function.
-    """
-    if (function is None):
-        raise RuntimeError(f'`function` parameter is required as non-`None`.')
-    
-    return _register_autocomplete_function(parameter_converter, function)
-
-
-def _register_autocomplete_function(parameter_converter, function):
-    """
-    Registers and auto completer for the application command. Called either by
-    ``SlasherApplicationCommand.autocomplete`` by ``SlasherApplicationCommandFunction.autocomplete`` or by
-    ``_register_autocomplete_function_decorator``.
-    
-    Parameters
-    ----------
-    parameter_converter : ``SlashCommandParameterConverter``
-        The parameter's converter.
-    function : `None` or `callable`
-        The function to register as auto completer.
-    
-    Raises
-    ------
-    RuntimeError
-        If the command has no direct command defined under itself.
-    TypeError
-        If `function is not an asynchronous function.
+    auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
     """
     command, parameter_converters = get_application_command_parameter_auto_completer_converters(function)
     
-    parameter_converter.auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+    auto_completer = SlasherApplicationCommandParameterAutoCompleter(
         command,
         parameter_converters,
     )
     
-    return function
+    return auto_completer
 
 
 @export
@@ -485,6 +447,8 @@ class SlasherApplicationCommand:
     
     Attributes
     ----------
+    _auto_completers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterAutoCompleter``) items
+        Auto completer functions by parameter name.
     _command : `None` or ``SlasherApplicationCommandFunction``
         The command of the slash command.
     _permission_overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
@@ -539,9 +503,9 @@ class SlasherApplicationCommand:
     -----
     ``SlasherApplicationCommand`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_command', '_permission_overwrites', '_registered_application_command_ids', '_schema',
-        '_sub_commands', '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default',
-        'is_global', 'name', 'target')
+    __slots__ = ('__weakref__', '_auto_completers', '_command', '_permission_overwrites',
+        '_registered_application_command_ids', '_schema', '_sub_commands', '_unloading_behaviour', 'allow_by_default',
+        'description', 'guild_ids', 'is_default', 'is_global', 'name', 'target')
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -698,6 +662,7 @@ class SlasherApplicationCommand:
         """
         return create_event_from_class(cls, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
             SLASH_COMMAND_COMMAND_NAME)
+    
     
     def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
             guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None):
@@ -881,6 +846,7 @@ class SlasherApplicationCommand:
                 self.allow_by_default = allow_by_default
                 self._permission_overwrites = None
                 self.target = target
+                self._auto_completers = None
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -916,6 +882,7 @@ class SlasherApplicationCommand:
             self.allow_by_default = allow_by_default
             self._permission_overwrites = None
             self.target = target
+            self._auto_completers = None
             
             if (wrappers is not None):
                 for wrapper in wrappers:
@@ -1283,8 +1250,15 @@ class SlasherApplicationCommand:
                 if sub_command.is_default:
                     raise RuntimeError(f'The category can have only 1 default command.')
         
-        sub_commands[command.name] = command.as_sub()
+        as_sub = command.as_sub()
+        
+        sub_commands[as_sub.name] = as_sub
         self._schema = None
+        
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            for parameter_name, auto_completer in auto_completers.items():
+                as_sub._try_resolve_auto_completer(parameter_name, auto_completer)
     
     
     def __eq__(self, other):
@@ -1479,43 +1453,110 @@ class SlasherApplicationCommand:
         ----------
         parameter_name : `str`
             The parameter's name.
-        function : `None` or `callable`, Optional
+        function : `None` or `async-callable`, Optional
             The function to register as auto completer.
         
         Returns
         -------
-        function / wrapper : `callable` or `functools.partial`
+        function / wrapper : `async-callable` or `functools.partial`
             The registered function if given or a wrapper to register the function with.
         
         Raises
         ------
         RuntimeError
-            - If the command has no direct command defined under itself.
             - If the parameter already has a auto completer defined.
             - If the application command function has no parameter named, like `parameter_name`.
             - If the parameter cannot be auto completed.
         TypeError
             If `function` is not an asynchronous.
         """
-        command_function = self._command
-        if (command_function is None):
-            raise RuntimeError(f'Please register auto completer to a direct command and not to a sub command '
-                f'category.')
-        
         if not isinstance(parameter_name, str):
-            raise TypeError(f'`name` can be given as `str` instance, got {parameter_name.__class__.__name__}.')
-        
-        parameter_converter = command_function._get_parameter_converter_by_name(parameter_name)
-        if (parameter_converter is None):
-            raise RuntimeError(f'Application command function `{self.name}` has no parameter named as '
-                f'`{parameter_name}`.')
-        
-        parameter_converter.check_can_autocomplete()
+            raise TypeError(f'`parameter_name` can be given as `str` instance, got '
+                f'{parameter_name.__class__.__name__}.')
         
         if (function is None):
-            return partial_func(_register_autocomplete_function_decorator, parameter_converter)
+            return partial_func(type(self)._register_autocomplete_function, self, parameter_name)
+            
+        return self._add_autocomplete_function(parameter_name, function)
+    
+    
+    def _register_autocomplete_function(self, parameter_name, function):
+        """
+        Returned by ``.autocomplete`` wrapped inside of `functools.partial` if `function` is not given.
         
-        return _register_autocomplete_function(parameter_converter, function)
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        function : `async-callable`
+            The function to register as auto completer.
+        
+        Returns
+        -------
+        function : `async-callable`
+            The registered function.
+        
+        Raises
+        ------
+        RuntimeError
+            - `function` cannot be `None`.
+            - If the application command function has no parameter named, like `parameter_name`.
+            - If the parameter cannot be auto completed.
+        TypeError
+            If `function` is not an asynchronous.
+        """
+        if (function is None):
+            raise RuntimeError(f'`function` cannot be `None`.')
+        
+        return self._add_autocomplete_function(parameter_name, function)
+    
+    
+    def _add_autocomplete_function(self, parameter_name, function):
+        """
+        Registers an autocomplete function.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        function : `async-callable`
+            The function to register as auto completer.
+        
+        Returns
+        -------
+        function : `async-callable`
+            The registered function.
+        
+        Raises
+        ------
+        RuntimeError
+            - If the application command function has no parameter named, like `parameter_name`.
+            - If the parameter cannot be auto completed.
+        TypeError
+            If `function` is not an asynchronous.
+        """
+        command_function = self._command
+        if command_function is None:
+            
+            auto_completer = _create_auto_completer(function)
+            
+            # If it is none, try to resolve the parameters in sub commands.
+            auto_completers = self._auto_completers
+            if (auto_completers is None):
+                auto_completers = {}
+                self._auto_completers = auto_completers
+            
+            auto_completers[parameter_name] = auto_completer
+            
+            sub_commands = self._sub_commands
+            if (sub_commands is not None):
+                for sub_command in sub_commands.values():
+                    sub_command._try_resolve_auto_completer(parameter_name, auto_completer)
+        
+        else:
+            command_function._add_autocomplete_function(parameter_name, function)
+        
+        return function
 
 
 class SlasherApplicationCommandFunction:
@@ -1524,6 +1565,8 @@ class SlasherApplicationCommandFunction:
     
     Attributes
     ----------
+    _auto_completers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterAutoCompleter``) items
+        Auto completer functions by parameter name.
     _command : `async-callable˛
         The command's function to call.
     _parameter_converters : `tuple` of ``ParameterConverter``
@@ -1537,8 +1580,8 @@ class SlasherApplicationCommandFunction:
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoker user.
     """
-    __slots__ = ('_command', '_parameter_converters', 'category', 'description', 'is_default', 'name',
-        'show_for_invoking_user_only')
+    __slots__ = ('_auto_completers', '_command', '_parameter_converters', 'category', 'description', 'is_default',
+        'name', 'show_for_invoking_user_only')
     
     def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
@@ -1560,6 +1603,7 @@ class SlasherApplicationCommandFunction:
             Whether the command is the default command in it's category.
         """
         self = object.__new__(cls)
+        self._auto_completers = None
         self._command = command
         self._parameter_converters = parameter_converters
         self.show_for_invoking_user_only = show_for_invoking_user_only
@@ -1783,17 +1827,61 @@ class SlasherApplicationCommandFunction:
         if not isinstance(parameter_name, str):
             raise TypeError(f'`name` can be given as `str` instance, got {parameter_name.__class__.__name__}.')
         
+        if (function is None):
+            return partial_func(type(self)._register_autocomplete_function, self, parameter_name)
+            
+        return self._add_autocomplete_function(parameter_name, function)
+    
+
+    @copy_docs(SlasherApplicationCommand._register_autocomplete_function)
+    def _register_autocomplete_function(self, parameter_name, function):
+        if (function is None):
+            raise RuntimeError(f'`function` cannot be `None`.')
+        
+        return self._add_autocomplete_function(parameter_name, function)
+    
+    
+    @copy_docs(SlasherApplicationCommand._add_autocomplete_function)
+    def _add_autocomplete_function(self, parameter_name, function):
         parameter_converter = self._get_parameter_converter_by_name(parameter_name)
         if (parameter_converter is None):
             raise RuntimeError(f'Application command function `{self.name}` has no parameter named as '
                 f'`{parameter_name}`.')
         
-        parameter_converter.check_can_autocomplete()
+        auto_completer = _create_auto_completer(function)
         
-        if (function is None):
-            return partial_func(_register_autocomplete_function_decorator, parameter_converter)
+        auto_completers = self._auto_completers
+        if (auto_completers is None):
+            auto_completers = {}
+            self._auto_completers = auto_completers
         
-        return _register_autocomplete_function(parameter_converter, function)
+        auto_completers[parameter_name] = auto_completer
+        
+        parameter_converter.register_auto_completer(auto_completer)
+        
+        return function
+    
+    
+    def _try_resolve_auto_completer(self, parameter_name, auto_completer):
+        """
+        Tries to register auto completer to the slasher application command function.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+            The auto completer.
+        """
+        auto_completers = self._auto_completers
+        if (auto_completers is None) or (parameter_name not in auto_completers):
+            parameter_converter = self._get_parameter_converter_by_name(parameter_name)
+            if (
+                (parameter_converter is not None) and
+                parameter_converter.can_auto_complete() and
+                not parameter_converter.is_auto_completed()
+            ):
+                parameter_converter.register_auto_completer(auto_completer)
 
 
 class SlasherApplicationCommandCategory:
@@ -1802,6 +1890,8 @@ class SlasherApplicationCommandCategory:
     
     Attributes
     ----------
+    _auto_completers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterAutoCompleter``) items
+        Auto completer functions by parameter name.
     _sub_commands : `dict` of (`str`, ``SlasherApplicationCommandFunction``) items
         The sub-commands of the category.
     _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand
@@ -1813,7 +1903,7 @@ class SlasherApplicationCommandCategory:
     name : `str`
         The name of the slash sub-category.
     """
-    __slots__ = ('_sub_commands', '_parent_reference', 'description', 'is_default', 'name')
+    __slots__ = ('_auto_completers', '_sub_commands', '_parent_reference', 'description', 'is_default', 'name')
     
     def __new__(cls, slasher_application_command):
         """
@@ -1830,6 +1920,7 @@ class SlasherApplicationCommandCategory:
         self._sub_commands = {}
         self._parent_reference = WeakReferer(slasher_application_command)
         self.is_default = slasher_application_command.is_default
+        self._auto_completers = None
         return self
     
     
@@ -2006,8 +2097,8 @@ class SlasherApplicationCommandCategory:
             - Cannot add anymore sub-category under sub-categories.
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
-        command = create_event_from_class(SlasherApplicationCommand, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
-            SLASH_COMMAND_COMMAND_NAME)
+        command = create_event_from_class(SlasherApplicationCommand, klass, SLASH_COMMAND_PARAMETER_NAMES,
+            SLASH_COMMAND_NAME_NAME, SLASH_COMMAND_COMMAND_NAME)
         
         if isinstance(command, Router):
             command = command[0]
@@ -2048,11 +2139,39 @@ class SlasherApplicationCommandCategory:
         
         sub_commands[command.name] = as_sub
         
-        parent_reference = self._parent_reference
-        if (parent_reference is not None):
+        # Reset the parent's schema recursively
+        parent = self
+        while True:
+            parent_reference = parent._parent_reference
+            if (parent_reference is None):
+                break
+            
             parent = parent_reference()
-            if (parent is not None):
+            if (parent is None):
+                break
+            
+            if isinstance(parent, SlasherApplicationCommand):
                 parent._schema = None
+                break
+        
+        # Resolve auto completers recursively
+        parent = self
+        while True:
+            auto_completers = parent._auto_completers
+            if (auto_completers is not None):
+                for parameter_name, auto_completer in auto_completers.items():
+                    as_sub._try_resolve_auto_completer(parameter_name, auto_completer)
+            
+            if isinstance(parent, SlasherApplicationCommand):
+                break
+            
+            parent_reference = parent._parent_reference
+            if (parent_reference is None):
+                break
+            
+            parent = parent_reference()
+            if (parent is None):
+                break
     
     
     def __eq__(self, other):
@@ -2073,8 +2192,8 @@ class SlasherApplicationCommandCategory:
             return False
         
         return True
-
-
+    
+    
     def autocomplete(self, parameter_name, function=None):
         """
         Registers an auto completer function to the application command.
@@ -2085,15 +2204,62 @@ class SlasherApplicationCommandCategory:
             The parameter's name.
         function : `None` or `callable`, Optional
             The function to register as auto completer.
-        
-        Raises
-        ------
-        RuntimeError
-            If the command has no direct command defined under itself.
         """
-        raise RuntimeError(f'Please register auto completer to a direct command and not to a sub command category.')
+        if not isinstance(parameter_name, str):
+            raise TypeError(f'`parameter_name` can be given as `str` instance, got '
+                f'{parameter_name.__class__.__name__}.')
+        
+        if (function is None):
+            return partial_func(type(self)._register_autocomplete_function, self, parameter_name)
+            
+        return self._add_autocomplete_function(parameter_name, function)
+    
+    
+    @copy_docs(SlasherApplicationCommand._register_autocomplete_function)
+    def _register_autocomplete_function(self, parameter_name, function):
+        if (function is None):
+            raise RuntimeError(f'`function` cannot be `None`.')
+        
+        return self._add_autocomplete_function(parameter_name, function)
+    
+    
+    @copy_docs(SlasherApplicationCommand._add_autocomplete_function)
+    def _add_autocomplete_function(self, parameter_name, function):
+        
+        auto_completer = _create_auto_completer(function)
+        
+        auto_completers = self._auto_completers
+        if (auto_completers is None):
+            auto_completers = {}
+            self._auto_completers = auto_completers
+        
+        auto_completers[parameter_name] = auto_completer
+        
+        sub_commands = self._sub_commands
+        for sub_command in sub_commands.values():
+            sub_command._try_resolve_auto_completer(parameter_name, auto_completer)
+
+        return function
+    
+    
+    def _try_resolve_auto_completer(self, parameter_name, auto_completer):
+        """
+        Tries to register auto completer to the slasher application command function.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+            The auto completer.
+        """
+        auto_completers = self._auto_completers
+        if (auto_completers is None) or (parameter_name not in auto_completers):
+            for sub_command in self._sub_commands.values():
+                sub_command._try_resolve_auto_completer(parameter_name, auto_completer)
 
 
+@export
 class SlasherApplicationCommandParameterAutoCompleter:
     """
     Represents an application command parameter's auto completer.

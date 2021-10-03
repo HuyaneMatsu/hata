@@ -4,6 +4,7 @@ import reprlib
 
 from ...backend.analyzer import CallableAnalyzer
 from ...backend.utils import un_map_pack, copy_docs
+from ...backend.export import include
 
 from ...discord.core import ROLES, CHANNELS
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -1658,7 +1659,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('channel_types', 'auto_completer', 'choices', 'converter', 'default', 'description', 'required',
+    __slots__ = ('auto_completer', 'channel_types', 'choices', 'converter', 'default', 'description', 'required',
         'type', 'name')
     
     def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types):
@@ -1786,19 +1787,50 @@ class SlashCommandParameterConverter(ParameterConverter):
         )
     
     
-    def check_can_autocomplete(self):
+    def can_auto_complete(self):
         """
-        Checks whether the parameter can be auto completed.
+        Returns whether the parameter can be auto completed.
+        
+        Returns
+        -------
+        can_be_auto_completed : `bool`
+            Whether the parameter can be auto completed.
+        """
+        if (self.type not in ANNOTATION_AUTO_COMPLETE_AVAILABILITY):
+            return False
+        
+        if (self.choices is not None):
+            return False
+        
+        return True
+    
+    def is_auto_completed(self):
+        """
+        Returns whether the parameter is already auto completed.
+        
+        Returns
+        -------
+        is_auto_completed : `bool`
+        """
+        if self.auto_completer is None:
+            return False
+        
+        return True
+    
+    def register_auto_completer(self, auto_completer):
+        """
+        Registers an auto completer to the slash command parameter converter.
+        
+        Parameters
+        ----------
+        auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+            The auto completer to register.
         
         Raises
         ------
         RuntimeError
-            - If the parameter already has a auto completer defined.
-            - If the parameter cannot be auto completed.
+            If the parameter cannot be auto completed.
         """
-        if (self.auto_completer is not None):
-            raise RuntimeError(f'Parameter `{self.name}` already has an auto completer defined.')
-        
         if (self.type not in ANNOTATION_AUTO_COMPLETE_AVAILABILITY):
             raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. Only string base type parameters '
                 f'can be (str, int, expression).')
@@ -1806,6 +1838,8 @@ class SlashCommandParameterConverter(ParameterConverter):
         if (self.choices is not None):
             raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. `choices` and `autocomplete` are'
                f'mutually exclusive.')
+        
+        self.auto_completer = auto_completer
 
 
 def create_parameter_converter(parameter, parameter_configurer):

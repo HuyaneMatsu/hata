@@ -869,6 +869,7 @@ class Guild(DiscordEntity, immortal=True):
             voice_state._update_channel(data)
             voice_state._update_attributes(data)
     
+    
     @property
     def text_channels(self):
         """

@@ -2962,13 +2962,12 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
     except KeyError:
         # Do not handle outside of guild calls
         return
-    else:
-        guild_id = int(guild_id)
-        try:
-            guild = GUILDS[guild_id]
-        except KeyError:
-            guild_sync(client, data, 'VOICE_STATE_UPDATE')
-            return
+    
+    guild_id = int(guild_id)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        return
     
     try:
         user_data = data['member']
@@ -3169,6 +3168,8 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
     except KeyError:
         # Do not handle outside of guild calls
         return
+    
+    guild_id = int(guild_id)
     
     try:
         guild = GUILDS[guild_id]

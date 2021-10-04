@@ -1839,7 +1839,9 @@ class SlashCommandParameterConverter(ParameterConverter):
             raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. `choices` and `autocomplete` are'
                f'mutually exclusive.')
         
-        self.auto_completer = auto_completer
+        self_auto_completer = self.auto_completer
+        if (self_auto_completer is None) or auto_completer._is_deeper_than(self_auto_completer):
+            self.auto_completer = auto_completer
 
 
 def create_parameter_converter(parameter, parameter_configurer):

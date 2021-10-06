@@ -49,6 +49,8 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | certified_moderator           | 18                |
     +-------------------------------+-------------------+
+    | bot_http_interactions         | 19                |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
         'staff': 0,
@@ -70,6 +72,7 @@ class UserFlag(FlagBase):
         'verified_bot': 16,
         'early_verified_developer': 17,
         'certified_moderator': 18,
+        'bot_http_interactions': 19,
     }
 
 

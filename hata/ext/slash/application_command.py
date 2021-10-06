@@ -3,7 +3,7 @@ __all__ = ('SlasherApplicationCommand', )
 from functools import partial as partial_func
 
 from ...backend.utils import WeakReferer, copy_docs
-from ...backend.export import export
+from ...backend.export import export, include
 
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
     create_event_from_class
@@ -26,7 +26,10 @@ from .wrappers import SlasherCommandWrapper, get_parameter_configurers
 from .converters import get_slash_command_parameter_converters, InternalParameterConverter, \
     get_context_command_parameter_converters, SlashCommandParameterConverter, \
     get_application_command_parameter_auto_completer_converters
-from .exceptions import SlasherApplicationCommandParameterConversionError
+from .exceptions import SlasherApplicationCommandParameterConversionError, _register_exception_handler, \
+    test_exception_handler, handle_command_exception
+
+Slasher = include('Slasher')
 
 # Routers
 
@@ -40,9 +43,10 @@ APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND = ApplicationCommandOptionType.sub_c
 APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY = ApplicationCommandOptionType.sub_command_group
 
 APPLICATION_COMMAND_FUNCTION_DEEPNESS = -1
-APPLICATION_COMMAND_DEEPNESS = 0
-APPLICATION_COMMAND_CATEGORY_DEEPNESS_START = 1
-APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX = 2
+APPLICATION_COMMAND_HANDLER_DEEPNESS = 0
+APPLICATION_COMMAND_DEEPNESS = 1
+APPLICATION_COMMAND_CATEGORY_DEEPNESS_START = 2
+APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX = 3
 
 
 def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
@@ -493,6 +497,84 @@ def _build_auto_complete_parameter_names(parameter_name, parameter_names):
     return processed_parameter_names
 
 
+def _register_autocomplete_function(parent, parameter_names, function):
+    """
+    Returned by `.autocomplete` decorators wrapped inside of `functools.partial` if `function` is not given.
+    
+    Parameters
+    ----------
+    parent : ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandFunction``,
+            ``SlasherApplicationCommandCategory``
+        The parent entity to register the auto completer to.
+    parameter_names : `list` of `str`
+        The parameters' names.
+    function : `async-callable`
+        The function to register as auto completer.
+    
+    Returns
+    -------
+    auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+        The registered auto completer
+    
+    Raises
+    ------
+    RuntimeError
+        - `function` cannot be `None`.
+        - If the application command function has no parameter named, like `parameter_name`.
+        - If the parameter cannot be auto completed.
+    TypeError
+        If `function` is not an asynchronous.
+    """
+    if (function is None):
+        raise RuntimeError(f'`function` cannot be `None`.')
+    
+    return parent._add_autocomplete_function(parameter_names, function)
+
+
+def _reset_parent_schema(entity):
+    """
+    Resets the command category's or function's parent's schema.
+    
+    Parameters
+    ----------
+    entity : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+        The category or function to reset it's parent's schema.
+    """
+    # Reset the parent's schema recursively
+    while True:
+        parent_reference = entity._parent_reference
+        if (parent_reference is None):
+            break
+        
+        entity = parent_reference()
+        if (entity is None):
+            break
+        
+        if isinstance(entity, SlasherApplicationCommand):
+            _reset_slasher_application_command_schema(entity)
+            break
+
+def _reset_slasher_application_command_schema(entity):
+    """
+    Resets the slasher application commands schema.
+    
+    Parameters
+    ----------
+    entity : ``SlasherApplicationCommand``
+        The command to reset's its schema if applicable.
+    """
+    schema = entity._schema
+    if (schema is not None):
+        entity._schema = None
+        
+        parent_reference = entity._parent_reference
+        if (parent_reference is not None):
+            slasher = parent_reference()
+            
+            if (slasher is not None):
+                slasher._schema_reset(entity)
+
+
 @export
 class SlasherApplicationCommand:
     """
@@ -501,9 +583,17 @@ class SlasherApplicationCommand:
     Attributes
     ----------
     _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
-        Auto completer functions by parameter name.
+        Auto completer functions.
     _command : `None` or ``SlasherApplicationCommandFunction``
         The command of the slash command.
+    _exception_handlers : `None` or `list` of `CoroutineFunction`
+        Exception handlers added with ``.error`` to the interaction handler.
+        
+        Same as ``Slasher._exception_handlers``.
+    
+    _parent_reference : `None` or ``WeakReferer`` to ``Slasher``
+        Reference to the slasher application command's parent.
+    
     _permission_overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
         Permission overwrites applied to the slash command.
     _registered_application_command_ids : `None` or `dict` of (`int`, `int`) items
@@ -513,6 +603,11 @@ class SlasherApplicationCommand:
         command id.
     _schema : `None` or ``ApplicationCommand``
         Internal slot used by the ``.get_schema`` method.
+    _self_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
+        Back reference to the slasher application command.
+        
+        Used by sub commands to access the parent entity.
+    
     _unloading_behaviour : `int`
         Behaviour what describes what should happen when the command is removed from the slasher.
         
@@ -528,11 +623,12 @@ class SlasherApplicationCommand:
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    _sub_commands: `None` or `dict` of (`str`, (``SlasherApplicationCommandFunction`` or \
+    _sub_commands : `None` or `dict` of (`str`, (``SlasherApplicationCommandFunction`` or \
             ``SlasherApplicationCommandCategory``)) items
         Sub-commands of the slash command.
         
         Mutually exclusive with the ``._command`` parameter.
+    
     allow_by_default : `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     description : `str`
@@ -556,9 +652,10 @@ class SlasherApplicationCommand:
     -----
     ``SlasherApplicationCommand`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_auto_completers', '_command', '_permission_overwrites',
-        '_registered_application_command_ids', '_schema', '_sub_commands', '_unloading_behaviour', 'allow_by_default',
-        'description', 'guild_ids', 'is_default', 'is_global', 'name', 'target')
+    __slots__ = ('__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parent_reference',
+        '_permission_overwrites', '_registered_application_command_ids', '_schema', '_self_reference', '_sub_commands',
+        '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default', 'is_global', 'name',
+        'target')
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -900,6 +997,9 @@ class SlasherApplicationCommand:
                 self._permission_overwrites = None
                 self.target = target
                 self._auto_completers = None
+                self._exception_handlers = None
+                self._parent_reference = None
+                self._self_reference = None
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -936,6 +1036,9 @@ class SlasherApplicationCommand:
             self._permission_overwrites = None
             self.target = target
             self._auto_completers = None
+            self._exception_handlers = None
+            self._parent_reference = None
+            self._self_reference = None
             
             if (wrappers is not None):
                 for wrapper in wrappers:
@@ -998,11 +1101,6 @@ class SlasherApplicationCommand:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        
-        Raises
-        ------
-        SlasherApplicationCommandParameterConversionError
-            Command parameter conversion failed.
         """
         options = interaction_event.interaction.options
         
@@ -1019,14 +1117,24 @@ class SlasherApplicationCommand:
         try:
             sub_command = self._sub_commands[option.name]
         except KeyError:
-            raise SlasherApplicationCommandParameterConversionError(
+            pass
+        else:
+            await sub_command(client, interaction_event, option.options)
+            return
+        
+        # Do not put this into the `except` branch.
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            SlasherApplicationCommandParameterConversionError(
                 None,
                 option.name,
                 'sub-command',
                 list(self._sub_commands.keys()),
             )
-        
-        await sub_command(client, interaction_event, option.options)
+        )
+        return
     
     
     async def call_auto_completion(self, client, interaction_event, auto_complete_option):
@@ -1161,14 +1269,6 @@ class SlasherApplicationCommand:
         new._unloading_behaviour = self._unloading_behaviour
         new.allow_by_default = self.allow_by_default
         
-        if (sub_commands is not None):
-            parent_reference = None
-            for sub_command in sub_commands.values():
-                if isinstance(sub_command, SlasherApplicationCommandCategory):
-                    if parent_reference is None:
-                        parent_reference = WeakReferer(new)
-                    sub_command._parent_reference = parent_reference
-        
         permission_overwrites = self._permission_overwrites
         if (permission_overwrites is not None):
             permission_overwrites = {
@@ -1179,6 +1279,22 @@ class SlasherApplicationCommand:
         new._permission_overwrites = permission_overwrites
         
         new.target = self.target
+        
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            auto_completers = auto_completers.copy()
+        new._auto_completers = auto_completers
+        
+        exception_handlers = self._exception_handlers
+        if (exception_handlers is not None):
+            exception_handlers = exception_handlers.copy()
+        new._exception_handlers = exception_handlers
+        
+        new._self_reference = None
+        
+        if (sub_commands is not None):
+            for sub_command in sub_commands.values():
+                sub_command._parent_reference = new._get_self_reference()
         
         return new
     
@@ -1309,9 +1425,10 @@ class SlasherApplicationCommand:
                     raise RuntimeError(f'The category can have only 1 default command.')
         
         as_sub = command.as_sub(APPLICATION_COMMAND_CATEGORY_DEEPNESS_START)
+        as_sub._parent_reference = self._get_self_reference()
         
         sub_commands[as_sub.name] = as_sub
-        self._schema = None
+        _reset_slasher_application_command_schema(self)
         
         auto_completers = self._auto_completers
         if (auto_completers is not None):
@@ -1355,6 +1472,12 @@ class SlasherApplicationCommand:
             return False
         
         if self.target is not other.target:
+            return False
+        
+        if self._auto_completers != other._auto_completers:
+            return False
+        
+        if self._exception_handlers != other._exception_handlers:
             return False
         
         return True
@@ -1533,38 +1656,7 @@ class SlasherApplicationCommand:
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(type(self)._register_autocomplete_function, self, parameter_names)
-            
-        return self._add_autocomplete_function(parameter_names, function)
-    
-    
-    def _register_autocomplete_function(self, parameter_names, function):
-        """
-        Returned by ``.autocomplete`` wrapped inside of `functools.partial` if `function` is not given.
-        
-        Parameters
-        ----------
-        parameter_names : `list` of `str`
-            The parameters' names.
-        function : `async-callable`
-            The function to register as auto completer.
-        
-        Returns
-        -------
-        function : `async-callable`
-            The registered function.
-        
-        Raises
-        ------
-        RuntimeError
-            - `function` cannot be `None`.
-            - If the application command function has no parameter named, like `parameter_name`.
-            - If the parameter cannot be auto completed.
-        TypeError
-            If `function` is not an asynchronous.
-        """
-        if (function is None):
-            raise RuntimeError(f'`function` cannot be `None`.')
+            return partial_func(_register_autocomplete_function, self, parameter_names)
         
         return self._add_autocomplete_function(parameter_names, function)
     
@@ -1582,8 +1674,8 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        function : `async-callable`
-            The registered function.
+        auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+            The registered auto completer
         
         Raises
         ------
@@ -1593,6 +1685,9 @@ class SlasherApplicationCommand:
         TypeError
             If `function` is not an asynchronous.
         """
+        if isinstance(function, SlasherApplicationCommandParameterAutoCompleter):
+            function = function._command
+        
         command_function = self._command
         if command_function is None:
             
@@ -1600,6 +1695,7 @@ class SlasherApplicationCommand:
                 function,
                 parameter_names,
                 APPLICATION_COMMAND_DEEPNESS,
+                self,
             )
             
             # If it is none, try to resolve the parameters in sub commands.
@@ -1616,9 +1712,109 @@ class SlasherApplicationCommand:
                     sub_command._try_resolve_auto_completer(auto_completer)
         
         else:
-            command_function._add_autocomplete_function(parameter_names, function)
+            auto_completer = command_function._add_autocomplete_function(parameter_names, function)
         
-        return function
+        _reset_slasher_application_command_schema(self)
+        
+        return auto_completer
+    
+    
+    def error(self, exception_handler=None, *, first=False):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommand``.
+        
+        Parameters
+        ----------
+        exception_handler : `None` or `CoroutineFunction`, Optional
+            Exception handler to register.
+        first : `bool`, Optional (Keyword Only)
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
+            If `exception_handler` is not given, returns a wrapper.
+        """
+        if exception_handler is None:
+            return partial_func(_register_exception_handler, first)
+        
+        return self._register_exception_handler(exception_handler, first)
+    
+    
+    def _register_exception_handler(self, exception_handler, first):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommand``.
+        
+        Parameters
+        ----------
+        exception_handler : `CoroutineFunction`
+            Exception handler to register.
+        first : `bool`
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler : `CoroutineFunction`
+        """
+        test_exception_handler(exception_handler)
+        
+        exception_handlers = self._exception_handlers
+        if exception_handlers is None:
+            self._exception_handlers = exception_handlers = []
+        
+        if first:
+            exception_handlers.insert(0, exception_handler)
+        else:
+            exception_handlers.append(exception_handler)
+        
+        return exception_handler
+    
+    
+    def _get_self_reference(self):
+        """
+        Gets a weak reference to the ``SlasherApplicationCommand``.
+        
+        Returns
+        -------
+        self_reference : ``WeakReferer`` to ``SlasherApplicationCommand``
+        """
+        self_reference = self._self_reference
+        if self_reference is None:
+            self_reference = WeakReferer(self)
+            self._self_reference = self_reference
+        
+        return self_reference
+    
+    
+    def _try_resolve_auto_completer(self, auto_completer):
+        """
+        Tries to register auto completer to the slasher application command.
+        
+        Parameters
+        ----------
+        auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+            The auto completer.
+        
+        Returns
+        -------
+        resolved : `int`
+            The amount of parameters resolved.
+        """
+        resolved = 0
+        
+        command = self._command
+        if command is None:
+            sub_commands = self._sub_commands
+            if (sub_commands is not None):
+                for sub_command in sub_commands.values():
+                    resolved += sub_command._try_resolve_auto_completer(auto_completer)
+        else:
+            resolved += command._try_resolve_auto_completer(auto_completer)
+        
+        if resolved:
+            _reset_slasher_application_command_schema(self)
+        
+        return resolved
 
 
 class SlasherApplicationCommandFunction:
@@ -1628,11 +1824,24 @@ class SlasherApplicationCommandFunction:
     Attributes
     ----------
     _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
-        Auto completer functions by parameter name.
+        Auto completer functions.
     _command : `async-callable˛
         The command's function to call.
+    _exception_handlers : `None` or `list` of `CoroutineFunction`
+        Exception handlers added with ``.error`` to the interaction handler.
+        
+        Same as ``Slasher._exception_handlers``.
+    
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
+    _parent_reference : `None` or ``WeakReferer`` to (``SlasherApplicationCommand``,
+            ``SlasherApplicationCommandCategory``)
+        Reference to the parent application command or category.
+    _self_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommandFunction``
+        Back reference to the slasher application command function.
+        
+        Used by auto completers to access the parent entity.
+    
     description : `str`
         The slash command's description.
     is_default : `bool`
@@ -1642,8 +1851,9 @@ class SlasherApplicationCommandFunction:
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoker user.
     """
-    __slots__ = ('_auto_completers', '_command', '_parameter_converters', 'category', 'description',
-        'is_default', 'name', 'show_for_invoking_user_only')
+    __slots__ = ('__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parameter_converters',
+        '_parent_reference', '_self_reference', 'category', 'description', 'is_default', 'name',
+        'show_for_invoking_user_only')
     
     def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
@@ -1672,6 +1882,9 @@ class SlasherApplicationCommandFunction:
         self.description = description
         self.name = name
         self.is_default = is_default
+        self._exception_handlers = None
+        self._parent_reference = None
+        self._self_reference = None
         
         return self
     
@@ -1709,13 +1922,44 @@ class SlasherApplicationCommandFunction:
             else:
                 value = parameter_relation.get(parameter_converter.name, None)
             
-            parameter = await parameter_converter(client, interaction_event, value)
+            try:
+                parameter = await parameter_converter(client, interaction_event, value)
+            except BaseException as err:
+                exception = err
+            else:
+                parameters.append(parameter)
+                continue
+                
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+            return
             
-            parameters.append(parameter)
         
         command_coroutine = self._command(*parameters)
         
-        await process_command_coroutine(client, interaction_event, self.show_for_invoking_user_only, command_coroutine)
+        try:
+            await process_command_coroutine(
+                client,
+                interaction_event,
+                self.show_for_invoking_user_only,
+                command_coroutine,
+            )
+        except BaseException as err:
+            exception = err
+        else:
+            return
+        
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            exception,
+        )
+        return
     
     
     async def call_auto_completion(self, client, interaction_event, auto_complete_option):
@@ -1815,12 +2059,31 @@ class SlasherApplicationCommandFunction:
         """
         Copies the slash command function.
         
-        They are not mutable, so just returns itself.
-        
         Returns
         -------
         self : ``SlasherApplicationCommandFunction``
         """
+        new = object.__new__(type(self))
+        new._command = self._command
+        new._parameter_converters = self._parameter_converters
+        new.show_for_invoking_user_only = self.show_for_invoking_user_only
+        new.description = self.description
+        new.name = self.name
+        new.is_default = self.is_default
+        
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            auto_completers = auto_completers.copy()
+        new._auto_completers = auto_completers
+        
+        exception_handlers = self._exception_handlers
+        if (exception_handlers is not None):
+            exception_handlers = exception_handlers.copy()
+        new._exception_handlers = exception_handlers
+        
+        new._parent_reference = self._parent_reference
+        new._self_reference = None
+        
         return self
     
     
@@ -1845,6 +2108,12 @@ class SlasherApplicationCommandFunction:
             return False
         
         if self.is_default != other.is_default:
+            return False
+        
+        if self._auto_completers != other._auto_completers:
+            return False
+        
+        if self._exception_handlers != other._exception_handlers:
             return False
         
         return True
@@ -1880,25 +2149,21 @@ class SlasherApplicationCommandFunction:
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(type(self)._register_autocomplete_function, self, parameter_names)
-        
-        return self._add_autocomplete_function(parameter_names, function)
-    
-    
-    @copy_docs(SlasherApplicationCommand._register_autocomplete_function)
-    def _register_autocomplete_function(self, parameter_names, function):
-        if (function is None):
-            raise RuntimeError(f'`function` cannot be `None`.')
+            return partial_func(_register_autocomplete_function, self, parameter_names)
         
         return self._add_autocomplete_function(parameter_names, function)
     
     
     @copy_docs(SlasherApplicationCommand._add_autocomplete_function)
     def _add_autocomplete_function(self, parameter_names, function):
+        if isinstance(function, SlasherApplicationCommandParameterAutoCompleter):
+            function = function._command
+        
         auto_completer = SlasherApplicationCommandParameterAutoCompleter(
             function,
             parameter_names,
             APPLICATION_COMMAND_FUNCTION_DEEPNESS,
+            self,
         )
         
         auto_completable_parameters = self._get_auto_completable_parameters()
@@ -1917,7 +2182,7 @@ class SlasherApplicationCommandFunction:
         for parameter_converter in matched_auto_completable_parameters:
             parameter_converter.register_auto_completer(auto_completer)
         
-        return function
+        return auto_completer
     
     
     def _try_resolve_auto_completer(self, auto_completer):
@@ -1926,15 +2191,89 @@ class SlasherApplicationCommandFunction:
         
         Parameters
         ----------
-        parameter_name : `str`
-            The parameter's name.
         auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
             The auto completer.
+        
+        Returns
+        -------
+        resolved : `int`
+            The amount of parameters resolved.
         """
+        resolved = 0
+        
         auto_completable_parameters = self._get_auto_completable_parameters()
         matched_auto_completable_parameters = auto_completer._difference_match_parameters(auto_completable_parameters)
         for parameter_converter in matched_auto_completable_parameters:
-            parameter_converter.register_auto_completer(auto_completer)
+            resolved += parameter_converter.register_auto_completer(auto_completer)
+        
+        return resolved
+    
+    
+    def error(self, exception_handler=None, *, first=False):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandFunction``.
+        
+        Parameters
+        ----------
+        exception_handler : `None` or `CoroutineFunction`, Optional
+            Exception handler to register.
+        first : `bool`, Optional (Keyword Only)
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
+            If `exception_handler` is not given, returns a wrapper.
+        """
+        if exception_handler is None:
+            return partial_func(_register_exception_handler, first)
+        
+        return self._register_exception_handler(exception_handler, first)
+    
+    
+    def _register_exception_handler(self, exception_handler, first):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandFunction``.
+        
+        Parameters
+        ----------
+        exception_handler : `CoroutineFunction`
+            Exception handler to register.
+        first : `bool`
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler : `CoroutineFunction`
+        """
+        test_exception_handler(exception_handler)
+        
+        exception_handlers = self._exception_handlers
+        if exception_handlers is None:
+            self._exception_handlers = exception_handlers = []
+        
+        if first:
+            exception_handlers.insert(0, exception_handler)
+        else:
+            exception_handlers.append(exception_handler)
+        
+        return exception_handler
+    
+    
+    def _get_self_reference(self):
+        """
+        Gets a weak reference to the ``SlasherApplicationCommandFunction``.
+        
+        Returns
+        -------
+        self_reference : ``WeakReferer`` to ``SlasherApplicationCommandFunction``
+        """
+        self_reference = self._self_reference
+        if self_reference is None:
+            self_reference = WeakReferer(self)
+            self._self_reference = self_reference
+        
+        return self_reference
 
 
 class SlasherApplicationCommandCategory:
@@ -1944,12 +2283,22 @@ class SlasherApplicationCommandCategory:
     Attributes
     ----------
     _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
-        Auto completer functions by parameter name.
+        Auto completer functions by.
     _deepness : `int`
         How nested the category is.
+    _exception_handlers : `None` or `list` of `CoroutineFunction`
+        Exception handlers added with ``.error`` to the interaction handler.
+        
+        Same as ``Slasher._exception_handlers``.
+    
+    _self_reference : ``WeakReferer`` to ``SlasherApplicationCommandCategory``
+        Back reference to the slasher application command category.
+        
+        Used by sub commands to access the parent entity.
+    
     _sub_commands : `dict` of (`str`, ``SlasherApplicationCommandFunction``) items
         The sub-commands of the category.
-    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand
+    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
         The parent slash command of the category if any.
     description : `str`
         The slash command's description.
@@ -1958,8 +2307,8 @@ class SlasherApplicationCommandCategory:
     name : `str`
         The name of the slash sub-category.
     """
-    __slots__ = ('_auto_completers', '_deepness', '_sub_commands', '_parent_reference', 'description', 'is_default',
-        'name')
+    __slots__ = ('__weakref__', '_auto_completers', '_deepness', '_exception_handlers', '_self_reference',
+        '_sub_commands', '_parent_reference', 'description', 'is_default', 'name')
     
     def __new__(cls, slasher_application_command, deepness):
         """
@@ -1977,10 +2326,13 @@ class SlasherApplicationCommandCategory:
         self.name = slasher_application_command.name
         self.description = slasher_application_command.description
         self._sub_commands = {}
-        self._parent_reference = WeakReferer(slasher_application_command)
+        self._parent_reference = None
         self.is_default = slasher_application_command.is_default
         self._auto_completers = None
         self._deepness = deepness
+        self._exception_handlers = None
+        self._self_reference = None
+        
         return self
     
     
@@ -1998,11 +2350,6 @@ class SlasherApplicationCommandCategory:
             The received interaction event.
         options : `None` or `list` of ``InteractionEventChoice``
             Options bound to the category.
-        
-        Raises
-        ------
-        SlasherApplicationCommandParameterConversionError
-            Exception occurred meanwhile parsing parameter.
         """
         if (options is None) or len(options) != 1:
             return
@@ -2012,15 +2359,24 @@ class SlasherApplicationCommandCategory:
         try:
             sub_command = self._sub_commands[option.name]
         except KeyError:
-            raise SlasherApplicationCommandParameterConversionError(
+            pass
+        else:
+            await sub_command(client, interaction_event, option.options)
+            return
+        
+        # Do not put this into the `except` branch.
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            SlasherApplicationCommandParameterConversionError(
                 None,
                 option.name,
                 'sub-command',
                 list(self._sub_commands.keys()),
             )
-        
-        await sub_command(client, interaction_event, option.options)
-    
+        )
+        return
     
     @copy_docs(SlasherApplicationCommand.call_auto_completion)
     async def call_auto_completion(self, client, interaction_event, auto_complete_option):
@@ -2075,6 +2431,19 @@ class SlasherApplicationCommandCategory:
         new.description = self.description
         new.name = self.name
         new._parent_reference = None
+        
+        auto_completers = self._auto_completers
+        if (auto_completers is not None):
+            auto_completers = auto_completers.copy()
+        new._auto_completers = auto_completers
+        
+        exception_handlers = self._exception_handlers
+        if (exception_handlers is not None):
+            exception_handlers = exception_handlers.copy()
+        new._exception_handlers = exception_handlers
+        
+        new._self_reference = None
+        
         return new
     
     
@@ -2194,24 +2563,11 @@ class SlasherApplicationCommandCategory:
             for sub_command in sub_commands.values():
                 if sub_command.is_default:
                     raise RuntimeError(f'The category can have only 1 default command.')
-       
+        
+        as_sub._parent_reference = self._get_self_reference()
         sub_commands[command.name] = as_sub
         
-        
-        # Reset the parent's schema recursively
-        parent = self
-        while True:
-            parent_reference = parent._parent_reference
-            if (parent_reference is None):
-                break
-            
-            parent = parent_reference()
-            if (parent is None):
-                break
-            
-            if isinstance(parent, SlasherApplicationCommand):
-                parent._schema = None
-                break
+        _reset_parent_schema(self)
         
         # Resolve auto completers recursively
         parent = self
@@ -2221,7 +2577,7 @@ class SlasherApplicationCommandCategory:
                 for auto_completer in auto_completers:
                     as_sub._try_resolve_auto_completer(auto_completer)
             
-            if isinstance(parent, SlasherApplicationCommand):
+            if isinstance(parent, Slasher):
                 break
             
             parent_reference = parent._parent_reference
@@ -2250,6 +2606,12 @@ class SlasherApplicationCommandCategory:
         if self.is_default != other.is_default:
             return False
         
+        if self._auto_completers != other._auto_completers:
+            return False
+        
+        if self._exception_handlers != other._exception_handlers:
+            return False
+        
         return True
     
     
@@ -2274,26 +2636,21 @@ class SlasherApplicationCommandCategory:
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(type(self)._register_autocomplete_function, self, parameter_names)
+            return partial_func(_register_autocomplete_function, self, parameter_names)
             
-        return self._add_autocomplete_function(parameter_names, function)
-    
-    
-    @copy_docs(SlasherApplicationCommand._register_autocomplete_function)
-    def _register_autocomplete_function(self, parameter_names, function):
-        if (function is None):
-            raise RuntimeError(f'`function` cannot be `None`.')
-        
         return self._add_autocomplete_function(parameter_names, function)
     
     
     @copy_docs(SlasherApplicationCommand._add_autocomplete_function)
     def _add_autocomplete_function(self, parameter_names, function):
+        if isinstance(function, SlasherApplicationCommandParameterAutoCompleter):
+            function = function._command
         
         auto_completer = SlasherApplicationCommandParameterAutoCompleter(
             function,
             parameter_names,
             self._deepness,
+            self,
         )
         
         auto_completers = self._auto_completers
@@ -2303,11 +2660,15 @@ class SlasherApplicationCommandCategory:
         
         auto_completers.append(auto_completer)
         
+        resolved = 0
         sub_commands = self._sub_commands
         for sub_command in sub_commands.values():
-            sub_command._try_resolve_auto_completer(auto_completer)
+            resolved += sub_command._try_resolve_auto_completer(auto_completer)
         
-        return function
+        if resolved:
+            _reset_parent_schema(self)
+        
+        return auto_completer
     
     
     def _try_resolve_auto_completer(self, auto_completer):
@@ -2318,12 +2679,86 @@ class SlasherApplicationCommandCategory:
         ----------
         auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
             The auto completer.
+        
+        Returns
+        -------
+        resolved : `int`
+            The amount of parameters resolved.
         """
+        resolved = 0
         for sub_command in self._sub_commands.values():
-            sub_command._try_resolve_auto_completer(auto_completer)
+             resolved += sub_command._try_resolve_auto_completer(auto_completer)
+        
+        return resolved
+    
+    
+    def error(self, exception_handler=None, *, first=False):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandCategory``.
+        
+        Parameters
+        ----------
+        exception_handler : `None` or `CoroutineFunction`, Optional
+            Exception handler to register.
+        first : `bool`, Optional (Keyword Only)
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
+            If `exception_handler` is not given, returns a wrapper.
+        """
+        if exception_handler is None:
+            return partial_func(_register_exception_handler, first)
+        
+        return self._register_exception_handler(exception_handler, first)
+    
+    
+    def _register_exception_handler(self, exception_handler, first):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandCategory``.
+        
+        Parameters
+        ----------
+        exception_handler : `CoroutineFunction`
+            Exception handler to register.
+        first : `bool`
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler : `CoroutineFunction`
+        """
+        test_exception_handler(exception_handler)
+        
+        exception_handlers = self._exception_handlers
+        if exception_handlers is None:
+            self._exception_handlers = exception_handlers = []
+        
+        if first:
+            exception_handlers.insert(0, exception_handler)
+        else:
+            exception_handlers.append(exception_handler)
+        
+        return exception_handler
+    
+    
+    def _get_self_reference(self):
+        """
+        Gets a weak reference to the ``SlasherApplicationCommandCategory``.
+        
+        Returns
+        -------
+        self_reference : ``WeakReferer`` to ``SlasherApplicationCommandCategory``
+        """
+        self_reference = self._self_reference
+        if self_reference is None:
+            self_reference = WeakReferer(self)
+            self._self_reference = self_reference
+        
+        return self_reference
 
 
-@export
 class SlasherApplicationCommandParameterAutoCompleter:
     """
     Represents an application command parameter's auto completer.
@@ -2334,14 +2769,17 @@ class SlasherApplicationCommandParameterAutoCompleter:
         The command's function to call.
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
+    _parent_reference : `None` or ``WeakReferer`` to (``SlasherApplicationCommand``,
+            ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``)
+        The parent slash command of the auto completer, where it was registered to.
     name_pairs : `frozenset` of `tuple` (`str`, `str`)
         Raw - display parameter names, to which the converter should autocomplete.
     deepness : `int`
         How deep the auto completer was created. Deeper auto completers always overwrite higher ones.
     """
-    __slots__ = ('_command', '_parameter_converters', 'deepness', 'name_pairs')
+    __slots__ = ('_command', '_parameter_converters', '_parent_reference', 'deepness', 'name_pairs')
     
-    def __new__(cls, function, parameter_names, deepness):
+    def __new__(cls, function, parameter_names, deepness, parent):
         """
         Creates a new ``SlasherApplicationCommandParameterAutoCompleter`` instance with the given parameters.
         
@@ -2353,16 +2791,24 @@ class SlasherApplicationCommandParameterAutoCompleter:
             The names, which should be auto completed.
         deepness : `int`
             How deep the auto completer was created.
+        parent : `None`, ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandCategory``,
+            ``SlasherApplicationCommandFunction``
         """
         command, parameter_converters = get_application_command_parameter_auto_completer_converters(function)
         
         name_pairs = frozenset((name, raw_name_to_display(name)) for name in set(parameter_names))
+        
+        if parent is None:
+            parent_reference = None
+        else:
+            parent_reference = parent._get_self_reference()
         
         self = object.__new__(cls)
         self._command = command
         self._parameter_converters = parameter_converters
         self.name_pairs = name_pairs
         self.deepness = deepness
+        self._parent_reference = parent_reference
         
         return self
     
@@ -2384,13 +2830,29 @@ class SlasherApplicationCommandParameterAutoCompleter:
         
         for parameter_converter in self._parameter_converters:
             parameter = await parameter_converter(client, interaction_event, None)
-            
             parameters.append(parameter)
         
         auto_completer_coroutine = self._command(*parameters)
         
-        await process_auto_completer_coroutine(client, interaction_event, auto_completer_coroutine)
-    
+        try:
+            await process_auto_completer_coroutine(
+                client,
+                interaction_event,
+                auto_completer_coroutine,
+            )
+        except BaseException as err:
+            exception = err
+        else:
+            return
+        
+        # Do not put this into the `except` branch.
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            exception,
+        )
+        return
     
     def __repr__(self):
         """Returns the parameter auto completer's representation."""

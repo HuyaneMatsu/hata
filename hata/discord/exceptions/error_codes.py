@@ -169,6 +169,8 @@ These are the following:
 +-------------------------------------------------------+-----------+-----------+
 | max_ban_fetches                                       | 30037     | -         |
 +-------------------------------------------------------+-----------+-----------+
+| max_scheduled_events                                  | 30038     | 100       |
++-------------------------------------------------------+-----------+-----------+
 | max_stickers                                          | 30039     | -         |
 +-------------------------------------------------------+-----------+-----------+
 | rate_limit_prune                                      | 30040     | -         |
@@ -492,6 +494,7 @@ max_application_commands = 30032
 max_thread_participants = 30033
 max_bans = 30035
 max_ban_fetches = 30037
+max_scheduled_events = 30038
 max_stickers = 30039
 rate_limit_prune = 30040
 rate_limit_widget_update = 30042

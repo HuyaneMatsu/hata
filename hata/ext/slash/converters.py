@@ -1826,6 +1826,11 @@ class SlashCommandParameterConverter(ParameterConverter):
         auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
             The auto completer to register.
         
+        Returns
+        -------
+        resolved : `int`
+            Whether the parameter was resolved.
+        
         Raises
         ------
         RuntimeError
@@ -1842,6 +1847,11 @@ class SlashCommandParameterConverter(ParameterConverter):
         self_auto_completer = self.auto_completer
         if (self_auto_completer is None) or auto_completer._is_deeper_than(self_auto_completer):
             self.auto_completer = auto_completer
+            resolved = 1
+        else:
+            resolved = 0
+        
+        return resolved
 
 
 def create_parameter_converter(parameter, parameter_configurer):

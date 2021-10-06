@@ -7,9 +7,16 @@ class PayloadError(Exception):
     pass
 
 
-class InvalidHandshake(Exception):
+class HandshakeError(Exception):
+    pass
+
+class InvalidHandshake(HandshakeError):
     """
     Raised when websocket handshake fails.
+    
+    Attributes
+    ----------
+    response : ``
     """
     pass
 
@@ -35,7 +42,7 @@ class HttpProcessingError(Exception):
         Exception.__init__(self, f'HTTP {self.code}, message={message!r}, headers={self.headers!r}')
 
 
-class AbortHandshake(HttpProcessingError, InvalidHandshake):
+class AbortHandshake(HttpProcessingError, HandshakeError):
     """
     Raised when websocket handshake is aborted on server side.
     

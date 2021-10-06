@@ -7,6 +7,8 @@ except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
 
+from functools import partial as partial_func
+
 from ...discord.interaction.components import COMPONENT_CUSTOM_ID_LENGTH_MAX
 from ...discord.events.handling_helpers import route_value, Router, create_event_from_class
 from .wrappers import SlasherCommandWrapper
@@ -14,6 +16,7 @@ from .utils import _check_maybe_route
 from .converters import get_component_command_parameter_converters, RegexMatcher, \
     check_component_converters_satisfy_string, check_component_converters_satisfy_regex
 from .responding import process_command_coroutine
+from .exceptions import handle_command_exception, test_exception_handler, _register_exception_handler
 
 SLASH_COMMAND_PARAMETER_NAMES = ('command', 'custom_id')
 
@@ -162,6 +165,13 @@ class ComponentCommand:
     ----------
     _command_function : `async-callable˛
         The command's function to call.
+    _exception_handlers : `None` or `list` of `CoroutineFunction`
+        Exception handlers added with ``.error`` to the interaction handler.
+        
+        Same as ``Slasher._exception_handlers``.
+    
+    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
+        The parent slasher of the component command.
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
     _string_custom_ids : `None` or `tuple` of `str`
@@ -169,7 +179,8 @@ class ComponentCommand:
     _regex_custom_ids : `None` or `tuple` of `re.Pattern`.
         Regex pattern to match custom-ids.
     """
-    __slots__ = ('_command_function', '_parameter_converters', '_regex_custom_ids', '_string_custom_ids')
+    __slots__ = ('_command_function', '_exception_handlers', '_parent_reference', '_parameter_converters',
+        '_regex_custom_ids', '_string_custom_ids')
     
     
     @classmethod
@@ -249,6 +260,8 @@ class ComponentCommand:
                 self._parameter_converters = parameter_converters
                 self._string_custom_ids = string_custom_ids
                 self._regex_custom_ids = regex_custom_ids
+                self._parent_reference = None
+                self._exception_handlers = None
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -265,11 +278,13 @@ class ComponentCommand:
             self._parameter_converters = parameter_converters
             self._string_custom_ids = string_custom_ids
             self._regex_custom_ids = regex_custom_ids
+            self._parent_reference = None
+            self._exception_handlers = None
             
             if (wrappers is not None):
                 for wrapper in wrappers:
                     wrapper.apply(self)
-
+            
             return self
     
     
@@ -343,13 +358,38 @@ class ComponentCommand:
         parameters = []
         
         for parameter_converter in self._parameter_converters:
-            parameter = await parameter_converter(client, interaction_event, regex_match)
-            parameters.append(parameter)
+            try:
+                parameter = await parameter_converter(client, interaction_event, regex_match)
+            except BaseException as err:
+                exception = err
+            else:
+                parameters.append(parameter)
+                continue
+            
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+            return
         
         command_coroutine = self._command_function(*parameters)
         
-        await process_command_coroutine(client, interaction_event, False, command_coroutine)
-    
+        try:
+            await process_command_coroutine(client, interaction_event, False, command_coroutine)
+        except BaseException as err:
+            exception = err
+        else:
+            return
+        
+        await handle_command_exception(
+            self,
+            client,
+            interaction_event,
+            exception,
+        )
+        return
     
     def __hash__(self):
         """Returns the component command's hash value."""
@@ -387,6 +427,9 @@ class ComponentCommand:
         if self._regex_custom_ids != other._regex_custom_ids:
             return False
         
+        if self._exception_handlers != other._exception_handlers:
+            return False
+        
         return True
     
     
@@ -403,4 +446,62 @@ class ComponentCommand:
         new._parameter_converters = self._parameter_converters
         new._string_custom_ids = self._string_custom_ids
         new._regex_custom_ids = self._regex_custom_ids
+        new._parent_reference = None
+        
+        exception_handlers = self._exception_handlers
+        if (exception_handlers is not None):
+            exception_handlers = exception_handlers.copy()
+        new._exception_handlers = exception_handlers
+        
         return new
+
+
+    def error(self, exception_handler=None, *, first=False):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandCategory``.
+        
+        Parameters
+        ----------
+        exception_handler : `None` or `CoroutineFunction`, Optional
+            Exception handler to register.
+        first : `bool`, Optional (Keyword Only)
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
+            If `exception_handler` is not given, returns a wrapper.
+        """
+        if exception_handler is None:
+            return partial_func(_register_exception_handler, first)
+        
+        return self._register_exception_handler(exception_handler, first)
+    
+    
+    def _register_exception_handler(self, exception_handler, first):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandCategory``.
+        
+        Parameters
+        ----------
+        exception_handler : `CoroutineFunction`
+            Exception handler to register.
+        first : `bool`
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler : `CoroutineFunction`
+        """
+        test_exception_handler(exception_handler)
+        
+        exception_handlers = self._exception_handlers
+        if exception_handlers is None:
+            self._exception_handlers = exception_handlers = []
+        
+        if first:
+            exception_handlers.insert(0, exception_handler)
+        else:
+            exception_handlers.append(exception_handler)
+        
+        return exception_handler

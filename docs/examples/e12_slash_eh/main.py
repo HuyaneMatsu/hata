@@ -31,7 +31,10 @@ async def slash_error(client, interaction_event, command, exception):
     It'll give:
         client              :   Client                                          | Client
         interaction_event   :   InteractionEvent                                | Event
-        command             :   SlasherApplicationCommand, ComponentCommand     | The command that was invoked
+        command             :   ComponentCommand, SlasherApplicationCommand,    | The command that was invoked
+                                SlasherApplicationCommandCategory,              |
+                                SlasherApplicationCommandFunction,              |
+                                SlasherApplicationCommandParameterAutoCompleter |
         exception           :   BaseException                                   | The exception that was raised
 
     This should return a boolean

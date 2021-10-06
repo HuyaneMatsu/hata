@@ -1,3 +1,22 @@
+## 1.1.109 *\[2021-10-??\]*
+
+### Summary
+
+Improve auto completion and error handling of slash extension.
+
+#### Improvements
+
+- Add `ERROR_CODES.max_scheduled_events`.
+- Add `UserFlag.bot_http_interactions`.
+- Add `InvalidHandshake.response`.
+- Add `InvalidHandshake.message`.
+
+##### hata.ext.slash
+
+- Auto completers now can be registered to command groups and to ``Slasher`` as well.
+- Auto completers with multiple parameter names can be registered with 1 call.
+- Add `.error` decorator for slasher application commands, to auto completers and to component commands.
+
 ## 1.1.108 *\[2021-10-01\]*
 
 ### Summary

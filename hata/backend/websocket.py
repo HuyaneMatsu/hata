@@ -1189,10 +1189,9 @@ class WSClient(WebSocketCommonProtocol):
             - Would be redirected to not `http` or `https`.
             - Connector closed.
         TypeError
-            `extra_response_headers` is not given as `None`, neither as `dict-like`.
+            If `extra_response_headers` is not given as `None`, neither as `dict-like`.
         ValueError
             - Host could not be detected from `url`.
-            - The response's http version is unsupported (not `HTTP1.1`).
             - Received extension header is incorrect.
             - Received connection header is incorrect.
         TimeoutError
@@ -1209,6 +1208,7 @@ class WSClient(WebSocketCommonProtocol):
             - No subprotocols are supported, but still received.
             - Multiple subprotocols received.
             - Unsupported subprotocol received.
+            - The response's http version is unsupported (not `HTTP1.1`).
         """
         if http_client is None:
             http_client = HTTPClient(loop)
@@ -1258,7 +1258,7 @@ class WSClient(WebSocketCommonProtocol):
         async with http_client.request(METHOD_GET, url, request_headers) as response:
            
             if response.raw_message.version != HttpVersion11:
-                raise ValueError(f'Unsupported HTTP version: {response.raw_message.version}.')
+                raise InvalidHandshake(f'Unsupported HTTP version: {response.raw_message.version}.')
             
             if response.status != 101:
                 raise InvalidHandshake(f'Invalid status code: {response.status!r}.')

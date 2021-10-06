@@ -6,6 +6,7 @@ from functools import partial as partial_func
 from ...backend.futures import Task, WaitTillAll
 from ...backend.event_loop import EventThread
 from ...backend.utils import WeakReferer, WeakKeyDictionary
+from ...backend.export import export
 
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import Router, asynclist, EventHandlerBase
@@ -16,10 +17,12 @@ from ...discord.interaction import ApplicationCommand, InteractionEvent, Interac
 
 from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID_GLOBAL, SYNC_ID_MAIN, \
     SYNC_ID_NON_GLOBAL, RUNTIME_SYNC_HOOKS
-from .application_command import SlasherApplicationCommand
+from .application_command import SlasherApplicationCommand, APPLICATION_COMMAND_HANDLER_DEEPNESS, \
+    SlasherApplicationCommandParameterAutoCompleter, _build_auto_complete_parameter_names, \
+    _register_autocomplete_function
 from .component_command import ComponentCommand
-from .exceptions import handle_command_exception, test_exception_handler, default_slasher_exception_handler, \
-    default_slasher_random_error_message_getter, _validate_random_error_message_getter
+from .exceptions import test_exception_handler, default_slasher_exception_handler, \
+    default_slasher_random_error_message_getter, _validate_random_error_message_getter, _register_exception_handler
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -99,6 +102,7 @@ class CommandChange:
         The command itself.
     """
     __slots__ = ('added', 'command')
+    
     def __init__(self, added, command):
         """
         Creates a new command change instance.
@@ -143,9 +147,15 @@ class CommandState:
         Slash commands, which are removed, but should not be deleted.
     """
     __slots__ = ('_active', '_changes', '_is_non_global', '_kept', )
+    
     def __init__(self, is_non_global):
         """
         Creates a new ``CommandState`` instance.
+        
+        Parameters
+        ----------
+        is_non_global : `bool`
+            Whether the command state refers to non-local commands.
         """
         self._changes = None
         self._active = None
@@ -757,43 +767,15 @@ class CommandState:
         return active_command_count_with_sub_commands
 
 
-def _register_exception_handler(slasher, first, exception_handler):
-    """
-    Registers an exception handler to the slasher. This function is wrapped inside of `functools.partial` with it's
-    `slasher` and `first` parameters.
-    
-    Parameters
-    ----------
-    slasher : ``Slasher``
-        The slasher to register the exception handler to.
-        
-        This parameter is passed by
-    first : `bool`
-        Whether the exception handler should run first.
-    exception_handler : `CoroutineFunction`
-        Exception handler to register.
-    
-    Returns
-    -------
-    exception_handler : `CoroutineFunction`
-    
-    Raises
-    ------
-    RuntimeError
-        If `exception_handler` is given as `None`.
-    """
-    if (exception_handler is None):
-        raise RuntimeError('`exception_handler` cannot be `None`.')
-    
-    return slasher._register_exception_handler(exception_handler, first)
-
-
+@export
 class Slasher(EventHandlerBase):
     """
     Slash command processor.
     
     Attributes
     ----------
+    _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
+        Auto completer functions.
     _call_later : `None` or `list` of `tuple` (`bool`, `Any`)
         Slash command changes to apply later if syncing is in progress.
     _client_reference : ``WeakReferer`` to ``Client``
@@ -818,21 +800,23 @@ class Slasher(EventHandlerBase):
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
     _exception_handlers : `None` or `list` of `CoroutineFunction`
-        Error handlers added with `.error` to the interaction handler.
-    
+        Exception handlers added with ``.error`` to the interaction handler.
+        
         The following parameters are passed to it:
         
-        +-------------------+-------------------------------------------------------+
-        | Name              | Type                                                  |
-        +===================+=======================================================+
-        | client            | ``Client``                                            |
-        +-------------------+-------------------------------------------------------+
-        | interaction_event | ``InteractionEvent``                                  |
-        +-------------------+-------------------------------------------------------+
-        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``   |
-        +-------------------+-------------------------------------------------------+
-        | exception         | `BaseException`                                       |
-        +-------------------+-------------------------------------------------------+
+        +-------------------+-------------------------------------------------------------------------------+
+        | Name              | Type                                                                          |
+        +===================+===============================================================================+
+        | client            | ``Client``                                                                    |
+        +-------------------+-------------------------------------------------------------------------------+
+        | interaction_event | ``InteractionEvent``                                                          |
+        +-------------------+-------------------------------------------------------------------------------+
+        | command           | ``ComponentCommand``, ``SlasherApplicationCommand``,                          |
+        |                   | ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``  |
+        |                   | ``SlasherApplicationCommandParameterAutoCompleter``                           |
+        +-------------------+-------------------------------------------------------------------------------+
+        | exception         | `BaseException`                                                               |
+        +-------------------+-------------------------------------------------------------------------------+
         
         Should return the following parameters:
         
@@ -841,6 +825,9 @@ class Slasher(EventHandlerBase):
         +===================+===========+
         | handled           | `bool`    |
         +-------------------+-----------+
+    
+    _self_reference : `None` or ``WeakReferer`` to ``Slasher``
+        Reference back to the slasher. Used to reference back from commands.
     
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
@@ -871,10 +858,10 @@ class Slasher(EventHandlerBase):
     -----
     ``Slasher`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_call_later', '_client_reference', '_component_commands', '_command_states',
-        '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers',
-        '_random_error_message_getter', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
-        '_synced_permissions', 'command_id_to_command', 'regex_custom_id_to_component_command',
+    __slots__ = ('__weakref__', '_auto_completers', '_call_later', '_client_reference', '_component_commands',
+        '_command_states', '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers',
+        '_random_error_message_getter', '_self_reference', '_sync_done', '_sync_permission_tasks', '_sync_should',
+        '_sync_tasks', '_synced_permissions', 'command_id_to_command', 'regex_custom_id_to_component_command',
         'string_custom_id_to_component_command')
     
     __event_name__ = 'interaction_create'
@@ -953,7 +940,6 @@ class Slasher(EventHandlerBase):
         self._sync_permission_tasks = {}
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
-        self._exception_handlers = exception_handlers
         self._random_error_message_getter = random_error_message_getter
         self._component_commands = set()
         
@@ -961,7 +947,12 @@ class Slasher(EventHandlerBase):
         self.string_custom_id_to_component_command = {}
         self.regex_custom_id_to_component_command = {}
         
+        self._exception_handlers = exception_handlers
+        self._self_reference = None
+        self._auto_completers = None
+        
         return self
+    
     
     async def __call__(self, client, interaction_event):
         """
@@ -1008,11 +999,7 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._dispatch_application_command_event', err)
         else:
             if (command is not None):
-                try:
-                    await command(client, interaction_event)
-                except BaseException as err:
-                    await handle_command_exception(self._exception_handlers, client, interaction_event, command, err)
-    
+                await command(client, interaction_event)
     
     async def _dispatch_component_event(self, client, interaction_event):
         """
@@ -1056,12 +1043,7 @@ class Slasher(EventHandlerBase):
         else:
             regex_match = None
         
-        try:
-            await component_command(client, interaction_event, regex_match)
-        except BaseException as err:
-            await handle_command_exception(self._exception_handlers, client, interaction_event, component_command,
-                err)
-    
+        await component_command(client, interaction_event, regex_match)
     
     async def _dispatch_application_command_autocomplete_event(self, client, interaction_event):
         """
@@ -1090,10 +1072,7 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._dispatch_application_command_autocomplete_event', err)
         else:
             if (command is not None):
-                try:
-                    await command.call_auto_completion(client, interaction_event, auto_complete_option)
-                except BaseException as err:
-                    await handle_command_exception(self._exception_handlers, client, interaction_event, command, err)
+               await command.call_auto_completion(client, interaction_event, auto_complete_option)
     
     
     def add_component_interaction_waiter(self, message, waiter):
@@ -1267,6 +1246,8 @@ class Slasher(EventHandlerBase):
         command : ``SlasherApplicationCommand``
             The command to add.
         """
+        command._parent_reference = self._get_self_reference()
+        
         if self._check_late_register(command, True):
             return
         
@@ -2226,6 +2207,7 @@ class Slasher(EventHandlerBase):
         KOKORO.wake_up()
         return task.sync_wrap().wait()
     
+    
     async def _do_main_sync(self, client):
         """
         Syncs the slash commands with the client. This method is the internal method of ``.sync``.
@@ -2369,6 +2351,7 @@ class Slasher(EventHandlerBase):
         
         return delete_commands_on_unload
     
+    
     @delete_commands_on_unload.setter
     def delete_commands_on_unload(self, delete_commands_on_unload):
         if type(delete_commands_on_unload) is bool:
@@ -2501,7 +2484,7 @@ class Slasher(EventHandlerBase):
     
     def error(self, exception_handler=None, *, first=False):
         """
-        Registers an exception handler to the slasher.
+        Registers an exception handler to the ``Slasher``.
         
         Parameters
         ----------
@@ -2516,7 +2499,7 @@ class Slasher(EventHandlerBase):
             If `exception_handler` is not given, returns a wrapper.
         """
         if exception_handler is None:
-            return partial_func(self, first)
+            return partial_func(_register_exception_handler, first)
         
         return self._register_exception_handler(exception_handler, first)
     
@@ -2564,6 +2547,8 @@ class Slasher(EventHandlerBase):
         RuntimeError
             If `command` would only partially overwrite an other commands.
         """
+        component_command._parent_reference = self._get_self_reference()
+        
         string_custom_id_to_component_command = self.string_custom_id_to_component_command
         regex_custom_id_to_component_command = self.regex_custom_id_to_component_command
         
@@ -2771,3 +2756,126 @@ class Slasher(EventHandlerBase):
             command_count_with_sub_commands = command_state.get_active_command_count_with_sub_commands()
         
         return command_count_with_sub_commands
+    
+    
+    def _get_self_reference(self):
+        """
+        Gets a weak reference to the ``Slasher``.
+        
+        Returns
+        -------
+        self_reference : ``WeakReferer`` to ``Slasher``
+        """
+        self_reference = self._self_reference
+        if self_reference is None:
+            self_reference = WeakReferer(self)
+            self._self_reference = self_reference
+        
+        return self_reference
+
+
+    def autocomplete(self, parameter_name, *parameter_names, function=None):
+        """
+        Registers an auto completer function to the slasher.
+        
+        Parameters
+        ----------
+        parameter_name : `str`
+            The parameter's name.
+        *parameter_names : `str`
+            Additional parameter names to autocomplete
+        function : `None` or `async-callable`, Optional (Keyword only)
+            The function to register as auto completer.
+        
+        Returns
+        -------
+        function / wrapper : `async-callable` or `functools.partial`
+            The registered function if given or a wrapper to register the function with.
+        
+        Raises
+        ------
+        RuntimeError
+            - If the parameter already has a auto completer defined.
+            - If the application command function has no parameter named, like `parameter_name`.
+            - If the parameter cannot be auto completed.
+        TypeError
+            If `function` is not an asynchronous.
+        """
+        parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
+        
+        if (function is None):
+            return partial_func(_register_autocomplete_function, self, parameter_names)
+            
+        return self._add_autocomplete_function(parameter_names, function)
+    
+    
+    def _add_autocomplete_function(self, parameter_names, function):
+        """
+        Registers an autocomplete function.
+        
+        Parameters
+        ----------
+        parameter_names : `list` of `str`
+            The parameters' names.
+        function : `async-callable`
+            The function to register as auto completer.
+        
+        Returns
+        -------
+        function : `async-callable`
+            The registered function.
+        
+        Raises
+        ------
+        RuntimeError
+            - If the application command function has no parameter named, like `parameter_name`.
+            - If the parameter cannot be auto completed.
+        TypeError
+            If `function` is not an asynchronous.
+        """
+        if isinstance(function, SlasherApplicationCommandParameterAutoCompleter):
+            function = function._command
+        
+        auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+            function,
+            parameter_names,
+            APPLICATION_COMMAND_HANDLER_DEEPNESS,
+            self,
+        )
+        
+        auto_completers = self._auto_completers
+        if (auto_completers is None):
+            auto_completers = []
+            self._auto_completers = auto_completers
+        
+        auto_completers.append(auto_completer)
+        
+        for command_state in self._command_states.values():
+            active = command_state._active
+            if (active is not None):
+                for slasher_application_command in active:
+                    slasher_application_command._try_resolve_auto_completer(auto_completer)
+            
+            
+            changes = command_state._changes
+            if (changes is not None):
+                for command_change in changes:
+                    if command_change.added:
+                        command_change.command._try_resolve_auto_completer(auto_completer)
+        
+        return auto_completer
+    
+    
+    def _schema_reset(self, command):
+        """
+        Called when an application command's schema is reset.
+        
+        Parameters
+        ----------
+        command : ``SlasherApplicationCommand``
+        """
+        for sync_id in command._iter_sync_ids():
+            self._sync_done.discard(sync_id)
+            self._sync_should.add(sync_id)
+        
+        self._maybe_sync()

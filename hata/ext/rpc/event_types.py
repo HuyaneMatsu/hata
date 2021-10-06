@@ -117,7 +117,7 @@ class ChannelVoiceSelectEvent(EventBase):
     
     def __new__(cls, channel_id, guild_id):
         """
-        Creates a new channel voice select event from teh given parameters.
+        Creates a new channel voice select event from the given parameters.
         
         Parameters
         ----------

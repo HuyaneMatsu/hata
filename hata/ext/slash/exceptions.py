@@ -10,6 +10,7 @@ from ...discord.interaction import InteractionType
 from ...discord.exceptions import DiscordException, ERROR_CODES
 
 SlasherApplicationCommand = include('SlasherApplicationCommand')
+Slasher = include('Slasher')
 
 class SlasherCommandError(Exception):
     """
@@ -335,7 +336,7 @@ async def _render_application_command_exception(client, command, exception):
     await client.events.error(client, f'`Slasher` while calling `{command_name}`', exception)
 
 
-async def handle_command_exception(exception_handlers, client, interaction_event, command, exception):
+async def handle_command_exception(entity, client, interaction_event, exception):
     """
     handles slash command exception.
     
@@ -343,30 +344,28 @@ async def handle_command_exception(exception_handlers, client, interaction_event
 
     Parameters
     ----------
-    exception_handlers : `None` or `list` of `CoroutineFunction`
-        Exception handlers to call.
+    entity : ``ComponentCommand``, ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandCategory``,
+            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandParameterAutoCompleter``
+        The entity to iterate it's exception handlers.
     client : ``Client``
         The respective client.
     interaction_event : ``InteractionEvent``
         The received interaction event.
-    command : ``SlasherApplicationCommand`` or ``ComponentCommand``
-        The command, which raised.
     exception : `BaseException`
         The occurred exception.
     """
-    if (exception_handlers is not None):
-        for exception_handler in exception_handlers:
-            try:
-                handled = await exception_handler(client, interaction_event, command, exception)
-            except BaseException as err:
-                await client.events.error(client, 'handle_command_exception', err)
-                return
-            
-            if handled:
-                return
+    for exception_handler in _iter_exception_handlers(entity):
+        try:
+            handled = await exception_handler(client, interaction_event, entity, exception)
+        except BaseException as err:
+            await client.events.error(client, 'handle_command_exception', err)
+            return
+        
+        if handled:
+            return
     
     if not isinstance(exception, SlasherCommandError):
-        await _render_application_command_exception(client, command, exception)
+        await _render_application_command_exception(client, entity, exception)
 
 
 def test_exception_handler(exception_handler):
@@ -380,17 +379,19 @@ def test_exception_handler(exception_handler):
         
         The following parameters are passed to it:
         
-        +-------------------+-------------------------------------------------------+
-        | Name              | Type                                                  |
-        +===================+=======================================================+
-        | client            | ``Client``                                            |
-        +-------------------+-------------------------------------------------------+
-        | interaction_event | ``InteractionEvent``                                  |
-        +-------------------+-------------------------------------------------------+
-        | command           | ``SlasherApplicationCommand``, ``ComponentCommand``   |
-        +-------------------+-------------------------------------------------------+
-        | exception         | `BaseException`                                       |
-        +-------------------+-------------------------------------------------------+
+        +-------------------+-------------------------------------------------------------------------------+
+        | Name              | Type                                                                          |
+        +===================+===============================================================================+
+        | client            | ``Client``                                                                    |
+        +-------------------+-------------------------------------------------------------------------------+
+        | interaction_event | ``InteractionEvent``                                                          |
+        +-------------------+-------------------------------------------------------------------------------+
+        | command           | ``ComponentCommand``, ``SlasherApplicationCommand``,                          |
+        |                   | ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``, |
+        |                   | ``SlasherApplicationCommandParameterAutoCompleter``                           |
+        +-------------------+-------------------------------------------------------------------------------+
+        | exception         | `BaseException`                                                               |
+        +-------------------+-------------------------------------------------------------------------------+
         
         Should return the following parameters:
         
@@ -420,3 +421,66 @@ def test_exception_handler(exception_handler):
             if not analyzer.accepts_args():
                 raise TypeError(f'`exception_handler` should accept `4` parameters, meanwhile the given callable '
                     f'expects up to `{max_!r}`, got `{exception_handler!r}`.')
+
+
+def _register_exception_handler(parent, first, exception_handler):
+    """
+    Registers an exception handler to the respective entity. This function is wrapped inside of
+    `functools.partial` with it's `parent` and `first` parameters.
+    
+    Parameters
+    ----------
+    parent : ``Slasher``, ``SlasherApplicationCommand`, ``SlasherApplicationCommandCategory``, ``ComponentCommand``,
+            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandParameterAutoCompleter``
+        The slasher to register the exception handler to.
+    first : `bool`
+        Whether the exception handler should run first.
+    exception_handler : `CoroutineFunction`
+        Exception handler to register.
+    
+    Returns
+    -------
+    exception_handler : `CoroutineFunction`
+    
+    Raises
+    ------
+    RuntimeError
+        If `exception_handler` is given as `None`.
+    """
+    if (exception_handler is None):
+        raise RuntimeError('`exception_handler` cannot be `None`.')
+    
+    return parent._register_exception_handler(exception_handler, first)
+
+
+def _iter_exception_handlers(entity):
+    """
+    Iterates the given entity's exception handlers.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    entity : ``ComponentCommand``, ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandCategory``,
+            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandParameterAutoCompleter``
+        The entity to iterate it's exception handlers.
+    
+    Yields
+    ------
+    exception_handler : `CoroutineFunction`
+    """
+    while True:
+        exception_handlers = entity._exception_handlers
+        if (exception_handlers is not None):
+            yield from exception_handlers
+        
+        if isinstance(entity, Slasher):
+            break
+        
+        parent_reference = entity._parent_reference
+        if parent_reference is None:
+            break
+        
+        entity = parent_reference()
+        if entity is None:
+            break

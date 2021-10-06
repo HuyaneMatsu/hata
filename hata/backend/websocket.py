@@ -1258,10 +1258,10 @@ class WSClient(WebSocketCommonProtocol):
         async with http_client.request(METHOD_GET, url, request_headers) as response:
            
             if response.raw_message.version != HttpVersion11:
-                raise InvalidHandshake(f'Unsupported HTTP version: {response.raw_message.version}.')
+                raise InvalidHandshake(f'Unsupported HTTP version: {response.raw_message.version}.', response=response)
             
             if response.status != 101:
-                raise InvalidHandshake(f'Invalid status code: {response.status!r}.')
+                raise InvalidHandshake(f'Invalid status code: {response.status!r}.', response=response)
             
             response_headers = response.headers
             connections = []
@@ -1271,7 +1271,10 @@ class WSClient(WebSocketCommonProtocol):
                     connections.extend(parse_connections(received_connection))
             
             if not any(value.lower() == 'upgrade' for value in connections):
-                raise InvalidHandshake(f'Invalid connection, no upgrade found, got {connections!r}.')
+                raise InvalidHandshake(
+                    f'Invalid connection, no upgrade found, got {connections!r}.',
+                    response = response
+                )
             
             upgrade = []
             received_upgrades = response_headers.get_all(UPGRADE)
@@ -1280,25 +1283,37 @@ class WSClient(WebSocketCommonProtocol):
                     upgrade.extend(parse_upgrades(received_upgrade))
             
             if len(upgrade) != 1 and upgrade[0].lower() != 'websocket': # ignore case
-                raise InvalidHandshake(f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}.')
+                raise InvalidHandshake(
+                    f'Expected \'WebSocket\' for \'Upgrade\', but got {upgrade!r}.',
+                    response = response,
+                )
             
             expected_key = b64encode(hashlib.sha1((sec_key+WS_KEY).encode()).digest()).decode()
             received_keys = response_headers.get_all(SEC_WEBSOCKET_ACCEPT)
             if received_keys is None:
-                raise InvalidHandshake(f'Expected 1 secret key {expected_key!r}, but received 0.')
+                raise InvalidHandshake(f'Expected 1 secret key {expected_key!r}, but received 0.', response=response)
             if len(received_keys) > 1:
-                raise InvalidHandshake(f'Expected 1 secret key {expected_key!r}, but received more: {received_keys!r}.')
+                raise InvalidHandshake(
+                    f'Expected 1 secret key {expected_key!r}, but received more: {received_keys!r}.',
+                    response = response
+                )
             
             received_key = received_keys[0]
             if received_key != expected_key:
-                raise InvalidHandshake(f'Expected secret key {expected_key}, but got {received_key!r}.')
+                raise InvalidHandshake(
+                    f'Expected secret key {expected_key}, but got {received_key!r}.',
+                    response = response,
+                )
             
             #extensions
             accepted_extensions = []
             received_extensions = response_headers.get_all(SEC_WEBSOCKET_EXTENSIONS)
             if (received_extensions is not None):
                 if available_extensions is None:
-                    raise InvalidHandshake(f'No extensions supported, but received {received_extensions!r}.')
+                    raise InvalidHandshake(
+                        f'No extensions supported, but received {received_extensions!r}.',
+                        response = response,
+                    )
                 
                 parsed_extension_values = []
                 for value in received_extensions:
@@ -1312,25 +1327,34 @@ class WSClient(WebSocketCommonProtocol):
                             break
                     else:
                         # no matching extension
-                        raise InvalidHandshake(f'Unsupported extension: name={name!r}, params={params!r}.')
+                        raise InvalidHandshake(
+                            f'Unsupported extension: name={name!r}, params={params!r}.',
+                            response = response,
+                        )
             
             subprotocol = None
             received_subprotocols = response_headers.get_all(SEC_WEBSOCKET_PROTOCOL)
             if (received_subprotocols is not None):
                 if available_subprotocols is None:
-                    raise InvalidHandshake(f'No subprotocols supported, but received {received_subprotocols!r}.')
+                    raise InvalidHandshake(
+                        f'No subprotocols supported, but received {received_subprotocols!r}.',
+                        response = response,
+                    )
                 
                 parsed_subprotocol_values = []
                 for received_subprotocol in received_subprotocols:
                     parsed_subprotocol_values.extend(parse_subprotocols(received_subprotocol))
                 
                 if len(parsed_subprotocol_values) > 1:
-                    raise InvalidHandshake(f'Multiple subprotocols: {parsed_subprotocol_values!r}.')
+                    raise InvalidHandshake(
+                        f'Multiple subprotocols: {parsed_subprotocol_values!r}.',
+                        response = response,
+                    )
                 
                 subprotocol = parsed_subprotocol_values[0]
                 
                 if subprotocol not in available_subprotocols:
-                    raise InvalidHandshake(f'Unsupported subprotocol: {subprotocol}.')
+                    raise InvalidHandshake(f'Unsupported subprotocol: {subprotocol}.', response=response)
             
             connection = response.connection
             protocol = connection.protocol
@@ -1592,10 +1616,10 @@ class WSServerProtocol(WebSocketCommonProtocol):
                         early_response = await early_response
                 
                 if (early_response is not None):
-                    raise AbortHandshake(*early_response)
+                    raise AbortHandshake(*early_response, request=request)
                 
             else:
-                raise AbortHandshake(SERVICE_UNAVAILABLE, 'Server is shutting down.')
+                raise AbortHandshake(SERVICE_UNAVAILABLE, 'Server is shutting down.', request=request)
             
             connections = []
             connection_headers = request_headers.get_all(CONNECTION)
@@ -1617,31 +1641,34 @@ class WSServerProtocol(WebSocketCommonProtocol):
             
             received_keys = request_headers.get_all(SEC_WEBSOCKET_KEY)
             if received_keys is None:
-                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_KEY!r} from headers')
+                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_KEY!r} from headers', request=request)
             
             if len(received_keys) > 1:
-                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_KEY!r} values at headers')
+                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_KEY!r} values at headers', request=request)
             
             key = received_keys[0]
         
             try:
                 raw_key = b64decode(key.encode(), validate=True)
             except BinasciiError:
-                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}: {key!r}.')
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}: {key!r}.', request=request)
             
             if len(raw_key) != 16:
-                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_KEY!r}, should be length 16; {key!r}.')
+                raise InvalidHandshake(
+                    f'Invalid {SEC_WEBSOCKET_KEY!r}, should be length 16; {key!r}.',
+                    request = request,
+                )
             
             sw_version = request_headers.get_all(SEC_WEBSOCKET_VERSION)
             if sw_version is None:
-                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_VERSION!r} values at headers.')
+                raise InvalidHandshake(f'Missing {SEC_WEBSOCKET_VERSION!r} values at headers.', request=request)
             
             if len(sw_version) > 1:
-                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_VERSION!r} values at headers.')
+                raise InvalidHandshake(f'Multiple {SEC_WEBSOCKET_VERSION!r} values at headers.', request=request)
             
             sw_version = sw_version[0]
             if sw_version != '13':
-                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_VERSION!r}: {sw_version!r}.')
+                raise InvalidHandshake(f'Invalid {SEC_WEBSOCKET_VERSION!r}: {sw_version!r}.', request=request)
             
             while True:
                 origin = self.origin
@@ -1693,7 +1720,10 @@ class WSServerProtocol(WebSocketCommonProtocol):
                             break
                     else:
                         # no matching extension
-                        raise InvalidHandshake(f'Unsupported extension: name={name!r}, params={params!r}.')
+                        raise InvalidHandshake(
+                            f'Unsupported extension: name={name!r}, params={params!r}.',
+                            request = request,
+                        )
                     
                     # If we didn't break from the loop, no extension in our list matched what the client sent. The
                     # extension is declined.
@@ -1803,7 +1833,7 @@ class WSServerProtocol(WebSocketCommonProtocol):
             elif isinstance(err, InvalidHandshake):
                 status = BAD_REQUEST
                 headers = imultidict()
-                body = f'Failed to open a WebSocket connection: {err}.\n'.encode()
+                body = f'Failed to open a WebSocket connection: {err.message}.\n'.encode()
             elif isinstance(err, PayloadError):
                 status = BAD_REQUEST
                 headers = imultidict()

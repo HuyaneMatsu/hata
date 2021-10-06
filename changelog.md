@@ -10,6 +10,8 @@ Improve auto completion and error handling of slash extension.
 - Add `UserFlag.bot_http_interactions`.
 - Add `InvalidHandshake.response`.
 - Add `InvalidHandshake.message`.
+- Add `InvalidHandshake.request`.
+- Add `AbortHandshake.request`.
 
 ##### hata.ext.slash
 

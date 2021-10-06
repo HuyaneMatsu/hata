@@ -7,18 +7,24 @@ class PayloadError(Exception):
     pass
 
 
-class HandshakeError(Exception):
-    pass
-
-class InvalidHandshake(HandshakeError):
+class InvalidHandshake(Exception):
     """
     Raised when websocket handshake fails.
     
     Attributes
     ----------
-    response : ``
+    message : `str`
+        Error message.
+    response : `None` or ``ClientResponse``
+        Received http answer.
+    request : ``RawRequestMessage``
+        Received raw http request.
     """
-    pass
+    def __init__(self, message, *, response=None, request=None):
+        self.response = response
+        self.message = message
+        self.request = request
+        Exception.__init__(self, message)
 
 
 class HttpProcessingError(Exception):
@@ -34,15 +40,15 @@ class HttpProcessingError(Exception):
     headers : `None` or ``imultidict`` of (`str`, `str`) items
         Respective headers.
     """
-    def __init__(self, code=0, message='', headers=None):
+    def __init__(self, message='', code=0, headers=None):
         self.code = code
         self.headers = headers
         self.message = message
         
-        Exception.__init__(self, f'HTTP {self.code}, message={message!r}, headers={self.headers!r}')
+        Exception.__init__(self, f'HTTP {code}, message={message!r}, headers={headers!r}')
 
 
-class AbortHandshake(HttpProcessingError, HandshakeError):
+class AbortHandshake(HttpProcessingError, InvalidHandshake):
     """
     Raised when websocket handshake is aborted on server side.
     
@@ -54,7 +60,19 @@ class AbortHandshake(HttpProcessingError, HandshakeError):
         Error message. Defaults to empty string.
     headers : `None` or ``imultidict`` of (`str`, `str`) items
         Respective headers.
+    response : `None` or ``ClientResponse``
+        Received http answer.
+    request : ``RawRequestMessage``
+        Received raw http request.
     """
+    def __init__(self, message='', code=0, headers=None, *, response=None, request=None):
+        self.response = response
+        self.message = message
+        self.request = request
+        self.code = code
+        self.headers = headers
+        
+        Exception.__init__(self, f'HTTP {code}, message={message!r}, headers={headers!r}')
 
 
 class ProxyError(HttpProcessingError):
@@ -101,7 +119,7 @@ class ContentEncodingError(HttpProcessingError, PayloadError):
         Respective headers.
     """
     def __init__(self, message='Bad Request', headers=None):
-        HttpProcessingError.__init__(self, 400, message, headers)
+        HttpProcessingError.__init__(self, message, 400, headers)
 
 
 class ConnectionClosed(Exception):

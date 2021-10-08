@@ -71,7 +71,7 @@ from ..color import Color
 from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
-from ..scheduled_event import PrivacyLevel
+from ..scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntityType
 from ..message.utils import process_message_chunk
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
@@ -84,7 +84,8 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
-    get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id
+    get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
+    get_scheduled_event_id
 from .utils import UserGuildPermission, Typer, BanEntry
 from .ready_state import ReadyState
 
@@ -8116,6 +8117,322 @@ class Client(ClientUserPBase):
         data = await self.http.stage_get(channel_id)
         return Stage(data)
     
+    # Scheduled events
+    
+    async def scheduled_event_create(self, guild, name, start, *, description=None, end=None,
+            privacy_level=PrivacyLevel.guild_only, location=None, stage=None, voice=None):
+        """
+        Creates a guild scheduled events.
+        
+        To define, where the event will take place, use the `location`, `stage` or `voice` parameters.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild`` or `int`
+            The guild, where to create the scheduled event.
+        name : `str`
+            The event's name. It's length can be in range [1:100].
+        start : `datetime``
+            When the event will start.
+        description : `None` or `str`, Optional (Keyword only)
+            The event's description. It's length can be in range [0:1000].
+        end : `None` or `datetime` Optional (Keyword only)
+            When the event will end.
+        privacy_level : ``PrivacyLevel`` or `int`, Optional (Keyword only)
+            The privacy level of the event. Whether it is global or guild only.
+        location : `str`, Optional (Keyword only)
+            The location, where the event will take place.
+        stage : ``ChannelStage`` or `int`, Optional (Keyword only)
+            The stage channel, where the event will take place.
+        voice : ``ChannelVoice`` or `int`, Optional (Keyword only)
+            The voice channel, where the event will take place.
+        
+        Returns
+        -------
+        scheduled_event : ``ScheduledEvent``
+            The created event.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` is neither ``Guild``, nor `int` instance.
+            - If `privacy_level` is neither ``PrivacyLevel``, nor `int` instance.
+            - If `stage` is neither ``ChannelStage``, nor `int` instance.
+            - If `voice` is neither ``ChannelVoice``, nor `int` instance.
+            - If neither `location`, `stage` or `voice` parameters is given.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `name` is not `str` instance.
+            - If `name`'s length is out of the expected range.
+            - If `description is neither `None` nor `str` instance.
+            - If `description`'s length is out of the expected range.
+            - If `location` is not `str` instance.
+            - If `start` is not `datetime` instance.
+            - If `end `is neither `None`, nor `datetime` instance.
+        """
+        guild_id = get_guild_id(guild)
+        
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(f'`name` can be given as `sts` instance, got '
+                    f'{topic.__class__.__name__}.')
+            
+            name_length = len(name)
+            if (name_length < 1) or (name_length > 100):
+                raise AssertionError(f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.')
+        
+        if __debug__:
+            if not isinstance(start, datetime):
+                raise AssertionError(f'`start` can be `datetime` instance, got {start.__class__.__name__}.')
+            
+            if (end is not None) and (not isinstance(end, datetime)):
+                raise AssertionError(f'`end` can be either `None` or `datetime` instance, got '
+                    f'{end.__class__.__name__}.')
+        
+        if isinstance(privacy_level, PrivacyLevel):
+            privacy_level_value = privacy_level.value
+        elif isinstance(privacy_level, int):
+            privacy_level_value = privacy_level
+        else:
+            raise TypeError(f'`privacy_level` can be given either as {PrivacyLevel.__name__} or `int` '
+                f'instance, got {privacy_level.__class__.__name__}.')
+        
+        if (description is not None):
+            if __debug__:
+                if (not isinstance(description, str)):
+                    raise AssertionError(f'`description` can be given as `None` or as `str` instance, got '
+                        f'{description.__class__.__name__}.')
+                
+                description_length = len(description)
+                if description_length > 1000:
+                    raise AssertionError(f'description length can be in range [0:1000], got {description_length!r}, '
+                        f'{description!r}.')
+            
+            if not description:
+                description = None
+        
+        if (location is not None):
+            if __debug__:
+                if not isinstance(location, str):
+                    raise AssertionError(f'`location` can be given as `str` instance, got '
+                        f'{location.__class__.__name__}.')
+            
+            channel_id = None
+            entity_metadata = {'location': location}
+            entity_type = ScheduledEventEntityType.location
+        
+        elif (stage is not None):
+            channel_id = get_channel_id(stage, ChannelStage)
+            entity_metadata = None
+            entity_type = ScheduledEventEntityType.stage
+        
+        elif (voice is not None):
+            channel_id = get_channel_id(voice, ChannelVoice)
+            entity_metadata = None
+            entity_type = ScheduledEventEntityType.voice
+            
+        else:
+            raise TypeError(f'Either `location`, `stage` or `voice` parameters are required.')
+        
+        data = {
+            'name' : name,
+            'privacy_level': privacy_level_value,
+            'channel_id': channel_id,
+            'entity_metadata': entity_metadata,
+            'entity_type': entity_type.value,
+            'scheduled_start_time': datetime_to_timestamp(start),
+        }
+        
+        if (description is not None):
+            data['description'] = description
+        
+        if (end is not None):
+            data['scheduled_end_time'] = datetime_to_timestamp(end)
+        
+        data = await self.http.scheduled_event_create(guild_id, data)
+        return ScheduledEvent(data)
+    
+    # In theory you can edit the target entity is as well, but we will ignore it for now.
+    
+    async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...):
+        """
+        Edits the given scheduled event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent`` or `int`
+            The scheduled event to edit.
+        name : `str`, Optional (Keyword only)
+            The new name of the scheduled event. It's length can be in range [1:100].
+        description : `None` or `str`, Optional (Keyword only)
+            The new description of the scheduled event. It's length can be in range [0:1000].
+            
+            Pass it as `None` to remove the old one.
+        
+        start : `datetime`, Optional (Keyword only)
+            The new start of teh scheduled event.
+        end : `None` or `datetime`
+            The end of the of the scheduled event.
+            
+            Pass it as `None` to remove the old end.
+        
+        Raises
+        ------
+        TypeError
+            - If `scheduled_event` is neither ``ScheduledEvent``, nor `int` instance.
+            - If `privacy_level` is neither ``PrivacyLevel``, nor `int` instance.
+            - If `stage` is neither ``ChannelStage``, nor `int` instance.
+            - If `voice` is neither ``ChannelVoice``, nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `name` is not `str` instance.
+            - If `name`'s length is out of the expected range.
+            - If `description is neither `None` nor `str` instance.
+            - If `description`'s length is out of the expected range.
+            - If `location` is not `str` instance.
+            - If `start` is not `datetime` instance.
+            - If `end `is neither `None`, nor `datetime` instance.
+        """
+        scheduled_event_id = get_scheduled_event_id(scheduled_event)
+        
+        data = {}
+        
+        if (name is not ...):
+            if __debug__:
+                name_length = len(name)
+                if (name_length < 1) or (name_length > 100):
+                    raise AssertionError(f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.')
+            
+            data['name'] = name
+        
+        
+        if (description is not ...):
+            if description is None:
+                description = ''
+            else:
+                if __debug__:
+                    if (not isinstance(description, str)):
+                        raise AssertionError(f'`description` can be given as `None` or as `str` instance, got '
+                            f'{description.__class__.__name__}.')
+                    
+                    description_length = len(description)
+                    if description_length > 1000:
+                        raise AssertionError(f'description length can be in range [0:1000], got '
+                            f'{description_length!r}, {description!r}.')
+            
+            data['description'] = description
+        
+        if (start is not ...):
+            if __debug__:
+                if not isinstance(start, datetime):
+                    raise AssertionError(f'`start` can be `datetime` instance, got {start.__class__.__name__}.')
+            
+            data['scheduled_start_time'] = datetime_to_timestamp(start)
+        
+        if (end is not ...):
+            if __debug__:
+                if (end is not None) and (not isinstance(end, datetime)):
+                    raise AssertionError(f'`end` can be either `None` or `datetime` instance, got '
+                        f'{end.__class__.__name__}.')
+            
+            data['scheduled_end_time'] = None if end is None else datetime_to_timestamp(end)
+        
+        if data:
+            await self.http.scheduled_event_edit(scheduled_event_id, data)
+        
+    
+    async def scheduled_event_delete(self, scheduled_event):
+        """
+        Edits the given scheduled event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent`` or `int`
+            The scheduled event to edit.
+        
+        Raises
+        ------
+        TypeError
+            If `scheduled_event` is neither ``ScheduledEvent``, nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        scheduled_event_id = get_scheduled_event_id(scheduled_event)
+        await self.http.scheduled_event_delete(scheduled_event_id)
+    
+    
+    async def scheduled_event_get(self, scheduled_event):
+        """
+        Gets the given scheduled event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent`` or `int`
+            The scheduled event to get.
+        
+        Returns
+        -------
+        scheduled_event : ``ScheduledEvent``
+        
+        Raises
+        ------
+        TypeError
+            If `scheduled_event` is neither ``ScheduledEvent``, nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        scheduled_event_id = get_scheduled_event_id(scheduled_event)
+        data = await self.http.scheduled_event_get(scheduled_event_id, {'with_user_count', None})
+        return ScheduledEvent(data)
+    
+    
+    async def scheduled_event_get_all_guild(self, guild):
+        """
+        Gets the given guild's scheduled event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to get it's scheduled of.
+        
+        Returns
+        -------
+        scheduled_events : `list` of ``ScheduledEvent``
+        
+        Raises
+        ------
+        TypeError
+            If `guild` is neither ``Guild`` nor `int` instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id = get_guild_id(guild)
+        scheduled_event_datas = await self.http.scheduled_event_get_all_guild(guild_id, {'with_user_count': True})
+        return [ScheduledEvent(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
+    
+    
     # Thread
     
     async def guild_thread_get_all_active(self, guild):
@@ -8130,7 +8447,7 @@ class Client(ClientUserPBase):
             The guild to get it's threads of.
         
         Returns
-        ------
+        -------
         threads : `list` of ``ChannelThread``
         
         Raises
@@ -10487,7 +10804,7 @@ class Client(ClientUserPBase):
         Parameters
         ----------
         guild : ``Guild``
-            Th guild, what's invite will be edited.
+            The guild, what's invite will be edited.
         vanity_code : `str`
             The new code of the guild's vanity invite.
         reason : `None` or `str`, Optional (Keyword only)
@@ -14335,7 +14652,7 @@ class Client(ClientUserPBase):
             await KOKORO.render_exc_async(err, before, after)
             return False
         
-        # Some Discord implementations send string reesponse for some weird reason.
+        # Some Discord implementations send string response for some weird reason.
         if isinstance(data, str):
             try:
                 data = from_json(data)

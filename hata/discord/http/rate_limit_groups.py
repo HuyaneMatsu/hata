@@ -798,6 +798,30 @@ Group Details
     - Resets after : `UN`
     - Notes : Untested. `DiscordException Not Found (404): 404: Not Found`
 
+- scheduled_event_delete
+    - Endpoint : `/guild-events/{scheduled_event_id}`
+    - Method : `DELETE`
+    - Required auth : `UN`
+    - Limiter : `UN`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- scheduled_event_get
+    - Endpoint : `/guild-events/{scheduled_event_id}`
+    - Method : `GET`
+    - Required auth : `UN`
+    - Limiter : `UN`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- scheduled_event_edit
+    - Endpoint : `/guild-events/{scheduled_event_id}`
+    - Method : `PATCH`
+    - Required auth : `UN`
+    - Limiter : `UN`
+    - Limit : `UN`
+    - Resets after : `UN`
+
 - guild_create
     - Endpoint : `/guilds`
     - Method : `POST`
@@ -1003,6 +1027,22 @@ Group Details
     - Limiter : `GLOBAL`
     - Limit : `1`
     - Resets after : `2.0`
+
+- scheduled_event_get_all_guild
+    - Endpoint : `/guilds/{guild_id}/events`
+    - Method : `GET`
+    - Required auth : `UN`
+    - Limiter : `UN`
+    - Limit : `UN`
+    - Resets after : `UN`
+
+- scheduled_event_create
+    - Endpoint : `/guilds/{guild_id}/events`
+    - Method : `POST`
+    - Required auth : `UN`
+    - Limiter : `UN`
+    - Limit : `UN`
+    - Resets after : `UN`
 
 - integration_get_all
     - Endpoint : `/guilds/{guild_id}/integrations`
@@ -1875,6 +1915,9 @@ discovery_validate_term = RateLimitGroup()
 client_gateway_hooman = RateLimitGroup()
 client_gateway_bot = RateLimitGroup()
 discovery_guild_get_all = RateLimitGroup(optimistic=True) # untested, not yet added
+scheduled_event_delete = RateLimitGroup(optimistic=True) # untested
+scheduled_event_get = RateLimitGroup(optimistic=True) # untested
+scheduled_event_edit = RateLimitGroup(optimistic=True) # untested
 guild_create = RateLimitGroup.unlimited()
 guild_delete = RateLimitGroup.unlimited()
 guild_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1899,6 +1942,8 @@ emoji_create = RateLimitGroup()
 emoji_delete = RateLimitGroup()
 emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 emoji_edit = RateLimitGroup()
+scheduled_event_get_all_guild = RateLimitGroup(optimistic=True) # untested
+scheduled_event_create = RateLimitGroup(optimistic=True) # untested
 integration_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 integration_create = RateLimitGroup(optimistic=True) # untested
 integration_delete = RateLimitGroup(optimistic=True) # untested

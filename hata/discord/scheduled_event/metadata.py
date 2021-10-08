@@ -158,3 +158,59 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         speaker_ids = self.speaker_ids
         if (speaker_ids is not None):
             return tuple(create_partial_user_from_id(speaker_id) for speaker_id in speaker_ids)
+
+
+class LocationEntityMetadata(ScheduledEventEntityMetadata):
+    """
+    Location entity metadata of ``ScheduledEvent`` instances.
+    
+    Attributes
+    ----------
+    location : `None` or `str`
+        The place where the event will take place.
+    """
+    __slots__ = ('location', )
+    
+    def __new__(cls, location):
+        """
+        Creates a new location entity metadata for ``ScheduledEvent`` instances.
+        
+        Parameters
+        ----------
+        location : `str`
+            The location.
+        
+        Raises
+        ------
+        TypeError
+            If `location`'s type is incorrect.
+        ValueError
+            If `location` is an empty string.
+        """
+        if not isinstance(location, str):
+            raise TypeError(f'`location can be only `str` instance, got `{location.__class__.__name__}`.')
+        
+        if not location:
+            raise ValueError(f'`location` cannot be empty string.')
+        
+        self = object.__new__(cls)
+        self.location = location
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ScheduledEventEntityMetadata.from_data)
+    def from_data(cls, data):
+        location = data.get('location', None)
+        
+        self = object.__new__(cls)
+        self.location = location
+        return self
+    
+    
+    @classmethod
+    @copy_docs(ScheduledEventEntityMetadata.to_data)
+    def to_data(self, data):
+        return {
+            'location': self.location,
+        }

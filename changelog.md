@@ -12,12 +12,42 @@ Improve auto completion and error handling of slash extension.
 - Add `InvalidHandshake.message`.
 - Add `InvalidHandshake.request`.
 - Add `AbortHandshake.request`.
+- Add `ScheduledEvent.sku_ids`.
+- Add `ScheduledEventEntityType.voice`.
+- Add `ScheduledEventEntityType.location`.
+- Add `manage_events` permission.
+- Add `ScheduledEvent._update_attributes`.
+- Add `Client.scheduled_event_create`.
+- Add `Client.scheduled_event_edit`.
+- Add `Client.scheduled_event_delete`.
+- Add `Client.scheduled_event_get`.
+- Add `Client.scheduled_event_get_all_guild`.
+- Add `DiscordHttpClient.scheduled_event_create`.
+- Add `DiscordHttpClient.scheduled_event_edit`.
+- Add `DiscordHttpClient.scheduled_event_delete`.
+- Add `DiscordHttpClient.scheduled_event_get`.
+- Add `DiscordHttpClient.scheduled_event_get_all_guild`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_get_all_guild`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_create`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_delete`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_get`.
+- Add `RATE_LIMIT_GROUPS.scheduled_event_edit`.
+- Add `Client.events.scheduled_event_create`.
+- Add `Client.events.scheduled_event_delete`.
+- Add `Client.events.scheduled_event_edit`.
+- Add `Client.events.scheduled_event_user_subscribe`.
+- Add `Client.events.scheduled_event_user_unsubscribe`.
 
 ##### hata.ext.slash
 
 - Auto completers now can be registered to command groups and to ``Slasher`` as well.
 - Auto completers with multiple parameter names can be registered with 1 call.
 - Add `.error` decorator for slasher application commands, to auto completers and to component commands.
+
+#### Renames, Deprecation & Removals
+
+- Rename `ScheduledEvent.scheduled_start` to `.start`.
+- Rename `ScheduledEvent.scheduled_end` to `.end`.
 
 ## 1.1.108 *\[2021-10-01\]*
 

@@ -1,4 +1,5 @@
 __all__ = ()
+
 from os.path import split as split_path
 from collections import deque
 
@@ -20,6 +21,7 @@ from ..stage import Stage
 from ..webhook import Webhook
 from ..emoji import Emoji, parse_reaction
 from ..sticker import Sticker
+from ..scheduled_event import ScheduledEvent
 
 
 ComponentBase = include('ComponentBase')
@@ -464,7 +466,7 @@ def get_channel_id(channel, channel_type):
     else:
         channel_id = maybe_snowflake(channel)
         if channel_id is None:
-            raise TypeError(f'`channel` can be either given as `{channel_type.__name__}` or as `int` instance, '
+            raise TypeError(f'The channel can be either given as `{channel_type.__name__}` or as `int` instance, '
                 f'got {channel.__class__.__name__}.')
     
     return channel_id
@@ -1312,3 +1314,33 @@ def get_sticker_and_id(sticker):
             f'got {sticker.__class__.__name__}.')
         
     return sticker, sticker_id
+
+
+def get_scheduled_event_id(scheduled_event):
+    """
+    Gets the scheduled event's identifier from the given guild or of it's identifier.
+    
+    Parameters
+    ----------
+    scheduled_event : ``ScheduledEvent``, `int`
+        The scheduled event, or it's identifier.
+    
+    Returns
+    -------
+    scheduled_event_id : `int`
+        The scheduled event's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `scheduled_event`'s type is incorrect.
+    """
+    if isinstance(scheduled_event, ScheduledEvent):
+        scheduled_event_id = scheduled_event.id
+    else:
+        scheduled_event_id = maybe_snowflake(scheduled_event)
+        if scheduled_event_id is None:
+            raise TypeError(f'`scheduled_event` can be given as `{ScheduledEvent.__name__}` or `int` instance, got '
+                f'{scheduled_event.__class__.__name__}.')
+    
+    return scheduled_event_id

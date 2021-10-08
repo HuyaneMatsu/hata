@@ -59,6 +59,11 @@ INTENT_SHIFT_EVENTS = {
         'THREAD_MEMBER_UPDATE',
         'THREAD_MEMBERS_UPDATE',
         'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE',
+        'GUILD_SCHEDULED_EVENT_CREATE',
+        'GUILD_SCHEDULED_EVENT_UPDATE',
+        'GUILD_SCHEDULED_EVENT_DELETE',
+        'GUILD_SCHEDULED_EVENT_USER_CREATE',
+        'GUILD_SCHEDULED_EVENT_USER_DELETE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
@@ -163,8 +168,8 @@ def populate_dispatch_event_intents():
     from itertools import chain
     
     for intent_shift, event_names in chain(
-            INTENT_SHIFT_EVENTS.items(), ((INTENT_SHIFT_DEFAULT_EVENT, GLOBAL_INTENT_SHIFT_EVENTS),)
-                ):
+        INTENT_SHIFT_EVENTS.items(), ((INTENT_SHIFT_DEFAULT_EVENT, GLOBAL_INTENT_SHIFT_EVENTS),)
+    ):
         
         for event_name in event_names:
             try:
@@ -211,7 +216,12 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                        |       |                            | THREAD_LIST_SYNC,                           |
     |                                        |       |                            | THREAD_MEMBER_UPDATE,                       |
     |                                        |       |                            | THREAD_MEMBERS_UPDATE,                      |
-    |                                        |       |                            | GUILD_APPLICATION_COMMAND_COUNTS_UPDATE     |
+    |                                        |       |                            | GUILD_APPLICATION_COMMAND_COUNTS_UPDATE,    |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_CREATE,               |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_UPDATE,               |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_DELETE,               |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_CREATE,          |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_DELETE,          |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_USERS               | 1     | guild_users                | GUILD_MEMBER_ADD,                           |
     |                                        |       |                            | GUILD_MEMBER_UPDATE,                        |

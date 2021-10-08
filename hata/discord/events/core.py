@@ -178,6 +178,11 @@ add_event_handler('stage_delete', 2, 'STAGE_INSTANCE_DELETE',)
 add_event_handler('thread_user_add', 4, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
 add_event_handler('thread_user_delete', 3, ('THREAD_MEMBER_UPDATE', 'THREAD_MEMBERS_UPDATE'),)
 add_event_handler('voice_server_update', 2, 'VOICE_SERVER_UPDATE',)
+add_event_handler('scheduled_event_create', 2, 'GUILD_SCHEDULED_EVENT_CREATE',)
+add_event_handler('scheduled_event_edit', 3, 'GUILD_SCHEDULED_EVENT_UPDATE',)
+add_event_handler('scheduled_event_delete', 2, 'GUILD_SCHEDULED_EVENT_DELETE',)
+add_event_handler('scheduled_event_user_subscribe', 3, 'GUILD_SCHEDULED_EVENT_USER_CREATE',)
+add_event_handler('scheduled_event_user_unsubscribe', 3, 'GUILD_SCHEDULED_EVENT_USER_DELETE',)
 
 
 class ParserSettingOption:
@@ -192,6 +197,7 @@ class ParserSettingOption:
         The parser's name(s) also known as the dispatch event's.
     """
     __slots__ = ('intent_shift', 'name')
+    
     def __new__(cls, name):
         """
         Creates new ``ParserSettingOption`` instances from the given name.

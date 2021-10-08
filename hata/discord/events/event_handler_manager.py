@@ -498,6 +498,46 @@ class EventHandlerManager:
         | unicode_emoji | `None` or ``Emoji``   |
         +---------------+-----------------------+
     
+    scheduled_event_create(client: ``Client``, scheduled_event: ``ScheduledEvent``):
+        Called when a scheduled event is created.
+    
+    scheduled_event_delete(client: ``Client``, scheduled_event: ``ScheduledEvent``):
+        Called when a scheduled event is deleted.
+    
+    scheduled_event_edit(client: ``Client``, scheduled_event: ``ScheduledEvent``, old_attributes: {`None`, `dict`}):
+        Called when a scheduled event is edited.
+        
+        If the scheduled event is cached, `old_attributes` will be a dictionary including the changed attributes in
+        `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional any can be any of the following:
+        
+            +---------------------------+-------------------------------+
+            | Key                       | Value                         |
+            +===========================+===============================+
+            | description               | `None` or `str`               |
+            +---------------------------+-------------------------------+
+            | image                     | ``Icon``                      |
+            +---------------------------+-------------------------------+
+            | name                      | `str`                         |
+            +---------------------------+-------------------------------+
+            | send_start_notification   | `bool`                        |
+            +---------------------------+-------------------------------+
+            | end                       | `None` or `datetime`          |
+            +---------------------------+-------------------------------+
+            | start                     | `None` or `datetime`          |
+            +---------------------------+-------------------------------+
+            | sku_ids                   | `None` or `tuple` of `int`    |
+            +---------------------------+-------------------------------+
+            | status                    | ``ScheduledEventStatus``      |
+            +---------------------------+-------------------------------+
+    
+    scheduled_event_user_subscribe(client: ``Client``, `scheduled_event_id: `int`, user_id: `int`):
+        Called when a user subscribes to a scheduled event.
+    
+    scheduled_event_user_unsubscribe(client: ``Client``, `scheduled_event_id: `int`, user_id: `int`):
+        Called when a user unsubscribes from a scheduled event.
+    
     shutdown(client : ``Client``):
         Called when ``Client.stop`` or ``Client.disconnect`` is called indicating, that the client is logging off and
         all data should be saved if needed.

@@ -37,6 +37,7 @@ PERMISSION_SHIFT_MANAGE_WEBHOOKS = 29
 PERMISSION_SHIFT_MANAGE_EMOJIS_AND_STICKERS = 30
 PERMISSION_SHIFT_USE_APPLICATION_COMMANDS = 31
 PERMISSION_SHIFT_REQUEST_TO_SPEAK = 32
+PERMISSION_SHIFT_MANAGE_EVENTS = 33
 PERMISSION_SHIFT_MANAGE_THREADS = 34
 PERMISSION_SHIFT_CREATE_PUBLIC_THREADS = 35
 PERMISSION_SHIFT_CREATE_PRIVATE_THREADS = 36
@@ -78,6 +79,7 @@ PERMISSION_MASK_MANAGE_WEBHOOKS = 1<<PERMISSION_SHIFT_MANAGE_WEBHOOKS
 PERMISSION_MASK_MANAGE_EMOJIS_AND_STICKERS = 1<<PERMISSION_SHIFT_MANAGE_EMOJIS_AND_STICKERS
 PERMISSION_MASK_USE_APPLICATION_COMMANDS = 1<<PERMISSION_SHIFT_USE_APPLICATION_COMMANDS
 PERMISSION_MASK_REQUEST_TO_SPEAK = 1<<PERMISSION_SHIFT_REQUEST_TO_SPEAK
+PERMISSION_MASK_MANAGE_EVENTS = 1<<PERMISSION_SHIFT_MANAGE_EVENTS
 PERMISSION_MASK_MANAGE_THREADS = 1<<PERMISSION_SHIFT_MANAGE_THREADS
 PERMISSION_MASK_CREATE_PUBLIC_THREADS = 1<<PERMISSION_SHIFT_CREATE_PUBLIC_THREADS
 PERMISSION_MASK_CREATE_PRIVATE_THREADS = 1<<PERMISSION_SHIFT_CREATE_PRIVATE_THREADS
@@ -158,6 +160,8 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-------------------------------+-------------------+
     | request_to_speak              | 32                |
     +-------------------------------+-------------------+
+    | manage_events                 | 33                |
+    +-------------------------------+-------------------+
     | manage_threads                | 34                |
     +-------------------------------+-------------------+
     | create_public_threads         | 35                |
@@ -208,6 +212,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'manage_emojis_and_stickers': PERMISSION_SHIFT_MANAGE_EMOJIS_AND_STICKERS,
         'use_application_commands': PERMISSION_SHIFT_USE_APPLICATION_COMMANDS,
         'request_to_speak': PERMISSION_SHIFT_REQUEST_TO_SPEAK,
+        'manage_events': PERMISSION_SHIFT_MANAGE_EVENTS,
         'manage_threads': PERMISSION_SHIFT_MANAGE_THREADS,
         'create_public_threads': PERMISSION_SHIFT_CREATE_PUBLIC_THREADS,
         'create_private_threads': PERMISSION_SHIFT_CREATE_PRIVATE_THREADS,
@@ -215,48 +220,6 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
         'start_embedded_activities': PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES,
     }
-    
-    
-    @property
-    def can_manage_emojis(self):
-        """
-        The `manage_emojis` permission is deprecated and will be removed in 2021 September.
-        Please use ``.manage_emojis_and_stickers`` instead.
-        """
-        warnings.warn(
-            'The `manage_emojis` permission is deprecated and will be removed in 2021 September. '
-            'Please use `manage_emojis_and_stickers`. instead',
-            FutureWarning)
-        
-        return self.can_manage_emojis_and_stickers
-    
-    
-    @property
-    def allow_manage_emojis(self):
-        """
-        The `manage_emojis` permission is deprecated and will be removed in 2021 September.
-        Please use ``.manage_emojis_and_stickers`` instead.
-        """
-        warnings.warn(
-            'The `manage_emojis` permission is deprecated and will be removed in 2021 September. '
-            'Please use `manage_emojis_and_stickers` instead.',
-            FutureWarning)
-        
-        return self.allow_manage_emojis_and_stickers
-
-
-    @property
-    def deny_manage_emojis(self):
-        """
-        The `manage_emojis` permission is deprecated and will be removed in 2021 September.
-        Please use ``.manage_emojis_and_stickers`` instead.
-        """
-        warnings.warn(
-            'The `manage_emojis` permission is deprecated and will be removed in 2021 September. '
-            'Please use `.manage_emojis_and_stickers` instead.',
-            FutureWarning)
-        
-        return self.deny_manage_emojis_and_stickers
     
     
     @property
@@ -379,6 +342,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     manage_emojis_and_stickers = True,
     use_application_commands = True,
     request_to_speak = True,
+    manage_events = True,
     manage_threads = True,
     create_public_threads = True,
     create_private_threads = True,
@@ -421,6 +385,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     manage_roles = False,
     manage_webhooks = False,
     manage_emojis_and_stickers = False,
+    manage_events = False,
     manage_threads = False,
     use_application_commands = True,
     request_to_speak = False,
@@ -475,6 +440,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     manage_emojis_and_stickers = False,
     use_application_commands = True,
     request_to_speak = False,
+    manage_events = False,
     manage_threads = True,
     create_public_threads = True,
     create_private_threads = True,
@@ -531,6 +497,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     manage_emojis_and_stickers = False,
     use_application_commands = False,
     request_to_speak = True,
+    manage_events = True,
     manage_threads = False,
     create_public_threads = False,
     create_private_threads = False,
@@ -588,6 +555,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     manage_emojis_and_stickers = False,
     use_application_commands = False,
     request_to_speak = True,
+    manage_events = True,
     manage_threads = False,
     create_public_threads = False,
     create_private_threads = False,
@@ -598,5 +566,4 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
 PERMISSION_CAN_SEND_MESSAGES_ALL = Permission().update_by_keys(
     send_messages = True,
     send_messages_in_threads = True,
-
 )

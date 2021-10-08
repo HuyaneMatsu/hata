@@ -8,7 +8,7 @@ from ...backend.futures import Task
 from ...backend.export import include
 
 from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, \
-    STAGES, USERS
+    STAGES, USERS, SCHEDULED_EVENTS
 from ..user import User, create_partial_user_from_id, thread_user_create, thread_user_update, thread_user_pop, \
     thread_user_delete
 from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
@@ -23,6 +23,7 @@ from ..interaction import ApplicationCommand, ApplicationCommandPermission, Inte
 from ..integration import Integration
 from ..stage import Stage
 from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji_from_data
+from ..scheduled_event import ScheduledEvent
 
 from .core import maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
 from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
@@ -293,6 +294,7 @@ def MESSAGE_DELETE__OPT_SC(client, data):
 
 def MESSAGE_DELETE__OPT_MC(client, data):
     channel_id = int(data['channel_id'])
+    
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
@@ -301,9 +303,9 @@ def MESSAGE_DELETE__OPT_MC(client, data):
         return
     
     if first_client(
-            channel.clients,
-            INTENT_MASK_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_MESSAGES
-                ) is not client:
+        channel.clients,
+        INTENT_MASK_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_MESSAGES,
+    ) is not client:
         return
     
     message_id = int(data['id'])
@@ -3969,3 +3971,202 @@ add_parser(
     GUILD_APPLICATION_COMMAND_COUNTS_UPDATE,
     GUILD_APPLICATION_COMMAND_COUNTS_UPDATE)
 del GUILD_APPLICATION_COMMAND_COUNTS_UPDATE
+
+
+
+def GUILD_SCHEDULED_EVENT_CREATE_CAL_SC(client, data):
+    scheduled_event = ScheduledEvent(data)
+    
+    Task(client.events.scheduled_event_create(client, scheduled_event), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_CREATE_CAL_MC(client, data):
+    scheduled_event = ScheduledEvent(data)
+    
+    event_handler = client.events.scheduled_event_create
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, scheduled_event), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_CREATE_OPT(client, data):
+    pass
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_CREATE',
+    GUILD_SCHEDULED_EVENT_CREATE_CAL_SC,
+    GUILD_SCHEDULED_EVENT_CREATE_CAL_MC,
+    GUILD_SCHEDULED_EVENT_CREATE_OPT,
+    GUILD_SCHEDULED_EVENT_CREATE_OPT)
+del GUILD_SCHEDULED_EVENT_CREATE_CAL_SC, \
+    GUILD_SCHEDULED_EVENT_CREATE_CAL_MC, \
+    GUILD_SCHEDULED_EVENT_CREATE_OPT
+
+
+def GUILD_SCHEDULED_EVENT_DELETE_CAL_SC(client, data):
+    scheduled_event = ScheduledEvent(data)
+    
+    Task(client.events.scheduled_event_delete(client, scheduled_event), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_DELETE_CAL_MC(client, data):
+    scheduled_event = ScheduledEvent(data)
+    
+    event_handler = client.events.scheduled_event_delete
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, scheduled_event), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_DELETE_OPT(client, data):
+    pass
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_DELETE',
+    GUILD_SCHEDULED_EVENT_DELETE_CAL_SC,
+    GUILD_SCHEDULED_EVENT_DELETE_CAL_MC,
+    GUILD_SCHEDULED_EVENT_DELETE_OPT,
+    GUILD_SCHEDULED_EVENT_DELETE_OPT)
+del GUILD_SCHEDULED_EVENT_DELETE_CAL_SC, \
+    GUILD_SCHEDULED_EVENT_DELETE_CAL_MC, \
+    GUILD_SCHEDULED_EVENT_DELETE_OPT
+
+
+def GUILD_SCHEDULED_EVENT_UPDATE_CAL_SC(client, data):
+    scheduled_event_id = int(data['id'])
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        scheduled_event = ScheduledEvent(data)
+        old_attributes = None
+    else:
+        old_attributes = scheduled_event._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    Task(client.events.scheduled_event_edit(client, scheduled_event, old_attributes), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_UPDATE_CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
+    
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        # Should not happen.
+        return
+    
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    scheduled_event_id = int(data['id'])
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        scheduled_event = ScheduledEvent(data)
+        old_attributes = None
+    else:
+        old_attributes = scheduled_event._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    for client in clients:
+        event_handler = client.events.scheduled_event_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, scheduled_event, old_attributes), KOKORO)
+
+
+def GUILD_SCHEDULED_EVENT_UPDATE_OPT_SC(client, data):
+    scheduled_event_id = int(data['id'])
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        pass
+    else:
+        scheduled_event._update_attributes(data)
+
+def GUILD_SCHEDULED_EVENT_UPDATE_OPT_MC(client, data):
+    scheduled_event_id = int(data['id'])
+    try:
+        scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+    except KeyError:
+        return
+    
+    guild_id = int(data['guild_id'])
+    
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        # Should not happen.
+        return
+    
+    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS)
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    if first_client(guild.clients, INTENT_MASK_GUILDS) is not client:
+        return
+
+    scheduled_event._update_attributes(data)
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_UPDATE',
+    GUILD_SCHEDULED_EVENT_UPDATE_CAL_SC,
+    GUILD_SCHEDULED_EVENT_UPDATE_CAL_MC,
+    GUILD_SCHEDULED_EVENT_UPDATE_OPT_SC,
+    GUILD_SCHEDULED_EVENT_UPDATE_OPT_MC)
+del GUILD_SCHEDULED_EVENT_UPDATE_CAL_SC, \
+    GUILD_SCHEDULED_EVENT_UPDATE_CAL_MC, \
+    GUILD_SCHEDULED_EVENT_UPDATE_OPT_SC, \
+    GUILD_SCHEDULED_EVENT_UPDATE_OPT_MC
+
+def GUILD_SCHEDULED_EVENT_USER_CREATE_CAL_SC(client, data):
+    scheduled_event_id = int(data['guild_scheduled_event_id'])
+    user_id = int(data['user_id'])
+    
+    Task(client.events.scheduled_event_user_subscribe(client, scheduled_event_id, user_id), KOKORO)
+    
+def GUILD_SCHEDULED_EVENT_USER_CREATE_CAL_MC(client, data):
+    event_handler = client.events.scheduled_event_user_subscribe
+    if (event_handler is not None):
+        scheduled_event_id = int(data['guild_scheduled_event_id'])
+        user_id = int(data['user_id'])
+        
+        Task(event_handler(client, scheduled_event_id, user_id), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_USER_CREATE_OPT(client, data):
+    pass
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_USER_CREATE',
+    GUILD_SCHEDULED_EVENT_USER_CREATE_CAL_SC,
+    GUILD_SCHEDULED_EVENT_USER_CREATE_CAL_MC,
+    GUILD_SCHEDULED_EVENT_USER_CREATE_OPT,
+    GUILD_SCHEDULED_EVENT_USER_CREATE_OPT)
+del GUILD_SCHEDULED_EVENT_USER_CREATE_CAL_SC, \
+    GUILD_SCHEDULED_EVENT_USER_CREATE_CAL_MC, \
+    GUILD_SCHEDULED_EVENT_USER_CREATE_OPT
+
+
+def GUILD_SCHEDULED_EVENT_USER_DELETE_CAL_SC(client, data):
+    scheduled_event_id = int(data['guild_scheduled_event_id'])
+    user_id = int(data['user_id'])
+    
+    Task(client.events.scheduled_event_user_unsubscribe(client, scheduled_event_id, user_id), KOKORO)
+    
+def GUILD_SCHEDULED_EVENT_USER_DELETE_CAL_MC(client, data):
+    event_handler = client.events.scheduled_event_user_unsubscribe
+    if (event_handler is not None):
+        scheduled_event_id = int(data['guild_scheduled_event_id'])
+        user_id = int(data['user_id'])
+        
+        Task(event_handler(client, scheduled_event_id, user_id), KOKORO)
+
+def GUILD_SCHEDULED_EVENT_USER_DELETE_OPT(client, data):
+    pass
+
+add_parser(
+    'GUILD_SCHEDULED_EVENT_USER_DELETE',
+    GUILD_SCHEDULED_EVENT_USER_DELETE_CAL_SC,
+    GUILD_SCHEDULED_EVENT_USER_DELETE_CAL_MC,
+    GUILD_SCHEDULED_EVENT_USER_DELETE_OPT,
+    GUILD_SCHEDULED_EVENT_USER_DELETE_OPT)
+del GUILD_SCHEDULED_EVENT_USER_DELETE_CAL_SC, \
+    GUILD_SCHEDULED_EVENT_USER_DELETE_CAL_MC, \
+    GUILD_SCHEDULED_EVENT_USER_DELETE_OPT

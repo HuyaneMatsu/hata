@@ -1536,6 +1536,52 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/stage-instances/{channel_id}',
         )
     
+    
+    # Scheduled events
+    
+    async def scheduled_event_create(self, guild_id, data):
+        return await self.dicscord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_create, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_POST,
+            f'{API_ENDPOINT}/guilds/{guild_id}/events',
+            data,
+        )
+    
+    
+    async def scheduled_event_edit(self, scheduled_event_id, data):
+        return await self.dicscord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PATCH,
+            f'{API_ENDPOINT}/guild-events/{scheduled_event_id}',
+            data,
+        )
+    
+    
+    async def scheduled_event_delete(self, scheduled_event_id, data):
+        return await self.dicscord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_delete, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/guild-events/{scheduled_event_id}',
+        )
+    
+    
+    async def scheduled_event_get(self, scheduled_event_id, params):
+        return await self.dicscord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guild-events/{scheduled_event_id}',
+            params = params,
+        )
+    
+    
+    async def scheduled_event_get_all_guild(self, guild_id, params):
+        return await self.dicscord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get_all_guild, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/events',
+            params = params,
+        )
+    
     # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
     # data structure: {'sticker_ids': [sticker_id_1, ...]}
     async def greet(self, channel_id, data):

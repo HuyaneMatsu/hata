@@ -2,7 +2,7 @@ __all__ = ('PrivacyLevel', 'ScheduledEventEntityType', 'ScheduledEventStatus',)
 
 from ..bases import PreinstancedBase, Preinstance as P
 
-from .metadata import StageEntityMetadata
+from .metadata import StageEntityMetadata, LocationEntityMetadata
 
 class ScheduledEventStatus(PreinstancedBase):
     """
@@ -77,13 +77,17 @@ class ScheduledEventEntityType(PreinstancedBase):
     
     Every predefined scheduled event can be accessed as class attribute as well:
     
-    +-----------------------+---------------+-------+---------------------------+
-    | Class attribute name  | Name          | Value | Metadata type             |
-    +=======================+===============+=======+===========================+
-    | none                  | none          | 0     | None                      |
-    +-----------------------+---------------+-------+---------------------------+
-    | stage                 | stage         | 1     | ``StageEntityMetadata``   |
-    +-----------------------+---------------+-------+---------------------------+
+    +-----------------------+---------------+-------+-------------------------------+
+    | Class attribute name  | Name          | Value | Metadata type                 |
+    +=======================+===============+=======+===============================+
+    | none                  | none          | 0     | None                          |
+    +-----------------------+---------------+-------+-------------------------------+
+    | stage                 | stage         | 1     | ``StageEntityMetadata``       |
+    +-----------------------+---------------+-------+-------------------------------+
+    | voice                 | voice         | 2     | `None`                        |
+    +-----------------------+---------------+-------+-------------------------------+
+    | location              | location      | 3     | ``LocationEntityMetadata``    |
+    +-----------------------+---------------+-------+-------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -137,6 +141,9 @@ class ScheduledEventEntityType(PreinstancedBase):
     
     none = P(0, 'none', None)
     stage = P(1, 'stage', StageEntityMetadata)
+    voice = P(2, 'voice', None)
+    location = P(3, 'location', LocationEntityMetadata)
+
 
 
 class PrivacyLevel(PreinstancedBase):

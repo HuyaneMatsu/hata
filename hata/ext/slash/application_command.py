@@ -1001,6 +1001,9 @@ class SlasherApplicationCommand:
                 self._parent_reference = None
                 self._self_reference = None
                 
+                if (command_function is not None):
+                    command_function._parent_reference = self._get_self_reference()
+                
                 if (wrappers is not None):
                     for wrapper in wrappers:
                         wrapper.apply(self)
@@ -1039,6 +1042,9 @@ class SlasherApplicationCommand:
             self._exception_handlers = None
             self._parent_reference = None
             self._self_reference = None
+            
+            if (command_function is not None):
+                command_function._parent_reference = self._get_self_reference()
             
             if (wrappers is not None):
                 for wrapper in wrappers:

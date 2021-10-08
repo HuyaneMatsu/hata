@@ -51,7 +51,7 @@ from ..oauth2.helpers import parse_locale, DEFAULT_LOCALE
 from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken, INTENT_ERROR_CODES, \
     RESHARD_ERROR_CODES
 from ..core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
-    MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, USERS
+    MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, USERS, SCHEDULED_EVENTS
 from ..voice import VoiceClient
 from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
 from ..integration import Integration
@@ -85,7 +85,7 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
     get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
-    get_scheduled_event_id
+    get_scheduled_event_id, get_scheduled_event_and_id
 from .utils import UserGuildPermission, Typer, BanEntry
 from .ready_state import ReadyState
 
@@ -8375,7 +8375,7 @@ class Client(ClientUserPBase):
         await self.http.scheduled_event_delete(scheduled_event_id)
     
     
-    async def scheduled_event_get(self, scheduled_event):
+    async def scheduled_event_get(self, scheduled_event, *, force_update=False):
         """
         Gets the given scheduled event.
         
@@ -8385,6 +8385,8 @@ class Client(ClientUserPBase):
         ----------
         scheduled_event : ``ScheduledEvent`` or `int`
             The scheduled event to get.
+        force_update : `bool`
+            Whether the scheduled event should be requested even if it supposed to be up to date.
         
         Returns
         -------
@@ -8399,9 +8401,22 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        scheduled_event_id = get_scheduled_event_id(scheduled_event)
-        data = await self.http.scheduled_event_get(scheduled_event_id, {'with_user_count', None})
-        return ScheduledEvent(data)
+        scheduled_event, scheduled_event_id = get_scheduled_event_and_id(scheduled_event)
+        if (scheduled_event is None) or force_update:
+            data = await self.http.scheduled_event_get(scheduled_event_id, {'with_user_count', None})
+        
+            if scheduled_event is None:
+                try:
+                    scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
+                except KeyError:
+                    scheduled_event = ScheduledEvent(data)
+                else:
+                    scheduled_event._update_attributes(data)
+                    scheduled_event._update_counts_only(data)
+            else:
+                scheduled_event = ScheduledEvent(data)
+        
+        return scheduled_event
     
     
     async def scheduled_event_get_all_guild(self, guild):

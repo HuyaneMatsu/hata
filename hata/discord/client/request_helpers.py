@@ -7,7 +7,7 @@ from ...backend.utils import to_json
 from ...backend.export import include
 from ...backend.formdata import Formdata
 
-from ..core import MESSAGES, CHANNELS, GUILDS, USERS, STICKERS
+from ..core import MESSAGES, CHANNELS, GUILDS, USERS, STICKERS, SCHEDULED_EVENTS
 from ..message import Message, MessageReference, MessageRepr
 from ..user import ClientUserBase
 from ..channel import ChannelText, ChannelStage
@@ -1344,3 +1344,38 @@ def get_scheduled_event_id(scheduled_event):
                 f'{scheduled_event.__class__.__name__}.')
     
     return scheduled_event_id
+
+
+def get_scheduled_event_and_id(scheduled_event):
+    """
+    Gets the scheduled event's identifier from the given guild or of it's identifier.
+    
+    Parameters
+    ----------
+    scheduled_event : ``ScheduledEvent``, `int`
+        The scheduled event, or it's identifier.
+    
+    Returns
+    -------
+    scheduled_event : `None` or ``ScheduledEvent``
+        The scheduled event.
+    scheduled_event_id : `int`
+        The scheduled event's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `scheduled_event`'s type is incorrect.
+    """
+    if isinstance(scheduled_event, ScheduledEvent):
+        scheduled_event =  scheduled_event
+        scheduled_event_id = scheduled_event.id
+    else:
+        scheduled_event_id = maybe_snowflake(scheduled_event)
+        if scheduled_event_id is None:
+            raise TypeError(f'`scheduled_event` can be given as `{ScheduledEvent.__name__}` or `int` instance, got '
+                f'{scheduled_event.__class__.__name__}.')
+        
+        scheduled_event = SCHEDULED_EVENTS.get(scheduled_event_id, None)
+    
+    return  scheduled_event, scheduled_event_id

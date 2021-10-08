@@ -77,12 +77,7 @@ class ScheduledEvent(DiscordEntity):
             
             self._set_attributes(data)
         else:
-            try:
-                user_count = data['user_count']
-            except KeyError:
-                pass
-            else:
-                self.user_count = user_count
+            self._update_counts_only(data)
         
         return self
     
@@ -130,7 +125,6 @@ class ScheduledEvent(DiscordEntity):
             entity_id = int(entity_id)
         self.entity_id = entity_id
         
-        
         self._update_attributes(data)
     
     def _update_attributes(self, data):
@@ -142,8 +136,6 @@ class ScheduledEvent(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Scheduled event data.
         """
-        # Do not set this in ``._difference_update_attributes``, since that is only called from dispatch event parsers.
-
         description = data.get('description', None)
         if (description is not None) and (not description):
             description = None
@@ -264,6 +256,22 @@ class ScheduledEvent(DiscordEntity):
         
         return old_attributes
     
+    def update_counts_only(self, data):
+        """
+        Updates the scheduled event's count attributes only.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Scheduled event data.
+        """
+        try:
+            user_count = data['user_count']
+        except KeyError:
+            pass
+        else:
+            self.user_count = user_count
+        
     
     def __repr__(self):
         """Returns the guild event's representation."""

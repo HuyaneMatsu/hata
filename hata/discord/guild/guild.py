@@ -833,16 +833,19 @@ class Guild(DiscordEntity, immortal=True):
         
         else:
             voice_state._set_cache_user(user)
-            old_channel_id, new_channel_id = voice_state._update_channel(data)
-            if new_channel_id == 0:
-                yield VOICE_STATE_LEAVE, voice_state, old_channel_id
-            
             old_attributes = voice_state._difference_update_attributes(data)
             if old_attributes:
                 yield VOICE_STATE_UPDATE, voice_state, old_attributes
             
-            if old_channel_id != new_channel_id:
+            old_channel_id, new_channel_id = voice_state._update_channel(data)
+            if new_channel_id == 0:
+                yield VOICE_STATE_LEAVE, voice_state, old_channel_id
+            elif old_channel_id != new_channel_id:
                 yield VOICE_STATE_MOVE, voice_state, old_channel_id
+            
+
+            
+            
         
     
     def _update_voice_state_restricted(self, data, user):

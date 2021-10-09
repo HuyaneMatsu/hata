@@ -1,4 +1,4 @@
-# 3rd party voice clients (VIP)
+# 3rd party voice clients
 
 If you ever wanted to play music with Python you might have stumbled upon a big problem - Python GIL.
 

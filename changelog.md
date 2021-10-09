@@ -1,3 +1,9 @@
+## 1.1.110 *\[2021-10-??\]*
+
+#### Bug Fixes
+
+`client.events.user_voice_leave` could be triggered with `client.events.user_voice_move`. Same for voice client events.
+
 ## 1.1.109 *\[2021-10-10\]*
 
 ### Summary

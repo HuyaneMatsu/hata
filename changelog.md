@@ -1,11 +1,13 @@
-## 1.1.110 *\[2021-10-??\]*
+## 1.1.110 *\[2021-10-10]*
 
 #### Bug Fixes
 
-- `client.events.user_voice_leave` could be triggered with `client.events.user_voice_move`. Same for voice client events.
+- `client.events.user_voice_leave` could be triggered with `client.events.user_voice_move`. Same for voice client
+    events.
 - `VOICE_STATE_UPDATE__CAL_SC` was not calling user events if client's voice state changed.
+- `client.events.user_voice_update` could be called with bad parameter.
 
-## 1.1.109 *\[2021-10-10\]*
+## 1.1.109 *\[2021-10-8\]*
 
 ### Summary
 

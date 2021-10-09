@@ -3020,7 +3020,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 
                 event_handler = client.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, VOICE_STATE_JOIN), KOKORO)
+                    Task(event_handler(client, voice_state, change), KOKORO)
                 
                 continue
     
@@ -3047,7 +3047,7 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
             if action == VOICE_STATE_UPDATE:
                 event_handler = client.events.user_voice_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client, voice_state, VOICE_STATE_JOIN), KOKORO)
+                    Task(event_handler(client, voice_state, change), KOKORO)
                 continue
 
 

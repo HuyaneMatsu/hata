@@ -2,7 +2,8 @@
 
 #### Bug Fixes
 
-`client.events.user_voice_leave` could be triggered with `client.events.user_voice_move`. Same for voice client events.
+- `client.events.user_voice_leave` could be triggered with `client.events.user_voice_move`. Same for voice client events.
+- `VOICE_STATE_UPDATE__CAL_SC` was not calling user events if client's voice state changed.
 
 ## 1.1.109 *\[2021-10-10\]*
 

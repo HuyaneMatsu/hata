@@ -2984,25 +2984,45 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
                 event_handler = client.events.voice_client_join
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                     Task(event_handler(client, voice_state), KOKORO)
+                
+                event_handler = client.events.user_voice_join
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state), KOKORO)
+                
                 continue
             
             if action == VOICE_STATE_MOVE:
                 event_handler = client.events.voice_client_move
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(event_handler(client, voice_state, change), KOKORO)
+                
+                event_handler = client.events.user_voice_move
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state, change), KOKORO)
+                
                 continue
             
             if action == VOICE_STATE_LEAVE:
                 event_handler = client.events.voice_client_leave
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(event_handler(client, voice_state, change), KOKORO)
+                
+                event_handler = client.events.user_voice_leave
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state, change), KOKORO)
+                
                 continue
             
             if action == VOICE_STATE_UPDATE:
                 event_handler = client.events.voice_client_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
                      Task(event_handler(client, voice_state, change), KOKORO)
-            continue
+                
+                event_handler = client.events.user_voice_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, voice_state, VOICE_STATE_JOIN), KOKORO)
+                
+                continue
     
     else:
         for action, voice_state, change in guild._update_voice_state(data, user):

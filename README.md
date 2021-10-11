@@ -8,7 +8,7 @@
 
 <p align="center">
     <a href="https://discord.gg/3cH2r5d">Support</a> |
-    <a href="www.astil.dev/project/hata/docs/hata">Documentation</a> |
+    <a href="https://www.astil.dev/project/hata/docs/hata">Documentation</a> |
     <a href="https://github.com/HuyaneMatsu/hata">Source</a>
 </p>
 

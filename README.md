@@ -1,6 +1,24 @@
-# Hata
+<h1 align="center">
+    <b><a href="https://github.com/HuyaneMatsu/hata">Hata</a></b>
+</h1>
 
-Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
+<h5 align="center">
+    A blazing fast Discord API wrapper that you can't deny
+</h5>
+
+<p align="center">
+    <a href="https://discord.gg/3cH2r5d">Support</a> |
+    <a href="www.astil.dev/project/hata/docs/hata">Documentation</a> |
+    <a href="https://github.com/HuyaneMatsu/hata">Source</a>
+</p>
+
+<h1></h1>
+
+### About
+
+Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrapper written in Python named after [Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro).
+
+<h1></h1>
 
 #### Why hata?
 
@@ -10,7 +28,7 @@ Hata is an async Discord API wrapper written in Python named after Hata no Kokor
 
 - Performant
     
-    Fast concurrent code using async/await syntax, cache control, PyPy support and more!
+    Fast concurrent code based on async/await paradigm with cache control, PyPy support and much more!
 
 - Newest API features
     
@@ -18,16 +36,22 @@ Hata is an async Discord API wrapper written in Python named after Hata no Kokor
 
 - 100% Python
 
-    Completely relies on Python! Easy to read, easy to understand, easy to code.
+    Built in Python! Easy to code, easy to read, easy to maintain.
 
+
+<h1></h1>
 
 #### Why not hata?
 
 - Small community
-    
-    Hata has a small and slowly increasing community. The chance of getting help outside of our
+
+    Hata has a small but, slowly growing community. The chance of getting help outside of our
     [cosy discord server](https://discord.gg/3cH2r5d) equals to zero.
 
+
+## [Documentation](https://www.astil.dev/project/hata/docs/hata)
+
+The library reference is available [*here*](https://www.astil.dev/project/hata/docs/hata) & the tutorial is available [*here*](https://github.com/HuyaneMatsu/hata/blob/master/docs/topics/README.md)
 
 ## Usage
 
@@ -52,6 +76,7 @@ async def message_create(client, message):
 
 Nue.start()
 ```
+<h1></h1>
 
 An improved example using the `commands` extension to handle common use cases.
 
@@ -70,6 +95,7 @@ async def ping(client, message):
 
 Saki.start()
 ```
+<h1></h1>
 
 Or use slash commands!
 
@@ -96,15 +122,17 @@ Seija.start()
 > (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
 > limitation.
 
-If you wonder, how to run up more clients, just put the two code snippet into the same file.
+<h1></h1>
+If you are wondering, how to start more clients, just put the two code snippet into the same file.
 
-Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you
-can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
-ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
 
-## Installing guide
+*Hata leaves the main thread free, [`client.start()`](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client#start) blocks it only till the client logs in (or fails it), although you
+can still use the [`start_clients`](https://github.com/HuyaneMatsu/hata/blob/master/docs/examples/e02_multiple_clients/main.py) function, what as it says, starts up all the non-running clients parallelly, so go
+ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.*
 
-To install the package use:
+## Installation
+
+To install Hata simply do
 
 ```shell
 # Linux/OS X
@@ -112,11 +140,14 @@ $ python3 -m pip install hata
 
 # Windows
 $ python -m pip install hata
+
+# Voice Support
+$ python -m pip install hata[voice]
 ```
+And you are good to go! Hata has native pypy support as well if you need some more speed!
+<h1></h1>
 
-Hata has native pypy support as well if you need some more speed!
-
-### Dependencies
+## Dependencies
 
 #### Requirements
 
@@ -135,9 +166,9 @@ If you have issues, suggestions, want to contribute, or just want to send cute n
 
 [![](https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner1)](https://discord.gg/3cH2r5d)
 
-## Acknowledgement
+## Acknowledgements
 
-Shout-Outs for our brave testers, who are helping the most improving the library:
+Shout-Out to our brave testers, who are helping the most to improve Hata!
 
 - `Nekosia` \[Grammar\]
 - [`Mina Ashido`](https://github.com/Technisha) \[Feature requests & Bug hunting\]

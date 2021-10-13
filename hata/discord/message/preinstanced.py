@@ -417,20 +417,6 @@ class MessageType(PreinstancedBase):
     thread_started = P(21, 'thread_started', MESSAGE_DEFAULT_CONVERTER)
     invite_reminder = P(22, 'invite_reminder', convert_invite_reminder)
     context_command = P(23, 'context_command', MESSAGE_DEFAULT_CONVERTER)
-    
-    
-    @class_property
-    def application_command(cls):
-        """
-        ``.application_command`` is deprecated, please use ``.slash_command`` instead.
-        Will be removed in 2021 September.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.application_command` is deprecated, and will be removed in 2021 November. '
-            f'Please use `{cls.__name__}.slash_command` instead.',
-            FutureWarning)
-        
-        return cls.slash_command
 
 
 del convert_add_user

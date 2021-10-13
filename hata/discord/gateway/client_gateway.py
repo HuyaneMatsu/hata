@@ -148,8 +148,6 @@ class DiscordGateway:
         ------
         DiscordGatewayException
             The client tries to connect with bad or not acceptable intent or shard value.
-        InvalidToken
-            When the client's token is invalid.
         DiscordException
         """
         client = self.client
@@ -222,8 +220,6 @@ class DiscordGateway:
         ConnectionClosed
         InvalidHandshake
         WebSocketProtocolError
-        InvalidToken
-            When the client's token is invalid
         DiscordException
         """
         while True:
@@ -267,6 +263,8 @@ class DiscordGateway:
         
         Raises
         ------
+        ConnectionClosed
+            If the websocket connection closed.
         TimeoutError
             If the gateways's `.kokoro` is not beating, meanwhile it should.
         """
@@ -336,10 +334,13 @@ class DiscordGateway:
         try:
             parser = PARSERS[event]
         except KeyError:
-            Task(client.events.error(client,
-                f'{self.__class__.__name__}._received_message',
-                f'Unknown dispatch event {event}\nData: {data!r}'),
-                KOKORO,
+            Task(
+                client.events.error(
+                        client,
+                        f'{self.__class__.__name__}._received_message',
+                        f'Unknown dispatch event {event}\nData: {data!r}'
+                    ),
+                    KOKORO,
             )
             
             return False
@@ -419,10 +420,13 @@ class DiscordGateway:
             return False
         
         client = self.client
-        Task(client.events.error(client,
-            f'{self.__class__.__name__}._special_operation',
-            f'Unknown operation {operation}\nData: {data!r}'),
-                KOKORO,
+        Task(
+            client.events.error(
+                client,
+                f'{self.__class__.__name__}._special_operation',
+                f'Unknown operation {operation}\nData: {data!r}'
+            ),
+            KOKORO,
         )
         
         return False
@@ -700,8 +704,6 @@ class DiscordGatewaySharder:
         ------
         DiscordGatewayException
             The client tries to connect with bad or not acceptable intent or shard value.
-        InvalidToken
-            When the client's token is invalid.
         DiscordException
             Any exception raised by the discord API when connecting.
         """

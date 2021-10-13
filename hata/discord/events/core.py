@@ -19,6 +19,7 @@ PARSERS = {}
 
 EVENT_HANDLER_EXPECTED_ARGUMENT_COUNTS = {}
 EVENT_HANDLER_NAME_TO_PARSER_NAMES = {}
+EVENT_HANDLER_NAMES = set()
 
 REGISTERED_CLIENTS = WeakSet()
 PARSER_SETTINGS = {}
@@ -76,33 +77,113 @@ def add_event_handler(name, value, parser):
     
     EVENT_HANDLER_EXPECTED_ARGUMENT_COUNTS[name] = value
     EVENT_HANDLER_NAME_TO_PARSER_NAMES[name] = parser
+    EVENT_HANDLER_NAMES.add(name)
 
 
-def get_event_parser_parameter_count(name):
+def get_plugin_event_handler_and_parameter_count(event_handler_manager, name):
     """
     Returns the amount of parameters, what the events would pass to the respective event.
     
     Parameters
     ----------
+    event_handler_manager : ``EventHandlerManager``
+        The respective event handler.
     name : `str`
         The event's name.
     
     Returns
     -------
+    plugin : ``EventHandlerManager``, ``EventHandlerPlugin``
+        The event handler or the plugin owning the event.
     parameter_count : `int`
         The amount of parameters, what to the respective event would be passed.
-    
-    Raises
-    ------
-    LookupError
-        There is no event defined with the specific name.
     """
     try:
         parameter_count = EVENT_HANDLER_EXPECTED_ARGUMENT_COUNTS[name]
     except KeyError:
-        raise LookupError(f'Invalid Event name: `{name!r}`.') from None
+        pass
+    else:
+        return event_handler_manager, parameter_count
     
-    return parameter_count
+    plugin_events = event_handler_manager._plugin_events
+    if (plugin_events is not None):
+        try:
+            event_handler_plugin = plugin_events[name]
+        except KeyError:
+            pass
+        else:
+            return event_handler_plugin, event_handler_plugin._plugin_parameter_counts[name]
+    
+    return None, 0
+
+
+def get_plugin_event_handler_and_parser_names(event_handler_manager, name):
+    """
+    Returns the plugin implementing the given attribute, and it's dispatch event parser names.
+    
+    Parameters
+    ----------
+    event_handler_manager : ``EventHandlerManager``
+        The respective event handler.
+    name : `str`
+        The event's name.
+    
+    Returns
+    -------
+    plugin : `None`, ``EventHandlerManager``, ``EventHandlerPlugin``
+        The event handler or the plugin owning the event.
+    parser_names : `None` or `tuple` of `str`
+        Dispatch event parser's names relating to the event.
+    """
+    try:
+        parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES[name]
+    except KeyError:
+        pass
+    else:
+        return event_handler_manager, parser_names
+    
+    plugin_events = event_handler_manager._plugin_events
+    if (plugin_events is not None):
+        try:
+            event_handler_plugin = plugin_events[name]
+        except KeyError:
+            pass
+        else:
+            return event_handler_plugin, None
+    
+    return None, None
+
+
+def get_plugin_event_handler(event_handler_manager, name):
+    """
+    Returns teh plugin implementing the attribute.
+    
+    Parameters
+    ----------
+    event_handler_manager : ``EventHandlerManager``
+        The respective event handler.
+    name : `str`
+        The event's name.
+    
+    Returns
+    -------
+    plugin : `None`, ``EventHandlerManager``, ``EventHandlerPlugin``
+        The event handler or the plugin owning the event.
+    """
+    if name in EVENT_HANDLER_NAMES:
+        return event_handler_manager
+    
+    plugin_events = event_handler_manager._plugin_events
+    if (plugin_events is not None):
+        try:
+            event_handler_plugin = plugin_events[name]
+        except KeyError:
+            pass
+        else:
+            return event_handler_plugin
+    
+    return None
+
 
 add_event_handler('error', 3, None,)
 add_event_handler('launch', 1, None,)

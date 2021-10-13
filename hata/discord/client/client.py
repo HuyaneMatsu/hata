@@ -1026,50 +1026,6 @@ class Client(ClientUserPBase):
                 self.token = token
     
     
-    async def client_edit_nick(self, guild, nick, *, reason=None):
-        """
-        Changes the client's nick at the specified Guild. A nick name's length can be between 1-32. An extra parameter
-        reason is accepted as well, what will show up at the respective guild's audit logs.
-        
-        This method is deprecated and will be removed in 2021 September. Please use ``.client_guild_profile_edit``
-        instead.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : `None`, `int` or ``Guild`` instance
-            The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
-            returns instantly.
-        nick : `None` or `str`
-            The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
-        reason : `None` or `str`, Optional (Keyword only)
-            Will show up at the respective guild's audit logs.
-        
-        Raises
-        ------
-        TypeError
-            `guild` was not given neither as ``Guild`` or `int` instance.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        AssertionError
-            - If the nick's length is over `32`.
-            - If the nick was not given neither as `None` or `str` instance.
-        
-        Notes
-        -----
-        No request is done if the client's actual nickname at the guild is same as the method would change it too.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.client_edit_nick` is deprecated, and will be removed in 2021 September. '
-            f'Please use `.client_guild_profile_edit` instead.',
-            FutureWarning)
-        
-        return await self.client_guild_profile_edit(guild, nick=nick, reason=reason)
-    
-    
     async def client_guild_profile_edit(self, guild, *, nick=..., avatar=..., reason=None):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.

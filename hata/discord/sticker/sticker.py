@@ -541,16 +541,3 @@ class Sticker(DiscordEntity, immortal=True):
         guild_id = self.guild_id
         if guild_id:
             return GUILDS.get(guild_id, None)
-    
-    
-    @property
-    def format_type(self):
-        """
-        Deprecated, please use `.format` instead. Will be removed in 2021 September.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.format_type` is deprecated, and will be removed in 2021 September. '
-            f'Please use `{self.__class__.__name__}.format` instead.',
-            FutureWarning)
-        
-        return self.format

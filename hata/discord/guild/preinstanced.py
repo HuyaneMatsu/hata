@@ -509,6 +509,8 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+-----------------------------------+
     | Class attribute names         | name                              | value                             |
     +===============================+===================================+===================================+
+    | animated_banner               | animated banner                   | ANIMATED_BANNER                   |
+    +-------------------------------+-----------------------------------+-----------------------------------+
     | animated_icon                 | animated icon                     | ANIMATED_ICON                     |
     +-------------------------------+-----------------------------------+-----------------------------------+
     | announcement_channels         | announcement channels             | NEWS                              |
@@ -607,6 +609,7 @@ class GuildFeature(PreinstancedBase):
     
     
     # predefined
+    animated_banner = P('ANIMATED_BANNER', 'animated_banner')
     animated_icon = P('ANIMATED_ICON', 'animated icon')
     announcement_channels = P('NEWS', 'announcement channels')
     banner = P('BANNER', 'banner')
@@ -644,19 +647,6 @@ class GuildFeature(PreinstancedBase):
     
     
     @class_property
-    def vanity(cls):
-        """
-        ``.vanity`` is deprecated, please use ``.vanity_invite`` instead. Will be removed in 2021 September.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.vanity` is deprecated, and will be removed in 2021 September. '
-            f'Please use `{cls.__name__}.vanity_invite` instead.',
-            FutureWarning)
-        
-        return cls.vanity_invite
-    
-    
-    @class_property
     def welcome_screen(cls):
         """
         ``.welcome_screen`` is deprecated, please use ``.welcome_screen_enabled`` instead. Will be removed in 2021
@@ -673,8 +663,8 @@ class GuildFeature(PreinstancedBase):
     @class_property
     def verification_screen(cls):
         """
-        ``.verification_screen`` is deprecated, please use ``.verification_screen_enabled`` instead. Will be removed in 2021
-        November.
+        ``.verification_screen`` is deprecated, please use ``.verification_screen_enabled`` instead. Will be removed in
+        2021 November.
         """
         warnings.warn(
             f'`{cls.__name__}.verification_screen` is deprecated, and will be removed in 2021 November. '

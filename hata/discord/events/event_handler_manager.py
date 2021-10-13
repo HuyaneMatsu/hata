@@ -5,14 +5,35 @@ from functools import partial as partial_func
 
 from ...backend.utils import WeakReferer
 
-from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, get_event_parser_parameter_count, \
-    PARSER_SETTINGS
+from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, \
+    get_plugin_event_handler_and_parameter_count, PARSER_SETTINGS, EVENT_HANDLER_NAMES, \
+    get_plugin_event_handler_and_parser_names, get_plugin_event_handler
 from .handling_helpers import ChunkWaiter, check_parameter_count_and_convert, asynclist, \
     check_name
 from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler, \
     default_voice_client_ghost_event_handler, default_voice_client_join_event_handler, \
     default_voice_client_move_event_handler, default_voice_client_leave_event_handler, \
     default_voice_client_update_event_handler, default_voice_client_shutdown_event_handler
+from .event_handler_plugin import EventHandlerPlugin
+
+DEFAULT_EVENT_HANDLERS = (
+    ('error', default_error_event_handler, False),
+    ('guild_user_chunk', ChunkWaiter, True),
+    ('voice_server_update', default_voice_server_update_event_handler, False),
+    ('voice_client_ghost', default_voice_client_ghost_event_handler, False),
+    ('voice_client_join', default_voice_client_join_event_handler, False),
+    ('voice_client_move', default_voice_client_move_event_handler, False),
+    ('voice_client_leave', default_voice_client_leave_event_handler, False),
+    ('voice_client_update', default_voice_client_update_event_handler, False),
+    ('voice_client_shutdown', default_voice_client_shutdown_event_handler, False),
+)
+
+EVENT_HANDLER_ATTRIBUTES = frozenset((
+    '_launch_called',
+    'client_reference',
+    '_plugin_events',
+    '_plugins',
+))
 
 class EventHandlerManager:
     """
@@ -25,11 +46,15 @@ class EventHandlerManager:
     ----------
     _launch_called : `bool`
         Whether The respective client's `.events.launch` was called already.
+    _plugin_events : `None` or `dict` of (`str`, ``EventHandlerPlugin``) items
+        Event name to plugin relation.
+    _plugins : `None` or `set` of ``EventHandlerPlugin``
+        Plugins added to the event handler.
     client_reference : ``WeakReferer``
         Weak reference to the parent client to avoid reference loops.
     
     Additional Event Attributes
-    --------------------------
+    ---------------------------
     application_command_create(client: ``Client``, guild_id: `int`, application_command: ``ApplicationCommand``)
         Called when you create an application guild bound to a guild.
     
@@ -755,7 +780,7 @@ class EventHandlerManager:
     webhook_update(client: ``Client``, channel: ``ChannelGuildBase``):
         Called when a webhook of a channel is updated. Discord not provides further details tho.
     """
-    __slots__ = ('client_reference', '_launch_called', *sorted(EVENT_HANDLER_NAME_TO_PARSER_NAMES))
+    __slots__ = (*EVENT_HANDLER_ATTRIBUTES, *EVENT_HANDLER_NAMES)
     
     def __init__(self, client):
         """
@@ -766,20 +791,20 @@ class EventHandlerManager:
         client : ``Client``
         """
         client_reference = WeakReferer(client)
+        
         object.__setattr__(self, 'client_reference', client_reference)
+        object.__setattr__(self, '_plugins', None)
+        object.__setattr__(self, '_plugin_events', None)
+        
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
             object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
         
-        object.__setattr__(self, 'error', default_error_event_handler)
         object.__setattr__(self, '_launch_called', False)
-        object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
-        object.__setattr__(self, 'voice_server_update', default_voice_server_update_event_handler)
-        object.__setattr__(self, 'voice_client_ghost', default_voice_client_ghost_event_handler)
-        object.__setattr__(self, 'voice_client_join', default_voice_client_join_event_handler)
-        object.__setattr__(self, 'voice_client_move', default_voice_client_move_event_handler)
-        object.__setattr__(self, 'voice_client_leave', default_voice_client_leave_event_handler)
-        object.__setattr__(self, 'voice_client_update', default_voice_client_update_event_handler)
-        object.__setattr__(self, 'voice_client_shutdown', default_voice_client_shutdown_event_handler)
+        
+        for event_handler_name, event_handler, instance_event_handler in DEFAULT_EVENT_HANDLERS:
+            if instance_event_handler:
+                event_handler = event_handler()
+            object.__setattr__(self, event_handler_name, event_handler)
     
     
     def __call__(self, func=None, name=None, overwrite=False):
@@ -802,7 +827,7 @@ class EventHandlerManager:
         
         Raises
         ------
-        AttributeError
+        LookupError
             Invalid event name.
         TypeError
             - If `func` was not given as callable.
@@ -815,37 +840,58 @@ class EventHandlerManager:
         
         name = check_name(func, name)
         
-        parameter_count = get_event_parser_parameter_count(name)
+        plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
+        
+        if plugin is None:
+            raise LookupError(f'Invalid Event name: `{name!r}`.') from None
+        
+        if plugin is self:
+            parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
+        else:
+            parser_names = None
+        
         func = check_parameter_count_and_convert(func, parameter_count, name=name)
         
-        if overwrite:
-            setattr(self, name, func)
-            return func
-        
-        parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
-        if (parser_names is None):
-            raise AttributeError(f'Event name: {name!r} is invalid.')
+        actual = getattr(plugin, name)
         
         if func is DEFAULT_EVENT_HANDLER:
-            return func
-        
-        actual = getattr(self, name)
-        if actual is DEFAULT_EVENT_HANDLER:
-            object.__setattr__(self, name, func)
+            if actual is DEFAULT_EVENT_HANDLER:
+                pass
             
-            for parser_name in parser_names:
-                parser_setting = PARSER_SETTINGS[parser_name]
-                parser_setting.add_mention(self.client_reference())
-            return func
+            else:
+                if overwrite:
+                    object.__setattr__(plugin, name, DEFAULT_EVENT_HANDLER)
+                    
+                    if (parser_names is not None) and parser_names:
+                        for parser_name in parser_names:
+                            parser_setting = PARSER_SETTINGS[parser_name]
+                            parser_setting.remove_mention(self.client_reference())
+                
+                else:
+                    pass
         
-        if type(actual) is asynclist:
-            list.append(actual, func)
-            return func
+        else:
+            if actual is DEFAULT_EVENT_HANDLER:
+                object.__setattr__(plugin, name, func)
+                
+                if (parser_names is not None) and parser_names:
+                    for parser_name in parser_names:
+                        parser_setting = PARSER_SETTINGS[parser_name]
+                        parser_setting.add_mention(self.client_reference())
+            
+            else:
+                if overwrite:
+                    object.__setattr__(plugin, name, func)
+                
+                else:
+                    if type(actual) is asynclist:
+                        list.append(actual, func)
+                    else:
+                        new = asynclist()
+                        list.append(new, actual)
+                        list.append(new, func)
+                        object.__setattr__(plugin, name, new)
         
-        new = asynclist()
-        list.append(new, actual)
-        list.append(new, func)
-        object.__setattr__(self, name, new)
         return func
     
     
@@ -857,19 +903,16 @@ class EventHandlerManager:
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
             delete(self, name)
         
-        object.__setattr__(self, 'error', default_error_event_handler)
-        object.__setattr__(self, 'guild_user_chunk', ChunkWaiter())
-        object.__setattr__(self, 'voice_server_update', default_voice_server_update_event_handler)
-        object.__setattr__(self, 'voice_client_ghost', default_voice_client_ghost_event_handler)
-        object.__setattr__(self, 'voice_client_join', default_voice_client_join_event_handler)
-        object.__setattr__(self, 'voice_client_move', default_voice_client_move_event_handler)
-        object.__setattr__(self, 'voice_client_leave', default_voice_client_leave_event_handler)
-        object.__setattr__(self, 'voice_client_update', default_voice_client_update_event_handler)
-        object.__setattr__(self, 'voice_client_shutdown', default_voice_client_shutdown_event_handler)
+        for event_handler_name, event_handler, instance_event_handler in DEFAULT_EVENT_HANDLERS:
+            if instance_event_handler:
+                event_handler = event_handler()
+            object.__setattr__(self, event_handler_name, event_handler)
+    
     
     def __setattr__(self, name, value):
         """
-        Sets the given event handler under the specified event name. Updates the respective event's parser(s) if needed.
+        Sets the given event handler under the specified event name. Updates the respective event's parser(s) if
+        needed.
         
         Parameters
         ----------
@@ -883,25 +926,52 @@ class EventHandlerManager:
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
-        parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
-        if (parser_names is None) or (not parser_names):
+        if name in EVENT_HANDLER_ATTRIBUTES:
             object.__setattr__(self, name, value)
             return
         
-        for parser_name in parser_names:
-            parser_setting = PARSER_SETTINGS[parser_name]
-            actual = getattr(self, name)
-            object.__setattr__(self, name, value)
+        plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
+        
+        if plugin is None:
+            raise AttributeError(f'Unknown attribute: `{name!r}`.') from None
+        
+        if plugin is self:
+            parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
+        else:
+            parser_names = None
+        
+
+        func = check_parameter_count_and_convert(value, parameter_count, name=name)
+        
+        actual = getattr(plugin, name)
+        
+        if func is DEFAULT_EVENT_HANDLER:
             if actual is DEFAULT_EVENT_HANDLER:
-                if value is DEFAULT_EVENT_HANDLER:
-                    continue
-                
-                parser_setting.add_mention(self.client_reference())
-                continue
+                pass
             
-            if value is DEFAULT_EVENT_HANDLER:
-                parser_setting.remove_mention(self.client_reference())
-            continue
+            else:
+                object.__setattr__(plugin, name, DEFAULT_EVENT_HANDLER)
+                
+                if (parser_names is not None) and parser_names:
+                    for parser_name in parser_names:
+                        parser_setting = PARSER_SETTINGS[parser_name]
+                        parser_setting.remove_mention(self.client_reference())
+        
+        else:
+            if actual is DEFAULT_EVENT_HANDLER:
+                object.__setattr__(plugin, name, func)
+                
+                if (parser_names is not None) and parser_names:
+                    for parser_name in parser_names:
+                        parser_setting = PARSER_SETTINGS[parser_name]
+                        parser_setting.add_mention(self.client_reference())
+            
+            else:
+                object.__setattr__(plugin, name, func)
+        
+        
+        raise AttributeError(f'Unknown attribute: `{name!r}`.') from None
+    
     
     def __delattr__(self, name):
         """
@@ -917,20 +987,59 @@ class EventHandlerManager:
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
-        actual = getattr(self, name)
+        plugin, parser_names = get_plugin_event_handler_and_parser_names(self, name)
+        if plugin is None:
+            
+            if name in EVENT_HANDLER_ATTRIBUTES:
+                message = f'Cannot delete attribute: `{name}`.'
+            else:
+                message = f'Unknown attribute: `{name!r}`.'
+            
+            raise AttributeError(message)
+        
+        
+        actual = getattr(plugin, name)
         if actual is DEFAULT_EVENT_HANDLER:
             return
         
-        object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
+        object.__setattr__(plugin, name, DEFAULT_EVENT_HANDLER)
         
-        parser_names=EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
-        if (parser_names is None) or (not parser_names):
-            # parser name can be an empty string as well for internal events
-            return
+        if (parser_names is not None) and parser_names:
+            for parser_name in parser_names:
+                parser_setting = PARSER_SETTINGS[parser_name]
+                parser_setting.remove_mention(self.client_reference())
+    
+    
+    def __getattr__(self, name):
+        """
+        Tries to get the attribute of a registered plugin.
         
-        for parser_name in parser_names:
-            parser_setting = PARSER_SETTINGS[parser_name]
-            parser_setting.remove_mention(self.client_reference())
+        Parameters
+        ----------
+        name : `str`
+            The name of the event.
+        
+        Returns
+        -------
+        event_handler : `Any`
+            Registered event handler if any.
+        
+        Raises
+        ------
+        AttributeError
+            If non of the plugins have the given attribute.
+        """
+        plugin_events = self._plugin_events
+        if (plugin_events is not None):
+            try:
+                event_handler_plugin = plugin_events[name]
+            except KeyError:
+                pass
+            else:
+                return getattr(event_handler_plugin, name)
+        
+        raise AttributeError(f'Unknown attribute: `{name!r}`.')
+    
     
     def get_handler(self, name, type_):
         """
@@ -945,14 +1054,15 @@ class EventHandlerManager:
 
         Returns
         -------
-        event_handler : `str`, `None`
+        event_handler : `None`, `Any`
             The matched event handler if any.
         """
-        if name == 'client':
+        plugin = get_plugin_event_handler(self, name)
+        if plugin is None:
             return None
         
         try:
-            actual = getattr(self, name)
+            actual = getattr(plugin, name)
         except AttributeError:
             return None
         
@@ -969,6 +1079,7 @@ class EventHandlerManager:
         
         return None
     
+    
     def remove(self, func, name=None, by_type=False, count=-1):
         """
         Removes the given event handler from the the event descriptor.
@@ -984,13 +1095,15 @@ class EventHandlerManager:
         count : `int`, Optional
             The maximal amount of the same events to remove. Negative numbers count as unlimited. Defaults to `-1`.
         """
-        if (count == 0) or (name == 'client'):
+        if (count == 0) or (name in EVENT_HANDLER_ATTRIBUTES):
             return
         
         name = check_name(func, name)
         
+        plugin = get_plugin_event_handler(self, name)
+        
         try:
-            actual = getattr(self, name)
+            actual = getattr(plugin, name)
         except AttributeError:
             return
         
@@ -1019,7 +1132,7 @@ class EventHandlerManager:
             
             if length == 1:
                 actual = list.__getitem__(actual, 0)
-                object.__setattr__(self, name, actual)
+                object.__setattr__(plugin, name, actual)
                 return
         
         else:
@@ -1029,13 +1142,74 @@ class EventHandlerManager:
             if actual != func:
                 return
         
-        object.__setattr__(self, name, DEFAULT_EVENT_HANDLER)
+        object.__setattr__(plugin, name, DEFAULT_EVENT_HANDLER)
         
-        parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
-        if (parser_names is None):
-            return
+        if plugin is self:
+            parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
+            if (parser_names is not None) and parser_names:
+                for parser_name in parser_names:
+                    parser_setting = PARSER_SETTINGS[parser_name]
+                    parser_setting.remove_mention(self.client_reference())
         
-        for parser_name in parser_names:
-            parser_setting = PARSER_SETTINGS[parser_name]
-            parser_setting.remove_mention(self.client_reference())
         return
+    
+    
+    def register_plugin(self, plugin):
+        """
+        Registers a plugin to the event handler manager.
+        
+        Parameters
+        ----------
+        plugin : ``EventHandlerPlugin``
+            The plugin to add.
+        
+        Returns
+        -------
+        plugin : ``EventHandlerPlugin``
+            The added plugin.
+        
+        Raises
+        ------
+        TypeError
+            - If `plugin` is not ``EventHandlerPlugin`` instance.
+        RuntimeError
+            - If an event name of the `plugin` is already defined by an other plugin.
+        """
+        if isinstance(plugin, EventHandlerPlugin):
+            pass
+        
+        elif issubclass(plugin, EventHandlerPlugin):
+            # Hax
+            plugin = plugin()
+        
+        else:
+            raise TypeError(f'`plugins can only be `{EventHandlerPlugin.__name__}` instances, got '
+                f'{plugin.__class__.__name__}.')
+        
+        plugins = self._plugins
+        if plugins is None:
+            plugins = set()
+            object.__setattr__(self, '_plugins', plugins)
+        
+        plugin_events = self._plugin_events
+        event_names = plugin._plugin_event_names
+        
+        if (plugin_events is None):
+            plugin_events = {}
+            object.__setattr__(self, '_plugin_events', plugin_events)
+            
+        else:
+            for event_name in event_names:
+                try:
+                    other_plugin = plugin_events[event_name]
+                except KeyError:
+                    pass
+                else:
+                    raise RuntimeError(f'`{event_name!r}` of `{plugin!r}` is already defined by: `{other_plugin!r}`')
+        
+        for event_name in event_names:
+            plugin_events[event_name] = plugin
+        
+        plugins.add(plugin)
+        
+        return plugin

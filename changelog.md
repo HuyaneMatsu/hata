@@ -6,6 +6,15 @@
 - Add `EventHandlerManager.register_plugin`.
 - Do parameter count checks inside of `EventHandlerManager.__setattr__` as well.
 - Add `EventHandlerPlugin` and other respective classes.
+- `VoiceClient.channel` is now a property.
+- `VoiceClient.guild` is now a property.
+- Add `VoiceClient.channel_id` is now a property.
+- Add `VoiceClient.guild_id` is now a property.
+
+##### ext.commands_v2
+
+- Add `CommandContext.channel_id`.
+- Add `CommandContext.guild_id`.
 
 #### Bug Fixes
 

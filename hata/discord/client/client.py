@@ -1941,7 +1941,7 @@ class Client(ClientUserPBase):
         if achievement is None:
             achievement = Achievement(data)
         else:
-            achievement._set_attributes(data)
+            achievement._update_attributes(data)
         return achievement
     
     async def achievement_delete(self, achievement):
@@ -2112,7 +2112,7 @@ class Client(ClientUserPBase):
         if application is None:
             application = Application(application_data)
         else:
-            application._set_attributes(application_data)
+            application._update_attributes(application_data)
         
         return application
     
@@ -2154,7 +2154,7 @@ class Client(ClientUserPBase):
         if eula is None:
             eula = EULA(eula_data)
         else:
-            eula._set_attributes(eula_data)
+            eula._update_attributes(eula_data)
         
         return eula
     
@@ -5930,7 +5930,7 @@ class Client(ClientUserPBase):
 ##                if client not in guild.clients:
 ##                    guild.clients.append(client)
 ##            else:
-##                profile._set_attributes(user_data)
+##                profile._update_attributes(user_data)
 ##
 ##        if not CACHE_USER:
 ##            return
@@ -7070,7 +7070,7 @@ class Client(ClientUserPBase):
             guild_discovery = GuildDiscovery(guild_discovery_data, guild)
         else:
             guild_discovery = guild
-            guild_discovery._set_attributes(guild_discovery_data)
+            guild_discovery._update_attributes(guild_discovery_data)
         
         return guild_discovery
     
@@ -9624,7 +9624,7 @@ class Client(ClientUserPBase):
         if webhook is None:
             webhook = Webhook(data)
         else:
-            webhook._set_attributes(data)
+            webhook._update_attributes(data)
         
         return webhook
     
@@ -10483,7 +10483,7 @@ class Client(ClientUserPBase):
         
             emoji = Emoji(emoji_data, guild)
         else:
-            emoji._set_attributes(emoji_data)
+            emoji._update_attributes(emoji_data)
         
         return emoji
     
@@ -12045,7 +12045,7 @@ class Client(ClientUserPBase):
         if application_command is None:
             application_command = ApplicationCommand.from_data(application_command_data)
         else:
-            application_command._set_attributes(application_command_data)
+            application_command._update_attributes(application_command_data)
         
         return application_command
     
@@ -12353,7 +12353,7 @@ class Client(ClientUserPBase):
         if application_command is None:
             application_command = ApplicationCommand.from_data(application_command_data)
         else:
-            application_command._set_attributes(application_command_data)
+            application_command._update_attributes(application_command_data)
         
         return application_command
     
@@ -15492,7 +15492,7 @@ class Client(ClientUserPBase):
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         """
-        ClientUserPBase._set_attributes(self, data)
+        ClientUserPBase._update_attributes(self, data)
         
         self.verified = data.get('verified', False)
         
@@ -15563,7 +15563,7 @@ class Client(ClientUserPBase):
             self.guild_profiles[guild.id] = GuildProfile(data)
             guild.users[self.id] = self
         else:
-            profile._set_attributes(data)
+            profile._update_attributes(data)
     
     @property
     def friends(self):

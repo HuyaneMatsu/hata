@@ -7,6 +7,10 @@
 - Do parameter count checks inside of `EventHnalderManager.__setattr__` as well.
 - Add `EventHandlerPlugin` and other respective classes.
 
+#### Bug Fixes
+
+- Multiple ``Client`` methods could raise `AttributeError` by calling a bad method. (Gojo#8953)
+
 ## 1.1.110 *\[2021-10-10]*
 
 #### Bug Fixes
@@ -56,7 +60,7 @@ Improve auto completion and error handling of slash extension.
 - Add `Client.events.scheduled_event_user_subscribe`.
 - Add `Client.events.scheduled_event_user_unsubscribe`.
 
-##### hata.ext.slash
+##### ext.slash
 
 - Auto completers now can be registered to command groups and to ``Slasher`` as well.
 - Auto completers with multiple parameter names can be registered with 1 call.
@@ -75,7 +79,7 @@ Add unicode emoji support for roles.
 
 #### Improvements
 
-##### hata.ext.slash
+##### ext.slash
 
 - Add `first` parameter to `Slasher.error`.
 - Add `create_unicode_emoji`.

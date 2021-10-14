@@ -78,7 +78,7 @@ class ExtensionLoader:
     from datetime import datetime
     
     cake = 'cake'
-    now = datetime.now()
+    now = datetime.utcnow()
     
     EXTENSION_LOADER.add_default_variables(cake=cake, now=now)
     EXTENSION_LOADER.load_extension('extension')

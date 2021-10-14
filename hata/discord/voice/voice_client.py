@@ -625,7 +625,7 @@ class VoiceClient:
                 return
         
         if request:
-            timestamp = datetime_to_timestamp(datetime.now())
+            timestamp = datetime_to_timestamp(datetime.utcnow())
         else:
             timestamp = None
         

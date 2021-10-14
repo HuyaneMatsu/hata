@@ -1441,7 +1441,7 @@ class Message(DiscordEntity, immortal=True):
         >>>> f'{message:e}'
         'never'
         >>>> from datetime import datetime
-        >>>> message = message.custom(edited_at=datetime.now())
+        >>>> message = message.custom(edited_at=datetime.utcnow())
         >>>> message
         <Message id=0, ln=12, author=#0000>
         >>>> f'{message:e}'

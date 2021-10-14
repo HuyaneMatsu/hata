@@ -5728,7 +5728,7 @@ class Client(ClientUserPBase):
             data['form_fields'] = step_datas
         
         if data:
-            data['version'] = datetime_to_timestamp(datetime.now())
+            data['version'] = datetime_to_timestamp(datetime.utcnow())
             data = await self.http.verification_screen_edit(guild_id, data)
             if data is None:
                 verification_screen = None

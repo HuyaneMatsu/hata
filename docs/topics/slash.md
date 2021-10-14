@@ -821,7 +821,7 @@ MODERATOR_ROLE = Role.precreate(MODERATOR_ROLE_ID)
 @set_permission(TEST_GUILD, MODERATOR_ROLE, True)
 async def latest_users(event):
     """Shows the new users of the guild."""
-    date_limit = datetime.now() - timedelta(days=7)
+    date_limit = datetime.utcnow() - timedelta(days=7)
     
     users = []
     guild = event.guild

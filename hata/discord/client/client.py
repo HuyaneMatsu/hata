@@ -14803,7 +14803,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelVoiceBase`` or `int`
+        channel : ``ChannelVoiceBase`` or `tuple` (`int`, `int`)
             The channel to join to.
         
         Returns
@@ -14813,42 +14813,31 @@ class Client(ClientUserPBase):
         Raises
         ------
         RuntimeError
-            - If not every library is installed to join voice.
-            - If `channel` is partial.
+            If not every library is installed to join voice.
         TimeoutError
             If voice client fails to connect the given channel.
         TypeError
-            If `channel` was not given neither as ``ChannelVoiceBase`` nor as `int` referring to a voice channel.
+            If `channel` was not given neither as ``ChannelVoiceBase`` nor as `tuple` (`int`, `int`).
         """
         if isinstance(channel, ChannelVoiceBase):
-            pass
+            guild_id = channel.guild_id
+            channel_id = channel.id
         else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelVoiceBase.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+            snowflake_pair = maybe_snowflake_pair(channel)
+            if snowflake_pair is None:
+                raise TypeError(f'`channel` can be given as `{ChannelVoiceBase.__name__}` or `tuple` (`int`, `int`)'
+                    f'instance, got {channel.__class__.__name__}.')
             
-            try:
-                channel = CHANNELS[channel_id]
-            except KeyError:
-                raise RuntimeError(f'Cannot join partial channel: {channel!r}') from None
-            
-            if not isinstance(channel, ChannelVoiceBase):
-                raise TypeError(f'Can join only to `{ChannelVoiceBase.__name__}`, got {channel.__class__.__name__}.')
+            guild_id, channel_id = snowflake_pair
         
-        guild = channel.guild
-        if guild is None:
-            raise RuntimeError(f'Cannot join partial channel: {channel!r}')
-        
-        guild_id = guild.id
         try:
             voice_client = self.voice_clients[guild_id]
         except KeyError:
-            voice_client = await VoiceClient(self, channel)
+            voice_client = await VoiceClient(self, guild_id, channel_id)
         else:
-            if voice_client.channel is not channel:
+            if voice_client.channel_id != channel_id:
                 gateway = self.gateway_for(guild_id)
-                await gateway.change_voice_state(guild_id, channel.id)
+                await gateway.change_voice_state(guild_id, channel_id)
         
         return voice_client
     
@@ -14869,37 +14858,26 @@ class Client(ClientUserPBase):
         
         Raises
         ------
-        RuntimeError
-            If `channel` is partial.
         TypeError
-            If `channel` was not given neither as ``ChannelStage`` nor as `int` referring to a stage channel.
+            If `channel` was not given neither as ``ChannelStage`` nor as `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         if isinstance(channel, ChannelStage):
+            guild_id = channel.guild_id
             channel_id = channel.id
         else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+            snowflake_pair = maybe_snowflake_pair(channel)
+            if snowflake_pair is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}` or `tuple`(`int`, `int`) '
+                    f'instance, got {channel.__class__.__name__}.')
             
-            try:
-                channel = CHANNELS[channel_id]
-            except KeyError:
-                raise RuntimeError(f'Cannot join partial channel: {channel!r}') from None
-            
-            if not isinstance(channel, ChannelStage):
-                raise TypeError(f'Can join only to `{ChannelStage.__name__}`, got {channel.__class__.__name__}.')
-        
-        guild = channel.guild
-        if guild is None:
-            raise RuntimeError(f'Cannot join partial channel: {channel!r}')
+            guild_id, channel_id = snowflake_pair
         
         if request:
-            timestamp = datetime_to_timestamp(datetime.now())
+            timestamp = datetime_to_timestamp(datetime.utcnow())
         else:
             timestamp = None
         
@@ -14909,7 +14887,7 @@ class Client(ClientUserPBase):
             'channel_id': channel_id
         }
         
-        await self.http.voice_state_client_edit(guild.id, data)
+        await self.http.voice_state_client_edit(guild_id, data)
     
     
     async def join_audience(self, channel):
@@ -14920,7 +14898,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage``
+        channel : ``ChannelStage`` or `tuple` (`int`, `int`)
             The stage channel to join.
         
         Raises
@@ -14928,38 +14906,30 @@ class Client(ClientUserPBase):
         RuntimeError
             If `channel` is partial.
         TypeError
-            If `channel` was not given neither as ``ChannelStage`` nor as `int` referring to a stage channel.
+            If `channel` was not given neither as ``ChannelStage`` nor as `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         if isinstance(channel, ChannelStage):
+            guild_id = channel.guild_id
             channel_id = channel.id
         else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}` or `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+            snowflake_pair = maybe_snowflake_pair(channel)
+            if snowflake_pair is None:
+                raise TypeError(f'`channel` can be given as `{ChannelStage.__name__}` or `tuple`(`int`, `int`) '
+                    f'instance, got {channel.__class__.__name__}.')
             
-            try:
-                channel = CHANNELS[channel_id]
-            except KeyError:
-                raise RuntimeError(f'Cannot join partial channel: {channel!r}') from None
-            
-            if not isinstance(channel, ChannelStage):
-                raise TypeError(f'Can join only to `{ChannelStage.__name__}`, got {channel.__class__.__name__}.')
+            guild_id, channel_id = snowflake_pair
         
-        guild = channel.guild
-        if guild is None:
-            raise RuntimeError(f'Cannot join partial channel: {channel!r}')
         
         data = {
             'suppress': True,
             'channel_id': channel_id
         }
         
-        await self.http.voice_state_client_edit(guild.id, data)
+        await self.http.voice_state_client_edit(guild_id, data)
     
     
     async def wait_for(self, event_name, check, timeout=None):

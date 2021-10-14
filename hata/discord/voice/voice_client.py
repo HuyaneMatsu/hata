@@ -9,17 +9,19 @@ from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, Inva
 from ...backend.protocol import DatagramMergerReadProtocol
 from ...backend.export import export
 
-from ..core import KOKORO, GUILDS
+from ..core import KOKORO, GUILDS, CHANNELS
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
 from ..channel import ChannelVoiceBase, ChannelStage
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from ..user import User
 from ..utils import datetime_to_timestamp
+from ..bases import maybe_snowflake
 
 from .audio_source import AudioSource
 from .opus import OpusEncoder
 from .player import AudioPlayer
 from .reader import AudioReader, AudioStream
+from .utils import try_get_voice_region
 
 @export
 class VoiceClient:
@@ -95,16 +97,16 @@ class VoiceClient:
          - ``._loop_actual``
          - ``._loop_queue``
      
-    channel : ``ChannelVoiceBase``
-        The channel where the voice client currently is.
+    channel_id : `int`
+        The channel's identifier where the voice client currently is.
     client : ``Client``
         The voice client's owner client.
     connected : ``Event``
         Used to communicate with the ``AudioPlayer`` thread.
     gateway : ``DiscordGatewayVoice``
         The gateway through what the voice client communicates with Discord.
-    guild : ``Guild```
-        The guild where the voice client is.
+    guild_id : `int``
+        The guild's identifier where the voice client is.
     lock : `Lock`
         A lock used meanwhile changing the currently playing audio to not modifying it parallelly.
     player : ``AudioPlayer``
@@ -122,10 +124,10 @@ class VoiceClient:
     __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
         '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_reconnecting',
         '_secret_box', '_sequence', '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token',
-        '_transport', '_video_source', '_video_sources', 'call_after', 'channel', 'client', 'connected', 'gateway',
-        'guild', 'lock', 'player', 'queue', 'reader', 'region', 'speaking',)
+        '_transport', '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'connected', 'gateway',
+        'guild_id', 'lock', 'player', 'queue', 'reader', 'region', 'speaking',)
     
-    def __new__(cls, client, channel):
+    def __new__(cls, client, guild_id, channel_id):
         """
         Creates a ``VoiceClient`` instance. If any of the required libraries are not present, raises `RuntimeError`.
         
@@ -136,8 +138,10 @@ class VoiceClient:
         ----------
         client : ``Client``
             The parent client.
-        channel : ``ChannelVoiceBase``
-            The channel where the client will connect to.
+        guild_id : `int`
+            the guild's identifier, where the the client will connect to.
+        channel_id : `int`
+            The channel's identifier where the client will connect to.
         
         Returns
         -------
@@ -148,9 +152,6 @@ class VoiceClient:
         RuntimeError
             If `PyNaCl` is not loaded.
             If `Opus` is not loaded.
-            If `channel` was given as a partial guild channel.
-        TypeError
-            When channel was not given as ``ChannelVoice`` instance.
         """
         # raise error at __new__
         if SecretBox is None:
@@ -159,26 +160,12 @@ class VoiceClient:
         if OpusEncoder is None:
             raise RuntimeError('Opus is not loaded.')
         
-        if isinstance(channel, ChannelVoiceBase):
-            guild_id = channel.guild_id
-            if guild_id == 0:
-                guild = None
-            else:
-                guild = GUILDS.get(guild_id)
-            
-            if guild is None:
-                raise RuntimeError(f'Cannot connect to partial channel: {channel!r}.')
-        else:
-            raise TypeError(f'`channel` can only be {ChannelVoiceBase.__name__}, got {channel.__class__.__name__}.')
-        
-        region = channel.region
-        if region is None:
-            region = guild.region
+        region = try_get_voice_region(guild_id, channel_id)
         
         self = object.__new__(cls)
         
-        self.guild = guild
-        self.channel = channel
+        self.guild_id = guild_id
+        self.channel_id = channel_id
         self.region = region
         self.gateway = DiscordGatewayVoice(self)
         self._socket = None
@@ -212,7 +199,7 @@ class VoiceClient:
         self._audio_streams = None
         self._reconnecting = True
         
-        client.voice_clients[guild.id] = self
+        client.voice_clients[guild_id] = self
         waiter = Future(KOKORO)
         Task(self._connect(waiter=waiter), KOKORO)
         return waiter
@@ -563,8 +550,11 @@ class VoiceClient:
         -------
         voice_state : `None` or ``VoiceState``
         """
-        guild = self.guild
-        if (guild is not None):
+        try:
+            guild = GUILDS[self.guild_id]
+        except KeyError:
+            pass
+        else:
             return guild.voice_states.get(self.client.id, None)
     
     
@@ -576,33 +566,30 @@ class VoiceClient:
         
         Parameters
         ---------
-        channel : ``ChannelVoiceBase``
+        channel : ``ChannelVoiceBase`` or `int` instance
             The channel where the voice client will move to.
         
         Raises
         ------
         TypeError
-            If  `channel` was not given as ``ChannelVoice`` instance.
+            If  `channel` was not given as ``ChannelVoiceBase`` not `int` instance.
         RuntimeError
             - If `channel` is partial.
             - If the ``VoiceClient`` would be moved between guilds.
         """
-        if not isinstance(channel, ChannelVoiceBase):
-            raise TypeError(f'Can join only to {ChannelVoiceBase.__name__}, got {channel.__class__.__name__}.')
+        if isinstance(channel, ChannelVoiceBase):
+            channel_id = channel.id
+        else:
+            channel_id = maybe_snowflake(channel)
+            if channel_id is None:
+                raise TypeError(f'`channel` can be given as {ChannelVoiceBase.__name__}, or as `int` instance, got '
+                    f'{channel.__class__.__name__}.')
         
-        if self.channel is channel:
+        if self.channel_id == channel_id:
             return
         
-        guild = channel.guild
-        if guild is None:
-            raise RuntimeError(f'Cannot connect to partial channel: {channel!r}.')
-        
-        own_guild = self.guild
-        if (own_guild is not guild):
-            raise RuntimeError('Cannot move to an another guild.')
-        
-        gateway = self.client.gateway_for(own_guild.id)
-        await gateway.change_voice_state(own_guild.id, channel.id)
+        gateway = self.client.gateway_for(self.guild_id)
+        await gateway.change_voice_state(self.guild_id, channel_id)
     
     
     async def join_speakers(self, *, request=False):
@@ -623,21 +610,19 @@ class VoiceClient:
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild = self.guild
-        if guild is None:
-            return
-        
-        channel = self.channel
-        if not isinstance(channel, ChannelStage):
-            return
-        
+        guild_id = self.guild_id
         try:
-            voice_state = guild.voice_states[self.client.id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            return
-        
-        if voice_state.is_speaker:
-            return
+            pass
+        else:
+            try:
+                voice_state = guild.voice_states[self.client.id]
+            except KeyError:
+                return
+            
+            if voice_state.is_speaker:
+                return
         
         if request:
             timestamp = datetime_to_timestamp(datetime.now())
@@ -647,10 +632,10 @@ class VoiceClient:
         data = {
             'suppress': False,
             'request_to_speak_timestamp': timestamp,
-            'channel_id': channel.id
+            'channel_id': self.channel_id
         }
         
-        await self.client.http.voice_state_client_edit(guild.id, data)
+        await self.client.http.voice_state_client_edit(guild_id, data)
     
     
     async def join_audience(self):
@@ -666,29 +651,27 @@ class VoiceClient:
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild = self.guild
-        if guild is None:
-            return
-        
-        channel = self.channel
-        if not isinstance(channel, ChannelStage):
-            return
-        
+        guild_id = self.guild_id
         try:
-            voice_state = guild.voice_states[self.client.id]
+            guild = GUILDS[guild_id]
         except KeyError:
-            return
-        
-        if not voice_state.is_speaker:
-            return
+            pass
+        else:
+            try:
+                voice_state = guild.voice_states[self.client.id]
+            except KeyError:
+                return
+            
+            if not voice_state.is_speaker:
+                return
         
         data = {
             'suppress': True,
-            'channel_id': channel.id
+            'channel_id': self.channel_id
         }
         
-        await self.client.http.voice_state_client_edit(guild.id, data)
-        return
+        await self.client.http.voice_state_client_edit(guild_id, data)
+   
     
     def append(self, source):
         """
@@ -956,7 +939,7 @@ class VoiceClient:
             self._reconnecting = False
             
             try:
-                del self.client.voice_clients[self.guild.id]
+                del self.client.voice_clients[self.guild_id]
             except KeyError:
                 pass
     
@@ -1034,7 +1017,7 @@ class VoiceClient:
             The ghost voice client's voice state.
         """
         try:
-            voice_client = await cls(client, voice_state.channel)
+            voice_client = await cls(client, voice_state.guild_id, voice_state.channel_id)
         except (RuntimeError, TimeoutError):
             return
         
@@ -1057,7 +1040,6 @@ class VoiceClient:
     async def _play_next(self, last_source):
         """
         Starts to play the next audio object on ``.queue`` and cancels the actual one if applicable.
-
         Should be used inside of ``.lock`` to ensure that the voice client is not modified parallelly.
         
         This function is a coroutine.
@@ -1163,15 +1145,10 @@ class VoiceClient:
         """
         client = self.client
         
-        guild = self.guild
-        if guild is None:
-            guild_id = 0
-        else:
-            guild_id = guild.id
-        gateway = client.gateway_for(guild_id)
+        gateway = client.gateway_for(self.guild_id)
         
         # request joining
-        await gateway.change_voice_state(guild_id, self.channel.id)
+        await gateway.change_voice_state(self.guild_id, self.channel_id)
         future_or_timeout(self._handshake_complete, 60.0)
         
         try:
@@ -1189,15 +1166,10 @@ class VoiceClient:
         """
         self._handshake_complete.clear()
         
-        guild = self.guild
-        if guild is None:
-            guild_id = 0
-        else:
-            guild_id = guild.id
-        gateway = self.client.gateway_for(guild_id)
+        gateway = self.client.gateway_for(self.guild_id)
         
         try:
-            await gateway.change_voice_state(guild_id, 0, self_mute=True)
+            await gateway.change_voice_state(self.guild_id, 0, self_mute=True)
         except ConnectionClosed:
             pass
         
@@ -1224,12 +1196,7 @@ class VoiceClient:
         """
         self.connected.clear()
         
-        guild = self.guild
-        if guild is None:
-            guild_id = 0
-        else:
-            guild_id = guild.id
-        gateway = self.client.gateway_for(guild_id)
+        gateway = self.client.gateway_for(self.guild_id)
         
         self._session_id = gateway.session_id
         token = event.token
@@ -1318,15 +1285,15 @@ class VoiceClient:
         changed: `bool`
             Whether voice region changed.
         """
-        region = self.channel.region
-        if region is None:
-            region = self.guild.region
+        region = try_get_voice_region(self.guild_id, self.channel_id)
         
         if region is self.region:
-            return False
+            changed = False
+        else:
+            self.region = region
+            changed = True
         
-        self.region = region
-        return True
+        return changed
     
     
     def __repr__(self):
@@ -1336,22 +1303,35 @@ class VoiceClient:
             self.__class__.__name__,
             ' client=',
             repr(self.client.full_name),
-            ', channel='
+            ', channel_id=',
+            repr(self.channel_id),
+            ', guild_id=',
+            repr(self.guild_id),
         ]
-        
-        channel = self.channel
-        repr_parts.append(repr(channel.name))
-        repr_parts.append(' (')
-        repr_parts.append(str(channel.id))
-        repr_parts.append(')')
-        
-        guild = self.guild
-        repr_parts.append(', guild=')
-        repr_parts.append(repr(guild.name))
-        repr_parts.append(' (')
-        repr_parts.append(repr(guild.id))
-        repr_parts.append(')')
         
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    @property
+    def channel(self):
+        """
+        Returns the voice client's channel.
+        
+        Returns
+        -------
+        channel : `None` or ``ChannelVoiceBase``
+        """
+        return CHANNELS.get(self.channel_id, None)
+    
+    @property
+    def guild(self):
+        """
+        Returns the voice client's guild.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        return GUILDS.get(self.guild_id, None)

@@ -139,10 +139,8 @@ class CommandContext(object):
         """
         message = self.message
         guild = message.guild
-        if guild is None:
-            return None
-        
-        return guild.voice_states.get(message.author.id, None)
+        if (guild is not None):
+            return guild.voice_states.get(message.author.id, None)
     
     
     @property
@@ -385,3 +383,27 @@ class CommandContext(object):
             return await handle_exception(self, err)
         
         return True
+    
+    
+    @property
+    def guild_id(self):
+        """
+        Returns the command context's message's guild's identifier.
+        
+        Returns
+        -------
+        guild_id : `int`
+        """
+        return self.message.guild_id
+    
+
+    @property
+    def channel_id(self):
+        """
+        Returns the command context's message's channel's identifier.
+        
+        Returns
+        -------
+        channel_id : `int`
+        """
+        return self.message.channel_id

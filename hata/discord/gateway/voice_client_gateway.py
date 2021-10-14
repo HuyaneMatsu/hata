@@ -368,7 +368,7 @@ class DiscordGatewayVoice:
         data = {
             'op': IDENTIFY,
             'd': {
-                'server_id': str(voice_client.channel.guild.id),
+                'server_id': str(voice_client.guild_id),
                 'user_id': str(voice_client.client.id),
                 'session_id': voice_client._session_id,
                 'token': voice_client._token,
@@ -390,7 +390,7 @@ class DiscordGatewayVoice:
             'op': RESUME,
             'd': {
                 'token': voice_client._token,
-                'server_id': str(voice_client.channel.guild.id),
+                'server_id': str(voice_client.guidld_id),
                 'session_id': voice_client._session_id,
             },
         }

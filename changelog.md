@@ -3,8 +3,8 @@
 #### Improvements
 
 - Add `GuildFeature.animated_banner`.
-- Add `EventHnalderManager.register_plugin`.
-- Do parameter count checks inside of `EventHnalderManager.__setattr__` as well.
+- Add `EventHandlerManager.register_plugin`.
+- Do parameter count checks inside of `EventHandlerManager.__setattr__` as well.
 - Add `EventHandlerPlugin` and other respective classes.
 
 #### Bug Fixes

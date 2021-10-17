@@ -5,11 +5,11 @@ from ...discord.core import KOKORO
 
 from .constants import LAVALINK_KEY_EVENT_TRACK_END, LAVALINK_KEY_EVENT_TRACK_EXCEPTION, LAVALINK_KEY_GUILD_ID, \
     LAVALINK_KEY_EVENT_TRACK_START, LAVALINK_KEY_EVENT_TRACK_STUCK, LAVALINK_KEY_EVENT_PLAYER_WEBSOCKET_CLOSED, \
-    LAVALINK_KEY_END_REASON, LAVALINK_KEY_EXCEPTION_REASON, LAVALINK_KEY_THRESHOLD_MS, \
+    LAVALINK_KEY_END_REASON, LAVALINK_KEY_EXCEPTION_REASON, LAVALINK_KEY_THRESHOLD_MS, LAVALINK_KEY_TRACK, \
     LAVALINK_KEY_WEBSOCKET_CLOSE_CODE, LAVALINK_KEY_WEBSOCKET_CLOSE_REASON, LAVALINK_KEY_WEBSOCKET_CLOSE_BY_REMOTE
-
 from .event_types import TrackEndEvent, TrackExceptionEvent, TrackStartEvent, TrackStuckEvent, \
     PlayerWebsocketClosedEvent
+from .track import Track
 
 def parse_track_end(client, data):
     guild_id = int(data[LAVALINK_KEY_GUILD_ID])
@@ -51,8 +51,7 @@ def parse_track_start(client, data):
     except KeyError:
         return
     
-    track = player._current_track
-    
+    track = Track.from_base64(data[LAVALINK_KEY_TRACK])
     event = TrackStartEvent(player, track)
     Task(client.solarlink._events.track_start(client, event), KOKORO)
 

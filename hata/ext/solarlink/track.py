@@ -364,6 +364,7 @@ class ConfiguredTrack:
             for attribute_name, attribute_value in added_attributes:
                 repr_parts.append(', ')
                 repr_parts.append(attribute_name)
+                repr_parts.append('=')
                 repr_parts.append(repr(attribute_value))
         
         repr_parts.append('>')

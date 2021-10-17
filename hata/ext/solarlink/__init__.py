@@ -17,6 +17,7 @@ from .exceptions import *
 from .node import *
 from .parsers import *
 from .player import *
+from .route_planner import *
 from .stats import *
 from .track import *
 from .track_end_reasons import *
@@ -34,6 +35,7 @@ __all__ = (
     *node.__all__,
     *parsers.__all__,
     *player.__all__,
+    *route_planner.__all__,
     *stats.__all__,
     *track.__all__,
     *track_end_reasons.__all__,

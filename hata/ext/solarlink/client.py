@@ -22,6 +22,7 @@ from .exceptions import SolarAuthenticationError
 from .node import SolarNode
 from .player import SolarPlayer
 from .track import Track
+from .route_planner import get_route_planner
 
 class SolarClient:
     """
@@ -328,7 +329,7 @@ class SolarClient:
         
         Returns
         -------
-        route_planner_data
+        route_planner : `None` or ``RoutePlannerBase`` instance
         
         Raises
         ------
@@ -346,14 +347,21 @@ class SolarClient:
             },
         ) as response:
             if response.status == 200:
-                return await response.json()
+                route_planner_data = await response.json()
             
             elif response.status in (401, 403):
                 raise SolarAuthenticationError(node, response)
             
             else:
-                return None
-    
+                route_planner_data = None
+        
+        if route_planner_data is None:
+            route_planner = None
+        else:
+            route_planner = get_route_planner(route_planner_data)
+        
+        return route_planner
+        
     
     async def routeplanner_free_address(self, node, address):
         """
@@ -613,7 +621,7 @@ class SolarClient:
     
     
     def __repr__(self):
-        """Returns teh solar client's representation."""
+        """Returns the solar client's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
         node_count = len(self.nodes)

@@ -2,6 +2,8 @@ __all__ = ()
 
 from math import inf
 from datetime import datetime
+from base64 import b64decode
+from binascii import Error as Base64DecodeError
 
 from ...backend.utils import basemethod
 from ...backend.event_loop import LOOP_TIME
@@ -1020,7 +1022,7 @@ def channel_move_sort_key(channel_key):
 
 def role_move_key(role, position):
     """
-    Used at ``Client.role_move`` and ``Client.role_reorder`` to create a json serializible change key from the given
+    Used at ``Client.role_move`` and ``Client.role_reorder`` to create a json serializable change key from the given
     `role` and `position`.
     
     Parameters
@@ -1221,3 +1223,36 @@ def application_command_autocomplete_choice_sort_key(choice):
         The choice's name.
     """
     return choice['name']
+
+
+def try_get_user_id_from_token(token):
+    """
+    Tries to get user id from the given user token.
+    
+    Parameters
+    ----------
+    token : `str`
+        The user's token.
+    
+    Returns
+    -------
+    user_id : `int`
+        Returns `0` if parsing failed.
+    """
+    dot_index = token.find('.')
+    if (dot_index > 0):
+        token_base64 = token[:dot_index]
+        
+        try:
+            token_string = b64decode(token_base64)
+        except Base64DecodeError:
+            user_id = 0
+        else:
+            try:
+                user_id = int(token_string)
+            except ValueError:
+                user_id = 0
+    else:
+        user_id = 0
+    
+    return user_id

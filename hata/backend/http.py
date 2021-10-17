@@ -809,7 +809,7 @@ class HTTPClient:
                 parameter, the respective websocket ``Frame``.
         available_subprotocols : `None` or (`list` of `str`), Optional (Keyword only)
             A list of supported subprotocols in order of decreasing preference.
-        extra_request_headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional (Keyword only)
+        headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional (Keyword only)
             Extra request headers.
         http_client : `None` or ``HTTPClient`` instance, Optional (Keyword only)
             Http client to use to connect the websocket.

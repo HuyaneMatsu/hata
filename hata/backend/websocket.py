@@ -1133,7 +1133,7 @@ class WSClient(WebSocketCommonProtocol):
     
     __slots__ = ()
     async def __new__(cls, loop, url, *, origin=None, available_extensions=None, available_subprotocols=None,
-            extra_request_headers=None, http_client=None, **websocket_kwargs):
+            headers=None, http_client=None, **websocket_kwargs):
         """
         Connects the websocket client to the given `url`.
         
@@ -1160,7 +1160,7 @@ class WSClient(WebSocketCommonProtocol):
                 parameter, the respective websocket ``Frame``.
         available_subprotocols : `None` or (`list` of `str`), Optional (Keyword only)
             A list of supported subprotocols in order of decreasing preference.
-        extra_request_headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional (Keyword only)
+        headers : ``imultidict`` or `dict-like` with (`str`, `str`) items, Optional (Keyword only)
             Extra request headers.
         http_client : `None` or ``HTTPClient`` instance, Optional (Keyword only)
             Http client to use to connect the websocket.
@@ -1246,14 +1246,14 @@ class WSClient(WebSocketCommonProtocol):
         if available_subprotocols is not None:
             request_headers[SEC_WEBSOCKET_PROTOCOL] = build_subprotocols(available_subprotocols)
         
-        if extra_request_headers is not None:
+        if headers is not None:
             # we use especially items, so we check that
-            if isinstance(extra_request_headers, imultidict) or hasattr(type(extra_request_headers), 'items'):
-                for name, value in extra_request_headers.items():
+            if isinstance(headers, imultidict) or hasattr(type(headers), 'items'):
+                for name, value in headers.items():
                     request_headers[name] = value
             else:
                 raise TypeError('`extra_response_headers` should be `dict-like` with `.items` method, got '
-                    f'{extra_request_headers.__class__.__name__} instance.')
+                    f'{headers.__class__.__name__} instance.')
         
         async with http_client.request(METHOD_GET, url, request_headers) as response:
            

@@ -78,7 +78,7 @@ from .functionality_helpers import SingleUserChunker, MassUserChunker, Discovery
     DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
     _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, \
     ForceUpdateCache, channel_move_sort_key, role_move_key, role_reorder_valid_roles_sort_key, \
-    application_command_autocomplete_choice_parser
+    application_command_autocomplete_choice_parser, try_get_user_id_from_token
 from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
     add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
     get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
@@ -363,7 +363,7 @@ class Client(ClientUserPBase):
         
         # client_id
         if client_id is None:
-            client_id = 0
+            client_id = try_get_user_id_from_token(token)
         else:
             client_id = preconvert_snowflake(client_id, 'client_id')
         
@@ -8233,7 +8233,7 @@ class Client(ClientUserPBase):
             Pass it as `None` to remove the old one.
         
         start : `datetime`, Optional (Keyword only)
-            The new start of teh scheduled event.
+            The new start of the scheduled event.
         end : `None` or `datetime`
             The end of the of the scheduled event.
             

@@ -560,7 +560,7 @@ class VoiceClient:
     
     async def move_to(self, channel):
         """
-        Move the voice client to an another ``ChannelVoiceBase``.
+        Move the voice client to an another voice channel.
         
         This method is a coroutine.
         
@@ -573,9 +573,6 @@ class VoiceClient:
         ------
         TypeError
             If  `channel` was not given as ``ChannelVoiceBase`` not `int` instance.
-        RuntimeError
-            - If `channel` is partial.
-            - If the ``VoiceClient`` would be moved between guilds.
         """
         if isinstance(channel, ChannelVoiceBase):
             channel_id = channel.id
@@ -914,9 +911,9 @@ class VoiceClient:
                             # user nor us, so reconnect.
                             code = err.code
                             if code == 1000 or (
-                                     (code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE) and
-                                     (not self._maybe_change_voice_region())
-                                        ):
+                                 (code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE) and
+                                 (not self._maybe_change_voice_region())
+                            ):
                                 self._reconnecting = False
                                 await self._disconnect(force=False)
                                 return

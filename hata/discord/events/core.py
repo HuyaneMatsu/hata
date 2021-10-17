@@ -156,7 +156,7 @@ def get_plugin_event_handler_and_parser_names(event_handler_manager, name):
 
 def get_plugin_event_handler(event_handler_manager, name):
     """
-    Returns teh plugin implementing the attribute.
+    Returns the plugin implementing the attribute.
     
     Parameters
     ----------

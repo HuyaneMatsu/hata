@@ -10,6 +10,7 @@
 - `VoiceClient.guild` is now a property.
 - Add `VoiceClient.channel_id` is now a property.
 - Add `VoiceClient.guild_id` is now a property.
+- Get `user_id` from token when creating a client.
 
 ##### ext.commands_v2
 

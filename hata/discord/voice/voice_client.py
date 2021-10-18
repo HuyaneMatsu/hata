@@ -681,8 +681,8 @@ class VoiceClient:
         
         Returns
         -------
-        on_queue : `bool`
-            Whether the source was put on the voice client's queue or be used up as the player's source initially.
+        started_playing : `bool`
+            Whether the source is started playing and not put on queue.
         """
         source_type = source.__class__
         if not issubclass(source_type, AudioSource):

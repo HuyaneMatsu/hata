@@ -13,15 +13,12 @@ from ...discord.voice.utils import try_get_voice_region
 from ...discord.bases import maybe_snowflake_pair
 from ...discord.channel import ChannelVoiceBase
 from ...discord.client import Client
-from ...discord.guild import VoiceRegion
 
-from .constants import LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY, \
-    LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_TRACKS
 from .event_handler_plugin import SolarLinkEventManager
 from .exceptions import SolarAuthenticationError
 from .node import SolarNode
 from .player import SolarPlayer
-from .track import Track
+from .track import Track, GetTracksResult
 from .route_planner import get_route_planner
 
 class SolarClient:
@@ -45,6 +42,8 @@ class SolarClient:
     
     def __new__(cls, client):
         """
+        Creates and binds a lavalink manager client.
+        
         Parameters
         ----------
         client : ``Client``
@@ -151,7 +150,7 @@ class SolarClient:
         
         Returns
         -------
-        tracks : `list` of ``Track``
+        tracks : `None` or ``GetTracksResult``
             Decoded tracks.
         
         Raises
@@ -191,15 +190,11 @@ class SolarClient:
                 data = None
         
         if data is None:
-            tracks = []
+            result = None
         else:
-            track_datas = data.get(LAVALINK_KEY_TRACKS, None)
-            if (track_datas is None) or (not track_datas):
-                tracks = []
-            else:
-                tracks = [Track(track_data) for track_data in track_datas]
+            result = GetTracksResult(data)
         
-        return tracks
+        return result
     
     
     async def decode_track(self, track):
@@ -379,7 +374,7 @@ class SolarClient:
         Returns
         -------
         success : `bool`
-            Whether the address is free.
+            Whether the address is freed up.
         
         Raises
         ------
@@ -402,13 +397,23 @@ class SolarClient:
                 {'address': address}
             ),
         ) as response:
-            if response.status in (401, 403):
+            status = response.status
+            if status in (401, 403):
                 raise SolarAuthenticationError(node, response)
             
-            return (response.status == 204)
+            if status == 204:
+                # Success
+                return True
+            
+            if status == 500:
+                # The node has no routeplanner configured.
+                return False
+            
+            # Unexpected case.
+            return False
     
     
-    async def routeplanner_free_all_failing(self, node):
+    async def routeplanner_free_address_all(self, node):
         """
         Removes all addresses from the list which holds the addresses which are marked failing.
         
@@ -440,10 +445,20 @@ class SolarClient:
                 AUTHORIZATION: node._password,
             },
         ) as response:
-            if response.status in (401, 403):
+            status = response.status
+            if status in (401, 403):
                 raise SolarAuthenticationError(node, response)
             
-            return (response.status == 204)
+            if status == 204:
+                # Success
+                return True
+            
+            if status == 500:
+                # The node has no routeplanner configured
+                return False
+            
+            # Unexpected case.
+            return False
     
     
     @property

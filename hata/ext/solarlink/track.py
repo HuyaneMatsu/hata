@@ -1,4 +1,4 @@
-__all__ = ('Track', )
+__all__ = ('GetTracksResult', 'Track', )
 
 from math import floor
 from base64 import b64decode
@@ -8,7 +8,8 @@ from ...backend.utils import un_map_pack
 from .constants import LAVALINK_KEY_TRACK, LAVALINK_KEY_START_TIME, LAVALINK_KEY_END_TIME, LAVALINK_KEY_TRACK_BASE64, \
     LAVALINK_KEY_TRACK_DICT, LAVALINK_KEY_TRACK_IDENTIFIER, LAVALINK_KEY_TRACK_SEEKABLE, LAVALINK_KEY_TRACK_AUTHOR, \
     LAVALINK_KEY_TRACK_DURATION_MS, LAVALINK_KEY_TRACK_IS_STREAM, LAVALINK_KEY_TRACK_TITLE, \
-    LAVALINK_KEY_TRACK_URL, LAVALINK_KEY_TRACK_POSITION_MS
+    LAVALINK_KEY_TRACK_URL, LAVALINK_KEY_TRACK_POSITION_MS, LAVALINK_KEY_PLAYLIST, LAVALINK_KEY_PLAYLIST_NAME, \
+    LAVALINK_KEY_PLAYLIST_SELECTED_TRACK_INDEX, LAVALINK_KEY_TRACKS
 
 def _iter_configured_track_attributes(configured_track):
     """
@@ -145,7 +146,7 @@ class Track:
         cursor_start = cursor_end
         cursor_end = cursor_start + author_length
         author = data[cursor_start:cursor_end]
-        author = author.decode()
+        author = author.decode(errors='ignore')
         
         # read duration
         
@@ -370,3 +371,140 @@ class ConfiguredTrack:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+
+
+class GetTracksResult:
+    """
+    Returned by ``SolarClient.get_tracks`` if the request succeeded.
+    
+    Attributes
+    ----------
+    playlist_name : `None` or `str`
+        The playlist's name, of what the tracks are part.
+        
+        Defaults to `None`.
+        
+    selected_track_index : `int`
+        The selected track's index inside of the playlist.
+        
+        Defaults to `-1`.
+    
+    tracks : `None` or `tuple` of ``Track``
+        The matched tracks.
+        
+        Defaults to `None`.
+    """
+    __slots__ = ('playlist_name', 'selected_track_index', 'tracks',)
+    
+    def __new__(cls, data):
+        """
+        Creates a new get tracks result instance from the given response data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Response data.
+        """
+        playlist_data = data[LAVALINK_KEY_PLAYLIST]
+        if playlist_data is None:
+            playlist_name = None
+            selected_track_index = -1
+        else:
+            playlist_name = playlist_data.get(LAVALINK_KEY_PLAYLIST_NAME, None)
+            selected_track_index = playlist_data.get(LAVALINK_KEY_PLAYLIST_SELECTED_TRACK_INDEX, -1)
+        
+        track_datas = data[LAVALINK_KEY_TRACKS]
+        if (track_datas is None) or (not track_datas):
+            tracks = None
+        else:
+            tracks = tuple(Track(track_data) for track_data in track_datas)
+        
+        self = object.__new__(cls)
+        self.playlist_name = playlist_name
+        self.selected_track_index = selected_track_index
+        self.tracks = tracks
+        return self
+    
+    def __repr__(self):
+        """Returns the get tracks result's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        playlist_name = self.playlist_name
+        if (playlist_name is None):
+            field_added = False
+        else:
+            field_added = True
+            
+            repr_parts.append(' playlist_name=')
+            repr_parts.append(repr(playlist_name))
+        
+        
+        selected_track_index = self.selected_track_index
+        if (selected_track_index != -1):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' selected_track_index=')
+            repr_parts.append(repr(selected_track_index))
+        
+        
+        tracks = self.tracks
+        if (tracks is not None):
+            if field_added:
+                repr_parts.append(',')
+            
+            repr_parts.append(' tracks=[')
+            
+            index = 0
+            length = len(tracks)
+            
+            while True:
+                track = tracks[index]
+                repr_parts.append(repr(track))
+                
+                index += 1
+                if index == length:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+    
+    
+    def __len__(self):
+        """Returns the length of the tracks."""
+        tracks = self.tracks
+        if tracks is None:
+            length = 0
+        else:
+            length = len(tracks)
+        
+        return length
+    
+    def __bool__(self):
+        """Returns whether the result has any tracks."""
+        tracks = self.tracks
+        if tracks is None:
+            has_tracks = True
+        else:
+            if tracks:
+                has_tracks = True
+            else:
+                has_tracks = False
+        
+        return has_tracks
+    
+    def __getitem__(self, index):
+        """Returns the track of the given index"""
+        tracks = self.tracks
+        if tracks is None:
+            raise IndexError(index)
+        else:
+            return tracks[index]

@@ -153,7 +153,7 @@ class Embed(EmbedBase):
     @copy_docs(EmbedBase.__bool__)
     def __bool__(self):
         data = self._data
-        data_length = len(data)
+        data_length = len(data) - ('type' in data)
         if data_length == 0:
             return False
         

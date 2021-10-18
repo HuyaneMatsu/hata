@@ -1,4 +1,18 @@
+## 1.1.112 *\[2021-10-??]*
+
+#### Improvements
+
+- Add `UserFlag.spammer`.
+
+#### Bug fixes
+
+- `Embed.__bool__` could return incorrect value.
+
 ## 1.1.111 *\[2021-10-17]*
+
+### Summary
+
+Make `client.events` pluginable.
 
 #### Improvements
 

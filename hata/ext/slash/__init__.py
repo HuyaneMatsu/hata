@@ -15,6 +15,7 @@ from .waiters import *
 from .wrappers import *
 
 __all__ = (
+    'P',
     'configure_parameter',
     'set_permission',
     'setup_ext_slash',

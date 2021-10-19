@@ -3,6 +3,8 @@
 #### Improvements
 
 - Add `UserFlag.spammer`.
+- Add `ApplicationCommandOption.min_value`.
+- Add `ApplicationCommandOption.max_value`.
 
 #### Bug fixes
 

@@ -949,6 +949,69 @@ class RegexMatch:
         return f'<{self.__class__.__name__} groups={self.groups!r}>'
 
 
+class SlashParameter:
+    """
+    A class, which can be used familiarly to tuples as an annotation, but it supports rich parameters as well.
+    
+    Attributes
+    ----------
+    channel_types : `None` or `iterable` of `int`
+        The accepted channel types.
+    description : `None` or `str`
+        Description for the annotation.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value by the parameter.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value by the parameter.
+    type_or_choice : `str`, `type`, `list`, `dict`
+        The annotation's value to use.
+    name : `None` or `str`, Optional
+        Name to use instead of the parameter's.
+    """
+    __slots__ = ('channel_types', 'description', 'max_value', 'min_value', 'name', 'type_or_choice')
+    
+    def __new__(cls, type_or_choice=None, description=None, name=None, *, channel_types=None,
+            max_value=None, min_value=None):
+        """
+        Creates a new ``Parameter`` instance.
+        
+        Parameters
+        ----------
+        type_or_choice : `str`, `type`, `list`, `dict`, Optional
+            The annotation's value to use.
+        description : `None` or `str`, Optional
+            Description for the annotation.
+        name : `None` or `str`, Optional
+            Name to use instead of the parameter's.
+        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
+            The accepted channel types.
+        max_value : `None`, `int`, `float`, Optional (Keyword only)
+            The maximal accepted value by the parameter.
+        min_value : `None`, `int`, `float`, Optional (Keyword only)
+            The minimal accepted value by the parameter.
+        """
+        self = object.__new__(cls)
+        self.type_or_choice = type_or_choice
+        self.description = description
+        self.name = name
+        self.channel_types = channel_types
+        self.max_value = max_value
+        self.min_value = min_value
+        return self
+    
+    def __repr__(self):
+        return ''.join([
+            '<', self.__class__.__name__,
+            ' channel_types=', repr(self.channel_types),
+            ', description=', repr(self.description),
+            ', max_value=', repr(self.max_value),
+            ', min_value=', repr(self.min_value),
+            ', type_or_choice=', repr(self.type_or_choice),
+            ', name=', repr(self.name),
+            '>',
+        ])
+
+
 def create_annotation_choice_from_int(value):
     """
     Creates an annotation choice form an int.
@@ -1260,7 +1323,7 @@ def parse_annotation_name(name, parameter_name):
     name : `str`
         The name of an annotation.
     parameter_name : `None` or `str`
-        The annotation's name.
+        The parameter's name.
     
     Returns
     -------
@@ -1307,6 +1370,10 @@ def parse_annotation_tuple(parameter):
         The parameter's internal type identifier.
     channel_types : `None` or `tuple` of `int`
         The accepted channel types.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value.
     
     Raises
     ------
@@ -1342,7 +1409,43 @@ def parse_annotation_tuple(parameter):
         name = None
     
     name = parse_annotation_name(name, parameter_name)
-    return choices, description, name, annotation_type, channel_types
+    return choices, description, name, annotation_type, channel_types, None, None
+
+
+def parse_annotation_parameter(parameter, parameter_name):
+    """
+    Parses an annotated ``SlashParameter``.
+    
+    Parameters
+    ----------
+    parameter : ``Parameter``
+        The respective parameter's representation.
+    parameter_name : `str`
+        The parameter's name.
+    
+    Returns
+    -------
+    choices : `None` or `dict` of (`str` or `int`, `str`) items
+        Parameter's choices.
+    description : `str`
+        Parameter's description.
+    name : `str`
+        The parameter's name.
+    type_ : `int`
+        The parameter's internal type identifier.
+    channel_types : `None` or `tuple` of `int`
+        The accepted channel types.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value.
+    
+    Raises
+    ------
+    ValueError
+        TODO
+    """
+    # TODO
 
 
 def parse_annotation_internal(annotation):
@@ -1401,6 +1504,10 @@ def parse_annotation(parameter):
         The parameter's internal type identifier.
     channel_types : `None` or `tuple` of `int`
         The accepted channel types.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value.
     
     Raises
     ------
@@ -1417,6 +1524,9 @@ def parse_annotation(parameter):
                 annotation_value = parameter.name
             else:
                 return parse_annotation_tuple(parameter)
+        
+        elif isinstance(annotation_value, SlashParameter):
+            return parse_annotation_parameter(parameter, parameter.name)
     else:
         annotation_value = parameter.name
     
@@ -1431,7 +1541,7 @@ def parse_annotation(parameter):
             choices = None
             channel_types = None
     
-    return choices, None, parameter.name, annotation_type, channel_types
+    return choices, None, parameter.name, annotation_type, channel_types, None, None
 
 
 class ParameterConverter:
@@ -1652,17 +1762,22 @@ class SlashCommandParameterConverter(ParameterConverter):
         Default value of the parameter.
     description : `None` or `str`
         The parameter's description.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value by the converter.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value by the converter.
+    name : `str`
+        The parameter's name.
     required : `bool`
         Whether the the parameter is required.
     type : `int`
         Internal identifier of the converter.
-    name : `str`
-        The parameter's name.
     """
-    __slots__ = ('auto_completer', 'channel_types', 'choices', 'converter', 'default', 'description', 'required',
-        'type', 'name')
+    __slots__ = ('auto_completer', 'channel_types', 'choices', 'converter', 'default', 'description', 'max_value',
+        'min_value', 'name', 'required', 'type')
     
-    def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types):
+    def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types,
+            max_value, min_value):
         """
         Creates a new ``SlashCommandParameterConverter`` instance from the given parameters.
         
@@ -1686,6 +1801,10 @@ class SlashCommandParameterConverter(ParameterConverter):
             The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
         channel_types : `None` or `tuple` of `int`
             The accepted channel types.
+        max_value : `None`, `int`, `float`
+            The maximal accepted value by the converter.
+        min_value : `None`, `int`, `float`
+            The minimal accepted value by the converter.
         """
         self = object.__new__(cls)
         self.parameter_name = parameter_name
@@ -1698,6 +1817,9 @@ class SlashCommandParameterConverter(ParameterConverter):
         self.required = required
         self.type = type_
         self.channel_types = channel_types
+        self.max_value = max_value
+        self.min_value = min_value
+        
         return self
     
     
@@ -1761,6 +1883,16 @@ class SlashCommandParameterConverter(ParameterConverter):
             repr_parts.append(', channel_types=')
             repr_parts.append(repr(channel_types))
         
+        min_value = self.min_value
+        if (min_value is not None):
+            repr_parts.append(', min_value=')
+            repr_parts.append(repr(min_value))
+        
+        max_value = self.max_value
+        if (max_value is not None):
+            repr_parts.append(', max_value=')
+            repr_parts.append(repr(max_value))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
@@ -1784,6 +1916,8 @@ class SlashCommandParameterConverter(ParameterConverter):
             channel_types = self.channel_types,
             choices = option_choices,
             required = self.required,
+            min_value = self.min_value,
+            max_value = self.max_value,
         )
     
     
@@ -1889,14 +2023,16 @@ def create_parameter_converter(parameter, parameter_configurer):
         - If `annotation`'s 1st element's (description's) length is out of the expected range [2:100].
     """
     if parameter_configurer is None:
-        choices, description, name, annotation_type, channel_types = parse_annotation(parameter)
+        choices, description, name, annotation_type, channel_types, max_value, min_value = parse_annotation(parameter)
     else:
         choices = parameter_configurer._choices
         description = parameter_configurer._description
         name = parameter_configurer._name
         annotation_type = parameter_configurer._type
         channel_types = parameter_configurer._channel_types
-        
+        max_value = parameter_configurer._max_value
+        min_value = parameter_configurer._min_value
+    
     if description is None:
         description = raw_name_to_display(name)
     
@@ -1913,7 +2049,7 @@ def create_parameter_converter(parameter, parameter_configurer):
         parameter_converter = InternalParameterConverter(parameter.name, annotation_type, converter)
     else:
         parameter_converter = SlashCommandParameterConverter(parameter.name, annotation_type, converter, name,
-            description, default, required, choices, channel_types)
+            description, default, required, choices, channel_types, max_value, min_value)
     
     return parameter_converter
 

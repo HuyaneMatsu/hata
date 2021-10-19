@@ -778,6 +778,16 @@ class ApplicationCommandOption:
         Whether the option is the default one. Only one option can be `default`.
     description : `str`
         The description of the application command option. It's length can be in range [1:100].
+    max_value : `None`, `int` or `float`
+        The maximal value permitted for this option.
+        
+        Only Applicable for integer as `int`, or `as float options as `float`.
+    
+    min_value : `None`, `int` or `float`
+        The minimum value permitted for this option.
+        
+        Only Applicable for integer as `int`, or `as float options as `float`.
+    
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
     options : `None` or `list` of ``ApplicationCommandOption``
@@ -788,11 +798,11 @@ class ApplicationCommandOption:
     type : ``ApplicationCommandOptionType``
         The option's type.
     """
-    __slots__ = ('autocomplete', 'channel_types', 'choices', 'default', 'description', 'name', 'options', 'required',
-        'type')
+    __slots__ = ('autocomplete', 'channel_types', 'choices', 'default', 'description', 'max_value', 'min_value',
+        'name', 'options', 'required', 'type')
     
     def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, default=False,
-            required=False, choices=None, options=None):
+            required=False, max_value=None, min_value=None, choices=None, options=None):
         """
         Creates a new ``ApplicationCommandOption`` instance with the given parameters.
         
@@ -818,6 +828,16 @@ class ApplicationCommandOption:
             Whether the option is the default one. Defaults to `False`.
         required : `bool`, Optional (Keyword only)
             Whether the parameter is required. Defaults to `False`.
+        max_value : `None`, `int` or `float`
+            The maximal value permitted for this option.
+            
+            Only Applicable for integer as `int`, or `as float options as `float`.
+        
+        min_value : `None`, `int` or `float`
+            The minimum value permitted for this option.
+            
+            Only Applicable for integer as `int`, or `as float options as `float`.
+            
         choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
             
@@ -834,10 +854,14 @@ class ApplicationCommandOption:
             - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
             - If `channel_types` is neither `None` nor `iterable` of `int`.
+            - If `max_value` is not the expected type defined by `type_`'s value.
+            - If `min_value` is not the expected type defined by `type_`'s value.
         ValueError
             - If `type_` was given as `int` instance, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
             - If `channel_types` contains an unknown channel type value.
+            - If `max_value` is given, but it is not applicable for the given `type_`.
+            - If `min_value` is given, but it is not applicable for the given `type_`.
         AssertionError
             - If `name` was not given as `str` instance.
             - If `name` length is out of range [1:32].
@@ -990,6 +1014,41 @@ class ApplicationCommandOption:
             else:
                 channel_types_processed = None
         
+        
+        if (max_value is not None):
+            if type_ is ApplicationCommandOptionType.integer:
+                if not isinstance(max_value, int):
+                    raise TypeError(f'`max_value` can be `int` type, if `type_` is defined as {type_!r}, got '
+                        f'{max_value.__class__.__name__}; {max_value!r}.')
+            
+            elif type_ is ApplicationCommandOptionType.float:
+                if not isinstance(max_value, float):
+                    raise TypeError(f'`max_value` can be `float` type, if `type_` is defined as {type_!r}, got '
+                        f'{max_value.__class__.__name__}; {max_value!r}.')
+            
+            else:
+                raise ValueError(f'`max_value` is only meaningful if `type` is either '
+                    f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
+                    f'type_={type!r}; max_value={max_value!r}.'
+                )
+        
+        if (min_value is not None):
+            if type_ is ApplicationCommandOptionType.integer:
+                if not isinstance(min_value, int):
+                    raise TypeError(f'`min_value` can be `int` type, if `type_` is defined as {type_!r}, got '
+                        f'{min_value.__class__.__name__}; {min_value!r}.')
+            
+            elif type_ is ApplicationCommandOptionType.float:
+                if not isinstance(min_value, float):
+                    raise TypeError(f'`min_value` can be `float` type, if `type_` is defined as {type_!r}, got '
+                        f'{min_value.__class__.__name__}; {min_value!r}.')
+            
+            else:
+                raise ValueError(f'`min_value` is only meaningful if `type` is either '
+                    f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
+                    f'type_={type!r}; min_value={min_value!r}.'
+                )
+        
         if __debug__:
             if (channel_types_processed is not None) and (type_ is not ApplicationCommandOptionType.channel):
                 raise AssertionError(f'`channel_types` is only meaningful if `type_` is '
@@ -1015,6 +1074,8 @@ class ApplicationCommandOption:
         self.options = options_processed
         self.channel_types = channel_types_processed
         self.autocomplete = autocomplete
+        self.max_value = max_value
+        self.min_value = min_value
         return self
     
     
@@ -1176,6 +1237,10 @@ class ApplicationCommandOption:
         
         self.autocomplete = data.get('autocomplete', False)
         
+        self.min_value = data.get('min_value', None)
+        
+        self.max_value = data.get('max_value', None)
+        
         self.type = ApplicationCommandOptionType.get(data['type'])
         return self
     
@@ -1216,6 +1281,14 @@ class ApplicationCommandOption:
         if self.autocomplete:
             data['autocomplete'] = True
         
+        min_value = self.min_value
+        if (min_value is not None):
+            data['min_value'] = min_value
+        
+        max_value = self.max_value
+        if (max_value is not None):
+            data['max_value'] = max_value
+        
         return data
     
     
@@ -1238,6 +1311,16 @@ class ApplicationCommandOption:
         repr_parts.append(' (')
         repr_parts.append(type_.name)
         repr_parts.append(')')
+        
+        min_value = self.min_value
+        if (min_value is not None):
+            repr_parts.append(', min_value=')
+            repr_parts.append(repr(min_value))
+        
+        max_value = self.max_value
+        if (max_value is not None):
+            repr_parts.append(', max_value=')
+            repr_parts.append(repr(max_value))
         
         if self.default:
             repr_parts.append(', default=True')
@@ -1342,6 +1425,9 @@ class ApplicationCommandOption:
         
         new.autocomplete = self.autocomplete
         
+        new.min_value = self.min_value
+        new.max_value = self.max_value
+        
         return new
     
     def __eq__(self, other):
@@ -1374,6 +1460,12 @@ class ApplicationCommandOption:
             return False
         
         if self.autocomplete != other.autocomplete:
+            return False
+        
+        if self.min_value != other.min_value:
+            return False
+        
+        if self.max_value != other.max_value:
             return False
         
         return True

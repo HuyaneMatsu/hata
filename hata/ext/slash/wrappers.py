@@ -9,7 +9,7 @@ from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
 
 from .converters import parse_annotation_description, parse_annotation_type_and_choice, parse_annotation_name, \
-    ANNOTATION_TYPE_TO_STR_ANNOTATION
+    ANNOTATION_TYPE_TO_STR_ANNOTATION, ANNOTATION_TYPE_NUMBER, ANNOTATION_TYPE_FLOAT, ANNOTATION_TYPE_TO_STR_ANNOTATION
 
 class SlasherCommandWrapper:
     """
@@ -210,6 +210,10 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         Parameter's choices.
     _description : `None` or `str`
         Parameter's description.
+    _max_value : `None`, `int`, `float`
+        The maximal accepted value by the parameter.
+    _min_value : `None`, `int`, `float`
+        The minimal accepted value by the parameter.
     _name : `str`
         The parameter's name.
     _parameter_name : `str`
@@ -217,9 +221,11 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     _type : `int`
         The parameter's internal type identifier.
     """
-    __slots__ = ('_channel_types', '_choices', '_description', '_name', '_parameter_name', '_type')
+    __slots__ = ('_channel_types', '_choices', '_description', '_max_value', '_min_value', '_name', '_parameter_name',
+        '_type')
     
-    def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, channel_types=None):
+    def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, channel_types=None,
+            max_value=None, min_value=None):
         """
         Creates a partial function to wrap a slash command.
         
@@ -233,8 +239,12 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             Description for the annotation.
         name : `None` or `str`, Optional
             Name to use instead of the parameter's.
-        channel_types : `None` or `iterable` of `int`
+        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
             The accepted channel types.
+        max_value : `None`, `int`, `float`, Optional (Keyword only)
+            The maximal accepted value by the parameter.
+        min_value : `None`, `int`, `float`, Optional (Keyword only)
+            The minimal accepted value by the parameter.
         
         Returns
         -------
@@ -299,6 +309,31 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
         
+        if (max_value is not None):
+            if type_ == ANNOTATION_TYPE_NUMBER:
+                expected_type = int
+            elif type_ == ANNOTATION_TYPE_FLOAT:
+                expected_type = float
+            else:
+                raise ValueError(f'`max_value` is not applicable for `{ANNOTATION_TYPE_FLOAT[type_]}` parameters.')
+            
+            if not isinstance(max_value, expected_type):
+                raise TypeError(f'`max_value` is accepted as {expected_type.__name__} instance if type is specified '
+                    f'as `{ANNOTATION_TYPE_FLOAT[type_]}`, got {max_value.__class__.__name__}; {max_value!r}.')
+        
+        if (min_value is not None):
+            if type_ == ANNOTATION_TYPE_NUMBER:
+                expected_type = int
+            elif type_ == ANNOTATION_TYPE_FLOAT:
+                expected_type = float
+            else:
+                raise ValueError(f'`min_value` is not applicable for `{ANNOTATION_TYPE_FLOAT[type_]}` parameters.')
+            
+            if not isinstance(min_value, expected_type):
+                raise TypeError(f'`min_value` is accepted as {expected_type.__name__} instance if type is specified '
+                    f'as `{ANNOTATION_TYPE_FLOAT[type_]}`, got {min_value.__class__.__name__}; {min_value!r}.')
+        
+        
         if (parsed_channel_types is not None):
             if (channel_types_processed is not None):
                 raise ValueError(f'`received `channel_types` from both `type_or_choice` and `channel_types` '
@@ -307,15 +342,16 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             channel_types = parsed_channel_types
         else:
             channel_types = channel_types_processed
-            
+        
         if (description is not None):
             description = parse_annotation_description(description, parameter_name)
         name = parse_annotation_name(name, parameter_name)
         
-        return partial_func(cls._decorate, cls, choices, description, name, parameter_name, type_, channel_types)
+        return partial_func(cls._decorate, cls, choices, description, name, parameter_name, type_, channel_types,
+            max_value, min_value)
     
     
-    def _decorate(cls, choices, description, name, parameter_name, type_, channel_types, wrapped):
+    def _decorate(cls, choices, description, name, parameter_name, type_, channel_types, max_value, min_value, wrapped):
         """
         Wraps given command.
         
@@ -333,6 +369,10 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             The parameter's internal type identifier.
         channel_types : `None` or `tuple` of `int`
             The accepted channel types.
+        max_value : `None`, `int`, `float`
+            The maximal accepted value by the parameter.
+        min_value : `None`, `int`, `float`
+            The minimal accepted value by the parameter.
         wrapped : `Any`
             The slash command or other wrapper to wrap.
         
@@ -349,6 +389,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         self._type = type_
         self._channel_types = channel_types
         self._wrapped = wrapped
+        self._max_value = max_value
+        self._min_value = min_value
         
         return self
     
@@ -388,6 +430,16 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         if (channel_types is not None):
             repr_parts.append(', channel_types=')
             repr_parts.append(repr(channel_types))
+        
+        min_value = self._min_value
+        if (min_value is not None):
+            repr_parts.append(', min_value=')
+            repr_parts.append(repr(min_value))
+        
+        max_value = self._max_value
+        if (max_value is not None):
+            repr_parts.append(', max_value=')
+            repr_parts.append(repr(max_value))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

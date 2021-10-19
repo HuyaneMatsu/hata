@@ -9,7 +9,8 @@ from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
 
 from .converters import parse_annotation_description, parse_annotation_type_and_choice, parse_annotation_name, \
-    ANNOTATION_TYPE_TO_STR_ANNOTATION, ANNOTATION_TYPE_NUMBER, ANNOTATION_TYPE_FLOAT, ANNOTATION_TYPE_TO_STR_ANNOTATION
+    ANNOTATION_TYPE_TO_STR_ANNOTATION, ANNOTATION_TYPE_NUMBER, ANNOTATION_TYPE_FLOAT, \
+    process_max_nad_min_value, postprocess_channel_types
 
 class SlasherCommandWrapper:
     """
@@ -278,70 +279,13 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         else:
             raise TypeError(f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}.')
         
-        if (channel_types is None):
-            channel_types_processed = None
-        else:
-            channel_types_processed = None
-            
-            iterator = getattr(type(channel_types), '__iter__', None)
-            if (iterator is None):
-                raise TypeError(f'`channel_types` is neither `None` nor `iterable`, got '
-                    f'{channel_types.__class__.__anme__}.')
-            
-            for channel_type in iterator(channel_types):
-                if type(channel_type) is int:
-                    pass
-                elif isinstance(channel_type, int):
-                    channel_type = int(channel_type)
-                else:
-                    raise TypeError(f'`channel_types` may include only `int` instances, got '
-                        f'{channel_type.__class__.__name__}; {channel_type!r}.')
-                
-                if channel_types_processed is None:
-                    channel_types_processed = set()
-                
-                channel_types_processed.add(channel_type)
-        
-            if channel_types_processed:
-                channel_types_processed = tuple(sorted(channel_types_processed))
-            else:
-                channel_types_processed = None
-        
         type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
         
-        if (max_value is not None):
-            if type_ == ANNOTATION_TYPE_NUMBER:
-                expected_type = int
-            elif type_ == ANNOTATION_TYPE_FLOAT:
-                expected_type = float
-            else:
-                raise ValueError(f'`max_value` is not applicable for `{ANNOTATION_TYPE_FLOAT[type_]}` parameters.')
-            
-            if not isinstance(max_value, expected_type):
-                raise TypeError(f'`max_value` is accepted as {expected_type.__name__} instance if type is specified '
-                    f'as `{ANNOTATION_TYPE_FLOAT[type_]}`, got {max_value.__class__.__name__}; {max_value!r}.')
+        max_value = process_max_nad_min_value(type_, max_value, 'max_value')
+        min_value = process_max_nad_min_value(type_, min_value, 'min_value')
         
-        if (min_value is not None):
-            if type_ == ANNOTATION_TYPE_NUMBER:
-                expected_type = int
-            elif type_ == ANNOTATION_TYPE_FLOAT:
-                expected_type = float
-            else:
-                raise ValueError(f'`min_value` is not applicable for `{ANNOTATION_TYPE_FLOAT[type_]}` parameters.')
-            
-            if not isinstance(min_value, expected_type):
-                raise TypeError(f'`min_value` is accepted as {expected_type.__name__} instance if type is specified '
-                    f'as `{ANNOTATION_TYPE_FLOAT[type_]}`, got {min_value.__class__.__name__}; {min_value!r}.')
-        
-        
-        if (parsed_channel_types is not None):
-            if (channel_types_processed is not None):
-                raise ValueError(f'`received `channel_types` from both `type_or_choice` and `channel_types` '
-                    f'parameters.')
-            
-            channel_types = parsed_channel_types
-        else:
-            channel_types = channel_types_processed
+        processed_channel_types = preprocess_channel_types(channel_types)
+        channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
         
         if (description is not None):
             description = parse_annotation_description(description, parameter_name)

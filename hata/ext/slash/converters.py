@@ -1012,6 +1012,128 @@ class SlashParameter:
         ])
 
 
+def preprocess_channel_types(channel_types):
+    """
+    Preprocesses the given channel type values.
+    
+    Parameters
+    ----------
+    channel_types : `None`, `iterable` of `int`
+        Channel types to limit a slash command parameter to.
+    
+    Returns
+    -------
+    processed_channel_types : `None` or `tuple` of `int`
+    
+    Raises
+    ------
+    TypeError
+        If `channel_types` is neither `None` nor `iterable` of `int`.
+    ValueError
+        If received `channel_types` from both `type_or_choice` and `channel_types` parameters.
+    """
+    if (channel_types is None):
+        processed_channel_types = None
+    else:
+        processed_channel_types = None
+        
+        iterator = getattr(type(channel_types), '__iter__', None)
+        if (iterator is None):
+            raise TypeError(f'`channel_types` is neither `None` nor `iterable`, got '
+                f'{channel_types.__class__.__anme__}.')
+        
+        for channel_type in iterator(channel_types):
+            if type(channel_type) is int:
+                pass
+            elif isinstance(channel_type, int):
+                channel_type = int(channel_type)
+            else:
+                raise TypeError(f'`channel_types` may include only `int` instances, got '
+                    f'{channel_type.__class__.__name__}; {channel_type!r}.')
+            
+            if processed_channel_types is None:
+                processed_channel_types = set()
+            
+            processed_channel_types.add(channel_type)
+    
+        if processed_channel_types:
+            processed_channel_types = tuple(sorted(processed_channel_types))
+        else:
+            processed_channel_types = None
+    
+    return processed_channel_types
+
+
+def postprocess_channel_types(processed_channel_types, parsed_channel_types):
+    """
+    Selects which channel type should be used from the processed ones by using the `channel_types` field` or by the
+    ones processed from the `type_or_choice` field.
+    
+    Parameters
+    ----------
+    processed_channel_types : `None` or `tuple` of `int`
+        Channel types detected from `channel_types` field.
+    parsed_channel_types : `None` or `tuple` of `int`
+        Channel types processed from the `type_or_choice` field.
+    
+    Returns
+    -------
+    channel_types : `None` or `tuple` of `int`
+        The selected channel types.
+    
+    Raises
+    ------
+    ValueError
+        If both `processed_channel_types` and `parsed_channel_types` define channel types.
+    """
+    if (parsed_channel_types is not None):
+        if (processed_channel_types is not None):
+            raise ValueError(f'`received `channel_types` from both `type_or_choice` and `channel_types` '
+                f'parameters.')
+        
+        channel_types = parsed_channel_types
+    else:
+        channel_types = processed_channel_types
+    
+    return channel_types
+
+
+def process_max_nad_min_value(type_, value, value_name):
+    """
+    Processes max and min values.
+    
+    Parameters
+    ----------
+    type_ : `int`
+        The value's type's respective internal identifier.
+    value : `None`, `int`, `float`
+        The given value.
+    value_name : `str`
+        The value's name. Used when generating. exception messages.
+    
+    Returns
+    -------
+    value : `None`, `int`, `float`
+    """
+    if (value is not None):
+        if type_ == ANNOTATION_TYPE_NUMBER:
+            expected_type = int
+        elif type_ == ANNOTATION_TYPE_FLOAT:
+            expected_type = float
+        else:
+            raise ValueError(f'`{value_name}` is not applicable for `{ANNOTATION_TYPE_FLOAT[type_]}` parameters.')
+        
+        if type(value) is expected_type:
+            pass
+        elif isinstance(value, expected_type):
+            value = expected_type(value)
+        else:
+            raise TypeError(f'`{value_name}` is accepted as {expected_type.__name__} instance if type is specified '
+                f'as `{ANNOTATION_TYPE_FLOAT[type_]}`, got {value.__class__.__name__}; {value!r}.')
+    
+    return value
+
+
 def create_annotation_choice_from_int(value):
     """
     Creates an annotation choice form an int.
@@ -1412,13 +1534,13 @@ def parse_annotation_tuple(parameter):
     return choices, description, name, annotation_type, channel_types, None, None
 
 
-def parse_annotation_parameter(parameter, parameter_name):
+def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     """
     Parses an annotated ``SlashParameter``.
     
     Parameters
     ----------
-    parameter : ``Parameter``
+    slash_parameter : ``SlashParameter``
         The respective parameter's representation.
     parameter_name : `str`
         The parameter's name.
@@ -1442,10 +1564,43 @@ def parse_annotation_parameter(parameter, parameter_name):
     
     Raises
     ------
+    TypeError
+        - If `description`'s is not `None` nor `str` instance.
+        - If `parameter_type_or_choice` is `list` instance, but it's elements do not match the `tuple`
+            (`str`, `str` or `int`) pattern.
+        - If `parameter_type_or_choice` is `dict` instance, but it's items do not match the (`str`, `str` or `int`)
+            pattern.
+        - If `parameter_type_or_choice` is unexpected.
+        - If `name`'s is neither `None` or `str` instance.
+        - If `channel_types` is neither `None` nor `iterable` of `int`.
     ValueError
-        TODO
+        - If `description`'s length is out of the expected range [2:100].
+        - If `parameter_type_or_choice` is `str` instance, but not any of the expected ones.
+        - If `parameter_type_or_choice` is `type` instance, but not any of the expected ones.
+        - If `choice` amount is out of the expected range [1:25].
+        - If `type_or_choice` is a choice, and a `choice` name is duped.
+        - If `type_or_choice` is a choice, and a `choice` values are mixed types.
+        - If received `channel_types` from both `type_or_choice` and `channel_types` parameters.
     """
-    # TODO
+    type_or_choice = parameter.type_or_choice
+    if type_or_choice is None:
+        type_or_choice = parameter_name
+    
+    type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
+    
+    processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
+    channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
+    
+    max_value = process_max_nad_min_value(type_, slash_parameter.max_value, 'max_value')
+    min_value = process_max_nad_min_value(type_, slash_parameter.min_value, 'min_value')
+    
+    description = slash_parameter.description
+    if (description is not None):
+        description = parse_annotation_description(description, parameter_name)
+    
+    name = parse_annotation_name(slash_parametername, parameter_name)
+    
+    return choices, description, name, type_, channel_types, max_value, min_value
 
 
 def parse_annotation_internal(annotation):
@@ -1526,7 +1681,7 @@ def parse_annotation(parameter):
                 return parse_annotation_tuple(parameter)
         
         elif isinstance(annotation_value, SlashParameter):
-            return parse_annotation_parameter(parameter, parameter.name)
+            return parse_annotation_slash_parameter(parameter, parameter.name)
     else:
         annotation_value = parameter.name
     

@@ -837,7 +837,7 @@ class SolarPlayer:
         client = node.client
         
         try:
-            client.solarlink.players[self.guild_id]
+            del client.solarlink.players[self.guild_id]
         except KeyError:
             pass
         
@@ -903,9 +903,9 @@ class SolarPlayer:
         
         repr_parts.append('>')
         
-        repr_parts.append(''.join(repr_parts))
-
-
+        return ''.join(repr_parts)
+    
+    
     async def join_speakers(self, *, request=False):
         """
         Requests to speak at the voice client's voice channel. Only applicable for stage channels.

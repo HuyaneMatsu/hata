@@ -9,8 +9,7 @@ from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
 
 from .converters import parse_annotation_description, parse_annotation_type_and_choice, parse_annotation_name, \
-    ANNOTATION_TYPE_TO_STR_ANNOTATION, ANNOTATION_TYPE_NUMBER, ANNOTATION_TYPE_FLOAT, \
-    process_max_nad_min_value, postprocess_channel_types
+    ANNOTATION_TYPE_TO_STR_ANNOTATION, process_max_nad_min_value, postprocess_channel_types, preprocess_channel_types
 
 class SlasherCommandWrapper:
     """
@@ -22,6 +21,7 @@ class SlasherCommandWrapper:
         The wrapped object.
     """
     __slots__ = ('_wrapped',)
+    
     def __new__(cls):
         """
         Creates a partial function to wrap a slash command.

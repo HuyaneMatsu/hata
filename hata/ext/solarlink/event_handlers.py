@@ -42,13 +42,15 @@ async def handle_voice_client_join(client, voice_state):
     if not forward:
         return
     
-    await solar_player.node._send(
-        {
-            LAVALINK_KEY_GUILD_ID: str(guild_id),
-            LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-            **forward_data,
-        }
-    )
+    node = solar_player.node
+    if (node is not None):
+        await node._send(
+            {
+                LAVALINK_KEY_GUILD_ID: str(guild_id),
+                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
+                **forward_data,
+            }
+        )
 
 
 async def handle_voice_client_move(client, voice_state, old_channel_id):
@@ -114,13 +116,15 @@ async def handle_voice_client_update(client, voice_state, old_attributes):
     if not forward:
         return
     
-    await solar_player.node._send(
-        {
-            LAVALINK_KEY_GUILD_ID: str(guild_id),
-            LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-            **forward_data,
-        }
-    )
+    node = solar_player.node
+    if (node is not None):
+        await node._send(
+            {
+                LAVALINK_KEY_GUILD_ID: str(guild_id),
+                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
+                **forward_data,
+            }
+        )
 
 
 async def handle_voice_client_leave(client, voice_state, old_channel_id):
@@ -185,13 +189,15 @@ async def handle_voice_server_update(client, event):
     if not forward:
         return
     
-    await solar_player.node._send(
-        {
-            LAVALINK_KEY_GUILD_ID: str(guild_id),
-            LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-            **forward_data,
-        }
-    )
+    node = solar_player.node
+    if (node is not None):
+        await node._send(
+            {
+                LAVALINK_KEY_GUILD_ID: str(guild_id),
+                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
+                **forward_data,
+            }
+        )
 
 
 async def handle_voice_client_ghost(client, voice_state):

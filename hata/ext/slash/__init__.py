@@ -40,7 +40,7 @@ from .client_wrapper_extension import *
 
 set_permission = SlasherApplicationCommandPermissionOverwriteWrapper
 configure_parameter = SlasherApplicationCommandParameterConfigurerWrapper
-
+P = SlashParameter
 
 def setup_ext_slash(client, **kwargs):
     """

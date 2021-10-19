@@ -1,10 +1,18 @@
-## 1.1.112 *\[2021-10-??]*
+## 1.1.112 *\[2021-10-19]*
 
 #### Improvements
 
 - Add `UserFlag.spammer`.
 - Add `ApplicationCommandOption.min_value`.
 - Add `ApplicationCommandOption.max_value`.
+- Add `min_value` parameter to `ApplicationCommandOption`.
+- Add `max_value` parameter to `ApplicationCommandOption`.
+
+##### ext.slash
+
+- Add `min_value` parameter to `SlasherApplicationCommandParameterConfigurerWrapper`.
+- Add `max_value` parameter to `SlasherApplicationCommandParameterConfigurerWrapper`.
+- Add `SlashParameter` type.
 
 #### Bug fixes
 

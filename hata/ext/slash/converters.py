@@ -1,4 +1,4 @@
-__all__ = ()
+__all__ = ('SlashParameter', )
 
 import reprlib
 
@@ -1582,7 +1582,7 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
         - If `type_or_choice` is a choice, and a `choice` values are mixed types.
         - If received `channel_types` from both `type_or_choice` and `channel_types` parameters.
     """
-    type_or_choice = parameter.type_or_choice
+    type_or_choice = slash_parameter.type_or_choice
     if type_or_choice is None:
         type_or_choice = parameter_name
     
@@ -1598,7 +1598,7 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     if (description is not None):
         description = parse_annotation_description(description, parameter_name)
     
-    name = parse_annotation_name(slash_parametername, parameter_name)
+    name = parse_annotation_name(slash_parameter.name, parameter_name)
     
     return choices, description, name, type_, channel_types, max_value, min_value
 
@@ -1681,7 +1681,7 @@ def parse_annotation(parameter):
                 return parse_annotation_tuple(parameter)
         
         elif isinstance(annotation_value, SlashParameter):
-            return parse_annotation_slash_parameter(parameter, parameter.name)
+            return parse_annotation_slash_parameter(annotation_value, parameter.name)
     else:
         annotation_value = parameter.name
     

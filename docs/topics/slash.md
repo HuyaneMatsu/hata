@@ -219,7 +219,7 @@ An interaction event has the following top level attributes, which you may use u
 
 The possible parameter types are listed above in the [Limitations](#Limitations) section, tho it is a little bit more
 complicated as might look for first time. All parameter has 3 fields what we need to fulfill; `name`, `type` and
-`description`. Their definition is expected in the following format: `name : (type, descritpion)`.
+`description`. Their definition is expected in the following format: `name : (type, description)`.
 
 ```py
 from hata import Embed
@@ -230,6 +230,30 @@ async def cookie(event,
 ):
     """Gifts a cookie!"""
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !')
+```
+
+#### SlashParameter
+
+Parameter definition can be defined with `SlashParameter`-s as well. An advantage of slash parameters, that they
+support keyword-only parameters, like `channel_types`, `min_value`, `max_value`.
+
+```py
+from random import choice
+from hata import Embed
+from hata.ext.slash import P # P is a shortcut for `SlashParameter`
+
+CAKES = [
+    'https://tenor.com/view/chocolate-cake-candles-gif-15613028',
+    'https://tenor.com/view/cake-yummy-hungry-eating-birthday-cake-gif-18507935',
+    'https://tenor.com/view/cake-fat-slice-gif-4931308',
+]
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def cake(event,
+    user : P('user', 'To who?'),
+):
+    """Gifts a cake!"""
+    return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
 ```
 
 #### configure_parameter
@@ -771,7 +795,7 @@ async def is_banned(client, event,
 
 Familiarly to the `name` interaction parameter mentioned [above](#name), the tailing `_` characters are removed from
 parameter names as well, but at some cases it is not enough. For this cases, you can add an extra third element to your
-annotation tuple.
+annotation tuple, or to your `SlashParameter`.
 
 ```py
 @Nitori.interactions(guild=TEST_GUILD)
@@ -1069,10 +1093,15 @@ async def kaboom_mixed(client, event):
 
 ## Specifying channel parameter types
 
-The accepted channel types by channel parameters can be defined by 2 ways for now. Either by modifying the
-annotation or by using the `configure_parameter` decorator.
+The accepted channel types by channel parameters can be defined by 3 ways. Either by modifying the
+annotated type, or by using the `channel_types` parameter with `SlashParameter` or with the `configure_parameter`
+decorator.
 
-The annotation accepts all channel types, like `ChannelText`, `ChannelVoiceBase` and their name sas well.
+### Modifying the annotated type
+
+Channel types can be defined by changing the annotated type. By default defining it as `ChannelBase`, or as
+`'channel'` will accept all the channel types. But you can pass specific channel types as well, like: `ChannelText`,
+or `ChannelVoiceBase` (their string version works as well).
 
 Or an another consideration can be using their system name:
 
@@ -1111,8 +1140,11 @@ async def thread_channel_name_length(
     return len(channel.name)
 ```
 
-When using the `configure_parameter`, the `channel_types` keyword only parameter can be used to define the accepted
-channel types.
+### The `channel_types` parameter
+
+
+When using `SlashParameter` or `configure_parameter`, the `channel_types` keyword only parameter can be used to define
+the accepted channel types.
 
 ```py
 from hata import CHANNEL_TYPES
@@ -1123,6 +1155,58 @@ from hata.ext.slash import configure_parameter
 async def text_channel_name_length(channel):
     """Returns the selected text channel's name's length."""
     return len(channel.name)
+```
+
+
+```py
+from hata import CHANNEL_TYPES
+from hata.ext.slash import P
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def voice_channel_name_length(
+    channel: P('channel', 'Select a voice channel', channel_types=[CHANNEL_TYPES.guild_voice])
+):
+    """Returns the selected voice channel's name's length."""
+    return len(channel.name)
+```
+
+## Specifying input value range
+
+For `number` and `float` parameter types, you can define the minimal and the maximal accepted values with using the
+`min_value` and `max_value` parameters. It works for both `SlashParameter` and for `configure_parameter` as well.
+
+```py
+from hata.ext.slash import P
+
+MOST_POPULAR_TOUHOU_CHARACTERS = [
+    'Konpaku Youmu',
+    'Kirisame Marisa',
+    'Hakurei Reimu',
+    'Komeiji Koishi',
+    'Scarlet Flandre',
+    'Izayoi Sakuya',
+    'Scarlet Remilia',
+    'Fujiwara no Mokou',
+    'Komeiji Satori',
+    'Saigyouji Yuyuko '
+    'Shameimaru Aya',
+    'Margatroid Alice',
+    'Kochiya Sanae',
+    'Reisen Udongein Inaba',
+    'Hinanawi Tenshi',
+    'Yakumo Yukari',
+    'Hata no Kokoro',
+    'Chiruno',
+    'Patchouli Knowledge',
+    'Tatara Kogasa',
+]
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def character_popularity(
+    position: P('number', 'Please select a number between 1 and 20', min_value=1, max_value=20)
+):
+    """Returns the name of the touhou character by it's popularity position."""
+    return MOST_POPULAR_TOUHOU_CHARACTERS[position-1]
 ```
 
 ## Context commands

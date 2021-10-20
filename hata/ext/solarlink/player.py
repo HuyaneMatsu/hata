@@ -7,7 +7,7 @@ from datetime import datetime
 
 from ...backend.futures import Future, Task
 
-from ...discord.core import KOKORO, GUILDS
+from ...discord.core import KOKORO, GUILDS, CHANNELS
 from ...discord.channel import ChannelVoiceBase
 from ...discord.bases import maybe_snowflake
 from ...discord.utils import datetime_to_timestamp
@@ -220,6 +220,8 @@ class SolarPlayer:
         
         Raises
         ------
+        TypeError
+            If `track` is neither ``Track``, nor ``ConfiguredTrack`` instance.
         ValueError
             - If `start_time` is out of the expected [0.0:duration] range.
             - If `end_time` is out of the expected [0.0:duration] range.
@@ -419,7 +421,7 @@ class SolarPlayer:
                     })
             
             else:
-                if (self._paused_track is not None):
+                if (self._paused_track is None):
                     if (node is not None):
                         await node._send({
                             LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
@@ -997,3 +999,29 @@ class SolarPlayer:
         }
         
         await node.client.http.voice_state_client_edit(guild_id, data)
+    
+    
+    @property
+    def channel(self):
+        """
+        Returns the player's channel.
+        
+        Returns
+        -------
+        channel : `None` or ``ChannelVoiceBase``
+        """
+        channel_id = self.channel_id
+        if channel_id:
+            return CHANNELS.get(channel_id, None)
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the player's guild.
+        
+        Returns
+        -------
+        guild : `None` or ``Guild``
+        """
+        return GUILDS.get(self.guild_id, None)

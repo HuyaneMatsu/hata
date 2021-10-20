@@ -105,11 +105,7 @@ class Track:
         Parameters
         ----------
         base64 : `str`
-            Track data in base 64.
-        
-        Returns
-        -------
-        
+            Track data in base64.
         """
         data = b64decode(base64)
         
@@ -228,12 +224,11 @@ class Track:
         """Returns the track's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        
         if self.is_stream:
-            field_added = False
+            field_added = True
             repr_parts.append(' stream')
         else:
-            field_added = True
+            field_added = False
         
         if self.is_seekable:
             if field_added:
@@ -273,9 +268,48 @@ class Track:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def __hash__(self):
+        """Returns the track's hash."""
+        return hash(self.base64)
+    
+    
+    def __eq__(self):
+        """Returns whether teh two tracks are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.base64 == other.base64:
+            return True
+        
+        return False
 
+
+TRACK_ATTRIBUTE_GETTERS = {attribute_name: getattr(Track, attribute_name) for attribute_name in Track.__slots__}
 
 class ConfiguredTrack:
+    """
+    Represents a track added to a player. Not like generic tracks, this supports additional attributes as well.
+    
+    Attributes
+    ----------
+    _added_attributes : `None` or `dict` of (`str`, `Any`) items
+        Additionally passed attributes when registering a track.
+    
+    end_time : `float`
+        When the track will end.
+        
+        Defaults to `0.0`.
+    
+    start_time : `float`
+        When the track will start.
+        
+        Defaults to `0.0`.
+    
+    track : ``Track``
+        The source track.
+    """
     __slots__ = ('_added_attributes', 'end_time', 'start_time', 'track')
     
     def __new__(cls, track, start_time, end_time, added_attributes):
@@ -295,21 +329,48 @@ class ConfiguredTrack:
         
         Raises
         ------
+        TypeError
+            If `track` is neither ``Track``, nor ``ConfiguredTrack`` instance.
         ValueError
             - If `start_time` is out of the expected [0.0:duration] range.
             - If `end_time` is out of the expected [0.0:duration] range.
         """
+        if isinstance(track, Track):
+            configuration = None
+        elif isinstance(track, ConfiguredTrack):
+            configuration = track
+            track = track.track
+        else:
+            raise TypeError(f'`track` can be given either as `{Track.__name__}` or as `{ConfiguredTrack.__name__}` '
+                f'instance, got `{track.__class__.__name__}`.')
+        
         duration = track.duration
         if start_time:
             if (start_time < 0.0) or (start_time > duration):
                 raise ValueError(f'`start_time` can be in range [0.0:{duration:.3f}], got {end_time:.3f}.')
+        else:
+            if (configuration is not None):
+                start_time = configuration.start_time
         
         if end_time:
             if (end_time < 0.0) or (end_time > duration):
                 raise ValueError(f'`end_time` can be in range [0.0:{duration:.3f}], got {end_time:.3f}.')
+        else:
+            if (configuration is not None):
+                start_time = configuration.end_time
         
-        if not added_attributes:
-            added_attributes = None
+        if added_attributes:
+            if (configuration is not None):
+                configuration_added_attributes = configuration._added_attributes
+                if (configuration_added_attributes is not None):
+                    added_attributes = {**configuration_added_attributes, **added_attributes}
+        else:
+            if (configuration is None):
+                added_attributes = None
+            else:
+                added_attributes = configuration._added_attributes
+                if (added_attributes is not None):
+                    added_attributes = added_attributes.copy()
         
         self = object.__new__(cls)
         self.track = track
@@ -328,7 +389,15 @@ class ConfiguredTrack:
             except KeyError:
                 pass
         
+        try:
+            getter = TRACK_ATTRIBUTE_GETTERS[attribute_name]
+        except KeyError:
+            pass
+        else:
+            return getter.__get__(self.track, Track)
+        
         raise AttributeError(attribute_name)
+    
     
     def un_pack(self):
         """
@@ -371,8 +440,52 @@ class ConfiguredTrack:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    def __hash__(self):
+        """Returns the configured track's hash value."""
+        hash_value = 0
+        
+        start_time = self.start_time
+        if start_time:
+            hash_value ^= (1<<7)
+            hash_value ^= hash(start_time)
+        
+        end_time = self.end_time
+        if end_time:
+            hash_value ^= (1<<14)
+            hash_value ^= hash(end_time)
+        
+        hash_value ^= hash(self.track)
+        
+        added_attributes = self.added_attributes
+        if (added_attributes is not None):
+            hash_value ^= len(added_attributes)
+            
+            for item in added_attributes.items():
+                hash_value ^= hash(item)
+        
+        return hash_value
+    
+    def __eq__(self):
+        """Returns whether the two configured tracks are the same."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.track != other.track:
+            return False
+        
+        if self.end_time != other.end_time:
+            return False
+        
+        if self.start_time != other.start_time:
+            return False
+        
+        if self._added_attributes != other._added_attributes:
+            return False
+        
+        return True
 
-
+    
 class GetTracksResult:
     """
     Returned by ``SolarClient.get_tracks`` if the request succeeded.
@@ -488,6 +601,7 @@ class GetTracksResult:
         
         return length
     
+    
     def __bool__(self):
         """Returns whether the result has any tracks."""
         tracks = self.tracks
@@ -501,10 +615,50 @@ class GetTracksResult:
         
         return has_tracks
     
+    
     def __getitem__(self, index):
         """Returns the track of the given index"""
         tracks = self.tracks
         if tracks is None:
             raise IndexError(index)
-        else:
-            return tracks[index]
+        
+        return tracks[index]
+    
+    
+    def __hash__(self):
+        """Returns the get tracks result's hash."""
+        hash_value = 0
+        
+        playlist_name = self.playlist_name
+        if (playlist_name is not None):
+            hash_value ^= hash(playlist_name)
+        
+        selected_track_index = self.selected_track_index
+        if (selected_track_index != -1):
+            hash_value ^= (selected_track_index+1)
+        
+        tracks = self.tracks
+        if (tracks is not None):
+            hash_value ^= (len(tracks)<<8)
+            
+            for track in tracks:
+                hash_value ^= hash(track)
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two results are the same."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.playlist_name != other.playlist_name:
+            return False
+        
+        if self.selected_track_index != other.selected_track_index:
+            return False
+        
+        if self.tracks != other.tracks:
+            return False
+        
+        return True

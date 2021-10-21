@@ -1,4 +1,4 @@
-__all__ = ('SolarPlayerBaseBase', )
+__all__ = ('SolarPlayerBase', )
 
 from math import floor
 from random import randrange
@@ -21,7 +21,7 @@ from .constants import LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_NODE_OPERATION, LAVAL
 from .track import Track, ConfiguredTrack
 
 
-class SolarPlayerBaseBase:
+class SolarPlayerBase:
     """
     Base player of solar link.
     

@@ -17,7 +17,7 @@ from ...discord.client import Client
 from .event_handler_plugin import SolarLinkEventManager
 from .exceptions import SolarAuthenticationError
 from .node import SolarNode
-from .player import SolarPlayerBase
+from .player import SolarPlayer
 from .track import Track, GetTracksResult
 from .route_planner import get_route_planner
 from .player_base import SolarPlayerBase

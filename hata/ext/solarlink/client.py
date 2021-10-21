@@ -17,9 +17,10 @@ from ...discord.client import Client
 from .event_handler_plugin import SolarLinkEventManager
 from .exceptions import SolarAuthenticationError
 from .node import SolarNode
-from .player import SolarPlayer
+from .player import SolarPlayerBase
 from .track import Track, GetTracksResult
 from .route_planner import get_route_planner
+from .player_base import SolarPlayerBase
 
 class SolarClient:
     """
@@ -31,11 +32,11 @@ class SolarClient:
         Weakreference to the extended client instance.
     _events : ``SolarLinkEventManager``
         Event plugin for solarlink specific events.
-    _player_queue : `None` or `list` of ``SolarPlayer``
+    _player_queue : `None` or `list` of ``SolarPlayerBase``
         Solar players to join back to a node.
     nodes : `set` of ``SolarNode``
         All nodes the client is connected to.
-    players : `dict` of (`int`, ``SolarPlayer``) items
+    players : `dict` of (`int`, ``SolarPlayerBase``) items
         Active players of the client by their guild's identifier as key.
     """
     __slots__ = ('_client_reference', '_events', '_player_queue', 'nodes', 'players')
@@ -577,7 +578,7 @@ class SolarClient:
         return self.players.get(guild_id, None)
     
     
-    async def join_voice(self, channel):
+    async def join_voice(self, channel, *, cls=SolarPlayer):
         """
         Joins a solar player to the channel. If there is an already existing solar player at the respective guild,
         moves it.
@@ -588,10 +589,14 @@ class SolarClient:
         ----------
         channel : ``ChannelVoiceBase`` or `tuple` (`int`, `int`)
             The channel to join to.
+        cls : ``SolarPlayerBase`` subclass, Optional (Keyword only)
+            The player's class to create.
+            
+            Defaults to ``SolarPlayer``.
         
         Returns
         -------
-        solar_player : ``SolarPlayer``
+        solar_player : ``SolarPlayerBase``
         
         Raises
         ------
@@ -601,6 +606,9 @@ class SolarClient:
             - If there are no available nodes.
             - If the ``SolarClient``'s client is already deconstructed.
         """
+        if (cls is not SolarPlayer) and (not issubclass(cls, SolarPlayerBase)):
+            raise TypeError(f'`cls` can be given as `{SolarPlayerBase.__name__}` subclass, got {cls!r}.')
+        
         if isinstance(channel, ChannelVoiceBase):
             guild_id = channel.guild_id
             channel_id = channel.id
@@ -620,8 +628,9 @@ class SolarClient:
             if node is None:
                 raise RuntimeError('No available nodes!')
             
-            player = await SolarPlayer(node, guild_id, channel_id)
+            player, waiter = cls(node, guild_id, channel_id)
             self.players[guild_id] = player
+            await waiter
         
         else:
             if player.channel_id != channel_id:

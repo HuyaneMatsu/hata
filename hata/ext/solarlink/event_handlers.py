@@ -33,24 +33,10 @@ async def handle_voice_client_join(client, voice_state):
     if forward_data is None:
         forward_data = {}
         solar_player._forward_data = forward_data
-        forward = False
-    else:
-        forward = True
-        
+    
     forward_data[LAVALINK_KEY_SESSION_ID] = voice_state.session_id
     
-    if not forward:
-        return
-    
-    node = solar_player.node
-    if (node is not None):
-        await node._send(
-            {
-                LAVALINK_KEY_GUILD_ID: str(guild_id),
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-                **forward_data,
-            }
-        )
+    await solar_player._voice_update()
 
 
 async def handle_voice_client_move(client, voice_state, old_channel_id):
@@ -116,15 +102,7 @@ async def handle_voice_client_update(client, voice_state, old_attributes):
     if not forward:
         return
     
-    node = solar_player.node
-    if (node is not None):
-        await node._send(
-            {
-                LAVALINK_KEY_GUILD_ID: str(guild_id),
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-                **forward_data,
-            }
-        )
+    await solar_player._voice_update()
 
 
 async def handle_voice_client_leave(client, voice_state, old_channel_id):
@@ -176,28 +154,14 @@ async def handle_voice_server_update(client, event):
     if forward_data is None:
         forward_data = {}
         solar_player._forward_data = forward_data
-        forward = False
-    else:
-        forward = True
-        
+    
     forward_data[LAVALINK_KEY_VOICE_SERVER_UPDATE_EVENT] = {
         'guild_id': str(event.guild_id),
         'endpoint': event.endpoint,
         'token': event.token,
     }
     
-    if not forward:
-        return
-    
-    node = solar_player.node
-    if (node is not None):
-        await node._send(
-            {
-                LAVALINK_KEY_GUILD_ID: str(guild_id),
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-                **forward_data,
-            }
-        )
+    await solar_player._voice_update()
 
 
 async def handle_voice_client_ghost(client, voice_state):

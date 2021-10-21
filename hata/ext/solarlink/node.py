@@ -33,7 +33,7 @@ class SolarNode:
         A resume key to resume websocket connection with lavalink.
     client : ``Client``
         The parent client of the node.
-    players : `set` of ``SolarPlayer``
+    players : `set` of ``SolarPlayerBase``
         The players using this node.
     reconnect_attempts : `int`
         How much times the gateway should try to reconnect before erroring out.
@@ -332,7 +332,7 @@ class SolarNode:
                     
                     continue
         
-        except GeneratorExit as err:
+        except GeneratorExit:
             if (waiter is not None):
                 waiter.set_result_if_pending(False)
                 waiter = None
@@ -408,7 +408,7 @@ class SolarNode:
             except KeyError:
                 return False
             
-            await player._update_state(message[LAVALINK_KEY_PLAYER_STATE])
+            player._update_state(message[LAVALINK_KEY_PLAYER_STATE])
             return False
         
         elif operation == LAVALINK_KEY_GATEWAY_OPERATION_EVENT:

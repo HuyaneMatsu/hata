@@ -19,7 +19,7 @@ def parse_track_end(client, data):
     except KeyError:
         return
     
-    track = player._current_track
+    track = player.get_current()
     reason = data[LAVALINK_KEY_END_REASON]
     
     event = TrackEndEvent(player, track, reason)
@@ -35,7 +35,7 @@ def parse_track_exception(client, data):
     except KeyError:
         return
     
-    track = player._current_track
+    track = player.get_current()
     reason = data[LAVALINK_KEY_EXCEPTION_REASON]
     
     event = TrackExceptionEvent(player, track, reason)
@@ -65,7 +65,7 @@ def parse_track_stuck(client, data):
     except KeyError:
         return
     
-    track = player._current_track
+    track = player.get_current()
     threshold = data[LAVALINK_KEY_THRESHOLD_MS]*1000.0
     
     event = TrackStuckEvent(player, track, threshold)

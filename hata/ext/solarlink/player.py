@@ -1,4 +1,4 @@
-__all__ = ('SolarPlayer', )
+__all__ = ('SolarPlayerBase', )
 
 from math import floor
 from random import randrange
@@ -6,39 +6,41 @@ from time import monotonic
 from datetime import datetime
 
 from ...backend.futures import Future, Task
+from ...backend.utils import copy_docs
 
 from ...discord.core import KOKORO, GUILDS, CHANNELS
 from ...discord.channel import ChannelVoiceBase
 from ...discord.bases import maybe_snowflake
 from ...discord.utils import datetime_to_timestamp
 
-from .constants import LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE, \
-    LAVALINK_KEY_NODE_OPERATION_PLAYER_STOP, LAVALINK_KEY_NODE_OPERATION_PLAYER_PAUSE, LAVALINK_KEY_PAUSE, \
-    LAVALINK_KEY_NODE_OPERATION_PLAYER_VOLUME, LAVALINK_KEY_VOLUME, LAVALINK_KEY_NODE_OPERATION_PLAYER_SEEK, \
-    LAVALINK_KEY_POSITION_MS, LAVALINK_KEY_BAND, LAVALINK_KEY_GAIN, LAVALINK_KEY_NODE_OPERATION_PLAYER_EDIT_BANDS, \
-    LAVALINK_KEY_BANDS, LAVALINK_BAND_COUNT, LAVALINK_KEY_START_TIME, LAVALINK_KEY_END_TIME, LAVALINK_KEY_NO_REPLACE, \
-    LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY, LAVALINK_KEY_TRACK, LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY
 from .track import Track, ConfiguredTrack
+from .player_base import SolarPlayerBase
 
 
-class SolarPlayer:
+class SolarPlayer(SolarPlayerBase):
     """
     Player of solar link.
     
     Attributes
     ----------
-    _bands : `list` of `float`
-        The bands of the player.
-    _current_track : `None` or ``ConfiguredTrack``
-        The currently played track if any.
     _forward_data : `None` or `dict` of (`str`, `Any`) items
         Json to forward to the player's node as necessary.
-    _paused_track : `None` or ``ConfiguredTrack``
-        The paused track.
     _position : `float`
         The position of the current track.
     _position_update : `float`
         When ``._position`` was last updated in monotonic time.
+    channel_id : `int`
+        The channel's identifier, where the node is connected to.
+    guild_id : `int`
+        The guild's identifier, where the player is.
+    node : ``SolarNode``
+        The node that the player is connected to. Defaults to `None`.
+    _bands : `list` of `float`
+        The bands of the player.
+    _current_track : `None` or ``ConfiguredTrack``
+        The currently played track if any.
+    _paused_track : `None` or ``ConfiguredTrack``
+        The paused track.
     _repeat : `bool`
         Whether tracks should be repeated.
     _repeat_actual : `bool`
@@ -47,18 +49,13 @@ class SolarPlayer:
         Whether tracks should be shuffled.
     _volume : `float`
         The player's volume.
-    channel_id : `int`
-        The channel's identifier, where the node is connected to.
-    guild_id : `int`
-        The guild's identifier, where the player is.
-    node : ``SolarNode``
-        The node that the player is connected to. Defaults to `0`.
     queue : `list` of ``ConfiguredTrack``
         The queue of the tracks to play.
     """
-    __slots__ = ('_bands', '_current_track', '_forward_data', '_paused_track', '_position', '_position_update',
-        '_repeat', '_repeat_actual', '_shuffle', '_volume', 'channel_id', 'guild_id', 'node', 'queue')
+    __slots__ = ('_bands', '_current_track', '_paused_track', '_repeat', '_repeat_actual', '_shuffle', '_volume',
+        'queue')
     
+    @copy_docs(SolarPlayerBase.__new__)
     def __new__(cls, node, guild_id, channel_id):
         """
         Creates a new solar player instance.
@@ -74,126 +71,41 @@ class SolarPlayer:
         
         Returns
         -------
-        waiter : ``Future`` to ``SolarPlayer``
+        waiter : ``Future`` to ``SolarPlayerBase``
             A future, which can be awaited to get the connected player.
         """
-        self = object.__new__(cls)
-        
-        self._position = 0.0
-        self._position_update = 0.0
+        self, waiter = SolarPlayerBase.__new__(cls, node, guild_id, channel_id)
         
         self._shuffle = False
         self._repeat = False
         self._repeat_actual = False
-        
         self._current_track = None
         self._paused_track = None
+        self.queue = []
         self._bands = [0.0 for band_index in range(LAVALINK_BAND_COUNT)]
         self._volume = 1.0
-        self.guild_id = guild_id
-        self.channel_id = channel_id
-        self.node = node
-        self.queue = []
-        self._forward_data = None
         
-        waiter = Future(KOKORO)
-        Task(self._connect(waiter=waiter), KOKORO)
-        return waiter
+        return self, waiter
     
     
-    async def _connect(self, waiter=None):
-        """
-        Connecting task of the solar player.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        waiter : `None` or ``Future``
-            Waiter to set it's result or exception, when connection is established.
-        """
-        try:
-            client = self.node.client
-            
-            gateway = client.gateway_for(self.guild_id)
-            await gateway.change_voice_state(self.guild_id, self.channel_id)
-        
-        except GeneratorExit as err:
-            if (waiter is not None):
-                waiter.set_exception_if_pending(err)
-                waiter = None
-            
-            raise
-        
-        except BaseException as err:
-            if (waiter is not None):
-                waiter.set_exception_if_pending(err)
-                waiter = None
-        
-        if (waiter is not None):
-            waiter.set_result_if_pending(self)
-            waiter = None
-    
-    @property
-    def is_playing(self):
-        """
-        Returns whether the player is currently playing anything.
-        
-        Returns
-        -------
-        is_playing : `bool`
-        """
-        if not self.channel_id:
-            is_playing = False
-        elif self._paused_track:
-            is_playing = False
-        elif self._current_track is None:
-            is_playing = False
-        else:
-            is_playing = True
-        
-        return is_playing
+    @copy_docs(SolarPlayerBase.is_paused)
+    def is_paused(self):
+        return (self._paused_track is not None)
     
     
-    @property
-    def is_connected(self):
-        """
-        Returns whether the player is connected to a voice channel.
-        
-        Returns
-        -------
-        is_connected : `bool`
-        """
-        if self.channel_id:
-            is_connected = True
-        else:
-            is_connected = False
-        
-        return is_connected
+    @copy_docs(SolarPlayerBase.get_current)
+    def get_current(self):
+        return self._current_track
     
     
-    @property
-    def position(self):
-        """
-        Returns the position in the track.
-        
-        Returns
-        -------
-        position : `float`
-        """
-        if (not self.is_playing):
-            position = 0.0
-        else:
-            position = self._position
-            
-            if (self._paused_track is None):
-                position += monotonic() - self._position_update
-            
-            duration = self._current_track.track.duration
-            if position > duration:
-                position = duration
-        
-        return position
+    @copy_docs(SolarPlayerBase.get_volume)
+    def get_volume(self):
+        return self._volume
+    
+    
+    @copy_docs(SolarPlayerBase.get_bands)
+    def get_bands(self):
+        return self._bands
     
     
     async def append(self, track, start_time=0.0, end_time=0.0, **added_attributes):
@@ -229,14 +141,7 @@ class SolarPlayer:
         configured_track = ConfiguredTrack(track, start_time, end_time, added_attributes)
         
         if self._current_track is None:
-            node = self.node
-            if (node is not None):
-                await node._send({
-                    LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
-                    LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    LAVALINK_KEY_NO_REPLACE: False,
-                    **configured_track.un_pack(),
-                })
+            await self._play(configured_track)
             
             self._current_track = configured_track
             self._paused_track = None
@@ -305,21 +210,11 @@ class SolarPlayer:
                 pass
             else:
                 # We stop
-                node = self.node
-                if (node is not None):
-                    await node._send({
-                        LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_STOP,
-                        LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    })
+                await self._stop()
         else:
             node = self.node
             if (node is not None):
-                await node._send({
-                    LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
-                    LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    LAVALINK_KEY_NO_REPLACE: False,
-                    **new_track.un_pack(),
-                })
+                await self._play(new_track)
         
         self._current_track = new_track
         
@@ -327,17 +222,6 @@ class SolarPlayer:
             del queue[pop_after]
         
         return old_track, new_track
-    
-    
-    def get_current(self):
-        """
-        Returns the currently playing or paused track of the player.
-        
-        Returns
-        -------
-        track : `None` or ``ConfiguredTrack``
-        """
-        return self._current_track
     
     
     def iter_all_track(self):
@@ -367,12 +251,7 @@ class SolarPlayer:
         if self._current_track is None:
             return
         
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_STOP,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-            })
+        await self._stop()
         
         self._paused_track = None
         self._current_track = None
@@ -412,23 +291,12 @@ class SolarPlayer:
                 new_track = None
                 track_index = -1
             
-            node = self.node
             if new_track is None:
-                if (node is not None):
-                    await node._send({
-                        LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_STOP,
-                        LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    })
+                await self._stop()
             
             else:
                 if (self._paused_track is None):
-                    if (node is not None):
-                        await node._send({
-                            LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
-                            LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                            LAVALINK_KEY_NO_REPLACE: False,
-                            **new_track.un_pack(),
-                        })
+                    await self._play(new_track)
                 
                 self._current_track = new_track
             
@@ -446,6 +314,49 @@ class SolarPlayer:
         
         return track
         
+    
+    async def pause(self):
+        """
+        Pauses the player.
+        
+        This method is a coroutine.
+        """
+        if (self._paused_track is not None):
+            return
+        
+        current_track = self._current_track
+        if (current_track is None):
+            return
+        
+        await self._pause()
+        
+        self._paused_track = current_track
+    
+    
+    async def resume(self):
+        """
+        Resumes the player.
+        
+        This method is a coroutine.
+        """
+        paused_track = self._paused_track
+        if (paused_track is None):
+            return
+        
+        current_track = self._current_track
+        if (current_track is None):
+            # Should not happen.
+            return
+        
+        node = self.node
+        if (node is not None):
+            if (paused_track is current_track):
+                await self._resume()
+            else:
+                await self._play(current_track)
+        
+        self._paused_track = None
+    
     
     def set_repeat(self, repeat, actual=None):
         """
@@ -514,75 +425,6 @@ class SolarPlayer:
         return self._shuffle
     
     
-    async def pause(self):
-        """
-        Pauses the player.
-        
-        This method is a coroutine.
-        """
-        if (self._paused_track is not None):
-            return
-        
-        current_track = self._current_track
-        if (current_track is None):
-            return
-        
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PAUSE,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_PAUSE: True,
-            })
-        
-        self._paused_track = current_track
-    
-    
-    async def resume(self):
-        """
-        Resumes the player.
-        
-        This method is a coroutine.
-        """
-        paused_track = self._paused_track
-        if (paused_track is None):
-            return
-        
-        current_track = self._current_track
-        if (current_track is None):
-            # Should not happen.
-            return
-        
-        node = self.node
-        if (node is not None):
-            if (paused_track is current_track):
-                await node._send({
-                    LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PAUSE,
-                    LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    LAVALINK_KEY_PAUSE: False,
-                })
-            else:
-                await node._send({
-                    LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
-                    LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    LAVALINK_KEY_NO_REPLACE: False,
-                    **current_track.un_pack(),
-                })
-        
-        self._paused_track = None
-    
-    
-    def is_paused(self):
-        """
-        Returns whether the player is currently paused.
-        
-        Returns
-        -------
-        is_paused : `bool`
-        """
-        return (self._paused_track is not None)
-    
-    
     async def set_volume(self, volume):
         """
         Sets the player's volume.
@@ -599,26 +441,9 @@ class SolarPlayer:
         elif volume > 10.0:
             volume = 10.0
         
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_VOLUME,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_VOLUME: floor(volume*100.0),
-            })
+        await self._set_volume(volume)
         
         self._volume = volume
-    
-    
-    def get_volume(self):
-        """
-        Returns the player's volume.
-        
-        Returns
-        -------
-        volume : `float`
-        """
-        return self._volume
     
     
     async def seek(self, position):
@@ -635,13 +460,7 @@ class SolarPlayer:
         if (self._current_track is None):
             return
         
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_SEEK,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_POSITION_MS: floor(position*1000.0),
-        })
+        await self._seek(position)
     
     
     async def set_gain(self, band, gain):
@@ -702,18 +521,7 @@ class SolarPlayer:
             
             to_update.append((band, gain))
         
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_EDIT_BANDS,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_BANDS: [
-                    {
-                        LAVALINK_KEY_BAND: band,
-                        LAVALINK_KEY_GAIN: gain,
-                    } for band, gain in to_update
-                ],
-            })
+        await self._set_gains(to_update)
         
         for band, gain in to_update:
             self._bands[band] = gain
@@ -725,187 +533,10 @@ class SolarPlayer:
         
         This method is a coroutine.
         """
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_EDIT_BANDS,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_BANDS: [
-                    {
-                        LAVALINK_KEY_BAND: band,
-                        LAVALINK_KEY_GAIN: 0.0,
-                    } for band in range(LAVALINK_BAND_COUNT)
-                ],
-            })
+        await self._set_gains([(band, 0.0) for band in range(LAVALINK_BAND_COUNT)])
         
         for band in LAVALINK_BAND_COUNT:
             self._bands[band] = 0.0
-
-
-    async def _update_state(self, data):
-        """
-        Updates the position of the player.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            State data given.
-        """
-        try:
-            position = data[LAVALINK_KEY_POSITION_MS]
-        except KeyError:
-            position = 0.0
-        else:
-            position = position*1000.0
-        
-        self._position = position
-        self._position_update = monotonic()
-        # There is also a time key, but dunno why i would use it.
-    
-    
-    async def change_node(self, node):
-        """
-        Changes the player's node
-        
-        Parameters
-        ----------
-        node ``SolarNode``
-            The node the player is changed to.
-        """
-        old_node = self.node
-        if (old_node is not None) and old_node.available:
-            await old_node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-            })
-        
-        self.node = node
-        
-        forward_data = self._forward_data
-        if (forward_data is not None) and (len(forward_data) == 2):
-            await node._send(
-                {
-                    LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE,
-                    LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                    **forward_data,
-                }
-            )
-        
-        current_track = self._current_track
-        if (current_track is not None):
-            node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                **current_track.un_pack(),
-                LAVALINK_KEY_START_TIME: floor(self.position*1000.0),
-                LAVALINK_KEY_PAUSE: (self._paused_track is current_track),
-                LAVALINK_KEY_VOLUME: floor(self._volume*100.0),
-            })
-        
-        modified_bands = None
-        bands = self._bands
-        for band in range(LAVALINK_BAND_COUNT):
-            gain = bands[band]
-            if gain:
-                if modified_bands is None:
-                    modified_bands = []
-                
-                modified_bands.append((band, gain))
-        
-        
-        if (modified_bands is not None):
-            node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_EDIT_BANDS,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_BANDS: [
-                    {
-                        LAVALINK_KEY_BAND: band,
-                        LAVALINK_KEY_GAIN: gain,
-                    } for band, gain in modified_bands
-                ],
-            })
-    
-    
-    async def disconnect(self):
-        """
-        Disconnects the player from Discord.
-        
-        This method is a coroutine.
-        """
-        node = self.node
-        if (node is None):
-            return
-            
-        client = node.client
-        
-        try:
-            del client.solarlink.players[self.guild_id]
-        except KeyError:
-            pass
-        
-        if (not node.available):
-            await self.node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-            })
-        
-        gateway = client.gateway_for(self.guild_id)
-        await gateway.change_voice_state(self.guild_id, 0)
-        
-        self.node = None
-    
-    
-    async def move_to(self, channel):
-        """
-        Move the voice client to an another voice channel.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ---------
-        channel : ``ChannelVoiceBase`` or `int` instance
-            The channel where the voice client will move to.
-        
-        Raises
-        ------
-        TypeError
-            If  `channel` was not given as ``ChannelVoiceBase`` not `int` instance.
-        """
-        node = self.node
-        if node is None:
-            # Already disconnected.
-            return
-        
-        if isinstance(channel, ChannelVoiceBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelVoiceBase.__name__}, or as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
-        
-        if self.channel_id == channel_id:
-            return
-        
-        gateway = node.client.gateway_for(self.guild_id)
-        await gateway.change_voice_state(self.guild_id, channel_id)
-    
-    
-    def __repr__(self):
-        """Returns the representation of the player."""
-        repr_parts = [
-            '<', self.__class__.__name__,
-            ' guild_id=', repr(self.guild_id),
-        ]
-        
-        channel_id = self.channel_id
-        if channel_id:
-            repr_parts.append(', channel_id=')
-            repr_parts.append(repr(channel_id))
-        
-        repr_parts.append('>')
-        
-        return ''.join(repr_parts)
     
     
     async def join_speakers(self, *, request=False):
@@ -999,29 +630,3 @@ class SolarPlayer:
         }
         
         await node.client.http.voice_state_client_edit(guild_id, data)
-    
-    
-    @property
-    def channel(self):
-        """
-        Returns the player's channel.
-        
-        Returns
-        -------
-        channel : `None` or ``ChannelVoiceBase``
-        """
-        channel_id = self.channel_id
-        if channel_id:
-            return CHANNELS.get(channel_id, None)
-    
-    
-    @property
-    def guild(self):
-        """
-        Returns the player's guild.
-        
-        Returns
-        -------
-        guild : `None` or ``Guild``
-        """
-        return GUILDS.get(self.guild_id, None)

@@ -12,7 +12,7 @@ class TrackStartEvent(EventBase):
     
     Attributes
     ----------
-    player : ``SolarPlayer``
+    player : ``SolarPlayerBase``
         The player associated with the event.
     track : ``ConfiguredTrack``
         The started track.
@@ -25,7 +25,7 @@ class TrackStartEvent(EventBase):
         
         Parameters
         ----------
-        player : ``SolarPlayer``
+        player : ``SolarPlayerBase``
             The player associated with the event.
         track : ``ConfiguredTrack``
             The started track.
@@ -71,7 +71,7 @@ class TrackEndEvent(EventBase):
     
     Attributes
     ----------
-    player : ``SolarPlayer``
+    player : ``SolarPlayerBase``
         The player associated with the event.
     reason : `None` or `str`
         The reason why the track ended.
@@ -86,7 +86,7 @@ class TrackEndEvent(EventBase):
         
         Parameters
         ----------
-        player : ``SolarPlayer``
+        player : ``SolarPlayerBase``
             The player associated with the event.
         reason : `None` or `str`
             The reason why the track ended.
@@ -143,7 +143,7 @@ class TrackStuckEvent(EventBase):
     
     Attributes
     ----------
-    player : ``SolarPlayer``
+    player : ``SolarPlayerBase``
         The player associated with the event.
     threshold : `float`
         The amount of time till the time is stuck in seconds.
@@ -158,7 +158,7 @@ class TrackStuckEvent(EventBase):
         
         Parameters
         ----------
-        player : ``SolarPlayer``
+        player : ``SolarPlayerBase``
             The player associated with the event.
         track : ``ConfiguredTrack``
             The stucking track.
@@ -214,7 +214,7 @@ class TrackExceptionEvent(EventBase):
     
     Attributes
     ----------
-    player : ``SolarPlayer``
+    player : ``SolarPlayerBase``
         The player associated with the event.
     reason : `str`
         Error reason.
@@ -229,7 +229,7 @@ class TrackExceptionEvent(EventBase):
         
         Parameters
         ----------
-        player : ``SolarPlayer``
+        player : ``SolarPlayerBase``
             The player associated with the event.
         track : ``ConfiguredTrack``
             The stucking track.
@@ -288,7 +288,7 @@ class PlayerWebsocketClosedEvent(EventBase):
         Whether the websocket was closed remotely.
     code : `int`
         Websocket close code.
-    player : ``SolarPlayer``
+    player : ``SolarPlayerBase``
         The player associated with the event.
     reason : `None` or `str`
         Websocket close reason.
@@ -301,7 +301,7 @@ class PlayerWebsocketClosedEvent(EventBase):
         
         Parameters
         ----------
-        player : ``SolarPlayer``
+        player : ``SolarPlayerBase``
             The player associated with the event.
         code : `int`
             Websocket close code.

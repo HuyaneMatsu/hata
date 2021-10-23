@@ -1072,7 +1072,8 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._dispatch_application_command_autocomplete_event', err)
         else:
             if (command is not None):
-               await command.call_auto_completion(client, interaction_event, auto_complete_option)
+                print('call_auto_completion', auto_complete_option)
+                await command.call_auto_completion(client, interaction_event, auto_complete_option)
     
     
     def add_component_interaction_waiter(self, message, waiter):

@@ -12,6 +12,10 @@
 
 ##### ext.slash
 - `SlasherApplicationCommandParameterAutoCompleter` has no exception handlers implemented.
+- `SlasherApplicationCommand.create_event` returned incorrect value.
+- `SlasherApplicationCommandCategory.create_event` returned incorrect value.
+- Fix a `TypeError` in `SlasherApplicationCommandCategory.as_option`.
+- A bad logic could cause auto completion not be called inside of sub commands.
 
 ## 1.1.112 *\[2021-10-19]*
 

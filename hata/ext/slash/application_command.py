@@ -1165,7 +1165,6 @@ class SlasherApplicationCommand:
         ):
             options = auto_complete_option.options
             if (options is not None):
-                option = options[0]
                 sub_commands = self._sub_commands
                 if (sub_commands is not None):
                     try:
@@ -1173,7 +1172,8 @@ class SlasherApplicationCommand:
                     except KeyError:
                         pass
                     else:
-                        await sub_command.call_auto_completion(client, interaction_event, option)
+                        await sub_command.call_auto_completion(client, interaction_event, auto_complete_option)
+        
         else:
             command_function = self._command
             if (command_function is not None):
@@ -1368,8 +1368,7 @@ class SlasherApplicationCommand:
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_application_command(command)
-        return command
+        return self._add_application_command(command)
     
     
     def create_event_from_class(self, klass):
@@ -1401,8 +1400,7 @@ class SlasherApplicationCommand:
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_application_command(command)
-        return command
+        return self._add_application_command(command)
     
     
     def _add_application_command(self, command):
@@ -1440,6 +1438,8 @@ class SlasherApplicationCommand:
         if (auto_completers is not None):
             for auto_completer in auto_completers:
                 as_sub._try_resolve_auto_completer(auto_completer)
+        
+        return as_sub
     
     
     def __eq__(self, other):
@@ -2175,7 +2175,7 @@ class SlasherApplicationCommandFunction:
         auto_completable_parameters = self._get_auto_completable_parameters()
         matched_auto_completable_parameters = auto_completer._difference_match_parameters(auto_completable_parameters)
         if not matched_auto_completable_parameters:
-            raise RuntimeError(f'Application command function `{self.name}` has no parameter do not matches any '
+            raise RuntimeError(f'Application command function `{self.name}` has no parameter matching any '
                 f'parameters of `{auto_completer!r}`.')
         
         auto_completers = self._auto_completers
@@ -2397,7 +2397,7 @@ class SlasherApplicationCommandCategory:
                 sub_commands = self._sub_commands
                 if (sub_commands is not None):
                     try:
-                        sub_command = sub_commands[auto_complete_option.name]
+                        sub_command = sub_commands[option.name]
                     except KeyError:
                         pass
                     else:
@@ -2414,7 +2414,7 @@ class SlasherApplicationCommandCategory:
         """
         sub_commands = self._sub_commands
         if sub_commands:
-            options = [sub_command.as_option() for sub_command in sub_commands]
+            options = [sub_command.as_option() for sub_command in sub_commands.values()]
         else:
             options = None
         
@@ -2504,8 +2504,7 @@ class SlasherApplicationCommandCategory:
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_application_command(command)
-        return command
+        return self._add_application_command(command)
     
     
     def create_event_from_class(self, klass):
@@ -2538,8 +2537,7 @@ class SlasherApplicationCommandCategory:
         if isinstance(command, Router):
             command = command[0]
         
-        self._add_application_command(command)
-        return command
+        return self._add_application_command(command)
     
     
     def _add_application_command(self, command):
@@ -2550,6 +2548,11 @@ class SlasherApplicationCommandCategory:
         ----------
         command : ``SlasherApplicationCommand``
             The slash command to add.
+        
+        Returns
+        -------
+        as_sub : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+            The command as sub-command.
         
         Raises
         ------
@@ -2593,7 +2596,8 @@ class SlasherApplicationCommandCategory:
             parent = parent_reference()
             if (parent is None):
                 break
-    
+        
+        return as_sub
     
     def __eq__(self, other):
         """Returns whether the two slash commands categories are equal."""

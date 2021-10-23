@@ -4,13 +4,14 @@
 
 - Add `SystemChannelFlag.join_sticker_replies`
 
-#### Bug Fixes
+##### ext.commands_v2
+- Add `release_at` check decorator and ``CheckReleaseAt`` check class. (Gojo#8953)
 
+#### Bug Fixes
 - Fix a `TypeError` in `parse_cookie_date`. (Gojo#8953)
 
-##### ext.commands_v2
-
-- Add `release_at` check decorator and ``CheckReleaseAt`` check class. (Gojo#8953)
+##### ext.slash
+- `SlasherApplicationCommandParameterAutoCompleter` has no exception handlers implemented.
 
 ## 1.1.112 *\[2021-10-19]*
 
@@ -23,7 +24,6 @@
 - Add `max_value` parameter to `ApplicationCommandOption`.
 
 ##### ext.slash
-
 - Add `min_value` parameter to `SlasherApplicationCommandParameterConfigurerWrapper`.
 - Add `max_value` parameter to `SlasherApplicationCommandParameterConfigurerWrapper`.
 - Add `SlashParameter` type.
@@ -51,7 +51,6 @@ Make `client.events` pluginable.
 - Get `user_id` from token when creating a client.
 
 ##### ext.commands_v2
-
 - Add `CommandContext.channel_id`.
 - Add `CommandContext.guild_id`.
 
@@ -109,7 +108,6 @@ Improve auto completion and error handling of slash extension.
 - Add `Client.events.scheduled_event_user_unsubscribe`.
 
 ##### ext.slash
-
 - Auto completers now can be registered to command groups and to ``Slasher`` as well.
 - Auto completers with multiple parameter names can be registered with 1 call.
 - Add `.error` decorator for slasher application commands, to auto completers and to component commands.
@@ -128,7 +126,6 @@ Add unicode emoji support for roles.
 #### Improvements
 
 ##### ext.slash
-
 - Add `first` parameter to `Slasher.error`.
 - Add `create_unicode_emoji`.
 - Add `Role.unicode_emoji`.
@@ -214,14 +211,12 @@ Add auto completion for slash commands.
 - Add `ApplicationCommandAutocompleteInteraction`.
 
 ##### ext.slash
-
 - `Slasher` now supports auto completion feature (this includes many new classes and functions). Use the
     `.autocomplete(parameter_name)` decorator on slash command to register an auto completion function.
 
 #### Bug Fixes
 
 ##### ext.slash
-
 - `SlasherApplicationCommand.create_event`, `SlasherApplicationCommand.create_event_from_class`
     `SlasherApplicationCommandCategory.create_event` and `SlasherApplicationCommandCategory.create_event_from_class`
     returned itself instead of the registered sub-command / sub-command-category.
@@ -247,7 +242,6 @@ Add auto completion for slash commands.
 - `get_channel_id_and_message_id` could raise `AttributeError`.
 
 ##### ext.slash
-
 - Add support for channel type specific annotations for slash commands.
 - `configure_parameter` now accepts `channel_types` parameter.
 
@@ -261,7 +255,6 @@ Add auto completion for slash commands.
 - Add `Role._create_empty`.
 
 ##### ext.extension_loader
-
 - Absolute paths are supported.
 
 #### Bug Fixes
@@ -289,7 +282,6 @@ Add auto completion for slash commands.
 - Add `icon` parameter to `Client.role_create`.
 
 ##### ext.slash
-
 - `InteractionResponse` will not retrieve message if used within a `return` expression (Saving up 1 request usually).
 
 #### Bug Fixes
@@ -354,7 +346,6 @@ Stop creating functions runtime, but now we remove lambdas.
 #### Bug Fixes
 
 ##### ext.commands_v2
-
 Fix an `AttributeError` caused from `CommandProcessor._add_category`.
 
 ##### hata.ext.asyncio

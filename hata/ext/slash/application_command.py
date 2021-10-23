@@ -2773,6 +2773,11 @@ class SlasherApplicationCommandParameterAutoCompleter:
     ----------
     _command : `async-callable˛
         The command's function to call.
+    _exception_handlers : `None` or `list` of `CoroutineFunction`
+        Exception handlers added with ``.error`` to the interaction handler.
+        
+        Same as ``Slasher._exception_handlers``.
+    
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
     _parent_reference : `None` or ``WeakReferer`` to (``SlasherApplicationCommand``,
@@ -2783,7 +2788,7 @@ class SlasherApplicationCommandParameterAutoCompleter:
     deepness : `int`
         How deep the auto completer was created. Deeper auto completers always overwrite higher ones.
     """
-    __slots__ = ('_command', '_parameter_converters', '_parent_reference', 'deepness', 'name_pairs')
+    __slots__ = ('_command', '_exception_handlers', '_parameter_converters', '_parent_reference', 'deepness', 'name_pairs')
     
     def __new__(cls, function, parameter_names, deepness, parent):
         """
@@ -2815,6 +2820,7 @@ class SlasherApplicationCommandParameterAutoCompleter:
         self.name_pairs = name_pairs
         self.deepness = deepness
         self._parent_reference = parent_reference
+        self._exception_handlers = None
         
         return self
     
@@ -2931,3 +2937,53 @@ class SlasherApplicationCommandParameterAutoCompleter:
                     break
         
         return matched
+    
+    def error(self, exception_handler=None, *, first=False):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandParameterAutoCompleter``.
+        
+        Parameters
+        ----------
+        exception_handler : `None` or `CoroutineFunction`, Optional
+            Exception handler to register.
+        first : `bool`, Optional (Keyword Only)
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
+            If `exception_handler` is not given, returns a wrapper.
+        """
+        if exception_handler is None:
+            return partial_func(_register_exception_handler, first)
+        
+        return self._register_exception_handler(exception_handler, first)
+    
+    
+    def _register_exception_handler(self, exception_handler, first):
+        """
+        Registers an exception handler to the ``SlasherApplicationCommandParameterAutoCompleter``.
+        
+        Parameters
+        ----------
+        exception_handler : `CoroutineFunction`
+            Exception handler to register.
+        first : `bool`
+            Whether the exception handler should run first.
+        
+        Returns
+        -------
+        exception_handler : `CoroutineFunction`
+        """
+        test_exception_handler(exception_handler)
+        
+        exception_handlers = self._exception_handlers
+        if exception_handlers is None:
+            self._exception_handlers = exception_handlers = []
+        
+        if first:
+            exception_handlers.insert(0, exception_handler)
+        else:
+            exception_handlers.append(exception_handler)
+        
+        return exception_handler

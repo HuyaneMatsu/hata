@@ -20,21 +20,24 @@ class SystemChannelFlag(ReverseFlagBase):
     +---------------------------+-------------------+
     | setup_tips                | 2                 |
     +---------------------------+-------------------+
+    | join_sticker_replies      | 3                 |
+    +---------------------------+-------------------+
     
     There are also predefined ``SystemChannelFlag``-s:
     
     +-----------------------+-----------------------+
     | Class attribute name  | value                 |
     +=======================+=======================+
-    | NONE                  | ActivityFlag(0b111)   |
+    | NONE                  | ActivityFlag(0b1111)  |
     +-----------------------+-----------------------+
-    | ALL                   | ActivityFlag(0b000)   |
+    | ALL                   | ActivityFlag(0b0000)  |
     +-----------------------+-----------------------+
     """
     __keys__ = {
         'welcome': 0,
         'boost': 1,
         'setup_tips': 2,
+        'join_sticker_replies': 3,
     }
     
     @property
@@ -62,5 +65,5 @@ class SystemChannelFlag(ReverseFlagBase):
     NONE = NotImplemented
     ALL = NotImplemented
 
-SystemChannelFlag.NONE = SystemChannelFlag(0b111)
-SystemChannelFlag.ALL = SystemChannelFlag(0b000)
+SystemChannelFlag.NONE = SystemChannelFlag(0b1111)
+SystemChannelFlag.ALL = SystemChannelFlag(0b0000)

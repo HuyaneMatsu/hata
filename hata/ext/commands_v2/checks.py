@@ -76,6 +76,9 @@ The implemented checks are the following:
 | is_in_voice                    | N/A             | Whether the user is in a voice channel in the respective     |
 |                                |                 | guild.                                                       |
 +--------------------------------+-----------------+--------------------------------------------------------------+
+| release_at                     | release_at,     | Whether the command is already released. Users with the      |
+|                                | *roles          | given roles and the bot owners bypass the check.             |
++--------------------------------+-----------------+--------------------------------------------------------------+
 | nsfw_channel_only              | N/A             | Whether the message's channel is nsfw.                       |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | owner_only                     | N/A             | Whether the message's author is an owner of the client.      |
@@ -144,6 +147,7 @@ __all__ = (
     'is_channel',
     'is_guild',
     'is_in_voice',
+    'release_at',
     'nsfw_channel_only',
     'owner_only',
     'owner_or_guild_owner_only',
@@ -157,6 +161,7 @@ __all__ = (
 )
 
 from functools import partial as partial_func
+from datetime import datetime
 
 
 from ...backend.futures import Task
@@ -173,6 +178,7 @@ from ...discord.channel import ChannelBase, ChannelText, ChannelCategory, Channe
     ChannelGroup
 from ...discord.client import Client
 from ...discord.user import ClientUserBase
+from ...discord.utils import datetime_to_id
 
 from .wrappers import CommandCheckWrapper
 
@@ -283,7 +289,7 @@ class CheckBase(metaclass=CheckMeta):
     
     def __repr__(self):
         """Returns the check's representation."""
-        result = [
+        repr_parts = [
             self.__class__.__name__,
             '(',
         ]
@@ -310,20 +316,20 @@ class CheckBase(metaclass=CheckMeta):
                 else:
                     display_name = name
                 
-                result.append(display_name)
-                result.append('=')
+                repr_parts.append(display_name)
+                repr_parts.append('=')
                 attr = getattr(self,name)
-                result.append(repr(attr))
+                repr_parts.append(repr(attr))
                 
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
         
-        result.append(')')
+        repr_parts.append(')')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     def __invert__(self):
         """Inverts the check's condition returning a new check."""
@@ -703,6 +709,7 @@ class CheckHasAnyRole(CheckHasRoleBase):
         The legends themselves.
     """
     __slots__ = ('roles', )
+    
     def __new__(cls, *roles):
         """
         Checks whether a respective condition passes.
@@ -760,6 +767,7 @@ class HasAnyRoleCheckOrRelationIsOwner(CheckHasAnyRole, CheckIsOwner):
         The roles from what the user should have at least 1.
     """
     __slots__ = ()
+    
     def __new__(cls, *roles):
         """
         Checks whether a respective condition passes.
@@ -1975,6 +1983,7 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         The respective categories' id.
     """
     __slots__ = ('category_ids', )
+    
     def __new__(cls, *categories):
         """
         Checks whether a respective condition passes.
@@ -2015,6 +2024,69 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         yield from self.category_ids
 
 
+class CheckReleaseAt(CheckBase):
+    """
+    Checks whether the command is already released.
+    
+    Attributes
+    ----------
+    release_at : `int`
+        The time in snowflake, when the command will be released.
+    pre_access_roles : `None` or `set` of ``Role``
+        The roles, who are bypassed by the check.
+    """
+    def __new__(cls, release_at, *roles):
+        """
+        Checks whether a respective condition passes.
+        
+        Parameters
+        ----------
+        release_at : `datetime`
+            When the command is released.
+        *roles : `str`, `int` or ``Role``
+            Role from which the message's author should have at least one.
+        
+        Raises
+        ------
+        TypeError
+            If an element of role was not given neither as ``Role``, `str` or `int` instance.
+        ValueError
+            If a role was given as `str` or as `int` instance, but not as a valid snowflake, so a ``Role`` instance
+            cannot be precreated with it.
+        """
+        if not isinstance(release_at, datetime):
+            raise TypeError(f'`release_at` can be given as `datetime` instance, got {release_at.__class__.__name__}.')
+        
+        roles_processed = set()
+        for role in roles:
+            role = instance_or_id_to_instance(role, Role, 'role')
+            roles_processed.add(role)
+        
+        release_at = datetime_to_id(release_at)
+        
+        self = object.__new__(cls)
+        self.release_at = release_at
+        self.pre_access_roles = roles_processed
+        return self
+    
+    
+    @copy_docs(CheckBase.__call__)
+    async def __call__(self, context):
+        message = context.message
+        if message.id > self.release_at:
+            return True
+        
+        user = message.author
+        for role in self.roles:
+            if  user.has_role(role):
+                return True
+        
+        if context.client.is_owner(user):
+            return True
+        
+        return False
+
+
 has_role = partial_func(CommandCheckWrapper, CheckHasRole)
 owner_or_has_role = partial_func(CommandCheckWrapper, CheckHasRoleOrIsOwner)
 has_any_role = partial_func(CommandCheckWrapper, CheckHasAnyRole)
@@ -2045,3 +2117,4 @@ bot_account_only = partial_func(CommandCheckWrapper, CheckBotAccount)
 user_account_or_client_only = partial_func(CommandCheckWrapper, CheckIsUserAccountOrIsClient)
 is_category = partial_func(CommandCheckWrapper, CheckIsCategory)
 is_any_category = partial_func(CommandCheckWrapper, CheckIsAnyCategory)
+release_at = partial_func(CommandCheckWrapper, CheckReleaseAt)

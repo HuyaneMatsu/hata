@@ -10,14 +10,26 @@ from .url import URL
 from .helpers import is_ip_address
 from .event_loop import LOOP_TIME
 
-DATE_TOKENS_RP = re.compile(
-    '[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E]*(?P<token>[\x00-\x08\x0A-\x1F\d:a-zA-Z\x7F-\xFF]+)')
+DATE_TOKENS_RP = re.compile('[\x09\x20-\x2F\x3B-\x40\x5B-\x60\x7B-\x7E]*(?P<token>[\x00-\x08\x0A-\x1F\d:a-zA-Z\x7F-\xFF]+)')
 DATE_HMS_TIME_RP = re.compile('(\d{1,2}):(\d{1,2}):(\d{1,2})')
 DATE_DAY_OF_MONTH_RP = re.compile('\d{1,2}')
-DATE_MONTH_RP = re.compile('jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec', re.I)
 DATE_YEAR_RP = re.compile('\d{2,4}')
 MAX_TIME = 2051215261.0 # (2035-01-01)
 
+MONTHS = {
+    'jan': 1,
+    'feb': 2,
+    'mar': 3,
+    'apr': 4,
+    'may': 5,
+    'jun': 6,
+    'jul': 7,
+    'aug': 8,
+    'sep': 9,
+    'oct': 10,
+    'nov': 11,
+    'dec': 12,
+}
 
 def parse_cookie_date(date_str):
     """
@@ -40,9 +52,7 @@ def parse_cookie_date(date_str):
     
     hour = minute = second = day = month = year = 0
     
-    for token_match in DATE_TOKENS_RP.finditer(date_str):
-        
-        token = token_match.group('token')
+    for token in DATE_TOKENS_RP.findall(date_str):
         
         if not found_time:
             time_match = DATE_HMS_TIME_RP.match(token)
@@ -62,10 +72,12 @@ def parse_cookie_date(date_str):
                 continue
         
         if not found_month:
-            month_match = DATE_MONTH_RP.match(token)
-            if (month_match is not None):
+            try:
+                month = MONTHS[token.lower()]
+            except KeyError:
+                pass
+            else:
                 found_month = True
-                month = month_match.lastindex
                 continue
         
         if not found_year:
@@ -84,7 +96,6 @@ def parse_cookie_date(date_str):
         return None
     
     return datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)
-
 
 
 def do_domains_match(domain, hostname):

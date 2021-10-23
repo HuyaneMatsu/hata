@@ -434,38 +434,39 @@ async def shutdown():
 
 The following checks are implemented:
 
-| Name                           | Extra parameter          | Description                                                                                       |
-|--------------------------------|--------------------------|---------------------------------------------------------------------------------------------------|
-| announcement_channel_only      | N/A                      | Whether the message's channel is an announcement channel.                                         |
-| booster_only                   | N/A                      | Whether the user boosts the respective guild.                                                     |
-| bot_account_only               | N/A                      | Whether the message's author is a bot account.                                                    |
-| client_only                    | N/A                      | Whether the message was sent by a ``Client``.                                                     |
-| custom                         | function                 | Custom checks, to wrap a given `function`. (Can be async.)                                        |
-| guild_only                     | N/A                      | Whether the message was sent to a guild channel.                                                  |
-| guild_owner_only               | N/A                      | Whether the message's author is the guild's owner. (Fails in private channels.)                   |
-| has_any_role                   | *roles                   | Whether the message's author has any of the given roles.                                          |
-| has_client_guild_permissions   | permissions, **kwargs    | Whether the client has the given permissions at the guild. (Fails in private channels.)           |
-| has_client_permissions         | permissions, **kwargs    | Whether the client has the given permissions at the channel.                                      |
-| has_guild_permissions          | permissions, **kwargs    | Whether the message's author has the given permissions at the guild. (Fails in private channels.) |
-| has_permissions                | permissions, **kwargs    | Whether the message's author has the given permissions at the channel.                            |
-| has_role                       | role                     | Whether the message's author has the given role.                                                  |
-| is_any_category                | *categories              | Whether the message was sent into a channel, what's category is any of the specified ones.        |
-| is_any_channel                 | *channels                | Whether the message was sent to any of the given channels.                                        |
-| is_any_guild                   | *guilds                  | Whether the message was sent to any of the given guilds.                                          |
-| is_category                    | category                 | Whether the message was sent into a channel, what's category is the specified one.                |
-| is_channel                     | channel                  | Whether the message's channel is the given one.                                                   |
-| is_guild                       | guild                    | Whether the message guild is the given one.                                                       |
-| is_in_voice                    | N/A                      | Whether the user is in a voice channel in the respective guild.                                   |
-| nsfw_channel_only              | N/A                      | Whether the message's channel is nsfw.                                                            |
-| owner_only                     | N/A                      | Whether the message's author is an owner of the client.                                           |
-| owner_or_guild_owner_only      | N/A                      | `owner_only` or `guild_owner` (Fails in private channels.)                                        |
-| owner_or_has_any_role          | *roles                   | `owner_only` or `has_any_role`                                                                    |
-| owner_or_has_guild_permissions | permissions, **kwargs    | `owner_only` or `has_guild_permissions` (Fails in private channels.)                              |
-| owner_or_has_permissions       | permissions, **kwargs    | `owner_only` or `has_permissions`                                                                 |
-| owner_or_has_role              | role                     | `owner_only` or `has_role`                                                                        |
-| private_only                   | N/A                      | Whether the message's channel is a private channel.                                               |
-| user_account_only              | N/A                      | Whether the message's author is a user account.                                                   |
-| user_account_or_client_only    | N/A                      | Whether the message's author is a user account or a ``Client`` instance.                          |
+| Name                           | Extra parameter          | Description                                                                                               |
+|--------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------|
+| announcement_channel_only      | N/A                      | Whether the message's channel is an announcement channel.                                                 |
+| booster_only                   | N/A                      | Whether the user boosts the respective guild.                                                             |
+| bot_account_only               | N/A                      | Whether the message's author is a bot account.                                                            |
+| client_only                    | N/A                      | Whether the message was sent by a ``Client``.                                                             |
+| custom                         | function                 | Custom checks, to wrap a given `function`. (Can be async.)                                                |
+| guild_only                     | N/A                      | Whether the message was sent to a guild channel.                                                          |
+| guild_owner_only               | N/A                      | Whether the message's author is the guild's owner. (Fails in private channels.)                           |
+| has_any_role                   | *roles                   | Whether the message's author has any of the given roles.                                                  |
+| has_client_guild_permissions   | permissions, **kwargs    | Whether the client has the given permissions at the guild. (Fails in private channels.)                   |
+| has_client_permissions         | permissions, **kwargs    | Whether the client has the given permissions at the channel.                                              |
+| has_guild_permissions          | permissions, **kwargs    | Whether the message's author has the given permissions at the guild. (Fails in private channels.)         |
+| has_permissions                | permissions, **kwargs    | Whether the message's author has the given permissions at the channel.                                    |
+| has_role                       | role                     | Whether the message's author has the given role.                                                          |
+| is_any_category                | *categories              | Whether the message was sent into a channel, what's category is any of the specified ones.                |
+| is_any_channel                 | *channels                | Whether the message was sent to any of the given channels.                                                |
+| is_any_guild                   | *guilds                  | Whether the message was sent to any of the given guilds.                                                  |
+| is_category                    | category                 | Whether the message was sent into a channel, what's category is the specified one.                        |
+| is_channel                     | channel                  | Whether the message's channel is the given one.                                                           |
+| is_guild                       | guild                    | Whether the message guild is the given one.                                                               |
+| is_in_voice                    | N/A                      | Whether the user is in a voice channel in the respective guild.                                           |
+| release_at                     | release_at, *roles       | Whether the command is already released. Users with the given roles and the bot owners bypass the check.  |
+| nsfw_channel_only              | N/A                      | Whether the message's channel is nsfw.                                                                    |
+| owner_only                     | N/A                      | Whether the message's author is an owner of the client.                                                   |
+| owner_or_guild_owner_only      | N/A                      | `owner_only` or `guild_owner` (Fails in private channels.)                                                |
+| owner_or_has_any_role          | *roles                   | `owner_only` or `has_any_role`                                                                            |
+| owner_or_has_guild_permissions | permissions, **kwargs    | `owner_only` or `has_guild_permissions` (Fails in private channels.)                                      |
+| owner_or_has_permissions       | permissions, **kwargs    | `owner_only` or `has_permissions`                                                                         |
+| owner_or_has_role              | role                     | `owner_only` or `has_role`                                                                                |
+| private_only                   | N/A                      | Whether the message's channel is a private channel.                                                       |
+| user_account_only              | N/A                      | Whether the message's author is a user account.                                                           |
+| user_account_or_client_only    | N/A                      | Whether the message's author is a user account or a ``Client`` instance.                                  |
 
 
 ### Category checks

@@ -1,3 +1,17 @@
+## 1.1.113 *\[2021-10-??]*
+
+#### Improvements
+
+- Add `SystemChannelFlag.join_sticker_replies`
+
+#### Bug Fixes
+
+- Fix a `TypeError` in `parse_cookie_date`. (Gojo#8953)
+
+##### ext.commands_v2
+
+- Add `release_at` check decorator and ``CheckReleaseAt`` check class. (Gojo#8953)
+
 ## 1.1.112 *\[2021-10-19]*
 
 #### Improvements

@@ -1,11 +1,17 @@
-## 1.1.114 *\[2021-10-24]*
+## 1.1.115 *\[2021-10-24\]*
+
+#### Bug Fixes
+
+- Remove a random print call.
+
+## 1.1.114 *\[2021-10-24\]*
 
 #### Bug Fixes
 
 - Fix an `AttributeError` in `default_voice_client_join_event_handler`.
 - Fix an `AttributeError` in `default_voice_client_move_event_handler`.
 
-## 1.1.113 *\[2021-10-23]*
+## 1.1.113 *\[2021-10-23\]*
 
 #### Improvements
 
@@ -25,7 +31,7 @@
 - Fix a `TypeError` in `SlasherApplicationCommandCategory.as_option`.
 - A bad logic could cause auto completion not be called inside of sub commands.
 
-## 1.1.112 *\[2021-10-19]*
+## 1.1.112 *\[2021-10-19\]*
 
 #### Improvements
 
@@ -44,7 +50,7 @@
 
 - `Embed.__bool__` could return incorrect value.
 
-## 1.1.111 *\[2021-10-17]*
+## 1.1.111 *\[2021-10-17\]*
 
 ### Summary
 
@@ -70,7 +76,7 @@ Make `client.events` pluginable.
 
 - Multiple ``Client`` methods could raise `AttributeError` by calling a bad method. (Gojo#8953)
 
-## 1.1.110 *\[2021-10-10]*
+## 1.1.110 *\[2021-10-10\]*
 
 #### Bug Fixes
 

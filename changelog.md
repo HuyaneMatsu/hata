@@ -1,3 +1,10 @@
+## 1.1.114 *\[2021-10-24]*
+
+#### Bug Fixes
+
+- Fix an `AttributeError` in `default_voice_client_join_event_handler`.
+- Fix an `AttributeError` in `default_voice_client_move_event_handler`.
+
 ## 1.1.113 *\[2021-10-23]*
 
 #### Improvements
@@ -8,6 +15,7 @@
 - Add `release_at` check decorator and ``CheckReleaseAt`` check class. (Gojo#8953)
 
 #### Bug Fixes
+
 - Fix a `TypeError` in `parse_cookie_date`. (Gojo#8953)
 
 ##### ext.slash

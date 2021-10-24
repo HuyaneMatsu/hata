@@ -98,7 +98,7 @@ async def default_voice_client_join_event_handler(client, voice_state):
     except KeyError:
         pass
     else:
-        voice_client.channel = voice_state.channel
+        voice_client.channel_id = voice_state.channel_id
 
 
 async def default_voice_client_move_event_handler(client, voice_state, old_channel_id):
@@ -121,7 +121,7 @@ async def default_voice_client_move_event_handler(client, voice_state, old_chann
     except KeyError:
         pass
     else:
-        voice_client.channel = voice_state.channel
+        voice_client.channel_id = voice_state.channel_id
 
 
 async def default_voice_client_leave_event_handler(client, voice_state, old_channel_id):

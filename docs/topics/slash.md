@@ -1188,7 +1188,7 @@ MOST_POPULAR_TOUHOU_CHARACTERS = [
     'Scarlet Remilia',
     'Fujiwara no Mokou',
     'Komeiji Satori',
-    'Saigyouji Yuyuko '
+    'Saigyouji Yuyuko',
     'Shameimaru Aya',
     'Margatroid Alice',
     'Kochiya Sanae',

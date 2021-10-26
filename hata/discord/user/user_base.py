@@ -666,7 +666,7 @@ class UserBase(DiscordEntity, immortal=True):
     
     avatar_url_for = property(module_urls.user_avatar_url_for)
     avatar_url_for_as = module_urls.user_avatar_url_for_as
-    avatar_url_at = property(module_urls.user_avatar_url_at)
+    avatar_url_at = module_urls.user_avatar_url_at
     avatar_url_at_as = module_urls.user_avatar_url_at_as
     
     

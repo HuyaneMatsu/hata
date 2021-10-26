@@ -1,3 +1,17 @@
+## 1.1.116 *\[2021-10-??\]*
+
+#### Improvements
+
+- Add `ApplicationFlag.gateway_message_content`.
+- Add `ApplicationFlag.gateway_message_content_limited`.
+- Add `DiscordHTTPClient.thread_user_get`.
+- Add `RATELIMIT_GROUPS.thread_user_get`.
+- Add `Client.thread_user_get`.
+
+#### Bug Fixes
+
+- `UserBase.avatar_url_at` was incorrectly set as property.
+
 ## 1.1.115 *\[2021-10-24\]*
 
 #### Bug Fixes

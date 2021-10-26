@@ -29,6 +29,10 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | embedded                          | 17                |
     +-----------------------------------+-------------------+
+    | gateway_message_content           | 18                |
+    +-----------------------------------+-------------------+
+    | gateway_message_content_limited   | 19                |
+    +-----------------------------------+-------------------+
     """
     __keys__ = {
         'managed_emoji': 2,
@@ -40,6 +44,8 @@ class ApplicationFlag(FlagBase):
         'gateway_guild_members_limited': 15,
         'verification_pending_guild_limit': 16,
         'embedded': 17,
+        'gateway_message_content': 18,
+        'gateway_message_content_limited': 19,
     }
 
 

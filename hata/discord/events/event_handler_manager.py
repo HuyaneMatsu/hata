@@ -97,9 +97,12 @@ class EventHandlerManager:
     channel_delete(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is deleted.
     
-    channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: `dict`)
+    channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: {`dict`, `None`})
         Called when a channel is edited. The passed `old_attributes` parameter contains the channel's overwritten
         attributes in `attribute-name` - `old-value` relation.
+        
+        If the channel is uncached, but is updated, `old_attributes` will be given as `None`. This can happen when a
+        thread is unarchived.
         
         Every item in `old_attributes` is optional and it's items can be any of the following:
         

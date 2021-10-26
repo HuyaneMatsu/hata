@@ -1654,12 +1654,22 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me',
         )
     
+    
+    async def thread_user_get(self, channel_id, user_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get, channel_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/channels/{channel_id}/thread-members/{user_id}',
+        )
+    
+    
     async def thread_user_add(self, channel_id, user_id):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_add, channel_id),
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/{user_id}',
         )
+    
     
     async def thread_user_delete(self, channel_id, user_id):
         return await self.discord_request(

@@ -667,6 +667,14 @@ Group Details
     - Limit : `5`
     - Resets after : `5.0`
 
+- thread_user_get
+    - Endpoint : `/channels/{channel_id}/thread-members/{user_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `UNLIMITED`
+    - Limit : `N/A`
+    - Resets after : `N/A`
+
 - thread_user_add
     - Endpoint : `/channels/{channel_id}/thread-members/{user_id}`
     - Method : `POST`
@@ -1900,6 +1908,7 @@ thread_join = GROUP_THREAD_ACTION
 thread_leave = GROUP_THREAD_ACTION
 thread_user_add = GROUP_THREAD_ACTION
 thread_user_delete = GROUP_THREAD_ACTION
+thread_user_get = RateLimitGroup.unlimited()
 thread_self_settings_edit = RateLimitGroup()
 thread_create = GROUP_THREAD_CREATE
 typing = RateLimitGroup(LIMITER_CHANNEL)

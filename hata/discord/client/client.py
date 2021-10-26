@@ -8663,6 +8663,50 @@ class Client(ClientUserPBase):
         await self.http.thread_leave(channel_id)
     
     
+    async def thread_user_get(self, thread_channel, user):
+        """
+        Gets a user's thread profile inside of a thread channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        thread_channel : ``ChannelThread``, `int`
+            The channel to get the user's thread profile of.
+        user : ``ClientUserBase``, `int`
+            The user to get it's thread profile of.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+            The user, who's thread profile was requested.
+        
+        Raises
+        ------
+        TypeError
+            - If `thread_channel`'s type is incorrect.
+            - If `user`'s type is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        channel, channel_id = get_channel_and_id(thread_channel, ChannelThread)
+        user, user_id = get_user_and_id(user)
+        
+        thread_user_data = await self.http.thread_user_get(channel_id, user_id)
+        
+        if user is None:
+            user = create_partial_user(user_id)
+        
+        if channel is None:
+            channel = create_partial_channel_from_id(channel_id, 12, 0)
+        
+        thread_user_create(channel, user, thread_user_data)
+        
+        return user
+    
+    
     async def thread_user_add(self, thread_channel, user):
         """
         Adds the user to the thread channel.

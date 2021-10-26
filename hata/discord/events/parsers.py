@@ -1589,6 +1589,7 @@ def CHANNEL_UPDATE__CAL_MC(client, data):
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client_, channel, old_attributes), KOKORO)
 
+
 def CHANNEL_UPDATE__OPT_SC(client, data):
     channel_id = int(data['id'])
     try:
@@ -1622,6 +1623,128 @@ del CHANNEL_UPDATE__CAL_SC, \
     CHANNEL_UPDATE__CAL_MC, \
     CHANNEL_UPDATE__OPT_SC, \
     CHANNEL_UPDATE__OPT_MC
+
+
+def THREAD_UPDATE__CAL_SC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
+        channel = channel_type(data, client, guild_id)
+        old_attributes = None
+        
+    else:
+        old_attributes = channel._difference_update_attributes(data)
+        if not old_attributes:
+            return
+    
+    Task(client.events.channel_edit(client, channel, old_attributes), KOKORO)
+
+def THREAD_UPDATE__CAL_MC(client, data):
+    guild_id = data.get('guild_id', None)
+    if guild_id is None:
+        guild_id = 0
+        clients = None
+    else:
+        guild_id = int(guild_id)
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            clients = None
+        else:
+            clients = guild.clients
+    
+    channel_id = int(data['id'])
+    channel = CHANNELS.get(channel_id, None)
+    
+    if (clients is not None):
+        clients = filter_clients(clients, INTENT_MASK_GUILDS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    if channel is None:
+        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
+        channel = channel_type(data, client, guild_id)
+        old_attributes = None
+    else:
+        old_attributes = channel._difference_update_attributes(data)
+        if not old_attributes:
+            if (clients is not None):
+                clients.close()
+            return
+    
+    if (clients is None):
+        event_handler = client.events.channel_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, channel, old_attributes), KOKORO)
+    else:
+        for client_ in clients:
+            event_handler = client_.events.channel_edit
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, channel, old_attributes), KOKORO)
+
+def THREAD_UPDATE__OPT_SC(client, data):
+    channel_id = int(data['id'])
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
+        channel_type(data, client, guild_id)
+    else:
+        channel._update_attributes(data)
+
+def THREAD_UPDATE__OPT_MC(client, data):
+    guild_id = data.get('guild_id', None)
+    if guild_id is None:
+        guild_id = 0
+        clients = None
+    else:
+        guild_id = int(guild_id)
+        try:
+            guild = GUILDS[guild_id]
+        except KeyError:
+            clients = None
+        else:
+            clients = guild.clients
+    
+    channel_id = int(data['id'])
+    channel = CHANNELS.get(channel_id, None)
+    
+    if (clients is not None):
+        if first_client(clients, INTENT_MASK_GUILDS) is not client:
+            return
+    
+    if (channel is None):
+        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
+        channel_type(data, client, guild_id)
+    else:
+        channel._update_attributes(data)
+
+
+add_parser(
+    'THREAD_UPDATE',
+    THREAD_UPDATE__CAL_SC,
+    THREAD_UPDATE__CAL_MC,
+    THREAD_UPDATE__OPT_SC,
+    THREAD_UPDATE__OPT_MC)
+del THREAD_UPDATE__CAL_SC, \
+    THREAD_UPDATE__CAL_MC, \
+    THREAD_UPDATE__OPT_SC, \
+    THREAD_UPDATE__OPT_MC
 
 def CHANNEL_CREATE__CAL(client, data):
     channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)

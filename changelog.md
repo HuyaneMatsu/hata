@@ -11,6 +11,7 @@
 #### Bug Fixes
 
 - `UserBase.avatar_url_at` was incorrectly set as property.
+- Threads on unarchiving were not put to cache.
 
 ## 1.1.115 *\[2021-10-24\]*
 

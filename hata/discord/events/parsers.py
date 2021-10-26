@@ -1614,7 +1614,7 @@ def CHANNEL_UPDATE__OPT_MC(client, data):
     channel._update_attributes(data)
 
 add_parser(
-    ('CHANNEL_UPDATE', 'THREAD_UPDATE'),
+    'CHANNEL_UPDATE',
     CHANNEL_UPDATE__CAL_SC,
     CHANNEL_UPDATE__CAL_MC,
     CHANNEL_UPDATE__OPT_SC,

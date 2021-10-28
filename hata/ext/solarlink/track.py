@@ -466,7 +466,7 @@ class ConfiguredTrack:
         
         return hash_value
     
-    def __eq__(self):
+    def __eq__(self, other):
         """Returns whether the two configured tracks are the same."""
         if type(self) is not type(other):
             return NotImplemented

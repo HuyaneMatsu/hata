@@ -16,7 +16,7 @@ async def default_track_exception_event_handler(client, event):
     event : ``TrackExceptionEvent``
         The exception event received.
     """
-    await event.player.play_next()
+    await event.player.skip(0)
 
 
 async def default_track_stuck_event_handler(client, event):
@@ -32,7 +32,7 @@ async def default_track_stuck_event_handler(client, event):
     event : ``TrackStuckEvent``
         The track stuck event.
     """
-    await event.player.play_next()
+    await event.player.skip(0)
 
 
 async def default_track_end_event_handler(client, event):
@@ -49,7 +49,7 @@ async def default_track_end_event_handler(client, event):
         The track end event.
     """
     if event.reason == TRACK_END_REASONS.finished:
-        await event.player.play_next()
+        await event.player.skip()
 
 
 class SolarLinkEventManager(EventHandlerPlugin):

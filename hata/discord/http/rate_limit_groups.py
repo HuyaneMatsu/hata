@@ -31,6 +31,7 @@ Limiter types:
 - `GLOBAL`
 - `channel_id`
 - `guild_id`
+- `interaction_id`
 - `webhook_id`
 
 Required auth types:

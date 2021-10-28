@@ -39,12 +39,14 @@ class SolarPlayer(SolarPlayerBase):
         The bands of the player.
     _current_track : `None` or ``ConfiguredTrack``
         The currently played track if any.
+    _paused : `bool`
+        Whether the player is paused.
     _paused_track : `None` or ``ConfiguredTrack``
         The paused track.
-    _repeat : `bool`
-        Whether tracks should be repeated.
-    _repeat_actual : `bool`
+    _repeat_current : `bool`
         Whether the current track should be repeated. Defaults to `False`.
+    _repeat_queue : `bool`
+        Whether tracks should be repeated.
     _shuffle : `bool`
         Whether tracks should be shuffled.
     _volume : `float`
@@ -52,8 +54,8 @@ class SolarPlayer(SolarPlayerBase):
     queue : `list` of ``ConfiguredTrack``
         The queue of the tracks to play.
     """
-    __slots__ = ('_bands', '_current_track', '_paused_track', '_repeat', '_repeat_actual', '_shuffle', '_volume',
-        'queue')
+    __slots__ = ('_bands', '_current_track', '_paused', '_paused_track', '_repeat_current', '_repeat_queue',
+        '_shuffle', '_volume', 'queue')
     
     @copy_docs(SolarPlayerBase.__new__)
     def __new__(cls, node, guild_id, channel_id):
@@ -77,9 +79,10 @@ class SolarPlayer(SolarPlayerBase):
         self, waiter = SolarPlayerBase.__new__(cls, node, guild_id, channel_id)
         
         self._shuffle = False
-        self._repeat = False
-        self._repeat_actual = False
+        self._repeat_queue = False
+        self._repeat_current = False
         self._current_track = None
+        self._paused = None
         self._paused_track = None
         self.queue = []
         self._bands = [0.0 for band_index in range(LAVALINK_BAND_COUNT)]
@@ -90,7 +93,7 @@ class SolarPlayer(SolarPlayerBase):
     
     @copy_docs(SolarPlayerBase.is_paused)
     def is_paused(self):
-        return (self._paused_track is not None)
+        return self._paused
     
     
     @copy_docs(SolarPlayerBase.get_current)
@@ -141,87 +144,21 @@ class SolarPlayer(SolarPlayerBase):
         configured_track = ConfiguredTrack(track, start_time, end_time, added_attributes)
         
         if self._current_track is None:
-            await self._play(configured_track)
+            paused = self._paused
+            if (not paused):
+                await self._play(configured_track)
             
             self._current_track = configured_track
-            self._paused_track = None
-            started_playing = True
+            
+            if paused:
+                started_playing = False
+            else:
+                started_playing = True
         else:
             self.queue.append(configured_track)
             started_playing = False
         
         return started_playing
-    
-    
-    async def play_next(self):
-        """
-        Plays the next track of the player. Calls this method, when a track is over, and not skipped.
-        
-        This method is a coroutine.
-        
-        Returns
-        -------
-        old_track : `None` or ``ConfiguredTrack``
-        new_track : `None` or ``ConfiguredTrack``
-        """
-        # Are we paused, derp
-        if (self._paused_track is not None):
-            return
-        
-        old_track = self._current_track
-        queue = self.queue
-        if old_track is None:
-            if queue:
-                if self._shuffle:
-                    pop_after = randrange(randrange(len(queue)))
-                    
-                else:
-                    pop_after = 0
-                new_track = queue[pop_after]
-            
-            else:
-                pop_after = -1
-                new_track = None
-        else:
-            if queue:
-                if self._repeat_actual:
-                    new_track = old_track
-                    pop_after =  -1
-                else:
-                    if self._shuffle:
-                        pop_after = randrange(len(queue))
-                    else:
-                        pop_after = 0
-                    new_track = queue[pop_after]
-                    
-                    if self._repeat:
-                        queue.append(old_track)
-            
-            else:
-                pop_after = -1
-                if self._repeat:
-                    new_track = old_track
-                else:
-                    new_track = None
-        
-        if (new_track is None):
-            if (old_track is None):
-                # We are stopped, do nothing
-                pass
-            else:
-                # We stop
-                await self._stop()
-        else:
-            node = self.node
-            if (node is not None):
-                await self._play(new_track)
-        
-        self._current_track = new_track
-        
-        if pop_after != -1:
-            del queue[pop_after]
-        
-        return old_track, new_track
     
     
     def iter_all_track(self):
@@ -253,13 +190,14 @@ class SolarPlayer(SolarPlayerBase):
         
         await self._stop()
         
+        # do not change `self._paused`
         self._paused_track = None
         self._current_track = None
     
     
     async def skip(self, index=0):
         """
-        Skips the given track from the queue and returns it.
+        Skips the given track by it's index and returns it.
         
         This method is a coroutine.
         
@@ -280,28 +218,57 @@ class SolarPlayer(SolarPlayerBase):
             track = self._current_track
             self._current_track = None
             
-            if queue:
-                if self._shuffle:
-                    track_index = randrange(len(queue))
-                    new_track = queue[track_index]
+            if self._repeat_current:
+                if not self._paused:
+                    await self._play(track)
+                
+                self._current_track = track
+            
+            elif self._repeat_queue:
+                # Only repeat the actual, if there is no other.
+                if queue:
+                    if self._shuffle:
+                        track_index = randrange(len(queue))
+                        new_track = queue[track_index]
+                    else:
+                        track_index = 0
+                        new_track = queue[0]
                 else:
-                    track_index = 0
-                    new_track = queue[0]
-            else:
-                new_track = None
-                track_index = -1
-            
-            if new_track is None:
-                await self._stop()
-            
-            else:
-                if (self._paused_track is None):
+                    new_track = track
+                    track_index = -1
+                
+                if not self._paused:
                     await self._play(new_track)
                 
                 self._current_track = new_track
+                
+                if track_index != -1:
+                    del queue[track_index]
+                    queue.append(track)
             
-            if track_index != -1:
-                del queue[track_index]
+            else:
+                if queue:
+                    if self._shuffle:
+                        track_index = randrange(len(queue))
+                        new_track = queue[track_index]
+                    else:
+                        track_index = 0
+                        new_track = queue[0]
+                else:
+                    new_track = None
+                    track_index = -1
+                
+                if new_track is None:
+                    await self._stop()
+                
+                else:
+                    if not self._paused:
+                        await self._play(new_track)
+                    
+                    self._current_track = new_track
+                
+                if track_index != -1:
+                    del queue[track_index]
         
         elif index < 0:
             track = None
@@ -311,9 +278,12 @@ class SolarPlayer(SolarPlayerBase):
                 track = None
             else:
                 track = queue.pop(index-1)
+                
+                if self._repeat_queue and (not self._repeat_current):
+                    queue.append(track)
         
         return track
-        
+    
     
     async def pause(self):
         """
@@ -321,15 +291,14 @@ class SolarPlayer(SolarPlayerBase):
         
         This method is a coroutine.
         """
-        if (self._paused_track is not None):
+        if self._paused:
             return
         
         current_track = self._current_track
-        if (current_track is None):
-            return
+        if (current_track is not None):
+            await self._pause()
         
-        await self._pause()
-        
+        self._paused = True
         self._paused_track = current_track
     
     
@@ -339,54 +308,65 @@ class SolarPlayer(SolarPlayerBase):
         
         This method is a coroutine.
         """
+        if not self._paused:
+            return
+        
         paused_track = self._paused_track
-        if (paused_track is None):
-            return
-        
-        current_track = self._current_track
-        if (current_track is None):
-            # Should not happen.
-            return
-        
-        node = self.node
-        if (node is not None):
-            if (paused_track is current_track):
-                await self._resume()
-            else:
-                await self._play(current_track)
+        if (paused_track is not None):
+            current_track = self._current_track
+            if (current_track is not None):
+                node = self.node
+                if (node is not None):
+                    if (paused_track is current_track):
+                        await self._resume()
+                    else:
+                        await self._play(current_track)
         
         self._paused_track = None
+        self._paused = False
     
     
-    def set_repeat(self, repeat, actual=None):
+    def set_repeat_queue(self, repeat):
         """
-        Sets the player to repeat the tracks.
+        Sets the player to repeat the whole queue.
+        
+        Parameters
+        ----------
+        repeat : `bool`
+            Whether to repeat queue.
+        """
+        self._repeat_queue = repeat
+        
+        if repeat:
+            self._repeat_current = False
+    
+    
+    def set_repeat_current(self, repeat):
+        """
+        Sets the player to repeat the actual track.
         
         Parameters
         ----------
         repeat : `bool`
             Whether to repeat the player or not.
         actual : `bool`
-            Whether the current track should be repeated.
+            Whether the repeat the current track.
         """
-        self._repeat = repeat
+        self._repeat_current = repeat
         
         if repeat:
-            if (actual is not None):
-                self._repeat_actual = actual
-        else:
-            self._repeat_actual = False
+            self._repeat_queue = False
     
     
-    def is_repeating(self):
+    def is_repeating_queue(self):
         """
-        Returns whether the player is repeating the tracks.
+        Returns whether the player is repeating the queue.
         
         Returns
         -------
         repeat : `bool`
         """
-        return self._repeat
+        return self._repeat_queue
     
     
     def is_repeating_actual(self):
@@ -395,9 +375,9 @@ class SolarPlayer(SolarPlayerBase):
         
         Returns
         -------
-        repeat_actual : `bool`
+        repeat_current : `bool`
         """
-        return self._repeat_actual
+        return self._repeat_current
     
     
     def set_shuffle(self, shuffle):

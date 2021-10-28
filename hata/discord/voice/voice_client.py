@@ -726,7 +726,7 @@ class VoiceClient:
             else:
                 source = player.source
             
-            # Try playing next even if player is `None`.
+            # Try playing next even if player is not `None`.
             Task(self.play_next(), KOKORO)
         
         elif index < 0:

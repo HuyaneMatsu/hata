@@ -16,7 +16,8 @@
 
 ### About
 
-Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrapper written in Python named after [Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro).
+Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrapper written in Python named after
+[Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro).
 
 <h1></h1>
 
@@ -51,7 +52,8 @@ Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrap
 
 ## [Documentation](https://www.astil.dev/project/hata/docs/hata)
 
-The library reference is available [*here*](https://www.astil.dev/project/hata/docs/hata) & the tutorial is available [*here*](https://github.com/HuyaneMatsu/hata/blob/master/docs/topics/README.md)
+The library reference is available [*here*](https://www.astil.dev/project/hata/docs/hata) & the tutorials are
+available [*here*](https://github.com/HuyaneMatsu/hata/blob/master/docs/topics/README.md).
 
 ## Usage
 

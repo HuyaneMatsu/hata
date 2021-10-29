@@ -1,4 +1,4 @@
-__all__ = ('SolarPlayerBase', )
+__all__ = ('SolarPlayer', )
 
 from math import floor
 from random import randrange

@@ -51,7 +51,7 @@ def parse_track_start(client, data):
     except KeyError:
         return
     
-    track = Track.from_base64(data[LAVALINK_KEY_TRACK])
+    track = player.get_current()
     event = TrackStartEvent(player, track)
     Task(client.solarlink._events.track_start(client, event), KOKORO)
 

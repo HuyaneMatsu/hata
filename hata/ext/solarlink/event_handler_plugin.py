@@ -49,7 +49,7 @@ async def default_track_end_event_handler(client, event):
         The track end event.
     """
     if event.reason == TRACK_END_REASONS.finished:
-        await event.player.skip()
+        await event.player.skip(0)
 
 
 class SolarLinkEventManager(EventHandlerPlugin):

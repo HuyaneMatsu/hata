@@ -678,6 +678,7 @@ CAN_EXECUTE_PREFIX_PATTERN_1 = frozenset((
     OPERATION_INVERT_ID,
     OPERATION_POSITIVATE_ID,
     *TWO_SIDE_OPERATORS,
+    OPERATION_PARENTHESES_START_ID,
 ))
 
 CAN_EXECUTE_PREFIX_PATTERN_3 = frozenset((
@@ -986,7 +987,7 @@ def evaluate_2_sided_remainder(token_1, token_2, token_3):
         raise EvaluationError(token_2.array, token_2.start, token_2.end,
             f'Remainder by zero disallowed: {value_1} % {value_2}.')
     
-    value = value_1 // value_2
+    value = value_1 % value_2
     return merge_2_tokens(token_1, token_3, value)
 
 

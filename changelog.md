@@ -14,7 +14,8 @@
 - Threads on unarchiving were not put to cache.
 
 ##### ext.slash
-- Operations before parentheses were not converted to their prefix versions even if applicable.
+- Operations before and after parentheses start were not converted to their prefix versions even if applicable.
+- Full division operation was used when executing remainder. (Gojo#8953)
 
 ## 1.1.115 *\[2021-10-24\]*
 

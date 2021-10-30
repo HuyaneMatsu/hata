@@ -1,20 +1,16 @@
 __all__ = ('SolarPlayer', )
 
-from math import floor
 from random import randrange
-from time import monotonic
 from datetime import datetime
 
-from ...backend.futures import Future, Task
 from ...backend.utils import copy_docs
 
-from ...discord.core import KOKORO, GUILDS, CHANNELS
-from ...discord.channel import ChannelVoiceBase
-from ...discord.bases import maybe_snowflake
+from ...discord.core import GUILDS
 from ...discord.utils import datetime_to_timestamp
 
 from .track import Track, ConfiguredTrack
 from .player_base import SolarPlayerBase
+from .constants import LAVALINK_BAND_COUNT
 
 
 class SolarPlayer(SolarPlayerBase):
@@ -229,10 +225,10 @@ class SolarPlayer(SolarPlayerBase):
                 if queue:
                     if self._shuffle:
                         track_index = randrange(len(queue))
-                        new_track = queue[track_index]
                     else:
                         track_index = 0
-                        new_track = queue[0]
+                    
+                    new_track = queue[track_index]
                 else:
                     new_track = track
                     track_index = -1
@@ -250,10 +246,9 @@ class SolarPlayer(SolarPlayerBase):
                 if queue:
                     if self._shuffle:
                         track_index = randrange(len(queue))
-                        new_track = queue[track_index]
                     else:
                         track_index = 0
-                        new_track = queue[0]
+                    new_track = queue[track_index]
                 else:
                     new_track = None
                     track_index = -1
@@ -277,10 +272,54 @@ class SolarPlayer(SolarPlayerBase):
             if index > len(queue):
                 track = None
             else:
-                track = queue.pop(index-1)
+                track = queue.pop(index+1)
                 
                 if self._repeat_queue and (not self._repeat_current):
                     queue.append(track)
+        
+        return track
+    
+    
+    async def remove(self, index=0):
+        """
+        Removes the track with the given index from the queue and returns it.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        index : `int`, Optional
+            The track's index to skip.
+            
+            When skipping the `0`-th track, so the current, it will start to play the next if not paused.
+        
+        Returns
+        -------
+        track : `None` or ``ConfiguredTrack``
+        """
+        queue = self.queue
+        
+        if index == 0:
+            track = self._current_track
+            self._current_track = None
+            
+            if queue:
+                if self._shuffle:
+                    track_index = randrange(len(queue))
+                else:
+                    track_index = 0
+                new_track = queue[track_index]
+                
+                if not self._paused:
+                    await self._play(new_track)
+                
+                self._current_track = new_track
+                del queue[index]
+        
+        elif index > len(queue):
+            track = None
+        else:
+            track = queue.pop(index+1)
         
         return track
     
@@ -468,7 +507,7 @@ class SolarPlayer(SolarPlayerBase):
         """
         Modifies the player's band settings.
         
-        This method is a coroutine
+        This method is a coroutine.
         
         Parameters
         ----------

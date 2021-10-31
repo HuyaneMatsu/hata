@@ -740,6 +740,7 @@ class VoiceClient:
         
         return source
     
+    
     def pause(self):
         """
         Pauses the currently played audio if applicable.
@@ -749,6 +750,7 @@ class VoiceClient:
             player.pause()
             Task(self.set_speaking(0), KOKORO)
     
+    
     def resume(self):
         """
         Resumes the currently stopped audio if applicable.
@@ -757,6 +759,7 @@ class VoiceClient:
         if (player is not None):
             player.resume()
             Task(self.set_speaking(1), KOKORO)
+    
     
     def stop(self):
         """
@@ -769,6 +772,7 @@ class VoiceClient:
             self.player = None
             player.stop()
     
+    
     def is_connected(self):
         """
         Returns whether the voice client is connected to a ``ChannelVoice``.
@@ -778,6 +782,7 @@ class VoiceClient:
         is_connected : `bool`
         """
         return self.connected.is_set()
+    
     
     def is_playing(self):
         """
@@ -798,6 +803,7 @@ class VoiceClient:
             return False
         
         return True
+    
     
     def is_paused(self):
         """

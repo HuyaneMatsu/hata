@@ -431,7 +431,7 @@ class ConfiguredTrack:
         
         added_attributes = self._added_attributes
         if (added_attributes is not None):
-            for attribute_name, attribute_value in added_attributes:
+            for attribute_name, attribute_value in added_attributes.items():
                 repr_parts.append(', ')
                 repr_parts.append(attribute_name)
                 repr_parts.append('=')

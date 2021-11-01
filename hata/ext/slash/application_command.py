@@ -1155,30 +1155,35 @@ class SlasherApplicationCommand:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        auto_complete_option : ``ApplicationCommandAutocompleteInteractionOption``
+        auto_complete_option : ``ApplicationCommandAutocompleteInteraction``
             The option to autocomplete.
         """
-        auto_complete_option_type = auto_complete_option.type
-        if (
-            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND) or
-            (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY)
-        ):
-            options = auto_complete_option.options
-            if (options is not None):
-                sub_commands = self._sub_commands
-                if (sub_commands is not None):
+        command_function = self._command
+        if (command_function is not None):
+            await command_function.call_auto_completion(client, interaction_event, auto_complete_option)
+            return
+        
+        sub_commands = self._sub_commands
+        if (sub_commands is not None):
+            auto_complete_option = auto_complete_option.options[0]
+            
+            auto_complete_option_type = auto_complete_option.type
+            if (
+                (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND) or
+                (auto_complete_option_type is APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY)
+            ):
+                options = auto_complete_option.options
+                if (options is not None):
                     try:
                         sub_command = sub_commands[auto_complete_option.name]
                     except KeyError:
                         pass
                     else:
                         await sub_command.call_auto_completion(client, interaction_event, auto_complete_option)
+            
+            return
         
-        else:
-            command_function = self._command
-            if (command_function is not None):
-                await command_function.call_auto_completion(client, interaction_event, auto_complete_option)
-    
+        # no more cases
     
     def get_schema(self):
         """

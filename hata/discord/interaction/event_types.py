@@ -827,11 +827,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         Can be used by extensions and is used by the the ``Client`` instances to ensure correct flow order.
     application_id : `int`
         The interaction's application's identifier.
-    channel : ``ChannelText`` or ``ChannelPrivate``
-        The channel from where the interaction was called. Might be a partial channel if not cached.
-    guild : `None` or ``Guild`
-        The from where the interaction was called from. Might be `None` if the interaction was called from a private
-        channel.
+    channel_id : `int`
+        The channel's identifier from where the interaction was called.
+    guild_id : `int`
+        The guild's identifier from where the interaction was called from. Might be `0` if the interaction was called
+        from a private channel.
     interaction : `None` or ``ApplicationCommandInteraction``, ``ComponentInteraction`` or \
             ``ApplicationCommandAutocompleteInteraction``
         

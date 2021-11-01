@@ -368,7 +368,7 @@ class SolarPlayerBase:
         
         This method is a coroutine.
         """
-        node = self._node
+        node = self.node
         if (node is not None) and node.available:
             await node._send({
                 LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY,

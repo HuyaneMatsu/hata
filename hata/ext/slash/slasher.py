@@ -1058,11 +1058,10 @@ class Slasher(EventHandlerBase):
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
-        auto_complete_options = interaction_event.interaction.options
-        if (auto_complete_options is None):
-            return
         
-        auto_complete_option = auto_complete_options[0]
+        auto_complete_option = interaction_event.interaction
+        if auto_complete_option.options is None:
+            return
         
         try:
             command = await self._try_get_command_by_id(client, interaction_event)

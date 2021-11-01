@@ -1,8 +1,10 @@
-__all__ = ('ClientWrapper', 'BanEntry', 'Typer', 'start_clients', 'stop_clients',)
+__all__ = ('ClientWrapper', 'BanEntry', 'Typer', 'start_clients', 'stop_clients', 'wait_for_interruption')
 
+import sys
 from threading import current_thread
+from time import sleep as blocking_sleep
 
-from ...backend.futures import Task, sleep, CancelledError
+from ...backend.futures import Task, sleep, CancelledError, WaitTillAll
 from ...backend.export import include
 
 from ..core import CLIENTS, KOKORO
@@ -38,6 +40,43 @@ def stop_clients():
     
     if (current_thread() is not KOKORO):
         KOKORO.wake_up()
+
+
+def wait_for_interruption():
+    """
+    Waits for keyboard interruption. If occurred, shuts down all the clients and closes the event loop. This operation
+    is unreleasable.
+    
+    Shutting down the clients might take a few seconds depending on the added shutdown event handlers.
+    
+    Raises
+    ------
+    RuntimeError
+        If used inside of the event loop of clients.
+    KeyboardInterrupt
+        The received keyboard interrupt.
+    """
+    if current_thread() is KOKORO:
+        raise RuntimeError(f'`wait_for_interruption` cannot be used inside of {KOKORO!r}.')
+    
+    try:
+        while True:
+            # sleep 1 day
+            blocking_sleep(86400.0)
+    except KeyboardInterrupt as err:
+        exception = err
+    else:
+        # should not happen
+        exception = None
+    
+    sys.stdout.write('wait_for_interruption interrupted\n')
+    
+    WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
+    KOKORO.stop()
+    
+    # reraise exception
+    if (exception is not None):
+        raise exception
 
 
 class BanEntry:

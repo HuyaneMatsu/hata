@@ -1985,7 +1985,8 @@ class SlasherApplicationCommandFunction:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        auto_complete_option : ``ApplicationCommandAutocompleteInteractionOption``
+        auto_complete_option : ``ApplicationCommandAutocompleteInteraction`` or \
+                ``ApplicationCommandAutocompleteInteractionOption``
             The option to autocomplete.
         """
         focused_option = auto_complete_option.focused_option

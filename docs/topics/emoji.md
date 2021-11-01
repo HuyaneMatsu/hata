@@ -32,10 +32,11 @@ name.
 ## Custom emojis
 
 Custom emojis cannot be accessed initially before startup, since they are not yet received from Discord.
-Tho in runtime, you can find them by using `EMOJIS` weak value dictionary or in their respective guild's `.emojis` dictionary as well!
+Tho in runtime, you can find them by using `EMOJIS` weak value dictionary or in their respective guild's `.emojis`
+dictionary as well!
 
-It would be really really, making your imouto cry, sad if we couldn't create custom emojis before starting up.
-So to keep the lolis safe, we can precreate them and they will get  updated with their actual values when we receieve data
+It would make your lil sister cry if we couldn't create custom emojis before starting up.
+So to keep her safe, we can precreate them and they will get updated with their actual values when we receive data
 from Discord. To do this we got `Emoji.precreate` with the following parameters:
 
 | Parameter name    | Type      | Required  |

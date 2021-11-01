@@ -17,6 +17,8 @@
 ##### ext.slash
 - Operations before and after parentheses start were not converted to their prefix versions even if applicable.
 - Full division operation was used when executing remainder. (Gojo#8953)
+- `InteractionResponse` was not passing `show_for_invoking_user_only` correctly, causing `abort` to misbehave.
+    (from 1.1.103)
 
 ## 1.1.115 *\[2021-10-24\]*
 

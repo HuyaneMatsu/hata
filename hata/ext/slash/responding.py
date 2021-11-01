@@ -500,11 +500,16 @@ class InteractionResponse:
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed',
                 'file', 'tts', 'components'))
             
-            if (not need_acknowledging):
-                response_parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
+            if need_acknowledging or (not interaction_event.is_unanswered()):
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
             
+            else:
+                yield client.interaction_response_message_create(
+                    interaction_event,
+                    **response_parameters,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
             
-            yield client.interaction_followup_message_create(interaction_event, **response_parameters)
             return
         
         elif interaction_event.type is INTERACTION_TYPE_MESSAGE_COMPONENT:

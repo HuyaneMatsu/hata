@@ -315,6 +315,10 @@ class SolarPlayer(SolarPlayerBase):
                 
                 self._current_track = new_track
                 del queue[index]
+            
+            else:
+                if (track is not None):
+                    await self._stop()
         
         elif index > len(queue):
             track = None

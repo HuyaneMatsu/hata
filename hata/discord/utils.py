@@ -1373,6 +1373,8 @@ def escape_markdown(content):
     content = content.replace('`', '\\`')
     content = content.replace('>', '\\>')
     content = content.replace(':', '\\:')
+    content = content.replace('[', '\\[')
+    content = content.replace(']', '\\]')
     return content
 
 

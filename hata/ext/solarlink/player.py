@@ -408,9 +408,9 @@ class SolarPlayer(SolarPlayerBase):
         return self._repeat_queue
     
     
-    def is_repeating_actual(self):
+    def is_repeating_current(self):
         """
-        Returns whether the player is repeating the actual track.
+        Returns whether the player is repeating the current track.
         
         Returns
         -------

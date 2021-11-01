@@ -8,6 +8,7 @@
 - Add `RATELIMIT_GROUPS.thread_user_get`.
 - Add `Client.thread_user_get`.
 - `Emoji.__format__` now returns `.as_emoji` if `code` is given as `''`.
+- Add `wait_for_interruption`.
 
 #### Bug Fixes
 

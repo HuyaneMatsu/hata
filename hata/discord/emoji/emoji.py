@@ -286,9 +286,9 @@ class Emoji(DiscordEntity, immortal=True):
         >>> emoji = Emoji.precreate(now_as_id(), name='nice')
         >>> emoji
         <Emoji id=712359434843586560, name='nice'>
-        >>> # no code stands for `emoji.name`
+        >>> # no code returns the emoji's emoji format as a shortcut in f string formatting.
         >>> f'{emoji}'
-        'nice'
+        '<:nice:712359434843586560>'
         >>> # 'e' stands for emoji format.
         >>> f'{emoji:e}'
         '<:nice:712359434843586560>'
@@ -301,7 +301,7 @@ class Emoji(DiscordEntity, immortal=True):
         >>> # The following works with builtin (unicode) emojis as well.
         >>> emoji = BUILTIN_EMOJIS['heart']
         >>> f'{emoji}'
-        'heart'
+        '❤️'
         >>> f'{emoji:e}'
         '❤️'
         >>> f'{emoji:r}'
@@ -311,7 +311,7 @@ class Emoji(DiscordEntity, immortal=True):
         ```
         """
         if not code:
-            return self.name
+            return self.as_emoji
         
         if code == 'e':
             return self.as_emoji

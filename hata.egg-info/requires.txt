@@ -1,0 +1,10 @@
+chardet>=2.0
+
+[cpythonspeedups]
+cchardet>=2.0
+
+[relativedelta]
+python-dateutil>=2.0
+
+[voice]
+PyNaCl>=1.3.0

@@ -1,6 +1,5 @@
 __all__ = ()
 
-import warnings
 from functools import partial as partial_func
 
 from ...backend.utils import WeakReferer
@@ -9,7 +8,7 @@ from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, \
     get_plugin_event_handler_and_parameter_count, PARSER_SETTINGS, EVENT_HANDLER_NAMES, \
     get_plugin_event_handler_and_parser_names, get_plugin_event_handler
 from .handling_helpers import ChunkWaiter, check_parameter_count_and_convert, asynclist, \
-    check_name
+    check_name, _iterate_event_handler
 from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler, \
     default_voice_client_ghost_event_handler, default_voice_client_join_event_handler, \
     default_voice_client_move_event_handler, default_voice_client_leave_event_handler, \
@@ -1216,3 +1215,27 @@ class EventHandlerManager:
         plugins.add(plugin)
         
         return plugin
+    
+    
+    def iter_event_names_and_handlers(self):
+        """
+        Iterates over all the event names and the handlers.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        event_name : `str`
+            The event's name.
+        event_handler : `async-callable`
+            The event's handler.
+        """
+        for event_name in EVENT_HANDLER_NAMES:
+            for event_handler in _iterate_event_handler(getattr(self, event_name)):
+                yield event_name, event_handler
+        
+        plugin_events = self._plugin_events
+        if (plugin_events is not None):
+            for event_name, event_handler_plugin in plugin_events.items():
+                for event_handler in _iterate_event_handler(getattr(event_handler_plugin, event_name)):
+                    yield event_name, event_handler

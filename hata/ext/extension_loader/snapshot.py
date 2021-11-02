@@ -1,65 +1,13 @@
 __all__ = ()
 
-from ...discord.events.handling_helpers import asynclist, ChunkWaiter
-from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES, DEFAULT_EVENT_HANDLER
+from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES
 from ...discord.core import CLIENTS
-from ...discord.client.functionality_helpers import WaitForHandler
 
 SNAPSHOT_TAKERS = {}
 
 # Client.events snapshot functions
 
-IGNORED_EVENT_HANDLER_TYPES = {
-    WaitForHandler,
-    ChunkWaiter,
-}
-
-def should_ignore_event_handler(event_handler):
-    """
-    Returns whether the given `event_handler` should be ignored from snapshotting.
-    
-    Parameters
-    ----------
-    event_handler : `async-callable`
-        The respective event handler.
-    
-    Returns
-    -------
-    should_ignore : `bool`
-    """
-    if event_handler is DEFAULT_EVENT_HANDLER:
-        return True
-    
-    if type(event_handler) in IGNORED_EVENT_HANDLER_TYPES:
-        return True
-    
-    return False
-
 EVENT_NAMES = tuple(EVENT_HANDLER_NAME_TO_PARSER_NAMES.keys())
-
-def iterate_event_handler(event_handler):
-    """
-    Iterates over the given event handler, yielding each valuable handler.
-    
-    This method is an iterable generator.
-    
-    Parameters
-    ----------
-    event_handler : `Any`
-        Event handler to iterate trough.
-    
-    Yields
-    ------
-    event_handler : `sync-callable`
-        Valuable event handler-
-    """
-    if isinstance(event_handler, asynclist):
-        for iterated_event_handler in list.__iter__(event_handler):
-            if not should_ignore_event_handler(iterated_event_handler):
-                yield iterated_event_handler
-    else:
-        if not should_ignore_event_handler(event_handler):
-            yield event_handler
 
 
 def take_event_handler_snapshot(client):
@@ -74,20 +22,19 @@ def take_event_handler_snapshot(client):
     Returns
     -------
     collected : `dict` of (`str`, `list` of `async-callable`) items
-        A multidict storing `event-name`, `event-handler` pairs.
+        A dictionary storing `event-name`, `event-handler` pairs.
     """
     collected = {}
     
-    event_descriptor = client.events
-    for event_name in EVENT_NAMES:
-        for event_handler in iterate_event_handler(getattr(event_descriptor, event_name)):
-            try:
-                event_handlers = collected[event_name]
-            except KeyError:
-                event_handlers = []
-                collected[event_name] = event_handlers
-            
-            event_handlers.append(event_handler)
+    event_handler_manager = client.events
+    for event_name, event_handler in event_handler_manager.iter_event_names_and_handlers():
+        try:
+            event_handlers = collected[event_name]
+        except KeyError:
+            event_handlers = []
+            collected[event_name] = event_handlers
+        
+        event_handlers.append(event_handler)
     
     return collected
 
@@ -164,15 +111,15 @@ def revert_event_handler_snapshot(client, snapshot_difference):
         The tuple has 3 elements, where the 0th element is the name of the respective event, meanwhile the 1th element
         contains the removed event handlers and the 2th the added ones.
     """
-    event_descriptor = client.events
+    event_handler_manager = client.events
     for event_handler_name, removed_handlers, added_handlers in snapshot_difference:
         if (added_handlers is not None):
             for handler in added_handlers:
-                event_descriptor.remove(handler, name=event_handler_name, count=1)
-            
+                event_handler_manager.remove(handler, name=event_handler_name, count=1)
+        
         if (removed_handlers is not None):
             for handler in removed_handlers:
-                event_descriptor(handler, name=event_handler_name)
+                event_handler_manager(handler, name=event_handler_name)
 
 
 # Register snapshot taker

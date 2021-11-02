@@ -1,3 +1,14 @@
+## 1.1.117 *\[2021-11-??\]*
+
+#### Improvements
+
+- Add `ApplicationCommandAutocompleteInteraction.get_value_of`.
+- Add `ApplicationCommandAutocompleteInteractionOption.get_value_of`.
+- Add `EventHandlerManager.iter_event_names_and_handlers`.
+
+##### ext.extension_loader
+- Plugins are supported.
+
 ## 1.1.116 *\[2021-11-01\]*
 
 #### Improvements

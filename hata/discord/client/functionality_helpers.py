@@ -626,54 +626,6 @@ class MultiClientMessageDeleteSequenceSharder:
         self.delete_old_task = None
         
         return self
-    
-
-class WaitForHandler:
-    """
-    O(n) event waiter. Added as an event handler by ``Client.wait_for``.
-    
-    Attributes
-    ----------
-    waiters : `dict` of (``Future``, `callable`) items
-        A dictionary which contains the waiter futures and the respective checks.
-    """
-    __slots__ = ('waiters', )
-    
-    def __init__(self):
-        """
-        Creates a new ``WaitForHandler`` instance.
-        """
-        self.waiters = {}
-    
-    async def __call__(self, client, *args):
-        """
-        Runs the checks of the respective event.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client who received the respective events.
-        args : `tuple` of `Any`
-            Other received parameters by the event.
-        """
-        for future, check in self.waiters.items():
-            try:
-                result = check(*args)
-            except BaseException as err:
-                future.set_exception_if_pending(err)
-            else:
-                if isinstance(result, bool):
-                    if result:
-                        if len(args) == 1:
-                            args = args[0]
-                    else:
-                        return
-                else:
-                    args = (*args, result)
-                
-                future.set_result_if_pending(args)
 
 
 def _check_is_client_duped(client, client_id):

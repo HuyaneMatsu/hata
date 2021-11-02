@@ -1,6 +1,5 @@
 __all__ = ('EventHandlerBase', 'EventWaitforBase', 'eventlist', )
 
-import sys
 from functools import partial as partial_func
 
 from ...backend.utils import FunctionType, RemovedDescriptor, MethodLike, WeakKeyDictionary, NEEDS_DUMMY_INIT
@@ -1394,11 +1393,11 @@ class eventlist(list):
         """
         type_ = self.type
         if type_ is None:
-            message = 'On `eventlist` without type `.from_class` method cannot be used.'
+            raise TypeError('On `eventlist` without type `.from_class` method cannot be used.')
         
         from_class = getattr(type_, 'from_class', None)
         if from_class is None:
-                message = f'The `eventlist`\'s type: `{type_!r}` is not supporting `.from_class`.'
+            raise TypeError(f'The `eventlist`\'s type: `{type_!r}` is not supporting `.from_class`.')
         
         element = from_class(klass)
         list.append(self, element)
@@ -1677,7 +1676,7 @@ class EventWaitforMeta(type):
     """
     Metaclass for `waitfor` event handlers
     
-    The defaultly supported events are the following:
+    The supported events by default are the following:
     - `message_create`
     - `message_edit`
     - `message_delete`
@@ -2230,6 +2229,55 @@ class ChunkWaiter(EventHandlerBase):
             del waiters[nonce]
 
 
+
+class WaitForHandler:
+    """
+    O(n) event waiter. Added as an event handler by ``Client.wait_for``.
+    
+    Attributes
+    ----------
+    waiters : `dict` of (``Future``, `callable`) items
+        A dictionary which contains the waiter futures and the respective checks.
+    """
+    __slots__ = ('waiters', )
+    
+    def __init__(self):
+        """
+        Creates a new ``WaitForHandler`` instance.
+        """
+        self.waiters = {}
+    
+    async def __call__(self, client, *args):
+        """
+        Runs the checks of the respective event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client who received the respective events.
+        args : `tuple` of `Any`
+            Other received parameters by the event.
+        """
+        for future, check in self.waiters.items():
+            try:
+                result = check(*args)
+            except BaseException as err:
+                future.set_exception_if_pending(err)
+            else:
+                if isinstance(result, bool):
+                    if result:
+                        if len(args) == 1:
+                            args = args[0]
+                    else:
+                        return
+                else:
+                    args = (*args, result)
+                
+                future.set_result_if_pending(args)
+
+
 class asynclist(list):
     """
     Container used by events to call more events and by waitfor events to call more waiters.
@@ -2404,3 +2452,55 @@ async def ensure_event_handlers(client, event_handlers):
         future = WaitTillAll(tasks, KOKORO)
         tasks = None # clear references
         await future
+
+
+IGNORED_EVENT_HANDLER_TYPES = frozenset((
+    WaitForHandler,
+    ChunkWaiter,
+))
+
+def should_ignore_event_handler(event_handler):
+    """
+    Returns whether the given `event_handler` should be ignored from snapshotting.
+    
+    Parameters
+    ----------
+    event_handler : `async-callable`
+        The respective event handler.
+    
+    Returns
+    -------
+    should_ignore : `bool`
+    """
+    if event_handler is DEFAULT_EVENT_HANDLER:
+        return True
+    
+    if type(event_handler) in IGNORED_EVENT_HANDLER_TYPES:
+        return True
+    
+    return False
+
+
+def _iterate_event_handler(event_handler):
+    """
+    Iterates over the given event handler, yielding each valuable handler.
+    
+    This method is an iterable generator.
+    
+    Parameters
+    ----------
+    event_handler : `Any`
+        Event handler to iterate trough.
+    
+    Yields
+    ------
+    event_handler : `sync-callable`
+        Valuable event handlers.
+    """
+    if isinstance(event_handler, asynclist):
+        for iterated_event_handler in list.__iter__(event_handler):
+            if not should_ignore_event_handler(iterated_event_handler):
+                yield iterated_event_handler
+    else:
+        if not should_ignore_event_handler(event_handler):
+            yield event_handler

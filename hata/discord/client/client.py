@@ -39,7 +39,8 @@ from ..webhook import Webhook, create_partial_webhook_from_id
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
     PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
 from ..events.event_handler_manager import EventHandlerManager
-from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
+from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers, \
+    WaitForHandler
 from ..events.intent import IntentFlag
 from ..events.core import register_client, unregister_client
 from ..invite import Invite, InviteTargetType
@@ -75,7 +76,7 @@ from ..scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntity
 from ..message.utils import process_message_chunk
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
-    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, WaitForHandler, _check_is_client_duped, \
+    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, _check_is_client_duped, \
     _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, \
     ForceUpdateCache, channel_move_sort_key, role_move_key, role_reorder_valid_roles_sort_key, \
     application_command_autocomplete_choice_parser, try_get_user_id_from_token

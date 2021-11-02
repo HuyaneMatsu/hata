@@ -657,6 +657,39 @@ class ApplicationCommandAutocompleteInteractionOption:
                 focused_option =  option.focused_option
                 if (focused_option is not None):
                     return focused_option
+    
+    
+    def get_value_of(self, *option_names):
+        """
+        Gets the value for the option by the given name.
+        
+        Parameters
+        ----------
+        *option_names : `str`
+            The option(s)'s name.
+        
+        Returns
+        -------
+        value : `None` or `str`
+            The value, the user has been typed.
+        """
+        if option_names:
+            option_name, *option_names = option_names
+            
+            options = self.options
+            if options is None:
+                value = None
+            else:
+                for option in options:
+                    if option.name == option_name:
+                        value = option.get_value_of(*option_names)
+                        break
+                else:
+                    value = None
+        else:
+            value = self.value
+        
+        return value
 
 
 class ApplicationCommandAutocompleteInteraction(DiscordEntity):
@@ -766,6 +799,39 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
                 focused_option = None
         
         return focused_option
+    
+    
+    def get_value_of(self, *option_names):
+        """
+        Gets the value for the option by the given name.
+        
+        Parameters
+        ----------
+        *option_names : `str`
+            The option(s)'s name.
+        
+        Returns
+        -------
+        value : `None` or `str`
+            The value, the user has been typed.
+        """
+        if option_names:
+            option_name, *option_names = option_names
+            
+            options = self.options
+            if options is None:
+                value = None
+            else:
+                for option in options:
+                    if option.name == option_name:
+                        value = option.get_value_of(*option_names)
+                        break
+                else:
+                    value = None
+        else:
+            value = None
+        
+        return value
     
     
     @property

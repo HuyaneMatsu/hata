@@ -359,7 +359,7 @@ class Timeout:
         return f'<{self.__class__.__name__}>'
 
 
-def content_disposition_header(disposition_type, parameters, quote_fields=True):
+def create_content_disposition_header(disposition_type, parameters, quote_fields):
     """
     Creates Content-Disposition header value.
     
@@ -391,7 +391,7 @@ def content_disposition_header(disposition_type, parameters, quote_fields=True):
             parameter_parts.append(f'{key}="{value}"')
             
             if key == 'filename':
-                parameter_parts.append(f'filename*=utf-8\'\'{value}')
+                parameter_parts.append(f'filename*=utf-8"{value}"')
         
         value = '; '.join(parameter_parts)
     else:

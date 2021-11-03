@@ -1,16 +1,16 @@
 ﻿__all__ = ()
 
-import base64, binascii, json, os, re, mimetypes as mime_types, uuid, zlib
+import base64, binascii, os, re, mimetypes as mime_types, uuid, zlib
 from io import StringIO, TextIOBase, BytesIO, BufferedRandom, IOBase, BufferedReader
 from urllib.parse import urlencode as url_encode
 from .quote import unquote
 
 from .export import export
-from .utils import imultidict, multidict
+from .utils import imultidict, multidict, to_json
 from .ios import AsyncIO
 
 from .headers import CONTENT_DISPOSITION, CONTENT_ENCODING, CONTENT_LENGTH, CONTENT_TRANSFER_ENCODING, CONTENT_TYPE
-from .helpers import content_disposition_header, CHAR, TOKEN
+from .helpers import create_content_disposition_header, CHAR, TOKEN
 from .protocol import ZLIB_COMPRESSOR, BROTLI_COMPRESSOR
 from .exceptions import ContentEncodingError
 
@@ -130,7 +130,7 @@ class PayloadBase:
         self.headers = headers
         self.content_type = content_type
     
-    def set_content_disposition(self, disposition_type, parameters, quote_fields=True):
+    def set_content_disposition(self, disposition_type, parameters, quote_fields):
         """
         Sets content disposition header to the payload.
         
@@ -145,7 +145,7 @@ class PayloadBase:
         """
         headers = self.headers
         headers.pop_all(CONTENT_DISPOSITION, None)
-        headers[CONTENT_DISPOSITION] = content_disposition_header(disposition_type, parameters, quote_fields=quote_fields)
+        headers[CONTENT_DISPOSITION] = create_content_disposition_header(disposition_type, parameters, quote_fields)
     
     async def write(self, writer):
         """
@@ -232,6 +232,7 @@ class StringPayload(BytesPayload):
         The payload's size if applicable.
     """
     __slots__ = ()
+    
     def __init__(self, data, kwargs):
         """
         Creates a new ``StringPayload`` instance.
@@ -287,6 +288,7 @@ class StringIOPayload(StringPayload):
         The payload's size if applicable.
     """
     __slots__ = ()
+    
     def __init__(self, data, kwargs):
         """
         Creates a new ``StringIOPayload`` instance.
@@ -346,7 +348,7 @@ class IOBasePayload(PayloadBase):
         if (disposition is not None):
             filename = self.filename
             if (filename is not None):
-                self.set_content_disposition(disposition, {'filename': filename})
+                self.set_content_disposition(disposition, {'filename': filename}, True)
     
     async def write(self, writer):
         """
@@ -512,6 +514,7 @@ class BufferedReaderPayload(IOBasePayload):
         The payload's size if applicable.
     """
     __slots__ = ()
+    
     def __init__(self, data, kwargs):
         """
         Creates a new ``BufferedReaderPayload`` instance.
@@ -553,6 +556,7 @@ class JsonPayload(BytesPayload):
         The payload's size if applicable.
     """
     __slots__ = ()
+    
     def __init__(self, data, kwargs):
         """
         Creates a new ``AsyncIterablePayload`` instance.
@@ -568,7 +572,7 @@ class JsonPayload(BytesPayload):
         if (encoding is None):
             kwargs['encoding'] = encoding = 'utf-8'
         
-        data = json.dumps(data).encode(encoding)
+        data = to_json(data).encode(encoding)
         
         kwargs.setdefault('content_type', 'application/json')
         BytesPayload.__init__(self, data, kwargs)
@@ -715,7 +719,7 @@ class BodyPartReaderPayload(PayloadBase):
             parameters['filename'] = filename
         
         if parameters:
-            self.set_content_disposition('attachment', parameters)
+            self.set_content_disposition('attachment', parameters, True)
     
     async def write(self, writer):
         """

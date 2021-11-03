@@ -228,7 +228,7 @@ class Formdata:
                     f'value: {value!r}.') from err
             
             if type_options:
-                part.set_content_disposition('form-data', type_options.kwargs(), quote_fields=self.quote_fields)
+                part.set_content_disposition('form-data', type_options.kwargs(), self.quote_fields)
                 part.headers.pop_all(CONTENT_LENGTH, None)
             
             writer.append_payload(part)

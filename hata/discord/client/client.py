@@ -11432,8 +11432,9 @@ class Client(ClientUserPBase):
         """
         snowflake_pair = get_guild_id_and_role_id(role)
         if snowflake_pair is None:
-            return
-        guild_id, role_id = get_guild_id_and_role_id
+            raise TypeError(f'`role` can be given either as `{Role.__name__}` or as `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.')
+        
+        guild_id, role_id = snowflake_pair
         
         if (position is not None):
             await self.role_move((guild_id, role_id), position, reason=reason)
@@ -11541,8 +11542,9 @@ class Client(ClientUserPBase):
         """
         snowflake_pair = get_guild_id_and_role_id(role)
         if snowflake_pair is None:
-            return
-        guild_id, role_id = get_guild_id_and_role_id
+            raise TypeError(f'`role` can be given either as `{Role.__name__}` or as `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.')
+        
+        guild_id, role_id = snowflake_pair
         
         await self.http.role_delete(guild_id, role_id, reason)
     

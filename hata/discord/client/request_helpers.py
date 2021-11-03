@@ -232,7 +232,7 @@ if API_VERSION >= 9:
         -------
         data : `dict` of (`str`, `Any`)
         """
-        data = {'id': str(attachment_id)}
+        data = {'id': attachment_id}
         
         if (description is not None):
             data['description'] = description
@@ -369,11 +369,11 @@ if API_VERSION >= 9:
             
             else:
                 form = Formdata()
+                form.add_field('payload_json', to_json(data))
                 
                 for index, (name, io, description) in enumerate(files):
                     form.add_field(f'files[{index}]', io, filename=name, content_type='application/octet-stream')
-                
-                form.add_field('payload_json', to_json(data))
+        
         
         return form, contains_attachments
     

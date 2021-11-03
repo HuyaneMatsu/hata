@@ -219,6 +219,8 @@ class Message(DiscordEntity, immortal=True):
     -----
     Message instances are weakreferable.
     
+    The `content`, `embeds`, `attachments` and the `components` fields are restricted for the message content intent.
+    
     Structure
     ---------
     Not like other Discord entities, message attributes can be accessed mainly through properties, which are the

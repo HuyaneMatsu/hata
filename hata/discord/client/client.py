@@ -828,8 +828,8 @@ class Client(ClientUserPBase):
     
     
     async def client_edit(self, *, name=None, avatar=..., bio=..., banner_color=..., banner=..., # Generic
-            password=None, new_password=None, email=None, house=... # User account only
-                ):
+        password=None, new_password=None, email=None, house=... # User account only
+    ):
         """
         Edits the client. Only the provided parameters will be changed. Every parameter what refers to a user
         account is not tested.
@@ -15411,7 +15411,7 @@ class Client(ClientUserPBase):
                 raise TypeError(f'User {index} was not passed neither as `int` or as `{UserBase.__name__}` instance, '
                     f'got {user.__class__.__name__}.')
             
-            if index==limit:
+            if index == limit:
                 break
         
         additional_owner_ids = self._additional_owner_ids

@@ -5,9 +5,15 @@
 - Add `ApplicationCommandAutocompleteInteraction.get_value_of`.
 - Add `ApplicationCommandAutocompleteInteractionOption.get_value_of`.
 - Add `EventHandlerManager.iter_event_names_and_handlers`.
+- Add `Attachment.description`.
+- Support API version 10.
 
 ##### ext.extension_loader
 - Plugins are supported.
+
+#### Bug Fixes
+- `Client._request_members` raised `TypeError`.
+
 
 ## 1.1.116 *\[2021-11-01\]*
 

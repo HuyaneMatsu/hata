@@ -40,7 +40,7 @@ HATA_STATUS_ENDPOINT : `None`, `str` = `None`
     Discord status endpoint.
 
 HATA_API_VERSION : `int` = `9`
-    The Discord api version used by hata. The accepted values are `6`, `7`, `8` and `9`.
+    The Discord api version used by hata. The accepted values are `6`, `7`, `8`, `9` and `10`.
     
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still
     present.
@@ -200,8 +200,8 @@ if API_VERSION not in (7, 8):
     if API_VERSION < 6:
         warnings.warn(f'`API_VERSION` given with a value less than `6`, got {API_VERSION!r}, defaulting to {7!r}!')
         API_VERSION = 7
-    elif API_VERSION > 9:
-        warnings.warn(f'`API_VERSION` given with a value greater than `9`, got {API_VERSION!r}, defaulting to {9!r}!')
+    elif API_VERSION > 10:
+        warnings.warn(f'`API_VERSION` given with a value greater than `10`, got {API_VERSION!r}, defaulting to {9!r}!')
         API_VERSION = 9
     elif API_VERSION == 6:
         warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)

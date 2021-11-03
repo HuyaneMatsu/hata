@@ -119,7 +119,7 @@ class MassUserChunker:
     """
     __slots__ = ('last', 'timer', 'waiter',)
     
-    def __init__(self, left):
+    def __init__(self):
         """
         Parameters
         ----------

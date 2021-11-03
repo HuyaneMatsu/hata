@@ -3,12 +3,14 @@ __all__ = ()
 from os.path import split as split_path
 from collections import deque
 
+from ...env import API_VERSION
+
 from ...backend.utils import to_json
 from ...backend.export import include
 from ...backend.formdata import Formdata
 
 from ..core import MESSAGES, CHANNELS, GUILDS, USERS, STICKERS, SCHEDULED_EVENTS
-from ..message import Message, MessageReference, MessageRepr
+from ..message import Message, MessageReference, MessageRepr, Attachment
 from ..user import ClientUserBase
 from ..channel import ChannelText, ChannelStage
 from ..embed import EmbedBase
@@ -157,154 +159,386 @@ def validate_message_to_delete(message):
     return channel_id, message_id, message
 
 
-def create_file_form(data, file):
-    """
-    Creates a `multipart/form-data` form from the message's data and from the file data. If there is no files to
-    send, will return `None` to tell the caller, that nothing is added to the overall data.
-    
-    Parameters
-    ----------
-    data : `dict` of `Any`
-        The data created by the ``.message_create`` method.
-    file : `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, tuple (`file-name`, `io`), `io`
-        The files to send.
-    
-    Returns
-    -------
-    form : `None` or `Formdata`
-        Returns a `Formdata` of the files and from the message's data. If there are no files to send, returns `None`
-        instead.
-    
-    Raises
-    ------
-    ValueError
-        If more than `10` file is registered to be sent.
-    
-    Notes
-    -----
-    Accepted `io` types with check order are:
-    - ``BodyPartReader`` instance
-    - `bytes`, `bytearray`, `memoryview` instance
-    - `str` instance
-    - `BytesIO` instance
-    - `StringIO` instance
-    - `TextIOBase` instance
-    - `BufferedReader`, `BufferedRandom` instance
-    - `IOBase` instance
-    - ``AsyncIO`` instance
-    - `async-iterable`
-    
-    Raises `TypeError` at the case of invalid `io` type.
-    
-    There are two predefined data types specialized to send files:
-    - ``ReuBytesIO``
-    - ``ReuAsyncIO``
-    
-    If a buffer is sent, then when the request is done, it is closed. So if the request fails, we would not be
-    able to resend the file, except if we have a data type, what instead of closing on `.close()` just seeks to
-    `0` (or later if needed) on close, instead of really closing instantly. These data types implement a
-    `.real_close()` method, but they do `real_close` on `__exit__` as well.
-    """
-    form = Formdata()
-    form.add_field('payload_json', to_json(data))
-    files = []
-    
-    # checking structure
-    
-    # case 1 dict like
-    if hasattr(type(file), 'items'):
-        files.extend(file.items())
-    
-    # case 2 tuple => file, filename pair
-    elif isinstance(file, tuple):
-        files.append(file)
-    
-    # case 3 list like
-    elif isinstance(file, (list, deque)):
-        for element in file:
-            if type(element) is tuple:
-                name, io = element
-            else:
-                io = element
-                name = ''
+if API_VERSION >= 10:
+    def _add_file_from_tuple(files, tuple_):
+        """
+        Processes the given file tuple.
+        
+        Parameters
+        ----------
+        files : `None` or `list` of `tuple` (`str`, `Any`, (`None`, `str`))
+            The collected files to send.
+        tuple_ : `tuple` (?(`None` or `str`), ?`Any`, ?(`None` or `str`))
+            A tuple containing the name, io and the description.
+        
+        Returns
+        -------
+        files : `None` or `list` of `tuple` (`str`, `Any`, (`None`, `str`))
+            The collected files to send.
+        
+        Raises
+        ------
+        ValueError
+            If a `tuple_`'s length is out of teh expected [0:3] range.
+        """
+        tuple_length = len(tuple_)
+        if tuple_length:
+            if tuple_length > 3:
+                raise ValueError(f'`tuple` length can be in range [0:3], got {tuple_length!r}; {tuple_!r}.')
             
-            if not name:
-                #guessing name
-                name = getattr(io, 'name', '')
-                if name:
+            if tuple_length == 1:
+                io = tuple_[0]
+                name = None
+                description = None
+            elif tuple_length == 2:
+                name, io = tuple_
+                if (name is not None) and (not name):
+                    name = None
+                description = None
+            else:
+                name, io, description = tuple_
+                if (name is not None) and (not name):
+                    name = None
+                if (description is not None) and (not description):
+                    description = None
+            
+            if name is None:
+                name = getattr(io, 'name', None)
+                if (name is not None) and name:
                     _, name = split_path(name)
                 else:
                     name = str(random_id())
             
-            files.append((name, io),)
-    
-    #case 4 file itself
-    else:
-        name = getattr(file, 'name', '')
-        #guessing name
-        if name:
-            _, name = split_path(name)
-        else:
-            name = str(random_id())
+            if files is None:
+                files = []
+            
+            files = files.append((name, io, description))
         
-        files.append((name, file),)
+        return files
     
-    # checking the amount of files
-    # case 1 one file
-    if len(files) == 1:
-        name, io = files[0]
-        form.add_field('file', io, filename=name, content_type='application/octet-stream')
-    # case 2, no files -> return None, we should use the already existing data
-    elif len(files) == 0:
-        return None
-    # case 3 maximum 10 files
-    elif len(files) < 11:
-        for index, (name, io) in enumerate(files):
-            form.add_field(f'file{index}s', io, filename=name, content_type='application/octet-stream')
     
-    # case 4 more than 10 files
-    else:
-        raise ValueError('You can send maximum 10 files at once.')
-    
-    return form
-
-
-def add_file_to_message_data(message_data, file, contains_content):
-    """
-    Adds files to the message data creating a form data if applicable.
-    
-    Parameters
-    ----------
-    message_data : `dict` of (`str`, `Any`) items
-        The message's payload to send.
-    file : `None` or `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
-            tuple (`file-name`, `io`), `io`
-        The files to send.
-    contains_content : `bool`
-        Whether the message already contains any content.
-    
-    Returns
-    -------
-    message_data : `None` or `dict`, `Formdata`
-        Returns a `Formdata` if the message contains attachments, `dict` if contains any content and `None` if
-        not.
-    
-    Raises
-    ------
-    ValueError
-        If more than `10` file is registered to be sent.
-    """
-    if (file is None):
-        if not contains_content:
-            message_data = None
-    else:
-        form = create_file_form(message_data, file)
-        if (form is None) and (not contains_content):
-            message_data = None
+    def create_file_form(data, file):
+        """
+        Creates a `multipart/form-data` form from the message's data and from the file data. If there is no files to
+        send, will return `None` to tell the caller, that nothing is added to the overall data.
+        
+        Parameters
+        ----------
+        data : `dict` of `Any`
+            The data created by the ``.message_create`` method.
+        file : `dict` of (`file-name`, `io`) items, `list` of (``Attachment``, `tuple` (`file-name`, `io`)) elements,
+                `tuple` (`file-name`, `io`, ), `io`, ``Attachment``
+            The files to send.
+        
+        Returns
+        -------
+        form : `None` or `Formdata`
+            Returns a `Formdata` of the files and from the message's data. If there are no files to send, returns
+            `None` instead.
+        contains_attachments : `bool`
+            Whether the message payload contains attachments.
+        
+        Raises
+        ------
+        ValueError
+            - If more than `10` file is registered to be sent.
+            - If a `tuple`'s length is out of teh expected [0:3] range.
+        
+        Notes
+        -----
+        Accepted `io` types with check order are:
+        - ``BodyPartReader`` instance
+        - `bytes`, `bytearray`, `memoryview` instance
+        - `str` instance
+        - `BytesIO` instance
+        - `StringIO` instance
+        - `TextIOBase` instance
+        - `BufferedReader`, `BufferedRandom` instance
+        - `IOBase` instance
+        - ``AsyncIO`` instance
+        - `async-iterable`
+        
+        Raises `TypeError` at the case of invalid `io` type.
+        
+        There are two predefined data types specialized to send files:
+        - ``ReuBytesIO``
+        - ``ReuAsyncIO``
+        
+        If a buffer is sent, then when the request is done, it is closed. So if the request fails, we would not be
+        able to resend the file, except if we have a data type, what instead of closing on `.close()` just seeks to
+        `0` (or later if needed) on close, instead of really closing instantly. These data types implement a
+        `.real_close()` method, but they do `real_close` on `__exit__` as well.
+        """
+        files = None
+        attachments = None
+        
+        # checking structure
+        
+        # case 1 dict like
+        if hasattr(type(file), 'items'):
+            for name, io in file.items():
+                if files is None:
+                    files = []
+                
+                files.append((name, io, None))
+        
+        # case 2 tuple => file, filename pair | file, filename, description pairs
+        elif isinstance(file, tuple):
+            files = _add_file_from_tuple(files, file)
+        
+        # case 3 list like
+        elif isinstance(file, (list, deque)):
+            for element in file:
+                if isinstance(element, Attachment):
+                    if attachments is None:
+                        attachments = []
+                    
+                    attachments.append(element.id)
+                
+                else:
+                    files = _add_file_from_tuple(files, file)
+        
+        elif isinstance(file, Attachment):
+            if attachments is None:
+                attachments = []
+            
+            attachments.append(file.id)
+        
+        # case 4 file itself
         else:
-            message_data = form
+            name = getattr(file, 'name', None)
+            if (name is not None) and name:
+                _, name = split_path(name)
+            else:
+                name = str(random_id())
+            
+            files.append((name, file, None),)
+        
+        attachment_fields = None
+        form = None
+        
+        if (files is not None):
+            for index, (name, io, description) in enumerate(files):
+                form.add_field(f'files[{index}]', io, filename=name, content_type='application/octet-stream')
+                
+                if attachment_fields is None:
+                    attachment_fields = []
+                
+                attachment_fields.append({
+                    'id': 0,
+                    'filename': name,
+                    'description': description
+                })
+        
+        if (attachments is not None):
+            for attachment_id in attachments:
+                if attachment_fields is None:
+                    attachment_fields = []
+                
+                attachment_fields.append({
+                    'id': attachment_id,
+                })
+        
+        if (attachment_fields is None):
+            contains_attachments = False
+        else:
+            contains_attachments = True
+            
+            data['attachments'] = attachment_fields
+            if form is None:
+                form = Formdata()
+                form.add_field('payload_json', to_json(data))
+        
+        return form, contains_attachments
     
-    return message_data
+    
+    def add_file_to_message_data(message_data, file, contains_content):
+        """
+        Adds files to the message data creating a form data if applicable.
+        
+        Parameters
+        ----------
+        message_data : `dict` of (`str`, `Any`) items
+            The message's payload to send.
+        file : `None` or `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
+                tuple (`file-name`, `io`), `io`
+            The files to send.
+        contains_content : `bool`
+            Whether the message already contains any content.
+        
+        Returns
+        -------
+        message_data : `None` or `dict`, ``Formdata``
+            Returns a ``Formdata`` if the message contains attachments, `dict` if contains any content and `None` if
+            not.
+        
+        Raises
+        ------
+        ValueError
+            If more than `10` file is registered to be sent.
+        """
+        if (file is None):
+            if not contains_content:
+                message_data = None
+        else:
+            form, contains_attachments = create_file_form(message_data, file)
+            if (form is None) and (not contains_content) and (not contains_attachments):
+                message_data = None
+            else:
+                message_data = form
+        
+        return message_data
+
+else:
+    def create_file_form(data, file):
+        """
+        Creates a `multipart/form-data` form from the message's data and from the file data. If there is no files to
+        send, will return `None` to tell the caller, that nothing is added to the overall data.
+        
+        Parameters
+        ----------
+        data : `dict` of `Any`
+            The data created by the ``.message_create`` method.
+        file : `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, tuple (`file-name`, `io`),
+                `io`
+            The files to send.
+        
+        Returns
+        -------
+        form : `None` or `Formdata`
+            Returns a `Formdata` of the files and from the message's data. If there are no files to send, returns `None`
+            instead.
+        
+        Raises
+        ------
+        ValueError
+            If more than `10` file is registered to be sent.
+        
+        Notes
+        -----
+        Accepted `io` types with check order are:
+        - ``BodyPartReader`` instance
+        - `bytes`, `bytearray`, `memoryview` instance
+        - `str` instance
+        - `BytesIO` instance
+        - `StringIO` instance
+        - `TextIOBase` instance
+        - `BufferedReader`, `BufferedRandom` instance
+        - `IOBase` instance
+        - ``AsyncIO`` instance
+        - `async-iterable`
+        
+        Raises `TypeError` at the case of invalid `io` type.
+        
+        There are two predefined data types specialized to send files:
+        - ``ReuBytesIO``
+        - ``ReuAsyncIO``
+        
+        If a buffer is sent, then when the request is done, it is closed. So if the request fails, we would not be
+        able to resend the file, except if we have a data type, what instead of closing on `.close()` just seeks to
+        `0` (or later if needed) on close, instead of really closing instantly. These data types implement a
+        `.real_close()` method, but they do `real_close` on `__exit__` as well.
+        """
+        form = Formdata()
+        form.add_field('payload_json', to_json(data))
+        files = []
+        
+        # checking structure
+        
+        # case 1 dict like
+        if hasattr(type(file), 'items'):
+            files.extend(file.items())
+        
+        # case 2 tuple => file, filename pair
+        elif isinstance(file, tuple):
+            files.append(file)
+        
+        # case 3 list like
+        elif isinstance(file, (list, deque)):
+            for element in file:
+                if type(element) is tuple:
+                    name, io = element
+                else:
+                    io = element
+                    name = ''
+                
+                if not name:
+                    #guessing name
+                    name = getattr(io, 'name', '')
+                    if name:
+                        _, name = split_path(name)
+                    else:
+                        name = str(random_id())
+                
+                files.append((name, io),)
+        
+        #case 4 file itself
+        else:
+            name = getattr(file, 'name', '')
+            #guessing name
+            if name:
+                _, name = split_path(name)
+            else:
+                name = str(random_id())
+            
+            files.append((name, file),)
+        
+        # checking the amount of files
+        # case 1 one file
+        if len(files) == 1:
+            name, io = files[0]
+            form.add_field('file', io, filename=name, content_type='application/octet-stream')
+        # case 2, no files -> return None, we should use the already existing data
+        elif len(files) == 0:
+            return None
+        # case 3 maximum 10 files
+        elif len(files) < 11:
+            for index, (name, io) in enumerate(files):
+                form.add_field(f'file{index}s', io, filename=name, content_type='application/octet-stream')
+        
+        # case 4 more than 10 files
+        else:
+            raise ValueError('You can send maximum 10 files at once.')
+        
+        return form
+    
+    
+    def add_file_to_message_data(message_data, file, contains_content):
+        """
+        Adds files to the message data creating a form data if applicable.
+        
+        Parameters
+        ----------
+        message_data : `dict` of (`str`, `Any`) items
+            The message's payload to send.
+        file : `None` or `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
+                tuple (`file-name`, `io`), `io`
+            The files to send.
+        contains_content : `bool`
+            Whether the message already contains any content.
+        
+        Returns
+        -------
+        message_data : `None` or `dict`, ``Formdata``
+            Returns a ``Formdata`` if the message contains attachments, `dict` if contains any content and `None` if
+            not.
+        
+        Raises
+        ------
+        ValueError
+            If more than `10` file is registered to be sent.
+        """
+        if (file is None):
+            if not contains_content:
+                message_data = None
+        else:
+            form = create_file_form(message_data, file)
+            if (form is None) and (not contains_content):
+                message_data = None
+            else:
+                message_data = form
+        
+        return message_data
 
 
 def validate_content_and_embed(content, embed, is_edit):

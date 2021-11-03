@@ -12,6 +12,8 @@ class Attachment(DiscordEntity):
         The unique identifier number of the attachment.
     content_type : `None` or `str`
         The attachment's media type.
+    description : `None` or `str`
+        Description for the file.
     height : `int`
         The height of the attachment if applicable. Defaults to `0`.
     name : `str`
@@ -32,7 +34,7 @@ class Attachment(DiscordEntity):
     width : `int`
         The attachment's width if applicable. Defaults to `0`.
     """
-    __slots__ = ('content_type', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url', 'width')
+    __slots__ = ('content_type', 'description', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url', 'width')
     
     def __init__(self, data):
         """
@@ -45,6 +47,7 @@ class Attachment(DiscordEntity):
         """
         self.name = data['filename']
         self.content_type = data.get('content_type', None)
+        self.description = data.get('description', None)
         self.id = int(data['id'])
         self.proxy_url = data['proxy_url']
         self.size = data['size']

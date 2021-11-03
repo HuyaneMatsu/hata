@@ -2,10 +2,10 @@
 
 import base64, binascii, re
 from collections import namedtuple
-from urllib.parse import quote
 import socket as module_socket
 
 from .futures import CancelledError
+from .quote import quote
 
 CHAR = {chr(i) for i in range(0, 128)}
 CTL = {*(chr(i) for i in range(0, 32)), chr(127)}
@@ -15,8 +15,8 @@ TOKEN = CHAR ^ CTL ^ SEPARATORS
 sentinel = object()
 
 HttpVersion = namedtuple('HttpVersion', ('major', 'minor'))
-HttpVersion10 = HttpVersion(1,0)
-HttpVersion11 = HttpVersion(1,1)
+HttpVersion10 = HttpVersion(1, 0)
+HttpVersion11 = HttpVersion(1, 1)
 
 del namedtuple
 
@@ -386,7 +386,7 @@ def create_content_disposition_header(disposition_type, parameters, quote_fields
                 raise ValueError(f'Bad content disposition parameter {key!r}={value!r}.')
             
             if quote_fields:
-                value = quote(value, '')
+                value = quote(value, '[]')
             
             parameter_parts.append(f'{key}="{value}"')
             

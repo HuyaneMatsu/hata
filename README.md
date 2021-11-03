@@ -173,8 +173,8 @@ If you have issues, suggestions, want to contribute, or just want to send cute n
 Shout-Out to our brave testers, who are helping the most to improve Hata!
 
 - `Nekosia` \[Grammar\]
-- [`Mina Ashido`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
+- [`Proxisha`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
 - [`Hime Esuto`](https://github.com/HimeEsuto) \[Bug hunting\]
 - [`BrainDead`](https://github.com/albertopoljak) \[Documentation improvements\]
-- [`Zeref Draganeel`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]
+- [`Zeref`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]
 - [`vinam`](https://github.com/saiTama-max) \[Bug hunting\[asyncio extension\]\]

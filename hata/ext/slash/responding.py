@@ -587,14 +587,9 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
     event : `None`, ``InteractionEvent``, Optional (Keyword only)
         A specific event ot answer instead of the command's.
     """
-    if show_for_invoking_user_only is ...:
-        if (file is not ...):
-            show_for_invoking_user_only = False
-        else:
-            show_for_invoking_user_only = True
-    
-    response = InteractionResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions, components=components,
-        tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, message=message, event=event)
+    response = InteractionResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions,
+        components=components, tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, message=message,
+        event=event)
     response._is_abort = True
     raise InteractionAbortedError(response)
 

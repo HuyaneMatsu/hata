@@ -1,4 +1,4 @@
-__all__ = ('DeviceType', 'ShortcutKeyType', 'VoiceSettingsModeType')
+__all__ = ('DeviceType', 'ShortcutKeyType', 'VoiceConnectionState', 'VoiceSettingsModeType')
 
 from ...discord.bases import PreinstancedBase, Preinstance as P
 
@@ -134,3 +134,68 @@ class VoiceSettingsModeType(PreinstancedBase):
     
     audio_input = P('PUSH_TO_TALK', 'audio_input')
     audio_output = P('VOICE_ACTIVITY', 'audio_output')
+
+
+class VoiceConnectionState(PreinstancedBase):
+    """
+    Represents a voice connection's state.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the voice connection state.
+    value : `str`
+        The identifier value the voice connection state.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``VoiceSettingsModeType``) items
+        Stores the predefined ``VoiceSettingsModeType`` instances. These can be accessed with their `value` as
+        key.
+    VALUE_TYPE : `type` = `str`
+        The voice connection state' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the voice connection states.
+    
+    Every predefined voice connection state can be accessed as class attribute as well:
+    
+    +-----------------------+-----------------------+---------------------------+
+    | Class attribute name  | Name                  | Value                     |
+    +=======================+=======================+===========================+
+    | disconnected          | disconnected          | `'DISCONNECTED'`          |
+    +-----------------------+-----------------------+---------------------------+
+    | awaiting_endpoint      | awaiting_endpoint    | `'AWAITING_ENDPOINT'`     |
+    +-----------------------+-----------------------+---------------------------+
+    | authenticating        | authenticating        | `'AUTHENTICATING'`        |
+    +-----------------------+-----------------------+---------------------------+
+    | connecting            | connecting            | `'CONNECTING'`            |
+    +-----------------------+-----------------------+---------------------------+
+    | connected             | connected             | `'CONNECTED'`             |
+    +-----------------------+-----------------------+---------------------------+
+    | voice_disconnected    | voice_disconnected    | `'VOICE_DISCONNECTED'`    |
+    +-----------------------+-----------------------+---------------------------+
+    | voice_connecting      | voice_connecting      | `'VOICE_CONNECTING'`      |
+    +-----------------------+-----------------------+---------------------------+
+    | voice_activity        | voice_connected       | `'VOICE_CONNECTED'`       |
+    +-----------------------+-----------------------+---------------------------+
+    | no_route              | no_route              | `'NO_ROUTE'`              |
+    +-----------------------+-----------------------+---------------------------+
+    | ice_checking          | ice_checking          | `'ICE_CHECKING'`          |
+    +-----------------------+-----------------------+---------------------------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = str
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    disconnected = P('DISCONNECTED', 'disconnected')
+    awaiting_endpoint = P('AWAITING_ENDPOINT', 'awaiting_endpoint')
+    authenticating = P('AUTHENTICATING', 'authenticating')
+    connecting = P('CONNECTING', 'connecting')
+    connected = P('CONNECTED', 'connected')
+    voice_disconnected = P('VOICE_DISCONNECTED', 'voice_disconnected')
+    voice_connecting = P('VOICE_CONNECTING', 'voice_connecting')
+    voice_connected = P('VOICE_CONNECTED', 'voice_connected')
+    no_route = P('NO_ROUTE', 'no_route')
+    ice_checking = P('ICE_CHECKING', 'ice_checking')

@@ -308,8 +308,6 @@ class RPCClient:
             raise NotImplemented(f'Opening interprocess connection is not supported on {PLATFORM}.')
     
     
-    
-    
     async def _send_handshake(self):
         """
         Sends handshake payload.

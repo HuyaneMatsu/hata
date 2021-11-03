@@ -25,6 +25,7 @@ class VoiceConnectionStatus:
         """Returns the voice connection state's representation."""
         return f'<{self.__class__.__name__} state={self.state.name}>'
     
+    @classmethod
     def from_data(cls, data):
         """
         Creates a nw voice connection status instance from the given data.

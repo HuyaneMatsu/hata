@@ -20,6 +20,8 @@ HttpVersion11 = HttpVersion(1, 1)
 
 del namedtuple
 
+BASIC_AUTH_DEFAULT_ENCODING = 'latin1'
+
 class BasicAuth:
     """
     Http basic authorization implementation.
@@ -31,17 +33,11 @@ class BasicAuth:
     password : `str`
         Authorization password. Can be empty string.
     encoding : `str`
-        Encoding used to encode the authorization headers. Defaults to ``.DEFAULT_ENCODING``.
-    
-    Class Attributes
-    ----------------
-    DEFAULT_ENCODING : `str` = `'latin1'`
-        Default encoding used to encode and decode the authorization headers.
+        Encoding used to encode the authorization headers.
     """
-    DEFAULT_ENCODING = 'latin1'
     __slots__ = ('username', 'password', 'encoding',)
     
-    def __new__(cls, username, password='', encoding=DEFAULT_ENCODING):
+    def __new__(cls, username, password='', encoding=BASIC_AUTH_DEFAULT_ENCODING):
         """
         Creates a new ``BasicAuth`` instance with the given parameters.
         
@@ -79,7 +75,7 @@ class BasicAuth:
         return self
     
     @classmethod
-    def decode(cls, auth_header, encoding=DEFAULT_ENCODING):
+    def decode(cls, auth_header, encoding=BASIC_AUTH_DEFAULT_ENCODING):
         """
         Creates a new ``BasicAuth`` instance from the given HTTP header value and.
         
@@ -134,25 +130,26 @@ class BasicAuth:
     
     def __repr__(self):
         """Returns the basic auth's representation."""
-        result = [
+        repr_parts = [
             self.__class__.__name__,
             '(username=',
             repr(self.username),
-                ]
+        ]
         
         password = self.password
         if password:
-            result.append(', password=')
-            result.append(repr(password))
+            repr_parts.append(', password=')
+            repr_parts.append(repr(password))
         
         encoding = self.encoding
-        if encoding != self.DEFAULT_ENCODING:
-            result.append(' encoding=')
-            result.append(repr(encoding))
+        if encoding != BASIC_AUTH_DEFAULT_ENCODING:
+            repr_parts.append(' encoding=')
+            repr_parts.append(repr(encoding))
         
-        result.append(')')
+        repr_parts.append(')')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
+
 
 _ipv4_pattern = '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 _ipv6_pattern = (
@@ -164,7 +161,7 @@ _ipv6_pattern = (
     '[A-F0-9]{1,4}|(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}$)'
     '(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)|(?:[A-F0-9]{1,4}:){7}'
     ':|:(:[A-F0-9]{1,4}){7})$'
-        )
+)
 
 _ipv4_regex = re.compile(_ipv4_pattern)
 _ipv6_regex = re.compile(_ipv6_pattern, flags=re.I)
@@ -376,11 +373,12 @@ def create_content_disposition_header(disposition_type, parameters, quote_fields
     -------
     value : `str`
     """
-    if not disposition_type or not (TOKEN > set(disposition_type)):
+    if (not disposition_type) or not (TOKEN > set(disposition_type)):
         raise ValueError(f'Bad content disposition type {disposition_type!r}.')
     
     if parameters:
         parameter_parts = [disposition_type]
+        field_added = False
         for key, value in parameters.items():
             if (not key) or (not (TOKEN > set(key))):
                 raise ValueError(f'Bad content disposition parameter {key!r}={value!r}.')
@@ -388,16 +386,26 @@ def create_content_disposition_header(disposition_type, parameters, quote_fields
             if quote_fields:
                 value = quote(value, '[]')
             
-            parameter_parts.append(f'{key}="{value}"')
+            if field_added:
+                parameter_parts.append('; ')
+            else:
+                field_added = True
+            
+            parameter_parts.append(key)
+            parameter_parts.append('="')
+            parameter_parts.append(value)
+            parameter_parts.append('"')
             
             if key == 'filename':
-                parameter_parts.append(f'filename*=utf-8"{value}"')
+                parameter_parts.append('; filename*=utf-8\'\'')
+                parameter_parts.append(value)
         
-        value = '; '.join(parameter_parts)
+        value = ''.join(parameter_parts)
     else:
         value = disposition_type
     
     return value
+
 
 def tcp_nodelay(transport, value):
     """

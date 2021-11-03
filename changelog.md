@@ -6,7 +6,7 @@
 - Add `ApplicationCommandAutocompleteInteractionOption.get_value_of`.
 - Add `EventHandlerManager.iter_event_names_and_handlers`.
 - Add `Attachment.description`.
-- Support API version 10.
+- Support API version 10. (coming soon to Discord)
 
 ##### ext.extension_loader
 - Plugins are supported.

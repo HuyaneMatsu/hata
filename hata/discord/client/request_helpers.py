@@ -159,7 +159,7 @@ def validate_message_to_delete(message):
     return channel_id, message_id, message
 
 
-if API_VERSION >= 10:
+if API_VERSION >= 9:
     def _add_file_from_tuple(files, tuple_):
         """
         Processes the given file tuple.
@@ -212,9 +212,32 @@ if API_VERSION >= 10:
             if files is None:
                 files = []
             
-            files = files.append((name, io, description))
+            files.append((name, io, description))
         
         return files
+    
+    
+    def _build_partial_attachment_data(attachment_id, description):
+        """
+        Builds a partial attachment payload to be sent to Discord.
+        
+        Parameters
+        ----------
+        attachment_id : `int`
+            The attachment's identifier.
+        description : `None` or `str`
+            Description for the attachment.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        data = {'id': str(attachment_id)}
+        
+        if (description is not None):
+            data['description'] = description
+        
+        return data
     
     
     def create_file_form(data, file):
@@ -296,7 +319,7 @@ if API_VERSION >= 10:
                     attachments.append(element.id)
                 
                 else:
-                    files = _add_file_from_tuple(files, file)
+                    files = _add_file_from_tuple(files, element)
         
         elif isinstance(file, Attachment):
             if attachments is None:
@@ -312,41 +335,44 @@ if API_VERSION >= 10:
             else:
                 name = str(random_id())
             
+            if files is None:
+                files = []
+            
             files.append((name, file, None),)
         
         attachment_fields = None
-        form = None
         
         if (files is not None):
             for index, (name, io, description) in enumerate(files):
-                form.add_field(f'files[{index}]', io, filename=name, content_type='application/octet-stream')
-                
                 if attachment_fields is None:
                     attachment_fields = []
                 
-                attachment_fields.append({
-                    'id': 0,
-                    'filename': name,
-                    'description': description
-                })
+                attachment_fields.append(_build_partial_attachment_data(index, description))
         
         if (attachments is not None):
             for attachment_id in attachments:
                 if attachment_fields is None:
                     attachment_fields = []
                 
-                attachment_fields.append({
-                    'id': attachment_id,
-                })
+                attachment_fields.append(_build_partial_attachment_data(attachment_id, None))
         
         if (attachment_fields is None):
             contains_attachments = False
+            
+            form = None
         else:
             contains_attachments = True
-            
             data['attachments'] = attachment_fields
-            if form is None:
+            
+            if (files is None):
+                form = None
+            
+            else:
                 form = Formdata()
+                
+                for index, (name, io, description) in enumerate(files):
+                    form.add_field(f'files[{index}]', io, filename=name, content_type='application/octet-stream')
+                
                 form.add_field('payload_json', to_json(data))
         
         return form, contains_attachments
@@ -382,8 +408,9 @@ if API_VERSION >= 10:
                 message_data = None
         else:
             form, contains_attachments = create_file_form(message_data, file)
-            if (form is None) and (not contains_content) and (not contains_attachments):
-                message_data = None
+            if (form is None):
+                if (not contains_content) and (not contains_attachments):
+                    message_data = None
             else:
                 message_data = form
         

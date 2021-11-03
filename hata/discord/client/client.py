@@ -11377,7 +11377,7 @@ class Client(ClientUserPBase):
     # Role management
     
     async def role_edit(self, role, *, name=None, color=None, separated=None, mentionable=None, permissions=None,
-            position=None, icon=None, reason=None):
+            position=None, icon=..., reason=None):
         """
         Edits the role with the given parameters.
         

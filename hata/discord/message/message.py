@@ -8,7 +8,7 @@ from ...backend.utils import BaseMethodDescriptor
 from ...backend.export import export, include
 
 from ..bases import DiscordEntity, id_sort_key
-from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, time_to_id, DATETIME_FORMAT_CODE
+from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, datetime_to_id, DATETIME_FORMAT_CODE
 from ..core import MESSAGES, CHANNELS, GUILDS
 from ..user import ZEROUSER, User, ClientUserBase, UserBase
 from ..emoji import reaction_mapping
@@ -1034,7 +1034,7 @@ class Message(DiscordEntity, immortal=True):
                 raise TypeError(f'`edited_at` can be `None` or `datetime`, got `{edited_at.__class__.__name__}`.')
         
         if validate:
-            if (edited_at is not None) and (time_to_id(edited_at)<message_id):
+            if (edited_at is not None) and (datetime_to_id(edited_at)<message_id):
                 raise ValueError('`edited_at` can not be lower, than `created_at`')
         
         try:

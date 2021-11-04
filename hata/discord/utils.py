@@ -289,10 +289,10 @@ def unix_time_to_datetime(unix_time):
 
 def time_to_id(time):
     """
-    `id_to_time`\'s is deprecated, and will be removed in 2021 November. Please use ``id_to_datetime`` instead.
+    `time_to_id`\'s is deprecated, and will be removed in 2021 November. Please use ``id_to_datetime`` instead.
     """
     warnings.warn(
-        f'`id_to_time`\'s is deprecated, and will be removed in 2021 November. '
+        f'`time_to_id`\'s is deprecated, and will be removed in 2021 November. '
         f'Please use `id_to_datetime` instead.',
         FutureWarning)
     return datetime_to_id(time)
@@ -388,7 +388,7 @@ def log_time_converter(value):
         return value.id
     
     if type(value) is datetime:
-        return time_to_id(value)
+        return datetime_to_id(value)
     
     raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')

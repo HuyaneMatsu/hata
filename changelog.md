@@ -15,6 +15,7 @@
 - `Client._request_members` raised `TypeError`.
 - `Client.role_edit` raised `TypeError`. (Izumi Midoriya#9646)
 - `Client.role_delete` raised `TypeError`. (Izumi Midoriya#9646)
+- `time_to_id` was used even if deprecated +typod deprecation message. (Al_Loiz \[ICU\]#5392)
 
 ## 1.1.116 *\[2021-11-01\]*
 

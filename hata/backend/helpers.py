@@ -247,6 +247,7 @@ class Timeout:
         +---------------------------+-------+
     """
     __slots__ = ('_handle', '_loop', '_task', '_state')
+    
     def __new__(cls, loop, timeout):
         """
         Creates a new timeouter instance bound to the given loop.
@@ -353,6 +354,7 @@ class Timeout:
         return False
     
     def __repr__(self):
+        """Returns the timeout's representation."""
         return f'<{self.__class__.__name__}>'
 
 

@@ -3,9 +3,9 @@ __all__ = ()
 from ...backend.futures import Task
 from ...discord.user import User
 from ...discord.events.handling_helpers import asynclist
-from ...discord.core import KOKORO
+from ...discord.core import KOKORO, MESSAGES, CHANNELS
 from ...discord.guild import create_partial_guild_from_data
-from ...discord.message import Message
+from ...discord.message import Message, MessageRepr
 
 
 from .constants import DISPATCH_EVENT_READY, DISPATCH_EVENT_GUILD_STATUS_UPDATE, \
@@ -95,16 +95,72 @@ def handle_dispatch_user_voice_delete(rpc_client, data):
     
     Task(rpc_client.events.voice_state_delete(rpc_client, voice_state), KOKORO)
 
+
 def handle_dispatch_voice_connection_status(rpc_client, data):
     voice_connection_status = VoiceConnectionStatus.from_data(data)
 
     Task(rpc_client.events.voice_connection_status(rpc_client, voice_connection_status), KOKORO)
 
+
 def handle_dispatch_message_create(rpc_client, data):
     message = Message(data)
     
     Task(rpc_client.events.message_create(rpc_client, message), KOKORO)
+
+
+def handle_dispatch_message_edit(rpc_client, data):
+    message_id = int(data['id'])
+    message = MESSAGES.get(message_id, None)
+    if message is None:
+        if 'edited_timestamp' not in data:
+            return
     
+        # Dead event handling
+        message = Message(data)
+        old_attributes = None
+    
+    else:
+        if 'edited_timestamp' in data:
+            old_attributes = message._difference_update_attributes(data)
+            if not old_attributes:
+                return
+        
+        else:
+            message._update_embed_no_return(data)
+            return
+    
+    Task(rpc_client.events.message_create(rpc_client, message, old_attributes), KOKORO)
+
+
+def handle_dispatch_message_delete(rpc_client, data):
+    message_id = int(data['id'])
+    try:
+        message = MESSAGES[message_id]
+    except KeyError:
+        message = MessageRepr(message_id, 0, 0)
+    else:
+        channel_id = message.channel_id
+        try:
+            channel = CHANNELS[channel_id]
+        except KeyError:
+            pass
+        else:
+            channel._pop_message(message_id)
+    
+    Task(rpc_client.events.message_delete(rpc_client, message), KOKORO)
+
+
+def handle_dispatch_speaking_start(rpc_client, data):
+    user_id = int(data['user_id'])
+    
+    Task(rpc_client.events.speaking_start(rpc_client, user_id), KOKORO)
+
+
+def handle_dispatch_speaking_stop(rpc_client, data):
+    user_id = int(data['user_id'])
+    
+    Task(rpc_client.events.speaking_stop(rpc_client, user_id), KOKORO)
+
 
 DISPATCH_EVENT_HANDLERS = {
     DISPATCH_EVENT_READY: handle_dispatch_ready,
@@ -118,7 +174,10 @@ DISPATCH_EVENT_HANDLERS = {
     DISPATCH_EVENT_USER_VOICE_DELETE: handle_dispatch_user_voice_delete,
     DISPATCH_EVENT_VOICE_CONNECTION_STATUS: handle_dispatch_voice_connection_status,
     DISPATCH_EVENT_MESSAGE_CREATE: handle_dispatch_message_create,
-    
+    DISPATCH_EVENT_MESSAGE_UPDATE: handle_dispatch_message_edit,
+    DISPATCH_EVENT_MESSAGE_DELETE: handle_dispatch_message_delete,
+    DISPATCH_EVENT_SPEAKING_START: handle_dispatch_speaking_start,
+    DISPATCH_EVENT_SPEAKING_STOP: handle_dispatch_speaking_stop,
 }
 
 
@@ -133,3 +192,7 @@ del handle_dispatch_user_voice_update
 del handle_dispatch_user_voice_delete
 del handle_dispatch_voice_connection_status
 del handle_dispatch_message_create
+del handle_dispatch_message_edit
+del handle_dispatch_message_delete
+del handle_dispatch_speaking_start
+del handle_dispatch_speaking_stop

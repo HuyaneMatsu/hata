@@ -3506,6 +3506,8 @@ class Client(ClientUserPBase):
             
             message_data['message_reference'] = message_reference_data
         
+        message_data['type'] = 0
+        
         message_data = add_file_to_message_data(message_data, file, contains_content)
         if message_data is None:
             return
@@ -5475,7 +5477,7 @@ class Client(ClientUserPBase):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        if (guild is None) or (GuildFeature.welcome_screen in guild.features):
+        if (guild is None) or (GuildFeature.welcome_screen_enabled in guild.features):
             welcome_screen_data = await self.http.welcome_screen_get(guild_id)
             if welcome_screen_data is None:
                 welcome_screen = None

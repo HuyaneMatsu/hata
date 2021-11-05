@@ -380,7 +380,6 @@ def create_content_disposition_header(disposition_type, parameters, quote_fields
     
     if parameters:
         parameter_parts = [disposition_type]
-        field_added = False
         for key, value in parameters.items():
             if (not key) or (not (TOKEN > set(key))):
                 raise ValueError(f'Bad content disposition parameter {key!r}={value!r}.')
@@ -388,10 +387,7 @@ def create_content_disposition_header(disposition_type, parameters, quote_fields
             if quote_fields:
                 value = quote(value, '[]')
             
-            if field_added:
-                parameter_parts.append('; ')
-            else:
-                field_added = True
+            parameter_parts.append('; ')
             
             parameter_parts.append(key)
             parameter_parts.append('="')

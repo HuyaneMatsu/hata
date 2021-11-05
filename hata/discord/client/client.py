@@ -3506,8 +3506,6 @@ class Client(ClientUserPBase):
             
             message_data['message_reference'] = message_reference_data
         
-        message_data['type'] = 0
-        
         message_data = add_file_to_message_data(message_data, file, contains_content)
         if message_data is None:
             return

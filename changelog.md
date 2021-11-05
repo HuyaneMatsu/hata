@@ -1,3 +1,9 @@
+## 1.1.118 *\[2021-11-05\]*
+
+#### Bug Fixes
+
+- An another `TypeError` in `Role._delete`.
+
 ## 1.1.117 *\[2021-11-05\]*
 
 ### Summary

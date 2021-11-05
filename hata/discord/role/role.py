@@ -566,7 +566,7 @@ class Role(DiscordEntity, immortal=True):
                                 if len(role_ids) == 1:
                                     role_ids = None # It is so deep! (that's what she said)
                                 else:
-                                    role_ids = tuple(*role_ids[:index], *role_ids[index+1:])
+                                    role_ids = (*role_ids[:index], *role_ids[index+1:])
                                 guild_profile.role_ids = role_ids
     
     

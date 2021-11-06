@@ -179,7 +179,7 @@ if API_VERSION >= 9:
         Raises
         ------
         ValueError
-            If a `tuple_`'s length is out of teh expected [0:3] range.
+            If a `tuple_`'s length is out of the expected [0:3] range.
         """
         tuple_length = len(tuple_)
         if tuple_length:
@@ -265,7 +265,7 @@ if API_VERSION >= 9:
         ------
         ValueError
             - If more than `10` file is registered to be sent.
-            - If a `tuple`'s length is out of teh expected [0:3] range.
+            - If a `tuple`'s length is out of the expected [0:3] range.
         
         Notes
         -----

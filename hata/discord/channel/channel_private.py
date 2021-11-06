@@ -239,7 +239,16 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             CHANNELS[channel_id] = self
         
         return self
-
+    
+    
+    @copy_docs(ChannelBase.to_data)
+    def to_data(self):
+        data = ChannelBase.to_data(self)
+        
+        # users
+        data['recipients'] = [user.to_data() for user in self.users]
+        
+        return data
 
 
 @export
@@ -558,3 +567,25 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
                 setattr(self, *item)
         
         return self
+    
+    
+    @copy_docs(ChannelBase.to_data)
+    def to_data(self):
+        data = ChannelBase.to_data(self)
+        
+        # users
+        data['recipients'] = [user.to_data() for user in self.users]
+        
+        # name
+        name = self.name
+        if not name:
+            name = None
+        data['name'] = name
+        
+        # owner_id
+        data['owner_id'] = str(self.owner_id)
+        
+        # icon
+        data['icon'] = self.icon.as_base16_hash
+        
+        return data

@@ -135,6 +135,22 @@ class Sticker(DiscordEntity, immortal=True):
         
         return self
     
+    
+    def to_partial_data(self):
+        """
+        Tries to convert the sticker to a json serializable dictionary representing a partial sticker.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        return {
+            'id': str(self.id),
+            'name': self.name,
+            'format_type': self.format.value,
+        }
+    
+        
     def _update_from_partial(self, data):
         """
         Updates a partial sticker with to not partial from the given data.

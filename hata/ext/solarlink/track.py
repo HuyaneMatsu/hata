@@ -275,8 +275,8 @@ class Track:
         return hash(self.base64)
     
     
-    def __eq__(self):
-        """Returns whether teh two tracks are equal."""
+    def __eq__(self, other):
+        """Returns whether the two tracks are equal."""
         if type(self) is not type(other):
             return NotImplemented
         

@@ -23,6 +23,7 @@ class MessageReference:
         The referenced message's id. Might be set as `0`.
     """
     __slots__ = ('_channel', '_message', '_guild', 'channel_id', 'guild_id', 'message_id',)
+    
     def __new__(cls, data):
         """
         Creates a ``MessageReference`` from message reference data included inside of a ``Message``'s.
@@ -172,3 +173,34 @@ class MessageReference:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the message reference to json serializable dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        data = {
+            'message_id': str(self.message_id)
+        }
+        
+        channel_id = self.channel_id
+        if channel_id:
+            channel_id = str(channel_id)
+        else:
+            channel_id = None
+        
+        data['channel_id'] = channel_id
+        
+        guild_id = self.guild_id
+        if guild_id:
+            guild_id = str(guild_id)
+        else:
+            guild_id = None
+        
+        data['guild_id'] = guild_id
+        
+        return data

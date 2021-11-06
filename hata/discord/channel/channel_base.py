@@ -7,7 +7,6 @@ from ...backend.export import export, include
 from ..bases import DiscordEntity
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE
-from ..user import User
 from ..utils import DATETIME_FORMAT_CODE
 
 Client = include('Client')
@@ -65,7 +64,13 @@ class ChannelBase(DiscordEntity, immortal=True):
     
     
     def _get_processed_name(self):
-        """Returns the channel's name."""
+        """
+        Returns the channel's name.
+        
+        Returns
+        -------
+        name : `str`
+        """
         return ''
     
     
@@ -122,6 +127,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
+    
     @property
     def display_name(self):
         """
@@ -133,6 +139,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         return ''
     
+    
     @property
     def mention(self):
         """
@@ -143,6 +150,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         mention : `str`
         """
         return f'<#{self.id}>'
+    
     
     @property
     def partial(self):
@@ -157,6 +165,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         return (not self.clients)
     
+    
     def get_user(self, name, default=None):
         """
         Tries to find the a user with the given name at the channel. Returns the first matched one.
@@ -170,7 +179,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``ClientUserBase`` or `None`
+        user : ``ClientUserBase`` or `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -196,6 +205,7 @@ class ChannelBase(DiscordEntity, immortal=True):
                 return user
         
         return default
+    
     
     def get_user_like(self, name, default=None):
         """
@@ -240,6 +250,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         return default
     
+    
     def get_users_like(self, name):
         """
         Searches the users, who's name or nick starts with the given string.
@@ -251,7 +262,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase`` objects
+        users : `list` of ``ClientUserBase``
         """
         result = []
         if (not 1 < len(name) < 38):
@@ -283,6 +294,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         return result
     
+    
     @property
     def users(self):
         """
@@ -293,6 +305,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         users : `list` of ``ClientUserBase``
         """
         return []
+    
     
     def iter_users(self):
         """
@@ -305,6 +318,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         user : ``ClientUserBase``
         """
         yield from self.users
+    
     
     @property
     def clients(self):
@@ -321,6 +335,7 @@ class ChannelBase(DiscordEntity, immortal=True):
                 clients.append(user)
         
         return clients
+    
     
     # for sorting channels
     def __gt__(self, other):
@@ -496,6 +511,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         """
         return 0
     
+    
     @property
     def guild(self):
         """
@@ -597,4 +613,31 @@ class ChannelBase(DiscordEntity, immortal=True):
         self = object.__new__(cls)
         self.id = channel_id
         return self
-
+    
+    
+    def to_data(self):
+        """
+        Converts the channel to json serializable representation dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `str`) items
+        """
+        data = {}
+        
+        # id
+        data['id'] = str(self.id)
+        
+        # type
+        data['type'] = self.type
+        
+        # guild_id
+        guild_id = self.guild_id
+        if guild_id:
+            guild_id = str(guild_id)
+        else:
+            guild_id = None
+        
+        data['guild_id'] = guild_id
+        
+        return data

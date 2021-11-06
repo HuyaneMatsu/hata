@@ -258,10 +258,10 @@ class IconSlot:
     __slots__ = ('internal_name', 'discord_side_name', 'added_instance_attributes', 'added_class_attributes')
     
     _compile_globals = {
-        'ICON_TYPE_NONE': ICON_TYPE_NONE     ,
-        'ICON_TYPE_STATIC': ICON_TYPE_STATIC   ,
-        'ICON_TYPE_ANIMATED': ICON_TYPE_ANIMATED ,
-        'Icon': Icon               ,
+        'ICON_TYPE_NONE': ICON_TYPE_NONE,
+        'ICON_TYPE_STATIC': ICON_TYPE_STATIC,
+        'ICON_TYPE_ANIMATED': ICON_TYPE_ANIMATED,
+        'Icon': Icon,
     }
     
     def __new__(cls, internal_name, discord_side_name, url_property, url_as_method, add_updater=True):

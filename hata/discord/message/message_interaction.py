@@ -57,3 +57,19 @@ class MessageInteraction(DiscordEntity):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the message interaction back to json serializable dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        return {
+            'id': str(self.id),
+            'name': str(self.name),
+            'type': self.type.value,
+            'user': self.user.to_data()
+        }

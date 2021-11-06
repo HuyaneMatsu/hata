@@ -689,3 +689,44 @@ class UserBase(DiscordEntity, immortal=True):
         self.banner_color = None
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the user back to a json serializable dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `str`) items
+        """
+        data = []
+        
+        # id
+        data['id'] = str(self.id)
+        
+        # name
+        data['name'] = self.name
+        
+        # discriminator
+        data['discriminator'] = str(self.discriminator)
+        
+        # avatar
+        data['avatar'] = self.avatar.as_base16_hash
+        
+        # banner
+        data['banner'] = self.banner.as_base16_hash
+        
+        # banner color
+        banner_color = self.banner_color
+        if (banner_color is not None):
+            banner_color = int(banner_color)
+        data['accent_color'] = banner_color
+        
+        # bot
+        if self.is_bot:
+            data['bot'] = True
+        
+        # flags
+        data['flags'] = int(self.flags)
+        
+        return data

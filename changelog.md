@@ -1,3 +1,20 @@
+## 1.1.119 *\[2021-11-??\]*
+
+- Add `UserBase.to_data`.
+- Add `MessageActivity.to_data`.
+- Add `MessageApplication.to_data`.
+- Add `Attachment.to_data`.
+- Add `MessageInteraction.to_data`.
+- Add `reaction_mapping.to_data`.
+- Add `MessageReference.to_data`.
+- Add `Message.to_message_reference_data`.
+- Add `Sticker.to_partial_data`.
+- Add `Message.to_data`.
+- Add `ChannelBase.to_data`.
+- Add `ChannelPrivate.to_data`.
+- Add `ChannelGroup.to_data`.
+- Add `ChannelGuildBase.to_data`.
+
 ## 1.1.118 *\[2021-11-05\]*
 
 #### Bug Fixes

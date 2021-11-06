@@ -8,7 +8,8 @@ from ...backend.utils import BaseMethodDescriptor
 from ...backend.export import export, include
 
 from ..bases import DiscordEntity, id_sort_key
-from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, datetime_to_id, DATETIME_FORMAT_CODE
+from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, datetime_to_id, DATETIME_FORMAT_CODE, \
+    datetime_to_timestamp
 from ..core import MESSAGES, CHANNELS, GUILDS
 from ..user import ZEROUSER, User, ClientUserBase, UserBase
 from ..emoji import reaction_mapping
@@ -2536,6 +2537,230 @@ class Message(DiscordEntity, immortal=True):
                 _set_message_field(self, *item)
         
         return self
+    
+    
+    def to_data(self, *, recursive=True):
+        """
+        Tries to convert the message back to json serializable dictionary.
+        
+        Parameters
+        ----------
+        recursive : `bool`, Optional (Keyword only)
+            Whether referenced messages should be converted as well.
+            
+            Defaults to `True`.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        data = {}
+        
+        # id
+        data['id'] = str(self.id)
+        
+        # channel_id
+        data['channel_id'] = str(self.channel_id)
+        
+        # guild_id
+        guild_id = self.guild_id
+        if not guild_id:
+            guild_id = None
+        data['guild_id'] = guild_id
+        
+        # author
+        author = self.author
+        if (author is not ZEROUSER):
+            data['author'] = author.to_data()
+        
+        # activity
+        activity = self.activity
+        if (activity is not None):
+            data['activity'] = activity.to_data()
+        
+        # application
+        application = self.application
+        if (application is not None):
+            data['application'] = application.to_data()
+        
+        # application_id
+        application_id = self.application_id
+        if application_id:
+            data['application_id'] = self.application_id
+        
+        # attachments
+        attachments = self.attachments
+        if attachments is None:
+            attachment_datas = []
+        else:
+            attachment_datas = [attachment.to_data() for attachment in attachments]
+        data['attachments'] = attachment_datas
+        
+        # components
+        components = self.components
+        if (components is None):
+            component_datas = []
+        else:
+            component_datas = [component.to_data() for component in components]
+        data['components'] = component_datas
+        
+        # content
+        content = self.content
+        if (content is None):
+            content = ''
+        data['content'] = content
+        
+        # cross_mentions
+        cross_mentions = self.cross_mentions
+        if (cross_mentions is not None):
+            data['cross_mentions'] = [
+                {
+                    'id': str(channel.id),
+                    'name': channel.name,
+                    'guild_id': str(channel.guild_id),
+                    'type': channel.type,
+                }
+                for channel in cross_mentions
+            ]
+        
+        # edited_at
+        edited_at = self.edited_at
+        if (edited_at is None):
+            edited_timestamp = None
+        else:
+            edited_timestamp = datetime_to_timestamp(edited_at)
+        data['edited_timestamp'] = edited_timestamp
+        
+        # embeds
+        embeds = self.embeds
+        if embeds is None:
+            embed_datas = []
+        else:
+            embed_datas = [embed.to_data() for embed in embeds]
+        data['embeds'] = embed_datas
+        
+        # everyone_mention
+        data['mention_everyone'] = self.everyone_mention
+        
+        # flags
+        data['flags'] = int(self.flags)
+        
+        # interaction
+        interaction = self.interaction
+        if (interaction is not None):
+            data['interaction'] = interaction.to_data()
+        
+        # nonce
+        data['nonce'] = self.nonce
+        
+        # pinned
+        data['pinned'] = self.pinned
+        
+        # reactions
+        reactions = self.reactions
+        if reactions is None:
+            reaction_datas = []
+        else:
+            reaction_datas = reactions.to_data()
+        data['reactions'] = reaction_datas
+        
+        # referenced_message
+        referenced_message = self.referenced_message
+        if (referenced_message is not None):
+            # Can be either Message or MessageReference instance
+            if isinstance(referenced_message, MessageReference):
+                message_reference_data = referenced_message.to_data()
+            elif isinstance(referenced_message, Message):
+                message_reference_data = referenced_message.to_message_reference_data()
+            else:
+                # Bug ?
+                message_reference_data = None
+            
+            if (message_reference_data is not None):
+                data['message_reference'] = message_reference_data
+        
+        # referenced_message # 2
+        if recursive and self.type in (MessageType.inline_reply, MessageType.thread_started):
+            if (referenced_message is None):
+                # Bug ?
+                referenced_message_data = None
+            elif isinstance(referenced_message, Message):
+                if referenced_message.deleted:
+                    referenced_message_data = None
+                else:
+                    referenced_message_data = referenced_message.to_data(recursive=False)
+            else:
+                # Bug ?
+                referenced_message_data = None
+            
+            data['referenced_message'] = referenced_message_data
+        
+        # role_mention_ids
+        role_mention_ids = self.role_mention_ids
+        if role_mention_ids is None:
+            role_mention_ids = []
+        else:
+            role_mention_ids = [str(role_id) for role_id in role_mention_ids]
+        data['mention_roles'] = role_mention_ids
+        
+        # stickers
+        stickers = self.stickers
+        if stickers is None:
+            sticker_datas = []
+        else:
+            sticker_datas = [sticker.to_partial_data() for sticker in stickers]
+        data['sticker_items'] = sticker_datas
+        
+        # thread
+        thread = self.thread
+        if (thread is not None):
+            data['thread'] = thread.to_data()
+        
+        # tts
+        data['tts'] = self.tts
+        
+        # type
+        data['type'] = self.type.value
+        
+        user_mentions = self.user_mentions
+        if (user_mentions is None):
+            user_mention_datas = []
+        else:
+            user_mention_datas = [user_mention.to_data() for user_mention in user_mentions]
+        data['mentions'] = user_mention_datas
+        
+        return data
+    
+    
+    def to_message_reference_data(self):
+        """
+        Tries to convert the message to json serializable dictionary representing a message reference.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        data = {
+            'message_id': str(self.id)
+        }
+        
+        channel_id = self.channel_id
+        if channel_id:
+            channel_id = str(channel_id)
+        else:
+            channel_id = None
+        
+        data['channel_id'] = channel_id
+        
+        guild_id = self.guild_id
+        if guild_id:
+            guild_id = str(guild_id)
+        else:
+            guild_id = None
+        
+        data['guild_id'] = guild_id
+        
+        return data
     
     
     @classmethod

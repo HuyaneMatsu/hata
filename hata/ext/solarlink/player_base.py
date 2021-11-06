@@ -41,7 +41,7 @@ class SolarPlayerBase:
         The node that the player is connected to. Defaults to `None`.
     
     
-    When subclassing please overwrite teh following methods:
+    When subclassing please overwrite the following methods:
     
     - ``.is_paused``
     - ``.get_current``

@@ -56,6 +56,7 @@ class Attachment(DiscordEntity):
         self.width = data.get('width', 0)
         self.temporary = data.get('ephemeral', False)
     
+    
     def __repr__(self):
         """Returns the representation of the attachment."""
         repr_parts = [
@@ -69,14 +70,60 @@ class Attachment(DiscordEntity):
         repr_parts.append(', name=')
         repr_parts.append(repr(self.name))
         
-        x = self.width
-        y = self.height
-        if x and y:
+        width = self.width
+        height = self.height
+        if width and height:
             repr_parts.append(', size=')
-            repr_parts.append(repr(x))
+            repr_parts.append(repr(width))
             repr_parts.append('x')
-            repr_parts.append(repr(y))
+            repr_parts.append(repr(height))
         
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the attachment back to json serializable dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        data = {}
+        
+        # id
+        data['id'] = str(self.id)
+        
+        # content_type
+        content_type = self.content_type
+        if (content_type is not None):
+            data['content_type'] = content_type
+        
+        # description
+        description = self.description
+        if (description is not None):
+            data['description'] = description
+        
+        # height & width
+        height = self.height
+        width = self.width
+        if width and height:
+            data['width'] = width
+            data['height'] = height
+        
+        # name
+        data['filename'] = self.name
+        
+        # proxy_url
+        data['proxy_url'] = self.proxy_url
+        
+        # temporary
+        if self.temporary:
+            data['ephemeral'] = True
+        
+        # url
+        data['url'] = self.url
+        
+        return data

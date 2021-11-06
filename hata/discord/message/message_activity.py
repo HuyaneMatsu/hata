@@ -14,6 +14,7 @@ class MessageActivity:
         The message application's type.
     """
     __slots__ = ('party_id', 'type',)
+    
     def __init__(self, data):
         """
         Creates a new ``MessageActivity`` from message activity data included inside of a ``Message``'s data.
@@ -23,7 +24,7 @@ class MessageActivity:
         data : `dict` of (`str`, `Any`) items
             Message activity data.
         """
-        self.party_id = data.get('party_id','')
+        self.party_id = data.get('party_id', '')
         self.type = MessageActivityType.get(data['type'])
 
     def __eq__(self, other):
@@ -42,3 +43,17 @@ class MessageActivity:
     def __repr__(self):
         """Returns the message activity's representation."""
         return f'<{self.__class__.__name__} type={self.type.name} ({self.type.value}), party_id={self.party_id!r}>'
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the message activity back to json serializable dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        return {
+            'party_id': self.party_id,
+            'type': self.type.value,
+        }

@@ -61,3 +61,20 @@ class MessageApplication(DiscordEntity):
     def __repr__(self):
         """Returns the representation of the message application."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the message application back to json serializable dictionary.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`)
+        """
+        return {
+            'cover': self.cover.as_base16_hash,
+            'description': self.description,
+            'icon': self.icon.as_base16_hash,
+            'id': str(self.id),
+            'name': self.name,
+        }

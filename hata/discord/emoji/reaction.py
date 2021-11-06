@@ -3,7 +3,7 @@ __all__ = ('reaction_mapping', 'reaction_mapping_line',)
 from ...backend.export import include
 from ...backend.utils import set_docs
 
-from .utils import create_partial_emoji_from_data
+from .utils import create_partial_emoji_from_data, create_partial_emoji_data
 
 Client = include('Client')
 
@@ -196,6 +196,27 @@ class reaction_mapping(dict):
         """
         self[emoji] = reaction_mapping_line._full(users)
         self._full_check()
+    
+    
+    def to_data(self):
+        """
+        Tries to convert the reactions back to a json serializable list.
+        
+        Returns
+        -------
+        data : `list` of `dict` of (`str`, `Any`)
+        """
+        data = []
+        for emoji, users in self.items():
+            length = len(users)
+            if length:
+                data.append({
+                    'count': length,
+                    'me': False, # Me is always False
+                    'emoji': create_partial_emoji_data(emoji),
+                })
+        
+        return data
 
 
 class reaction_mapping_line(set):

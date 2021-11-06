@@ -320,6 +320,21 @@ class ChannelGuildBase(ChannelBase):
         permissions = self.permissions_for(user)
         permission_cache[user.id] = permissions
         return permissions
+    
+    
+    @copy_docs(ChannelBase.to_data)
+    def to_data(self):
+        data = ChannelBase.to_data(self)
+        
+        # name
+        data['name'] = self.name
+        
+        # parent_id
+        parent_id = self.parent_id
+        if parent_id:
+            data['parent_id'] = str(parent_id)
+        
+        return self
 
 
 @export

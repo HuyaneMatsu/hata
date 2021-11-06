@@ -1,8 +1,6 @@
 __all__ = ('MessageType', 'MessageActivityType')
 
-import warnings
-
-from ...backend.utils import any_to_any, class_property
+from ...backend.utils import any_to_any
 
 from ..bases import PreinstancedBase, Preinstance as P
 from ..utils import sanitize_mentions

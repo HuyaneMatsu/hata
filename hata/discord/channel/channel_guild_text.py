@@ -336,7 +336,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     def precreate(cls, channel_id, **kwargs):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
-        the precrated channel will be picked up. If an already existing channel would be precreated, returns that
+        the precreated channel will be picked up. If an already existing channel would be precreated, returns that
         instead and updates that only, if that is a partial channel.
         
         Parameters
@@ -452,3 +452,21 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
                 setattr(self, *item)
         
         return self
+    
+    
+    @copy_docs(ChannelGuildMainBase.to_data)
+    def to_data(self):
+        data = ChannelGuildMainBase.to_data(self)
+        
+        data['default_auto_archive_duration'] = self.default_auto_archive_duration // 60
+        
+        if self.nsfw:
+            data['nsfw'] = True
+        
+        slowmode = self.slowmode
+        if slowmode:
+            data['rate_limit_per_user'] = slowmode
+        
+        data['topic'] = self.topic
+        
+        return data

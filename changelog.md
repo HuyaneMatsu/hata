@@ -14,6 +14,16 @@
 - Add `ChannelPrivate.to_data`.
 - Add `ChannelGroup.to_data`.
 - Add `ChannelGuildBase.to_data`.
+- Add `ChannelGuildBase.to_data`.
+- Add `ChannelCategory.to_data`.
+- Add `ChannelDirectory.to_data`.
+- Add `ChannelStore.to_data`.
+- Add `ChannelText.to_data`.
+- Add `ChannelGuildUndefined.to_data`.
+- Add `ChannelVoiceBase.to_data`.
+- Add `ChannelVoice.to_data`.
+- Add `ChannelStage.to_data`.
+- Add `ChannelThread.to_data`.
 
 ## 1.1.118 *\[2021-11-05\]*
 

@@ -85,8 +85,8 @@ def cr_p_permission_overwrite_object(target, allow, deny):
         permission_overwrite_target_type = PermissionOverwriteTargetType.user
     
     return {
-        'allow': allow,
-        'deny': deny,
+        PERMISSION_ALLOW_KEY: allow,
+        PERMISSION_DENY_KEY: deny,
         'id': target.id,
         'type': permission_overwrite_target_type.value,
     }

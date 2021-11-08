@@ -107,6 +107,22 @@ class ChannelVoiceBase(ChannelGuildMainBase):
         return self.name
 
 
+    @copy_docs(ChannelGuildMainBase.to_data)
+    def to_data(self):
+        data = ChannelGuildMainBase.to_data(self)
+        
+        data['bitrate'] = self.bitrate
+        data['user_limit'] = self.user_limit
+        
+        region = self.region
+        if (region is not None):
+            region = region.value
+        
+        data['rtc_region'] = region
+        
+        return data
+
+
 @export
 class ChannelVoice(ChannelVoiceBase):
     """
@@ -341,7 +357,7 @@ class ChannelVoice(ChannelVoiceBase):
     def precreate(cls, channel_id, **kwargs):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
-        the precrated channel will be picked up. If an already existing channel would be precreated, returns that
+        the precreated channel will be picked up. If an already existing channel would be precreated, returns that
         instead and updates that only, if that is a partial channel.
         
         Parameters
@@ -436,7 +452,15 @@ class ChannelVoice(ChannelVoiceBase):
                 setattr(self, *item)
         
         return self
-
+    
+    
+    @copy_docs(ChannelVoiceBase.to_data)
+    def to_data(self):
+        data = ChannelVoiceBase.to_data(self)
+        
+        data['video_quality_mode'] = self.video_quality_mode.value
+        
+        return data
 
 
 @export
@@ -686,7 +710,7 @@ class ChannelStage(ChannelVoiceBase):
     def precreate(cls, channel_id, **kwargs):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
-        the precrated channel will be picked up. If an already existing channel would be precreated, returns that
+        the precreated channel will be picked up. If an already existing channel would be precreated, returns that
         instead and updates that only, if that is a partial channel.
         
         Parameters
@@ -853,3 +877,11 @@ class ChannelStage(ChannelVoiceBase):
                     users.append(user)
         
         return users
+
+    @copy_docs(ChannelVoiceBase.to_data)
+    def to_data(self):
+        data = ChannelVoiceBase.to_data(self)
+        
+        data['topic'] = self.topic
+        
+        return data

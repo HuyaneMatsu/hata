@@ -369,7 +369,7 @@ class Sticker(DiscordEntity, immortal=True):
     def precreate(cls, sticker_id, **kwargs):
         """
         Precreates the sticker by creating a partial one with the given parameters. When the sticker is loaded
-        the precrated one will be picked up. If an already existing sticker would be precreated, returns that
+        the precreated one will be picked up. If an already existing sticker would be precreated, returns that
         instead and updates that only, if that is partial.
         
         Parameters

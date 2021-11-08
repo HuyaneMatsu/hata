@@ -8,6 +8,7 @@ from ...backend.export import export, include
 from ..permission import Permission, PermissionOverwriteTargetType
 from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, \
     PERMISSION_MASK_VIEW_CHANNEL
+from ..permission.utils import PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
 from ..core import GUILDS, CHANNELS
 from ..user import ClientUserBase
 
@@ -788,3 +789,21 @@ class ChannelGuildMainBase(ChannelGuildBase):
                 del guild.channels[self.id]
             except KeyError:
                 pass
+    
+    @copy_docs(ChannelGuildBase.to_data)
+    def to_data(self):
+        data = ChannelGuildBase.to_data(self)
+        
+        data['position'] = self.position
+        
+        data['permission_overwrites'] = [
+            {
+                'id': str(permission_overwrite.target_id),
+                'type': permission_overwrite.target_type.value,
+                PERMISSION_ALLOW_KEY: str(permission_overwrite.allow),
+                PERMISSION_DENY_KEY: str(permission_overwrite.deny)
+            }
+            for permission_overwrite in self.permission_overwrites.values()
+        ]
+        
+        return data

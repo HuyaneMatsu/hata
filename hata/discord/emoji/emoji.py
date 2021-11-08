@@ -147,7 +147,7 @@ class Emoji(DiscordEntity, immortal=True):
     def precreate(cls, emoji_id, **kwargs):
         """
         Precreates the emoji by creating a partial one with the given parameters. When the emoji is loaded
-        the precrated one will be picked up. If an already existing emoji would be precreated, returns that
+        the precreated one will be picked up. If an already existing emoji would be precreated, returns that
         instead and updates that only, if that is partial.
         
         Parameters

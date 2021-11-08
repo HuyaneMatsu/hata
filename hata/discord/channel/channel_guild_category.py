@@ -153,7 +153,7 @@ class ChannelCategory(ChannelGuildMainBase):
     def precreate(cls, channel_id, **kwargs):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
-        the precrated channel will be picked up. If an already existing channel would be precreated, returns that
+        the precreated channel will be picked up. If an already existing channel would be precreated, returns that
         instead and updates that only, if that is a partial channel.
         
         Parameters
@@ -230,3 +230,9 @@ class ChannelCategory(ChannelGuildMainBase):
         
         self_id = self.id
         return sorted(channel for channel in guild.channels.values() if channel.parent_id == self_id)
+    
+    
+    @copy_docs(ChannelGuildMainBase.to_data)
+    def to_data(self):
+        # same as `ChannelGuildMainBase`'s. Keep this function here for reference.
+        return ChannelGuildMainBase.to_data(self)

@@ -12,21 +12,22 @@ from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_int_options, \
     preconvert_bool
-from ..utils import timestamp_to_datetime
+from ..utils import timestamp_to_datetime, datetime_to_timestamp
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
 from .channel_text_base import ChannelTextBase
+from . import channel_types as CHANNEL_TYPES
 
 
 AUTO_ARCHIVE_DEFAULT = 3600
 AUTO_ARCHIVE_OPTIONS = frozenset((3600, 86400, 259200, 604800))
 
 CHANNEL_THREAD_NAMES = {
-     9: None,
-    10: 'announcements',
-    11: 'public',
-    12: 'private',
+    CHANNEL_TYPES.thread: None,
+    CHANNEL_TYPES.guild_thread_announcements: 'announcements',
+    CHANNEL_TYPES.guild_thread_public: 'public',
+    CHANNEL_TYPES.guild_thread_private: 'private',
 }
 
 @export
@@ -91,10 +92,14 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     __slots__ = ('archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode',
         'thread_users', 'type')
     
-    DEFAULT_TYPE = 12
-    ORDER_GROUP = 9
+    DEFAULT_TYPE = CHANNEL_TYPES.guild_thread_private
+    ORDER_GROUP = CHANNEL_TYPES.thread
     INTERCHANGE = ()
-    REPRESENTED_TYPES = (10, 11, 12,)
+    REPRESENTED_TYPES = (
+        CHANNEL_TYPES.guild_thread_announcements,
+        CHANNEL_TYPES.guild_thread_public,
+        CHANNEL_TYPES.guild_thread_private,
+    )
     
     def __new__(cls, data, client, guild_id):
         """
@@ -500,7 +505,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     def precreate(cls, channel_id, **kwargs):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
-        the precrated channel will be picked up. If an already existing channel would be precreated, returns that
+        the precreated channel will be picked up. If an already existing channel would be precreated, returns that
         instead and updates that only, if that is a partial channel.
         
         Parameters
@@ -612,3 +617,35 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
                 setattr(self, *item)
         
         return self
+    
+    
+    @copy_docs(ChannelGuildBase.to_data)
+    def to_data(self):
+        data = ChannelGuildBase.to_data(self)
+        
+        slowmode = self.slowmode
+        if slowmode:
+            data['rate_limit_per_user'] = slowmode
+        
+        owner_id = self.owner_id
+        if owner_id:
+            data['owner_id'] = str(owner_id)
+        
+        thread_data = {}
+        thread_data['thread_metadata'] = thread_data
+        
+        thread_data['archived'] = self.archived
+        
+        thread_data['auto_archive_duration'] = self.auto_archive_after//60
+        
+        archive_timestamp = self.archive_timestamp
+        if (archive_timestamp is not None):
+            archive_timestamp = datetime_to_timestamp(archive_timestamp)
+        thread_data['archive_timestamp'] = archive_timestamp
+        
+        thread_data['locked'] = not self.open
+        
+        if self.type == CHANNEL_TYPES.guild_thread_private:
+            thread_data['invitable'] = self.invitable
+        
+        return data

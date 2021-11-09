@@ -6014,7 +6014,7 @@ class Client(ClientUserPBase):
     async def guild_create(self, name, *, icon=None, roles=None, channels=None, afk_channel_id=None,
             system_channel_id=None, afk_timeout=None, region=VoiceRegion.eu_central,
             verification_level=VerificationLevel.medium, message_notification=MessageNotificationLevel.only_mentions,
-            content_filter=ContentFilterLevel.disabled):
+            content_filter=ContentFilterLevel.disabled, boost_progress_bar_enabled=None):
         """
         Creates a guild with the given parameter. Bot accounts can create guilds only when they have less than 10.
         User account guild limit is 100, meanwhile staff guild limit is 200.
@@ -6047,6 +6047,8 @@ class Client(ClientUserPBase):
             The message notification level of the new guild.
         content_filter : ``ContentFilterLevel`` or `int`, Optional (Keyword only)
             The content filter level of the guild.
+        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+            Whether the guild has the boost progress bar should be enabled.
         
         Returns
         -------
@@ -6072,6 +6074,7 @@ class Client(ClientUserPBase):
             - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
             - If `afk-timeout` was not given as `int` instance.
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
+            - If `boost_progress_bar_enabled` was not given as `bool` instance.
         """
         if __debug__:
             if self.is_bot:
@@ -6191,9 +6194,19 @@ class Client(ClientUserPBase):
             
             data['afk_timeout'] = afk_timeout
         
+        if (boost_progress_bar_enabled is not None):
+            if __debug__:
+                if not isinstance(boost_progress_bar_enabled, bool):
+                    raise AssertionError('`boost_progress_bar_enabled` can be given as `bool` instance, got '
+                        f'{boost_progress_bar_enabled.__class__.__name__}.')
+            
+            data['premium_progress_bar_enabled'] = boost_progress_bar_enabled
+        
+        
         data = await self.http.guild_create(data)
         # we can create only partial, because the guild data is not completed usually
         return create_partial_guild_from_data(data)
+    
     
     async def guild_prune(self, guild, days, *, roles=None, count=False, reason=None):
         """
@@ -6350,10 +6363,12 @@ class Client(ClientUserPBase):
         data = await self.http.guild_prune_estimate(guild_id, data)
         return data.get('pruned', None)
     
+    
     async def guild_edit(self, guild, *, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
             afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
             afk_timeout=None, verification_level=None, content_filter=None, message_notification=None, description=...,
-            preferred_locale=None, system_channel_flags=None, add_feature=None, remove_feature=None, reason=None):
+            preferred_locale=None, system_channel_flags=None, add_feature=None, remove_feature=None,
+            boost_progress_bar_enabled=None, reason=None):
         """
         Edits the guild with the given parameters.
         
@@ -6414,6 +6429,8 @@ class Client(ClientUserPBase):
             If `guild` is given as an id, then `add_feature` should contain all the features of the guild to set.
         remove_feature : (`str`, ``GuildFeature``) or (`iterable` of (`str`, ``GuildFeature``)), Optional (Keyword only)
             Guild feature(s) to remove from the guild's.
+        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+            Whether the guild has the boost progress bar should be enabled.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
@@ -6447,6 +6464,7 @@ class Client(ClientUserPBase):
             - If `afk_timeout` was not given as `int` instance.
             - If `system_channel_flags` was not given as `SystemChannelFlag` or as other `int` instance.
             - If `preferred_locale` was not given as `str` instance.
+            - If `boost_progress_bar_enabled` was not given as `bool` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6819,6 +6837,15 @@ class Client(ClientUserPBase):
                 break # End GOTO
             
             data['features'] = features
+        
+        
+        if (boost_progress_bar_enabled is not None):
+            if __debug__:
+                if not isinstance(boost_progress_bar_enabled, bool):
+                    raise AssertionError('`boost_progress_bar_enabled` can be given as `bool` instance, got '
+                        f'{boost_progress_bar_enabled.__class__.__name__}.')
+            
+            data['premium_progress_bar_enabled'] = boost_progress_bar_enabled
         
         
         await self.http.guild_edit(guild_id, data, reason)

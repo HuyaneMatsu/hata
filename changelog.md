@@ -7,6 +7,8 @@
 - Add `Guild.boost_progress_bar_enabled`.
 - Add `boost_progress_bar_enabled` transformer to audit logs.
 - Add `boost_progress_bar_enabled` parameter to `Guild.precreate`.
+- Add `boost_progress_bar_enabled` parameter to `Client.guild_edit`.
+- Add `boost_progress_bar_enabled` parameter to `Client.guild_create`.
 
 ## 1.1.119 *\[2021-11-09\]*
 

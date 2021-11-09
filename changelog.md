@@ -1,4 +1,6 @@
-## 1.1.119 *\[2021-11-??\]*
+## 1.1.119 *\[2021-11-09\]*
+
+#### Improvements
 
 - Add `UserBase.to_data`.
 - Add `MessageActivity.to_data`.
@@ -24,6 +26,10 @@
 - Add `ChannelVoice.to_data`.
 - Add `ChannelStage.to_data`.
 - Add `ChannelThread.to_data`.
+
+#### Bug Fixes
+
+- `log_time_converter` could return value of incorrect type. (Al_Loiz \[ICU\]#5392) (from 1.1.117)
 
 ## 1.1.118 *\[2021-11-05\]*
 

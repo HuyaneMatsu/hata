@@ -387,8 +387,8 @@ def log_time_converter(value):
     if isinstance(value, DiscordEntity):
         return value.id
     
-    if type(value) is datetime:
-        return (value)
+    if isinstance(value, datetime):
+        return datetime_to_id(value)
     
     raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
         f'`{value.__class__.__name__}`.')

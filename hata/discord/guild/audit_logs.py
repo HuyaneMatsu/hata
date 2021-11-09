@@ -47,6 +47,7 @@ class AuditLog:
         webhooks, meanwhile the values are the values themselves.
     """
     __slots__ = ('entries', 'guild', 'integrations', 'threads', 'users', 'webhooks')
+    
     def __init__(self, data, guild):
         """
         Creates an ``AuditLog`` instance from the data received from Discord.
@@ -843,6 +844,13 @@ def transform_bool__separated(name, data):
     return AuditLogChange('separated', before, after)
 
 
+def transform_bool__boost_progress_bar_enabled(name, data):
+    before = data.get('old_value', None)
+    after = data.get('new_value', None)
+    
+    return AuditLogChange('boost_progress_bar_enabled', before, after)
+
+
 def transform_channel(name, data):
     name = name[:-3]
     
@@ -1236,6 +1244,7 @@ TRANSFORMERS = {
     'permission_overwrites' : transform_overwrites,
     'permissions': transform_deprecated if API_VERSION in (6, 7) else transform_permission,
     'permissions_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
+    'premium_progress_bar_enabled': transform_bool__boost_progress_bar_enabled,
     'public_updates_channel_id' : transform_snowflake,
     'rate_limit_per_user': transform_int__slowmode,
     'region': transform_region,
@@ -1287,7 +1296,7 @@ del transform_scheduled_event_status
 del transform_scheduled_event_entity_type
 del transform_snowflake_array
 del transform_unicode_emoji
-
+del transform_bool__boost_progress_bar_enabled
 
 class AuditLogChange:
     """

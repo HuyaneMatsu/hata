@@ -1,3 +1,13 @@
+## 1.1.120 *\[2021-11-??\]*
+
+#### Improvements
+
+- Add `GuildFeature.internal_employee_only`.
+- Add `GuildFeature.channel_banners`.
+- Add `Guild.boost_progress_bar_enabled`.
+- Add `boost_progress_bar_enabled` transformer to audit logs.
+- Add `boost_progress_bar_enabled` parameter to `Guild.precreate`.
+
 ## 1.1.119 *\[2021-11-09\]*
 
 #### Improvements

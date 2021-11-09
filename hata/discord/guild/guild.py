@@ -19,7 +19,7 @@ from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR
 from ..emoji import Emoji
 from ..oauth2.helpers import parse_preferred_locale, DEFAULT_LOCALE
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
+from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type, preconvert_bool
 from .preinstanced import GuildFeature, VoiceRegion, VerificationLevel, MessageNotificationLevel, MFA, \
     ContentFilterLevel, NsfwLevel
 from ..sticker import Sticker, StickerFormat
@@ -120,6 +120,8 @@ class Guild(DiscordEntity, immortal=True):
         The guild's banner's hash in `uint128`.
     banner_type : ``IconType``
         The guild's banner's type.
+    boost_progress_bar_enabled : `bool`
+        Whether the guild has the boost progress bar enabled.
     booster_count : `int`
         The total number of boosts of the guild.
     channels : `dict` of (`int`, ``ChannelGuildBase`` instance) items
@@ -221,11 +223,11 @@ class Guild(DiscordEntity, immortal=True):
     - ``.widget_enabled``
     """
     __slots__ = ('_boosters', '_permission_cache', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
-        'approximate_user_count', 'available', 'booster_count', 'channels', 'clients', 'content_filter', 'description',
-        'emojis', 'features', 'is_large', 'max_presences', 'max_users', 'max_video_channel_users',
-        'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
-        'public_updates_channel_id', 'region', 'roles', 'roles', 'rules_channel_id', 'stages', 'stickers',
-        'system_channel_id', 'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code',
+        'approximate_user_count', 'available', 'boost_progress_bar_enabled', 'booster_count', 'channels', 'clients',
+        'content_filter', 'description', 'emojis', 'features', 'is_large', 'max_presences', 'max_users',
+        'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale',
+        'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles', 'rules_channel_id', 'stages',
+        'stickers', 'system_channel_id', 'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code',
         'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled')
     
     banner = IconSlot(
@@ -459,6 +461,9 @@ class Guild(DiscordEntity, immortal=True):
             
             > Mutually exclusive with the `banner` parameter.
         
+        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+            Whether the guild has the boost progress bar enabled.
+        
         invite_splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
             The guild's invite splash.
             
@@ -540,10 +545,9 @@ class Guild(DiscordEntity, immortal=True):
             cls.discovery_splash.preconvert(kwargs, processable)
             
             for attribute_name, attribute_type in (
-                    ('region', VoiceRegion),
-                    ('nsfw_level', NsfwLevel),
-                        ):
-                
+                ('region', VoiceRegion),
+                ('nsfw_level', NsfwLevel),
+            ):
                 try:
                     attribute_value = kwargs.pop(attribute_name)
                 except KeyError:
@@ -551,6 +555,14 @@ class Guild(DiscordEntity, immortal=True):
                 else:
                     attribute_value = preconvert_preinstanced_type(attribute_value, attribute_name, attribute_type)
                     processable.append((attribute_name, attribute_value))
+            
+            try:
+                boost_progress_bar_enabled = kwargs.pop('boost_progress_bar_enabled')
+            except KeyError:
+                pass
+            else:
+                boost_progress_bar_enabled = preconvert_bool(boost_progress_bar_enabled, 'boost_progress_bar_enabled')
+                processable.append(('boost_progress_bar_enabled', boost_progress_bar_enabled))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -598,6 +610,7 @@ class Guild(DiscordEntity, immortal=True):
         self.available = False
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
+        self.boost_progress_bar_enabled = False
         self.booster_count = -1
         self.clients = []
         self.content_filter = ContentFilterLevel.disabled
@@ -842,11 +855,7 @@ class Guild(DiscordEntity, immortal=True):
                 yield VOICE_STATE_LEAVE, voice_state, old_channel_id
             elif old_channel_id != new_channel_id:
                 yield VOICE_STATE_MOVE, voice_state, old_channel_id
-            
-
-            
-            
-        
+    
     
     def _update_voice_state_restricted(self, data, user):
         """
@@ -1784,69 +1793,71 @@ class Guild(DiscordEntity, immortal=True):
         
         Returned Data Structure
         -----------------------
-        +---------------------------+-------------------------------+
-        | Keys                      | Values                        |
-        +===========================+===============================+
-        | afk_channel_id            | `int`                         |
-        +---------------------------+-------------------------------+
-        | afk_timeout               | `int`                         |
-        +---------------------------+-------------------------------+
-        | available                 | `bool`                        |
-        +---------------------------+-------------------------------+
-        | banner                    | ``Icon``                      |
-        +---------------------------+-------------------------------+
-        | booster_count             | `int`                         |
-        +---------------------------+-------------------------------+
-        | content_filter            | ``ContentFilterLevel``        |
-        +---------------------------+-------------------------------+
-        | description               | `None` or `str`               |
-        +---------------------------+-------------------------------+
-        | discovery_splash          | ``Icon``                      |
-        +---------------------------+-------------------------------+
-        | features                  | `list` of ``GuildFeature``    |
-        +---------------------------+-------------------------------+
-        | icon                      | ``Icon``                      |
-        +---------------------------+-------------------------------+
-        | invite_splash             | ``Icon``                      |
-        +---------------------------+-------------------------------+
-        | max_presences             | `int`                         |
-        +---------------------------+-------------------------------+
-        | max_users                 | `int`                         |
-        +---------------------------+-------------------------------+
-        | max_video_channel_users   | `int`                         |
-        +---------------------------+-------------------------------+
-        | message_notification      | ``MessageNotificationLevel``  |
-        +---------------------------+-------------------------------+
-        | mfa                       | ``MFA``                       |
-        +---------------------------+-------------------------------+
-        | name                      | `str`                         |
-        +---------------------------+-------------------------------+
-        | nsfw_level                | `NsfwLevel`                   |
-        +---------------------------+-------------------------------+
-        | owner_id                  | `int`                         |
-        +---------------------------+-------------------------------+
-        | preferred_locale          | `str`                         |
-        +---------------------------+-------------------------------+
-        | premium_tier              | `int`                         |
-        +---------------------------+-------------------------------+
-        | public_updates_channel_id | `int`                         |
-        +---------------------------+-------------------------------+
-        | region                    | ``VoiceRegion``               |
-        +---------------------------+-------------------------------+
-        | rules_channel_id          | `int`                         |
-        +---------------------------+-------------------------------+
-        | system_channel_id         | `int`                         |
-        +---------------------------+-------------------------------+
-        | system_channel_flags      | ``SystemChannelFlag``         |
-        +---------------------------+-------------------------------+
-        | vanity_code               | `None` or `str`               |
-        +---------------------------+-------------------------------+
-        | verification_level        | ``VerificationLevel``         |
-        +---------------------------+-------------------------------+
-        | widget_channel_id         | `int`                         |
-        +---------------------------+-------------------------------+
-        | widget_enabled            | `bool`                        |
-        +---------------------------+-------------------------------+
+        +-------------------------------+-------------------------------+
+        | Keys                          | Values                        |
+        +===============================+===============================+
+        | afk_channel_id                | `int`                         |
+        +-------------------------------+-------------------------------+
+        | afk_timeout                   | `int`                         |
+        +-------------------------------+-------------------------------+
+        | available                     | `bool`                        |
+        +-------------------------------+-------------------------------+
+        | banner                        | ``Icon``                      |
+        +-------------------------------+-------------------------------+
+        | boost_progress_bar_enabled    | `bool`                        |
+        +-------------------------------+-------------------------------+
+        | booster_count                 | `int`                         |
+        +-------------------------------+-------------------------------+
+        | content_filter                | ``ContentFilterLevel``        |
+        +-------------------------------+-------------------------------+
+        | description                   | `None` or `str`               |
+        +-------------------------------+-------------------------------+
+        | discovery_splash              | ``Icon``                      |
+        +-------------------------------+-------------------------------+
+        | features                      | `list` of ``GuildFeature``    |
+        +-------------------------------+-------------------------------+
+        | icon                          | ``Icon``                      |
+        +-------------------------------+-------------------------------+
+        | invite_splash                 | ``Icon``                      |
+        +-------------------------------+-------------------------------+
+        | max_presences                 | `int`                         |
+        +-------------------------------+-------------------------------+
+        | max_users                     | `int`                         |
+        +-------------------------------+-------------------------------+
+        | max_video_channel_users       | `int`                         |
+        +-------------------------------+-------------------------------+
+        | message_notification          | ``MessageNotificationLevel``  |
+        +-------------------------------+-------------------------------+
+        | mfa                           | ``MFA``                       |
+        +-------------------------------+-------------------------------+
+        | name                          | `str`                         |
+        +-------------------------------+-------------------------------+
+        | nsfw_level                    | `NsfwLevel`                   |
+        +-------------------------------+-------------------------------+
+        | owner_id                      | `int`                         |
+        +-------------------------------+-------------------------------+
+        | preferred_locale              | `str`                         |
+        +-------------------------------+-------------------------------+
+        | premium_tier                  | `int`                         |
+        +-------------------------------+-------------------------------+
+        | public_updates_channel_id     | `int`                         |
+        +-------------------------------+-------------------------------+
+        | region                        | ``VoiceRegion``               |
+        +-------------------------------+-------------------------------+
+        | rules_channel_id              | `int`                         |
+        +-------------------------------+-------------------------------+
+        | system_channel_id             | `int`                         |
+        +-------------------------------+-------------------------------+
+        | system_channel_flags          | ``SystemChannelFlag``         |
+        +-------------------------------+-------------------------------+
+        | vanity_code                   | `None` or `str`               |
+        +-------------------------------+-------------------------------+
+        | verification_level            | ``VerificationLevel``         |
+        +-------------------------------+-------------------------------+
+        | widget_channel_id             | `int`                         |
+        +-------------------------------+-------------------------------+
+        | widget_enabled                | `bool`                        |
+        +-------------------------------+-------------------------------+
         """
         old_attributes = {}
         
@@ -2046,6 +2057,11 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['nsfw_level'] = self.nsfw_level
             self.nsfw_level = nsfw_level
         
+        boost_progress_bar_enabled = data.get('premium_progress_bar_enabled', False)
+        if self.boost_progress_bar_enabled != boost_progress_bar_enabled:
+            old_attributes['boost_progress_bar_enabled'] = self.boost_progress_bar_enabled
+            self.boost_progress_bar_enabled = boost_progress_bar_enabled
+        
         self.self._update_counts_only(data)
         
         return old_attributes
@@ -2179,6 +2195,8 @@ class Guild(DiscordEntity, immortal=True):
         self.preferred_locale = parse_preferred_locale(data)
         
         self.nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
+        
+        self.boost_progress_bar_enabled = data.get('premium_progress_bar_enabled', False)
         
         self._update_counts_only(data)
     

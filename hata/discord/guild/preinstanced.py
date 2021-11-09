@@ -517,6 +517,8 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+-----------------------------------+
     | banner                        | banner                            | BANNER                            |
     +-------------------------------+-----------------------------------+-----------------------------------+
+    | channel_banners               | channel banners                   | CHANNEL_BANNER                    |
+    +-------------------------------+-----------------------------------+-----------------------------------+
     | commerce                      | commerce                          | COMMERCE                          |
     +-------------------------------+-----------------------------------+-----------------------------------+
     | community                     | community                         | COMMUNITY                         |
@@ -530,6 +532,8 @@ class GuildFeature(PreinstancedBase):
     | featurable                    | featurable                        | FEATURABLE                        |
     +-------------------------------+-----------------------------------+-----------------------------------+
     | hub                           | hub                               | HUB                               |
+    +-------------------------------+-----------------------------------+-----------------------------------+
+    | internal_employee_only        | internal employee only            | INTERNAL_EMPLOYEE_ONLY            |
     +-------------------------------+-----------------------------------+-----------------------------------+
     | invite_splash                 | invite splash                     | INVITE_SPLASH                     |
     +-------------------------------+-----------------------------------+-----------------------------------+
@@ -613,6 +617,7 @@ class GuildFeature(PreinstancedBase):
     animated_icon = P('ANIMATED_ICON', 'animated icon')
     announcement_channels = P('NEWS', 'announcement channels')
     banner = P('BANNER', 'banner')
+    channel_banners = P('CHANNEL_BANNER', 'channel banners')
     commerce = P('COMMERCE', 'commerce')
     community = P('COMMUNITY', 'community')
     discoverable = P('DISCOVERABLE', 'discoverable')
@@ -620,6 +625,7 @@ class GuildFeature(PreinstancedBase):
     discoverable_enabled_before = P('ENABLED_DISCOVERABLE_BEFORE', 'discoverable enabled before')
     featurable = P('FEATURABLE', 'featurable')
     hub = P('HUB', 'hub')
+    internal_employee_only = P('INTERNAL_EMPLOYEE_ONLY', 'internal employee only')
     invite_splash = P('INVITE_SPLASH', 'invite splash')
     member_list_disabled = P('MEMBER_LIST_DISABLED', 'member list disabled')
     monetization_enabled = P('MONETIZATION_ENABLED', 'monetization enabled')

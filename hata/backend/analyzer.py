@@ -86,29 +86,30 @@ class Parameter:
     
     def __repr__(self):
         """Returns the parameter's representation."""
-        result = []
-        result.append('<')
-        result.append(self.__class__.__name__)
-        result.append(' ')
+        repr_parts = []
+        repr_parts.append('<')
+        repr_parts.append(self.__class__.__name__)
+        repr_parts.append(' ')
         
         if self.reserved:
-            result.append('reserved, ')
+            repr_parts.append('reserved, ')
         
-        result.append(PARAMETER_TYPE_NAMES[self.positionality])
+        repr_parts.append(PARAMETER_TYPE_NAMES[self.positionality])
         
-        result.append(', name=')
-        result.append(repr(self.name))
+        repr_parts.append(', name=')
+        repr_parts.append(repr(self.name))
         
         if self.has_default:
-            result.append(', default=')
-            result.append(repr(self.default))
+            repr_parts.append(', default=')
+            repr_parts.append(repr(self.default))
         
         if self.has_annotation:
-            result.append(', annotation=')
-            result.append(repr(self.annotation))
+            repr_parts.append(', annotation=')
+            repr_parts.append(repr(self.annotation))
         
-        result.append('>')
-        return ''.join(result)
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
     
     def is_positional_only(self):
         """
@@ -262,51 +263,53 @@ class CallableAnalyzer:
     
     def __repr__(self):
         """Returns the callable analyzer's representation."""
-        result = []
-        result.append('<')
-        result.append(self.__class__.__name__)
+        repr_parts = []
+        repr_parts.append('<')
+        repr_parts.append(self.__class__.__name__)
         
         if self.is_async():
-            result.append(' async')
+            repr_parts.append(' async')
         elif self.is_async_generator():
-            result.append(' async generator')
+            repr_parts.append(' async generator')
         elif self.can_instance_to_async_callable():
-            result.append(' instance async')
+            repr_parts.append(' instance async')
         elif self.can_instance_to_async_generator():
-            result.append(' instance async generator')
+            repr_parts.append(' instance async generator')
         
         method_allocation = self.method_allocation
         if method_allocation:
-            result.append(' method')
+            repr_parts.append(' method')
             if method_allocation!=1:
-                result.append(' (')
-                result.append(repr(method_allocation))
-                result.append(')')
+                repr_parts.append(' (')
+                repr_parts.append(repr(method_allocation))
+                repr_parts.append(')')
         
-        result.append(' ')
+        repr_parts.append(' ')
         callable_ = self.callable
-        result.append(repr(callable_))
+        repr_parts.append(repr(callable_))
         real_function = self.real_function
         if (callable_ is not real_function):
-            result.append(' (')
-            result.append(repr(real_function))
-            result.append(')')
+            repr_parts.append(' (')
+            repr_parts.append(repr(real_function))
+            repr_parts.append(')')
         
-        result.append(', parameters=')
-        result.append(repr(self.parameters))
+        repr_parts.append(', parameters=')
+        repr_parts.append(repr(self.parameters))
         
         args_parameter = self.args_parameter
         if (args_parameter is not None):
-            result.append(', args=')
-            result.append(repr(args_parameter))
+            repr_parts.append(', args=')
+            repr_parts.append(repr(args_parameter))
         
         kwargs_parameter = self.kwargs_parameter
         if (kwargs_parameter is not None):
-            result.append(', kwargs=')
-            result.append(repr(kwargs_parameter))
+            repr_parts.append(', kwargs=')
+            repr_parts.append(repr(kwargs_parameter))
         
-        result.append('>')
-        return ''.join(result)
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+    
     
     def __new__(cls, callable_, as_method=False):
         """
@@ -454,7 +457,7 @@ class CallableAnalyzer:
             accepts_args = real_function.__code__.co_flags&CO_VARARGS
             keyword_only_parameter_count = real_function.__code__.co_kwonlyargcount
             accepts_kwargs = real_function.__code__.co_flags&CO_VARKEYWORDS
-            positional_only_argcount = getattr(real_function.__code__, 'co_posonlyargcount', 0)
+            positional_only_parameter_count = getattr(real_function.__code__, 'co_posonlyargcount', 0)
             default_parameter_values = real_function.__defaults__
             default_keyword_only_parameter_values = real_function.__kwdefaults__
             annotations = getattr(real_function, '__annotations__', None)
@@ -533,7 +536,7 @@ class CallableAnalyzer:
                     parameter.has_default = True
                     parameter.default = default
                 
-                if index<positional_only_argcount:
+                if index<positional_only_parameter_count:
                     parameter.positionality = PARAMETER_TYPE_POSITIONAL_ONLY
                 else:
                     parameter.positionality = PARAMETER_TYPE_POSITIONAL_AND_KEYWORD

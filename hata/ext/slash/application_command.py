@@ -917,7 +917,7 @@ class SlasherApplicationCommand:
         
         if route_to:
             name = route_name(name, route_to)
-            name = [raw_name_to_display(sub_name) for sub_name in name]
+            name = [raw_name_to_display(check_name(command, sub_name)) for sub_name in name]
             
             default_description = _generate_description_from(command, None, None)
             show_for_invoking_user_only = route_value(show_for_invoking_user_only, route_to)

@@ -10,7 +10,8 @@ except ImportError:
 from functools import partial as partial_func
 
 from ...discord.interaction.components import COMPONENT_CUSTOM_ID_LENGTH_MAX
-from ...discord.events.handling_helpers import route_value, Router, create_event_from_class
+from ...discord.events.handling_helpers import route_value, Router, create_event_from_class, check_name, route_name
+
 from .wrappers import SlasherCommandWrapper
 from .utils import _check_maybe_route
 from .converters import get_component_command_parameter_converters, RegexMatcher, \
@@ -18,10 +19,10 @@ from .converters import get_component_command_parameter_converters, RegexMatcher
 from .responding import process_command_coroutine
 from .exceptions import handle_command_exception, test_exception_handler, _register_exception_handler
 
-SLASH_COMMAND_PARAMETER_NAMES = ('command', 'custom_id')
+COMPONENT_COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name')
 
-SLASH_COMMAND_NAME_NAME = None
-SLASH_COMMAND_COMMAND_NAME = 'command'
+COMPONENT_COMMAND_NAME_NAME = 'name'
+COMPONENT_COMMAND_COMMAND_NAME = 'command'
 
 def _validate_custom_id(custom_id):
     """
@@ -98,6 +99,38 @@ def _validate_custom_ids(custom_id):
             f'{custom_id.__class__.__name__}.')
     
     return custom_ids
+
+
+def _validate_name(name):
+    """
+    Validates the given name.
+    
+    Parameters
+    ----------
+    name : `None` or `str`
+        A command's respective name.
+    
+    Returns
+    -------
+    name : `None` or `str`
+        The validated name.
+    
+    Raises
+    ------
+    TypeError
+        If `name` is not given as `None` neither as `str` instance.
+    """
+    if name is not None:
+        name_type = name.__class__
+        if name_type is str:
+            pass
+        elif issubclass(name_type, str):
+            name = str(name)
+        else:
+            raise TypeError(f'`name` can be only given as `None` or as `str` instance, got {name_type.__name__}; '
+                f'{name!r}.')
+    
+    return name
 
 
 def split_and_check_satisfaction(custom_ids, parameter_converters):
@@ -178,9 +211,13 @@ class ComponentCommand:
         The custom id-s to wait for.
     _regex_custom_ids : `None` or `tuple` of `re.Pattern`.
         Regex pattern to match custom-ids.
+    name : `str`
+        The component commands name.
+        
+        Only used for debugging.
     """
     __slots__ = ('_command_function', '_exception_handlers', '_parent_reference', '_parameter_converters',
-        '_regex_custom_ids', '_string_custom_ids')
+        '_regex_custom_ids', '_string_custom_ids', 'name')
     
     
     @classmethod
@@ -204,11 +241,11 @@ class ComponentCommand:
         ValueError
             If any attribute's value is incorrect.
         """
-        return create_event_from_class(cls, klass, SLASH_COMMAND_PARAMETER_NAMES, SLASH_COMMAND_NAME_NAME,
-            SLASH_COMMAND_COMMAND_NAME)
+        return create_event_from_class(cls, klass, COMPONENT_COMMAND_PARAMETER_NAMES, COMPONENT_COMMAND_NAME_NAME,
+            COMPONENT_COMMAND_COMMAND_NAME)
     
     
-    def __new__(cls, func, custom_id):
+    def __new__(cls, func, custom_id, name=None):
         """
         Creates a new ``ComponentCommand`` instance with the given parameters
         
@@ -218,6 +255,8 @@ class ComponentCommand:
             The function used as the command when using the respective slash command.
         custom_id : `str`, (`list` or `set`) of `str`, `tuple` of (`str`, (`list` or `set`) of `str`)
             Custom id to match by the component command.
+        name : `str` or `None`, Optional
+            The name of the component command.
         
         Returns
         -------
@@ -229,7 +268,8 @@ class ComponentCommand:
             - If `func` is not async callable, neither cannot be instanced to async.
             - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`
+            - If `func` accepts `**kwargs`.
+            - If `name` was not given neither as `None` or `str` instance.
             - If `custom_id`'s type is incorrect.
         ValueError:
             - If no `custom_id` was received.
@@ -243,16 +283,19 @@ class ComponentCommand:
         
         # Check for routing.
         route_to = 0
-        custom_id, route_to = _check_maybe_route('name', custom_id, route_to, _validate_custom_ids)
+        name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
+        custom_id, route_to = _check_maybe_route('custom_id', custom_id, route_to, _validate_custom_ids)
         
         command, parameter_converters = get_component_command_parameter_converters(command)
         
         if route_to:
             custom_id = route_value(custom_id, route_to)
+            name = route_name(name, route_to)
+            name = [check_name(command, sub_name) for sub_name in name]
             
             router = []
             
-            for custom_id in custom_id:
+            for custom_id, name in zip(custom_id, name):
                 string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, parameter_converters)
                 
                 self = object.__new__(cls)
@@ -262,6 +305,7 @@ class ComponentCommand:
                 self._regex_custom_ids = regex_custom_ids
                 self._parent_reference = None
                 self._exception_handlers = None
+                self.name = name
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -270,7 +314,10 @@ class ComponentCommand:
                 router.append(self)
             
             return Router(router)
+        
         else:
+            name = check_name(command, name)
+            
             string_custom_ids, regex_custom_ids = split_and_check_satisfaction(custom_id, parameter_converters)
             
             self = object.__new__(cls)
@@ -280,6 +327,7 @@ class ComponentCommand:
             self._regex_custom_ids = regex_custom_ids
             self._parent_reference = None
             self._exception_handlers = None
+            self.name = name
             
             if (wrappers is not None):
                 for wrapper in wrappers:
@@ -290,15 +338,12 @@ class ComponentCommand:
     
     def __repr__(self):
         """Returns the component command's representation."""
-        repr_parts = ['<', self.__class__.__name__]
+        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
         
         string_custom_ids = self._string_custom_ids
-        if (string_custom_ids is None):
-            field_added = False
-        else:
-            field_added = True
+        if (string_custom_ids is not None):
             
-            repr_parts.append(' string_custom_ids=[')
+            repr_parts.append(', string_custom_ids=[')
             index = 0
             limit = len(string_custom_ids)
             
@@ -317,10 +362,8 @@ class ComponentCommand:
         
         regex_custom_ids = self._regex_custom_ids
         if (regex_custom_ids is not None):
-            if field_added:
-                repr_parts.append(', ')
             
-            repr_parts.append(' regex_custom_ids=[')
+            repr_parts.append(', regex_custom_ids=[')
             index = 0
             limit = len(regex_custom_ids)
             

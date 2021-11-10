@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('AsyncLifoQueue', 'AsyncQueue', 'CancelledError', 'Event', 'Future', 'FutureAsyncWrapper',
     'FutureSyncWrapper', 'FutureWM', 'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task',
     'WaitContinuously', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout',

@@ -10,6 +10,17 @@
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_edit`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_create`.
 
+##### ext.slash
+- Add `ComponentCommand.name`.
+- Add `name` parameter to `ComponentCommand.__new__`.
+- `_render_application_command_exception` now uses `repr(command)`.
+
+#### Bug Fixes
+
+##### ext.slash
+- `CompoenntCommand.__new__` could raise exception with bad error message.
+- `SlasherApplicationCommand.__new__` could pass `None` to `raw_name_to_display` dropping `TypeError` if routing.
+
 ## 1.1.119 *\[2021-11-09\]*
 
 #### Improvements

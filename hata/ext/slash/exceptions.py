@@ -302,8 +302,11 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 pass
-            elif isinstance(err, DiscordException) and (
-                    (err.status == 500) or (err.code == ERROR_CODES.unknown_interaction)
+            elif (
+                isinstance(err, DiscordException) and (
+                    (err.status == 500) or
+                    (err.code == ERROR_CODES.unknown_interaction)
+                )
             ):
                 pass
             else:
@@ -328,12 +331,7 @@ async def _render_application_command_exception(client, command, exception):
     exception : `BaseException`
         The occurred exception.
     """
-    if isinstance(command, SlasherApplicationCommand):
-        command_name = command.name
-    else:
-        command_name = command.__class__.__name__
-    
-    await client.events.error(client, f'`Slasher` while calling `{command_name}`', exception)
+    await client.events.error(client, f'`Slasher` while calling `{command!r}`', exception)
 
 
 async def handle_command_exception(entity, client, interaction_event, exception):

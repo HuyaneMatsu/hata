@@ -1221,7 +1221,7 @@ def route_name(name, count):
     
     Returns
     -------
-    result : `list` of `str`
+    result : `list` of (`None` or `str`)
     
     Raises
     ------

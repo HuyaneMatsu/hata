@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
 __all__ = ('Formdata', )
 
 from io import IOBase
 from urllib.parse import urlencode
-from json import dumps as dump_to_json
 
 from .utils import multidict
 
@@ -47,6 +45,7 @@ class Formdata:
         self.is_multipart = False
         self.quote_fields = quote_fields
     
+    
     @classmethod
     def from_fields(cls, fields):
         """
@@ -87,7 +86,8 @@ class Formdata:
                 raise TypeError(f'`Formdata.from_fields` got unhandleable field: {fiend_type.__name__}; {field!r}.')
         
         return self
-        
+    
+    
     def add_field(self, name, value, content_type=None, filename=None, transfer_encoding=None):
         """
         Adds a field to the formdata.
@@ -156,6 +156,7 @@ class Formdata:
         
         self.fields.append((type_options, headers, value))
     
+    
     def _gen_form_urlencoded(self, encoding):
         """
         Generates `application/x-www-form-urlencoded` payload from the ``Formdata``'s fields.
@@ -180,6 +181,7 @@ class Formdata:
             content_type = f'application/x-www-form-urlencoded; charset={encoding}'
         
         return BytesPayload(urlencode(data, doseq=True, encoding=encoding).encode(), {'content_type': content_type})
+    
     
     def _gen_form_data(self, encoding):
         """
@@ -259,24 +261,10 @@ class Formdata:
         else:
             return self._gen_form_urlencoded(encoding)
     
-    def add_json(self, data):
-        """
-        Shortcut to add a json field to the ``Formdata``.
-        
-        Parameters
-        ----------
-        data : `Any`
-            Json serializable content.
-        """
-        if data:
-            type_options = multidict()
-            type_options['name'] = 'data_json'
-            data = dump_to_json(data, separators=(',', ':'), ensure_ascii=True)
-            self.fields.append((type_options, multidict(), data))
     
     def __repr__(self):
         """Returns the representation of the formdata."""
-        result = ['<', self.__class__.__name__, ' [']
+        repr_parts = ['<', self.__class__.__name__, ' [']
         
         fields = self.fields
         limit = len(fields)
@@ -284,22 +272,23 @@ class Formdata:
             index = 0
             while True:
                 type_options, headers, value = fields[index]
-                result.append('(')
-                result.append(repr(type_options))
-                result.append(', ')
-                result.append(repr(headers))
-                result.append(', ')
-                result.append(repr(value))
-                result.append(')')
+                repr_parts.append('(')
+                repr_parts.append(repr(type_options))
+                repr_parts.append(', ')
+                repr_parts.append(repr(headers))
+                repr_parts.append(', ')
+                repr_parts.append(repr(value))
+                repr_parts.append(')')
                 
                 index += 1
                 if index == limit:
                     break
                     
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
         
-        result.append(']>')
-        return ''.join(result)
+        repr_parts.append(']>')
+        
+        return ''.join(repr_parts)
     
     __str__ = __repr__

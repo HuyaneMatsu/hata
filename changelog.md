@@ -9,11 +9,18 @@
 - Add `boost_progress_bar_enabled` parameter to `Guild.precreate`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_edit`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_create`.
+- Add `DiscordException.sent_data`.
+- Add `DiscordException.recevied_data`.
 
 ##### ext.slash
 - Add `ComponentCommand.name`.
 - Add `name` parameter to `ComponentCommand.__new__`.
 - `_render_application_command_exception` now uses `repr(command)`.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `DiscordException.data`, use `.recevied_data` instead.
+- Rename `DiscordException._cr_code` to `._get_code`.
 
 #### Bug Fixes
 

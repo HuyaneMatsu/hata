@@ -1,5 +1,7 @@
 __all__ = ('DiscordException',)
 
+import warnings
+
 
 from ...backend.headers import RETRY_AFTER, DATE
 
@@ -49,7 +51,7 @@ class DiscordException(Exception):
     ----------
     response : ``ClientResponse``
         The http client response, what caused the error.
-    data : `Any`
+    received_data : `Any`
         Deserialized `json` response data if applicable.
     _messages : `None` or `list` of `str`
         Initially the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
@@ -58,7 +60,7 @@ class DiscordException(Exception):
         Initially the `._code` attribute is set to `None`, but first time when the `.code` property is accessed, it is
         parsed out. If the response data does not contains `code`, then this attribute is set to `0`.
     """
-    def __init__(self, response, data):
+    def __init__(self, response, received_data, sent_data):
         """
         Creates a new ``DiscordException``.
         
@@ -66,14 +68,28 @@ class DiscordException(Exception):
         ----------
         response : ``ClientResponse``
             The http client response, what caused the error.
-        data : `Any`
+        received_data : `Any`
             Deserialized `json` response data if applicable.
         """
         Exception.__init__(self)
         self.response = response
-        self.data = data
+        self.data = received_data
+        self.received_data = received_data
+        self.sent_data = sent_data
         self._messages = None
         self._code = None
+    
+    @property
+    def data(self):
+        """
+        Deprecated, please use ``.channel_thread_get_all_active`` instead.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}.data` is deprecated, and will be removed in 2022 January. '
+            f'Please use `.received_data` instead.',
+            FutureWarning)
+        
+        return self.received_data
     
     @property
     def messages(self):
@@ -109,7 +125,7 @@ class DiscordException(Exception):
         messages = []
         
         message_parts = []
-        data = self.data
+        data = self.received_data
         if type(data) is dict:
             message_base = data.get('message', '')
             error_datas = data.get('errors', None)
@@ -291,10 +307,11 @@ class DiscordException(Exception):
         """
         code = self._code
         if code is None:
-            code = self._cr_code()
+            code = self._get_code()
+        
         return code
     
-    def _cr_code(self):
+    def _get_code(self):
         """
         Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as
         well.
@@ -303,9 +320,9 @@ class DiscordException(Exception):
         -------
         error_code : `int`
         """
-        data = self.data
-        if type(data) is dict:
-            code = data.get('code', 0)
+        received_data = self.received_data
+        if isinstance(received_data, dict):
+            code = received_data.get('code', 0)
         else:
             code = 0
         

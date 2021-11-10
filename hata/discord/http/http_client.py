@@ -279,7 +279,7 @@ class DiscordHTTPClient(HTTPClient):
                 
                 if status == 429:
                     if 'code' in response_data: # Can happen at the case of rate limit ban
-                        raise DiscordException(response, response_data)
+                        raise DiscordException(response, response_data, data)
                     
                     retry_after = response_data.get('retry_after', 0.0)
                     if response_data.get('global', False):
@@ -298,7 +298,7 @@ class DiscordHTTPClient(HTTPClient):
                     continue
                 
                 lock.exit(response_headers)
-                raise DiscordException(response, response_data)
+                raise DiscordException(response, response_data, data)
     
     # client
     

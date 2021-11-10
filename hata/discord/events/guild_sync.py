@@ -9,7 +9,7 @@ from .core import PARSERS
 
 SYNC_REQUESTS = {}
 
-async def sync_task(queue_id, coro, queue):
+async def sync_task(queue_id, coroutine, queue):
     """
     Syncer task ensured if a guild related dispatch event fails, when any expected entity mentioned by it was not
     found.
@@ -20,7 +20,7 @@ async def sync_task(queue_id, coro, queue):
     ----------
     queue_id : `int`
         The respective guild's id to identify queued up unhandled dispatch event when de-sync happened.
-    coro : `coroutine`
+    coroutine : `coroutine`
         ``Client.guild_sync`` coroutine.
     queue : `list` of `tuple` (``Client``, `Any`, (`str` or `tuple` (`str`, `function`, `Any`)))
         A queue of events to call with the specified parameters.
@@ -35,7 +35,7 @@ async def sync_task(queue_id, coro, queue):
         the checker returned `True`.
     """
     try:
-        guild = await coro
+        guild = await coroutine
     except (DiscordException, ConnectionError):
         return
     else:

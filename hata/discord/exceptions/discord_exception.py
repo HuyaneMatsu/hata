@@ -2,7 +2,6 @@ __all__ = ('DiscordException',)
 
 import warnings
 
-
 from ...backend.headers import RETRY_AFTER, DATE
 
 from ..utils import parse_date_header_to_datetime, DATETIME_FORMAT_CODE

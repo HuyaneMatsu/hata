@@ -10,6 +10,8 @@ from ...backend.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_P
     USER_AGENT, AUTHORIZATION
 from ...backend.quote import quote
 from ...backend.event_loop import LOOP_TIME
+from ...backend.formdata import Formdata
+
 from ...env import API_VERSION
 
 from ..exceptions import DiscordException
@@ -23,6 +25,8 @@ from . import rate_limit_groups as RATE_LIMIT_GROUPS
 
 LIBRARY_USER_AGENT_BASE = 'Discord-client (HuyaneMatsu) Python'
 LIBRARY_USER_AGENT = LIBRARY_USER_AGENT_BASE
+
+NON_JSON_TYPES = (Formdata, bytes, type(None))
 
 @call
 def generate_user_agent():
@@ -187,8 +191,7 @@ class DiscordHTTPClient(HTTPClient):
         if not connector.closed:
             connector.close()
     
-    async def discord_request(self, handler, method, url,
-            data=None, params=None, headers=None, reason=None):
+    async def discord_request(self, handler, method, url, data=None, params=None, headers=None, reason=None):
         """
         Does a request towards Discord.
         
@@ -228,15 +231,15 @@ class DiscordHTTPClient(HTTPClient):
             # normal request
             headers = self.headers.copy()
             
-            if isinstance(data, (dict, list)):
+            if not isinstance(data, NON_JSON_TYPES):
                 headers[CONTENT_TYPE] = 'application/json'
                 data = to_json(data)
             
-            if reason is not None:
+            if (reason is not None):
                 headers[AUDIT_LOG_REASON] = quote(reason, safe='\ ')
         else:
             # bearer or webhook request
-            if isinstance(data, (dict, list)) and (CONTENT_TYPE not in headers):
+            if (CONTENT_TYPE not in headers) and (not isinstance(data, NON_JSON_TYPES)):
                 headers[CONTENT_TYPE] = 'application/json'
                 data = to_json(data)
         

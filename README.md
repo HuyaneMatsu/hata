@@ -40,16 +40,6 @@ Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrap
     Built in Python! Easy to code, easy to read, easy to maintain.
 
 
-<h1></h1>
-
-#### Why not hata?
-
-- Small community
-
-    Hata has a small but, slowly growing community. The chance of getting help outside of our
-    [cosy discord server](https://discord.gg/3cH2r5d) equals to zero.
-
-
 ## [Documentation](https://www.astil.dev/project/hata/docs/hata)
 
 The library reference is available [*here*](https://www.astil.dev/project/hata/docs/hata) & the tutorials are

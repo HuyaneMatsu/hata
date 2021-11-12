@@ -14,7 +14,7 @@
 - Add `ERROR_CODES.exactly_one_guild_id_parameter_is_required`.
 - Add `channel_banner_url` for future reference.
 - Add `channel_banner_url_as` for future reference.
-- Add `GuildProfile.timed_out_until`
+- Add `GuildProfile.timed_out_until`.
 
 ##### ext.slash
 - Add `ComponentCommand.name`.

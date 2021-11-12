@@ -20,14 +20,6 @@ Why hata
 
     Completely relies on Python! Easy to read, easy to understand, easy to code.
 
-
-Why not hata
-------------
-- Small community
-    
-    Hata has a small and slowly increasing community. The chance of getting help outside of our
-    `cosy discord server:https://discord.gg/3cH2r5d` equals to zero.
-
 Usage
 -----
 

@@ -36,6 +36,8 @@ LOOP_TIME = module_time.monotonic
 LOOP_TIME_RESOLUTION = module_time.get_clock_info('monotonic').resolution
 del module_time
 
+export('LOOP_TIME', LOOP_TIME)
+
 class Handle:
     """
     Object returned by a callback registration method:

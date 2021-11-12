@@ -15,6 +15,7 @@
 - Add `channel_banner_url` for future reference.
 - Add `channel_banner_url_as` for future reference.
 - Add `GuildProfile.timed_out_until`.
+- Add `repeat_timeout.
 
 ##### ext.slash
 - Add `ComponentCommand.name`.

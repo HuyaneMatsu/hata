@@ -2,7 +2,7 @@ __all__ = ('AsyncLifoQueue', 'AsyncQueue', 'CancelledError', 'Event', 'Future', 
     'FutureSyncWrapper', 'FutureWM', 'Gatherer', 'InvalidStateError', 'Lock', 'ScarletExecutor', 'ScarletLock', 'Task',
     'WaitContinuously', 'WaitTillAll', 'WaitTillExc', 'WaitTillFirst', 'enter_executor', 'future_or_timeout',
     'is_awaitable', 'is_coroutine', 'is_coroutine_function', 'is_coroutine_generator',
-    'is_coroutine_generator_function', 'shield', 'skip_ready_cycle', 'sleep', )
+    'is_coroutine_generator_function', 'repeat_timeout', 'shield', 'skip_ready_cycle', 'sleep', )
 
 import sys, reprlib, linecache
 from types import GeneratorType, CoroutineType, AsyncGeneratorType, MethodType, FunctionType
@@ -15,7 +15,7 @@ from .analyzer import CO_ASYNC_GENERATOR, CO_COROUTINE_ALL, CO_GENERATOR, CO_ITE
 from .export import export, include
 
 EventThread = include('EventThread')
-
+LOOP_TIME = include('LOOP_TIME')
 
 class CancelledError(BaseException):
     """The Future or Task was cancelled."""
@@ -4183,13 +4183,14 @@ class _TimeoutHandleCanceller(_HandleCancellerBase):
         self.handler = None
         future.set_exception_if_pending(TimeoutError())
 
+
 def future_or_timeout(future, timeout):
     """
     If the given ``Future`` is not done till the given `timeout` occurs, set `TimeoutError` as it's exception.
     
     Parameters
     ----------
-    future : ``future`` instance
+    future : ``Future`` instance
         The future to set the timeout to.
     timeout : `float`
         The time after the given `future`'s exception is set as `TimeoutError`.
@@ -4219,6 +4220,119 @@ def future_or_timeout(future, timeout):
     
     callback.handler = handler
     future.add_done_callback(callback)
+
+
+class RepeatTimeoutHandler:
+    """
+    Handles `repeat_timeout` within the loop.
+    
+    Attributes
+    ----------
+    handle : `None` or ``TimerHandle``
+        The handle to cancel when the loop is over.
+    last_set : `float`
+        The last time when we repeated the timeout. Set as monotonic time. Defaults to `0.0` if was not set.
+    loop : ``EventThread``
+        The current event loop.
+    task : ``Task``
+        The currently running task.
+    timeout : `float`
+        The time to drop `TimeoutException` after.
+    """
+    __slots__ = ('handle', 'last_set', 'loop', 'task', 'timeout')
+    
+    def __init__(self, loop, task, timeout):
+        """
+        loop : ``EventThread``
+            The current event loop.
+        task : ``Task``
+            The currently running task.
+        timeout :
+            The time to drop `TimeoutException` after.
+        """
+        self.last_set = 0.0
+        self.loop = loop
+        self.task = task
+        self.timeout = timeout
+        self.handle = loop.call_later(timeout, self)
+    
+    def cancel(self):
+        """
+        Cancels the repeat timeout handler.
+        """
+        handle = self.handle
+        if (handle is not None):
+            self.handle = None
+            handle.cancel()
+    
+    def __call__(self):
+        """
+        Checks whether the repeat timeout handler timed out.
+        """
+        last_set = self.last_set
+        if last_set:
+            self.last_set = 0.0
+            handle = self.loop.call_at(last_set+self.timeout, self)
+        else:
+            handle = None
+            self.task.set_exception_if_pending(TimeoutError())
+        
+        self.handle = handle
+
+
+def repeat_timeout(timeout):
+    """
+    Repeats timeout on the code executed within a context of a for loop.
+    
+    The timeout it re-set with each iteration.
+    
+    The main difference between ``repeat_timeout` and ``future_or_timeout`` is, that this only renews the timeout if
+    expired, saving a lot of resources on fast running loops compared to their timeout duration.
+    
+    This function is an iterable generator.
+    
+    Usage
+    -----
+    ```py
+    try:
+        for _ in repeat_timeout(10.0):
+            await my_task(...)
+    except TimeoutError:
+        # my_task(...) did not complete within timeout.
+    ```
+    
+    Parameters
+    ----------
+    timeout : `float`
+        The timeout duration to drop `TimeoutException` after.
+    
+    Yields
+    ------
+    none : `None`
+    
+    Raises
+    ------
+    RuntimeError
+        - Called from outside of an ``EventThread``.
+        - Called from outside of a ``Task``.
+    """
+    thread = current_thread()
+    if not isinstance(thread, EventThread):
+        raise RuntimeError(f'`repeat_timeout used outside of {EventThread.__name__}, at {thread!r}.')
+    
+    task = thread.current_task
+    if task is None:
+        raise RuntimeError(f'`repeat_timeout` used outside of a {Task.__name__}.')
+    
+    repeat_timeout_handler = RepeatTimeoutHandler(thread, task, timeout)
+    
+    try:
+        while True:
+            yield
+            repeat_timeout_handler.last_set = LOOP_TIME()
+    finally:
+        repeat_timeout_handler.cancel()
+
 
 class _FutureChainer:
     """
@@ -5348,7 +5462,8 @@ class enter_executor:
     """
     Async context manager for moving a ``Task``'s section's execution to an executor thread.
     
-    Usage:
+    Usage
+    -----
     ```py
     # Do async code
     async with enter_executor():

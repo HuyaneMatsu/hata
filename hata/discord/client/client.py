@@ -15611,6 +15611,8 @@ class Client(ClientUserPBase):
         +-------------------+-------------------------------+
         | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
+        | timed_out_until   | `None` ot `datetime`          |
+        +-------------------+-------------------------------+
         """
         try:
             profile = self.guild_profiles[guild.id]

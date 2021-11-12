@@ -1717,3 +1717,84 @@ def role_icon_url_as(role, ext=None, size=None):
             prefix = 'a_'
 
     return f'{CDN_ENDPOINT}/role-icons/{role.id}/{prefix}{role.icon_hash:0>32x}.{ext}{end}'
+
+
+def channel_banner_url(channel):
+    """
+    Returns the channel's banner's url. If the channel has no banner, then returns `None`.
+    
+    Parameters
+    ----------
+    channel : `object`
+        The respective channel.
+    
+    Returns
+    -------
+    url : `None` or `str`
+    """
+    banner_type = channel.banner_type
+    if banner_type is ICON_TYPE_NONE:
+        return None
+    
+    if banner_type is ICON_TYPE_STATIC:
+        prefix = ''
+        ext = 'png'
+    else:
+        prefix = 'a_'
+        ext = 'gif'
+    
+    return f'{CDN_ENDPOINT}/channel-banners/{channel.id}/{prefix}{channel.banner_hash:0>32x}.{ext}'
+
+
+def channel_banner_url_as(channel, ext=None, size=None):
+    """
+    Returns the channel's banner's url. If the channel has no banner, then returns `None`.
+    
+    Parameters
+    ----------
+    channel : `object`
+        The respective channel.
+    ext : `str`, Optional
+        The extension of the banner's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+    size : `int`, Optional
+        The preferred minimal size of the banner's url.
+    
+    Returns
+    -------
+    url : `None` or `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext` or `size` was not passed as any of the expected values.
+    """
+    banner_type = channel.banner_type
+    if banner_type is ICON_TYPE_NONE:
+        return None
+    
+    if size is None:
+        end = ''
+    elif size in VALID_ICON_SIZES:
+        end = f'?size={size}'
+    else:
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+    
+    if ext is None:
+        if banner_type is ICON_TYPE_STATIC:
+            prefix = ''
+            ext = 'png'
+        else:
+            prefix = 'a_'
+            ext = 'gif'
+    
+    else:
+        if banner_type is ICON_TYPE_STATIC:
+            if ext not in VALID_ICON_FORMATS:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+            prefix = ''
+        else:
+            if ext not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
+            prefix = 'a_'
+    
+    return f'{CDN_ENDPOINT}/channel-banners/{channel.id}/{prefix}{channel.banner_hash:0>32x}.{ext}{end}'

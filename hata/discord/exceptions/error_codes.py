@@ -411,6 +411,8 @@ These are the following:
 +-------------------------------------------------------+-----------+-----------+
 | sticker_animation_duration_exceeds_5_second           | 170007    | -         |
 +-------------------------------------------------------+-----------+-----------+
+| exactly_one_guild_id_parameter_is_required            | 180001    | -         |
++-------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
 unknown_application = 10002
@@ -623,3 +625,5 @@ invalid_lottie_json = 170001
 sticker_maximum_dimensions_exceeded = 170005
 sticker_frame_rate_out_of_expected_range = 170006
 sticker_animation_duration_exceeds_5_second = 170007
+
+exactly_one_guild_id_parameter_is_required = 180001

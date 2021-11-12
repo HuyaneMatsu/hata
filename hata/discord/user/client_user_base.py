@@ -145,6 +145,8 @@ class ClientUserBase(UserBase):
             +-------------------+-------------------------------+
             | role_ids          | `None` or `tuple` of `int`    |
             +-------------------+-------------------------------+
+            | timed_out_until   | `None` ot `datetime`          |
+            +-------------------+-------------------------------+
         """
         user_id = int(data['user']['id'])
         

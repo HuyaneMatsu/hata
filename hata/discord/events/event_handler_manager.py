@@ -372,6 +372,8 @@ class EventHandlerManager:
         +-------------------+-------------------------------+
         | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
+        | timed_out_until   | `None` ot `datetime`          |
+        +-------------------+-------------------------------+
     
     integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
         Called when an integration is created inside of a guild. Includes cases when bots are added to the guild as

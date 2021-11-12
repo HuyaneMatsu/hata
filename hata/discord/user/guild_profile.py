@@ -17,6 +17,10 @@ class GuildProfile(metaclass=Slotted):
     
     Attributes
     ----------
+    avatar_hash : `int`
+        The respective user's avatar hash at the guild in `uint128`.
+    avatar_type : `bool`
+        The respective user's avatar type at the guild.
     boosts_since : `None` or `datetime`
         Since when the user uses it's Nitro to boost the respective guild. If the user does not boost the guild, this
         attribute is set to `None`.
@@ -29,12 +33,10 @@ class GuildProfile(metaclass=Slotted):
         Whether the user has not yet passed the guild's membership screening requirements. Defaults to `False`.
     role_ids : `None` or `tuple` of ``Role``
         The user's roles at the guild.
-    avatar_hash : `int`
-        The respective user's avatar hash at the guild in `uint128`.
-    avatar_type : `bool`
-        The respective user's avatar type at the guild.
+    timed_out_until : `None` or `datetime`
+        Till when the user is timed out, and cannot interact with the guild.
     """
-    __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'role_ids',)
+    __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'role_ids', 'timed_out_until')
     
     avatar = IconSlot('avatar', 'avatar', None, None)
     
@@ -125,6 +127,11 @@ class GuildProfile(metaclass=Slotted):
         
         self.pending = data.get('pending', None)
         
+        timed_out_until = data.get('communication_disabled_until', None)
+        if (timed_out_until is not None):
+            timed_out_until = timestamp_to_datetime(timed_out_until)
+        self.timed_out_until = timed_out_until
+        
         self._set_avatar(data)
     
     
@@ -159,6 +166,8 @@ class GuildProfile(metaclass=Slotted):
         +-------------------+-------------------------------+
         | role_ids          | `None` or `tuple` of `int`    |
         +-------------------+-------------------------------+
+        | timed_out_until   | `None` ot `datetime`          |
+        +-------------------+-------------------------------+
         """
         old_attributes = {}
         nick = data.get('nick', None)
@@ -189,6 +198,13 @@ class GuildProfile(metaclass=Slotted):
             self.pending = pending
         
         self._update_avatar(data, old_attributes)
+        
+        timed_out_until = data.get('communication_disabled_until', None)
+        if (timed_out_until is not None):
+            timed_out_until = timestamp_to_datetime(timed_out_until)
+        if self.timed_out_until != timed_out_until:
+            old_attributes['timed_out_until'] = self.timed_out_until
+            self.timed_out_until = timed_out_until
         
         return old_attributes
     

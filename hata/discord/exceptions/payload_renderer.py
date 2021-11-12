@@ -14,8 +14,10 @@ TYPE_NAME_INTEGER = 'integer'
 TYPE_NAME_FLOAT = 'float'
 TYPE_NAME_LIST = 'list'
 TYPE_NAME_HASH_MAP = 'dictionary'
+TYPE_NAME_FORMDATA = 'formdata'
 
 MODIFIER_NAME_LENGTH = 'length'
+MODIFIER_FILENAME_LENGTH = 'filename'
 
 VALUE_INDENT = '    '
 VALUE_NONE = 'null'
@@ -45,35 +47,59 @@ def reconstruct_payload(payload):
         return reconstruct_formdata(payload)
     
     if isinstance(payload, bytes):
-        return reconstruct_bytes(payload)
+        return reconstruct_binary(payload)
     
-    return reconstruct_unexpected_value(payload)
+    return reconstruct_unexpected(payload)
 
 
-def reconstruct_json(payload):
+def reconstruct_json(value):
     """
     Tries to reconstruct json data.
     
-    payload_json : `str`
-        Payload data to reconstruct
+    Parameters
+    ----------
+    value : `str`
+        Json payload data to reconstruct
     
     Returns
     -------
     reconstructed_value : `str`
     """
-    try:
-        json_data = from_json(payload)
-    except JSONDecodeError:
-        return f'{TYPE_NAME_STRING}({MODIFIER_NAME_LENGTH}={len(payload)}): {reprlib.repr(payload)}'
-    
     reconstruct_into = []
-    reconstruct_json_value_into(json_data, reconstruct_into, 0)
+    reconstruct_json_into(value, reconstruct_into, 0)
     return ''.join(reconstruct_into)
 
 
-def reconstruct_json_value_into(value, into, indent):
+def reconstruct_json_into(value, into, indent):
     """
-    Reconstructs a json value extending the given `into` list.
+    Reconstructs a json payload extending the given `into` list.
+    
+    Parameters
+    ----------
+    value : `str`
+        Json payload data to reconstruct.
+    into : `list` of `str`
+        A list to extend it's content.
+    indent : `int`
+        The amount of indents to add.
+    """
+    try:
+        json_data = from_json(value)
+    except JSONDecodeError:
+        into.append(TYPE_NAME_STRING)
+        into.append('(')
+        into.append(MODIFIER_NAME_LENGTH)
+        into.append('=')
+        into.append(str(len(value)))
+        into.append('): ')
+        into.append(reprlib.repr(value))
+    else:
+        reconstruct_value_into(json_data, into, indent)
+
+
+def reconstruct_value_into(value, into, indent):
+    """
+    Reconstructs a value extending the given `into` list.
     
     Parameters
     ----------
@@ -114,7 +140,12 @@ def reconstruct_json_value_into(value, into, indent):
     if isinstance(value, dict):
         reconstruct_dictionary_into(value, into, indent)
         return
-
+    
+    # Used at form data
+    if isinstance(value, bytes):
+        reconstruct_binary_into(value, into)
+        return
+    
     reconstruct_unexpected_into(value, into)
 
 
@@ -231,7 +262,7 @@ def reconstruct_list_into(value, into, indent):
             for counter in indent:
                 into.append(VALUE_INDENT)
             
-            reconstruct_json_value_into(list_element, into, indent+1)
+            reconstruct_value_into(list_element, into, indent+1)
             
             into.append(',\n')
     
@@ -268,7 +299,7 @@ def reconstruct_dictionary_into(value, into, indent):
             into.append(repr(item_key))
             into.append(': ')
             
-            reconstruct_json_value_into(item_value, into, indent+1)
+            reconstruct_value_into(item_value, into, indent+1)
             
             into.append(',\n')
     
@@ -291,8 +322,89 @@ def reconstruct_unexpected_into(value, into):
     into.append(reprlib.repr(value))
 
 
+def reconstruct_binary_into(value, into):
+    """
+    Reconstructs a binary value to the given `into` list.
+    
+    Parameters
+    ----------
+    value : `binary`
+        The binary value.
+    into : `list` of `str`
+        A list to extend it's content.
+    """
+    into.append(TYPE_NAME_BINARY)
+    into.append('(')
+    into.append(MODIFIER_FILENAME_LENGTH)
+    into.append('=')
+    into.append(str(len(value)))
+    into.append(')')
 
-def reconstruct_unexpected_value(value):
+
+def reconstruct_formdata(value):
+    """
+    Tries to reconstruct formdata.
+    
+    Parameters
+    ----------
+    value : ``Formdata``
+        The formdata to reconstruct
+    
+    Returns
+    -------
+    reconstructed_value : `str`
+    """
+    reconstruct_into = [TYPE_NAME_FORMDATA]
+    
+    fields = value.fields
+    
+    reconstruct_into.append('(length=')
+    reconstruct_into.append(str((fields)))
+    reconstruct_into.append('): {')
+    
+    for field_type_options, field_headers, field_value in fields:
+        field_name = field_type_options['name']
+        filename = field_type_options.get('filename', None)
+        
+        reconstruct_into.append(VALUE_INDENT)
+        reconstruct_into.append(field_name)
+        if (filename is not None) and (filename != field_name):
+            reconstruct_into.append('(')
+            reconstruct_into.append(MODIFIER_FILENAME_LENGTH)
+            reconstruct_into.append('=')
+            reconstruct_into.append(filename)
+            reconstruct_into.append(')')
+        
+        reconstruct_into.append(': ')
+        if (filename is None) and (field_name == 'payload_json'):
+            reconstruct_json_into(field_value, reconstruct_into, 1)
+        else:
+            reconstruct_value_into(field_value, reconstruct_into, 1)
+        reconstruct_into.append('\n')
+    
+    reconstruct_into.append('}')
+    return ''.join(reconstruct_into)
+
+
+def reconstruct_binary(value):
+    """
+    Reconstructs a binary value.
+    
+    Parameters
+    ----------
+    value : `bytes`
+        The binary value.
+    
+    Returns
+    -------
+    reconstructed_value : `str`
+    """
+    reconstruct_into = []
+    reconstruct_binary_into(value, reconstruct_into)
+    return ''.join(reconstruct_into)
+
+
+def reconstruct_unexpected(value):
     """
     Reconstructs a value with an unexpected type.
     

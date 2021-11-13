@@ -298,6 +298,7 @@ class ChannelOutputStream:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exists the stream by closing it."""
         self.close()
+        return False
 
 class ChannelInputStream:
     """
@@ -821,7 +822,7 @@ class ChannelInputStream:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exists the stream by closing it."""
         self.close()
-
+        return False
 
 def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
     """

@@ -849,6 +849,8 @@ class AsyncIO:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Closes the asynchronous io."""
         self.__del__()
+        return False
+    
     
     def __aiter__(self):
         """

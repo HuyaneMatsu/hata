@@ -651,7 +651,9 @@ class ClaimedExecutor:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Releases the claimed executor."""
         self.release()
-    
+        return False
+
+
 class _execution_ended_cb:
     """
     Future callback set to result waiter futures when calling ``Executor.run_in_executor``.

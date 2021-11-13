@@ -90,11 +90,11 @@ class TaskLocal:
         """
         thread = current_thread()
         if not isinstance(thread, EventThread):
-            return
+            return False
         
         task = thread.current_task
         if task is None:
-            return
+            return False
         
         if task is self._task:
             self._task = None
@@ -103,7 +103,7 @@ class TaskLocal:
         try:
             locals_ = TASK_LOCALS[task]
         except KeyError:
-            return
+            return False
         
         for key, value in kwargs.items():
             try:
@@ -116,7 +116,9 @@ class TaskLocal:
             
             del locals_[key]
             continue
-
+        
+        
+        return False
 
 
 class HTTPRequestHandler(ProtocolBase):

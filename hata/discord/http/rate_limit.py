@@ -741,11 +741,9 @@ class RateLimitHandlerCTX:
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exists the context manager and if the context manager was not exited yet, exists it's parent as well."""
-        if self.exited:
-            return
-        
-        self.exited = True
-        self.parent.exit(None)
+        if not self.exited:
+            self.exited = True
+            self.parent.exit(None)
 
 
 class StaticRateLimitGroup:

@@ -244,6 +244,7 @@ class Typer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exits the typer's context block by cancelling it."""
         self.cancel()
+        return False
 
 
 class ClientWrapper:

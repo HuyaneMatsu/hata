@@ -30,7 +30,7 @@ STRING_BREAK_TO_MULTI_LINE_OVER = 60
 
 def reconstruct_payload(payload):
     """
-    Tries to reconstruct teh given payload.
+    Tries to reconstruct the given payload.
     
     Parameters
     ----------
@@ -44,35 +44,20 @@ def reconstruct_payload(payload):
     if payload is None: # nothing to do
         return None
     
+    into = ['payload = ']
     if isinstance(payload, str):
-        return reconstruct_json(payload)
+        reconstruct_json_into(payload, into, 0)
     
-    if isinstance(payload, Formdata):
-        return reconstruct_formdata(payload)
+    elif isinstance(payload, Formdata):
+        reconstruct_formdata_into(payload, into)
     
-    if isinstance(payload, bytes):
-        return reconstruct_binary(payload)
+    elif isinstance(payload, bytes):
+        reconstruct_binary_into(payload, into)
     
-    return reconstruct_unexpected(payload)
-
-
-def reconstruct_json(value):
-    """
-    Tries to reconstruct json data.
+    else:
+        reconstruct_unexpected_into(payload, into)
     
-    Parameters
-    ----------
-    value : `str`
-        Json payload data to reconstruct
-    
-    Returns
-    -------
-    reconstructed_value : `str`
-    """
-    reconstruct_into = []
-    reconstruct_json_into(value, reconstruct_into, 0)
-    return ''.join(reconstruct_into)
-
+    return ''.join(into)
 
 def reconstruct_json_into(value, into, indent):
     """
@@ -114,9 +99,6 @@ def reconstruct_value_into(value, into, indent):
     indent : `int`
         The amount of indents to add.
     """
-    for counter in indent:
-        into.append(VALUE_INDENT)
-    
     if value is None:
         reconstruct_null_into(into)
         return
@@ -300,13 +282,20 @@ def reconstruct_list_into(value, into, indent):
     into.append('): [')
     
     if length:
+        into.append('\n')
+        
+        element_indent = indent + 1
+        
         for list_element in value:
-            for counter in indent:
+            for counter in range(element_indent):
                 into.append(VALUE_INDENT)
             
-            reconstruct_value_into(list_element, into, indent+1)
+            reconstruct_value_into(list_element, into, element_indent)
             
             into.append(',\n')
+        
+        for counter in range(indent):
+            into.append(VALUE_INDENT)
     
     into.append(']')
 
@@ -334,16 +323,22 @@ def reconstruct_dictionary_into(value, into, indent):
     into.append('): {')
     
     if length:
-        for item_key, item_value in value.items():
-            for counter in indent:
+        into.append('\n')
+        item_indent = indent + 1
+        
+        for item_key, item_value in sorted(value.items(), key=hash_map_key_sort_key):
+            for counter in range(item_indent):
                 into.append(VALUE_INDENT)
             
             into.append(repr(item_key))
             into.append(': ')
             
-            reconstruct_value_into(item_value, into, indent+1)
+            reconstruct_value_into(item_value, into, item_indent)
             
             into.append(',\n')
+        
+        for counter in range(indent):
+            into.append(VALUE_INDENT)
     
     into.append('}')
 
@@ -383,82 +378,63 @@ def reconstruct_binary_into(value, into):
     into.append(')')
 
 
-def reconstruct_formdata(value):
+def reconstruct_formdata_into(value, into):
     """
-    Tries to reconstruct formdata.
+    Tries to reconstruct formdata into the given `into` list.
     
     Parameters
     ----------
     value : ``Formdata``
-        The formdata to reconstruct
+        The formdata to reconstruct.
+    into : `list` of `str`
+        A list to extend it's content.
     
     Returns
     -------
     reconstructed_value : `str`
     """
-    reconstruct_into = [TYPE_NAME_FORMDATA]
+    into.append(TYPE_NAME_FORMDATA)
     
     fields = value.fields
     
-    reconstruct_into.append('(length=')
-    reconstruct_into.append(str((fields)))
-    reconstruct_into.append('): {')
+    into.append('(length=')
+    into.append(str((fields)))
+    into.append('): {')
     
     for field_type_options, field_headers, field_value in fields:
         field_name = field_type_options['name']
         filename = field_type_options.get('filename', None)
         
-        reconstruct_into.append(VALUE_INDENT)
-        reconstruct_into.append(field_name)
+        into.append(VALUE_INDENT)
+        into.append(field_name)
         if (filename is not None) and (filename != field_name):
-            reconstruct_into.append('(')
-            reconstruct_into.append(MODIFIER_FILENAME_LENGTH)
-            reconstruct_into.append('=')
-            reconstruct_into.append(filename)
-            reconstruct_into.append(')')
+            into.append('(')
+            into.append(MODIFIER_FILENAME_LENGTH)
+            into.append('=')
+            into.append(filename)
+            into.append(')')
         
-        reconstruct_into.append(': ')
+        into.append(': ')
         if (filename is None) and (field_name == 'payload_json'):
-            reconstruct_json_into(field_value, reconstruct_into, 1)
+            reconstruct_json_into(field_value, into, 1)
         else:
-            reconstruct_value_into(field_value, reconstruct_into, 1)
-        reconstruct_into.append('\n')
+            reconstruct_value_into(field_value, into, 1)
+        into.append('\n')
     
-    reconstruct_into.append('}')
-    return ''.join(reconstruct_into)
+    into.append('}')
 
 
-def reconstruct_binary(value):
+def hash_map_key_sort_key(item):
     """
-    Reconstructs a binary value.
+    Used to sort hash maps based on their key.
     
     Parameters
     ----------
-    value : `bytes`
-        The binary value.
+    item : `tuple` (`str`, `Any`)
+        An item of a hash map.
     
     Returns
     -------
-    reconstructed_value : `str`
+    key : `str`
     """
-    reconstruct_into = []
-    reconstruct_binary_into(value, reconstruct_into)
-    return ''.join(reconstruct_into)
-
-
-def reconstruct_unexpected(value):
-    """
-    Reconstructs a value with an unexpected type.
-    
-    Parameters
-    ----------
-    value : `Any`
-        Le value.
-    
-    Returns
-    -------
-    reconstructed_value : `str`
-    """
-    reconstruct_into = []
-    reconstruct_unexpected_into(value, reconstruct_into)
-    return ''.join(reconstruct_into)
+    return item[0]

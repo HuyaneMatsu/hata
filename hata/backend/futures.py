@@ -4287,7 +4287,7 @@ class repeat_timeout:
         return self
     
     def __next__(self):
-        """Called when teh timeout handler does a loop, resetting its timeout."""
+        """Called when the timeout handler does a loop, resetting its timeout."""
         self.last_set = LOOP_TIME()
     
     def __enter__(self):

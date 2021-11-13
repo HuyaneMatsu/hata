@@ -205,3 +205,5 @@ if API_VERSION not in (7, 8):
         API_VERSION = 9
     elif API_VERSION == 6:
         warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)
+
+RICH_DISCORD_EXCEPTION = get_bool_env('HATA_RICH_DISCORD_EXCEPTION', False)

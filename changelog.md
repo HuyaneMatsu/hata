@@ -26,6 +26,7 @@
 
 - Deprecate `DiscordException.data`, use `.recevied_data` instead.
 - Rename `DiscordException._cr_code` to `._get_code`.
+- Rename `DiscordException._cr_messages` to `._create_messages`.
 
 #### Bug Fixes
 

@@ -2,9 +2,15 @@ __all__ = ('DiscordException',)
 
 import warnings
 
+from ...env import RICH_DISCORD_EXCEPTION
 from ...backend.headers import RETRY_AFTER, DATE
 
 from ..utils import parse_date_header_to_datetime, DATETIME_FORMAT_CODE
+
+if RICH_DISCORD_EXCEPTION:
+    from .payload_renderer import reconstruct_payload
+else:
+    reconstruct_payload = None
 
 class DiscordException(Exception):
     """
@@ -104,10 +110,15 @@ class DiscordException(Exception):
         """
         messages = self._messages
         if messages is None:
-            messages = self._cr_messages()
+            messages = self._create_messages()
+            if (reconstruct_payload is not None):
+                reconstructed_payload = reconstruct_payload(self.sent_data)
+                if (reconstructed_payload is not None):
+                    messages.append(reconstructed_payload)
+        
         return messages
     
-    def _cr_messages(self):
+    def _create_messages(self):
         """
         Generates the exception's messages from the causer response's headers. If the response's data contains `code`
         or / and `message` as well, then it will complement the exception message's header line with those too.

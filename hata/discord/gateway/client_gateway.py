@@ -3,7 +3,8 @@ __all__ = ()
 import sys, zlib
 
 from ...env import CACHE_PRESENCE
-from ...backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously
+from ...backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously, \
+    repeat_timeout
 from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 from ...backend.utils import to_json, from_json
 
@@ -15,6 +16,9 @@ from ..exceptions import DiscordGatewayException, GATEWAY_EXCEPTION_CODE_TABLE
 
 from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
+
+TIMEOUT_GATEWAY_CONNECT = 30.0
+TIMEOUT_POLL = 60.0
 
 DISPATCH = 0
 HEARTBEAT = 1
@@ -154,29 +158,29 @@ class DiscordGateway:
         while True:
             try:
                 task = Task(self._connect(), KOKORO)
-                future_or_timeout(task, 30.0)
+                future_or_timeout(task, TIMEOUT_GATEWAY_CONNECT)
                 await task
                 
                 if (waiter is not None):
                     waiter.set_result(None)
                     waiter = None
                 
+                
                 while True:
-                    task = Task(self._poll_event(), KOKORO)
-                    future_or_timeout(task, 60.0)
                     try:
-                        should_reconnect = await task
+                        with repeat_timeout(TIMEOUT_POLL) as loop:
+                            for _ in loop:
+                                should_reconnect = await self._poll_event()
+                                if should_reconnect and (not client.running):
+                                    return
+                    
                     except TimeoutError:
                         # timeout, no internet probably
                         return
                     
-                    if should_reconnect:
-                        if not client.running:
-                            return
-                        
-                        task = Task(self._connect(resume=True,), KOKORO)
-                        future_or_timeout(task, 30.0)
-                        await task
+                    task = Task(self._connect(resume=True,), KOKORO)
+                    future_or_timeout(task, TIMEOUT_GATEWAY_CONNECT)
+                    await task
             
             except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
                     ValueError) as err:

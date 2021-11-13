@@ -72,7 +72,6 @@ class DiscordException(Exception):
         """
         Exception.__init__(self)
         self.response = response
-        self.data = received_data
         self.received_data = received_data
         self.sent_data = sent_data
         self._messages = None

@@ -1,4 +1,4 @@
-from hata import Client
+from hata import Client, wait_for_interruption
 
 # Replace this with your bot token, see topics/getting_started.md to see how you can get one
 TOKEN = ''
@@ -29,3 +29,8 @@ async def ready(client):
 
 
 Sakuya.start()
+
+
+# On some platforms, you cannot cancel hata with keyboard interrupt. By using `wait_for_interruption`, you not only fix
+# that issue, but your bot will disconnect gracefully as well.
+wait_for_interruption()

@@ -744,7 +744,8 @@ class RateLimitHandlerCTX:
         if not self.exited:
             self.exited = True
             self.parent.exit(None)
-
+        
+        return False
 
 class StaticRateLimitGroup:
     """

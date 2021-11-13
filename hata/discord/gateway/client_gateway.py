@@ -171,7 +171,10 @@ class DiscordGateway:
                         with repeat_timeout(TIMEOUT_POLL) as loop:
                             for _ in loop:
                                 should_reconnect = await self._poll_event()
-                                if should_reconnect and (not client.running):
+                                if should_reconnect:
+                                    if client.running:
+                                        break
+                                    
                                     return
                     
                     except TimeoutError:

@@ -24,6 +24,10 @@ VALUE_NONE = 'null'
 VALUE_BOOLEAN_TRUE = 'true'
 VALUE_BOOLEAN_FALSE = 'false'
 
+STRING_MIN_LINE_LENGTH = 60
+STRING_MAX_LINE_LENGTH = 120
+STRING_BREAK_TO_MULTI_LINE_OVER = 60
+
 def reconstruct_payload(payload):
     """
     Tries to reconstruct teh given payload.
@@ -122,7 +126,7 @@ def reconstruct_value_into(value, into, indent):
         return
 
     if isinstance(value, str):
-        reconstruct_string_into(value, into)
+        reconstruct_string_into(value, into, indent)
         return
     
     if isinstance(value, int):
@@ -183,7 +187,7 @@ def reconstruct_boolean_into(value, into):
     into.append(value_representation)
 
 
-def reconstruct_string_into(value, into):
+def reconstruct_string_into(value, into, indent):
     """
     Reconstructs a string value to the given `into` list.
     
@@ -193,14 +197,52 @@ def reconstruct_string_into(value, into):
         The string value.
     into : `list` of `str`
         A list to extend it's content.
+    indent : `int`
+        The amount of indents to add.
     """
     into.append(TYPE_NAME_STRING)
     into.append('(')
     into.append('length=')
     into.append(str(len(value)))
-    into.append(')')
-    into.append(': ')
-    into.append(repr(value))
+    into.append('): ')
+    
+    length = len(value)
+    if length > STRING_BREAK_TO_MULTI_LINE_OVER:
+        into.append('(')
+        
+        string_indent = indent+1
+        
+        chunk_size = STRING_MAX_LINE_LENGTH-string_indent*len(VALUE_INDENT)
+        if chunk_size < STRING_MIN_LINE_LENGTH:
+            chunk_size = STRING_MIN_LINE_LENGTH
+        
+        start_index = 0
+        while True:
+            end_index = start_index+chunk_size
+            if end_index >= length:
+                end_index = length
+                should_break = True
+            else:
+                should_break = False
+            
+            for counter in range(string_indent):
+                into.append(VALUE_INDENT)
+            
+            into.append(repr(value[start_index:end_index]))
+            
+            if should_break:
+                break
+            
+            start_index = end_index
+            continue
+    
+        for counter in range(indent):
+            into.append(VALUE_INDENT)
+        
+        into.append(')')
+    
+    else:
+        into.append(repr(value))
 
 
 def reconstruct_integer_into(value, into):

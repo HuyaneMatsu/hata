@@ -4275,10 +4275,10 @@ class repeat_timeout:
         
         self = object.__new__(cls)
         self.last_set = 0.0
-        self.loop = loop
+        self.loop = thread
         self.task = task
         self.timeout = timeout
-        self.handle = loop.call_later(timeout, self)
+        self.handle = thread.call_later(timeout, self)
         self.exception = None
         return self
     

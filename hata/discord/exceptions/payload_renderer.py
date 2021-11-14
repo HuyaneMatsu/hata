@@ -13,11 +13,10 @@ TYPE_NAME_BOOLEAN = 'boolean'
 TYPE_NAME_INTEGER = 'integer'
 TYPE_NAME_FLOAT = 'float'
 TYPE_NAME_LIST = 'list'
-TYPE_NAME_HASH_MAP = 'dictionary'
+TYPE_NAME_HASH_MAP = 'hash_map'
 TYPE_NAME_FORMDATA = 'formdata'
 
-MODIFIER_NAME_LENGTH = 'length'
-MODIFIER_FILENAME_LENGTH = 'filename'
+MODIFIER_LENGTH = 'length'
 
 VALUE_INDENT = '    '
 VALUE_NONE = 'null'
@@ -77,7 +76,7 @@ def reconstruct_json_into(value, into, indent):
     except JSONDecodeError:
         into.append(TYPE_NAME_STRING)
         into.append('(')
-        into.append(MODIFIER_NAME_LENGTH)
+        into.append(MODIFIER_LENGTH)
         into.append('=')
         into.append(str(len(value)))
         into.append('): ')
@@ -124,7 +123,7 @@ def reconstruct_value_into(value, into, indent):
         return
     
     if isinstance(value, dict):
-        reconstruct_dictionary_into(value, into, indent)
+        reconstruct_hash_map_into(value, into, indent)
         return
     
     # Used at form data
@@ -158,9 +157,6 @@ def reconstruct_boolean_into(value, into):
     into : `list` of `str`
         A list to extend it's content.
     """
-    into.append(TYPE_NAME_BOOLEAN)
-    into.append(': ')
-    
     if value:
         value_representation = VALUE_BOOLEAN_TRUE
     else:
@@ -182,12 +178,6 @@ def reconstruct_string_into(value, into, indent):
     indent : `int`
         The amount of indents to add.
     """
-    into.append(TYPE_NAME_STRING)
-    into.append('(')
-    into.append('length=')
-    into.append(str(len(value)))
-    into.append('): ')
-    
     length = len(value)
     if length > STRING_BREAK_TO_MULTI_LINE_OVER:
         into.append('(')
@@ -238,8 +228,6 @@ def reconstruct_integer_into(value, into):
     into : `list` of `str`
         A list to extend it's content.
     """
-    into.append(TYPE_NAME_INTEGER)
-    into.append(': ')
     into.append(repr(value))
 
 
@@ -254,8 +242,6 @@ def reconstruct_float_into(value, into):
     into : `list` of `str`
         A list to extend it's content.
     """
-    into.append(TYPE_NAME_FLOAT)
-    into.append(': ')
     into.append(repr(value))
 
 
@@ -274,21 +260,18 @@ def reconstruct_list_into(value, into, indent):
     """
     length = len(value)
     
-    into.append(TYPE_NAME_LIST)
-    into.append('(')
-    into.append(MODIFIER_NAME_LENGTH)
-    into.append('=')
-    into.append(str(length))
-    into.append('): [')
+    into.append('[')
     
     if length:
         into.append('\n')
         
         element_indent = indent + 1
         
-        for list_element in value:
+        for index, list_element in enumerate(value):
             for counter in range(element_indent):
                 into.append(VALUE_INDENT)
+            into.append(str(index))
+            into.append(': ')
             
             reconstruct_value_into(list_element, into, element_indent)
             
@@ -300,14 +283,14 @@ def reconstruct_list_into(value, into, indent):
     into.append(']')
 
 
-def reconstruct_dictionary_into(value, into, indent):
+def reconstruct_hash_map_into(value, into, indent):
     """
-    Reconstructs a dictionary value extending the given `into` list.
+    Reconstructs a hash map value extending the given `into` list.
     
     Parameters
     ----------
     value : `dict`
-        The dictionary value.
+        The hash map value.
     into : `list` of `str`
         A list to extend it's content.
     indent : `int`
@@ -315,12 +298,7 @@ def reconstruct_dictionary_into(value, into, indent):
     """
     length = len(value)
     
-    into.append(TYPE_NAME_HASH_MAP)
-    into.append('(')
-    into.append(MODIFIER_NAME_LENGTH)
-    into.append('=')
-    into.append(str(length))
-    into.append('): {')
+    into.append('{')
     
     if length:
         into.append('\n')
@@ -372,7 +350,7 @@ def reconstruct_binary_into(value, into):
     """
     into.append(TYPE_NAME_BINARY)
     into.append('(')
-    into.append(MODIFIER_FILENAME_LENGTH)
+    into.append(MODIFIER_LENGTH)
     into.append('=')
     into.append(str(len(value)))
     into.append(')')
@@ -397,22 +375,19 @@ def reconstruct_formdata_into(value, into):
     
     fields = value.fields
     
-    into.append('(length=')
-    into.append(str((fields)))
-    into.append('): {')
+    into.append('({\n')
     
-    for field_type_options, field_headers, field_value in fields:
+    for index, (field_type_options, field_headers, field_value) in enumerate(fields):
         field_name = field_type_options['name']
         filename = field_type_options.get('filename', None)
         
         into.append(VALUE_INDENT)
-        into.append(field_name)
+        into.append(str(index))
+        into.append(': ')
+        into.append(repr(field_name))
         if (filename is not None) and (filename != field_name):
-            into.append('(')
-            into.append(MODIFIER_FILENAME_LENGTH)
-            into.append('=')
-            into.append(filename)
-            into.append(')')
+            into.append(' | ')
+            into.append(repr(filename))
         
         into.append(': ')
         if (filename is None) and (field_name == 'payload_json'):
@@ -421,7 +396,7 @@ def reconstruct_formdata_into(value, into):
             reconstruct_value_into(field_value, into, 1)
         into.append('\n')
     
-    into.append('}')
+    into.append('})')
 
 
 def hash_map_key_sort_key(item):

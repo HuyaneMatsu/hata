@@ -1027,7 +1027,7 @@ class Client(ClientUserPBase):
                 self.token = token
     
     
-    async def client_guild_profile_edit(self, guild, *, nick=..., avatar=..., reason=None):
+    async def client_guild_profile_edit(self, guild, *, nick=..., avatar=..., timed_out_until=..., reason=None):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.
         
@@ -1048,6 +1048,9 @@ class Client(ClientUserPBase):
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
         
+        timed_out_until : `None` or `datetime`, Optional (Keyword only)
+            Till when the client is timed out. Pass it as `None` to remove it.
+        
         reason : `None` or `str`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
@@ -1064,6 +1067,7 @@ class Client(ClientUserPBase):
             - If the nick's length is out of range [1:32].
             - If the nick was not given neither as `None` or `str` instance.
             - If `avatar`'s type is incorrect.
+            - If `timed_out_until` is neither `None` nor `datetime` instance.
         """
         # Security debug checks.
         if __debug__:
@@ -1124,6 +1128,19 @@ class Client(ClientUserPBase):
                 avatar_data = image_to_base64(avatar)
             
             data['avatar'] = avatar_data
+        
+        if (timed_out_until is not ...):
+            if timed_out_until is None:
+                timed_out_until_raw = None
+            else:
+                if __debug__:
+                    if not isinstance(timed_out_until, datetime):
+                        raise AssertionError(f'`timed_out_until` can be given as `None` or as `datetime` instance, '
+                            f'got {timed_out_until.__class__.__name__}.')
+                
+                timed_out_until_raw = datetime_to_timestamp(timed_out_until)
+            
+            data['communication_disabled_until'] = timed_out_until_raw
         
         if data:
             await self.http.client_guild_profile_edit(guild_id, data, reason)
@@ -7577,7 +7594,7 @@ class Client(ClientUserPBase):
     # users
     
     async def user_guild_profile_edit(self, guild, user, *, nick=..., deaf=None, mute=None, voice_channel=...,
-            roles=..., reason=None):
+            roles=..., timed_out_until=..., reason=None):
         """
         Edits the user's guild profile at the given guild.
         
@@ -7601,6 +7618,8 @@ class Client(ClientUserPBase):
             Pass it as `None` to kick the user from it's voice channel.
         roles : `None` or (`tuple`, `set`, `list`) of (``Role``, `int`), Optional (Keyword only)
             The new roles of the user. Give it as `None` to remove all of the user's roles.
+        timed_out_until : `None` or `datetime`, Optional (Keyword only)
+            Till when the client is timed out. Pass it as `None` to remove it.
         reason : `None` or `str`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
@@ -7621,6 +7640,7 @@ class Client(ClientUserPBase):
             - If `deaf` was not given as `bool` instance.
             - If `mute` was not given as `bool` instance.
             - If `roles` is not `None`, `set`, `tuple` or `list` instance.
+            - If `timed_out_until` is neither `None` nor `datetime` instance.
         """
         guild, guild_id = get_guild_and_id(guild)
         user, user_id = get_user_and_id(user)
@@ -7706,6 +7726,19 @@ class Client(ClientUserPBase):
                     role_ids.add(role_id)
             
             data['roles'] = role_ids
+        
+        if (timed_out_until is not ...):
+            if timed_out_until is None:
+                timed_out_until_raw = None
+            else:
+                if __debug__:
+                    if not isinstance(timed_out_until, datetime):
+                        raise AssertionError(f'`timed_out_until` can be given as `None` or as `datetime` instance, '
+                            f'got {timed_out_until.__class__.__name__}.')
+                
+                timed_out_until_raw = datetime_to_timestamp(timed_out_until)
+            
+            data['communication_disabled_until'] = timed_out_until_raw
         
         await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)
     
@@ -15620,6 +15653,7 @@ class Client(ClientUserPBase):
             self.guild_profiles[guild.id] = GuildProfile(data)
             guild.users[self.id] = self
             return {}
+        
         return profile._difference_update_attributes(data)
     
     def _update_profile_only(self, data, guild):

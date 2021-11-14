@@ -22,6 +22,9 @@
 - Add `ScheduledEventUnsubscribeEvent`.
 - `Client.events.scheduled_event_user_subscribe` now accepts 2 parameters.
 - `Client.events.scheduled_event_user_unsubscribe` now accepts 2 parameters.
+- Add `timed_out_until` parameter to `Client.client_guild_profile_edit`.
+- Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
+- Add `timed_out_until` transformer to audit logs.
 
 ##### ext.slash
 - Add `ComponentCommand.name`.

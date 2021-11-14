@@ -4,7 +4,7 @@ import warnings
 
 from ...env import API_VERSION
 
-from ..utils import Unknown, now_as_id, id_to_datetime
+from ..utils import Unknown, now_as_id, id_to_datetime, timestamp_to_datetime
 from ..core import CHANNELS, USERS, ROLES, MESSAGES, SCHEDULED_EVENTS
 from ..permission import Permission
 from ..color import Color
@@ -1196,6 +1196,22 @@ def transform_unicode_emoji(name, data):
     return AuditLogChange(name, before, after)
 
 
+def transform_timestamp__timed_out_until(name, data):
+    before = data.get('old_value', None)
+    if (before is None):
+        before = None
+    else:
+        before = timestamp_to_datetime(before)
+    
+    after = data.get('new_value', None)
+    if (after is None):
+        after = None
+    else:
+        after = timestamp_to_datetime(after)
+    
+    return AuditLogChange('timed_out_until', before, after)
+
+
 TRANSFORMERS = {
     '$add': transform_roles,
     '$remove': transform_roles,
@@ -1212,6 +1228,7 @@ TRANSFORMERS = {
     'channel_id': transform_channel,
     # code (str)
     'color': transform_color,
+    'communication_disabled_until': transform_timestamp__timed_out_until,
     # deaf (bool)
     # description (None or str)
     'default_message_notifications': transform_message_notification,
@@ -1297,6 +1314,7 @@ del transform_scheduled_event_entity_type
 del transform_snowflake_array
 del transform_unicode_emoji
 del transform_bool__boost_progress_bar_enabled
+del transform_timestamp__timed_out_until
 
 class AuditLogChange:
     """
@@ -1335,6 +1353,8 @@ class AuditLogChange:
     | banner                        | `None` or ``Icon``                            |
     +-------------------------------+-----------------------------------------------+
     | bitrate                       | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | boost_progress_bar_enabled    | `bool`                                        |
     +-------------------------------+-----------------------------------------------+
     | channel                       | `None` or ``ChannelGuildBase`` instance       |
     +-------------------------------+-----------------------------------------------+

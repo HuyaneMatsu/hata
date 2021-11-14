@@ -262,8 +262,8 @@ add_event_handler('voice_server_update', 2, 'VOICE_SERVER_UPDATE',)
 add_event_handler('scheduled_event_create', 2, 'GUILD_SCHEDULED_EVENT_CREATE',)
 add_event_handler('scheduled_event_edit', 3, 'GUILD_SCHEDULED_EVENT_UPDATE',)
 add_event_handler('scheduled_event_delete', 2, 'GUILD_SCHEDULED_EVENT_DELETE',)
-add_event_handler('scheduled_event_user_subscribe', 3, 'GUILD_SCHEDULED_EVENT_USER_CREATE',)
-add_event_handler('scheduled_event_user_unsubscribe', 3, 'GUILD_SCHEDULED_EVENT_USER_DELETE',)
+add_event_handler('scheduled_event_user_subscribe', 2, 'GUILD_SCHEDULED_EVENT_USER_ADD',)
+add_event_handler('scheduled_event_user_unsubscribe', 2, 'GUILD_SCHEDULED_EVENT_USER_REMOVE',)
 
 
 class ParserSettingOption:

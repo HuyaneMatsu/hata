@@ -16,6 +16,12 @@
 - Add `channel_banner_url_as` for future reference.
 - Add `GuildProfile.timed_out_until`.
 - Add `repeat_timeout.
+- Rename `GUILD_SCHEDULED_EVENT_USER_CREATE` to `GUILD_SCHEDULED_EVENT_USER_ADD`.
+- Rename `GUILD_SCHEDULED_EVENT_USER_DELETE` to `GUILD_SCHEDULED_EVENT_USER_REMOVE`.
+- Add `ScheduledEventSubscribeEvent`.
+- Add `ScheduledEventUnsubscribeEvent`.
+- `Client.events.scheduled_event_user_subscribe` now accepts 2 parameters.
+- `Client.events.scheduled_event_user_unsubscribe` now accepts 2 parameters.
 
 ##### ext.slash
 - Add `ComponentCommand.name`.

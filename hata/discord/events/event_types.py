@@ -5,7 +5,6 @@ from ...env import CACHE_PRESENCE
 from ...backend.utils import set_docs
 
 from ..bases import EventBase
-from ..guild import Guild
 from ..user import User
 from ..core import GUILDS
 

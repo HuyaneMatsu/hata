@@ -563,10 +563,10 @@ class EventHandlerManager:
             | status                    | ``ScheduledEventStatus``      |
             +---------------------------+-------------------------------+
     
-    scheduled_event_user_subscribe(client: ``Client``, `scheduled_event_id: `int`, user_id: `int`):
+    scheduled_event_user_subscribe(client: ``Client``, event: ``ScheduledEventSubscribeEvent``):
         Called when a user subscribes to a scheduled event.
     
-    scheduled_event_user_unsubscribe(client: ``Client``, `scheduled_event_id: `int`, user_id: `int`):
+    scheduled_event_user_unsubscribe(client: ``Client``, event: ``ScheduledEventUnsubscribeEvent``):
         Called when a user unsubscribes from a scheduled event.
     
     shutdown(client : ``Client``):

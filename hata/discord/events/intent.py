@@ -62,8 +62,8 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_SCHEDULED_EVENT_CREATE',
         'GUILD_SCHEDULED_EVENT_UPDATE',
         'GUILD_SCHEDULED_EVENT_DELETE',
-        'GUILD_SCHEDULED_EVENT_USER_CREATE',
-        'GUILD_SCHEDULED_EVENT_USER_DELETE',
+        'GUILD_SCHEDULED_EVENT_USER_ADD',
+        'GUILD_SCHEDULED_EVENT_USER_REMOVE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
@@ -220,8 +220,8 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_CREATE,               |
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_UPDATE,               |
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_DELETE,               |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_CREATE,          |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_DELETE,          |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_ADD,          |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_REMOVE,          |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_USERS               | 1     | guild_users                | GUILD_MEMBER_ADD,                           |
     |                                        |       |                            | GUILD_MEMBER_UPDATE,                        |

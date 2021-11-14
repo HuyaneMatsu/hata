@@ -23,7 +23,7 @@ from ..interaction import ApplicationCommand, ApplicationCommandPermission, Inte
 from ..integration import Integration
 from ..stage import Stage
 from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji_from_data
-from ..scheduled_event import ScheduledEvent
+from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
 
 from .core import maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
 from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
@@ -4259,57 +4259,53 @@ del GUILD_SCHEDULED_EVENT_UPDATE__CAL_SC, \
     GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC, \
     GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC
 
-def GUILD_SCHEDULED_EVENT_USER_CREATE__CAL_SC(client, data):
-    scheduled_event_id = int(data['guild_scheduled_event_id'])
-    user_id = int(data['user_id'])
+def GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC(client, data):
+    event = ScheduledEventSubscribeEvent(data)
     
-    Task(client.events.scheduled_event_user_subscribe(client, scheduled_event_id, user_id), KOKORO)
+    Task(client.events.scheduled_event_user_subscribe(client, event), KOKORO)
     
-def GUILD_SCHEDULED_EVENT_USER_CREATE__CAL_MC(client, data):
+def GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC(client, data):
     event_handler = client.events.scheduled_event_user_subscribe
-    if (event_handler is not None):
-        scheduled_event_id = int(data['guild_scheduled_event_id'])
-        user_id = int(data['user_id'])
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        event = ScheduledEventSubscribeEvent(data)
         
-        Task(event_handler(client, scheduled_event_id, user_id), KOKORO)
+        Task(event_handler(client, event), KOKORO)
 
-def GUILD_SCHEDULED_EVENT_USER_CREATE__OPT(client, data):
+def GUILD_SCHEDULED_EVENT_USER_ADD__OPT(client, data):
     pass
 
 add_parser(
-    'GUILD_SCHEDULED_EVENT_USER_CREATE',
-    GUILD_SCHEDULED_EVENT_USER_CREATE__CAL_SC,
-    GUILD_SCHEDULED_EVENT_USER_CREATE__CAL_MC,
-    GUILD_SCHEDULED_EVENT_USER_CREATE__OPT,
-    GUILD_SCHEDULED_EVENT_USER_CREATE__OPT)
-del GUILD_SCHEDULED_EVENT_USER_CREATE__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_USER_CREATE__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_USER_CREATE__OPT
+    'GUILD_SCHEDULED_EVENT_USER_ADD',
+    GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC,
+    GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC,
+    GUILD_SCHEDULED_EVENT_USER_ADD__OPT,
+    GUILD_SCHEDULED_EVENT_USER_ADD__OPT)
+del GUILD_SCHEDULED_EVENT_USER_ADD__CAL_SC, \
+    GUILD_SCHEDULED_EVENT_USER_ADD__CAL_MC, \
+    GUILD_SCHEDULED_EVENT_USER_ADD__OPT
 
 
-def GUILD_SCHEDULED_EVENT_USER_DELETE__CAL_SC(client, data):
-    scheduled_event_id = int(data['guild_scheduled_event_id'])
-    user_id = int(data['user_id'])
+def GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC(client, data):
+    event = ScheduledEventUnsubscribeEvent(data)
     
-    Task(client.events.scheduled_event_user_unsubscribe(client, scheduled_event_id, user_id), KOKORO)
+    Task(client.events.scheduled_event_user_unsubscribe(client, event), KOKORO)
     
-def GUILD_SCHEDULED_EVENT_USER_DELETE__CAL_MC(client, data):
+def GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC(client, data):
     event_handler = client.events.scheduled_event_user_unsubscribe
-    if (event_handler is not None):
-        scheduled_event_id = int(data['guild_scheduled_event_id'])
-        user_id = int(data['user_id'])
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        event = ScheduledEventUnsubscribeEvent(data)
         
-        Task(event_handler(client, scheduled_event_id, user_id), KOKORO)
+        Task(event_handler(client, event), KOKORO)
 
-def GUILD_SCHEDULED_EVENT_USER_DELETE__OPT(client, data):
+def GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT(client, data):
     pass
 
 add_parser(
-    'GUILD_SCHEDULED_EVENT_USER_DELETE',
-    GUILD_SCHEDULED_EVENT_USER_DELETE__CAL_SC,
-    GUILD_SCHEDULED_EVENT_USER_DELETE__CAL_MC,
-    GUILD_SCHEDULED_EVENT_USER_DELETE__OPT,
-    GUILD_SCHEDULED_EVENT_USER_DELETE__OPT)
-del GUILD_SCHEDULED_EVENT_USER_DELETE__CAL_SC, \
-    GUILD_SCHEDULED_EVENT_USER_DELETE__CAL_MC, \
-    GUILD_SCHEDULED_EVENT_USER_DELETE__OPT
+    'GUILD_SCHEDULED_EVENT_USER_REMOVE',
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC,
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC,
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT,
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT)
+del GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC, \
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC, \
+    GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT

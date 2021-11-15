@@ -26,6 +26,7 @@
 - Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
 - Add `timed_out_until` transformer to audit logs.
 - Add `HATA_LIBRARY_URL` environmental variable.
+
 ##### ext.slash
 - Add `ComponentCommand.name`.
 - Add `name` parameter to `ComponentCommand.__new__`.
@@ -240,11 +241,11 @@ Improve auto completion and error handling of slash extension.
 - Add `Client.scheduled_event_delete`.
 - Add `Client.scheduled_event_get`.
 - Add `Client.scheduled_event_get_all_guild`.
-- Add `DiscordHttpClient.scheduled_event_create`.
-- Add `DiscordHttpClient.scheduled_event_edit`.
-- Add `DiscordHttpClient.scheduled_event_delete`.
-- Add `DiscordHttpClient.scheduled_event_get`.
-- Add `DiscordHttpClient.scheduled_event_get_all_guild`.
+- Add `DiscordHTTPClient.scheduled_event_create`.
+- Add `DiscordHTTPClient.scheduled_event_edit`.
+- Add `DiscordHTTPClient.scheduled_event_delete`.
+- Add `DiscordHTTPClient.scheduled_event_get`.
+- Add `DiscordHTTPClient.scheduled_event_get_all_guild`.
 - Add `RATE_LIMIT_GROUPS.scheduled_event_get_all_guild`.
 - Add `RATE_LIMIT_GROUPS.scheduled_event_create`.
 - Add `RATE_LIMIT_GROUPS.scheduled_event_delete`.
@@ -794,7 +795,7 @@ Make multiple entities to weakly bound to other ones.
 - Add `ChannelThread.invitable`.
 - Add `invitable` parameter to `ChannelThread.precreate`.
 - Add `open` parameter to `ChannelThread.precreate`.
-- Add `DiscordHttpClient.guild_thread_get_all_active`.
+- Add `DiscordHTTPClient.guild_thread_get_all_active`.
 - Add `RATE_LIMIT_GROUPS.guild_thread_get_all_active`.
 - Add `Client.guild_thread_get_all_active`.
 - Add `Emoji._create_unicode`.
@@ -858,19 +859,19 @@ Make multiple entities to weakly bound to other ones.
 - Deprecate `Client.thread_get_all_active`.
 - Rename `Client.thread_get_all_active` to `.channel_thread_get_all_active`.
 - Rename `RATE_LIMIT_GROUPS.thread_get_chunk_active` to `.channel_thread_get_chunk_active`.
-- Rename `DiscordHttpClient.thread_get_chunk_active` to `.channel_thread_get_chunk_active`.
+- Rename `DiscordHTTPClient.thread_get_chunk_active` to `.channel_thread_get_chunk_active`.
 - Rename `request_thread_channels` to `request_channel_thread_channels`.
 - Deprecate `Client.thread_get_all_archived_private`.
 - Rename `Client.thread_get_all_archived_private` to `.channel_thread_get_all_archived_private`.
-- Rename `DiscordHttpClient.thread_get_chunk_archived_private` to `.channel_thread_get_chunk_archived_private`.
+- Rename `DiscordHTTPClient.thread_get_chunk_archived_private` to `.channel_thread_get_chunk_archived_private`.
 - Rename `RATE_LIMIT_GROUPS.thread_get_chunk_archived_private` to `.channel_thread_get_chunk_archived_private`.
 - Deprecate `Client.thread_get_all_archived_public`.
 - Rename `Client.thread_get_all_archived_public` to `.channel_thread_get_all_archived_public`.
-- Rename `DiscordHttpClient.thread_get_chunk_archived_public` to `.channel_thread_get_chunk_archived_public`.
+- Rename `DiscordHTTPClient.thread_get_chunk_archived_public` to `.channel_thread_get_chunk_archived_public`.
 - Rename `RATE_LIMIT_GROUPS.thread_get_chunk_archived_public` to `.channel_thread_get_chunk_archived_public`.
 - Deprecate `Client.thread_get_all_self_archived`.
 - Rename `Client.thread_get_all_self_archived` to `.channel_thread_get_all_self_archived`.
-- Rename `DiscordHttpClient.thread_get_chunk_self_archived` to `.channel_thread_get_chunk_self_archived`.
+- Rename `DiscordHTTPClient.thread_get_chunk_self_archived` to `.channel_thread_get_chunk_self_archived`.
 - Rename `RATE_LIMIT_GROUPS.thread_get_chunk_self_archived` to `.channel_thread_get_chunk_self_archived`.
 
 

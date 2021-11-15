@@ -25,7 +25,7 @@
 - Add `timed_out_until` parameter to `Client.client_guild_profile_edit`.
 - Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
 - Add `timed_out_until` transformer to audit logs.
-
+- Add `HATA_LIBRARY_URL` environmental variable.
 ##### ext.slash
 - Add `ComponentCommand.name`.
 - Add `name` parameter to `ComponentCommand.__new__`.

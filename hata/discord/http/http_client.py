@@ -12,10 +12,11 @@ from ...backend.quote import quote
 from ...backend.event_loop import LOOP_TIME
 from ...backend.formdata import Formdata
 
-from ...env import API_VERSION
+from ...env import API_VERSION, LIBRARY_URL
 
 from ..exceptions import DiscordException
 from ..core import KOKORO
+from ... import __version__
 from .urls import API_ENDPOINT, DISCORD_ENDPOINT, STATUS_ENDPOINT
 
 from .headers import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION, DEBUG_OPTIONS
@@ -23,7 +24,7 @@ from .rate_limit import RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStati
 from . import rate_limit_groups as RATE_LIMIT_GROUPS
 
 
-LIBRARY_USER_AGENT_BASE = 'Discord-client (HuyaneMatsu) Python'
+LIBRARY_USER_AGENT_BASE = f'DiscordBot ({LIBRARY_URL}, {__version__}) Python'
 LIBRARY_USER_AGENT = LIBRARY_USER_AGENT_BASE
 
 NON_JSON_TYPES = (Formdata, bytes, type(None))

@@ -24,7 +24,7 @@ class GatewayRateLimiter:
         The amount of requests which can be done, before the limit is exhausted.
     resets_at : `float`
         When the rate limit of the respective gateway will be reset.
-    wake_upper : `None`  or `TimerHandle`
+    wake_upper : `None`  or ``TimerHandle``
         A handler what will reset the limiter's limit and ensure it's queue if needed.
     """
     __slots__ = ('queue', 'remaining', 'resets_at', 'wake_upper', )

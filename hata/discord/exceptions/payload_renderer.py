@@ -13,7 +13,7 @@ TYPE_NAME_BOOLEAN = 'boolean'
 TYPE_NAME_INTEGER = 'integer'
 TYPE_NAME_FLOAT = 'float'
 TYPE_NAME_LIST = 'list'
-TYPE_NAME_HASH_MAP = 'hash_map'
+TYPE_NAME_HASH_MAP = 'object'
 TYPE_NAME_FORMDATA = 'formdata'
 
 MODIFIER_LENGTH = 'length'
@@ -26,6 +26,7 @@ VALUE_BOOLEAN_FALSE = 'false'
 STRING_MIN_LINE_LENGTH = 60
 STRING_MAX_LINE_LENGTH = 120
 STRING_BREAK_TO_MULTI_LINE_OVER = 60
+STRING_MAX_RENDER_LENGTH = 12000
 
 def reconstruct_payload(payload):
     """
@@ -82,10 +83,10 @@ def reconstruct_json_into(value, into, indent):
         into.append('): ')
         into.append(reprlib.repr(value))
     else:
-        reconstruct_value_into(json_data, into, indent)
+        reconstruct_value_into(json_data, into, indent, False)
 
 
-def reconstruct_value_into(value, into, indent):
+def reconstruct_value_into(value, into, indent, is_file):
     """
     Reconstructs a value extending the given `into` list.
     
@@ -97,6 +98,8 @@ def reconstruct_value_into(value, into, indent):
         A list to extend it's content.
     indent : `int`
         The amount of indents to add.
+    is_file : `bool`
+        Whether the value is a file and should not shown.
     """
     if value is None:
         reconstruct_null_into(into)
@@ -107,7 +110,7 @@ def reconstruct_value_into(value, into, indent):
         return
 
     if isinstance(value, str):
-        reconstruct_string_into(value, into, indent)
+        reconstruct_string_into(value, into, indent, is_file)
         return
     
     if isinstance(value, int):
@@ -165,7 +168,7 @@ def reconstruct_boolean_into(value, into):
     into.append(value_representation)
 
 
-def reconstruct_string_into(value, into, indent):
+def reconstruct_string_into(value, into, indent, is_file):
     """
     Reconstructs a string value to the given `into` list.
     
@@ -177,44 +180,56 @@ def reconstruct_string_into(value, into, indent):
         A list to extend it's content.
     indent : `int`
         The amount of indents to add.
+    is_file : `bool`
+        Whether teh value is a file and should nto be shown.
     """
     length = len(value)
-    if length > STRING_BREAK_TO_MULTI_LINE_OVER:
-        into.append('(')
-        
-        string_indent = indent+1
-        
-        chunk_size = STRING_MAX_LINE_LENGTH-string_indent*len(VALUE_INDENT)
-        if chunk_size < STRING_MIN_LINE_LENGTH:
-            chunk_size = STRING_MIN_LINE_LENGTH
-        
-        start_index = 0
-        while True:
-            end_index = start_index+chunk_size
-            if end_index >= length:
-                end_index = length
-                should_break = True
-            else:
-                should_break = False
-            
-            for counter in range(string_indent):
-                into.append(VALUE_INDENT)
-            
-            into.append(repr(value[start_index:end_index]))
-            
-            if should_break:
-                break
-            
-            start_index = end_index
-            continue
     
-        for counter in range(indent):
-            into.append(VALUE_INDENT)
-        
+    if is_file or (length > STRING_MAX_RENDER_LENGTH):
+        into.append(TYPE_NAME_STRING)
+        into.append('(')
+        into.append(MODIFIER_LENGTH)
+        into.append('=')
+        into.append(str(length))
         into.append(')')
     
     else:
-        into.append(repr(value))
+        if length > STRING_BREAK_TO_MULTI_LINE_OVER:
+            into.append('(')
+            
+            string_indent = indent+1
+            
+            chunk_size = STRING_MAX_LINE_LENGTH-string_indent*len(VALUE_INDENT)
+            if chunk_size < STRING_MIN_LINE_LENGTH:
+                chunk_size = STRING_MIN_LINE_LENGTH
+            
+            start_index = 0
+            while True:
+                end_index = start_index+chunk_size
+                if end_index >= length:
+                    end_index = length
+                    should_break = True
+                else:
+                    should_break = False
+                
+                for counter in range(string_indent):
+                    into.append(VALUE_INDENT)
+                
+                into.append(repr(value[start_index:end_index]))
+                
+                if should_break:
+                    break
+                
+                start_index = end_index
+                continue
+        
+            for counter in range(indent):
+                into.append(VALUE_INDENT)
+            
+            into.append(')')
+        
+        else:
+            into.append(repr(value))
 
 
 def reconstruct_integer_into(value, into):
@@ -273,7 +288,7 @@ def reconstruct_list_into(value, into, indent):
             into.append(str(index))
             into.append(': ')
             
-            reconstruct_value_into(list_element, into, element_indent)
+            reconstruct_value_into(list_element, into, element_indent, False)
             
             into.append(',\n')
         
@@ -311,7 +326,7 @@ def reconstruct_hash_map_into(value, into, indent):
             into.append(repr(item_key))
             into.append(': ')
             
-            reconstruct_value_into(item_value, into, item_indent)
+            reconstruct_value_into(item_value, into, item_indent, False)
             
             into.append(',\n')
         
@@ -393,7 +408,7 @@ def reconstruct_formdata_into(value, into):
         if (filename is None) and (field_name == 'payload_json'):
             reconstruct_json_into(field_value, into, 1)
         else:
-            reconstruct_value_into(field_value, into, 1)
+            reconstruct_value_into(field_value, into, 1, True)
         into.append('\n')
     
     into.append('})')

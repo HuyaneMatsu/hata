@@ -5197,6 +5197,7 @@ class Lock:
         
         return ''.join(repr_parts)
 
+
 class ScarletLock(Lock):
     """
     A hata scarlet lock can be used to guarantee access to a shared resource `n` amount of times.

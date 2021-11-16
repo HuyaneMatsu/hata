@@ -85,6 +85,7 @@ class RateLimitGroup:
         cls._auto_next_id = group_id+(7<<8)
         return group_id
     
+    
     def __new__(cls, limiter=LIMITER_GLOBAL, optimistic=False):
         """
         Creates a new rate limit group.
@@ -120,6 +121,7 @@ class RateLimitGroup:
         self.group_id = cls.generate_next_id()
         return self
     
+    
     @classmethod
     def unlimited(cls):
         """
@@ -143,9 +145,11 @@ class RateLimitGroup:
         cls._unlimited = self
         return self
     
+    
     def __hash__(self):
         """Hash of a rate limit group equals to it's group_id."""
         return self.group_id
+    
     
     def __repr__(self):
         """Returns the representation of the rate limit group."""
@@ -202,6 +206,7 @@ class RateLimitUnit:
         self.drop = drop
         self.allocates = allocates
         self.next = None
+    
     
     def update_with(self, drop, allocates):
         """
@@ -268,7 +273,8 @@ class RateLimitUnit:
         
         self.allocates += allocates
         return
-        
+    
+    
     def __repr__(self):
         """Returns the representation of the rate limit unit."""
         repr_parts = [
@@ -302,6 +308,7 @@ class RateLimitUnit:
         
         return ''.join(repr_parts)
 
+
 class RateLimitHandler:
     """
     Handles a request's rate limit.
@@ -326,6 +333,7 @@ class RateLimitHandler:
     ``RateLimitHandler`` supports weakreferencing for garbage collecting purposing.
     """
     __slots__ = ('__weakref__', 'active', 'drops', 'limiter_id', 'parent', 'queue', 'wake_upper', )
+    
     def __new__(cls, parent, limiter_id):
         """
         Creates a new rate limit handler.
@@ -359,6 +367,7 @@ class RateLimitHandler:
         
         return self
     
+    
     def copy(self):
         """
         Copies the rate limit handler. Only the ``.parent`` and the ``.limiter_id`` attributes are copied, because
@@ -376,6 +385,7 @@ class RateLimitHandler:
         new.queue = None
         new.wake_upper = None
         return new
+    
     
     def __repr__(self):
         """Returns the representation of the rate limit handler."""
@@ -423,6 +433,7 @@ class RateLimitHandler:
         repr_parts.append('>')
         return ''.join(repr_parts)
     
+    
     def __bool__(self):
         """Returns whether the rate limit handler is active."""
         if self.active:
@@ -437,6 +448,7 @@ class RateLimitHandler:
         
         return False
     
+    
     def __eq__(self, other):
         """Returns whether the two rate limit handler has the same ``.limiter_id`` and ``.parent``."""
         if self.limiter_id != other.limiter_id:
@@ -446,6 +458,7 @@ class RateLimitHandler:
             return False
         
         return True
+    
     
     def __ne__(self, other):
         """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
@@ -457,9 +470,11 @@ class RateLimitHandler:
         
         return False
     
+    
     def __hash__(self):
         """Hashes the rate limit handler."""
         return self.parent.group_id+self.limiter_id
+    
     
     def is_unlimited(self):
         """
@@ -473,6 +488,7 @@ class RateLimitHandler:
             return False
         
         return True
+    
     
     async def enter(self):
         """
@@ -517,6 +533,7 @@ class RateLimitHandler:
         await future
         
         self.active += 1
+    
     
     def exit(self, headers):
         """
@@ -625,6 +642,7 @@ class RateLimitHandler:
         wake_upper = KOKORO.call_at(drop, type(self).wake_up, self)
         self.wake_upper = wake_upper
     
+    
     def wake_up(self):
         """
         Called by ``.wake_upper`` when the handler's rate limits are dropped.
@@ -667,6 +685,7 @@ class RateLimitHandler:
             can_free -=1
             continue
     
+    
     def ctx(self):
         """
         Context manager for rate limit handler.
@@ -676,6 +695,7 @@ class RateLimitHandler:
         ctx : ``RateLimitHandlerCTX``
         """
         return RateLimitHandlerCTX(self)
+    
     
     def count_drops(self):
         """
@@ -694,6 +714,7 @@ class RateLimitHandler:
         
         return result
 
+
 class RateLimitHandlerCTX:
     """
     Context manager of a ``RateLimitHandler``.
@@ -709,6 +730,7 @@ class RateLimitHandlerCTX:
         Whether the context manager was exited already.
     """
     __slots__ = ('parent', 'exited', )
+    
     def __init__(self, parent):
         """
         Creates a new rate limit handler context manager.
@@ -720,6 +742,7 @@ class RateLimitHandlerCTX:
         """
         self.parent = parent
         self.exited = False
+    
     
     def exit(self, headers):
         """
@@ -735,9 +758,11 @@ class RateLimitHandlerCTX:
         self.exited = True
         self.parent.exit(headers)
     
+    
     def __enter__(self):
         """Enters the context manager returning itself."""
         return self
+    
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exists the context manager and if the context manager was not exited yet, exists it's parent as well."""
@@ -779,6 +804,7 @@ class StaticRateLimitGroup:
         The timeout till the rate limits reset.
     """
     __slots__ = ('group_id', 'limiter', 'size', 'timeout')
+    
     def __new__(cls, size, timeout, limiter=LIMITER_GLOBAL):
         """
         Creates a new rate limit group.
@@ -860,9 +886,10 @@ class StaticRateLimitHandler:
     
     Notes
     -----
-    Static rate limit handlers are weakreferencable.
+    Static rate limit handlers are weakreferable.
     """
     __slots__ = ('__weakref__', 'limiter_id', 'parent', 'lock')
+    
     def __new__(cls, parent, limiter_id):
         """
         Creates a new static rate limiter instance.
@@ -927,6 +954,7 @@ class StaticRateLimitHandler:
         repr_parts.append('>')
         return ''.join(repr_parts)
     
+    
     def __bool__(self):
         """Returns whether the rate limit handler is active."""
         lock = self.lock
@@ -938,6 +966,7 @@ class StaticRateLimitHandler:
         
         return False
     
+    
     def __eq__(self, other):
         """Returns whether the two rate limit handler has the same ``.limiter_id`` and ``.parent``."""
         if self.limiter_id != other.limiter_id:
@@ -947,6 +976,7 @@ class StaticRateLimitHandler:
             return False
         
         return True
+    
     
     def __ne__(self, other):
         """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
@@ -958,9 +988,11 @@ class StaticRateLimitHandler:
         
         return False
     
+    
     def __hash__(self):
         """Hashes the rate limit handler."""
         return self.parent.group_id+self.limiter_id
+    
     
     def is_unlimited(self):
         """
@@ -970,6 +1002,7 @@ class StaticRateLimitHandler:
             Static rate limit handlers are always limited.
         """
         return False
+    
     
     async def enter(self):
         """
@@ -985,6 +1018,7 @@ class StaticRateLimitHandler:
         
         await lock.acquire()
     
+    
     def exit(self, headers):
         """
         Called by the rate limit handler's context manager (``RateLimitHandlerCTX``) when a respective request is done.
@@ -999,6 +1033,7 @@ class StaticRateLimitHandler:
         handle = KOKORO.call_later(self.parent.timeout, self.lock.release)
         if handle is None: # If the loop is stopped, force release it.
             self.lock.release()
+    
     
     def ctx(self):
         """
@@ -1022,9 +1057,10 @@ class StackedStaticRateLimitHandler:
     
     Notes
     -----
-    Stacked static rate limit handlers are weakreferencable.
+    Stacked static rate limit handlers are weakreferable.
     """
     __slots__ = ('__weakref__', 'stack',)
+    
     def __new__(cls, parents, limiter_id):
         """
         Creates a new stacked static rate limiter instance.
@@ -1040,9 +1076,11 @@ class StackedStaticRateLimitHandler:
         self.stack = tuple(StaticRateLimitHandler(parent, limiter_id) for parent in parents)
         return self
     
+    
     def __repr__(self):
         """Returns the rate limit handler's representation."""
         return f'<{self.__class__.__name__} stack={self.stack!r}>'
+    
     
     def __bool__(self):
         """Returns whether the rate limit handler is active."""
@@ -1051,6 +1089,7 @@ class StackedStaticRateLimitHandler:
                 return True
         
         return False
+    
     
     def __eq__(self, other):
         """Returns whether the two rate limit handler has the same ``.limiter_id`` and ``.parent``."""
@@ -1062,6 +1101,7 @@ class StackedStaticRateLimitHandler:
         
         return False
     
+    
     def __ne__(self, other):
         """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
         if isinstance(other, StackedStaticRateLimitHandler):
@@ -1072,9 +1112,11 @@ class StackedStaticRateLimitHandler:
         
         return False
     
+    
     def __hash__(self):
         """Hashes the rate limit handler."""
         return hash(self.stack[0])
+    
     
     def is_unlimited(self):
         """
@@ -1084,6 +1126,7 @@ class StackedStaticRateLimitHandler:
             Static rate limit handlers are always limited.
         """
         return False
+    
     
     async def enter(self):
         """
@@ -1103,6 +1146,7 @@ class StackedStaticRateLimitHandler:
                 
                 raise
     
+    
     def exit(self, headers):
         """
         Called by the rate limit handler's context manager (``RateLimitHandlerCTX``) when a respective request is done.
@@ -1116,6 +1160,7 @@ class StackedStaticRateLimitHandler:
         """
         for handler in self.stack:
             handler.exit(headers)
+    
     
     def ctx(self):
         """

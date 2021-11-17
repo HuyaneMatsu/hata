@@ -917,7 +917,7 @@ class ClientResponse:
         
         return body.decode(encoding, errors)
     
-    async def json(self, encoding=None, loader=json.loads, content_type='application/json'):
+    async def json(self, encoding=None, loader=json.loads, content_type=None):
         """
         Loads the response's content as a json.
         
@@ -930,7 +930,7 @@ class ClientResponse:
             own encoding.
         loader : `callable`, Optional
             Json loader. Defaults to json.loads`.
-        content_type : `str`, Optional
+        content_type : `None` or `str`, Optional
             Content type to use instead of the default one. Defaults to `'application/json'`.
         
         Returns
@@ -949,8 +949,11 @@ class ClientResponse:
         if content_type is not None:
             received_content_type = self.headers.get(CONTENT_TYPE, '').lower()
             
-            if (json_re.match(received_content_type) is None) if (content_type == 'application/json') else \
-                    (content_type not in received_content_type):
+            if (
+                (json_re.match(received_content_type) is None)
+                     if (content_type is None) else
+                (content_type not in received_content_type)
+            ):
                 raise TypeError(f'Attempt to decode JSON with unexpected mime_type: {received_content_type!r}.')
         
         stripped = body.strip()

@@ -264,7 +264,7 @@ class DiscordHTTPClient(HTTPClient):
                     if not try_again:
                         raise ConnectionError('Invalid address or no connection with Discord.') from err
                     
-                    # os cant handle more, need to wait for the blocking job to be done
+                    # os can not handle more, need to wait for the blocking job to be done. This can happen on Windows.
                     await sleep(0.5/try_again, self.loop)
                     # Invalid address causes OSError too, but we will let it run 5 times, then raise a ConnectionError
                     try_again -= 1
@@ -274,7 +274,7 @@ class DiscordHTTPClient(HTTPClient):
                 status = response.status
                 
                 content_type_headers = response_headers.get(CONTENT_TYPE, None)
-                if (content_type_headers is not None) and (content_type_headers == 'application/json'):
+                if (content_type_headers is not None) and content_type_headers.startswith('application/json'):
                     response_data = from_json(response_data)
                 
                 if 199 < status < 305:

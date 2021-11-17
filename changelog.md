@@ -26,6 +26,7 @@
 - Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
 - Add `timed_out_until` transformer to audit logs.
 - Add `HATA_LIBRARY_URL` environmental variable.
+- Newly added `launch` event handlers will be ensured instantly if launch was already called.
 
 ##### ext.slash
 - Add `ComponentCommand.name`.

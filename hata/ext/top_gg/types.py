@@ -660,7 +660,7 @@ class BotVote(VoteBase):
         
         self.bot_id = int(data[JSON_KEY_BOT_VOTE_BOT_ID])
         
-        self.is_weekend = data[JSON_KEY_BOT_VOTE_IS_WEEKEND]
+        self.is_weekend = data.get(JSON_KEY_BOT_VOTE_IS_WEEKEND, False)
         
         return self
     

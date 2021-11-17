@@ -53,9 +53,6 @@ def setup_ext_slash(client, **kwargs):
     ----------
     client : ``Client``
         The client to setup the extension on.
-    immediate_sync : `bool`, Optional
-        Whether application command sync task should be started immediately as it is detected that no more features
-        are added to the slasher. Defaults to `False`.
     **kwargs : Keyword parameters
         Additional keyword parameter to be passed to the created ``Slasher``.
     

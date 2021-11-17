@@ -3,6 +3,9 @@ __all__ = ()
 from functools import partial as partial_func
 
 from ...backend.utils import WeakReferer
+from ...backend.futures import Task
+
+from ..core import KOKORO
 
 from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, \
     get_plugin_event_handler_and_parameter_count, PARSER_SETTINGS, EVENT_HANDLER_NAMES, \
@@ -49,7 +52,7 @@ class EventHandlerManager:
         Event name to plugin relation.
     _plugins : `None` or `set` of ``EventHandlerPlugin``
         Plugins added to the event handler.
-    client_reference : ``WeakReferer``
+    client_reference : ``WeakReferer`` to ``Client``
         Weak reference to the parent client to avoid reference loops.
     
     Additional Event Attributes
@@ -898,6 +901,11 @@ class EventHandlerManager:
                         list.append(new, func)
                         object.__setattr__(plugin, name, new)
         
+        if self._launch_called and (name == 'launch'):
+            client = self.client_reference()
+            if (client is not None):
+                Task(func(client), KOKORO)
+        
         return func
     
     
@@ -976,7 +984,10 @@ class EventHandlerManager:
                 object.__setattr__(plugin, name, func)
         
         
-        raise AttributeError(f'Unknown attribute: `{name!r}`.') from None
+        if self._launch_called and (name == 'launch'):
+            client = self.client_reference()
+            if (client is not None):
+                Task(func(client), KOKORO)
     
     
     def __delattr__(self, name):

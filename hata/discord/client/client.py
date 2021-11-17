@@ -827,7 +827,7 @@ class Client(ClientUserPBase):
             return (await response.read())
     
     
-    async def client_edit(self, *, name=None, avatar=..., bio=..., banner_color=..., banner=..., # Generic
+    async def client_edit(self, *, avatar=..., banner=..., banner_color=..., bio=..., name=None, # Generic
         password=None, new_password=None, email=None, house=... # User account only
     ):
         """
@@ -838,22 +838,22 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        name : `str`, Optional (Keyword only)
-            The client's new name.
-        
         avatar : `None` or `bytes-like`, Optional (Keyword only)
             An `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
         
-        bio : `None` or `str`, Optional (Keyword only)
-            The new bio of the client. By passing it as `None`, you can remove the client's current one.
+        banner : `None` or `bytes-like`, Optional (Keyword only)
+            An `'jpg'`, `'png'`, `'webp'`, 'gif'` image's raw data. By passing `None` you can remove the client's
+            current avatar.
         
         banner_color : `None`, ``Color`` or `int`, Optional (Keyword only)
             The new banner color of the client. By passing it as `None` you can remove the client's current one.
         
-        banner : `None` or `bytes-like`, Optional (Keyword only)
-            An `'jpg'`, `'png'`, `'webp'`, 'gif'` image's raw data. By passing `None` you can remove the client's
-            current avatar.
+        bio : `None` or `str`, Optional (Keyword only)
+            The new bio of the client. By passing it as `None`, you can remove the client's current one.
+        
+        name : `str`, Optional (Keyword only)
+            The client's new name.
         
         password : `str`, Optional (Keyword only)
             The actual password of the client.
@@ -898,17 +898,6 @@ class Client(ClientUserPBase):
         """
         data = {}
         
-        if (name is not None):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
-                
-                name_length = len(name)
-                if name_length < 2 or name_length > 32:
-                    raise AssertionError(f'The length of the name can be in range [2:32], got {name_length}; {name!r}.')
-            
-            data['username'] = name
-        
         
         if (avatar is not ...):
             if avatar is None:
@@ -933,31 +922,6 @@ class Client(ClientUserPBase):
             data['avatar'] = avatar_data
         
         
-        if (bio is not ...):
-            if bio is None:
-                bio = ''
-            else:
-                if __debug__:
-                    if not isinstance(bio, str):
-                        raise AssertionError(f'`bio` can be given either as `None` or `str` instance, got '
-                            f'{bio.__class__.__name__}.')
-                    
-                    bio_length = len(bio)
-                    if bio_length > 190:
-                        raise AssertionError(f'`bio` length can be in range [0:190], got {bio_length!r}; {bio!r}.')
-            
-            data['bio'] = bio
-        
-        
-        if (banner_color is not ...):
-            if __debug__:
-                if (banner_color is not None) and (not isinstance(banner_color, int)):
-                    raise AssertionError(f'`banner_color` can be either `None`, `{Color.__name__}` or `int` '
-                        f'instance, got {banner_color.__name__}.')
-            
-            data['accent_color'] = banner_color
-        
-        
         if (banner is not ...):
             if banner is None:
                 banner_data = None
@@ -975,6 +939,43 @@ class Client(ClientUserPBase):
                 banner_data = image_to_base64(banner)
             
             data['banner'] = banner_data
+        
+        
+        if (banner_color is not ...):
+            if __debug__:
+                if (banner_color is not None) and (not isinstance(banner_color, int)):
+                    raise AssertionError(f'`banner_color` can be either `None`, `{Color.__name__}` or `int` '
+                        f'instance, got {banner_color.__name__}.')
+            
+            data['accent_color'] = banner_color
+        
+        
+        if (bio is not ...):
+            if bio is None:
+                bio = ''
+            else:
+                if __debug__:
+                    if not isinstance(bio, str):
+                        raise AssertionError(f'`bio` can be given either as `None` or `str` instance, got '
+                            f'{bio.__class__.__name__}.')
+                    
+                    bio_length = len(bio)
+                    if bio_length > 190:
+                        raise AssertionError(f'`bio` length can be in range [0:190], got {bio_length!r}; {bio!r}.')
+            
+            data['bio'] = bio
+        
+        
+        if (name is not None):
+            if __debug__:
+                if not isinstance(name, str):
+                    raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                
+                name_length = len(name)
+                if name_length < 2 or name_length > 32:
+                    raise AssertionError(f'The length of the name can be in range [2:32], got {name_length}; {name!r}.')
+            
+            data['username'] = name
         
         
         if not self.is_bot:

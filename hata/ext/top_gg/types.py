@@ -1,5 +1,7 @@
-__all__ = ('BotInfo', 'BotStats','BotsQueryResult', 'BriefUserInfo', 'UserConnections', 'UserInfo')
+__all__ = ('BotInfo', 'BotStats', 'BotVote', 'BotsQueryResult', 'BriefUserInfo', 'GuildVote', 'UserConnections',
+    'UserInfo', 'VoteBase')
 
+from ...backend.utils import copy_docs
 from ...discord.utils import timestamp_to_datetime
 from ...discord.bases import IconSlot, Slotted
 from ...discord.http import urls as module_urls
@@ -34,6 +36,15 @@ from .constants import JSON_KEY_USER_INFO_CONNECTION_YOUTUBE, JSON_KEY_USER_INFO
 from .constants import JSON_KEY_BOTS_QUERY_RESULT_RESULTS, JSON_KEY_BOTS_QUERY_RESULT_LIMIT, \
     JSON_KEY_BOTS_QUERY_RESULT_OFFSET, JSON_KEY_BOTS_QUERY_RESULT_COUNT, JSON_KEY_BOTS_QUERY_RESULT_TOTAL
 
+# vote base constants
+from .constants import JSON_KEY_VOTE_BASE_QUERY, JSON_KEY_VOTE_BASE_TYPE, JSON_KEY_VOTE_BASE_USER_ID
+
+# bot vote constants
+from .constants import JSON_KEY_BOT_VOTE_BOT_ID, JSON_KEY_BOT_VOTE_IS_WEEKEND
+
+# guild vote constants
+from .constants import JSON_KEY_GUILD_VOTE_GUILD_ID
+
 class BotInfo(metaclass=Slotted):
     """
     Representing information about a bot.
@@ -51,7 +62,7 @@ class BotInfo(metaclass=Slotted):
     discriminator : `int`
         The bot's discriminator.
     donate_bot_guild_id : `int`
-        The guild id for the donatebot setup(?).
+        The guild id for the donate bot setup(?).
     featured_guild_ids : `None` or `tuple` of `int`
         The featured guild's identifiers on the bot's page.
     github_url : `None` or `str`
@@ -574,3 +585,116 @@ class BotsQueryResult:
             raise IndexError(index)
         
         return results[index]
+
+
+class VoteBase:
+    """
+    Base class for vote instances received with webhook.
+    
+    Attributes
+    ----------
+    query : `str`
+        Query used to redirect to vote.
+    type : `str`
+        The vote's type. Can be either `'upvote'` or `'test'`.
+    user_id : `int`
+        The user's identifier, who voted.
+    """
+    __slots__ = ('query', 'type', 'user_id')
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates a new vote instance.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Deserialized vote webhook data.
+        
+        Returns
+        -------
+        self : ``VoteBase``
+        """
+        self = object.__new__(cls)
+        
+        # query
+        self.query = data[JSON_KEY_VOTE_BASE_QUERY]
+        
+        # type
+        self.type = data[JSON_KEY_VOTE_BASE_TYPE]
+        
+        # user_id
+        self.user_id = int(data[JSON_KEY_VOTE_BASE_USER_ID])
+        
+        return self
+    
+    def __repr__(self):
+        """Returns the vote's representation."""
+        return f'<{self.__class__.__name__} user_id={self.user_id!r}>'
+
+
+class BotVote(VoteBase):
+    """
+    Bot vote received with webhook.
+    
+    Attributes
+    ----------
+    query : `str`
+        Query used to redirect to vote.
+    type : `str`
+        The vote's type. Can be either `'upvote'` or `'test'`.
+    user_id : `int`
+        The user's identifier, who voted.
+    bot_id : `int`
+        The bot's identifier.
+    is_weekend : `bool`
+        Whether the vote was done on a weekend.
+    """
+    __slots__ = ('bot_id', 'is_weekend')
+
+    @classmethod
+    @copy_docs(VoteBase.from_data)
+    def from_data(cls, data):
+        self = super(BotVote, cls).from_data(data)
+        
+        self.bot_id = int(data[JSON_KEY_BOT_VOTE_BOT_ID])
+        
+        self.is_weekend = data[JSON_KEY_BOT_VOTE_IS_WEEKEND]
+        
+        return self
+    
+    @copy_docs(VoteBase.__repr__)
+    def __repr__(self):
+        return f'<{self.__class__.__name__} user_id={self.user_id!r} bot_id={self.bot_id!r}>'
+
+
+class GuildVote(VoteBase):
+    """
+    Guild vote received with webhook.
+    
+    Attributes
+    ----------
+    query : `str`
+        Query used to redirect to vote.
+    type : `str`
+        The vote's type. Can be either `'upvote'` or `'test'`.
+    user_id : `int`
+        The user's identifier, who voted.
+    guild_id : `int`
+        The guild's identifier.
+    """
+    __slots__ = ('guild_id',)
+
+    @classmethod
+    @copy_docs(VoteBase.from_data)
+    def from_data(cls, data):
+        self = super(GuildVote, cls).from_data(data)
+        
+        self.guild_id = int(data[JSON_KEY_GUILD_VOTE_GUILD_ID])
+        
+        return self
+    
+    @copy_docs(VoteBase.__repr__)
+    def __repr__(self):
+        return f'<{self.__class__.__name__} user_id={self.user_id!r} guild_id={self.guild_id!r}>'

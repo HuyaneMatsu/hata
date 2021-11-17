@@ -421,7 +421,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         AssertionError
             - If `rpc_token` is not `str` instance.
             - If `name` is not `str` instance.
@@ -493,7 +493,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         AssertionError
             If `access_token` is not `str` instance.
         """
@@ -530,7 +530,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_GUILD_GET_ALL,
@@ -573,7 +573,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         guild_id = get_guild_id(guild)
         
@@ -620,7 +620,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         channel_id = get_channel_id(channel, ChannelBase)
         
@@ -679,7 +679,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         guild_id = get_guild_id(guild)
         
@@ -728,7 +728,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         AssertionError
             - If `audio_balance` is neither `None` nor ``AudioBalance`` instance.
             - If `mute` is neither `None` nor `int` instance.
@@ -801,7 +801,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         AssertionError
             If `force` is not `bool` instance.
         """
@@ -852,7 +852,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_VOICE_GET,
@@ -891,7 +891,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         if (channel is None):
             channel_id = None
@@ -933,7 +933,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_VOICE_SETTINGS_GET,
@@ -1002,7 +1002,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         if __debug__:
             if (input_ is not None) and (not isinstance(input_, VoiceSettingsInput)):
@@ -1117,7 +1117,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         guild_id = get_guild_id(guild)
         
@@ -1152,7 +1152,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         guild_id = get_guild_id(guild)
         
@@ -1185,7 +1185,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         if __debug__:
             for device in devices:
@@ -1230,7 +1230,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         activity_data = activity.user_dict()
         activity_data['instance'] = True
@@ -1268,7 +1268,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         user_id = get_user_id(user)
         
@@ -1303,7 +1303,7 @@ class RPCClient:
         TimeoutError
             No response received within timeout interval.
         DiscordRPCError
-            Any exception dropped by back the discord client.
+            Any exception dropped back by the discord client.
         """
         user_id = get_user_id(user)
         

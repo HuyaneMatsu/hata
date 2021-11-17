@@ -54,6 +54,9 @@ HATA_DOCS_ENABLED : `bool` = `True`
 
 HATA_LIBRARY_URL : `str` = `'https://github.com/HuyaneMatsu/hata'`
     Library url used at user agents.
+    
+HATA_RICH_DISCORD_EXCEPTION : `bool` = `False`
+    Whether ``DiscordException``-s should show the request data as well.
 """
 import warnings
 from os import getenv as get_environmental_variable
@@ -209,6 +212,6 @@ if API_VERSION not in (7, 8):
     elif API_VERSION == 6:
         warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)
 
-RICH_DISCORD_EXCEPTION = get_bool_env('HATA_RICH_DISCORD_EXCEPTION', False)
-
 LIBRARY_URL = get_str_env('HATA_LIBRARY_URL', 'https://github.com/HuyaneMatsu/hata')
+
+RICH_DISCORD_EXCEPTION = get_bool_env('HATA_RICH_DISCORD_EXCEPTION', False)

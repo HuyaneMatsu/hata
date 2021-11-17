@@ -266,7 +266,7 @@ class DiscordHTTPClient(HTTPClient):
                     
                     # os cant handle more, need to wait for the blocking job to be done
                     await sleep(0.5/try_again, self.loop)
-                    #invalid address causes OSError too, but we will let it run 5 times, then raise a ConnectionError
+                    # Invalid address causes OSError too, but we will let it run 5 times, then raise a ConnectionError
                     try_again -= 1
                     continue
                 

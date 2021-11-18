@@ -144,7 +144,7 @@ class TopGGClient:
     __slots__ = ('__weakref__', '_auto_post_handler', '_auto_post_running', '_global_rate_limit_expires_at', '_headers',
         '_rate_limit_handler_bots', '_rate_limit_handler_global', 'client_id', 'client_reference', 'http', 'top_gg_token',)
     
-    def __new__(cls, client, top_gg_token):
+    def __new__(cls, client, top_gg_token, auto_post_bot_stats=True):
         """
         Creates a new top.gg client instance.
         
@@ -154,12 +154,17 @@ class TopGGClient:
             The discord client.
         top_gg_token : `str`
             Top.gg api token.
+        auto_post_bot_stats : `bool`, Optional
+            Whether auto post should be started as the client launches up.
+            
+            Defaults to `True`.
         
         Raises
         ------
         TypeError
             - If `client` is not ``Client`` instance.
             - If `top_gg_token` is not `str` instance.
+            - If `auto_post_bot_stats` is not `bool` instance.
         """
         if not isinstance(client, Client):
             raise TypeError(f'`client` can be `{Client.__class__.__name__}` instance, got '
@@ -167,6 +172,10 @@ class TopGGClient:
         
         if not isinstance(top_gg_token, str):
             raise TypeError(f'`top_gg_token` can be `str` instance, got {top_gg_token.__class__.__name__}.')
+        
+        if not isinstance(auto_post_bot_stats, bool):
+            raise TypeError(f'`auto_post_bot_stats` can be `bool` instance, got '
+                f'{auto_post_bot_stats.__class__.__name__}.')
         
         client_reference = WeakReferer(client)
         
@@ -177,7 +186,7 @@ class TopGGClient:
         self = object.__new__(cls)
         self.client_reference = client_reference
         self._auto_post_handler = None
-        self._auto_post_running = True
+        self._auto_post_running = auto_post_bot_stats
         self._headers = headers
         
         self.client_id = client.id
@@ -189,6 +198,51 @@ class TopGGClient:
         self._rate_limit_handler_bots = RateLimitGroup(RATE_LIMIT_BOTS_SIZE, RATE_LIMIT_BOTS_RESET_AFTER)
         
         return self
+    
+    
+    def is_auto_posting(self):
+        """
+        Returns whether the bot stats are auto posted to top.gg
+        
+        Returns
+        -------
+        is_auto_posting : `bool`
+        """
+        return self._auto_post_running
+    
+    
+    def start_auto_posting(self):
+        """
+        Starts auto posting bot stats.
+        """
+        if not self._auto_post_running:
+            self._auto_post_running = True
+            
+            # We can only start it, if our client is running.
+            client = self.client_reference()
+            if (client is not None) and client.running:
+                
+                # Check edge case
+                auto_post_handler = self._auto_post_handler
+                if (auto_post_handler is None):
+                    
+                    self._auto_post_handler = KOKORO.call_later(
+                        AUTO_POST_INTERVAL,
+                        _trigger_auto_post,
+                        WeakReferer(self),
+                    )
+    
+    def stop_auto_posting(self):
+        """
+        Stops auto posting bot starts.
+        """
+        if self._auto_post_running:
+            self._auto_post_running = False
+            
+            auto_post_handler = self._auto_post_handler
+            if (auto_post_handler is not None):
+                self._auto_post_handler = None
+                auto_post_handler.cancel()
     
     
     async def post_bot_stats(self):

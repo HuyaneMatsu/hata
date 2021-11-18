@@ -277,7 +277,7 @@ class TopGGClient:
     
     async def get_weekend_status(self):
         """
-        Gets weekend status from top.gg.
+        Returns the weekend multiplier is on.
         
         This function is a coroutine.
         
@@ -298,7 +298,7 @@ class TopGGClient:
     
     async def get_bot_voters(self):
         """
-        Gets the last 1000 voters.
+        Returns the last 1000 voters.
         
         This method is a coroutine.
         
@@ -319,7 +319,7 @@ class TopGGClient:
     
     async def get_bot_info(self):
         """
-        Gets bot information and returns it.
+        Returns your bot's information.
         
         This method is a coroutine.
         

@@ -1,3 +1,10 @@
+## 1.1.121 *\[2021-11-??\]*
+
+#### Improvements
+
+- Add `ERROR_CODES.cannot_update_finished_scheduled_event`.
+- Add `ERROR_CODES.failed_to_create_stage_needed_for_scheduled_event`.
+
 ## 1.1.120 *\[2021-11-17\]*
 
 #### Improvements

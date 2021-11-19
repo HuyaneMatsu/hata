@@ -411,7 +411,11 @@ These are the following:
 +-------------------------------------------------------+-----------+-----------+
 | sticker_animation_duration_exceeds_5_second           | 170007    | -         |
 +-------------------------------------------------------+-----------+-----------+
+| cannot_update_finished_scheduled_event                | 180000    | -         |
++-------------------------------------------------------+-----------+-----------+
 | exactly_one_guild_id_parameter_is_required            | 180001    | -         |
++-------------------------------------------------------+-----------+-----------+
+| failed_to_create_stage_needed_for_scheduled_event     | 180002    | -         |
 +-------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
@@ -626,4 +630,6 @@ sticker_maximum_dimensions_exceeded = 170005
 sticker_frame_rate_out_of_expected_range = 170006
 sticker_animation_duration_exceeds_5_second = 170007
 
+cannot_update_finished_scheduled_event = 180000
 exactly_one_guild_id_parameter_is_required = 180001
+failed_to_create_stage_needed_for_scheduled_event = 180002

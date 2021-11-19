@@ -26,7 +26,7 @@ Usage
 The following example answers on `ping` message.
 
 ```py
-from hata import Client
+from hata import Client, wait_for_interruption
 
 Nue = Client('TOKEN')
 
@@ -43,12 +43,14 @@ async def message_create(client, message):
         await client.message_create(message.channel, 'pong')
 
 Nue.start()
+
+wait_for_interruption()
 ```
 
 An improved example using the `commands` extension to handle common use cases.
 
 ```py
-from hata import Client
+from hata import Client, wait_for_interruption
 
 Saki = Client('TOKEN', extensions='commands', prefix='s!')
 
@@ -61,12 +63,14 @@ async def ping(client, message):
     return 'pong'
 
 Saki.start()
+
+wait_for_interruption()
 ```
 
 Or use slash commands!
 
 ```py
-from hata import Client, Guild
+from hata import Client, Guild, wait_for_interruption
 
 GUILD = Guild.precreate(guild_id)
 
@@ -82,17 +86,19 @@ async def ping():
     return 'pong'
 
 Seija.start()
+
+wait_for_interruption()
 ```
 
 > Note: You need to restart your client, or the slash command wont show up. If there are more than 50 integrations
 > (bots) in a guild, some of the (integrations) bots wont be able to use slash commands. This is currently a Discord
 > limitation.
 
-If you wonder, how to run up more clients, just put the two code snippet into the same file.
-
 Hata leaves the main thread free, `client.start()` blocks it only till the client logs in (or fails it), although you
-can still use the `start_clients` function, what as it says, starts up all the non-running clients parallelly, so go
-ahead and start python with `-i` option, then interact with the clients from your interactive console in runtime.
+can still use the `start_clients()` function, what as it says, starts up all the non-running clients parallelly.
+
+Sometimes leaving the main thread might cause problems when trying to shut down the bot(s). At this case, you might
+want to use `wait_for_interruption()`, which shuts down the bot(s) and the event loop on keyboard interrupt.
 
 We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """

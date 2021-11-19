@@ -121,10 +121,9 @@ EMOJI_BIRD = BUILTIN_EMOJIS['bird']
 async def bird(animal:str=None):
     """Bird finds animals."""
     if animal is None:
-        # `{emoji:e}` is a shortcut for `.emoji`.
-        content = f'{EMOJI_BIRD:e} finds animals for you.'
+        content = f'{EMOJI_BIRD} finds animals for you.'
     else:
-        content = f'{EMOJI_BIRD:e} could not find animal named: `{animal}`.'
+        content = f'{EMOJI_BIRD} could not find animal named: `{animal}`.'
     
     return content
 

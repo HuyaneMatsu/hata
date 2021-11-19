@@ -126,7 +126,8 @@ wait_for_interruption()
 can still use the `start_clients()` function, what as it says, starts up all the non-running clients parallelly.*
 
 *Sometimes leaving the main thread might cause problems when trying to shut down the bot(s). At this case, you might
-want to use `wait_for_interruption()`, which shuts down the bot(s) and the event loop on keyboard interrupt.*
+want to use `wait_for_interruption()`, which disconnects the clients gracefully and closes the event loop on keyboard
+interrupt.*
 
 ## Installation
 

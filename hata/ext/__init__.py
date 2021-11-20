@@ -374,7 +374,7 @@ def run_setup_functions(client, setup_functions, kwargs):
     Parameters
     ----------
     client : ``Client``
-        The client on who the extensions should be setuped.
+        The client on who the extensions should be setupped.
     setup_functions : `None` or `set` of ``SetupFunction``
         The setup functions to run with the client.
     kwargs : `dict` of (`str`, `Any`) items

@@ -19,7 +19,7 @@ from .constants import JSON_KEY_POST_BOT_STATS_GUILD_COUNT, JSON_KEY_POST_BOT_ST
 from .types import UserInfo, BotInfo, BotsQueryResult
 from .bots_query import get_bots_query_sort_by_value, create_bots_query_search_value, BOTS_QUERY_FIELDS_VALUE
 from .rate_limit_handling import RateLimitGroup, RateLimitHandler, StackedRateLimitHandler
-from .exceptions import TopGGHttpException
+from .exceptions import TopGGHttpException, TopGGGloballyRateLimited
 
 AUTO_POST_INTERVAL = 1800.0
 
@@ -128,6 +128,8 @@ class TopGGClient:
         When the global rate limit expires in monotonic time.
     _headers : `imultidict`
         Request headers.
+    _raise_on_top_gg_global_rate_limit : `bool`
+        Whether ``TopGGGloballyRateLimited`` should be raised when the client gets globally rate limited.
     _rate_limit_handler_global : ``RateLimitHandler``
         Rate limit handler applied to all rate limits.
     _rate_limit_handler_bots : ``RateLimitHandler``
@@ -142,9 +144,10 @@ class TopGGClient:
         Top.gg api token.
     """
     __slots__ = ('__weakref__', '_auto_post_handler', '_auto_post_running', '_global_rate_limit_expires_at', '_headers',
-        '_rate_limit_handler_bots', '_rate_limit_handler_global', 'client_id', 'client_reference', 'http', 'top_gg_token',)
+        '_raise_on_top_gg_global_rate_limit', '_rate_limit_handler_bots', '_rate_limit_handler_global', 'client_id',
+        'client_reference', 'http', 'top_gg_token',)
     
-    def __new__(cls, client, top_gg_token, auto_post_bot_stats=True):
+    def __new__(cls, client, top_gg_token, auto_post_bot_stats=True, raise_on_top_gg_global_rate_limit=False):
         """
         Creates a new top.gg client instance.
         
@@ -158,6 +161,10 @@ class TopGGClient:
             Whether auto post should be started as the client launches up.
             
             Defaults to `True`.
+        raise_on_top_gg_global_rate_limit : `bool`, Optional
+            Whether ``TopGGGloballyRateLimited`` should be raised when the client gets globally rate limited.
+            
+            Defaults to `False`.
         
         Raises
         ------
@@ -165,6 +172,7 @@ class TopGGClient:
             - If `client` is not ``Client`` instance.
             - If `top_gg_token` is not `str` instance.
             - If `auto_post_bot_stats` is not `bool` instance.
+            - If `raise_on_top_gg_global_rate_limit` is not `bool` isinstance.
         """
         if not isinstance(client, Client):
             raise TypeError(f'`client` can be `{Client.__class__.__name__}` instance, got '
@@ -177,6 +185,11 @@ class TopGGClient:
             raise TypeError(f'`auto_post_bot_stats` can be `bool` instance, got '
                 f'{auto_post_bot_stats.__class__.__name__}.')
         
+        if not isinstance(raise_on_top_gg_global_rate_limit, bool):
+            raise TypeError(f'`raise_on_top_gg_global_rate_limit` can be `bool` instance, got '
+                f'{raise_on_top_gg_global_rate_limit.__class__.__name__}.')
+        
+        
         client_reference = WeakReferer(client)
         
         headers = imultidict()
@@ -187,6 +200,7 @@ class TopGGClient:
         self.client_reference = client_reference
         self._auto_post_handler = None
         self._auto_post_running = auto_post_bot_stats
+        self._raise_on_top_gg_global_rate_limit = raise_on_top_gg_global_rate_limit
         self._headers = headers
         
         self.client_id = client.id
@@ -255,6 +269,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -289,6 +306,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -310,6 +330,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -331,6 +354,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -366,8 +392,37 @@ class TopGGClient:
             - If `search` contains a not existent field.
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
+        
+        Keys
+        ----
+        `sort_by` fields and `search` field's keys might be the following:
+        
+        - banner_url
+        - certified_at
+        - discriminator
+        - donate_bot_guild_id
+        - featured_guild_ids
+        - github_url
+        - id
+        - invite_url
+        - is_certified
+        - long_description
+        - name
+        - owner_id
+        - owner_ids
+        - prefix
+        - short_description
+        - support_server_invite_url
+        - tags
+        - upvotes
+        - upvotes_monthly
+        - vanity_url
+        - website_url
         """
         if limit > 500:
             limit = 500
@@ -406,6 +461,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -432,6 +490,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -458,6 +519,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -483,6 +547,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -507,6 +574,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -531,6 +601,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -560,6 +633,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -590,6 +666,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -618,6 +697,9 @@ class TopGGClient:
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -645,12 +727,15 @@ class TopGGClient:
         rate_limit_handler : ``RateLimitHandlerBase`
             Rate limit handle to handle rate limit as.
         query_parameters : `None` or `Any`, Optional
-            Query parameters
+            Query parameters.
         
         Raises
         ------
         ConnectionError
             No internet connection.
+        TopGGGloballyRateLimited
+            If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+            `True`.
         TopGGHttpException
             Any exception raised by top.gg api.
         """
@@ -664,6 +749,9 @@ class TopGGClient:
         while try_again > 0:
             global_rate_limit_expires_at = self._global_rate_limit_expires_at
             if global_rate_limit_expires_at > LOOP_TIME():
+                if self._raise_on_top_gg_global_rate_limit:
+                    raise TopGGGloballyRateLimited(None)
+                
                 future = Future(KOKORO)
                 KOKORO.call_at(global_rate_limit_expires_at, Future.set_result_if_pending, future, None)
                 await future
@@ -704,6 +792,10 @@ class TopGGClient:
                             retry_after = RATE_LIMIT_GLOBAL_DEFAULT_DURATION
                     
                     self._global_rate_limit_expires_at = LOOP_TIME()+retry_after
+                    
+                    if self._raise_on_top_gg_global_rate_limit:
+                        raise TopGGGloballyRateLimited(None)
+                        
                     await sleep(retry_after, KOKORO)
                     continue
                 

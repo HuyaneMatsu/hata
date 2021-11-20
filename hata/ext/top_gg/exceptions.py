@@ -1,8 +1,26 @@
-__all__ = ('TopGGHttpException', )
+__all__ = ('TopGGHttpException', 'TopGGGloballyRateLimited',)
 
 import reprlib
 
 from .constants import JSON_KEY_EXCEPTION_MESSAGE
+
+class TopGGGloballyRateLimited(Exception):
+    """
+    response : ``ClientResponse`` or `None`
+            Response from top.gg if received as a response.
+    """
+    def __init__(self, response, response_data):
+        """
+        Creates a new top.gg http exception instance.
+        
+        Parameters
+        ----------
+        response : ``ClientResponse`` or `None`
+            Response from top.gg if received as a response.
+        """
+        self.response = response
+        Exception.__init__(self, response, response_data)
+
 
 class TopGGHttpException(Exception):
     """
@@ -10,10 +28,11 @@ class TopGGHttpException(Exception):
     
     Attributes
     ----------
+    response : ``ClientResponse``
+        Response from top.gg.
     message : `str`
         Exception message.
     """
-    
     def __init__(self, response, response_data):
         """
         Creates a new top.gg http exception instance.

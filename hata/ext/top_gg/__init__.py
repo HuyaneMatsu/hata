@@ -39,6 +39,14 @@ def setup_ext_top_gg(client, *args, **kwargs):
     ----------------
     top_gg_token : `str`
         Top.gg api token.
+    auto_post_bot_stats : `bool`, Optional
+        Whether auto post should be started as the client launches up.
+        
+        Defaults to `True`.
+    raise_on_top_gg_global_rate_limit : `bool`, Optional
+        Whether ``TopGGGloballyRateLimited`` should be raised when the client gets globally rate limited.
+        
+        Defaults to `False`.
     
     Returns
     -------
@@ -53,6 +61,7 @@ def setup_ext_top_gg(client, *args, **kwargs):
         - If `client` is not ``Client`` instance.
         - If `top_gg_token` is not `str` instance.
         - If `auto_post_bot_stats` is not `bool` instance.
+        - If `raise_on_top_gg_global_rate_limit` is not `bool` isinstance.
     """
     if hasattr(client, 'top_gg_client'):
         raise RuntimeError(f'The client already has `top_gg_client` attribute; got {client!r}.')
@@ -79,5 +88,6 @@ register_setup_function(
     ),
     (
         'auto_post_bot_stats',
+        'raise_on_top_gg_global_rate_limit',
     ),
 )

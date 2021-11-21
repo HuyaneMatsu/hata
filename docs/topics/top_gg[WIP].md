@@ -73,7 +73,7 @@ After passing it, you will get a ``TopGGGloballyRateLimited`` whenever the clien
 from hata.ext.top_gg import TopGGGloballyRateLimited
 
 try:
-    bot_info = await client.top_gg_client.get_bot_info()
+    bot_info = await client.top_gg.get_bot_info()
 except TopGGGloballyRateLimited:
     # global limit hit
     pass
@@ -89,7 +89,7 @@ Here is a quick rundown of the api methods provided by the extension. For more d
 Returns whether the weekend multiplier is on.
 
 ```py
-is_weekend = await Sakuya.top_gg_client.get_weekend_status()
+is_weekend = await Sakuya.top_gg.get_weekend_status()
 ```
 
 ### get_bot_voters
@@ -97,7 +97,7 @@ is_weekend = await Sakuya.top_gg_client.get_weekend_status()
 Returns the last 1000 voters.
 
 ```py
-voters = await Sakuya.top_gg_client.get_bot_voters()
+voters = await Sakuya.top_gg.get_bot_voters()
 ```
 
 ### get_bot_info
@@ -105,7 +105,7 @@ voters = await Sakuya.top_gg_client.get_bot_voters()
 Returns your bot's information.
 
 ```py
-bot_info = await Sakuya.top_gg_client.get_bot_info()
+bot_info = await Sakuya.top_gg.get_bot_info()
 ```
 
 ### get_bots
@@ -113,7 +113,7 @@ bot_info = await Sakuya.top_gg_client.get_bot_info()
 Returns bot information based on the given query.
 
 ```py
-bots = await Sakuya.top_gg_client.get_bots(limit=50, offset=0, sort_by=None, search=None)
+bots = await Sakuya.top_gg.get_bots(limit=50, offset=0, sort_by=None, search=None)
 ```
 
 `sort_by` fields and `search` field's keys might be the following:
@@ -145,7 +145,7 @@ bots = await Sakuya.top_gg_client.get_bots(limit=50, offset=0, sort_by=None, sea
 Returns the information about the user.
 
 ```py
-user_info = await Sakuya.top_gg_client.get_user_info(user_id)
+user_info = await Sakuya.top_gg.get_user_info(user_id)
 ```
 
 ### get_user_vote
@@ -153,7 +153,7 @@ user_info = await Sakuya.top_gg_client.get_user_info(user_id)
 Returns whether the user voted in the last 12 hours.
 
 ```py
-voted = await Sakuya.top_gg_client.get_user_vote(user_id)
+voted = await Sakuya.top_gg.get_user_vote(user_id)
 ```
 
 ## Webhook

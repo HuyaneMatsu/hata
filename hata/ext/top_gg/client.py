@@ -1,7 +1,7 @@
 __all__ = ('TopGGClient', )
 
 from ...backend.utils import WeakReferer, imultidict, to_json, from_json
-from ...backend.futures import Task, sleep, Future
+from ...backend.futures import Task, sleep, Future, shield
 from ...backend.headers import RETRY_AFTER, METHOD_GET, METHOD_POST, AUTHORIZATION, CONTENT_TYPE, USER_AGENT
 from ...backend.http import RequestCM
 from ...backend.event_loop import LOOP_TIME
@@ -22,6 +22,7 @@ from .rate_limit_handling import RateLimitGroup, RateLimitHandler, StackedRateLi
 from .exceptions import TopGGHttpException, TopGGGloballyRateLimited
 
 AUTO_POST_INTERVAL = 1800.0
+WEEKEND_STATE_UPDATE_INTERVAL = 300.0
 
 TOP_GG_ENDPOINT = 'https://top.gg/api'
 
@@ -35,7 +36,7 @@ async def _start_auto_post(client):
     ----------
     client : ``Client``
     """
-    top_gg_client = client.top_gg_client
+    top_gg_client = client.top_gg
     
     # update client is if required
     top_gg_client.client_id = client.client_id
@@ -59,7 +60,7 @@ async def _stop_auto_post(client):
     ----------
     client : ``Client``
     """
-    top_gg_client = client.top_gg_client
+    top_gg_client = client.top_gg
     
     top_gg_client._auto_post_running = False
     
@@ -114,6 +115,41 @@ async def _do_auto_post(top_gg_client, top_gg_client_reference):
             )
 
 
+async def get_weekend_status_task(top_gg_client):
+    """
+    Returns the weekend multiplier is on.
+    
+    This function is used for synchronizing multiple ``TopGGClient.get_weekend_status`` calls.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    top_gg_client : ``TopGGClient``
+        The top.gg client to use.
+    
+    Returns
+    -------
+    weekend_status : `bool`
+    
+    Raises
+    ------
+    ConnectionError
+        No internet connection.
+    TopGGGloballyRateLimited
+        If the client got globally rate limited by top.gg and `raise_on_top_gg_global_rate_limit` was given as
+        `True`.
+    TopGGHttpException
+        Any exception raised by top.gg api.
+    """
+    try:
+        data = await top_gg_client._get_weekend_status()
+    finally:
+        top_gg_client._weekend_status_request_task = None
+    
+    return data[JSON_KEY_WEEKEND_STATUS]
+
+
 class TopGGClient:
     """
     Represents a client connection towards top.gg.
@@ -134,6 +170,12 @@ class TopGGClient:
         Rate limit handler applied to all rate limits.
     _rate_limit_handler_bots : ``RateLimitHandler``
         Rate limit handler applied to `/bots` endpoints.
+    _weekend_status_cache_time : `float`
+        When the last ``.get_weekend_status`` was done.
+    _weekend_status_cache_value : `bool`
+        The response of the last ``get_weekend_status`` call.
+    _weekend_status_request_task : `None` or ``Task``
+        Synchronization task for requesting weekend status.
     client_id : `int`
         The client's identifier.
     client_reference : ``WeakReferer`` to ``Client``
@@ -143,8 +185,9 @@ class TopGGClient:
     top_gg_token : `str`
         Top.gg api token.
     """
-    __slots__ = ('__weakref__', '_auto_post_handler', '_auto_post_running', '_global_rate_limit_expires_at', '_headers',
-        '_raise_on_top_gg_global_rate_limit', '_rate_limit_handler_bots', '_rate_limit_handler_global', 'client_id',
+    __slots__ = ('__weakref__', '_auto_post_handler', '_auto_post_running', '_global_rate_limit_expires_at',
+        '_headers', '_raise_on_top_gg_global_rate_limit', '_rate_limit_handler_bots', '_rate_limit_handler_global',
+        '_weekend_status_cache_time', '_weekend_status_cache_value', '_weekend_status_request_task', 'client_id',
         'client_reference', 'http', 'top_gg_token',)
     
     def __new__(cls, client, top_gg_token, auto_post_bot_stats=True, raise_on_top_gg_global_rate_limit=False):
@@ -210,6 +253,10 @@ class TopGGClient:
         self._global_rate_limit_expires_at = 0.0
         self._rate_limit_handler_global = RateLimitGroup(RATE_LIMIT_GLOBAL_SIZE, RATE_LIMIT_GLOBAL_RESET_AFTER)
         self._rate_limit_handler_bots = RateLimitGroup(RATE_LIMIT_BOTS_SIZE, RATE_LIMIT_BOTS_RESET_AFTER)
+        
+        self._weekend_status_cache_time = 0.0
+        self._weekend_status_cache_value = False
+        self._weekend_status_request_task = None
         
         return self
     
@@ -292,11 +339,16 @@ class TopGGClient:
             await self._post_bot_stats(data)
     
     
-    async def get_weekend_status(self):
+    async def get_weekend_status(self, *, force_update=False):
         """
         Returns the weekend multiplier is on.
         
-        This function is a coroutine.
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        force_update : `bool`, Optional (Keyword only)
+            Whether the weekend status should be forcefully updated instead of using the cached one.
         
         Returns
         -------
@@ -312,8 +364,17 @@ class TopGGClient:
         TopGGHttpException
             Any exception raised by top.gg api.
         """
-        data = await self._get_weekend_status()
-        return data[JSON_KEY_WEEKEND_STATUS]
+        if force_update or (self._weekend_status_cache_time < LOOP_TIME()):
+            task = self._weekend_status_request_task
+            if task is None:
+                task = Task(get_weekend_status_task(self), KOKORO)
+                self._weekend_status_request_task = task
+            
+            weekend_status = await shield(task, KOKORO)
+        else:
+            weekend_status = self._weekend_status_cache_value
+        
+        return weekend_status
     
     
     async def get_bot_voters(self):

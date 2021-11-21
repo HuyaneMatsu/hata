@@ -770,7 +770,7 @@ class multidict(dict):
         value : `default` or `list` of `Any`
             The 0th matched value. If `key` is not present, but `default` value is given, then returns that.
         
-        raises
+        Raises
         ------
         KeyError
             if `key` is not present in the multidict and `default` value is not given either.
@@ -1078,7 +1078,7 @@ class imultidict(multidict):
         value : `default` or `list` of `Any`
             The 0th matched value. If `key` is not present, but `default` value is given, then returns that.
         
-        raises
+        Raises
         ------
         KeyError
             if `key` is not present in the multidict and `default` value is not given either.

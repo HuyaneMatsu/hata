@@ -63,12 +63,12 @@ def setup_ext_top_gg(client, *args, **kwargs):
         - If `auto_post_bot_stats` is not `bool` instance.
         - If `raise_on_top_gg_global_rate_limit` is not `bool` isinstance.
     """
-    if hasattr(client, 'top_gg_client'):
+    if hasattr(client, 'top_gg'):
         raise RuntimeError(f'The client already has `top_gg_client` attribute; got {client!r}.')
     
     top_gg_client = TopGGClient(client, *args, **kwargs)
     
-    client.top_gg_client = top_gg_client
+    client.top_gg = top_gg_client
     client.events(_start_auto_post, name='launch')
     client.events(_stop_auto_post, name='shutdown')
     

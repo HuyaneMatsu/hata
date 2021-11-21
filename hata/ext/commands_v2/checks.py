@@ -1181,6 +1181,8 @@ class CheckHasClientPermission(CheckHasPermissionBase):
     """
     Checks whether the client has the given permissions in the message's channel.
     
+    
+    Attributes
     ----------
     permission : ``Permission``
         The required permissions to pass the check.
@@ -1235,6 +1237,7 @@ class CheckHasClientGuildPermission(CheckHasClientPermission):
     """
     Checks whether the client has the given permissions in the message's guild.
     
+    Attributes
     ----------
     permission : ``Permission``
         The required permissions to pass the check.

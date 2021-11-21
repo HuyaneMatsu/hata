@@ -4449,14 +4449,14 @@ def shield(awaitable, loop):
     
     Returns
     -------
-    TypeError
-        The given `awaitable` is not `awaitable`.
-    
-    Returns
-    -------
     un_protected : ``Future`` instance
         If the given `awaitable` is a finished task, returns it, else returns a ``Future``, to what the original
         awaitable's result will be chained to.
+    
+    Raises
+    -------
+    TypeError
+        The given `awaitable` is not `awaitable`.
     """
     protected = loop.ensure_future(awaitable)
     if protected._state is not PENDING:
@@ -4466,6 +4466,7 @@ def shield(awaitable, loop):
     protected._callbacks.append(_FutureChainer(un_protected))
     un_protected._callbacks.append(_ChainRemover(protected))
     return un_protected
+
 
 class WaitTillFirst(Future):
     """

@@ -39,7 +39,7 @@ async def _start_auto_post(client):
     top_gg_client = client.top_gg
     
     # update client is if required
-    top_gg_client.client_id = client.client_id
+    top_gg_client.client_id = client.id
     
     # Do not post initially, we might not have all the guilds loaded yet.
     if top_gg_client._auto_post_running:

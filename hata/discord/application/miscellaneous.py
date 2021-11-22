@@ -1,7 +1,8 @@
-__all__ = ('ApplicationExecutable', 'ApplicationSubEntity', 'EULA', 'ThirdPartySKU', )
+__all__ = ('ApplicationExecutable', 'ApplicationInstallParameters', 'ApplicationSubEntity', 'EULA', 'ThirdPartySKU', )
 
 from ..bases import DiscordEntity
 from ..core import EULAS
+from ..permission import Permission
 
 class ApplicationSubEntity(DiscordEntity):
     """
@@ -44,6 +45,7 @@ class ApplicationSubEntity(DiscordEntity):
             return False
         
         return True
+
 
 class ApplicationExecutable:
     """
@@ -209,9 +211,10 @@ class EULA(DiscordEntity, immortal=True):
     The instances of the class support weakreferencing.
     """
     __slots__ = ('id', 'content', 'name')
+    
     def __new__(cls, data):
         """
-        Creates a new eula instance from the given parameters.
+        Creates a new eula instance from the given data.
         
         If the eula already exists, returns that instead.
         
@@ -248,3 +251,92 @@ class EULA(DiscordEntity, immortal=True):
     def __repr__(self):
         """Returns the eula's representation"""
         return f'<{self.__class__.__name__} {self.name!r}, id={self.id}>'
+
+
+class ApplicationInstallParameters:
+    """
+    Parameters for inviting a bot.
+    
+    Attributes
+    ----------
+    permissions : ``Permission``
+        The permissions to invite the bot with.
+    scopes : `None` or `tuple` of `str`
+        Oauth2 scopes to invite the bot with.
+    """
+    __slots__ = ('permissions', 'scopes')
+    
+    def __new__(cls, data):
+        """
+        Creates a application installation parameters instance from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Application installation parameters data.
+        """
+        self = object.__new__(cls)
+        scopes = data.get('scopes', None)
+        if (scopes is None) or (not scopes):
+            scopes = tuple(sorted(scopes))
+        else:
+            scopes = None
+        self.scopes = scopes
+        
+        self.permissions = Permission(data.get('permissions', 0))
+        
+        return self
+    
+    def __repr__(self):
+        """Returns the application install parameters' representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' scopes=[')
+        
+        scopes = self.scopes
+        if (scopes is not None):
+            length = len(scopes)
+            index = 0
+            
+            while True:
+                scope = scopes[index]
+                repr_parts.append(repr(scope))
+                
+                if index == length:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+        
+        repr_parts.append(', permissions=')
+        repr_parts.append(format(self.permissions, 'd'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __hash__(self):
+        """Returns the application install parameters' hash value."""
+        hash_value = 0
+        
+        scopes = self.scopes
+        if (scopes is not None):
+            hash_value ^= hash(scopes)
+        
+        hash_value ^ hash(self.permissions)
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two application install parameters are equal."""
+        if type(other) is not ApplicationInstallParameters:
+            return NotImplemented
+        
+        if self.permissions != other.permissions:
+            return False
+        
+        if self.scopes != other.scopes:
+            return False
+        
+        return True

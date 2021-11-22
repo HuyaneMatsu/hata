@@ -4,6 +4,12 @@
 
 - Add `ERROR_CODES.cannot_update_finished_scheduled_event`.
 - Add `ERROR_CODES.failed_to_create_stage_needed_for_scheduled_event`.
+- Add `banner` parameter to `ChannelText.precreate`.
+- Add `ChannelText.banner`.
+- Add `ApplicationInstallParameters`.
+- Add `Application.custom_install_url`.
+- Add `Application.install_parameters`.
+- Add `Application.tags`.
 
 ## 1.1.120 *\[2021-11-17\]*
 

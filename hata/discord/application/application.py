@@ -9,7 +9,7 @@ from ..http import urls as module_urls
 
 from .flags import ApplicationFlag
 from .team import Team
-from .miscellaneous import ApplicationExecutable, ApplicationSubEntity, ThirdPartySKU
+from .miscellaneous import ApplicationExecutable, ApplicationSubEntity, ThirdPartySKU, ApplicationInstallParameters
 
 class Application(DiscordEntity, immortal=True):
     """
@@ -32,6 +32,8 @@ class Application(DiscordEntity, immortal=True):
         will be used at the store.
     cover_type : ``IconType``
         The application's store cover image's type.
+    custom_install_url : `None` or `str`
+        The application's default custom authorization link, if enabled.
     description : `str`
         The description of the application. Defaults to empty string.
     developers : `None` or `list` of ``ApplicationSubEntity``
@@ -47,6 +49,8 @@ class Application(DiscordEntity, immortal=True):
         Defaults to `0` if not applicable.
     hook : `bool`
         Defaults to `False`.
+    install_parameters : `None` or ``ApplicationInstallParameters``
+        Settings for the application's default in-app authorization link, if enabled.
     icon_hash : `int`
         The application's icon's hash as `uint128`.
     icon_type : ``IconType``
@@ -80,6 +84,8 @@ class Application(DiscordEntity, immortal=True):
     summary : `str`
         If this application is a game sold on Discord, this field will be the summary field for the store page of its
         primary sku. Defaults to empty string.
+    tags : `None` or `tuple` of `str`
+        Up to 5 tags describing the content and functionality of the application.
     terms_of_service_url : `None` or `str`
         The url of the application's terms of service. Defaults to `None`.
     third_party_skus : `None` or `list` of ``ThirdPartySKU``
@@ -91,10 +97,10 @@ class Application(DiscordEntity, immortal=True):
     -----
     The instances of the class support weakreferencing.
     """
-    __slots__ = ('aliases', 'bot_public', 'bot_require_code_grant', 'description', 'developers', 'eula_id',
-        'executables', 'flags', 'guild_id', 'hook', 'name', 'overlay', 'overlay_compatibility_hook', 'owner',
-        'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'summary', 'terms_of_service_url',
-        'third_party_skus', 'verify_key')
+    __slots__ = ('aliases', 'bot_public', 'bot_require_code_grant', 'custom_install_url', 'description', 'developers',
+        'eula_id', 'executables', 'flags', 'guild_id', 'hook', 'install_parameters', 'name', 'overlay',
+        'overlay_compatibility_hook', 'owner', 'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins',
+        'slug', 'summary', 'tags', 'terms_of_service_url', 'third_party_skus', 'verify_key')
     
     cover = IconSlot(
         'cover',
@@ -154,6 +160,9 @@ class Application(DiscordEntity, immortal=True):
         self.flags = ApplicationFlag()
         self.privacy_policy_url = None
         self.terms_of_service_url = None
+        self.custom_install_url = None
+        self.install_parameters = None
+        self.tags = None
         
         self.cover_hash = 0
         self.cover_type = ICON_TYPE_NONE
@@ -401,6 +410,23 @@ class Application(DiscordEntity, immortal=True):
             terms_of_service_url = None
         self.terms_of_service_url = terms_of_service_url
         
+        self.custom_install_url = data.get('custom_install_url', None)
+        
+        install_parameters_data = data.get('install_params', None)
+        if install_parameters_data is None:
+            install_parameters = None
+        else:
+            install_parameters = ApplicationInstallParameters(data)
+        self.install_parameters = install_parameters
+        
+        tags = data.get('tags', None)
+        if (tags is None) or (not tags):
+            tags = None
+        else:
+            tags = tuple(sorted(tags))
+        self.tags = tags
+    
+    
     @classmethod
     def precreate(cls, application_id, **kwargs):
         """

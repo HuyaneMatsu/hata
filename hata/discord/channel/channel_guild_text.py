@@ -4,6 +4,7 @@ __all__ = ('ChannelText',)
 from ...backend.utils import copy_docs
 from ...backend.export import export, include
 
+from ..bases import IconSlot, ICON_TYPE_NONE
 from ..core import CHANNELS
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY, \
@@ -17,6 +18,7 @@ from .channel_guild_base import ChannelGuildMainBase
 from .channel_text_base import ChannelTextBase
 from .channel_thread import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
+from ..http import urls as module_urls
 
 parse_permission_overwrites = include('parse_permission_overwrites')
 
@@ -57,6 +59,10 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         no requests will be requested to get older messages.
     messages : `deque` of ``Message`` objects
         The channel's message history.
+    banner_hash : `int`
+        The channel's banner's hash in `uint128`.
+    banner_type : ``IconType``
+        The channel's banner's type.
     default_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
@@ -84,6 +90,13 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     
     ORDER_GROUP = 0
     INTERCHANGE = (0, 5,)
+    
+    banner = IconSlot(
+        'banner',
+        'banner',
+        module_urls.channel_banner_url,
+        module_urls.channel_banner_url_as,
+    )
     
     def __new__(cls, data, client, guild_id):
         """
@@ -133,6 +146,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             default_auto_archive_after *= 60
         self.default_auto_archive_after = default_auto_archive_after
         
+        self._set_banner(data)
+        
         return self
     
     @copy_docs(ChannelBase.__repr__)
@@ -169,6 +184,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         self.slowmode = 0
         self.topic = None
         self.type = channel_type
+        self.banner_hash = 0
+        self.banner_type = ICON_TYPE_NONE
         
         return self
     
@@ -201,6 +218,9 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         else:
             default_auto_archive_after *= 60
         self.default_auto_archive_after = default_auto_archive_after
+        
+        self._set_banner(data)
+    
     
     def _difference_update_attributes(self, data):
         """
@@ -222,6 +242,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         +-------------------------------+---------------------------------------------------+
         | Keys                          | Values                                            |
         +===============================+===================================================+
+        | banner                        | ``Icon``                                          |
+        +-------------------------------+---------------------------------------------------+
         | default_auto_archive_after    | `int`                                             |
         +-------------------------------+---------------------------------------------------+
         | parent_id                     | `int`                                             |
@@ -287,6 +309,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         
         self._update_parent_and_position(data, old_attributes)
         
+        self._update_banner(data, old_attributes)
+        
         return old_attributes
     
     
@@ -348,6 +372,21 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         
         Other Parameters
         ----------------
+        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+            The channel's banner.
+            
+            > Mutually exclusive with `banner_type` and `banner_hash` parameters.
+        
+        banner_type : ``IconType``, Optional (Keyword only)
+            The channel's banner's type.
+            
+            > Mutually exclusive with the `banner` parameter.
+        
+        banner_hash : `int`, Optional (Keyword only)
+            The channel's banner's hash.
+            
+            > Mutually exclusive with the `banner` parameter.
+        
         default_auto_archive_after : `int`, Optional (Keyword only)
             The channel's ``.default_auto_archive_after``.
         name : `str`, Optional (Keyword only)
@@ -431,6 +470,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
                 nsfw = preconvert_bool(nsfw, 'nsfw')
                 processable.append(('nsfw', nsfw))
             
+            cls.banner.preconvert(kwargs, processable)
+            
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
@@ -458,15 +499,22 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     def to_data(self):
         data = ChannelGuildMainBase.to_data(self)
         
-        data['default_auto_archive_duration'] = self.default_auto_archive_duration // 60
+        # banner
+        data['banner'] = self.banner.as_base16_hash
         
+        # default_auto_archive_duration
+        data['default_auto_archive_duration'] = self.default_auto_archive_after // 60
+        
+        # nsfw
         if self.nsfw:
             data['nsfw'] = True
         
+        # slowmode
         slowmode = self.slowmode
         if slowmode:
             data['rate_limit_per_user'] = slowmode
         
+        # topic
         data['topic'] = self.topic
         
         return data

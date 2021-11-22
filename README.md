@@ -173,5 +173,5 @@ Shout-Out to our brave testers, who are helping the most to improve Hata!
 - [`Proxisha`](https://github.com/Technisha) \[Feature requests & Bug hunting\]
 - [`Hime Esuto`](https://github.com/HimeEsuto) \[Bug hunting\]
 - [`BrainDead`](https://github.com/albertopoljak) \[Documentation improvements\]
-- [`Zeref`](https://github.com/Killua-Zoldyck-007) \[Features & Typos & Bug hunting\]
-- [`vinam`](https://github.com/saiTama-max) \[Bug hunting\[asyncio extension\]\]
+- [`Zeref`] \[Features & Typos & Bug hunting\]
+- [`vinam`](https://github.com/v1nam) \[Bug hunting\[asyncio extension\]\]

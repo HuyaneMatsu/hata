@@ -1,5 +1,5 @@
 __all__ = ('ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
-    'create_auto_custom_id', 'create_component')
+    'ComponentTextInput', 'create_auto_custom_id', 'create_component')
 
 from os import urandom as random_bytes
 from base64 import b85encode as to_base85
@@ -13,7 +13,7 @@ from ..preconverters import preconvert_preinstanced_type
 from ..utils import url_cutter
 from ..emoji import create_partial_emoji_from_data, Emoji, create_partial_emoji_data
 
-from .preinstanced import ComponentType, ButtonStyle
+from .preinstanced import ComponentType, ButtonStyle, TextInputStyle
 
 COMPONENT_TYPE_ROW = ComponentType.row
 COMPONENT_TYPE_BUTTON = ComponentType.button
@@ -28,7 +28,10 @@ COMPONENT_OPTION_MIN_VALUES_MIN = 0
 COMPONENT_OPTION_MIN_VALUES_MAX = 15
 COMPONENT_OPTION_MAX_VALUES_MIN = 1
 COMPONENT_OPTION_MAX_VALUES_MAX = 25
-
+COMPONENT_MAX_LENGTH_MIN = 0
+COMPONENT_MAX_LENGTH_MAX = 2147483647
+COMPONENT_MIN_LENGTH_MIN = 0
+COMPONENT_MIN_LENGTH_MAX = 2147483647
 
 def _debug_component_components(components):
     """
@@ -347,6 +350,52 @@ def _debug_component_max_values(max_values):
     if (max_values < COMPONENT_OPTION_MAX_VALUES_MIN) or (max_values > COMPONENT_OPTION_MAX_VALUES_MAX):
         raise AssertionError(f'`max_values` can be in range '
             f'[{COMPONENT_OPTION_MAX_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MAX}], got {max_values!r}.')
+
+
+def _debug_component_max_length(max_length):
+    """
+    Checks whether the given `component_text_input.max_length` value is correct.
+    
+    Parameters
+    ----------
+    max_length : `int`
+        The max values of a component select.
+    
+    Raises
+    ------
+    AssertionError
+        - If `max_length` was not given as `int` instance.
+        - If `max_length`'s is out of range [1:25].
+    """
+    if not isinstance(max_length, int):
+        raise AssertionError(f'`max_length` can be given as `int` instance, got {max_length.__class__.__name__}.')
+
+    if (max_length < COMPONENT_MAX_LENGTH_MIN) or (max_length > COMPONENT_MAX_LENGTH_MAX):
+        raise AssertionError(f'`max_length` can be in range '
+            f'[{COMPONENT_MAX_LENGTH_MIN}:{COMPONENT_MAX_LENGTH_MAX}], got {max_length!r}.')
+
+
+def _debug_component_min_length(min_length):
+    """
+    Checks whether the given `component_text_input.min_length` value is correct.
+    
+    Parameters
+    ----------
+    min_length : `int`
+        The max values of a component select.
+    
+    Raises
+    ------
+    AssertionError
+        - If `min_length` was not given as `int` instance.
+        - If `min_length`'s is out of range [1:25].
+    """
+    if not isinstance(min_length, int):
+        raise AssertionError(f'`min_length` can be given as `int` instance, got {min_length.__class__.__name__}.')
+
+    if (min_length < COMPONENT_MIN_LENGTH_MIN) or (min_length > COMPONENT_MIN_LENGTH_MAX):
+        raise AssertionError(f'`min_length` can be in range '
+            f'[{COMPONENT_MIN_LENGTH_MIN}:{COMPONENT_MIN_LENGTH_MAX}], got {min_length!r}.')
 
 
 def create_auto_custom_id():
@@ -2313,12 +2362,14 @@ COMPONENT_ATTRIBUTE_NAMES = frozenset((
     'disabled',
     'emoji',
     'label',
-    'style',
-    'url',
+    'max_length',
+    'max_values',
+    'min_length',
+    'min_values',
     'options',
     'placeholder',
-    'min_values',
-    'max_values',
+    'style',
+    'url',
 ))
 
 
@@ -2334,6 +2385,7 @@ class ComponentDynamic(ComponentBase):
         The component's type.
     """
     __slots__ = ('_data', 'type')
+    
     def __new__(cls, type_, **kwargs):
         """
         Creates a new component instance.
@@ -2492,12 +2544,14 @@ COMPONENT_TYPE_TO_STYLE = {
     ComponentType.row: None,
     ComponentType.button: ButtonStyle,
     ComponentType.select: None,
+    ComponentType.text_input: TextInputStyle,
 }
 
 COMPONENT_TYPE_VALUE_TO_TYPE = {
     ComponentType.row.value: ComponentRow,
     ComponentType.button.value: ComponentButton,
     ComponentType.select.value: ComponentSelect,
+    ComponentType.text_input.value: ComponentTextInput,
 }
 
 @export

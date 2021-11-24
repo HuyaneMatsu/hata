@@ -13,7 +13,8 @@
 
 ##### ext.extension_loader
 
-- syntax is checked before executing a module when reloading.
+- Syntax is checked before executing a module when reloading.
+- Add `Extension.file_name`.
 
 ## 1.1.120 *\[2021-11-17\]*
 

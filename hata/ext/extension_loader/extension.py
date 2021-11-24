@@ -477,18 +477,14 @@ class Extension:
             
             # Check whether the file's syntax is correct
             if check_for_syntax and (lib is not None):
-                try:
-                    file_name = lib.__file__
-                except AttributeError:
-                    pass
-                else:
-                    # python files might not be `.py` files, which we should not compile.
-                    if file_name.ends_with('.py'):
-                        try:
-                            compile_module(file_name)
-                        except FileNotFoundError:
-                            # If the file is deleted, is fine.
-                            pass
+                file_name = self.file_name
+                # python files might not be `.py` files, which we should not compile.
+                if file_name.endswith('.py'):
+                    try:
+                        compile_module(file_name)
+                    except FileNotFoundError:
+                        # If the file is deleted, is fine.
+                        pass
             
             snapshot_difference = self._snapshot_difference
             if (snapshot_difference is not None):
@@ -530,6 +526,7 @@ class Extension:
         """
         return self._spec.name
     
+    
     @property
     def short_name(self):
         """
@@ -547,6 +544,18 @@ class Extension:
             short_name = name[dot_index+1:]
         
         return short_name
+    
+    
+    @property
+    def file_name(self):
+        """
+        Returns the extension's file's name.
+        
+        Returns
+        -------
+        file_name : `str`
+        """
+        return self._spec.origin
     
     
     def is_loaded(self):

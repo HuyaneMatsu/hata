@@ -11,6 +11,10 @@
 - Add `Application.install_parameters`.
 - Add `Application.tags`.
 
+##### ext.extension_loader
+
+- syntax is checked before executing a module when reloading.
+
 ## 1.1.120 *\[2021-11-17\]*
 
 #### Improvements

@@ -772,7 +772,7 @@ class ExtensionLoader:
         
         for extension in extensions:
             try:
-                await self._unload_extension(extension)
+                await self._unload_extension(extension, False)
             except ExtensionError as err:
                 if error_messages is None:
                     error_messages = []
@@ -839,7 +839,7 @@ class ExtensionLoader:
         
         for extension in extensions:
             try:
-                await self._unload_extension(extension)
+                await self._unload_extension(extension, True)
                 await self._load_extension(extension)
             except ExtensionError as err:
                 if error_messages is None:
@@ -961,7 +961,7 @@ class ExtensionLoader:
                 continue
             
             try:
-                await self._unload_extension(extension)
+                await self._unload_extension(extension, False)
             except ExtensionError as err:
                 error_messages.append(err.message)
             
@@ -1018,7 +1018,7 @@ class ExtensionLoader:
                 continue
             
             try:
-                await self._unload_extension(extension)
+                await self._unload_extension(extension, True)
             except ExtensionError as err:
                 error_messages.append(err.message)
                 continue
@@ -1085,25 +1085,34 @@ class ExtensionLoader:
                     return
             
             try:
-                
                 if is_coroutine_function(entry_point):
                     await entry_point(lib)
                 else:
                     entry_point(lib)
             
             except BaseException as err:
-                message = await KOKORO.run_in_executor(alchemy_incendiary(
-                    self._render_exc, (err, [
-                    'Exception occurred meanwhile entering an extension: `', extension.name,
-                    '`.\nAt entry_point:', repr(entry_point), '\n\n',],
-                        )))
+                message = await KOKORO.run_in_executor(
+                    alchemy_incendiary(
+                        self._render_exc,
+                        (
+                            err,
+                            [
+                                'Exception occurred meanwhile entering an extension: `',
+                                extension.name,
+                                '`.\nAt entry_point:',
+                                repr(entry_point),
+                                '\n\n',
+                            ],
+                        )
+                    )
+                )
                 
                 raise ExtensionError(message) from None
         finally:
             self._execute_counter -= 1
     
     
-    async def _unload_extension(self, extension):
+    async def _unload_extension(self, extension, check_for_syntax):
         """
         Unloads the extension. If the extension is not loaded, will do nothing.
         
@@ -1122,6 +1131,10 @@ class ExtensionLoader:
         ----------
         extension : ``Extension``
             The extension to unload.
+        check_for_syntax : `bool`
+            Whether the file's new syntax should be checked before unloading.
+            
+            This parameter is used when reloading, to avoid unloading un-reloadable files.
         
         Raises
         ------
@@ -1131,7 +1144,7 @@ class ExtensionLoader:
         self._execute_counter += 1
         try:
             # loading blocks, but unloading does not
-            lib = extension._unload()
+            lib = extension._unload(check_for_syntax)
             
             if lib is None:
                 return # not loaded

@@ -3,6 +3,7 @@ __all__ = ('EXTENSIONS', )
 import sys
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from importlib import reload as reload_module
+from py_compile import compile as compile_module
 
 from ...backend.utils import HybridValueDictionary, WeakValueDictionary
 from ...backend.export import include
@@ -449,19 +450,45 @@ class Extension:
         return None
         # no more cases
     
-    def _unload(self):
+    def _unload(self, check_for_syntax):
         """
         Unloads the module and returns it. If it is already unloaded returns `None`.
+        
+        check_for_syntax : `bool`
+            Whether the file's new syntax should be checked before unloading.
+            
+            This parameter is used when reloading, to avoid unloading un-reloadable files.
         
         Returns
         -------
         lib : `None` or `lib`
+        
+        Raises
+        ------
+        SyntaxError
+            If `check_for_syntax` and the file's syntax is incorrect.
         """
         state = self._state
         if state == EXTENSION_STATE_UNDEFINED:
             return None
         
         if state == EXTENSION_STATE_LOADED:
+            lib = self._lib
+            
+            # Check whether the file's syntax is correct
+            if check_for_syntax and (lib is not None):
+                try:
+                    file_name = lib.__file__
+                except AttributeError:
+                    pass
+                else:
+                    # python files might not be `.py` files, which we should not compile.
+                    if file_name.ends_with('.py'):
+                        try:
+                            compile_module(file_name)
+                        except FileNotFoundError:
+                            # If the file is deleted, is fine.
+                            pass
             
             snapshot_difference = self._snapshot_difference
             if (snapshot_difference is not None):
@@ -469,7 +496,7 @@ class Extension:
                 revert_snapshot(snapshot_difference)
             
             self._state = EXTENSION_STATE_UNLOADED
-            return self._lib
+            return lib
         
         if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
             return None

@@ -10,6 +10,10 @@
 - Add `Application.custom_install_url`.
 - Add `Application.install_parameters`.
 - Add `Application.tags`.
+- Add `TextInputStyle`.
+- Add `InteractionType.form_submit`.
+- Add `ComponentType.text_input`.
+- Add `ComponentTextInput`.
 
 ##### ext.extension_loader
 

@@ -1,5 +1,6 @@
-__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteTargetType', 'ApplicationCommandTargetType',
-    'ButtonStyle', 'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES', 'ComponentType', 'InteractionType', )
+__all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwriteTargetType',
+    'ApplicationCommandTargetType', 'ButtonStyle', 'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES', 'ComponentType',
+    'InteractionType', 'TextInputStyle')
 
 import warnings
 
@@ -113,6 +114,8 @@ class InteractionType(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------+
     | application_command_autocomplete  | application_command_autocomplete  | 4     |
     +-----------------------------------+-----------------------------------+-------+
+    | form_submit                       | form_submit                       | 5     |
+    +-----------------------------------+-----------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -205,6 +208,8 @@ class ComponentType(PreinstancedBase):
     +-----------------------+---------------+-------+
     | select                | select        | 3     |
     +-----------------------+---------------+-------+
+    | text_input            | text input    | 4     |
+    +-----------------------+---------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -216,11 +221,12 @@ class ComponentType(PreinstancedBase):
     row = P(1, 'row')
     button = P(2, 'button')
     select = P(3, 'select')
+    text_input = P(4, 'text input')
     
 
 class ButtonStyle(PreinstancedBase):
     """
-    Represents a component's type.
+    Represents a button component's style.
     
     Attributes
     ----------
@@ -268,6 +274,49 @@ class ButtonStyle(PreinstancedBase):
     green = P(3, 'green')
     red = P(4, 'red')
     link = P(5, 'link')
+
+
+class TextInputStyle(PreinstancedBase):
+    """
+    Represents a text input component's type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the text input style.
+    value : `int`
+        The identifier value the text input style
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ButtonStyle``) items
+        Stores the predefined ``TextInputStyle`` instances. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The text input style's type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the text input styles.
+    
+    Every predefined text input style can be accessed as class attribute as well:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | Name          | Value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | short                 | short         | 1     |
+    +-----------------------+---------------+-------+
+    | paragraph             | paragraph     | 2     |
+    +-----------------------+---------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = P(0, 'none')
+    violet = P(1, 'short')
+    gray = P(2, 'paragraph')
 
 
 class ApplicationCommandTargetType(PreinstancedBase):

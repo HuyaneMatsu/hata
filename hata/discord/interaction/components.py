@@ -365,7 +365,7 @@ def _debug_component_max_length(max_length):
     ------
     AssertionError
         - If `max_length` was not given as `int` instance.
-        - If `max_length`'s is out of range [1:25].
+        - If `man_length`'s is out of the expected range.
     """
     if not isinstance(max_length, int):
         raise AssertionError(f'`max_length` can be given as `int` instance, got {max_length.__class__.__name__}.')
@@ -388,7 +388,7 @@ def _debug_component_min_length(min_length):
     ------
     AssertionError
         - If `min_length` was not given as `int` instance.
-        - If `min_length`'s is out of range [1:25].
+        - If `min_length`'s is out of the expected range.
     """
     if not isinstance(min_length, int):
         raise AssertionError(f'`min_length` can be given as `int` instance, got {min_length.__class__.__name__}.')
@@ -417,15 +417,15 @@ class ComponentBase:
     
     Class Attributes
     ----------------
-    type : ``ComponentType`` = `ComponentType.none`
-        The component's type.
     custom_id : `NoneType` = `None`
         Placeholder for sub-classes without `custom_id` attribute.
+    type : ``ComponentType`` = `ComponentType.none`
+        The component's type.
     """
     __slots__ = ()
     
-    type = ComponentType.none
     custom_id = None
+    type = ComponentType.none
     
     @classmethod
     def from_data(cls, data):
@@ -453,9 +453,15 @@ class ComponentBase:
         -------
         data : `dict` of (`str`, `Any`) items
         """
+        # type
         data = {
             'type' : self.type.value
         }
+        
+        # custom_id
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            data['custom_id'] = custom_id
         
         return data
     
@@ -556,10 +562,10 @@ class ComponentRow(ComponentBase):
     
     Class Attributes
     ----------------
-    type : ``ComponentType`` = `ComponentType.row`
-        The component's type.
     custom_id : `NoneType` = `None`
         `custom_id` is not applicable for component rows.
+    type : ``ComponentType`` = `ComponentType.row`
+        The component's type.
     """
     type = ComponentType.row
     
@@ -583,6 +589,7 @@ class ComponentRow(ComponentBase):
         if __debug__:
             _debug_component_components(components)
         
+        # components
         if not components:
             components = None
         
@@ -596,6 +603,7 @@ class ComponentRow(ComponentBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         
+        # components
         component_datas = data.get('components', None)
         if (component_datas is None) or (not component_datas):
             components = None
@@ -608,10 +616,12 @@ class ComponentRow(ComponentBase):
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
+        # type
         data = {
             'type' : self.type.value
         }
         
+        # components
         components = self.components
         if (components is None):
             component_datas = []
@@ -624,14 +634,21 @@ class ComponentRow(ComponentBase):
     
     @copy_docs(ComponentBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__, ' type=']
+        repr_parts = ['<', self.__class__.__name__]
         
+        # Descriptive fields : type
+        
+        # type
         type_ = self.type
+        repr_parts.append(' type=')
         repr_parts.append(type_.name)
         repr_parts.append(' (')
         repr_parts.append(repr(type_.value))
         repr_parts.append(')')
         
+        # sub-component fields : components
+        
+        # components
         repr_parts.append(', components=')
         components = self.components
         if (components is None):
@@ -656,8 +673,8 @@ class ComponentRow(ComponentBase):
             
             repr_parts.append(']')
         
-        repr_parts.append('>')
         
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -665,6 +682,7 @@ class ComponentRow(ComponentBase):
     def copy(self):
         new = object.__new__(type(self))
         
+        # components
         components = self.components
         if (components is not None):
             components = tuple(component.copy() for component in self.components)
@@ -692,6 +710,7 @@ class ComponentRow(ComponentBase):
         -------
         new : ``ComponentRow``
         """
+        # components
         try:
             components = kwargs.pop('components')
         except KeyError:
@@ -715,6 +734,7 @@ class ComponentRow(ComponentBase):
         if type(other) is not type(self):
             return NotImplemented
         
+        # components
         if self.components != other.components:
             return False
         
@@ -723,8 +743,10 @@ class ComponentRow(ComponentBase):
     
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
+        # type
         hash_value = self.type.value
         
+        # components
         components = self.components
         if (components is not None):
             hash_value ^= len(components)<<12
@@ -737,6 +759,7 @@ class ComponentRow(ComponentBase):
     @copy_docs(ComponentBase._iter_components)
     def _iter_components(self):
         yield self
+        
         components = self.components
         if (components is not None):
             for component in components:
@@ -767,14 +790,19 @@ class ComponentButton(ComponentBase):
         Custom identifier to detect which button was clicked by the user.
         
         > Mutually exclusive with the `url` field.
+    
     enabled : `bool`
         Whether the component is enabled.
+    
     emoji : `None` or ``Emoji``
         Emoji of the button if applicable.
+    
     label : `None` or `str`
         Label of the component.
+    
     style : `None` or ``ButtonStyle``
         The button's style.
+    
     url : `None` or `str`
         Url to redirect to when clicking on the button.
         
@@ -792,7 +820,7 @@ class ComponentButton(ComponentBase):
     
     __slots__ = ('custom_id', 'enabled', 'emoji', 'label', 'style', 'url',)
     
-    def __new__(cls, label=None, emoji=None, *, custom_id=None, url=None, style=None, enabled=True):
+    def __new__(cls, label=None, emoji=None, *, custom_id=None, enabled=True, style=None, url=None):
         """
         Creates a new component instance with the given parameters.
         
@@ -800,23 +828,25 @@ class ComponentButton(ComponentBase):
         ----------
         label : `None` or `str`, Optional
             Label of the component.
+        
         emoji : `None` or ``Emoji``, Optional
             Emoji of the button if applicable.
+        
         custom_id : `None` or `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `url` field.
         
-        url : `None` or `str`, Optional (Keyword only)
-            Url to redirect to when clicking on the button.
-            
-            > Mutually exclusive with the `custom_id` field.
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
         
         style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
             The button's style.
         
-        enabled : `bool`, Optional (Keyword only)
-            Whether the button is enabled. Defaults to `True`.
+        url : `None` or `str`, Optional (Keyword only)
+            Url to redirect to when clicking on the button.
+            
+            > Mutually exclusive with the `custom_id` field.
         
         Raises
         ------
@@ -835,45 +865,59 @@ class ComponentButton(ComponentBase):
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
+            _debug_component_enabled(enabled)
             _debug_component_emoji(emoji)
             _debug_component_label(label)
-            _debug_component_enabled(enabled)
             _debug_component_url(url)
         
+        # custom_id
         if (custom_id is not None) and (not custom_id):
             custom_id = None
         
+        # enabled
+        # No additional checks
+        
+        # emoji
+        # No additional checks
+        
+        # label
+        if (label is not None) and (not label):
+            label = None
+        
+        # url
         if (url is not None) and (not url):
             url = None
         
+        # custom_id & custom_id mixed
         if __debug__:
             if (custom_id is not None) and (url is not None):
                 raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
                     f'custom_id={custom_id!r}, url={url!r}.')
         
+        # style
         if (url is None):
+            # style
             if style is None:
                 style = cls.default_style
             else:
                 style = preconvert_preinstanced_type(style, 'style', ButtonStyle)
             
+            # If `custom_id` is required, but not given, generate one.
             if (custom_id is None):
                 custom_id = create_auto_custom_id()
         
         else:
             style = ButtonStyle.link
         
-        if (label is not None) and (not label):
-            label = None
         
         self = object.__new__(cls)
         
-        self.style = style
         self.custom_id = custom_id
-        self.emoji = emoji
-        self.url = url
-        self.label = label
         self.enabled = enabled
+        self.emoji = emoji
+        self.label = label
+        self.style = style
+        self.url = url
         
         return self
     
@@ -883,6 +927,13 @@ class ComponentButton(ComponentBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         
+        # custom_id
+        self.custom_id = data.get('custom_id', None)
+        
+        # enabled
+        self.enabled = not data.get('disabled', False)
+        
+        # emoji
         emoji_data = data.get('emoji', None)
         if emoji_data is None:
             emoji = None
@@ -890,99 +941,117 @@ class ComponentButton(ComponentBase):
             emoji = create_partial_emoji_from_data(emoji_data)
         self.emoji = emoji
         
-        style = data.get('style', None)
-        if (style is not None):
-            style = ButtonStyle.get(style)
-        self.style = style
-        
-        self.url = data.get('url', None)
-        
-        self.custom_id = data.get('custom_id', None)
-        
+        # label
         self.label = data.get('label', None)
         
-        self.enabled = not data.get('disabled', False)
+        # style
+        self.style = ButtonStyle.get(data.get('style', 0))
+        
+        # url
+        self.url = data.get('url', None)
         
         return self
     
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
+        # type
         data = {
             'type' : self.type.value
         }
         
-        emoji = self.emoji
-        if (emoji is not None):
-            data['emoji'] = create_partial_emoji_data(emoji)
-        
-        style = self.style
-        if (style is not None):
-            data['style'] = style.value
-        
-        url = self.url
-        if (url is not None):
-            data['url'] = url
-        
+        # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
             data['custom_id'] = custom_id
         
+        # enabled
+        if (not self.enabled):
+            data['disabled'] = True
+        
+        # emoji
+        emoji = self.emoji
+        if (emoji is not None):
+            data['emoji'] = create_partial_emoji_data(emoji)
+        
+        # label
         label = self.label
         if (label is not None):
             data['label'] = label
         
-        if (not self.enabled):
-            data['disabled'] = True
+        # style
+        style = self.style
+        if (style is not None):
+            data['style'] = style.value
+        
+        # url
+        url = self.url
+        if (url is not None):
+            data['url'] = url
         
         return data
     
     
     @copy_docs(ComponentBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__, ' type=']
+        repr_parts = ['<', self.__class__.__name__, ]
         
+        # Descriptive fields : type & style
+        
+        # type
         type_ = self.type
+        repr_parts.append(' type=')
         repr_parts.append(type_.name)
         repr_parts.append(' (')
         repr_parts.append(repr(type_.value))
         repr_parts.append(')')
         
+        # style
         style = self.style
-        if (style is not None):
-            repr_parts.append(', style=')
-            repr_parts.append(style.name)
-            repr_parts.append(' (')
-            repr_parts.append(repr(style.value))
-            repr_parts.append(')')
+        repr_parts.append(', style=')
+        repr_parts.append(style.name)
+        repr_parts.append(' (')
+        repr_parts.append(repr(style.value))
+        repr_parts.append(')')
         
-        emoji = self.emoji
-        if (emoji is not None):
-            repr_parts.append(', emoji=')
-            repr_parts.append(repr(emoji))
+        # System fields : custom_id
         
-        label = self.label
-        if (label is not None):
-            repr_parts.append(', label=')
-            repr_parts.append(reprlib.repr(label))
-        
-        url = self.url
-        if (url is not None):
-            repr_parts.append(', url=')
-            repr_parts.append(url_cutter(url))
-        
+        # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
             repr_parts.append(', custom_id=')
             repr_parts.append(reprlib.repr(custom_id))
         
+        # Text fields : emoji & label
+        
+        # emoji
+        emoji = self.emoji
+        if (emoji is not None):
+            repr_parts.append(', emoji=')
+            repr_parts.append(repr(emoji))
+        
+        # label
+        label = self.label
+        if (label is not None):
+            repr_parts.append(', label=')
+            repr_parts.append(reprlib.repr(label))
+        
+        
+        # Optional descriptive fields: url, enabled
+        
+        # url
+        url = self.url
+        if (url is not None):
+            repr_parts.append(', url=')
+            repr_parts.append(url_cutter(url))
+        
+        # enabled
         enabled = self.enabled
         if (not enabled):
             repr_parts.append(', enabled=')
             repr_parts.append(repr(enabled))
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     
@@ -1922,6 +1991,10 @@ class ComponentTextInput(ComponentBase):
             - If `enabled` was not given as `bool` instance.
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
+            - If `max_length` was not given as `int` instance.
+            - If `man_length`'s is out of the expected range.
+            - If `min_length` was not given as `int` instance.
+            - If `min_length`'s is out of the expected range.
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
@@ -2094,7 +2167,7 @@ class ComponentTextInput(ComponentBase):
             repr_parts.append(', placeholder=')
             repr_parts.append(repr(placeholder))
         
-        # Optional descriptive fields : max_length & min_length # enabled
+        # Optional descriptive fields : max_length & min_length & enabled
         
         # min_length
         min_length = self.min_length
@@ -2108,14 +2181,14 @@ class ComponentTextInput(ComponentBase):
             repr_parts.append(', max_length=')
             repr_parts.append(repr(max_length))
         
-        #enabled
+        # enabled
         enabled = self.enabled
         if (not enabled):
             repr_parts.append(', enabled=')
             repr_parts.append(repr(enabled))
         
-        repr_parts.append('>')
         
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -2298,6 +2371,7 @@ class ComponentTextInput(ComponentBase):
     
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
+        # type
         hash_value = self.type.value
         
         # custom_id

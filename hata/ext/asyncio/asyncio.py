@@ -1620,7 +1620,7 @@ FIRST_COMPLETED = 'FIRST_COMPLETED'
 FIRST_EXCEPTION = 'FIRST_EXCEPTION'
 ALL_COMPLETED = 'ALL_COMPLETED'
 
-async def wait(functions, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
+async def wait(futures, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
     """
     Wait for the Futures and coroutines given by functions to complete.
     
@@ -1638,10 +1638,10 @@ async def wait(functions, *, loop=None, timeout=None, return_when=ALL_COMPLETED)
     Note: This does not raise TimeoutError! Futures that aren't done when the timeout occurs are returned in the second
     set.
     """
-    if isfuture(functions) or iscoroutine(functions):
-        raise TypeError(f'expect a list of futures, not {type(functions).__name__}')
+    if isfuture(futures) or iscoroutine(futures):
+        raise TypeError(f'expect a list of futures, not {type(futures).__name__}')
     
-    if not functions:
+    if not futures:
         raise ValueError('Set of coroutines/Futures is empty.')
     
     if return_when not in (FIRST_COMPLETED, FIRST_EXCEPTION, ALL_COMPLETED):
@@ -1653,11 +1653,13 @@ async def wait(functions, *, loop=None, timeout=None, return_when=ALL_COMPLETED)
         warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
-    if any(iscoroutine(f) for f in set(functions)):
+    futures = set(futures)
+    
+    if any(iscoroutine(future) for future in futures):
         warnings.warn('The explicit passing of coroutine objects to asyncio.wait() is deprecated since Python 3.8, '
                       'and scheduled for removal in Python 3.11.', DeprecationWarning, stacklevel=2)
     
-    functions = {loop.ensure_future(f) for f in set(functions)}
+    futures = {loop.ensure_future(future) for future in futures}
     
     if return_when == FIRST_COMPLETED:
         future_type = WaitTillFirst
@@ -1666,7 +1668,7 @@ async def wait(functions, *, loop=None, timeout=None, return_when=ALL_COMPLETED)
     else:
         future_type = WaitTillAll
     
-    future = future_type(functions, loop)
+    future = future_type(futures, loop)
     if timeout is not None:
         future_or_timeout(future, timeout)
     

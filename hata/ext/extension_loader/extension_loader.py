@@ -40,12 +40,24 @@ def _get_extensions(name):
     
     extension_names_and_paths = set(_iter_extension_names_and_paths(name))
     for extension_name, extension_path in extension_names_and_paths:
-        if extension_name is None:
-            extension_name = _get_path_extension_name(extension_path)
-        
-        try:
-            extension = EXTENSION_LOADER._extensions_by_name[extension_name]
-        except KeyError:
+        # Use goto
+        while True:
+            try:
+                extension = EXTENSION_LOADER._extensions_by_name[extension_path]
+            except KeyError:
+                pass
+            else:
+                break
+            
+            if extension_name is None:
+                extension_name = _get_path_extension_name(extension_path)
+            try:
+                extension = EXTENSION_LOADER._extensions_by_name[extension_name]
+            except KeyError:
+                pass
+            else:
+                break
+            
             raise ExtensionError(f'No extension was added with name: `{extension_name}`.') from None
         
         extensions.add(extension)
@@ -544,6 +556,7 @@ class ExtensionLoader:
             locked, take_snapshot_difference, default_variables)
         
         self._extensions_by_name[extension.name] = extension
+        self._extensions_by_name[extension.file_name] = extension
         
         short_name = extension.short_name
         if (short_name is not None):

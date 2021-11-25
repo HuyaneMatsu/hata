@@ -2810,12 +2810,12 @@ class Task(Future):
     
     _coroutine : `CoroutineType` or `GeneratorType`
         The wrapped coroutine.
-    _waited_future : `None` or ``Future`` instance
-        The future on what's result the future is waiting right now.
     _must_cancel : `bool`
         Whether the task is cancelled, and at it's next step a ``CancelledError`` would be raised into it's coroutine.
+    _waited_future : `None` or ``Future`` instance
+        The future on what's result the future is waiting right now.
     """
-    __slots__ = ('_coroutine', '_waited_future', '_must_cancel')
+    __slots__ = ('_coroutine', '_must_cancel', '_waited_future')
     
     def __new__(cls, coroutine, loop):
         """

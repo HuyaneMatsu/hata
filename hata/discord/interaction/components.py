@@ -1621,7 +1621,7 @@ class ComponentSelect(ComponentBase):
     
     __slots__ = ('custom_id', 'enabled', 'options', 'placeholder', 'max_values', 'min_values', )
     
-    def __new__(cls, options, custom_id=None, *, placeholder=None, min_values=1, max_values=1, enabled=True):
+    def __new__(cls, options, custom_id=None, *, enabled=True, placeholder=None, max_values=1, min_values=1):
         """
         Creates a new ``ComponentSelect`` instance with the given parameters.
         
@@ -1631,14 +1631,14 @@ class ComponentSelect(ComponentBase):
             Options of the select.
         custom_id : `None` or `str`, Optional
             Custom identifier to detect which component was used by the user.
-        placeholder : `str`, Optional (Keyword only)
-            Placeholder text of the select.
-        min_values : `int`, Optional (Keyword only)
-            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
-        max_values : `int`, Optional (Keyword only)
-            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
+        placeholder : `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        max_values : `int`, Optional (Keyword only)
+            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
         
         Raises
         ------
@@ -1655,30 +1655,42 @@ class ComponentSelect(ComponentBase):
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
+            _debug_component_enabled(enabled)
             _debug_component_options(options)
             _debug_component_placeholder(placeholder)
             _debug_component_min_values(min_values)
             _debug_component_max_values(max_values)
-            _debug_component_enabled(enabled)
         
-        if (placeholder is not None) and (not placeholder):
-            placeholder = None
-        
+        # custom_id
         if (custom_id is None) or (not custom_id):
             custom_id = create_auto_custom_id()
         
+        # enabled
+        # No additional checks
+        
+        # options
         if (options is not None):
             options = tuple(options)
             if (not options):
                 options = None
         
+        # placeholder
+        if (placeholder is not None) and (not placeholder):
+            placeholder = None
+        
+        # max_values
+        # No additional checks
+        
+        # min_values
+        # No additional checks
+        
         self = object.__new__(cls)
         self.custom_id = custom_id
+        self.enabled = enabled
         self.options = options
         self.placeholder = placeholder
-        self.min_values = min_values
         self.max_values = max_values
-        self.enabled = enabled
+        self.min_values = min_values
         return self
     
     
@@ -1687,6 +1699,13 @@ class ComponentSelect(ComponentBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         
+        # custom_id
+        self.custom_id = data['custom_id']
+        
+        # enabled
+        self.enabled = not data.get('disabled', False)
+        
+        # options
         option_datas = data['options']
         if option_datas:
             options = tuple(ComponentSelectOption.from_data(option_data) for option_data in option_datas)
@@ -1694,27 +1713,34 @@ class ComponentSelect(ComponentBase):
             options = None
         self.options = options
         
-        self.custom_id = data['custom_id']
-        
+        # placeholder
         placeholder = data.get('placeholder', None)
         if (placeholder is not None) and (not placeholder):
             placeholder = None
         self.placeholder = placeholder
         
-        self.min_values = data.get('min_values', 1)
+        # max_values
         self.max_values = data.get('max_values', 1)
-        self.enabled = not data.get('disabled', False)
+        
+        # min_values
+        self.min_values = data.get('min_values', 1)
         
         return self
     
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
+        # type & custom_id
         data = {
             'type': self.type.value,
             'custom_id': self.custom_id,
         }
         
+        # enabled
+        if (not self.enabled):
+            data['disabled'] = True
+        
+        # options
         options = self.options
         if options is None:
             options_value = []
@@ -1722,37 +1748,45 @@ class ComponentSelect(ComponentBase):
             options_value = [option.to_data() for option in options]
         data['options'] = options_value
         
+        # placeholder
         placeholder = self.placeholder
         if (placeholder is not None):
             data['placeholder'] = placeholder
         
-        min_values = self.min_values
-        if min_values != 1:
-            data['min_values'] = min_values
-        
+        # max_values
         max_values = self.max_values
         if max_values != 1:
             data['max_values'] = max_values
         
-        if (not self.enabled):
-            data['disabled'] = True
+        # min_values
+        min_values = self.min_values
+        if min_values != 1:
+            data['min_values'] = min_values
         
         return data
     
     
     @copy_docs(ComponentBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__, ' type=']
+        repr_parts = ['<', self.__class__.__name__]
         
+        # Descriptive fields : type
+        
+        # type
         type_ = self.type
+        repr_parts.append(' type=')
         repr_parts.append(type_.name)
         repr_parts.append(' (')
         repr_parts.append(repr(type_.value))
         repr_parts.append(')')
         
+        # System fields : custom_id & options
+        
+        # custom_id
         repr_parts.append(', custom_id=')
         repr_parts.append(reprlib.repr(self.custom_id))
         
+        # options
         repr_parts.append(', options=')
         options = self.options
         if (options is None):
@@ -1779,21 +1813,29 @@ class ComponentSelect(ComponentBase):
         
         repr_parts.append('>')
         
+        # Text fields : placeholder
+        
+        # placeholder
         placeholder = self.placeholder
         if (placeholder is not None):
             repr_parts.append(', placeholder=')
             repr_parts.append(repr(placeholder))
         
+        # Optional descriptive fields: min_values & max_values & enabled
+        
+        # min_values
         min_values = self.min_values
         if min_values != 1:
             repr_parts.append(', min_values=')
             repr_parts.append(repr(min_values))
         
+        # max_values
         max_values = self.max_values
         if max_values != 1:
             repr_parts.append(', max_values=')
             repr_parts.append(repr(max_values))
         
+        # enabled
         enabled = self.enabled
         if (not enabled):
             repr_parts.append(', enabled=')
@@ -1806,18 +1848,26 @@ class ComponentSelect(ComponentBase):
     def copy(self):
         new = object.__new__(type(self))
         
+        # custom_id
         new.custom_id = self.custom_id
         
+        # enabled
+        new.enabled = self.enabled
+        
+        # options
         options = self.options
         if (options is not None):
             options = tuple(option.copy() for option in options)
-        
         new.options = options
         
+        # placeholder
         new.placeholder = self.placeholder
-        new.min_values = self.min_values
+        
+        # max_values
         new.max_values = self.max_values
-        new.enabled = self.enabled
+        
+        # min_values
+        new.min_values = self.min_values
         
         return new
     
@@ -1833,24 +1883,50 @@ class ComponentSelect(ComponentBase):
         
         Other Parameters
         ----------------
-        options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``, Optional (Keyword only)
-            Options of the select.
         custom_id : `None` or `str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
-        placeholder : `str`, Optional (Keyword only)
-            Placeholder text of the select.
-        min_values : `int`, Optional (Keyword only)
-            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
-        max_values : `int`, Optional (Keyword only)
-            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
+        
+        options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``, Optional (Keyword only)
+            Options of the select.
+        
+        placeholder : `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        max_values : `int`, Optional (Keyword only)
+            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
+        
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
         
         Returns
         -------
         new : ``ComponentSelect``
         """
+        # custom_id
+        try:
+            custom_id = kwargs.pop('custom_id')
+        except KeyError:
+            custom_id = self.custom_id
+        else:
+            if __debug__:
+                _debug_component_custom_id(custom_id)
+            
+            if custom_id is None:
+                custom_id = self.custom_id
+        
+        # enabled
+        try:
+            enabled = kwargs.pop('enabled')
+        except KeyError:
+            enabled = self.enabled
+        else:
+            if __debug__:
+                _debug_component_enabled(enabled)
+        
+        # options
         try:
             options = kwargs.pop('options')
         except KeyError:
@@ -1866,17 +1942,7 @@ class ComponentSelect(ComponentBase):
                 if (not options):
                     options = None
         
-        try:
-            custom_id = kwargs.pop('custom_id')
-        except KeyError:
-            custom_id = self.custom_id
-        else:
-            if __debug__:
-                _debug_component_custom_id(custom_id)
-            
-            if custom_id is None:
-                custom_id = self.custom_id
-        
+        # placeholder
         try:
             placeholder = kwargs.pop('placeholder')
         except KeyError:
@@ -1888,14 +1954,7 @@ class ComponentSelect(ComponentBase):
             if (placeholder is not None) and (not placeholder):
                 placeholder = None
         
-        try:
-            min_values = kwargs.pop('min_values')
-        except KeyError:
-            min_values = self.min_values
-        else:
-            if __debug__:
-                _debug_component_min_values(min_values)
-        
+        # max_values
         try:
             max_values = kwargs.pop('max_values')
         except KeyError:
@@ -1904,24 +1963,25 @@ class ComponentSelect(ComponentBase):
             if __debug__:
                 _debug_component_max_values(max_values)
         
+        # min_values
         try:
-            enabled = kwargs.pop('enabled')
+            min_values = kwargs.pop('min_values')
         except KeyError:
-            enabled = self.enabled
+            min_values = self.min_values
         else:
             if __debug__:
-                _debug_component_enabled(enabled)
+                _debug_component_min_values(min_values)
         
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
         new = object.__new__(type(self))
         new.custom_id = custom_id
+        new.enabled = enabled
         new.options = options
         new.placeholder = placeholder
-        new.min_values = min_values
         new.max_values = max_values
-        new.enabled = enabled
+        new.min_values = min_values
         return new
     
     
@@ -1930,22 +1990,28 @@ class ComponentSelect(ComponentBase):
         if type(other) is not type(self):
             return NotImplemented
         
+        # custom_id
         if self.custom_id != other.custom_id:
             return False
         
+        # enabled
+        if self.enabled != other.enabled:
+            return False
+        
+        # options
         if self.options != other.options:
             return False
         
+        # placeholder
         if self.placeholder != other.placeholder:
             return False
         
-        if self.min_values != other.min_values:
-            return False
-        
+        # max_values
         if self.max_values != other.max_values:
             return False
         
-        if self.enabled != other.enabled:
+        # min_values
+        if self.min_values != other.min_values:
             return False
         
         return True
@@ -1953,23 +2019,36 @@ class ComponentSelect(ComponentBase):
     
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
-        hash_value = self.type.value ^hash(self.custom_id)
+        hash_value = self.type.value
         
+        # custom_id
+        hash_value ^= hash(self.custom_id)
+        
+        # enabled
+        if self.enabled:
+            hash_value ^= 1<<8
+        
+        # options
         options = self.options
         if (options is not None):
             hash_value ^= len(options)<<12
             for option in options:
                 hash_value ^= hash(option)
         
+        # placeholder
         placeholder = self.placeholder
         if (placeholder is not None):
             hash_value ^= hash(placeholder)
         
-        hash_value ^= self.min_values
-        hash_value ^= self.max_values
+        # max_values
+        max_values = self.max_values
+        if (max_values != 1):
+            hash_value ^= (max_values << 18)
         
-        if self.enabled:
-            hash_value ^= 1<<8
+        # min_values
+        min_values = self.min_values
+        if (min_values != 1):
+            min_values ^= (min_values << 22)
         
         return hash_value
     
@@ -1977,6 +2056,7 @@ class ComponentSelect(ComponentBase):
     @copy_docs(ComponentBase._iter_components)
     def _iter_components(self):
         yield self
+        
         options = self.options
         if (options is not None):
             for option in options:
@@ -2030,13 +2110,13 @@ class ComponentTextInput(ComponentBase):
     
     Class Attributes
     ----------------
-    type : ``ComponentType`` = `ComponentType.text_input`
-        The component's type.
     default_style : ``TextInputStyle`` = `TextInputStyle.short`
         The default text input style to use if style is not given.
+    type : ``ComponentType`` = `ComponentType.text_input`
+        The component's type.
     """
-    type = ComponentType.text_input
     default_style = TextInputStyle.short
+    type = ComponentType.text_input
     
     __slots__ = ('custom_id', 'enabled', 'label', 'max_length', 'min_length', 'placeholder', 'style', )
     
@@ -2071,7 +2151,6 @@ class ComponentTextInput(ComponentBase):
         
         style : `None`, ``TextInputStyle``, `int`, Optional (Keyword only)
             The text input's style.
-        
         
         Raises
         ------

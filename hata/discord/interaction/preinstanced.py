@@ -315,8 +315,8 @@ class TextInputStyle(PreinstancedBase):
     __slots__ = ()
     
     none = P(0, 'none')
-    violet = P(1, 'short')
-    gray = P(2, 'paragraph')
+    short = P(1, 'short')
+    paragraph = P(2, 'paragraph')
 
 
 class ApplicationCommandTargetType(PreinstancedBase):

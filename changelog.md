@@ -14,6 +14,8 @@
 - Add `InteractionType.form_submit`.
 - Add `ComponentType.text_input`.
 - Add `ComponentTextInput`.
+- Rename `coro` to `coroutine` and `fut` to `future` everywhere. This might break some code.
+- Add missing `ComponentSelectOption.__eq__`.
 
 ##### ext.extension_loader
 

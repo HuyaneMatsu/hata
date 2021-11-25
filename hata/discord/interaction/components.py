@@ -810,13 +810,13 @@ class ComponentButton(ComponentBase):
     
     Class Attributes
     ----------------
-    type : ``ComponentType`` = `ComponentType.button`
-        The component's type.
     default_style : ``ButtonStyle`` = `ButtonStyle.violet`
         The default button style to use if style is not given.
+    type : ``ComponentType`` = `ComponentType.button`
+        The component's type.
     """
-    type = ComponentType.button
     default_style = ButtonStyle.violet
+    type = ComponentType.button
     
     __slots__ = ('custom_id', 'enabled', 'emoji', 'label', 'style', 'url',)
     
@@ -1037,7 +1037,7 @@ class ComponentButton(ComponentBase):
             repr_parts.append(reprlib.repr(label))
         
         
-        # Optional descriptive fields: url, enabled
+        # Optional descriptive fields: url & enabled
         
         # url
         url = self.url
@@ -1060,11 +1060,11 @@ class ComponentButton(ComponentBase):
         new = object.__new__(type(self))
         
         new.custom_id = self.custom_id
+        new.enabled = self.enabled
         new.emoji = self.emoji
+        new.label = self.label
         new.style = self.style
         new.url = self.url
-        new.label = self.label
-        new.enabled = self.enabled
         
         return new
     
@@ -1080,28 +1080,29 @@ class ComponentButton(ComponentBase):
         
         Other Parameters
         ----------------
-        label : `None` or `str`, Optional (Keyword only)
-            Label of the component.
+        custom_id : `None` or `str`, Optional (Keyword only)
+            Custom identifier to detect which button was clicked by the user.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the button is enabled. Defaults to `True`.
         
         emoji : `None` or ``Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
         
-        custom_id : `None` or `str`, Optional (Keyword only)
-            Custom identifier to detect which button was clicked by the user.
-            
-        url : `None` or `str`, Optional (Keyword only)
-            Url to redirect to when clicking on the button.
-            
+        label : `None` or `str`, Optional (Keyword only)
+            Label of the component.
+        
         style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
             The button's style.
         
-        enabled : `bool`, Optional (Keyword only)
-            Whether the button is enabled. Defaults to `True`.
+        url : `None` or `str`, Optional (Keyword only)
+            Url to redirect to when clicking on the button.
         
         Returns
         -------
         new : ``ComponentButton``
         """
+        # custom_id
         try:
             custom_id = kwargs.pop('custom_id')
         except KeyError:
@@ -1109,23 +1110,11 @@ class ComponentButton(ComponentBase):
         else:
             if __debug__:
                 _debug_component_custom_id(custom_id)
+            
+            if (custom_id is not None) and (not custom_id):
+                custom_id = None
         
-        try:
-            emoji = kwargs.pop('emoji')
-        except KeyError:
-            emoji = self.emoji
-        else:
-            if __debug__:
-                _debug_component_emoji(emoji)
-        
-        try:
-            label = kwargs.pop('label')
-        except KeyError:
-            label = self.label
-        else:
-            if __debug__:
-                _debug_component_label(label)
-        
+        # enabled
         try:
             enabled = kwargs.pop('enabled')
         except KeyError:
@@ -1134,6 +1123,31 @@ class ComponentButton(ComponentBase):
             if __debug__:
                 _debug_component_enabled(enabled)
         
+        # emoji
+        try:
+            emoji = kwargs.pop('emoji')
+        except KeyError:
+            emoji = self.emoji
+        else:
+            if __debug__:
+                _debug_component_emoji(emoji)
+        
+        # label
+        try:
+            label = kwargs.pop('label')
+        except KeyError:
+            label = self.label
+        else:
+            if __debug__:
+                _debug_component_label(label)
+        
+        # style
+        try:
+            style = kwargs.pop('style')
+        except KeyError:
+            style = self.style
+        
+        # url
         try:
             url = kwargs.pop('url')
         except KeyError:
@@ -1141,26 +1155,22 @@ class ComponentButton(ComponentBase):
         else:
             if __debug__:
                 _debug_component_url(url)
-        
-        try:
-            style = kwargs.pop('style')
-        except KeyError:
-            style = self.style
+            
+            if (url is not None) and (not url):
+                url = None
+
         
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
         
-        if (custom_id is not None) and (not custom_id):
-            custom_id = None
         
-        if (url is not None) and (not url):
-            url = None
-        
+        # custom_id & url
         if __debug__:
             if (custom_id is not None) and (url is not None):
                 raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
                     f'custom_id={custom_id!r}, url={url!r}.')
         
+        # url # style & custom
         if (url is None):
             if style is None:
                 style = cls.default_style
@@ -1176,11 +1186,11 @@ class ComponentButton(ComponentBase):
         new = object.__new__(type(self))
         
         new.custom_id = custom_id
-        new.emoji = emoji
-        new.style = style
-        new.url = url
-        new.label = label
         new.enabled = enabled
+        new.emoji = emoji
+        new.label = label
+        new.url = url
+        new.style = style
         
         return new
     
@@ -1190,22 +1200,28 @@ class ComponentButton(ComponentBase):
         if type(other) is not type(self):
             return NotImplemented
         
-        if self.emoji is not other.emoji:
-            return False
-        
-        if self.style is not other.style:
-            return False
-        
+        # custom_id
         if self.custom_id != other.custom_id:
             return False
         
-        if self.url != other.url:
+        # enabled
+        if self.enabled != other.enabled:
             return False
         
+        # emoji
+        if self.emoji is not other.emoji:
+            return False
+        
+        # label
         if self.label != other.label:
             return False
         
-        if self.enabled != other.enabled:
+        # style
+        if self.style is not other.style:
+            return False
+            
+        # url
+        if self.url != other.url:
             return False
         
         return True
@@ -1215,28 +1231,34 @@ class ComponentButton(ComponentBase):
     def __hash__(self):
         hash_value = self.type.value
         
-        emoji = self.emoji
-        if (emoji is not None):
-            hash_value ^= emoji.id
-        
-        style = self.style
-        if (style is not None):
-            hash_value ^= style.value
-        
+        # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
             hash_value ^= hash(custom_id)
         
-        url = self.url
-        if (url is not None):
-            hash_value ^= hash(url)
+        # enabled
+        if self.enabled:
+            hash_value ^= 1<<8
         
+        # emoji
+        emoji = self.emoji
+        if (emoji is not None):
+            hash_value ^= emoji.id
+        
+        # label
         label = self.label
         if (label is not None):
             hash_value ^= hash(label)
         
-        if self.enabled:
-            hash_value ^= 1<<8
+        # style
+        style = self.style
+        if (style is not None):
+            hash_value ^= style.value
+        
+        # url
+        url = self.url
+        if (url is not None):
+            hash_value ^= hash(url)
         
         return hash_value
 
@@ -1267,7 +1289,7 @@ class ComponentSelectOption(ComponentBase):
     """
     __slots__ = ('default', 'description', 'emoji', 'label', 'value')
     
-    def __new__(cls, value, label, emoji=None, *, description=None, default=False):
+    def __new__(cls, value, label, emoji=None, *, default=False, description=None):
         """
         Creates a new component option with the given parameters.
         
@@ -1279,24 +1301,35 @@ class ComponentSelectOption(ComponentBase):
             Label of the component option.
         emoji : `None` or ``Emoji``, Optional
             Emoji of the option if applicable.
+        default : `bool`, Optional (Keyword only)
+            Whether this the the default option. Defaults to `False`.
         description : `None` or `str`, Optional (Keyword only)
             Description of the component option.
-        default : `bool`
-            Whether this the the default option. Defaults to `False`.
         """
         if __debug__:
-            _debug_component_value(value)
-            _debug_component_label(label)
-            _debug_component_emoji(emoji)
-            _debug_component_description(description)
             _debug_component_default(default)
-            
-            if (label is None) or (not label):
-                raise AssertionError('`label` cannot be empty..')
+            _debug_component_description(description)
+            _debug_component_emoji(emoji)
+            _debug_component_label(label)
+            _debug_component_value(value)
         
+        # default
+        # No additional checks
+        
+        # description
         if (description is not None) and (not description):
             description = None
         
+        # emoji
+        # No additional checks
+        
+        # label
+        if __debug__:
+            if (label is None) or (not label):
+                raise AssertionError('`label` cannot be empty..')
+        
+        # value
+        # No additional checks
         
         self = object.__new__(cls)
         self.default = default
@@ -1312,10 +1345,13 @@ class ComponentSelectOption(ComponentBase):
     def from_data(cls, data):
         self = object.__new__(cls)
         
+        # default
         self.default = data.get('default', False)
         
+        # description
         self.description = data.get('description', None)
         
+        # emoji
         emoji_data = data.get('emoji', None)
         if emoji_data is None:
             emoji = None
@@ -1323,8 +1359,10 @@ class ComponentSelectOption(ComponentBase):
             emoji = create_partial_emoji_from_data(emoji_data)
         self.emoji = emoji
         
+        # label
         self.label = data['label']
         
+        # value
         self.value = data['value']
         
         return self
@@ -1332,50 +1370,66 @@ class ComponentSelectOption(ComponentBase):
     
     @copy_docs(ComponentBase.to_data)
     def to_data(self):
+        # label & value
         data = {
-            'value': self.value,
             'label': self.label,
+            'value': self.value,
         }
         
-        emoji = self.emoji
-        if (emoji is not None):
-            data['emoji'] = create_partial_emoji_data(emoji)
-        
+        # default
         if self.default:
             data['default'] = True
         
+        # description
         description = self.description
         if (description is not None):
             data['description'] = description
+        
+        # emoji
+        emoji = self.emoji
+        if (emoji is not None):
+            data['emoji'] = create_partial_emoji_data(emoji)
         
         return data
 
 
     @copy_docs(ComponentBase.__repr__)
     def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__, ' value=', repr(self.value)]
+        repr_parts = ['<', self.__class__.__name__]
         
+        # System fields : value
+        
+        # value
+        repr_parts.append(', value=')
+        repr_parts.append(reprlib.repr(self.value))
+        
+        # Text fields : emoji & label
+        
+        # emoji
         emoji = self.emoji
         if (emoji is not None):
             repr_parts.append(', emoji=')
             repr_parts.append(repr(emoji))
         
+        # label
         label = self.label
         if (label is not None):
             repr_parts.append(', label=')
             repr_parts.append(reprlib.repr(label))
         
+        # Optional descriptive fields: description & default
+        
+        # description
         description = self.description
         if (description is not None):
             repr_parts.append(', description=')
             repr_parts.append(reprlib.repr(description))
         
+        # default
         if self.default:
-            repr_parts.append(', default=')
-            repr_parts.append('True')
+            repr_parts.append(', default=True')
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     
@@ -1401,48 +1455,31 @@ class ComponentSelectOption(ComponentBase):
         
         Other Parameters
         ----------------
-        value : `str`, Optional (Keyword only)
-            The option's value.
-        label : `str`, Optional (Keyword only)
-            Label of the component option.
-        emoji : `None` or ``Emoji``, Optional (Keyword only)
-            Emoji of the option if applicable.
-        description : `None` or `str`, Optional (Keyword only)
-            Description of the component option.
         default : `bool`
             Whether this the the default option. Defaults to `False`.
+        description : `None` or `str`, Optional (Keyword only)
+            Description of the component option.
+        emoji : `None` or ``Emoji``, Optional (Keyword only)
+            Emoji of the option if applicable.
+        label : `str`, Optional (Keyword only)
+            Label of the component option.
+        value : `str`, Optional (Keyword only)
+            The option's value.
         
         Returns
         -------
         new : ``ComponentSelectOption``
         """
+        # default
         try:
-            value = kwargs.pop('value')
+            default = kwargs.pop('default')
         except KeyError:
-            value = self.value
+            default = self.default
         else:
             if __debug__:
-                _debug_component_value(value)
+                _debug_component_default(default)
         
-        try:
-            label = kwargs.pop('label')
-        except KeyError:
-            label = self.label
-        else:
-            if __debug__:
-                _debug_component_label(label)
-                
-                if (label is None) or (not label):
-                    raise AssertionError('`label` cannot be empty..')
-        
-        try:
-            emoji = kwargs.pop('emoji')
-        except KeyError:
-            emoji = self.emoji
-        else:
-            if __debug__:
-                _debug_component_emoji(emoji)
-        
+        # description
         try:
             description = kwargs.pop('description')
         except KeyError:
@@ -1454,13 +1491,36 @@ class ComponentSelectOption(ComponentBase):
             if (description is not None) and (not description):
                 description = None
         
+        # emoji
         try:
-            default = kwargs.pop('default')
+            emoji = kwargs.pop('emoji')
         except KeyError:
-            default = self.default
+            emoji = self.emoji
         else:
             if __debug__:
-                _debug_component_default(default)
+                _debug_component_emoji(emoji)
+        
+        
+        # label
+        try:
+            label = kwargs.pop('label')
+        except KeyError:
+            label = self.label
+        else:
+            if __debug__:
+                _debug_component_label(label)
+                
+                if (label is None) or (not label):
+                    raise AssertionError('`label` cannot be empty..')
+        
+        # value
+        try:
+            value = kwargs.pop('value')
+        except KeyError:
+            value = self.value
+        else:
+            if __debug__:
+                _debug_component_value(value)
         
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -1474,28 +1534,61 @@ class ComponentSelectOption(ComponentBase):
         return new
     
     
+    @copy_docs(ComponentBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # default
+        if self.default != other.default:
+            return False
+        
+        # description
+        if self.description != other.description:
+            return False
+        
+        # emoji
+        if self.emoji is not other.emoji:
+            return False
+        
+        # label
+        if self.label != other.label:
+            return False
+        
+        # value
+        if self.value != other.value:
+            return False
+        
+        return True
+    
+    
     @copy_docs(ComponentBase.__hash__)
     def __hash__(self):
         hash_value = 0
         
-        emoji = self.emoji
-        if (emoji is not None):
-            hash_value ^= emoji.id
+        # default
+        if self.default:
+            hash_value ^= 1<<8
         
-        value = self.value
-        if (value is not None):
-            hash_value ^= hash(value)
-        
+        # description
         description = self.description
         if (description is not None):
             hash_value ^= hash(description)
         
+        # emoji
+        emoji = self.emoji
+        if (emoji is not None):
+            hash_value ^= emoji.id
+        
+        # label
         label = self.label
         if (label is not None):
             hash_value ^= hash(label)
         
-        if self.default:
-            hash_value ^= 1<<8
+        # value
+        value = self.value
+        if (value is not None):
+            hash_value ^= hash(value)
         
         return hash_value
 

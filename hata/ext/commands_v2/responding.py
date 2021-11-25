@@ -160,7 +160,7 @@ async def process_command_coroutine(command_context, coroutine):
     Raises
     ------
     BaseException
-        Any exception raised by `coro`.
+        Any exception raised by `coroutine`.
     """
     if is_coroutine_generator(coroutine):
         response = await process_command_coroutine_generator(command_context, coroutine)

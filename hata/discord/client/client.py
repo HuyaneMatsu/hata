@@ -3579,7 +3579,7 @@ class Client(ClientUserPBase):
             coroutine = self.http.message_delete_b2wo(channel_id, message_id, reason)
         
         await coroutine
-        # If the coro raises, do not switch `message.deleted` to `True`.
+        # If the coroutine raises, do not switch `message.deleted` to `True`.
         if (message is not None):
             message.deleted = True
     
@@ -14434,11 +14434,11 @@ class Client(ClientUserPBase):
         try:
             while True:
                 if self.is_bot:
-                    coro = self.http.client_gateway_bot()
+                    coroutine = self.http.client_gateway_bot()
                 else:
-                    coro = self.http.client_gateway_hooman()
+                    coroutine = self.http.client_gateway_hooman()
                 try:
-                    data = await coro
+                    data = await coroutine
                 except DiscordException as err:
                     status = err.status
                     if status == 401:

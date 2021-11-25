@@ -333,7 +333,7 @@ class ChannelInputStream:
         Whether the stream is closed.
     _chunks : `str`
         The data queue.
-    _payload_reader : `None` or `generator`
+    _payload_reader : `None` or `GeneratorType`
         Payload reader generator, what gets the control back, when data, eof or any exception is received.
     _payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``._payload_reader`` generator returns.
@@ -517,7 +517,7 @@ class ChannelInputStream:
         
         Parameters
         ----------
-        payload_reader : `generator`
+        payload_reader : `GeneratorType`
             A generator, what gets control, every time a chunk is received, till it returns or raises.
         
         Returns

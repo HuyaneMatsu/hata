@@ -2306,8 +2306,8 @@ class asynclist(list):
         *args : Additional position parameters
             Parameters to call with the contained async callables.
         """
-        for coro in list.__iter__(self):
-            Task(coro(*args), KOKORO)
+        for coroutine_function in list.__iter__(self):
+            Task(coroutine_function(*args), KOKORO)
     
     
     def __repr__(self):
@@ -2350,8 +2350,8 @@ class asynclist(list):
             if attribute is not ...:
                 return attribute
         
-        for coro in list.__iter__(self):
-            attribute = getattr(coro, name, ...)
+        for coroutine_function in list.__iter__(self):
+            attribute = getattr(coroutine_function, name, ...)
             if attribute is ...:
                 continue
             

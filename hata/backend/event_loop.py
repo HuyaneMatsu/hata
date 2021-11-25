@@ -2081,13 +2081,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         return Future(self)
     
-    def create_task(self, coro):
+    def create_task(self, coroutine):
         """
         Creates a task wrapping the given coroutine.
         
         Parameters
         ----------
-        coro : `coroutine` or `generator`
+        coroutine : `CoroutineType` or `GeneratorType`
             The coroutine, to wrap.
         
         Returns
@@ -2095,16 +2095,16 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         task : ``Task``
             The created task instance.
         """
-        return Task(coro, self)
+        return Task(coroutine, self)
     
-    def create_task_thread_safe(self, coro):
+    def create_task_thread_safe(self, coroutine):
         """
         Creates a task wrapping the given coroutine and wakes up the event loop. Wakes up the event loop if sleeping,
         what means it is safe to use from other threads as well.
         
         Parameters
         ----------
-        coro : `coroutine` or `generator`
+        coroutine : `CoroutineType` or `GeneratorType`
             The coroutine, to wrap.
         
         Returns
@@ -2112,7 +2112,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         task : ``Task``
             The created task instance.
         """
-        task = Task(coro, self)
+        task = Task(coroutine, self)
         self.wake_up()
         return task
     
@@ -2126,84 +2126,84 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         """
         return ThreadSyncerCTX(self)
     
-    def ensure_future(self, coro_or_future):
+    def ensure_future(self, coroutine_or_future):
         """
         Ensures the given coroutine or future on the event loop. Returns an awaitable ``Future`` instance.
         
         Parameters
         ----------
-        coro_or_future : `awaitable`
+        coroutine_or_future : `awaitable`
             The coroutine or future to ensure.
         
         Returns
         -------
         future : ``Future`` instance.
-            The return type depends on `coro_or_future`'s type.
+            The return type depends on `coroutine_or_future`'s type.
             
-            - If `coro_or_future` is given as `coroutine` or as `generator`, returns a ``Task`` instance.
-            - If `coro_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
-            - If `coro_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
+            - If `coroutine_or_future` is given as `CoroutineType` or as `GeneratorType`, returns a ``Task`` instance.
+            - If `coroutine_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
+            - If `coroutine_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
                 ``FutureAsyncWrapper``.
-            - If `coro_or_future` defines an `__await__` method, then returns a ``Task`` instance.
+            - If `coroutine_or_future` defines an `__await__` method, then returns a ``Task`` instance.
         
         Raises
         ------
         TypeError
-            If `coro_or_future` is not `awaitable`.
+            If `coroutine_or_future` is not `awaitable`.
         """
-        if is_coroutine(coro_or_future):
-            return Task(coro_or_future, self)
+        if is_coroutine(coroutine_or_future):
+            return Task(coroutine_or_future, self)
         
-        if isinstance(coro_or_future, Future):
-            if coro_or_future._loop is not self:
-                coro_or_future = FutureAsyncWrapper(coro_or_future, self)
-            return coro_or_future
+        if isinstance(coroutine_or_future, Future):
+            if coroutine_or_future._loop is not self:
+                coroutine_or_future = FutureAsyncWrapper(coroutine_or_future, self)
+            return coroutine_or_future
         
-        type_ = type(coro_or_future)
+        type_ = type(coroutine_or_future)
         if hasattr(type_, '__await__'):
-            return Task(type_.__await__(coro_or_future), self)
+            return Task(type_.__await__(coroutine_or_future), self)
         
         raise TypeError('A Future, a coroutine or an awaitable is required.')
     
-    def ensure_future_thread_safe(self, coro_or_future):
+    def ensure_future_thread_safe(self, coroutine_or_future):
         """
         Ensures the given coroutine or future on the event loop. Returns an awaitable ``Future`` instance. Wakes up
         the event loop if sleeping, what means it is safe to use from other threads as well.
         
         Parameters
         ----------
-        coro_or_future : `awaitable`
+        coroutine_or_future : `awaitable`
             The coroutine or future to ensure.
         
         Returns
         -------
         future : ``Future`` instance.
-            The return type depends on `coro_or_future`'s type.
+            The return type depends on `coroutine_or_future`'s type.
             
-            - If `coro_or_future` is given as `coroutine` or as `generator`, returns a ``Task`` instance.
-            - If `coro_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
-            - If `coro_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
+            - If `coroutine_or_future` is given as `CoroutineType` or as `GeneratorType`, returns a ``Task`` instance.
+            - If `coroutine_or_future` is given as ``Future`` instance, bound to the current event loop, returns it.
+            - If `coroutine_or_future`is given as ``Future`` instance, bound to an other event loop, returns a
                 ``FutureAsyncWrapper``.
-            - If `coro_or_future` defines an `__await__` method, then returns a ``Task`` instance.
+            - If `coroutine_or_future` defines an `__await__` method, then returns a ``Task`` instance.
         
         Raises
         ------
         TypeError
-            If `coro_or_future` is not `awaitable`.
+            If `coroutine_or_future` is not `awaitable`.
         """
-        if is_coroutine(coro_or_future):
-            task = Task(coro_or_future, self)
+        if is_coroutine(coroutine_or_future):
+            task = Task(coroutine_or_future, self)
             self.wake_up()
             return task
         
-        if isinstance(coro_or_future, Future):
-            if coro_or_future._loop is not self:
-                coro_or_future = FutureAsyncWrapper(coro_or_future, self)
-            return coro_or_future
+        if isinstance(coroutine_or_future, Future):
+            if coroutine_or_future._loop is not self:
+                coroutine_or_future = FutureAsyncWrapper(coroutine_or_future, self)
+            return coroutine_or_future
         
-        type_ = type(coro_or_future)
+        type_ = type(coroutine_or_future)
         if hasattr(type_, '__await__'):
-            task = Task(type_.__await__(coro_or_future), self)
+            task = Task(type_.__await__(coroutine_or_future), self)
             self.wake_up()
             return task
 
@@ -2672,8 +2672,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                     raise # The event loop will catch and log it.
             else:
                 extra = {'peername': address}
-                coro = self._accept_connection_task(protocol_factory, connection_socket, extra, ssl, server)
-                Task(coro, self)
+                Task(self._accept_connection_task(protocol_factory, connection_socket, extra, ssl, server), self)
     
     async def _accept_connection_task(self, protocol_factory, connection_socket, extra, ssl, server):
         """

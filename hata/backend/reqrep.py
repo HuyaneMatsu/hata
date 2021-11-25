@@ -584,7 +584,7 @@ class ClientRequest:
         
         Returns
         -------
-        response : `coroutine` of ``ClientResponse.start`` ->
+        response : `CoroutineType` of ``ClientResponse.start`` ->
         """
         try:
             url = self.url

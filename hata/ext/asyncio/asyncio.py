@@ -138,8 +138,8 @@ class EventThread:
             sys.stderr.write(''.join(extracted))
 
 
-async def in_coro(fut):
-    return await fut
+async def in_coro(future):
+    return await future
 
 # Required by aio-http 3.7
 def asyncio_run_in_executor(self, executor, func=..., *args):
@@ -158,8 +158,8 @@ EventThread.run_in_executor = asyncio_run_in_executor
 del asyncio_run_in_executor
 
 #required by anyio
-def asyncio_create_task(self, coro):
-    return Task(coro, self)
+def asyncio_create_task(self, coroutine):
+    return Task(coroutine, self)
 
 EventThread.create_task = asyncio_create_task
 del asyncio_create_task
@@ -280,8 +280,8 @@ del asyncio_create_server
 # include: BaseEventLoop, _run_until_complete_cb
 BaseEventLoop = EventThread
 
-def _run_until_complete_cb(fut): # needed by anyio
-    fut._loop.stop()
+def _run_until_complete_cb(future): # needed by anyio
+    future._loop.stop()
 
 # async-io.base_futures
 # *none*
@@ -908,7 +908,7 @@ BaseSelectorEventLoop = EventThread
 # asyncio.staggered_race
 # Include: staggered_race
 
-async def staggered_race(coro_fns, delay, *, loop=None):
+async def staggered_race(coroutine_functions, delay, *, loop=None):
     """
     Run coroutines with staggered start times and take the first to finish.
     
@@ -933,8 +933,8 @@ async def staggered_race(coro_fns, delay, *, loop=None):
         ```
     
     Args:
-        coro_fns: an iterable of coroutine functions, i.e. callables that return a coroutine object when called. Use
-        ``functools.partial`` or lambdas to pass parameters.
+        coroutine_functions: an iterable of coroutine functions, i.e. callables that return a coroutine object when
+        called. Use `functools.partial` or lambdas to pass parameters.
         
         delay: amount of time, in seconds, between starting coroutines. If `None`, the coroutines will run
         sequentially.
@@ -945,11 +945,11 @@ async def staggered_race(coro_fns, delay, *, loop=None):
         tuple *(winner_result, winner_index, exceptions)* where
         
         - *winner_result*: the result of the winning coroutine, or `None` if no coroutines won.
-        - *winner_index*: the index of the winning coroutine in `coro_fns`, or `None` if no coroutines won. If the
+        - *winner_index*: the index of the winning coroutine in `coroutine_functions`, or `None` if no coroutines won. If the
             winning coroutine may return None on success, *winner_index* can be used to definitively determine whether
             any coroutine won.
         - *exceptions*: list of exceptions returned by the coroutines. `len(exceptions)` is equal to the number of
-            coroutines actually started, and the order is the same as in `coro_fns`. The winning coroutine's entry
+            coroutines actually started, and the order is the same as in `coroutine_functions`. The winning coroutine's entry
             is `None`.
     """
     raise NotImplementedError
@@ -1400,20 +1400,20 @@ class StreamReader:
         if exception is not None:
             raise exception
         
-        offset = 0
+        offunctionset = 0
         
         while True:
             buflen = len(self._buffer)
             
-            if buflen - offset >= seplen:
-                isep = self._buffer.find(separator, offset)
+            if buflen - offunctionset >= seplen:
+                isep = self._buffer.find(separator, offunctionset)
                 
                 if isep != -1:
                     break
                 
-                offset = buflen + 1 - seplen
-                if offset > self._limit:
-                    raise LimitOverrunError('Separator is not found, and chunk exceed the limit', offset)
+                offunctionset = buflen + 1 - seplen
+                if offunctionset > self._limit:
+                    raise LimitOverrunError('Separator is not found, and chunk exceed the limit', offunctionset)
             
             if self._eof:
                 chunk = bytes(self._buffer)
@@ -1581,15 +1581,15 @@ class Task(HataTask, metaclass=TaskMeta, ignore=True):
         '__weakref__', # Required by anyio
     )
     
-    def __new__(cls, coro, loop=None, name=None):
+    def __new__(cls, coroutine, loop=None, name=None):
         """A coroutine wrapped in a Future."""
-        if not iscoroutine(coro):
-            raise TypeError(f'a coroutine was expected, got {coro!r}')
+        if not iscoroutine(coroutine):
+            raise TypeError(f'a coroutine was expected, got {coroutine!r}')
         
         if loop is None:
             loop = get_event_loop()
         
-        return HataTask.__new__(cls, coro, loop)
+        return HataTask.__new__(cls, coroutine, loop)
     
     # Required by aiohttp 3.6
     def current_task(loop=None):
@@ -1604,25 +1604,25 @@ class Task(HataTask, metaclass=TaskMeta, ignore=True):
     
     # Required by anyio
     def get_coro(self):
-        return self._coro
+        return self._coroutine
 
 
-def create_task(coro, *, name=None):
+def create_task(coroutine, *, name=None):
     """
     Schedule the execution of a coroutine object in a spawn task.
     
     Return a Task object.
     """
     loop = get_running_loop()
-    return Task(coro, loop)
+    return Task(coroutine, loop)
 
 FIRST_COMPLETED = 'FIRST_COMPLETED'
 FIRST_EXCEPTION = 'FIRST_EXCEPTION'
 ALL_COMPLETED = 'ALL_COMPLETED'
 
-async def wait(fs, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
+async def wait(functions, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
     """
-    Wait for the Futures and coroutines given by fs to complete.
+    Wait for the Futures and coroutines given by functions to complete.
     
     The sequence futures must not be empty.
     
@@ -1632,16 +1632,16 @@ async def wait(fs, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
     
     Usage:
         ```py
-        done, pending = await asyncio.wait(fs)
+        done, pending = await asyncio.wait(functions)
         ```
     
     Note: This does not raise TimeoutError! Futures that aren't done when the timeout occurs are returned in the second
     set.
     """
-    if isfuture(fs) or iscoroutine(fs):
-        raise TypeError(f'expect a list of futures, not {type(fs).__name__}')
+    if isfuture(functions) or iscoroutine(functions):
+        raise TypeError(f'expect a list of futures, not {type(functions).__name__}')
     
-    if not fs:
+    if not functions:
         raise ValueError('Set of coroutines/Futures is empty.')
     
     if return_when not in (FIRST_COMPLETED, FIRST_EXCEPTION, ALL_COMPLETED):
@@ -1653,11 +1653,11 @@ async def wait(fs, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
         warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
-    if any(iscoroutine(f) for f in set(fs)):
+    if any(iscoroutine(f) for f in set(functions)):
         warnings.warn('The explicit passing of coroutine objects to asyncio.wait() is deprecated since Python 3.8, '
                       'and scheduled for removal in Python 3.11.', DeprecationWarning, stacklevel=2)
     
-    fs = {loop.ensure_future(f) for f in set(fs)}
+    functions = {loop.ensure_future(f) for f in set(functions)}
     
     if return_when == FIRST_COMPLETED:
         future_type = WaitTillFirst
@@ -1666,13 +1666,13 @@ async def wait(fs, *, loop=None, timeout=None, return_when=ALL_COMPLETED):
     else:
         future_type = WaitTillAll
     
-    future = future_type(fs, loop)
+    future = future_type(functions, loop)
     if timeout is not None:
         future_or_timeout(future, timeout)
     
     return await future
 
-async def wait_for(fut, timeout, *, loop=None):
+async def wait_for(future, timeout, *, loop=None):
     """
     Wait for the single Future or coroutine to complete, with timeout.
     
@@ -1692,15 +1692,16 @@ async def wait_for(fut, timeout, *, loop=None):
                       DeprecationWarning, stacklevel=2)
     
     if timeout is None:
-        return await fut
+        return await future
     
-    fut = loop.ensure_future(fut)
+    future = loop.ensure_future(future)
     if timeout <= 0.0:
-        if fut.done():
-            return fut.result()
+        if future.done():
+            return future.result()
     
-    future_or_timeout(fut, timeout)
-    return await fut
+    future_or_timeout(future, timeout)
+    return await future
+
 
 async def _as_completed_task(futures, waiter):
     index = 0
@@ -1737,7 +1738,7 @@ async def _as_completed_task(futures, waiter):
         
         waiter.reset()
 
-def as_completed(fs, *, loop=None, timeout=None):
+def as_completed(functions, *, loop=None, timeout=None):
     """
     Return an iterator whose values are coroutines.
     
@@ -1746,17 +1747,17 @@ def as_completed(fs, *, loop=None, timeout=None):
     
     This differs from PEP 3148; the proper way to use this is:
         ```py
-        for f in as_completed(fs):
+        for function in as_completed(functions):
             result = await f  # The 'await' may raise.
             # Use result.
         ```
     
     If a timeout is specified, the 'await' will raise TimeoutError when the timeout occurs before all Futures are done.
     
-    Note: The futures 'f' are not necessarily members of fs.
+    Note: The futures 'f' are not necessarily members of functions.
     """
-    if isfuture(fs) or iscoroutine(fs):
-        raise TypeError(f'expect a list of futures, not {type(fs).__name__}')
+    if isfuture(functions) or iscoroutine(functions):
+        raise TypeError(f'expect a list of futures, not {type(functions).__name__}')
     
     if loop is None:
         loop = get_event_loop()
@@ -1765,8 +1766,8 @@ def as_completed(fs, *, loop=None, timeout=None):
                       DeprecationWarning, stacklevel=2)
     
     tasks = set()
-    for coro_or_future in fs:
-        task = loop.ensure_future(coro_or_future)
+    for coroutine_or_future in functions:
+        task = loop.ensure_future(coroutine_or_future)
         tasks.add(task)
     
     if not tasks:
@@ -1796,7 +1797,7 @@ async def sleep(delay, result=None, *, loop=None):
     await hata_sleep(delay, loop)
     return result
 
-def ensure_future(coro_or_future, *, loop=None):
+def ensure_future(coroutine_or_future, *, loop=None):
     """
     Wrap a coroutine or an awaitable in a future.
     
@@ -1808,7 +1809,7 @@ def ensure_future(coro_or_future, *, loop=None):
         warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
                       DeprecationWarning, stacklevel=2)
     
-    return loop.ensure_future(coro_or_future)
+    return loop.ensure_future(coroutine_or_future)
 
 class _gatherer_done_cb_return_exceptions:
     __slots__ = ('future', )
@@ -1816,8 +1817,8 @@ class _gatherer_done_cb_return_exceptions:
         self.future = future
     
     def __call__(self, gatherer):
-        for fut in gatherer.futures_pending:
-            fut.cancel()
+        for pending_future in gatherer.futures_pending:
+            pending_future.cancel()
         
         future = self.future
         if future.done():
@@ -1832,9 +1833,9 @@ class _gatherer_done_cb_return_exceptions:
             future.set_exception(err)
             return
         
-        for fut in done:
+        for done_future in done:
             try:
-                result = fut.result()
+                result = done_future.result()
             except BaseException as err:
                 result = err
             
@@ -1844,6 +1845,7 @@ class _gatherer_done_cb_return_exceptions:
 
 class _gatherer_done_cb_raise:
     __slots__ = ('future', )
+    
     def __init__(self, future):
         self.future = future
     
@@ -1859,9 +1861,9 @@ class _gatherer_done_cb_raise:
             return
         
         results = []
-        for fut in done:
+        for done_future in done:
             try:
-                result = fut.result()
+                result = done_future.result()
             except BaseException as err:
                 exception = err
                 break
@@ -1890,13 +1892,13 @@ class _getherer_cancel_cb:
         if not future.cancelled():
             return
         
-        for fut in gatherer.futures_done:
-            fut.cancel()
+        for done_future in gatherer.futures_done:
+            done_future.cancel()
         
         gatherer.cancel()
 
         
-def gather(*coros_or_futures, loop=None, return_exceptions=False):
+def gather(*coroutines_or_futures, loop=None, return_exceptions=False):
     """
     Return a future aggregating results from the given coroutines/futures. Coroutines will be wrapped in a future and
     scheduled in the event loop. They will not necessarily be scheduled in the same order as passed in.
@@ -1923,13 +1925,13 @@ def gather(*coros_or_futures, loop=None, return_exceptions=False):
     
     future = HataFuture(loop)
     
-    if not coros_or_futures:
+    if not coroutines_or_futures:
         future.set_result([])
         return future
     
     tasks = []
-    for coro in coros_or_futures:
-        task = loop.ensure_future(loop)
+    for coroutine in coroutines_or_futures:
+        task = loop.ensure_future(coroutine)
         tasks.append(task)
     
     if return_exceptions:
@@ -1980,13 +1982,13 @@ def shield(arg, *, loop=None):
 
     return hata_shield(arg, loop)
 
-def run_coroutine_threadsafe(coro, loop):
+def run_coroutine_threadsafe(coroutine, loop):
     """
     Submit a coroutine object to a given event loop.
     
     Return a concurrent.futures.Future to access the result.
     """
-    return loop.create_task_thread_safe(coro)
+    return loop.create_task_thread_safe(coroutine)
 
 def _register_task(task):
     """Register a new task in asyncio as executed by loop."""
@@ -2341,7 +2343,7 @@ class WindowsProactorEventLoopPolicy(AbstractEventLoopPolicy):
 
 BUFSIZE = 8192
 
-def pipe(*, duplex=False, overlapped=(True, True), bufsize=BUFSIZE):
+def pipe(*, duplex=False, overlapped=(True, True), bufunctionsize=BUFSIZE):
     raise NotImplementedError
 
 class PipeHandle:

@@ -279,10 +279,10 @@ class ChooseMenu(PaginationBase):
             if result_length == 1:
                 choice = choices[0]
                 if isinstance(choice, tuple):
-                    coro = selector(client, channel, message, *choice)
+                    coroutine = selector(client, channel, message, *choice)
                 else:
-                    coro = selector(client, channel, message, choice)
-                await coro
+                    coroutine = selector(client, channel, message, choice)
+                await coroutine
             return None
         
         self = object.__new__(cls)
@@ -528,10 +528,10 @@ class ChooseMenu(PaginationBase):
                     choice = self.choices[self.selected]
                     channel = self.channel
                     if isinstance(choice, tuple):
-                        coro = selector(client, channel, message, *choice)
+                        coroutine = selector(client, channel, message, *choice)
                     else:
-                        coro = selector(client, channel, message, choice)
-                    await coro
+                        coroutine = selector(client, channel, message, choice)
+                    await coroutine
                 except BaseException as err:
                     await client.events.error(client, f'{self!r}.__call__ when calling {selector!r}', err)
                 return

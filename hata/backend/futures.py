@@ -434,9 +434,9 @@ def _should_ignore_frame(file, name, line):
 _ignore_frame(__spec__.origin, 'result', 'raise exception', )
 _ignore_frame(__spec__.origin, 'result_no_wait', 'raise exception', )
 _ignore_frame(__spec__.origin, '__call__', 'raise exception', )
-_ignore_frame(__spec__.origin, '_step', 'result = coro.throw(exception)', )
+_ignore_frame(__spec__.origin, '_step', 'result = coroutine.throw(exception)', )
 _ignore_frame(__spec__.origin, '__iter__', 'yield self', )
-_ignore_frame(__spec__.origin, '_step', 'result = coro.send(None)', )
+_ignore_frame(__spec__.origin, '_step', 'result = coroutine.send(None)', )
 _ignore_frame(__spec__.origin, '_wake_up', 'future.result()', )
 _ignore_frame(__spec__.origin, 'wait', 'return self.result()', )
 _ignore_frame(__spec__.origin, '__call__', 'future.result()', )
@@ -754,13 +754,13 @@ def format_callback(func, args=None, kwargs=None):
             wrapped = func.func
         except AttributeError:
             if type(func) is MethodType and func.__self__.__class__ is Task:
-                coro = func.__self__._coro
-                coro_repr = getattr(coro, '__qualname__', None)
-                if coro_repr is None:
-                    coro_repr = getattr(coro, '__name__', None)
-                    if coro_repr is None:
-                        coro_repr = repr(coro)
-                func_repr = f'<Bound method {func.__func__.__name__} of Task {coro_repr}>'
+                coroutine = func.__self__._coroutine
+                coroutine_repr = getattr(coroutine, '__qualname__', None)
+                if coroutine_repr is None:
+                    coroutine_repr = getattr(coroutine, '__name__', None)
+                    if coroutine_repr is None:
+                        coroutine_repr = repr(coroutine)
+                func_repr = f'<Bound method {func.__func__.__name__} of Task {coroutine_repr}>'
             else:
                 func_repr = getattr(func, '__qualname__', None)
                 if func_repr is None:
@@ -777,31 +777,32 @@ def format_callback(func, args=None, kwargs=None):
     
     return ''.join(result)
 
-def format_coroutine(coro):
+def format_coroutine(coroutine):
     """
     Formats the given coroutine to a more user friendly representation.
     
     Parameters
     ----------
-    coro : `coroutine` or `generator` (or any compatible cyi or builtin)
+    coroutine : `CoroutineType` or `GeneratorType` (or any compatible cyi or builtin)
+        The coroutine to get representation of.
     
     Returns
     -------
     result : `str`
         The formatted coroutine.
     """
-    if not (hasattr(coro, 'cr_code') or hasattr(coro, 'gi_code')):
+    if not (hasattr(coroutine, 'cr_code') or hasattr(coroutine, 'gi_code')):
         # Cython or builtin
-        name = getattr(coro, '__qualname__', None)
+        name = getattr(coroutine, '__qualname__', None)
         if name is None:
-            name = getattr(coro, '__name__', None)
+            name = getattr(coroutine, '__name__', None)
             if name is None: # builtins might reach this part
-                name = coro.__class__.__name__
+                name = coroutine.__class__.__name__
         
-        if type(coro) is GeneratorType:
-            running = coro.gi_running
-        elif type(coro) is CoroutineType:
-            running = coro.cr_running
+        if type(coroutine) is GeneratorType:
+            running = coroutine.gi_running
+        elif type(coroutine) is CoroutineType:
+            running = coroutine.cr_running
         else:
             running = False
         
@@ -812,14 +813,14 @@ def format_coroutine(coro):
         
         return f'{name}() {state}'
     
-    name = format_callback(coro)
+    name = format_callback(coroutine)
     
-    if type(coro) is GeneratorType:
-        code = coro.gi_code
-        frame = coro.gi_frame
+    if type(coroutine) is GeneratorType:
+        code = coroutine.gi_code
+        frame = coroutine.gi_frame
     else:
-        code = coro.cr_code
-        frame = coro.cr_frame
+        code = coroutine.cr_code
+        frame = coroutine.cr_frame
     
     file_name = code.co_filename
     
@@ -2807,22 +2808,22 @@ class Task(Future):
         Note, that states are checked by memory address and not by equality. Also ``RETRIEVED`` is used only if
         `__debug__` is set as `True`.
     
-    _coro : `coroutine` or `generator`
+    _coroutine : `CoroutineType` or `GeneratorType`
         The wrapped coroutine.
-    _fut_waiter : `None` or ``Future`` instance
+    _waited_future : `None` or ``Future`` instance
         The future on what's result the future is waiting right now.
     _must_cancel : `bool`
         Whether the task is cancelled, and at it's next step a ``CancelledError`` would be raised into it's coroutine.
     """
-    __slots__ = ('_coro', '_fut_waiter', '_must_cancel')
+    __slots__ = ('_coroutine', '_waited_future', '_must_cancel')
     
-    def __new__(cls, coro, loop):
+    def __new__(cls, coroutine, loop):
         """
         Creates a new ``Task`` object running the given coroutine on the given event loop.
         
         Parameters
         ----------
-        coro : `coroutine` or `generator`
+        coroutine : `CoroutineType` or `GeneratorType`
             The coroutine, what the task will on the respective event loop.
         loop : ``EventThread``
             The event loop on what the coroutine will run.
@@ -2838,8 +2839,8 @@ class Task(Future):
         self._blocking = False
 
         self._must_cancel = False
-        self._fut_waiter = None
-        self._coro = coro
+        self._waited_future = None
+        self._coroutine = coroutine
         
         loop.call_soon(self._step)
 
@@ -2862,11 +2863,11 @@ class Task(Future):
         """
         frames = []
         
-        coro = self._coro
-        if isinstance(coro, GeneratorType):
-            frame = coro.gi_frame
-        elif isinstance(coro, CoroutineType):
-            frame = coro.cr_frame
+        coroutine = self._coroutine
+        if isinstance(coroutine, GeneratorType):
+            frame = coroutine.gi_frame
+        elif isinstance(coroutine, CoroutineType):
+            frame = coroutine.cr_frame
         else:
             frame = None
         
@@ -2883,25 +2884,25 @@ class Task(Future):
             
             frames.append(frame)
             
-            if isinstance(coro, GeneratorType):
-                coro = coro.gi_yieldfrom
-            elif isinstance(coro, CoroutineType):
-                coro = coro.cr_await
+            if isinstance(coroutine, GeneratorType):
+                coroutine = coroutine.gi_yieldfrom
+            elif isinstance(coroutine, CoroutineType):
+                coroutine = coroutine.cr_await
             else:
-                coro = None
+                coroutine = None
             
-            if coro is not None:
-                if isinstance(coro, GeneratorType):
-                    frame = coro.gi_frame
-                elif isinstance(coro, CoroutineType):
-                    frame = coro.cr_frame
+            if coroutine is not None:
+                if isinstance(coroutine, GeneratorType):
+                    frame = coroutine.gi_frame
+                elif isinstance(coroutine, CoroutineType):
+                    frame = coroutine.cr_frame
                 else:
                     frame = None
                 
                 if frame is not None:
                     continue
             
-            self = self._fut_waiter
+            self = self._waited_future
             if self is None:
                 break
             
@@ -2909,12 +2910,12 @@ class Task(Future):
             if not isinstance(self, Task):
                 break
             
-            coro = self._coro
+            coroutine = self._coroutine
             
-            if isinstance(coro, GeneratorType):
-                frame = coro.gi_frame
-            elif isinstance(coro, CoroutineType):
-                frame = coro.cr_frame
+            if isinstance(coroutine, GeneratorType):
+                frame = coroutine.gi_frame
+            elif isinstance(coroutine, CoroutineType):
+                frame = coroutine.cr_frame
             else:
                 frame = None
                 
@@ -2933,16 +2934,16 @@ class Task(Future):
         if self._must_cancel:
             result.append(' (cancelling)')
         
-        result.append(' coro=')
-        result.append(format_coroutine(self._coro))
+        result.append(' coroutine=')
+        result.append(format_coroutine(self._coroutine))
         
-        fut_waiter = self._fut_waiter
-        if fut_waiter is not None:
+        waited_future = self._waited_future
+        if waited_future is not None:
             result.append(', waits for=')
-            if type(fut_waiter) is type(self):
-                result.append(fut_waiter.qualname)
+            if type(waited_future) is type(self):
+                result.append(waited_future.qualname)
             else:
-                result.append(repr(fut_waiter))
+                result.append(repr(waited_future))
         
         if (not self._must_cancel) and (state is FINISHED or state is RETRIEVED):
             exception = self._exception
@@ -3048,8 +3049,8 @@ class Task(Future):
                 
                 return 0
             
-            fut_waiter = self._fut_waiter
-            if (fut_waiter is None) or (not fut_waiter.cancel()):
+            waited_future = self._waited_future
+            if (waited_future is None) or (not waited_future.cancel()):
                 self._must_cancel = True
             
             return 1
@@ -3059,8 +3060,8 @@ class Task(Future):
             if self._state is not PENDING:
                 return 0
             
-            fut_waiter = self._fut_waiter
-            if (fut_waiter is None) or (not fut_waiter.cancel()):
+            waited_future = self._waited_future
+            if (waited_future is None) or (not waited_future.cancel()):
                 self._must_cancel = True
             
             return 1
@@ -3092,7 +3093,7 @@ class Task(Future):
         -------
         name : `str`
         """
-        coroutine = self._coro
+        coroutine = self._coroutine
         try:
             return coroutine.__name__
         except AttributeError:
@@ -3107,7 +3108,7 @@ class Task(Future):
         -------
         qualname : `str`
         """
-        coroutine = self._coro
+        coroutine = self._coroutine
         try:
             return coroutine.__qualname__
         except AttributeError:
@@ -3168,7 +3169,7 @@ class Task(Future):
         if self._state is not PENDING:
             raise InvalidStateError(self, 'set_exception')
         
-        if (self._fut_waiter is None) or self._fut_waiter.cancel():
+        if (self._waited_future is None) or self._waited_future.cancel():
             self._must_cancel = True
         
         if isinstance(exception, type):
@@ -3202,7 +3203,7 @@ class Task(Future):
         if self._state is not PENDING:
             return 0
         
-        if (self._fut_waiter is None) or self._fut_waiter.cancel():
+        if (self._waited_future is None) or self._waited_future.cancel():
             self._must_cancel = True
         
         if isinstance(exception, type):
@@ -3249,17 +3250,17 @@ class Task(Future):
         if self._must_cancel:
             exception = self._must_exception(exception)
         
-        coro = self._coro
-        self._fut_waiter = None
+        coroutine = self._coroutine
+        self._waited_future = None
         
         self._loop.current_task = self
         
-        # call either coro.throw(err) or coro.send(None).
+        # call either coroutine.throw(err) or coroutine.send(None).
         try:
             if exception is None:
-                result = coro.send(None)
+                result = coroutine.send(None)
             else:
-                result = coro.throw(exception)
+                result = coroutine.throw(exception)
         except StopIteration as exception:
             if self._must_cancel:
                 # the task is cancelled meanwhile
@@ -3275,7 +3276,7 @@ class Task(Future):
             if isinstance(result, Future) and result._blocking:
                 result._blocking = False
                 result.add_done_callback(self._wake_up)
-                self._fut_waiter = result
+                self._waited_future = result
                 if self._must_cancel:
                     if result.cancel():
                         self._must_cancel = False
@@ -3850,24 +3851,24 @@ class Gatherer(FutureWM):
     """
     __slots__ = ()
     
-    def __new__(cls, loop, coros_or_futures):
+    def __new__(cls, loop, coroutines_or_futures):
         """
-        Creates a new gatherer bound to the given `loop`, waiting for the given `coros_or_futures`-s results.
+        Creates a new gatherer bound to the given `loop`, waiting for the given `coroutines_or_futures`-s results.
         
         Parameters
         ----------
         loop : ``EventThread``
             The loop to what the created future will be bound to.
-        coros_or_futures : `iterable` of `awaitable`
+        coroutines_or_futures : `iterable` of `awaitable`
             Awaitables, which result will be gathered.
         
         Raises
         ------
         TypeError
-            Any of the given `coros_or_futures` is not awaitable.
+            Any of the given `coroutines_or_futures` is not awaitable.
         """
         awaitables = set()
-        for awaitable in coros_or_futures:
+        for awaitable in coroutines_or_futures:
             if not is_awaitable(awaitable):
                 raise TypeError(f'Cannot await on {awaitable.__class__.__name__}: {awaitable!r}')
             awaitables.add(awaitable)
@@ -5472,16 +5473,16 @@ class enter_executor:
         The future, what blocks the task's the execution, meanwhile the thread switch is taking place.
     _exit_future : `None` or ``Future``
         The future, what blocks the task's execution, meanwhile the thread is switching back.
-    _fut_waiter : `None` or ``Future`` instance
+    _waited_future : `None` or ``Future`` instance
         Blocking future used inside of the task, meanwhile it is in executor.
     _task : `None` or ``Task``
     """
-    __slots__ = ('_enter_future', '_exit_future', '_fut_waiter', '_task')
+    __slots__ = ('_enter_future', '_exit_future', '_waited_future', '_task')
     def __init__(self):
         self._enter_future = None
         self._task = None
         self._exit_future=None
-        self._fut_waiter = None
+        self._waited_future = None
     
     async def __aenter__(self):
         """
@@ -5521,7 +5522,7 @@ class enter_executor:
         self._enter_future = None
         self._task = None
         self._exit_future = None
-        self._fut_waiter = None
+        self._waited_future = None
         return False
     
     def _enter_executor(self):
@@ -5544,11 +5545,11 @@ class enter_executor:
         if future._state is not CANCELLED:
             return
         
-        fut_waiter = self._fut_waiter
-        if fut_waiter is None:
+        waited_future = self._waited_future
+        if waited_future is None:
             return
         
-        fut_waiter.cancel()
+        waited_future.cancel()
     
     def _executor_task(self):
         """
@@ -5558,54 +5559,54 @@ class enter_executor:
         # relink future task
         loop = task._loop
         end_future = Future(loop)
-        task._fut_waiter = end_future
+        task._waited_future = end_future
         self._exit_future = end_future
         
         # Set result to the enter task, so it can be retrieved.
         self._enter_future.set_result(None)
         
         exception = None
-        coro = task._coro
+        coroutine = task._coroutine
         
         # If some1 await at the block, we will sync_wrap it. If the exit future
         # is awaited, then we quit.
-        local_fut_waiter = None
+        local_waited_future = None
         
         try:
             while True:
                 if task._must_cancel:
                     exception = task._must_exception(exception)
                     
-                if (local_fut_waiter is not None):
-                    if local_fut_waiter is end_future:
+                if (local_waited_future is not None):
+                    if local_waited_future is end_future:
                         end_future.set_result(None)
                         loop.call_soon_thread_safe(task._step, exception)
                         break
                     
                     try:
-                        self._fut_waiter = local_fut_waiter
+                        self._waited_future = local_waited_future
                         if type(exception) is CancelledError:
-                            local_fut_waiter.cancel()
-                        local_fut_waiter.sync_wrap().wait()
+                            local_waited_future.cancel()
+                        local_waited_future.sync_wrap().wait()
                     
                     except CancelledError:
                         break
                     except BaseException as err:
                         exception = err
                     finally:
-                        local_fut_waiter = None
-                        self._fut_waiter = None
+                        local_waited_future = None
+                        self._waited_future = None
                 
                 if task._state is not PENDING:
                     # there is no reason to raise
                     break
                 
-                # call either coro.throw(err) or coro.send(None).
+                # call either coroutine.throw(err) or coroutine.send(None).
                 try:
                     if exception is None:
-                        result = coro.send(None)
+                        result = coroutine.send(None)
                     else:
-                        result = coro.throw(exception)
+                        result = coroutine.throw(exception)
                 
                 except StopIteration as exception:
                     if task._must_cancel:
@@ -5659,9 +5660,9 @@ class enter_executor:
                             
                             else:
                                 result._blocking = False
-                                local_fut_waiter = result
+                                local_waited_future = result
                                 if task._must_cancel:
-                                    if local_fut_waiter.cancel():
+                                    if local_waited_future.cancel():
                                         task._must_cancel = False
                                 
                                 continue

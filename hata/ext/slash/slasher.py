@@ -2257,11 +2257,11 @@ class Slasher(EventHandlerBase):
                     tasks = []
                     for guild_id in self._sync_should:
                         if guild_id == SYNC_ID_GLOBAL:
-                            coro = self._sync_global(client)
+                            coroutine = self._sync_global(client)
                         else:
-                            coro = self._sync_guild(client, guild_id)
+                            coroutine = self._sync_guild(client, guild_id)
                         
-                        task = Task(coro, KOKORO)
+                        task = Task(coroutine, KOKORO)
                         tasks.append(task)
                     
                     if tasks:

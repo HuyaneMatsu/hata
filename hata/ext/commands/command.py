@@ -141,7 +141,7 @@ def generate_alters_for(name):
     
     return alters
 
-async def process_command_coroutine(client, channel, coro):
+async def process_command_coroutine(client, channel, coroutine):
     """
     Processes a command coroutine.
     
@@ -155,22 +155,22 @@ async def process_command_coroutine(client, channel, coro):
         The client who will send the responses if applicable.
     channel : ``ChannelTextBase`` instance
         The channel from where the respective command was called.
-    coro : `coroutine`
+    coroutine : `CoroutineType`
         A coroutine with will send command response.
     
     Raises
     ------
     BaseException
-        Any exception raised by `coro`.
+        Any exception raised by `coroutine`.
     """
-    if is_coroutine_generator(coro):
+    if is_coroutine_generator(coroutine):
         response_message = None
         response_exception = None
         while True:
             if response_exception is None:
-                step = coro.asend(response_message)
+                step = coroutine.asend(response_message)
             else:
-                step = coro.athrow(response_exception)
+                step = coroutine.athrow(response_exception)
             
             try:
                 response = await step
@@ -217,7 +217,7 @@ async def process_command_coroutine(client, channel, coro):
                         response_exception = None
     
     else:
-        response = await coro
+        response = await coroutine
     
     if (response is not None) and isinstance(response, (str, EmbedBase)) and \
             channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
@@ -1189,8 +1189,8 @@ class Command:
                     if (handler is None):
                         return COMMAND_CHECKS_FAILED
                     
-                    coro = handler(client, message, self, check)
-                    await process_command_coroutine(client, message.channel, coro)
+                    coroutine = handler(client, message, self, check)
+                    await process_command_coroutine(client, message.channel, coroutine)
                     
                     return COMMAND_CHECKS_HANDLED
         
@@ -1204,8 +1204,8 @@ class Command:
                 if (handler is None):
                     return COMMAND_CHECKS_FAILED
                 
-                coro = handler(client, message, self, check)
-                await process_command_coroutine(client, message.channel, coro)
+                coroutine = handler(client, message, self, check)
+                await process_command_coroutine(client, message.channel, coroutine)
                 
                 return COMMAND_CHECKS_HANDLED
         
@@ -1226,8 +1226,8 @@ class Command:
                             async for arg in gen:
                                 args.append(arg)
                             
-                            coro = handler(client, message, self, *args)
-                            await process_command_coroutine(client, message.channel, coro)
+                            coroutine = handler(client, message, self, *args)
+                            await process_command_coroutine(client, message.channel, coroutine)
                         
                         return COMMAND_PARSER_FAILED
             else:
@@ -1244,8 +1244,8 @@ class Command:
                         async for arg in gen:
                             args.append(arg)
                         
-                        coro = handler(client, message, self, *args)
-                        await process_command_coroutine(client, message.channel, coro)
+                        coroutine = handler(client, message, self, *args)
+                        await process_command_coroutine(client, message.channel, coroutine)
                     
                     return COMMAND_PARSER_FAILED
         
@@ -1257,17 +1257,17 @@ class Command:
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
-                    coro = parser_failure_handler(client, message, self, content, args)
-                    await process_command_coroutine(client, message.channel, coro)
+                    coroutine = parser_failure_handler(client, message, self, content, args)
+                    await process_command_coroutine(client, message.channel, coroutine)
                 
                 return COMMAND_PARSER_FAILED
         
         command = self.command
         if args is None:
-            coro = command(client, message)
+            coroutine = command(client, message)
         else:
-            coro = command(client, message, *args)
-        await process_command_coroutine(client, message.channel, coro)
+            coroutine = command(client, message, *args)
+        await process_command_coroutine(client, message.channel, coroutine)
         
         return COMMAND_SUCCEEDED
     
@@ -1314,8 +1314,8 @@ class Command:
                     if (handler is None):
                         return COMMAND_CHECKS_FAILED
                     
-                    coro = handler(client, message, self, check)
-                    await process_command_coroutine(client, message.channel, coro)
+                    coroutine = handler(client, message, self, check)
+                    await process_command_coroutine(client, message.channel, coroutine)
                     return COMMAND_CHECKS_HANDLED
         
         
@@ -1329,8 +1329,8 @@ class Command:
                 if (handler is None):
                     return COMMAND_CHECKS_FAILED
                 
-                coro = handler(client, message, self, check)
-                await process_command_coroutine(client, message.channel, coro)
+                coroutine = handler(client, message, self, check)
+                await process_command_coroutine(client, message.channel, coroutine)
                 return COMMAND_CHECKS_HANDLED
         
         return COMMAND_CHECKS_SUCCEEDED
@@ -1450,18 +1450,18 @@ class Command:
             if not passed:
                 parser_failure_handler = self._parser_failure_handler
                 if (parser_failure_handler is not None):
-                    coro = parser_failure_handler(client, message, self, content, args)
-                    await process_command_coroutine(client, message.channel, coro)
+                    coroutine = parser_failure_handler(client, message, self, content, args)
+                    await process_command_coroutine(client, message.channel, coroutine)
                 
                 return COMMAND_PARSER_FAILED
         
         command = self.command
         if args is None:
-            coro = command(client, message)
+            coroutine = command(client, message)
         else:
-            coro = command(client, message, *args)
+            coroutine = command(client, message, *args)
         
-        await process_command_coroutine(client, message.channel, coro)
+        await process_command_coroutine(client, message.channel, coroutine)
         
         return COMMAND_SUCCEEDED
     
@@ -3168,8 +3168,8 @@ class CommandProcesser(EventWaitforBase):
                     if (command_error is not None):
                         checks = self._command_error_checks
                         if (checks is None):
-                            coro = command_error(client, message, command, content, err)
-                            await process_command_coroutine(client, message.channel, coro)
+                            coroutine = command_error(client, message, command, content, err)
+                            await process_command_coroutine(client, message.channel, coroutine)
                             return
                         else:
                             for check in checks:
@@ -3178,13 +3178,13 @@ class CommandProcesser(EventWaitforBase):
                                 
                                 handler = check.handler
                                 if (handler is not None):
-                                    coro = handler(client, message, command, check)
-                                    await process_command_coroutine(client, message.channel, coro)
+                                    coroutine = handler(client, message, command, check)
+                                    await process_command_coroutine(client, message.channel, coroutine)
                                 
                                 break
                             else:
-                                coro = command_error(client, message, command, content, err)
-                                await process_command_coroutine(client, message.channel, coro)
+                                coroutine = command_error(client, message, command, content, err)
+                                await process_command_coroutine(client, message.channel, coroutine)
                                 return
                     
                     await client.events.error(client, repr(self), err)
@@ -3213,12 +3213,12 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                coro = handler(client, message, command_name, check)
-                                await process_command_coroutine(client, message.channel, coro)
+                                coroutine = handler(client, message, command_name, check)
+                                await process_command_coroutine(client, message.channel, coroutine)
                             return
                     
-                    coro = invalid_command(client, message, command_name, content)
-                    await process_command_coroutine(client, message.channel, coro)
+                    coroutine = invalid_command(client, message, command_name, content)
+                    await process_command_coroutine(client, message.channel, coroutine)
                 
                 return
             
@@ -3229,8 +3229,8 @@ class CommandProcesser(EventWaitforBase):
                 if (command_error is not None):
                     checks = self._command_error_checks
                     if (checks is None):
-                        coro = command_error(client, message, command_name, content, err)
-                        await process_command_coroutine(client, message.channel, coro)
+                        coroutine = command_error(client, message, command_name, content, err)
+                        await process_command_coroutine(client, message.channel, coroutine)
                         return
                     else:
                         for check in checks:
@@ -3239,12 +3239,12 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                coro = handler(client, message, command_name, check)
-                                await process_command_coroutine(client, message.channel, coro)
+                                coroutine = handler(client, message, command_name, check)
+                                await process_command_coroutine(client, message.channel, coroutine)
                             break
                         else:
-                            coro = command_error(client, message, command_name, content, err)
-                            await process_command_coroutine(client, message.channel, coro)
+                            coroutine = command_error(client, message, command_name, content, err)
+                            await process_command_coroutine(client, message.channel, coroutine)
                             return
                 
                 await client.events.error(client, repr(self), err)
@@ -3264,18 +3264,18 @@ class CommandProcesser(EventWaitforBase):
                             
                             handler = check.handler
                             if (handler is not None):
-                                coro = handler(client, message, command_name, check)
-                                await process_command_coroutine(client, message.channel, coro)
+                                coroutine = handler(client, message, command_name, check)
+                                await process_command_coroutine(client, message.channel, coroutine)
                             return
                     
-                    coro = invalid_command(client, message, command_name, content)
-                    await process_command_coroutine(client, message.channel, coro)
+                    coroutine = invalid_command(client, message, command_name, content)
+                    await process_command_coroutine(client, message.channel, coroutine)
                 return
         
         default_event = self._default_event
         if (default_event is not None):
-            coro = default_event(client, message)
-            await process_command_coroutine(client, message.channel, coro)
+            coroutine = default_event(client, message)
+            await process_command_coroutine(client, message.channel, coroutine)
         
         return
     

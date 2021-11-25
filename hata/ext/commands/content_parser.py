@@ -3325,16 +3325,16 @@ class ContentParser(CommandContentParser):
         func = self._func
         if args is None:
             if self._is_method:
-                coro = func(parent, client, message)
+                coroutine = func(parent, client, message)
             else:
-                coro = func(client, message)
+                coroutine = func(client, message)
         else:
             if self._is_method:
-                coro = func(parent, client, message, *args)
+                coroutine = func(parent, client, message, *args)
             else:
-                coro = func(client, message, *args)
+                coroutine = func(client, message, *args)
         
-        await coro
+        await coroutine
         return True
     
     def __get__(self, obj, type_):

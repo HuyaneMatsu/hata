@@ -26,7 +26,7 @@ async def run_checks(checks, command_context):
     
     Parameters
     ----------
-    checks : `generator`
+    checks : `GeneratorType`
         A generator yielding checks.
     command_context : ``CommandContext``
         The respective command's context.

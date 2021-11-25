@@ -845,7 +845,7 @@ class RequestCM:
     
     Attributes
     ----------
-    coroutine : `coroutine` of (``HTTPRequest._request`` or ``HTTPRequest._request2``)
+    coroutine : `CoroutineType` of (``HTTPRequest._request`` or ``HTTPRequest._request2``)
         The wrapped requester coroutine.
     response : `None` or ``ClientResponse``
         Received client response if applicable.
@@ -858,7 +858,7 @@ class RequestCM:
         
         Parameters
         ----------
-        coroutine : `coroutine` of (``HTTPRequest._request`` or ``HTTPRequest._request2``)
+        coroutine : `CoroutineType` of (``HTTPRequest._request`` or ``HTTPRequest._request2``)
             Requester coroutine to wrap.
         """
         self.coroutine = coroutine
@@ -942,7 +942,7 @@ class WebsocketCM:
     
     Attributes
     ----------
-    coroutine : `coroutine` of ``WSClient.__new__``
+    coroutine : `CoroutineType` of ``WSClient.__new__``
         The wrapped requester coroutine.
     websocket : `None` or ``WSClient``
         The connected websocket client if applicable
@@ -955,7 +955,7 @@ class WebsocketCM:
         
         Parameters
         ----------
-        coroutine : `coroutine` of ``WSClient.__new__``
+        coroutine : `CoroutineType` of ``WSClient.__new__``
             Websocket connecting coroutine to wrap.
         """
         self.coroutine = coroutine

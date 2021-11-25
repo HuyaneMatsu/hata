@@ -141,7 +141,7 @@ class HTTPRequestHandler(ProtocolBase):
         Exception set by ``.set_exception``, when an unexpected exception occur meanwhile reading from socket.
     loop : ``EventThread``
         The event loop to what the protocol is bound to.
-    payload_reader : `None` or `generator`
+    payload_reader : `None` or `GeneratorType`
         Payload reader generator, what gets the control back, when data, eof or any exception is received.
     payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``.payload_reader`` generator returns.

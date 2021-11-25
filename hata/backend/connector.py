@@ -934,11 +934,11 @@ class TCPConnector(ConnectorBase):
             If transport does not expose socket instance.
         """
         if request.proxy_url is None:
-            coro = self.create_direct_connection(request)
+            coroutine = self.create_direct_connection(request)
         else:
-            coro = self.create_proxy_connection(request)
+            coroutine = self.create_proxy_connection(request)
         
-        _, protocol = await coro
+        _, protocol = await coroutine
         return protocol
     
     def get_ssl_context(self, request):

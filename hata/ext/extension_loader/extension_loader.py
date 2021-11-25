@@ -164,7 +164,7 @@ class ExtensionLoader:
       File ".../hata/backend/futures.py", line 723, in result
         raise exception
       File ".../hata/backend/futures.py", line 1602, in _step
-        result=coro.throw(exception)
+        result = coroutine.throw(exception)
       File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all
         raise ExtensionError(error_messages) from None
     hata.ext.extension_loader.ExtensionError: ExtensionError (1):

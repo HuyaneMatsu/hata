@@ -56,7 +56,7 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
     
     Yields
     -------
-    request_coro : `None` or `coroutine`
+    request_coroutine : `None` or `CoroutineType`
     """
     interaction_event_type = interaction_event.type
     
@@ -106,25 +106,25 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
             response,
         )
         
-        async for request_coro in get_request_coroutines(
+        async for request_coroutine in get_request_coroutines(
             client,
             interaction_event,
             show_for_invoking_user_only,
             response,
             is_return,
         ):
-            yield request_coro
+            yield request_coroutine
         
         return
     
     if isinstance(response, InteractionResponse):
-        for request_coro in response.get_request_coroutines(
+        for request_coroutine in response.get_request_coroutines(
             client,
             interaction_event,
             show_for_invoking_user_only,
             is_return,
         ):
-            yield request_coro
+            yield request_coroutine
         
         return
     
@@ -243,7 +243,7 @@ async def process_command_coroutine_generator(
             response_message = None
             response_exception = None
             
-            async for request_coro in get_request_coroutines(
+            async for request_coroutine in get_request_coroutines(
                 client,
                 interaction_event,
                 show_for_invoking_user_only,
@@ -251,7 +251,7 @@ async def process_command_coroutine_generator(
                 False,
             ):
                 try:
-                    response_message = await request_coro
+                    response_message = await request_coroutine
                 except BaseException as err:
                     # `response_message` may have be set before with an iteration, so reset it.
                     response_message = None
@@ -284,7 +284,7 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
     Raises
     ------
     BaseException
-        Any exception raised by `coroutine`.
+        Any exception raised by `CoroutineType`.
     """
     if is_coroutine_generator(coroutine):
         response = await process_command_coroutine_generator(
@@ -299,7 +299,7 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
         except InteractionAbortedError as err:
             response = err.response
     
-    async for request_coro in get_request_coroutines(
+    async for request_coroutine in get_request_coroutines(
         client,
         interaction_event,
         show_for_invoking_user_only,
@@ -307,7 +307,7 @@ async def process_command_coroutine(client, interaction_event, show_for_invoking
         True,
     ):
         try:
-            await request_coro
+            await request_coroutine
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 return
@@ -456,7 +456,7 @@ class InteractionResponse:
         
         Yields
         -------
-        request_coro : `None` or `coroutine`
+        request_coroutine : `None` or `CoroutineType`
         """
         event = self._event
         if (event is not None):
@@ -639,7 +639,7 @@ async def process_auto_completer_coroutine(client, interaction_event, coroutine)
     Raises
     ------
     BaseException
-        Any exception raised by `coroutine`.
+        Any exception raised by `CoroutineType`.
     """
     response = await coroutine
     await client.interaction_application_command_autocomplete(interaction_event, response)

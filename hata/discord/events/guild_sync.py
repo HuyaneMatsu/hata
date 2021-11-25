@@ -20,7 +20,7 @@ async def sync_task(queue_id, coroutine, queue):
     ----------
     queue_id : `int`
         The respective guild's id to identify queued up unhandled dispatch event when de-sync happened.
-    coroutine : `coroutine`
+    coroutine : `CoroutineType`
         ``Client.guild_sync`` coroutine.
     queue : `list` of `tuple` (``Client``, `Any`, (`str` or `tuple` (`str`, `function`, `Any`)))
         A queue of events to call with the specified parameters.

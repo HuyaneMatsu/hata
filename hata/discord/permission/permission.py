@@ -44,6 +44,7 @@ PERMISSION_SHIFT_CREATE_PRIVATE_THREADS = 36
 PERMISSION_SHIFT_USE_EXTERNAL_STICKERS = 37
 PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS = 38
 PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES = 39
+PERMISSION_SHIFT_MODERATE_USERS = 40
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1<<PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -86,6 +87,7 @@ PERMISSION_MASK_CREATE_PRIVATE_THREADS = 1<<PERMISSION_SHIFT_CREATE_PRIVATE_THRE
 PERMISSION_MASK_USE_EXTERNAL_STICKERS = 1<<PERMISSION_SHIFT_USE_EXTERNAL_STICKERS
 PERMISSION_MASK_SEND_MESSAGES_IN_THREADS = 1<<PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS
 PERMISSION_MASK_START_EMBEDDED_ACTIVITIES = 1 <<PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES
+PERMISSION_MASK_MODERATE_USERS = 1 << PERMISSION_SHIFT_MODERATE_USERS
 
 class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
     """
@@ -174,6 +176,8 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-------------------------------+-------------------+
     | start_embedded_activities     | 39                |
     +-------------------------------+-------------------+
+    | moderate_users                | 40                |
+    +-------------------------------+-------------------+
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -219,6 +223,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'use_external_stickers': PERMISSION_SHIFT_USE_EXTERNAL_STICKERS,
         'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
         'start_embedded_activities': PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES,
+        'moderate_users': PERMISSION_MASK_MODERATE_USERS,
     }
     
     
@@ -349,6 +354,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     use_external_stickers = True,
     send_messages_in_threads = True,
     start_embedded_activities = True,
+    moderate_users = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -392,6 +398,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     use_external_stickers = True,
     send_messages_in_threads = False,
     start_embedded_activities = False,
+    moderate_users = False,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -447,6 +454,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     use_external_stickers = True,
     send_messages_in_threads = True,
     start_embedded_activities = False,
+    moderate_users = False,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -504,6 +512,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     use_external_stickers = False,
     send_messages_in_threads = False,
     start_embedded_activities = True,
+    moderate_users = False,
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)
@@ -561,6 +570,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     create_private_threads = False,
     use_external_stickers = False,
     send_messages_in_threads = False,
+    moderate_users = False,
 )
 
 PERMISSION_CAN_SEND_MESSAGES_ALL = Permission().update_by_keys(

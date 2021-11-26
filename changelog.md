@@ -16,6 +16,11 @@
 - Add `ComponentTextInput`.
 - Rename `coro` to `coroutine` and `fut` to `future` everywhere. This might break some code.
 - Add missing `ComponentSelectOption.__eq__`.
+- Add `Permission.moderate_members`.
+- Add `AuditLogIterator.scheduled_events`.
+- Add `AuditLog.scheduled_events`.
+- Add missing `ComponentBase.__new__`.
+- Add `InteractionForm`.
 
 ##### ext.extension_loader
 

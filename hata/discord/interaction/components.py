@@ -427,6 +427,13 @@ class ComponentBase:
     custom_id = None
     type = ComponentType.none
     
+    def __new__(cls):
+        """
+        Creates a component base instance.
+        """
+        return object.__new__(cls)
+    
+    
     @classmethod
     def from_data(cls, data):
         """
@@ -583,8 +590,7 @@ class ComponentRow(ComponentBase):
         Raises
         ------
         AssertionError
-            - If `components` is neither `None`, `tuple` or `list`.
-            - If `components` contains a non ``Component`` instance.
+            - If `components` contains a non ``ComponentBase`` instance.
         """
         if __debug__:
             _debug_component_components(components)
@@ -724,9 +730,9 @@ class ComponentRow(ComponentBase):
             if not components:
                 components = None
         
-        self = object.__new__(type(self))
-        self.components = components
-        return self
+        new = object.__new__(type(self))
+        new.components = components
+        return new
     
     
     @copy_docs(ComponentBase.__eq__)

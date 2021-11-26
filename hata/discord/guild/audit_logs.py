@@ -14,7 +14,7 @@ from ..permission import PermissionOverwrite
 from ..integration import Integration
 from ..bases import Icon, maybe_snowflake
 from ..channel import VideoQualityMode, ChannelThread
-from ..scheduled_event import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel
+from ..scheduled_event import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel, ScheduledEvent
 from ..emoji import create_unicode_emoji
 
 from .utils import create_partial_guild_from_id
@@ -37,6 +37,8 @@ class AuditLog:
     integrations : `dict` of (`int`, ``Integration``) items
         A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
         the integrations, meanwhile the values are the integrations themselves.
+    scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
+        A dictionary containing the scheduled events mentioned inside of the audit logs.
     threads : `dict` of (`int`, ``ChannelThread``) items
         A dictionary containing the mentioned threads inside of the audit logs.
     users : `dict` of (`int`, ``ClientUserBase``) items
@@ -46,7 +48,7 @@ class AuditLog:
         A dictionary what contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     """
-    __slots__ = ('entries', 'guild', 'integrations', 'threads', 'users', 'webhooks')
+    __slots__ = ('entries', 'guild', 'integrations', 'scheduled_events', 'threads', 'users', 'webhooks')
     
     def __init__(self, data, guild):
         """
@@ -101,6 +103,16 @@ class AuditLog:
                 thread = ChannelThread(thread_data, None, guild.id)
                 threads[thread.id] = thread
         
+        self.scheduled_events = scheduled_events = {}
+        try:
+            scheduled_event_datas = data['guild_scheduled_events']
+        except KeyError:
+            pass
+        else:
+            for scheduled_event_data in scheduled_event_datas:
+                scheduled_event = ScheduledEvent(scheduled_event_data)
+                scheduled_events[scheduled_event.id] = scheduled_event
+        
         self.entries = entries = []
         try:
             entry_datas = data['audit_log_entries']
@@ -151,6 +163,8 @@ class AuditLogIterator:
     integrations : `dict` of (`int`, ``Integration``) items
         A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
         the integrations, meanwhile the values are the integrations themselves.
+    scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
+        A dictionary containing the scheduled events mentioned inside of the audit logs.
     threads : `dict` of (`int`, ``ChannelThread``) items
         A dictionary containing the mentioned threads inside of the audit logs.
     users : `dict` of (`int`, ``ClientUserBase`` items
@@ -160,7 +174,8 @@ class AuditLogIterator:
         A dictionary what contains the mentioned webhook by the audit log's entries. They keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     """
-    __slots__ = ('_data', '_index', 'client', 'entries', 'guild', 'integrations', 'threads', 'users', 'webhooks')
+    __slots__ = ('_data', '_index', 'client', 'entries', 'guild', 'integrations', 'scheduled_events', 'threads',
+        'users', 'webhooks')
     
     async def __new__(cls, client, guild, user=None, event=None):
         """
@@ -245,6 +260,7 @@ class AuditLogIterator:
         self.webhooks = {}
         self.integrations = {}
         self.threads = {}
+        self.scheduled_events = {}
         
         if (log_data is not None):
             self._process_data(log_data)
@@ -393,6 +409,18 @@ class AuditLogIterator:
             for thread_data in thread_datas:
                 thread = ChannelThread(thread_data, None, self.guild.id)
                 threads[thread.id] = thread
+        
+        
+        try:
+            scheduled_event_datas = data['guild_scheduled_events']
+        except KeyError:
+            pass
+        else:
+            scheduled_events = self.scheduled_events
+            
+            for scheduled_event_data in scheduled_event_datas:
+                scheduled_event = ScheduledEvent(scheduled_event_data)
+                scheduled_events[scheduled_event.id] = scheduled_event
         
         entries = self.entries
         for entry_data in entry_datas:
@@ -616,7 +644,7 @@ def convert_scheduled_event(entry, parent, target_id):
     else:
         target_id = int(target_id)
         try:
-            target = SCHEDULED_EVENTS[target_id]
+            target = parent.scheduled_events[target_id]
         except KeyError:
             target = Unknown('ScheduledEvent', target_id)
     

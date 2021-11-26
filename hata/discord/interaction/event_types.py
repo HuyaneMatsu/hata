@@ -1,6 +1,7 @@
 __all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutocompleteInteractionOption',
-    'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction', 'InteractionEvent',
-    'InteractionResponseContext', 'InteractionType')
+    'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction',
+    'FormSubmitInteraction', 'FormSubmitInteractionOption', 'InteractionEvent', 'InteractionResponseContext',
+    'InteractionType')
 
 
 import reprlib
@@ -320,15 +321,21 @@ class ApplicationCommandInteractionOption:
     ----------
     name : `str`
         The option's name.
-    options : `None` or `list` of ``ApplicationCommandInteractionOption``
+    
+    options : `None` or `tuple` of ``ApplicationCommandInteractionOption``
         The parameters and values from the user. Present if a sub-command was used. Defaults to `None` if non is
         received.
         
-        Mutually exclusive with the `value` attribute.
+        Mutually exclusive with the `value` field.
+    
     type : ``ApplicationCommandOptionType``
         The option's type.
+    
     value : `None`, `str`
         The given value by the user. Should be always converted to the expected type.
+        
+        Mutually exclusive with the `options` field,
+    
     """
     __slots__ = ('name', 'options', 'type', 'value')
     
@@ -336,7 +343,7 @@ class ApplicationCommandInteractionOption:
         """
         Creates a new ``ApplicationCommandInteractionOption`` instance from the data received from Discord.
         
-        Attributes
+        Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
             The received application command interaction option data.
@@ -347,17 +354,16 @@ class ApplicationCommandInteractionOption:
         if (option_datas is None) or (not option_datas):
             options = None
         else:
-            options = [ApplicationCommandInteractionOption(option_data) for option_data in option_datas]
+            options = tuple(ApplicationCommandInteractionOption(option_data) for option_data in option_datas)
+        
+        value = data.get('value', None)
+        if (value is not None):
+            value = str(value)
         
         self = object.__new__(cls)
         self.name = name
         self.options = options
         self.type = ApplicationCommandOptionType.get(data.get('type', 0))
-        
-        value = data.get('value', None)
-        if value is not None:
-            value = str(value)
-        
         self.value = value
         
         return self
@@ -372,7 +378,7 @@ class ApplicationCommandInteractionOption:
         
         type_ = self.type
         if type_ is not ApplicationCommandOptionType.none:
-            repr_parts.append('type=')
+            repr_parts.append(', type=')
             repr_parts.append(type_.name)
             repr_parts.append(' (')
             repr_parts.append(repr(type_.value))
@@ -852,11 +858,204 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
         return value
 
 
+class FormSubmitInteraction:
+    """
+    Represents a response to a ``InteractionForm``.
+    
+    Attributes
+    ----------
+    custom_id : `None` or `str`
+        The forms's custom identifier.
+    options : `None` or `tuple` of ``FormSubmitInteractionOption``
+        Submitted component values.
+    """
+    __slots__ = ('custom_id', 'options', )
+    
+    def __new__(cls, data, guild, cached_users):
+        """
+        Creates a new component interaction with the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The received form submit interaction data.
+        guild : `None` or ``Guild``
+            The respective guild.
+        cached_users : `None` or `list` of ``ClientUserBase``
+            Users, which might need temporary caching.
+        
+        Returns
+        -------
+        self : ``FormSubmitInteraction``
+            The created object.
+        cached_users : `None` or `list` of ``ClientUserBase``
+            Users, which might need temporary caching.
+        """
+        # custom_id
+        custom_id = data.get('custom_id', None)
+        
+        # options
+        option_datas = data.get('components', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = tuple(FormSubmitInteractionOption(option_data) for option_data in option_datas)
+        
+        
+        self = object.__new__(cls)
+        self.custom_id = custom_id
+        self.options = options
+        
+        return self, cached_users
+
+
+    def __repr__(self):
+        """Returns the form submit interaction's representation."""
+        repr_parts = ['<', self.__class__.__name__,]
+        
+        repr_parts.append('custom_id=')
+        repr_parts.append(self.custom_id)
+        
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=[')
+            
+            index = 0
+            limit = len(options)
+            
+            while True:
+                option = options[index]
+                index += 1
+                repr_parts.append(repr(option))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+
+
+class FormSubmitInteractionOption:
+    """
+    Attributes
+    ----------
+    custom_id : `None` or `str`
+        The option's respective component's type.
+        
+    options : `None` or `tuple` of ``FormSubmitInteractionOption``
+        
+        Mutually exclusive with the `value` field.
+    
+    type : ``ComponentType``
+        The option respective component's type.
+        
+    value : `None` or `str`
+    
+        Mutually exclusive with the `options` field.
+    """
+    __slots__ = ('custom_id', 'options', 'type', 'value')
+    
+    def __new__(cls, data):
+        """
+        Creates a new ``FormSubmitInteractionOption`` from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            The received form submit interaction option data.
+        """
+        # custom_id
+        custom_id = data.get('custom_id', None)
+        if (custom_id is not None) and (not custom_id):
+            custom_id = None
+        
+        # options
+        option_datas = data.get('components', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = tuple(FormSubmitInteractionOption(option_data) for option_data in option_datas)
+        
+        # type
+        type_ = ComponentType.get(data.get('type', 0))
+        
+        # value
+        value = data.get('value', None)
+        if (value is not None) and (not value):
+            value = None
+        
+        self = object.__new__(cls)
+        self.custom_id = custom_id
+        self.options = options
+        self.type = type_
+        self.value = value
+        return self
+        
+    def __repr__(self):
+        """Returns the application command interaction option's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        # Descriptive fields : type
+        
+        # type
+        type_ = self.type
+        if type_ is not ComponentType.none:
+            repr_parts.append(', type=')
+            repr_parts.append(type_.name)
+            repr_parts.append(' (')
+            repr_parts.append(repr(type_.value))
+            repr_parts.append(')')
+        
+        # System fields : custom_id
+        
+        # custom_id
+        repr_parts.append(', custom_id=')
+        repr_parts.append(reprlib.repr(self.custom_id))
+        
+        # Extra descriptive fields : options | value
+        # options
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=[')
+            
+            index = 0
+            limit = len(options)
+            
+            while True:
+                option = options[index]
+                index += 1
+                repr_parts.append(repr(option))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        # value
+        value = self.value
+        if (value is not None):
+            repr_parts.append(', value=')
+            repr_parts.append(repr(value))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)
+
+
 INTERACTION_TYPE_TABLE = {
     InteractionType.ping.value: None,
     InteractionType.application_command.value: ApplicationCommandInteraction,
     InteractionType.message_component.value: ComponentInteraction,
     InteractionType.application_command_autocomplete.value: ApplicationCommandAutocompleteInteraction,
+    InteractionType.form_submit: FormSubmitInteraction,
 }
 
 

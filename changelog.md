@@ -21,6 +21,7 @@
 - Add `AuditLog.scheduled_events`.
 - Add missing `ComponentBase.__new__`.
 - Add `InteractionForm`.
+- Add `FormSubmitInteraction`.
 
 ##### ext.extension_loader
 

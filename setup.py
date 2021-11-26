@@ -61,6 +61,7 @@ setup(
         'hata.ext.prettyprint',
         'hata.ext.slash',
         'hata.ext.slash.menus',
+        'hata.ext.top_gg',
         'hata.main',
     ],
     url = 'https://github.com/HuyaneMatsu/hata',

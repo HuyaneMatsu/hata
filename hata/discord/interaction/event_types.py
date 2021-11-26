@@ -66,7 +66,7 @@ class ApplicationCommandInteraction(DiscordEntity):
     __slots__ = ('name', 'options', 'resolved_channels', 'resolved_roles', 'resolved_messages', 'resolved_users',
         'target_id',)
     
-    def __new__(cls, data, guild, cached_users):
+    def __new__(cls, data, interaction_event):
         """
         Creates a new ``ApplicationCommandInteraction`` from the data received from Discord.
         
@@ -74,17 +74,8 @@ class ApplicationCommandInteraction(DiscordEntity):
         ----------
         data : `dict` of (`str`, `Any`) items
             The received application command interaction data.
-        guild : `None` or ``Guild``
-            The respective guild.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
-        
-        Returns
-        -------
-        self : ``ApplicationCommandInteraction``
-            The created object.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
+        interaction_event : ``InteractionEvent``
+            The parent interaction event.
         """
         try:
             resolved_data = data['resolved']
@@ -116,12 +107,11 @@ class ApplicationCommandInteraction(DiscordEntity):
                         if (guild_profile_data is not None):
                             user_data['member'] = guild_profile_data
                         
-                        user = User(user_data, guild)
+                        user = User(user_data, interaction_event.guild)
                         resolved_users[user.id] = user
                         
-                        if (guild_profile_data is not None) and (cached_users is not None) and \
-                                (user not in cached_users):
-                            cached_users.append(user)
+                        if (guild_profile_data is not None):
+                            interaction_event._add_cached_user(user)
                     
                 else:
                     resolved_users = None
@@ -135,7 +125,7 @@ class ApplicationCommandInteraction(DiscordEntity):
                     resolved_channels = {}
                     
                     for channel_data in resolved_channel_datas.values():
-                        channel = create_partial_channel_from_data(channel_data, guild.id)
+                        channel = create_partial_channel_from_data(channel_data, interaction_event.id)
                         if (channel is not None):
                             resolved_channels[channel.id] = channel
                     
@@ -152,7 +142,7 @@ class ApplicationCommandInteraction(DiscordEntity):
                 if resolved_role_datas:
                     resolved_roles = {}
                     for role_data in resolved_role_datas.values():
-                        role = Role(role_data, guild)
+                        role = Role(role_data, interaction_event.guild)
                         resolved_roles[role.id] = role
                 else:
                     resolved_roles = None
@@ -197,7 +187,9 @@ class ApplicationCommandInteraction(DiscordEntity):
         self.resolved_messages = resolved_messages
         self.target_id = target_id
         
-        return self, cached_users
+        interaction_event._add_response_waiter()
+        
+        return self
     
     
     def __repr__(self):
@@ -237,6 +229,102 @@ class ApplicationCommandInteraction(DiscordEntity):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two application command interactions are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # id
+        if self.id != other.id:
+            return False
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        # resolved_channels
+        if self.resolved_channels != other.resolved_channels:
+            return False
+        
+        # resolved_roles
+        if self.resolved_roles != other.resolved_roles:
+            return False
+        
+        # resolved_messages
+        if self.resolved_messages != other.resolved_messages:
+            return False
+        
+        # resolved_users
+        if self.resolved_users != other.resolved_users:
+            return False
+        
+        # target_id
+        if self.target_id != other.target_id:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the hash value of the application command interaction."""
+        hash_value = 0
+        
+        # id
+        hash_value ^= self.id
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= len(options)
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        # resolved_channels
+        resolved_channels = self.resolved_channels
+        if (resolved_channels is not None):
+            hash_value ^= (len(resolved_channels)<<8)
+            
+            for channel_id in resolved_channels.keys():
+                hash_value ^= channel_id
+        
+        # resolved_roles
+        resolved_roles = self.resolved_roles
+        if (resolved_roles is not None):
+            hash_value ^= (len(resolved_roles)<<12)
+            
+            for role_id in resolved_roles.keys():
+                hash_value ^= role_id
+        
+        # resolved_messages
+        resolved_messages = self.resolved_messages
+        if (resolved_messages is not None):
+            hash_value ^= (len(resolved_messages)<<16)
+            
+            for message_id in resolved_messages.keys():
+                hash_value ^= message_id
+        
+        # resolved_users
+        resolved_users = self.resolved_users
+        if (resolved_users is not None):
+            hash_value ^= (len(resolved_users)<<20)
+            
+            for user_id in resolved_users.keys():
+                hash_value ^= user_id
+        
+        # target_id
+        hash_value ^= self.target_id
+        
+        return hash_value
     
     
     def resolve_entity(self, entity_id):
@@ -412,7 +500,56 @@ class ApplicationCommandInteractionOption:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
-
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two application command interaction options are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        # type
+        if self.type is not other.type:
+            return False
+        
+        # value
+        if self.value != other.value:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the application command interaction option's hash value."""
+        hash_value = 0
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= len(options)
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        # type
+        hash_value ^= (self.type.value<<8)
+        
+        # value
+        value = self.value
+        if (value is not None):
+            hash_value ^= hash(value)
+        
+        return hash_value
 
 
 class ComponentInteraction:
@@ -430,7 +567,7 @@ class ComponentInteraction:
     """
     __slots__ = ('component_type', 'custom_id', 'components', 'options')
     
-    def __new__(cls, data, guild, cached_users):
+    def __new__(cls, data, interaction_event):
         """
         Creates a new component interaction with the given data.
         
@@ -438,17 +575,8 @@ class ComponentInteraction:
         ----------
         data : `dict` of (`str`, `Any`) items
             The received application command interaction data.
-        guild : `None` or ``Guild``
-            The respective guild.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
-        
-        Returns
-        -------
-        self : ``ComponentInteraction``
-            The created object.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
+        interaction_event : ``InteractionEvent``
+            The parent interaction event.
         """
         self = object.__new__(cls)
         
@@ -463,7 +591,7 @@ class ComponentInteraction:
         
         self.options = options
         
-        return self, cached_users
+        return self
     
     
     def __repr__(self):
@@ -509,19 +637,26 @@ class ComponentInteraction:
     def __eq__(self, other):
         """Compares the two component or component interaction."""
         other_type = type(other)
+        # Compare with self type.
         if other_type is type(self):
+            # component_type
             if self.component_type is not other.component_type:
                 return False
-            
+            #custom_id
             if self.custom_id != other.custom_id:
                 return False
             
             return True
         
+        # Compare with components.
         if issubclass(other_type, ComponentBase):
+            # Check `type` before `custom_id`
+            
+            # type
             if self.component_type is not other.type:
                 return False
             
+            # custom_id
             if self.custom_id != other.custom_id:
                 return False
             
@@ -533,11 +668,18 @@ class ComponentInteraction:
     
     def __hash__(self):
         """Returns the component interaction's hash value."""
-        hash_value = self.component_type.value^hash(self.custom_id)
+        hash_value = 0
         
+        # component_type
+        hash_value ^= self.component_type.value
+        
+        # custom_id
+        hash_value ^= hash(self.custom_id)
+        
+        # options
         options = self.options
         if (options is not None):
-            hash_value ^ len(options)<<24
+            hash_value ^ len(options)<<8
             for option in options:
                 hash_value ^ hash(option)
         
@@ -645,6 +787,63 @@ class ApplicationCommandAutocompleteInteractionOption:
         return ''.join(repr_parts)
     
     
+    def __hash__(self):
+        """Returns the application command autocomplete option's representation."""
+        hash_value = 0
+        
+        # focused
+        hash_value ^= (self.focused<<16)
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= (len(options)<<8)
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        # type
+        hash_value ^= self.type.value
+        
+        # value
+        value = self.value
+        if (value is not None):
+            hash_value ^= hash(value)
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two application command autocomplete option's are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # focused
+        if self.focused != other.focused:
+            return False
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        # type
+        if self.type is not other.type:
+            return False
+        
+        # value
+        if self.value != other.value:
+            return False
+        
+        return True
+    
+    
     @property
     def focused_option(self):
         """
@@ -698,7 +897,7 @@ class ApplicationCommandAutocompleteInteractionOption:
         return value
 
 
-class ApplicationCommandAutocompleteInteraction(DiscordEntity):
+class ApplicationCommandAutocompleteInteraction:
     """
     Represents an ``ApplicationCommand``'s auto completion interaction.
     
@@ -711,9 +910,9 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
     options : `None` or `tuple` of ``ApplicationCommandAutocompleteOption``
         Parameter auto completion options.
     """
-    __slots__ = ('name', 'options',)
+    __slots__ = ('id', 'name', 'options',)
     
-    def __new__(cls, data, guild, cached_users):
+    def __new__(cls, data, interaction_event):
         """
         Creates a new ``ApplicationCommandAutocompleteInteraction`` from the data received from Discord.
         
@@ -721,17 +920,8 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
         ----------
         data : `dict` of (`str`, `Any`) items
             The received application command interaction data.
-        guild : `None` or ``Guild``
-            The respective guild.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
-        
-        Returns
-        -------
-        self : ``ApplicationCommandInteraction``
-            The created object.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
+        interaction_event : ``InteractionEvent``
+            The parent interaction event.
         """
         id_ = int(data['id'])
         name = data['name']
@@ -749,7 +939,7 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
         self.name = name
         self.options = options
         
-        return self, cached_users
+        return self
     
     
     def __repr__(self):
@@ -783,6 +973,47 @@ class ApplicationCommandAutocompleteInteraction(DiscordEntity):
         repr_parts.append('>')
         return ''.join(repr_parts)
     
+    
+    def __hash__(self):
+        """Returns the application command autocomplete interaction hash value."""
+        hash_value = 0
+        
+        # id
+        hash_value ^= self.id
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= (len(options)<<8)
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two application command autocomplete interaction are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # id
+        if self.id != other.id:
+            return False
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        return True
+        
     
     @property
     def focused_option(self):
@@ -871,7 +1102,7 @@ class FormSubmitInteraction:
     """
     __slots__ = ('custom_id', 'options', )
     
-    def __new__(cls, data, guild, cached_users):
+    def __new__(cls, data, interaction_event):
         """
         Creates a new component interaction with the given data.
         
@@ -879,20 +1110,13 @@ class FormSubmitInteraction:
         ----------
         data : `dict` of (`str`, `Any`) items
             The received form submit interaction data.
-        guild : `None` or ``Guild``
-            The respective guild.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
-        
-        Returns
-        -------
-        self : ``FormSubmitInteraction``
-            The created object.
-        cached_users : `None` or `list` of ``ClientUserBase``
-            Users, which might need temporary caching.
+        interaction_event : ``InteractionEvent``
+            The parent interaction event.
         """
         # custom_id
         custom_id = data.get('custom_id', None)
+        if (custom_id is not None) and (not custom_id):
+            custom_id = None
         
         # options
         option_datas = data.get('components', None)
@@ -906,7 +1130,7 @@ class FormSubmitInteraction:
         self.custom_id = custom_id
         self.options = options
         
-        return self, cached_users
+        return self
 
 
     def __repr__(self):
@@ -938,6 +1162,42 @@ class FormSubmitInteraction:
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __hash__(self):
+        """Returns the form submit interaction's hash value."""
+        hash_value = 0
+        
+        # custom_id
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            hash_value ^= hash(custom_id)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= (len(options)<<8)
+            
+            for option in options:
+                hash_value ^= hash(option)
+            
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two submit interactions are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # custom_id
+        if self.custom_id != other.custom_id:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        return True
 
 
 class FormSubmitInteractionOption:
@@ -1048,6 +1308,58 @@ class FormSubmitInteractionOption:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+
+
+    def __hash__(self):
+        """Returns the form submit interaction's option hash value."""
+        hash_value = 0
+        
+        # custom_id
+        custom_id = self.custom_id
+        if (custom_id is not None):
+            hash_value ^= hash(custom_id)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= (len(options)<<8)
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        # type
+        hash_value ^= self.type.value
+        
+        # value
+        value = self.value
+        if (value is not None):
+            hash_value ^= hash(value)
+        
+        return hash_value
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two submit interaction options are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # custom_id
+        if self.custom_id != other.custom_id:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        # type
+        if self.type is not other.type:
+            return False
+        
+        # value
+        if self.value != other.value:
+            return False
+        
+        return True
 
 
 INTERACTION_TYPE_TABLE = {
@@ -1181,13 +1493,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         else:
             message = Message(message_data)
         
-        
         type_value = data['type']
-        interaction_type = INTERACTION_TYPE_TABLE.get(type_value, None)
-        if interaction_type is None:
-            interaction = None
-        else:
-            interaction, cached_users = interaction_type(data['data'], guild, cached_users)
         
         application_id = int(data['application_id'])
         
@@ -1198,7 +1504,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         self.type = InteractionType.get(type_value)
         self.channel_id = channel_id
         self.guild_id = guild_id
-        self.interaction = interaction
+        self.interaction = None
         self.token = data['token']
         # We ignore `type` field, since we always get only `InteractionType.application_command`.
         self.user = invoker_user
@@ -1207,6 +1513,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         self._cached_users = cached_users
         self.message = message
         
+        # All field is set -> we can now create our own child
+        interaction_type = INTERACTION_TYPE_TABLE.get(type_value, None)
+        if (interaction_type is not None):
+            self.interaction = interaction_type(data['data'], self)
+        
+        # Bind cached users to the guild for un-caching on event unallocation.
+        cached_users = self._cached_users
         if (cached_users is not None):
             for user in cached_users:
                 key = (user, guild)
@@ -1219,9 +1532,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
                     reference_count += 1
                 
                 USER_GUILD_CACHE[key] = reference_count
-        
-        if self.type is INTERACTION_TYPE_APPLICATION_COMMAND:
-            INTERACTION_EVENT_RESPONSE_WAITERS[self.id] = self
         
         return self
     
@@ -1321,25 +1631,31 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         response_state_names = None
         response_state = self._response_flag
+        
         if response_state == RESPONSE_FLAG_NONE:
             pass
-        elif response_state & RESPONSE_FLAG_DEFERRING:
+        
+        if response_state & RESPONSE_FLAG_DEFERRING:
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('deferring')
-        elif response_state & RESPONSE_FLAG_DEFERRED:
+        
+        if response_state & RESPONSE_FLAG_DEFERRED:
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('deferred')
-        elif response_state & RESPONSE_FLAG_RESPONDING:
+        
+        if response_state & RESPONSE_FLAG_RESPONDING:
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('responding')
-        elif response_state & RESPONSE_FLAG_RESPONDED:
+        
+        if response_state & RESPONSE_FLAG_RESPONDED:
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('responded')
-        elif response_state & RESPONSE_FLAG_EPHEMERAL:
+        
+        if response_state & RESPONSE_FLAG_EPHEMERAL:
             if response_state_names is None:
                 response_state_names = []
             response_state_names.append('ephemeral')
@@ -1555,7 +1871,35 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
                 voice_client = None
         
         return voice_client
-
+    
+    
+    def _add_cached_user(self, user):
+        """
+        Adds a user to the cached ones by the interaction.
+        
+        This function might be called inside of ``InteractionEvent.__new__`` when initializing it's interaction.
+        
+        Parameters
+        ----------
+        user : ``ClientUserBase``
+            The user to add to cache.
+        """
+        cached_users = self._cached_users
+        if cached_users is None:
+            self._cached_users = [user]
+        else:
+            if (user not in cached_users):
+                cached_users.append(user)
+    
+    
+    def _add_response_waiter(self):
+        """
+        Adds the interaction event to response waiters.
+        
+        Called when the interaction is application command one, to resolve it's ``.message`` attribute when created.
+        """
+        INTERACTION_EVENT_RESPONSE_WAITERS[self.id] = self
+    
 
 class InteractionResponseContext:
     """

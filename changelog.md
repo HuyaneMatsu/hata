@@ -22,11 +22,24 @@
 - Add missing `ComponentBase.__new__`.
 - Add `InteractionForm`.
 - Add `FormSubmitInteraction`.
+- Add missing `ApplicationCommandInteraction.__hash__`.
+- Add missing `ApplicationCommandInteraction.__eq__`.
+- Add missing `ApplicationCommandInteractionOption.__hash__`.
+- Add missing `ApplicationCommandInteractionOption.__eq__`.
+- Add missing `ApplicationCommandAutocompleteInteractionOption.__hash__`.
+- Add missing `ApplicationCommandAutocompleteInteractionOption.__eq__`.
+- `ApplicationCommandAutocompleteInteraction` not inherits anymore from `DiscordEntity`.
+- Add missing `ApplicationCommandAutocompleteInteraction.__hash__`
+- Add missing `ApplicationCommandAutocompleteInteraction.__eq__`
 
 ##### ext.extension_loader
 
 - Syntax is checked before executing a module when reloading.
 - Add `Extension.file_name`.
+
+##### ext.top_gg
+
+- Added to `setup.py`.
 
 ## 1.1.120 *\[2021-11-17\]*
 

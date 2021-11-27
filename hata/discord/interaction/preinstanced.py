@@ -128,6 +128,7 @@ class InteractionType(PreinstancedBase):
     application_command = P(2, 'application_command')
     message_component = P(3, 'message_component')
     application_command_autocomplete = P(4, 'application_command_autocomplete')
+    form_submit = P(5, 'form_submit')
 
 
 class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):

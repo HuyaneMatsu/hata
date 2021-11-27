@@ -170,7 +170,7 @@ def random_error_message_getter():
 
 ## Adding commands & responding
 
-After the extension is setuped, commands can be added using the `client.interaction` decorator.
+After the extension is setupped, commands can be added using the `client.interaction` decorator.
 
 > Global commands are only updated after 1 hour, meanwhile guild commands immediately, so when using test commands
 > make sure to use only guild bound commands. The examples will show only guild commands, tho of course global

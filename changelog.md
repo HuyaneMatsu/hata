@@ -31,6 +31,7 @@
 - `ApplicationCommandAutocompleteInteraction` not inherits anymore from `DiscordEntity`.
 - Add missing `ApplicationCommandAutocompleteInteraction.__hash__`
 - Add missing `ApplicationCommandAutocompleteInteraction.__eq__`
+- Add `CHANNEL_TYPES.guild_forum`.
 
 ##### ext.extension_loader
 

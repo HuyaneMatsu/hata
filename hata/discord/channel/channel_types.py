@@ -32,6 +32,8 @@ Contains channel type identifiers.
 +---------------------------------------+-------+
 | guild_directory                       | 14    |
 +---------------------------------------+-------+
+| guild_forum                           | 15    |
++---------------------------------------+-------+
 
 In addition also extra groups are defined:
 
@@ -76,6 +78,7 @@ In addition also extra groups are defined:
 |                                       | guild_thread_private,         |
 |                                       | guild_stage,                  |
 |                                       | guild_directory               |
+|                                       | guild_forum                   |
 +---------------------------------------+-------------------------------+
 | GROUP_THREAD                          | guild_thread_announcements,   |
 |                                       | guild_thread_public,          |
@@ -97,6 +100,7 @@ guild_thread_public = 11
 guild_thread_private = 12
 guild_stage = 13
 guild_directory = 14
+guild_forum = 15
 
 
 GROUP_MESSAGEABLE = frozenset((
@@ -155,6 +159,7 @@ GROUP_GUILD = frozenset((
     guild_thread_private,
     guild_stage,
     guild_directory,
+    guild_forum,
 ))
 
 GROUP_THREAD = frozenset((

@@ -192,6 +192,11 @@ async def perms(event):
     return Embed('Permissions', description).add_author(user.avatar_url, user.full_name)
 ```
 
+
+![](assets/slash_0000.png)
+
+![](assets/slash_0001.png)
+
 Every `return`-ed or `yield`-ed string or embed (list or tuple of embeds as well) from a slash command will be
 propagated to be sent as a response to the user, but you can also send responses manually with the
 `Client.interaction_response_message_create` or with the `Client.interaction_followup_message_create` methods. There
@@ -232,6 +237,8 @@ async def cookie(event,
     """Gifts a cookie!"""
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !')
 ```
+
+![](assets/slash_0002.png)
 
 #### SlashParameter
 

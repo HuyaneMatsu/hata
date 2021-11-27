@@ -42,6 +42,10 @@
 
 - Added to `setup.py`.
 
+##### ext.asycnio
+
+- Add `start_unix_server`.
+
 #### Renames, Deprecation & Removals
 
 - Rename `ComponentInteraction.component_type` to `.type`.

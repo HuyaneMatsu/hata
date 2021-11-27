@@ -124,6 +124,7 @@ for sub_module_name, feature_names, extra_features in (
             'StreamReaderProtocol',
             'open_connection',
             'start_server',
+            'start_unix_server',
             ), None,
         ),
         ('subprocess', (

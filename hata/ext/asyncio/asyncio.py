@@ -13,7 +13,7 @@ __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'Abstra
     'ensure_future', 'gather', 'get_child_watcher', 'get_event_loop', 'get_event_loop_policy', 'get_running_loop',
     'iscoroutine', 'iscoroutinefunction', 'isfuture', 'new_event_loop', 'open_connection', 'pipe', 'run',
     'run_coroutine_threadsafe', 'set_child_watcher', 'set_event_loop', 'set_event_loop_policy', 'shield', 'sleep',
-    'staggered_race', 'start_server', 'to_thread', 'wait', 'wait_for', 'wrap_future', )
+    'staggered_race', 'start_server', 'start_unix_server', 'to_thread', 'wait', 'wait_for', 'wrap_future', )
 
 import os, sys, warnings
 from threading import current_thread, enumerate as list_threads, main_thread
@@ -955,7 +955,7 @@ async def staggered_race(coroutine_functions, delay, *, loop=None):
     raise NotImplementedError
 
 # asyncio.streams
-# Include: StreamReader, StreamWriter, StreamReaderProtocol, open_connection, start_server
+# Include: StreamReader, StreamWriter, StreamReaderProtocol, open_connection, start_server, start_unix_server
 
 _DEFAULT_LIMIT = 1<<16
 
@@ -1033,6 +1033,25 @@ async def start_server(client_connected_cb, host=None, port=None, *, loop=None, 
         return protocol
     
     return await loop.create_server(factory, host, port, **kwds)
+
+
+async def start_unix_server(client_connected_cb, path=None, *, loop=None, limit=_DEFAULT_LIMIT, **kwds):
+    """
+    Similar to `start_server` but works with UNIX Domain Sockets.
+    """
+    if loop is None:
+        loop = get_event_loop()
+    else:
+        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+                      DeprecationWarning, stacklevel=2)
+    
+    def factory():
+        reader = StreamReader(limit=limit, loop=loop)
+        protocol = StreamReaderProtocol(reader, client_connected_cb, loop=loop)
+        return protocol
+
+    return await loop.create_unix_server(factory, path, **kwds)
+
 
 class FlowControlMixin(Protocol):
     """

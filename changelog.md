@@ -41,6 +41,11 @@
 
 - Added to `setup.py`.
 
+#### Renames, Deprecation & Removals
+
+- Rename `ComponentInteraction.component_type` to `.type`.
+- Deprecate `ComponentInteraction.component_type`.
+
 ## 1.1.120 *\[2021-11-17\]*
 
 #### Improvements
@@ -76,17 +81,17 @@
 - Add `name` parameter to `ComponentCommand.__new__`.
 - `_render_application_command_exception` now uses `repr(command)`.
 
-#### Renames, Deprecation & Removals
-
-- Deprecate `DiscordException.data`, use `.recevied_data` instead.
-- Rename `DiscordException._cr_code` to `._get_code`.
-- Rename `DiscordException._cr_messages` to `._create_messages`.
-
 #### Bug Fixes
 
 ##### ext.slash
 - `CompoenntCommand.__new__` could raise exception with bad error message.
 - `SlasherApplicationCommand.__new__` could pass `None` to `raw_name_to_display` dropping `TypeError` if routing.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `DiscordException.data`, use `.recevied_data` instead.
+- Rename `DiscordException._cr_code` to `._get_code`.
+- Rename `DiscordException._cr_messages` to `._create_messages`.
 
 ## 1.1.119 *\[2021-11-09\]*
 

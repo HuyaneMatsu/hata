@@ -4,7 +4,7 @@ __all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutoc
     'InteractionType')
 
 
-import reprlib
+import reprlib, warnings
 
 from ...backend.export import export
 from ...backend.futures import Future, shield, future_or_timeout
@@ -16,7 +16,7 @@ from ..channel import create_partial_channel_from_data
 from ..message import Message
 from ..permission import Permission
 from ..permission.permission import PERMISSION_PRIVATE
-from ..guild import Guild, create_partial_guild_from_id
+from ..guild import create_partial_guild_from_id
 from ..user import User, ClientUserBase
 from ..role import Role
 
@@ -77,14 +77,77 @@ class ApplicationCommandInteraction(DiscordEntity):
         interaction_event : ``InteractionEvent``
             The parent interaction event.
         """
+        # id
+        id_ = int(data['id'])
+        
+        # name
+        name = data['name']
+        
+        # options
+        option_datas = data.get('options', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = tuple(ApplicationCommandInteractionOption(option_data) for option_data in option_datas)
+        
+        # resolved_channels & resolved_roles & resolved_messages & resolved_users
         try:
             resolved_data = data['resolved']
         except KeyError:
-            resolved_users = None
             resolved_channels = None
             resolved_roles = None
             resolved_messages = None
+            resolved_users = None
         else:
+            # resolved_channels
+            try:
+                resolved_channel_datas = resolved_data['channels']
+            except KeyError:
+                resolved_channels = None
+            else:
+                if resolved_channel_datas:
+                    resolved_channels = {}
+                    
+                    for channel_data in resolved_channel_datas.values():
+                        channel = create_partial_channel_from_data(channel_data, interaction_event.id)
+                        if (channel is not None):
+                            resolved_channels[channel.id] = channel
+                    
+                    if not resolved_channels:
+                        resolved_channels = None
+                else:
+                    resolved_channels = None
+            
+            # resolved_roles
+            try:
+                resolved_role_datas = resolved_data['roles']
+            except KeyError:
+                resolved_roles = None
+            else:
+                if resolved_role_datas:
+                    resolved_roles = {}
+                    for role_data in resolved_role_datas.values():
+                        role = Role(role_data, interaction_event.guild)
+                        resolved_roles[role.id] = role
+                else:
+                    resolved_roles = None
+            
+            # resolved_messages
+            try:
+                resolved_message_datas = resolved_data['messages']
+            except KeyError:
+                resolved_messages = None
+            else:
+                if resolved_message_datas:
+                    resolved_messages = {}
+                    
+                    for message_data in resolved_message_datas.values():
+                        message = Message(message_data)
+                        resolved_messages[message.id] = message
+                else:
+                    resolved_messages = None
+            
+            # resolved_users
             try:
                 resolved_user_datas = resolved_data['users']
             except KeyError:
@@ -112,65 +175,11 @@ class ApplicationCommandInteraction(DiscordEntity):
                         
                         if (guild_profile_data is not None):
                             interaction_event._add_cached_user(user)
-                    
+                
                 else:
                     resolved_users = None
-            
-            try:
-                resolved_channel_datas = resolved_data['channels']
-            except KeyError:
-                resolved_channels = None
-            else:
-                if resolved_channel_datas:
-                    resolved_channels = {}
-                    
-                    for channel_data in resolved_channel_datas.values():
-                        channel = create_partial_channel_from_data(channel_data, interaction_event.id)
-                        if (channel is not None):
-                            resolved_channels[channel.id] = channel
-                    
-                    if not resolved_channels:
-                        resolved_channels = None
-                else:
-                    resolved_channels = None
-            
-            try:
-                resolved_role_datas = resolved_data['roles']
-            except KeyError:
-                resolved_roles = None
-            else:
-                if resolved_role_datas:
-                    resolved_roles = {}
-                    for role_data in resolved_role_datas.values():
-                        role = Role(role_data, interaction_event.guild)
-                        resolved_roles[role.id] = role
-                else:
-                    resolved_roles = None
-            
-            try:
-                resolved_message_datas = resolved_data['messages']
-            except KeyError:
-                resolved_messages = None
-            else:
-                if resolved_message_datas:
-                    resolved_messages = {}
-                    
-                    for message_data in resolved_message_datas.values():
-                        message = Message(message_data)
-                        resolved_messages[message.id] = message
-                else:
-                    resolved_messages = None
         
-        
-        id_ = int(data['id'])
-        name = data['name']
-        
-        option_datas = data.get('options', None)
-        if (option_datas is None) or (not option_datas):
-            options = None
-        else:
-            options = tuple(ApplicationCommandInteractionOption(option_data) for option_data in option_datas)
-        
+        # target_id
         target_id = data.get('target_id', None)
         if target_id is None:
             target_id = 0
@@ -436,22 +445,29 @@ class ApplicationCommandInteractionOption:
         data : `dict` of (`str`, `Any`) items
             The received application command interaction option data.
         """
+        # name
         name = data['name']
         
+        # options
         option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
             options = None
         else:
             options = tuple(ApplicationCommandInteractionOption(option_data) for option_data in option_datas)
         
+        # type
+        type_ = ApplicationCommandOptionType.get(data.get('type', 0))
+        
+        # value
         value = data.get('value', None)
         if (value is not None):
             value = str(value)
         
         self = object.__new__(cls)
+        
         self.name = name
         self.options = options
-        self.type = ApplicationCommandOptionType.get(data.get('type', 0))
+        self.type = type_
         self.value = value
         
         return self
@@ -558,14 +574,14 @@ class ComponentInteraction:
     
     Attributes
     ----------
-    component_type : ``ComponentType``
-        The component's type.
     custom_id : `None` or `str`
         The component's custom identifier.
     options : `None` or `tuple` of `str`
         Option values selected of the respective interaction.
+    type : ``ComponentType``
+        The component's type.
     """
-    __slots__ = ('component_type', 'custom_id', 'components', 'options')
+    __slots__ = ('type', 'custom_id', 'components', 'options')
     
     def __new__(cls, data, interaction_event):
         """
@@ -578,32 +594,36 @@ class ComponentInteraction:
         interaction_event : ``InteractionEvent``
             The parent interaction event.
         """
-        self = object.__new__(cls)
+        # custom_id
+        custom_id = data.get('custom_id', None)
         
-        self.custom_id = data.get('custom_id', None)
-        self.component_type = ComponentType.get(data['component_type'])
+        # type
+        type_ = ComponentType.get(data['type'])
         
+        # options
         option_datas = data.get('values', None)
         if (option_datas is None) or (not option_datas):
             options = None
         else:
             options = tuple(option_datas)
         
+        self = object.__new__(cls)
+        self.custom_id = custom_id
         self.options = options
-        
+        self.type = type_
         return self
     
     
     def __repr__(self):
         """Returns the component interaction's representation."""
-        repr_parts = [
-            '<', self.__class__.__name__,
-            ', component_type=',
-        ]
-        component_type = self.component_type
-        repr_parts.append(component_type.name)
+        repr_parts = ['<', self.__class__.__name__]
+        
+        # type
+        type_ = self.type
+        repr_parts.append(' type=')
+        repr_parts.append(type_.name)
         repr_parts.append(' (')
-        repr_parts.append(repr(component_type.value))
+        repr_parts.append(repr(type_.value))
         repr_parts.append(')')
         
         custom_id = self.custom_id
@@ -639,8 +659,8 @@ class ComponentInteraction:
         other_type = type(other)
         # Compare with self type.
         if other_type is type(self):
-            # component_type
-            if self.component_type is not other.component_type:
+            # type
+            if self.type is not other.type:
                 return False
             #custom_id
             if self.custom_id != other.custom_id:
@@ -653,7 +673,7 @@ class ComponentInteraction:
             # Check `type` before `custom_id`
             
             # type
-            if self.component_type is not other.type:
+            if self.type is not other.type:
                 return False
             
             # custom_id
@@ -670,8 +690,8 @@ class ComponentInteraction:
         """Returns the component interaction's hash value."""
         hash_value = 0
         
-        # component_type
-        hash_value ^= self.component_type.value
+        # type
+        hash_value ^= self.type.value
         
         # custom_id
         hash_value ^= hash(self.custom_id)
@@ -684,6 +704,19 @@ class ComponentInteraction:
                 hash_value ^ hash(option)
         
         return hash_value
+    
+    
+    def component_type(cls):
+        """
+        ``.component_type`` is deprecated, please use ``.type`` instead. Will be removed in 2022
+        February.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.component_type` is deprecated, and will be removed in 2022 February. '
+            f'Please use `{cls.__name__}.type` instead.',
+            FutureWarning)
+        
+        return cls.type
 
 
 class ApplicationCommandAutocompleteInteractionOption:
@@ -714,14 +747,13 @@ class ApplicationCommandAutocompleteInteractionOption:
         data : `dict` of (`str`, `Any`)
             Application command autocomplete option data.
         """
-        name = data['name']
-        
-        value = data.get('value', None)
-        if (value is not None) and (not value):
-            value = None
-        
+        # focused
         focused = data.get('focused', False)
         
+        # name
+        name = data['name']
+        
+        # options
         option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
             options = None
@@ -730,7 +762,13 @@ class ApplicationCommandAutocompleteInteractionOption:
                 ApplicationCommandAutocompleteInteractionOption(option_data) for option_data in option_datas
             )
         
+        # type
         type_ = ApplicationCommandOptionType.get(data['type'])
+        
+        # value
+        value = data.get('value', None)
+        if (value is not None) and (not value):
+            value = None
         
         self = object.__new__(cls)
         self.focused = focused
@@ -923,9 +961,13 @@ class ApplicationCommandAutocompleteInteraction:
         interaction_event : ``InteractionEvent``
             The parent interaction event.
         """
+        # id
         id_ = int(data['id'])
+        
+        # name
         name = data['name']
         
+        # options
         option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
             options = None
@@ -935,6 +977,7 @@ class ApplicationCommandAutocompleteInteraction:
             )
         
         self = object.__new__(cls)
+        
         self.id = id_
         self.name = name
         self.options = options
@@ -1127,6 +1170,7 @@ class FormSubmitInteraction:
         
         
         self = object.__new__(cls)
+        
         self.custom_id = custom_id
         self.options = options
         
@@ -1250,10 +1294,12 @@ class FormSubmitInteractionOption:
             value = None
         
         self = object.__new__(cls)
+        
         self.custom_id = custom_id
         self.options = options
         self.type = type_
         self.value = value
+        
         return self
         
     def __repr__(self):
@@ -1455,6 +1501,16 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         data : `dict` of (`str`, `Any`) items
             `INTERACTION_CREATE` dispatch event data.
         """
+        # id_
+        id_ = int(data['id'])
+        
+        # application_id
+        application_id = int(data['application_id'])
+        
+        # channel_id
+        channel_id = int(data['channel_id'])
+        
+        # guild_id
         guild_id = data.get('guild_id', None)
         if guild_id is None:
             guild_id = 0
@@ -1463,29 +1519,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         if guild_id:
             guild = create_partial_guild_from_id(guild_id)
-            cached_users = []
         else:
             guild = None
-            cached_users = None
         
-        channel_id = int(data['channel_id'])
+        # interaction
+        # We set interaction at the end when the object is fully initialized
         
-        try:
-            user_data = data['member']
-        except KeyError:
-            user_data = data['user']
-        
-        invoker_user = User(user_data, guild)
-        if (cached_users is not None):
-            cached_users.append(invoker_user)
-        
-        try:
-            user_permissions = user_data['permissions']
-        except KeyError:
-            user_permissions = PERMISSION_PRIVATE
-        else:
-            user_permissions = Permission(user_permissions)
-        
+        # message
         try:
             message_data = data['message']
         except KeyError:
@@ -1493,32 +1533,54 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         else:
             message = Message(message_data)
         
-        type_value = data['type']
+        # token
+        token = data['token']
         
-        application_id = int(data['application_id'])
+        # type
+        type_value = data['type']
+        type_ = InteractionType.get(type_value)
+        
+        # user
+        try:
+            user_data = data['member']
+        except KeyError:
+            user_data = data['user']
+        
+        user = User(user_data, guild)
+        
+        # user_permissions
+        try:
+            user_permissions = user_data['permissions']
+        except KeyError:
+            user_permissions = PERMISSION_PRIVATE
+        else:
+            user_permissions = Permission(user_permissions)
         
         
         self = object.__new__(cls)
-        self.id = int(data['id'])
+        self.id = id_
         self.application_id = application_id
-        self.type = InteractionType.get(type_value)
+        self.type = type_
         self.channel_id = channel_id
         self.guild_id = guild_id
         self.interaction = None
-        self.token = data['token']
-        # We ignore `type` field, since we always get only `InteractionType.application_command`.
-        self.user = invoker_user
+        self.token = token
+        self.user = user
         self.user_permissions = user_permissions
         self._response_flag = RESPONSE_FLAG_NONE
-        self._cached_users = cached_users
+        self._cached_users = None
         self.message = message
+        
+        # Cache our user if called from guild. This is required to kill references to the user in the guild.
+        if (guild is not None):
+            self._add_cached_user(user)
         
         # All field is set -> we can now create our own child
         interaction_type = INTERACTION_TYPE_TABLE.get(type_value, None)
         if (interaction_type is not None):
             self.interaction = interaction_type(data['data'], self)
         
-        # Bind cached users to the guild for un-caching on event unallocation.
+        # Bind cached users to the guild for un-caching on object unallocation.
         cached_users = self._cached_users
         if (cached_users is not None):
             for user in cached_users:

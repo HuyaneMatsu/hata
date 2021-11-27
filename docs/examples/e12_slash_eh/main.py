@@ -35,7 +35,7 @@ async def slash_error(client, interaction_event, command, exception):
                                 SlasherApplicationCommandCategory,              |
                                 SlasherApplicationCommandFunction,              |
                                 SlasherApplicationCommandParameterAutoCompleter |
-                                FormSubmitCommand                                     |
+                                FormSubmitCommand                               |
         exception           :   BaseException                                   | The exception that was raised
 
     This should return a boolean

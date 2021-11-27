@@ -5,7 +5,8 @@
 Slash refers to slash commands as probably known by the users or by interactions as mentioned by the api.
 
 You can also find Discord's insufficient API documentation
-[here](https://github.com/discord/discord-api-docs/tree/master/docs/interactions).
+[here](https://discord.com/developers/docs/interactions/application-commands#application-commands) or on their
+[github repo](https://github.com/discord/discord-api-docs/tree/master/docs/interactions).
 
 Hata supports interactions with many methods and classes, but this topic is not about their raw usage, but about the
 inherent slash extension.

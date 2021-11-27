@@ -223,7 +223,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'use_external_stickers': PERMISSION_SHIFT_USE_EXTERNAL_STICKERS,
         'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
         'start_embedded_activities': PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES,
-        'moderate_users': PERMISSION_MASK_MODERATE_USERS,
+        'moderate_users': PERMISSION_SHIFT_MODERATE_USERS,
     }
     
     

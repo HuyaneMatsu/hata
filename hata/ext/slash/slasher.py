@@ -821,7 +821,7 @@ class Slasher(EventHandlerBase):
         +-------------------+-------------------------------------------------------------------------------+
         | command           | ``ComponentCommand``, ``SlasherApplicationCommand``,                          |
         |                   | ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``  |
-        |                   | ``SlasherApplicationCommandParameterAutoCompleter``, ``FormSubmitCommand``          |
+        |                   | ``SlasherApplicationCommandParameterAutoCompleter``, ``FormSubmitCommand``    |
         +-------------------+-------------------------------------------------------------------------------+
         | exception         | `BaseException`                                                               |
         +-------------------+-------------------------------------------------------------------------------+

@@ -46,6 +46,14 @@
 - Rename `ComponentInteraction.component_type` to `.type`.
 - Deprecate `ComponentInteraction.component_type`.
 
+##### ext.slash
+
+- Rename `Slasher.regex_custom_id_to_component_command` to `._regex_custom_id_to_component_command`.
+- Rename `Slasher.string_custom_id_to_component_command` to `._string_custom_id_to_component_command`.
+- Deprecate `Slasher.regex_custom_id_to_component_command`.
+- Deprecate `Slasher.string_custom_id_to_component_command`.
+
+
 ## 1.1.120 *\[2021-11-17\]*
 
 #### Improvements

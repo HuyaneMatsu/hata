@@ -1,5 +1,6 @@
 __all__ = ('Slasher', )
 
+import warnings
 from threading import current_thread
 from functools import partial as partial_func
 
@@ -21,12 +22,17 @@ from .application_command import SlasherApplicationCommand, APPLICATION_COMMAND_
     SlasherApplicationCommandParameterAutoCompleter, _build_auto_complete_parameter_names, \
     _register_autocomplete_function
 from .component_command import ComponentCommand
+from .form_submit_command import FormSubmitCommand
 from .exceptions import test_exception_handler, default_slasher_exception_handler, \
     default_slasher_random_error_message_getter, _validate_random_error_message_getter, _register_exception_handler
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
+INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
+
+COMMAND_TARGET_COMPONENT_COMMAND = 'component'
+COMMAND_TARGET_FORM_COMPONENT_COMMAND = 'form'
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
     """
@@ -796,9 +802,11 @@ class Slasher(EventHandlerBase):
         +-------------------------------+-------+
     _component_commands : `set` of ``ComponentCommand``
         The component commands added to the slasher.
+    
     _component_interaction_waiters : ``WeakKeyDictionary`` of (``Message``, `async-callable`) items
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
+    
     _exception_handlers : `None` or `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
@@ -813,7 +821,7 @@ class Slasher(EventHandlerBase):
         +-------------------+-------------------------------------------------------------------------------+
         | command           | ``ComponentCommand``, ``SlasherApplicationCommand``,                          |
         |                   | ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``  |
-        |                   | ``SlasherApplicationCommandParameterAutoCompleter``                           |
+        |                   | ``SlasherApplicationCommandParameterAutoCompleter``, ``FormSubmitCommand``          |
         +-------------------+-------------------------------------------------------------------------------+
         | exception         | `BaseException`                                                               |
         +-------------------+-------------------------------------------------------------------------------+
@@ -826,43 +834,60 @@ class Slasher(EventHandlerBase):
         | handled           | `bool`    |
         +-------------------+-----------+
     
+    _form_submit_commands : `set` of ``FormSubmitCommand``
+        The form commands added to the slasher.
+    
+    _regex_custom_id_to_component_command : `dict` of (``RegexMatcher``, ``ComponentCommand``) items
+        A dictionary which contains component commands based on regex patterns.
+    
+    _regex_custom_id_to_form_submit_command : `dict` of (``RegexMatcher``, ``FormSubmitCommand``) items
+        A dictionary which contains form commands based on regex patterns.
+    
     _self_reference : `None` or ``WeakReferer`` to ``Slasher``
         Reference back to the slasher. Used to reference back from commands.
     
+    _string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
+        A dictionary which contains component commands for `custom_id`-s.
+    
+    _string_custom_id_to_form_submit_command : `dict` of (`str`, ``FormSubmitCommand``) items
+        A dictionary which contains form commands for `custom_id`-s.
+    
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
+    
     _sync_permission_tasks : `dict` of (`int`, ``Task``) items
         A dictionary of `guild-id` - `permission getter` tasks.
+    
     _sync_should : `set` of `int`
         A set of guild id-s which should be synced.
+    
     _sync_tasks : `dict` of (`int, ``Task``) items
         A dictionary of guilds, which are in sync at the moment.
+    
     _synced_permissions : `dict` of (`int`, `dict` of (`int`, ``ApplicationCommandPermission``) items) items
         A nested dictionary, which contains application command permission overwrites per guild_id and per
         `command_id`.
+    
     command_id_to_command : `dict` of (`int`, ``SlasherApplicationCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
-    regex_custom_id_to_component_command : `dict` of (``RegexMatcher``, ``ComponentCommand``) items.
-        A dictionary which contains component commands based on regex patterns.
-    string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
-        A dictionary which contains component commands for `custom_id`-s.
     
     Class Attributes
     ----------------
     __event_name__ : `str` = 'interaction_create'
         Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
-    SUPPORTED_TYPES : `tuple` (``SlasherApplicationCommand``, ``ComponentCommand``)
+    SUPPORTED_TYPES : `tuple` (``SlasherApplicationCommand``, ``ComponentCommand``, ``FormSubmitCommand``)
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     
     Notes
     -----
     ``Slasher`` instances are weakreferable.
     """
-    __slots__ = ('__weakref__', '_auto_completers', '_call_later', '_client_reference', '_component_commands',
-        '_command_states', '_command_unloading_behaviour', '_component_interaction_waiters', '_exception_handlers',
-        '_random_error_message_getter', '_self_reference', '_sync_done', '_sync_permission_tasks', '_sync_should',
-        '_sync_tasks', '_synced_permissions', 'command_id_to_command', 'regex_custom_id_to_component_command',
-        'string_custom_id_to_component_command')
+    __slots__ = ('__weakref__', '_auto_completers', '_call_later', '_client_reference', '_command_states',
+        '_command_unloading_behaviour', '_component_commands', '_component_interaction_waiters', '_exception_handlers',
+        '_form_submit_commands', '_random_error_message_getter', '_regex_custom_id_to_component_command',
+        '_regex_custom_id_to_form_submit_command', '_self_reference', '_string_custom_id_to_component_command',
+        '_string_custom_id_to_form_submit_command', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
+        '_synced_permissions', 'command_id_to_command')
     
     __event_name__ = 'interaction_create'
     
@@ -941,11 +966,16 @@ class Slasher(EventHandlerBase):
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
         self._random_error_message_getter = random_error_message_getter
-        self._component_commands = set()
         
         self.command_id_to_command = {}
-        self.string_custom_id_to_component_command = {}
-        self.regex_custom_id_to_component_command = {}
+        
+        self._component_commands = set()
+        self._string_custom_id_to_component_command = {}
+        self._regex_custom_id_to_component_command = {}
+        
+        self._form_submit_commands = set()
+        self._string_custom_id_to_form_submit_command = {}
+        self._regex_custom_id_to_form_submit_command = {}
         
         self._exception_handlers = exception_handlers
         self._self_reference = None
@@ -976,7 +1006,10 @@ class Slasher(EventHandlerBase):
         
         elif interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
             await self._dispatch_application_command_autocomplete_event(client, interaction_event)
-            
+        
+        elif interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT:
+            await self._dispatch_form_submit_event(client, interaction_event)
+    
     
     async def _dispatch_application_command_event(self, client, interaction_event):
         """
@@ -1000,6 +1033,7 @@ class Slasher(EventHandlerBase):
         else:
             if (command is not None):
                 await command(client, interaction_event)
+    
     
     async def _dispatch_component_event(self, client, interaction_event):
         """
@@ -1029,14 +1063,14 @@ class Slasher(EventHandlerBase):
         
         custom_id = interaction_event.interaction.custom_id
         try:
-            component_command = self.string_custom_id_to_component_command[custom_id]
+            component_command = self._string_custom_id_to_component_command[custom_id]
         except KeyError:
-            for regex_matcher in self.regex_custom_id_to_component_command:
+            for regex_matcher in self._regex_custom_id_to_component_command:
                 regex_match = regex_matcher(custom_id)
                 if (regex_match is None):
                     continue
                 
-                component_command = self.regex_custom_id_to_component_command[regex_matcher]
+                component_command = self._regex_custom_id_to_component_command[regex_matcher]
                 break
             else:
                 return
@@ -1044,6 +1078,7 @@ class Slasher(EventHandlerBase):
             regex_match = None
         
         await component_command(client, interaction_event, regex_match)
+    
     
     async def _dispatch_application_command_autocomplete_event(self, client, interaction_event):
         """
@@ -1058,7 +1093,6 @@ class Slasher(EventHandlerBase):
         interaction_event : ``InteractionEvent``
             The received interaction event.
         """
-        
         auto_complete_option = interaction_event.interaction
         if auto_complete_option.options is None:
             return
@@ -1072,6 +1106,38 @@ class Slasher(EventHandlerBase):
         else:
             if (command is not None):
                 await command.call_auto_completion(client, interaction_event, auto_complete_option)
+    
+    
+    async def _dispatch_form_submit_event(self, client, interaction_event):
+        """
+        Dispatches a form submit interaction event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client who received the interaction.
+        interaction_event : ``InteractionEvent``
+            The received interaction event.
+        """
+        custom_id = interaction_event.interaction.custom_id
+        try:
+            form_submit_command = self._string_custom_id_to_form_submit_command[custom_id]
+        except KeyError:
+            for regex_matcher in self._regex_custom_id_to_form_submit_command:
+                regex_match = regex_matcher(custom_id)
+                if (regex_match is None):
+                    continue
+                
+                form_submit_command = self._regex_custom_id_to_form_submit_command[regex_matcher]
+                break
+            else:
+                return
+        else:
+            regex_match = None
+        
+        await form_submit_command(client, interaction_event, regex_match)
     
     
     def add_component_interaction_waiter(self, message, waiter):
@@ -1185,17 +1251,35 @@ class Slasher(EventHandlerBase):
             return func
         
         if 'custom_id' in kwargs:
-            command = ComponentCommand(func, *args, **kwargs)
+            target = kwargs.get('target', None)
+            if (target is None) or (target == COMMAND_TARGET_COMPONENT_COMMAND):
+                command = ComponentCommand(func, *args, **kwargs)
+            elif (target == COMMAND_TARGET_FORM_COMPONENT_COMMAND):
+                command = FormSubmitCommand(func, *args, **kwargs)
+            else:
+                raise ValueError(f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
+                    f'can be any of: {COMMAND_TARGET_COMPONENT_COMMAND!r}, {COMMAND_TARGET_FORM_COMPONENT_COMMAND!r}.')
+        
         else:
             command = SlasherApplicationCommand(func, *args, **kwargs)
         
         if isinstance(command, Router):
             command = command[0]
         
+        # Register command
+        
         if isinstance(command, SlasherApplicationCommand):
             self._add_application_command(command)
-        else:
+        
+        elif isinstance(command, ComponentCommand):
             self._add_component_command(command)
+        
+        elif isinstance(command, FormSubmitCommand):
+            self._add_form_submit_command(command)
+        
+        else:
+            # No more cases
+            pass
         
         return command
     
@@ -2534,7 +2618,7 @@ class Slasher(EventHandlerBase):
     
     def _add_component_command(self, component_command):
         """
-        Adds a slash command to the ``Slasher`` if applicable.
+        Adds a component command to the ``Slasher`` if applicable.
         
         Parameters
         ---------
@@ -2544,20 +2628,54 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         RuntimeError
-            If `command` would only partially overwrite an other commands.
+            If the command would only partially overwrite an other commands.
         """
-        component_command._parent_reference = self._get_self_reference()
+        self._add_custom_id_based_command(component_command, self._component_commands,
+            self._string_custom_id_to_component_command, self._regex_custom_id_to_component_command)
+    
+    
+    def _add_form_submit_command(self, form_submit_command):
+        """
+        Adds a form_submit command to the ``Slasher`` if applicable.
         
-        string_custom_id_to_component_command = self.string_custom_id_to_component_command
-        regex_custom_id_to_component_command = self.regex_custom_id_to_component_command
+        Parameters
+        ---------
+        form_submit_command : ``FormSubmitCommand``
+            The command to add.
+        
+        Raises
+        ------
+        RuntimeError
+            If the command would only partially overwrite an other commands.
+        """
+        self._add_custom_id_based_command(form_submit_command, self._form_submit_commands,
+            self._string_custom_id_to_form_submit_command, self._regex_custom_id_to_form_submit_command)
+    
+    
+    def _add_custom_id_based_command(self, custom_id_based_command, custom_id_based_commands,
+            string_custom_id_to_custom_id_based_command, regex_custom_id_to_custom_id_based_command):
+        """
+        Adds a custom id based command to the ``Slasher`` if applicable.
+        
+        Parameters
+        ---------
+        custom_id_based_command : ``CustomIdBasedCommand``
+            The command to add.
+        
+        Raises
+        ------
+        RuntimeError
+            If the command would only partially overwrite an other commands.
+        """
+        custom_id_based_command._parent_reference = self._get_self_reference()
         
         overwrite_commands = None
         
-        string_custom_ids = component_command._string_custom_ids
+        string_custom_ids = custom_id_based_command._string_custom_ids
         if (string_custom_ids is not None):
             for string_custom_id in string_custom_ids:
                 try:
-                    maybe_overwrite_command = string_custom_id_to_component_command[string_custom_id]
+                    maybe_overwrite_command = string_custom_id_to_custom_id_based_command[string_custom_id]
                 except KeyError:
                     continue
                 
@@ -2567,11 +2685,11 @@ class Slasher(EventHandlerBase):
                 overwrite_commands.add(maybe_overwrite_command)
                 continue
         
-        regex_custom_ids = component_command._regex_custom_ids
+        regex_custom_ids = custom_id_based_command._regex_custom_ids
         if (regex_custom_ids is not None):
             for regex_custom_id in regex_custom_ids:
                 try:
-                    maybe_overwrite_command = regex_custom_id_to_component_command[regex_custom_id]
+                    maybe_overwrite_command = regex_custom_id_to_custom_id_based_command[regex_custom_id]
                 except KeyError:
                     continue
                 
@@ -2592,26 +2710,28 @@ class Slasher(EventHandlerBase):
                 if (overwrite_regex_custom_ids is not None):
                     would_overwrite_custom_ids.update(overwrite_regex_custom_ids)
             
-            component_command_string_custom_ids = component_command._string_custom_ids
-            if (component_command_string_custom_ids is not None) and \
-                    (not would_overwrite_custom_ids.issuperset(component_command_string_custom_ids)):
-                raise RuntimeError(f'Command: {component_command!r} would only partially overwrite the following '
+            custom_id_based_command_string_custom_ids = custom_id_based_command._string_custom_ids
+            if (
+                (custom_id_based_command_string_custom_ids is not None) and
+                (not would_overwrite_custom_ids.issuperset(custom_id_based_command_string_custom_ids))
+            ):
+                raise RuntimeError(f'Command: {custom_id_based_command!r} would only partially overwrite the following '
                     f'commands: {", ".join(overwrite_commands)}.')
             
             for overwrite_command in overwrite_commands:
-                self._component_commands.discard(overwrite_command)
+                custom_id_based_commands.discard(overwrite_command)
         
-        string_custom_ids = component_command._string_custom_ids
+        string_custom_ids = custom_id_based_command._string_custom_ids
         if (string_custom_ids is not None):
             for string_custom_id in string_custom_ids:
-                string_custom_id_to_component_command[string_custom_id] = component_command
+                string_custom_id_to_custom_id_based_command[string_custom_id] = custom_id_based_command
         
-        regex_custom_ids = component_command._regex_custom_ids
+        regex_custom_ids = custom_id_based_command._regex_custom_ids
         if (regex_custom_ids is not None):
             for regex_custom_id in regex_custom_ids:
-                regex_custom_id_to_component_command[regex_custom_id] = component_command
+                regex_custom_id_to_custom_id_based_command[regex_custom_id] = custom_id_based_command
         
-        self._component_commands.add(component_command)
+        custom_id_based_commands.add(custom_id_based_command)
     
     
     def _remove_component_command(self, component_command):
@@ -2628,7 +2748,7 @@ class Slasher(EventHandlerBase):
         except KeyError:
             pass
         else:
-            string_custom_id_to_component_command = self.string_custom_id_to_component_command
+            string_custom_id_to_component_command = self._string_custom_id_to_component_command
             
             string_custom_ids = component_command._string_custom_ids
             if (string_custom_ids is not None):
@@ -2636,7 +2756,7 @@ class Slasher(EventHandlerBase):
                     if string_custom_id_to_component_command[string_custom_id] is component_command:
                         del string_custom_id_to_component_command[string_custom_id]
             
-            regex_custom_id_to_component_command = self.regex_custom_id_to_component_command
+            regex_custom_id_to_component_command = self._regex_custom_id_to_component_command
             
             regex_custom_ids = component_command._regex_custom_ids
             if (regex_custom_ids is not None):
@@ -2878,3 +2998,29 @@ class Slasher(EventHandlerBase):
             self._sync_should.add(sync_id)
         
         self._maybe_sync()
+    
+    
+    def regex_custom_id_to_component_command(cls):
+        """
+        ``.regex_custom_id_to_component_command`` is deprecated, please use ``._regex_custom_id_to_component_command``
+        instead. Will be removed in 2022 February.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.regex_custom_id_to_component_command` is deprecated, and will be removed in 2022'
+            f'February. Please use `{cls.__name__}._regex_custom_id_to_component_command` instead.',
+            FutureWarning)
+        
+        return cls._regex_custom_id_to_component_command
+    
+    
+    def string_custom_id_to_component_command(cls):
+        """
+        ``.string_custom_id_to_component_command`` is deprecated, please use
+        ``._string_custom_id_to_component_command`` instead. Will be removed in 2022 February.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.string_custom_id_to_component_command` is deprecated, and will be removed in 2022 '
+            f'February. Please use `{cls.__name__}._string_custom_id_to_component_command` instead.',
+            FutureWarning)
+        
+        return cls._string_custom_id_to_component_command

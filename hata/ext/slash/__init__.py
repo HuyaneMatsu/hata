@@ -5,9 +5,11 @@ from .application_command import *
 from .components import *
 from .component_command import *
 from .converters import *
+from .custom_id_based_command import *
 from .event_handlers import *
 from .exceptions import *
 from .expression_parser import *
+from .form_submit_command import *
 from .responding import *
 from .slasher import *
 from .utils import *
@@ -23,9 +25,11 @@ __all__ = (
     *components.__all__,
     *component_command.__all__,
     *converters.__all__,
+    *custom_id_based_command.__all__,
     *event_handlers.__all__,
     *exceptions.__all__,
     *expression_parser.__all__,
+    *form_submit_command.__all__,
     *responding.__all__,
     *slasher.__all__,
     *utils.__all__,

@@ -4161,6 +4161,9 @@ class Client(ClientUserPBase):
                     message_ = messages_[before_index]
                     before_index += 1
                     
+                    if not message_.is_deletable():
+                        continue
+                    
                     if (filter is not None):
                         if not filter(message_):
                             continue

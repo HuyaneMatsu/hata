@@ -47,6 +47,11 @@
 - Add `start_unix_server`. (Forest#2913)
 - Add `Queue.put`. (Forest#2913)
 
+#### Bug Fixes
+
+- `Client.multi_client_message_delete_sequence` was not calling `Message.is_deletable` when getting messages from
+cache.
+
 #### Renames, Deprecation & Removals
 
 - Rename `ComponentInteraction.component_type` to `.type`.

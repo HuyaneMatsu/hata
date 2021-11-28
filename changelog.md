@@ -8,12 +8,14 @@
 - Add `FormSubmitInteraction.iter_custom_ids_and_values`.
 - Add `FormSubmitInteractionOption.iter_custom_ids_and_values`.
 
-
 ##### ext.asyncio
 
 - Implement `Semaphore`. (winwinwinwin#0001)
 - Implement `BoundedSemaphore`. (winwinwinwin#0001)
 
+#### Bug fixes
+
+- `EventThread.create_server` could raise `TypeError` (typo). (Forest#2913)
 
 ## 1.1.121 *\[2021-11-28\]*
 

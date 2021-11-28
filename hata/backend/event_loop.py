@@ -3957,7 +3957,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         Parameters
         ----------
-        host : `None` or `str`, `iterable` of (`None` or `str`)
+        host : `None` or `str`, (`None` or `str`)
             Network interfaces should the server be bound.
         port : `None` or `int`
             The port to use by the `host`.
@@ -4058,7 +4058,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             if (host is None) or (host == ''):
                  hosts.append(None)
             elif isinstance(host, str):
-                hosts.append(hosts)
+                hosts.append(host)
             elif hasattr(type(host), '__iter__'):
                 for host in host:
                     if (host is None) or (host == ''):
@@ -4083,7 +4083,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 while True:
                     done, pending = await WaitTillFirst(futures, self)
                     for future in done:
-                        futures.remove(future)
+                        futures.discard(future)
                         infos = future.result()
                         
                         for info in infos:

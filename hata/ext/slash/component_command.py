@@ -7,23 +7,16 @@ except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
 
-from functools import partial as partial_func
-
-from ...discord.events.handling_helpers import route_value, Router, create_event_from_class, check_name, route_name
+from ...backend.utils import copy_docs
+from ...discord.events.handling_helpers import route_value, Router, check_name, route_name
 
 from .wrappers import SlasherCommandWrapper
 from .utils import _check_maybe_route
 from .converters import get_component_command_parameter_converters
 from .responding import process_command_coroutine
-from .exceptions import handle_command_exception, test_exception_handler, _register_exception_handler
+from .exceptions import handle_command_exception
 from .custom_id_based_command import _validate_name, _validate_custom_ids, split_and_check_satisfaction, \
     CustomIdBasedCommand
-
-COMPONENT_COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name')
-
-COMPONENT_COMMAND_NAME_NAME = 'name'
-COMPONENT_COMMAND_COMMAND_NAME = 'command'
-
 
 class ComponentCommand(CustomIdBasedCommand):
     """
@@ -50,33 +43,17 @@ class ComponentCommand(CustomIdBasedCommand):
         The component commands name.
         
         Only used for debugging.
+    
+    Class Attributes
+    ----------------
+    COMMAND_COMMAND_NAME : `str`
+        The command's name defining parameter's name.
+    COMMAND_PARAMETER_NAMES : tuple of `str`
+        All parameters names accepted by ``.__new__``
+    COMMAND_NAME_NAME : `str`
+        The command's command defining parameter's name.
     """
     __slots__ = ()
-    
-    
-    @classmethod
-    def from_class(cls, klass):
-        """
-        Creates a new ``ComponentCommand`` instance from the given `klass`.
-        
-        Parameters
-        ----------
-        klass : `type`
-            The class to create component command from.
-        
-        Returns
-        -------
-        self : ``ComponentCommand`` or ``Router``
-        
-        Raises
-        ------
-        TypeError
-            If any attribute's type is incorrect.
-        ValueError
-            If any attribute's value is incorrect.
-        """
-        return create_event_from_class(cls, klass, COMPONENT_COMMAND_PARAMETER_NAMES, COMPONENT_COMMAND_NAME_NAME,
-            COMPONENT_COMMAND_COMMAND_NAME)
     
     
     def __new__(cls, func, custom_id, name=None):
@@ -169,69 +146,8 @@ class ComponentCommand(CustomIdBasedCommand):
             
             return self
     
-    
-    def __repr__(self):
-        """Returns the component command's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
-        
-        string_custom_ids = self._string_custom_ids
-        if (string_custom_ids is not None):
-            
-            repr_parts.append(', string_custom_ids=[')
-            index = 0
-            limit = len(string_custom_ids)
-            
-            while True:
-                string_custom_id = string_custom_ids[index]
-                repr_parts.append(repr(string_custom_id))
-                
-                index += 1
-                if index == limit:
-                    break
-                
-                repr_parts.append(', ')
-                continue
-            
-            repr_parts.append(']')
-        
-        regex_custom_ids = self._regex_custom_ids
-        if (regex_custom_ids is not None):
-            
-            repr_parts.append(', regex_custom_ids=[')
-            index = 0
-            limit = len(regex_custom_ids)
-            
-            while True:
-                regex_custom_id = regex_custom_ids[index]
-                repr_parts.append(repr(regex_custom_id.pattern.pattern))
-                
-                index += 1
-                if index == limit:
-                    break
-                
-                repr_parts.append(', ')
-                continue
-            
-            repr_parts.append(']')
-        
-        return ''.join(repr_parts)
-    
-    
+    @copy_docs(CustomIdBasedCommand.__call__)
     async def __call__(self, client, interaction_event, regex_match):
-        """
-        Calls the component command.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The respective client who received the event.
-        interaction_event : ``InteractionEvent``
-            The received interaction event.
-        regex_match : `None` or ``RegexMatch``
-            The matched regex if applicable.
-        """
         parameters = []
         
         for parameter_converter in self._parameter_converters:
@@ -267,118 +183,3 @@ class ComponentCommand(CustomIdBasedCommand):
             exception,
         )
         return
-    
-    def __hash__(self):
-        """Returns the component command's hash value."""
-        hash_value = 0
-        
-        string_custom_ids = self._string_custom_ids
-        if (string_custom_ids is not None):
-            hash_value ^= hash(string_custom_ids)
-        
-        regex_custom_ids = self._regex_custom_ids
-        if (regex_custom_ids is not None):
-            hash_value ^= hash(regex_custom_ids)
-        
-        command_function = self._command_function
-        try:
-            command_hash_value = hash(command_function)
-        except KeyError:
-            command_hash_value = object.__hash__(command_function)
-        
-        hash_value ^= command_hash_value
-        return hash_value
-    
-    
-    def __eq__(self, other):
-        """Returns whether self equals to other."""
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._command_function != other._command_function:
-            return False
-        
-        if self._string_custom_ids != other._string_custom_ids:
-            return False
-        
-        if self._regex_custom_ids != other._regex_custom_ids:
-            return False
-        
-        if self._exception_handlers != other._exception_handlers:
-            return False
-        
-        return True
-    
-    
-    def copy(self):
-        """
-        Copies the component command.
-        
-        Returns
-        -------
-        new : ``ComponentCommand``
-        """
-        new = object.__new__(type(self))
-        new._command_function = self._command_function
-        new._parameter_converters = self._parameter_converters
-        new._string_custom_ids = self._string_custom_ids
-        new._regex_custom_ids = self._regex_custom_ids
-        new._parent_reference = None
-        
-        exception_handlers = self._exception_handlers
-        if (exception_handlers is not None):
-            exception_handlers = exception_handlers.copy()
-        new._exception_handlers = exception_handlers
-        
-        return new
-
-
-    def error(self, exception_handler=None, *, first=False):
-        """
-        Registers an exception handler to the ``SlasherApplicationCommandCategory``.
-        
-        Parameters
-        ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
-            Exception handler to register.
-        first : `bool`, Optional (Keyword Only)
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler / wrapper : `CoroutineFunction` / `functools.partial`
-            If `exception_handler` is not given, returns a wrapper.
-        """
-        if exception_handler is None:
-            return partial_func(_register_exception_handler, first)
-        
-        return self._register_exception_handler(exception_handler, first)
-    
-    
-    def _register_exception_handler(self, exception_handler, first):
-        """
-        Registers an exception handler to the ``SlasherApplicationCommandCategory``.
-        
-        Parameters
-        ----------
-        exception_handler : `CoroutineFunction`
-            Exception handler to register.
-        first : `bool`
-            Whether the exception handler should run first.
-        
-        Returns
-        -------
-        exception_handler : `CoroutineFunction`
-        """
-        test_exception_handler(exception_handler)
-        
-        exception_handlers = self._exception_handlers
-        if exception_handlers is None:
-            self._exception_handlers = exception_handlers = []
-        
-        if first:
-            exception_handlers.insert(0, exception_handler)
-        else:
-            exception_handlers.append(exception_handler)
-        
-        return exception_handler

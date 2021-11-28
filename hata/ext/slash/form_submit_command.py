@@ -19,10 +19,10 @@ from .exceptions import handle_command_exception, test_exception_handler, _regis
 from .custom_id_based_command import _validate_name, _validate_custom_ids, split_and_check_satisfaction, \
     CustomIdBasedCommand
 
-COMPONENT_COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name')
+CUSTOM_ID_BASED_COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name')
 
-COMPONENT_COMMAND_NAME_NAME = 'name'
-COMPONENT_COMMAND_COMMAND_NAME = 'command'
+CUSTOM_ID_BASED_COMMAND_NAME_NAME = 'name'
+CUSTOM_ID_BASED_COMMAND_COMMAND_NAME = 'command'
 
 
 class FormSubmitCommand(CustomIdBasedCommand):

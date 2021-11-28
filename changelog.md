@@ -1,4 +1,16 @@
-## 1.1.122 *\[2021-12-28\]*
+## 1.1.123 *\[2021-12-??\]*
+
+#### Improvements
+
+##### ext.asyncio
+- `create_server` now expects and handles `start_serving` parameter. (Forest#2913)
+- `create_unix_server` now expects and handles `start_serving` parameter. (Forest#2913)
+
+#### Bug fixes
+
+- `EventThread.create_server` could raise `TypeError` (typo). (Forest#2913)
+
+## 1.1.122 *\[2021-11-28\]*
 
 #### Improvements
 
@@ -9,15 +21,8 @@
 - Add `FormSubmitInteractionOption.iter_custom_ids_and_values`.
 
 ##### ext.asyncio
-
 - Implement `Semaphore`. (winwinwinwin#0001)
 - Implement `BoundedSemaphore`. (winwinwinwin#0001)
-- `create_server` now expects and handles `start_serving` parameter. (Forest#2913)
-- `create_unix_server` now expects and handles `start_serving` parameter. (Forest#2913)
-
-#### Bug fixes
-
-- `EventThread.create_server` could raise `TypeError` (typo). (Forest#2913)
 
 ## 1.1.121 *\[2021-11-28\]*
 

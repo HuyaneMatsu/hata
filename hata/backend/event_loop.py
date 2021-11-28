@@ -4043,11 +4043,11 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
             if (socket is not None):
                 raise ValueError('`host` and `port` parameters are mutually exclusive with `socket`.')
             
-            if (type(reuse_address) is not bool):
+            if (reuse_address is not None) and (not isinstance(reuse_address, bool)):
                 raise TypeError('`reuse_address` can be `None` or type `bool`, got '
                     f'`{reuse_address.__class__.__name__}`.')
             
-            if type(reuse_port) is not bool:
+            if (reuse_port is not None) and (not isinstance(reuse_port, bool)):
                 raise TypeError('`reuse_address` can be `None` or type `bool`, got '
                     f'`{reuse_port.__class__.__name__}`.')
             

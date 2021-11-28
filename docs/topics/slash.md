@@ -1076,7 +1076,7 @@ async def devil(client, event):
     yield await get_image_embed(client, 'flandre_scarlet+remilia_scarlet', 'Scarlet Flandre & Remilia', 0xa12a2a)
 ```
 
-
+![](assets/slash_0022.png)
 
 ## Manual Responding
 

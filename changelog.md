@@ -51,6 +51,7 @@
 
 - `Client.multi_client_message_delete_sequence` was not calling `Message.is_deletable` when getting messages from
 cache.
+- Fix bad logic in `EventThread.create_server`. (Forest#2913)
 
 ##### ext.slash
 

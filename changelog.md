@@ -69,7 +69,6 @@ cache.
 - Deprecate `Slasher.regex_custom_id_to_component_command`.
 - Deprecate `Slasher.string_custom_id_to_component_command`.
 
-
 ## 1.1.120 *\[2021-11-17\]*
 
 #### Improvements

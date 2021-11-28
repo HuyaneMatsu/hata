@@ -1128,6 +1128,8 @@ async def kaboom(client, event):
         await client.interaction_followup_message_delete(event, message)
 ```
 
+![](assets/slash_0023.gif)
+
 An example using mixed `yield` and `Client` methods:
 
 ```py
@@ -1200,6 +1202,8 @@ async def thread_channel_name_length(
     return len(channel.name)
 ```
 
+![](assets/slash_0024.png)
+
 ### The `channel_types` parameter
 
 
@@ -1269,6 +1273,9 @@ async def character_popularity(
     return MOST_POPULAR_TOUHOU_CHARACTERS[position-1]
 ```
 
+
+![](assets/slash_0025.gif)
+
 ## Context commands
 
 Context commands can be defined by passing the `target` parameter when registering a command with the `.interactions`
@@ -1283,6 +1290,8 @@ async def avatar(target):
     return Embed(f'{target.full_name}\'s avatar', url=avatar_url).add_image(avatar_url)
 ```
 
+![](assets/slash_0026.gif)
+
 Context commands support only one additional parameter which isn't client and event, the context's target.
 when defining a command, the first parameter which isn't client or event, will be marked as the target parameter.
 Defining any other parameter will yield error, since context commands do not support any Discord side parameters.
@@ -1294,6 +1303,7 @@ async def length(target):
     return len(target)
 ```
 
+![](assets/slash_0027.gif)
 
 ## Getting command count
 
@@ -1333,6 +1343,8 @@ async def command_count(client, event):
         inline = True,
     )
 ```
+
+![](assets/slash_0028.png)
 
 To include sub-command count as well, there are the `.get_global_command_count_with_sub_commands()` and the
 `.get_guild_command_count_with_sub_commands(guild_or_guild_id)` methods.

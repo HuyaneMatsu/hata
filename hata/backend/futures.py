@@ -3573,9 +3573,15 @@ class AsyncQueue:
         """
         set_result_waiters = self._set_result_waiters
         if (set_result_waiters is not None):
-            set_result_waiters.pop(0).set_result_if_pending(True)
-            if (not set_result_waiters):
-                self._set_result_waiters = None
+            while True:
+                set_result = set_result_waiters.pop(0).set_result_if_pending(True)
+                
+                if (not set_result_waiters):
+                    self._set_result_waiters = None
+                    break
+                
+                if set_result == 1:
+                    break
     
     
     def result_no_wait(self):

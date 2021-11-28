@@ -19,6 +19,7 @@ import os, sys, warnings
 from threading import current_thread, enumerate as list_threads, main_thread
 from subprocess import PIPE
 from functools import partial, partial as partial_func
+from collections import deque
 
 from ...env import BACKEND_ONLY
 from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
@@ -618,29 +619,132 @@ class Semaphore:
     
     A semaphore manages an internal counter which is decremented by each acquire() call and incremented by each
     release() call. The counter can never go below zero; when acquire() finds that it is zero, it blocks, waiting until
-    some other thread calls release().
+    some other coroutine calls release().
     
     Semaphores also support the context management protocol.
     
     The optional parameter gives the initial value for the internal counter; it defaults to 1. If the value given is
     less than 0, ValueError is raised.
     """
+    __slots__ = ('_loop', '_value', '_waiters')
+    
     def __new__(cls, value=1, *, loop=None):
-        raise NotImplementedError
+        if loop is None:
+            loop = get_event_loop()
+        else:
+            warnings.warn(
+                'The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+                DeprecationWarning,
+                stacklevel = 2,
+            )
+        
+        if value < 0:
+            raise ValueError('Semaphore initial value must be >= 0')
+        
+        self = object.__new__(cls)
+        self._loop = loop
+        self._value = value
+        self._waiters = deque()
+        return self
+    
+    
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        if self.locked():
+            repr_parts.append(' locked')
+        else:
+            repr_parts.append(' unlocked, value:')
+            repr_parts.append(repr(self._value))
+        
+        waiter_count = len(self._waiters)
+        if waiter_count:
+            repr_parts.append(', waiters:')
+            repr_parts.append(waiter_count)
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def _wake_up_next(self):
+        while self._waiters:
+            waiter = self._waiters.popleft()
+            if waiter.set_result_if_pending(None) == 1:
+                return
+    
+    
+    def locked(self):
+        """Returns True if semaphore can not be acquired immediately."""
+        return self._value == 0
+    
+    
+    async def acquire(self):
+        """Acquire a semaphore.
+        If the internal counter is larger than zero on entry,
+        decrement it by one and return True immediately.  If it is
+        zero on entry, block, waiting until some other coroutine has
+        called release() to make it larger than 0, and then return
+        True.
+        """
+        while self._value <= 0:
+            future = HataFuture(self._loop)
+            self._waiters.append(future)
+            
+            try:
+                await future
+            except:
+                future.cancel()
+                
+                if (self._value > 0) and (not future.cancelled()):
+                    self._wake_up_next()
+                
+                raise
+        
+        self._value -= 1
+        return True
+    
+    
+    def release(self):
+        """Release a semaphore, incrementing the internal counter by one.
+        When it was zero on entry and another coroutine is waiting for it to
+        become larger than zero again, wake up that coroutine.
+        """
+        self._value += 1
+        self._wake_up_next()
+    
+    async def __aenter__(self):
+        await self.acquire()
+        return None
+    
+    async def __aexit__(self, exc_type, exc_value, exc_tb):
+        self.release()
+        return False
 
-class BoundedSemaphore:
+
+class BoundedSemaphore(Semaphore):
     """
     A bounded semaphore implementation.
     
     This raises ValueError in release() if it would increase the value above the initial value.
     """
+    __slots__ = ('_bound_value',)
+    
     def __new__(cls, value=1, *, loop=None):
-        raise NotImplementedError
+        self = Semaphore.__new__(cls, value=value, loop=loop)
+        self._bound_value = value
+        return self
+    
+    def release(self):
+        if self._value >= self._bound_value:
+            raise ValueError('BoundedSemaphore released too many times')
+        
+        return Semaphore.release(self)
+
 
 # asyncio.proactor_events
 # Include: BaseProactorEventLoop
 
-BaseProactorEventLoop = EventThread # Note, that hata has no proactor event_loop implemneted.
+BaseProactorEventLoop = EventThread # Note, that hata has no proactor event_loop implemented.
 
 # asyncio.protocols
 # Include: BaseProtocol, Protocol, DatagramProtocol, SubprocessProtocol, BufferedProtocol

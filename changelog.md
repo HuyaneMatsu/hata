@@ -32,6 +32,7 @@
 - Add missing `ApplicationCommandAutocompleteInteraction.__hash__`
 - Add missing `ApplicationCommandAutocompleteInteraction.__eq__`
 - Add `CHANNEL_TYPES.guild_forum`.
+- Add `AsyncQueue.set_result_wait`.
 
 ##### ext.extension_loader
 

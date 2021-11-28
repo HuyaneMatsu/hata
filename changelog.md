@@ -1,4 +1,4 @@
-## 1.1.121 *\[2021-11-??\]*
+## 1.1.121 *\[2021-11-28\]*
 
 #### Improvements
 
@@ -33,6 +33,7 @@
 - Add missing `ApplicationCommandAutocompleteInteraction.__eq__`
 - Add `CHANNEL_TYPES.guild_forum`.
 - Add `AsyncQueue.set_result_wait`.
+- Add images to `slash.md`.
 
 ##### ext.extension_loader
 

@@ -103,7 +103,7 @@ interrupt.
 
 We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """
-__version__ = '1.1.120'
+__version__ = '1.1.121'
 
 from .env import BACKEND_ONLY
 

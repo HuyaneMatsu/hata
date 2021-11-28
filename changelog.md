@@ -31,7 +31,7 @@
 - `ApplicationCommandAutocompleteInteraction` not inherits anymore from `DiscordEntity`.
 - Add missing `ApplicationCommandAutocompleteInteraction.__hash__`
 - Add missing `ApplicationCommandAutocompleteInteraction.__eq__`
-- Add `CHANNEL_TYPES.guild_forum`.
+- Add `CHANNEL_TYPES.guild_forum`.d
 
 ##### ext.extension_loader
 
@@ -44,7 +44,8 @@
 
 ##### ext.asycnio
 
-- Add `start_unix_server`.
+- Add `start_unix_server`. (Forest#2913)
+- Add `Queue.put`. (Forest#2913)
 
 #### Renames, Deprecation & Removals
 
@@ -164,8 +165,8 @@ Update file uploading system.
 
 #### Bug Fixes
 - `Client._request_members` raised `TypeError`.
-- `Client.role_edit` raised `TypeError`. (Izumi Midoriya#9646)
-- `Client.role_delete` raised `TypeError`. (Izumi Midoriya#9646)
+- `Client.role_edit` raised `TypeError`. (Forest#2913)
+- `Client.role_delete` raised `TypeError`. (Forest#2913)
 - `time_to_id` was used even if deprecated +typod deprecation message. (Al_Loiz \[ICU\]#5392)
 
 ## 1.1.116 *\[2021-11-01\]*
@@ -380,7 +381,7 @@ Voice rework to support 3rd party libraries.
 - Add `Client.events.voice_client_update`.
 - Add `VoiceState._cache_user`.
 - Add `Client.events.voice_client_shutdown`.
-- `Client.client_login_static` could return string (instead of dict) when using custom host. (Izumi Midoriya#9646)
+- `Client.client_login_static` could return string (instead of dict) when using custom host. (Forest#2913)
 - `Embed.title` and `Embed.description` is now casted to string. (Nova#3379)
 - `Embed.add_field`, `Embed.insert_field`, `_EmbedFieldsProxy.add_field` and `EmbedFieldsProxy.insert_field` now
     casts `name` and `value` parameters to string. (Nova#3379)
@@ -1760,7 +1761,7 @@ Fix some bugs and improve slash command creation.
 
 #### Summary
 
-Start supporting anyio (all bugs included). (Izumi Midoriya#9646)
+Start supporting anyio (all bugs included). (Forest#2913)
 
 #### Improvements
 
@@ -1786,7 +1787,7 @@ Add `extensions` parameter to `Client`'s constructor.
 
 - Add `extensions` parameter to `Client`'s constructor, allowing to run extension setup functions when constructing the
     client. This also means additional keyword parameters are supported to be forwarded to these setup functions.
-    (Izumi Midoriya#9646)
+    (Forest#2913)
 
 #### Improvements
 
@@ -1795,7 +1796,7 @@ Add `extensions` parameter to `Client`'s constructor.
 - Add `RATE_LIMIT_GROUPS.thread_create_public`.
 - Add `Client.thread_create`.
 - Add `WebhookType.applicaion`.
-- Add `Message.attachment`. (Izumi Midoriya#9646)
+- Add `Message.attachment`. (Forest#2913)
 
 #### Bug fixed
 
@@ -2026,8 +2027,8 @@ Channel input and output.
 - Add `sanitize_content`. (experimental)
 
 ##### ext.command_utils
-- Add `get_channel_stdin`. (experimental) (Izumi Midoriya#9646)
-- Add `get_channel_stdout`. (experimental) (Izumi Midoriya#9646)
+- Add `get_channel_stdin`. (experimental) (Forest#2913)
+- Add `get_channel_stdout`. (experimental) (Forest#2913)
 
 #### Improvements
 
@@ -2058,7 +2059,7 @@ Split up `ext.extension_loader` to more parts and add `client.extensions`.
 - Add `Extension.is_loaded`. (ᓚᘏᗢ | NeKo Mancer#1477)
 
 ##### ext.extension_loader
-- Add `client.extensions`. (Izumi Midoriya#9646) (ᓚᘏᗢ | NeKo Mancer#1477)
+- Add `client.extensions`. (Forest#2913) (ᓚᘏᗢ | NeKo Mancer#1477)
 - Add `EXTENSION_LOADER.get_extension`.
 
 #### Improvements
@@ -2406,23 +2407,23 @@ Fix duplicable client connections.
 - Fix reading readme issue on windows. (Yuma#8939)
 - Fix a `TypeError` in `User._update_presence`. (from 1.1.63)
 - `EventWaitforMeta._call_channel_edit` passed bad args to guild waiters.
-- Fix a `NameError` in `EventLoop.create_datagram_endpoint`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `cr_pg_channel_object`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.request_members`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.message_create`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.interaction_followup_message_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.interaction_followup_message_create`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.interaction_response_message_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.interaction_response_message_create`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.webhook_message_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.webhook_message_create`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.message_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.permission_overwrite_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `ApplicationCommandOption.add_option`. (Izumi Midoriya#9646)
-- Fix a `TypeError` in `Client.interaction_response_message_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.guild_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.channel_edit`. (Izumi Midoriya#9646)
-- Fix a `NameError` in `Client.guild_user_add`. (Izumi Midoriya#9646)
+- Fix a `NameError` in `EventLoop.create_datagram_endpoint`. (Forest#2913)
+- Fix a `NameError` in `cr_pg_channel_object`. (Forest#2913)
+- Fix a `NameError` in `Client.request_members`. (Forest#2913)
+- Fix a `NameError` in `Client.message_create`. (Forest#2913)
+- Fix a `NameError` in `Client.interaction_followup_message_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.interaction_followup_message_create`. (Forest#2913)
+- Fix a `NameError` in `Client.interaction_response_message_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.interaction_response_message_create`. (Forest#2913)
+- Fix a `NameError` in `Client.webhook_message_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.webhook_message_create`. (Forest#2913)
+- Fix a `NameError` in `Client.message_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.permission_overwrite_edit`. (Forest#2913)
+- Fix a `NameError` in `ApplicationCommandOption.add_option`. (Forest#2913)
+- Fix a `TypeError` in `Client.interaction_response_message_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.guild_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.channel_edit`. (Forest#2913)
+- Fix a `NameError` in `Client.guild_user_add`. (Forest#2913)
 - `Client._delete` could construct not a fully built `User` object. Add `User._from_client` to fix this.
 
 #### Renames, Deprecation & Removals

@@ -785,6 +785,15 @@ class Queue(AsyncQueue):
         
         return AsyncQueue.__new__(cls, loop, max_length=max_length)
     
+    async def put(self, element):
+        """
+        Put an item into the queue.
+        
+        Put an item into the queue. If the queue is full, wait until a free
+        slot is available before adding item.
+        """
+        await self.set_result_wait(element)
+    
     def put_nowait(self, element):
         if len(self) == self.max_length:
             raise QueueFull()

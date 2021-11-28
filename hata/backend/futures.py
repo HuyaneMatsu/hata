@@ -3341,15 +3341,22 @@ class AsyncQueue:
     ----------
     _exception : `None` or `BaseException` instance
         The exception set as the queue's result to raise, when the queue gets empty.
+    
     _loop : ``EventThread``
         The loop to what the queue is bound to.
+    
     _results : `deque`
         The results of the queue, which can be retrieved by ``.result``, ``.result_no_wait``, or by awaiting it.
+    
+    _set_result_waiters : `None` or `list` of ``Future``
+        Result setter waiters for the queue to become empty.
+    
     _waiter : `None` or ``Future``
         If the queue is empty and it's result is already waited, then this future is set. It's result is set, by the
         first ``.set_result``, or ``.set_exception`` call.
     """
-    __slots__ = ('_exception', '_loop', '_results', '_waiter',)
+    __slots__ = ('_exception', '_loop', '_results', '_set_result_waiters', '_waiter',)
+    
     def __new__(cls, loop, iterable=None, max_length=None, exception=None):
         """
         Creates a new ``AsyncQueue`` instance with the given parameter.
@@ -3385,8 +3392,9 @@ class AsyncQueue:
         self._results = results
         self._waiter = None
         self._exception = exception
-        
+        self._set_result_waiters = None
         return self
+    
     
     def set_result(self, element):
         """
@@ -3397,14 +3405,91 @@ class AsyncQueue:
         ----------
         element : `Any`
             The object to put on the queue.
+        
+        Returns
+        -------
+        set_result : `int` (`0`, `1`, `2`)
+            If the result was set instantly, return `0`. If the result was not set, returns `1`.
         """
         # should we raise InvalidStateError?
         waiter = self._waiter
         if waiter is None:
-            self._results.append(element)
+            results = self._results
+            max_length = results.maxlen
+            if (max_length is None) or (len(results) < max_length):
+                results.append(element)
+                set_result = 0
+            else:
+                set_result = 1
         else:
             self._waiter = None
             waiter.set_result_if_pending(element)
+            set_result = 0
+        
+        return set_result
+    
+    
+    async def set_result_wait(self, element):
+        """
+        Puts the given `element` on the queue. If the queue is full, blocks till it's elements are exhausted.
+        
+        This method is an awaitable.
+        
+        Parameters
+        ----------
+        element : `Any`
+            The object to put on the queue.
+        
+        Results
+        -------
+        set_result : `int` (`0`, `1`, `2`)
+            If the result was set instantly, return `0`. If the result was not set, returns `1`. If you needed to wait
+            for setting the result, returns `2`.
+        """
+        waiter = self._waiter
+        if waiter is None:
+            results = self._results
+            max_length = results.maxlen
+            if (max_length is None) or (len(results) < max_length):
+                results.append(element)
+                set_result = 0
+            else:
+                set_result_waiters = self._set_result_waiters
+                if (set_result_waiters is None):
+                    set_result_waiters = []
+                    self._set_result_waiters = set_result_waiters
+                
+                waiter = Future(self._loop)
+                
+                set_result_waiters.append(waiter)
+                
+                try:
+                    can_set_result = await waiter
+                except:
+                    try:
+                        set_result_waiters.remove(waiter)
+                    except ValueError:
+                        pass
+                    else:
+                        if not set_result_waiters:
+                            self._set_result_waiters = None
+                    
+                    raise
+                
+                else:
+                    if can_set_result:
+                        results.append(element)
+                        set_result = 2
+                    else:
+                        set_result = 1
+                
+        else:
+            self._waiter = None
+            waiter.set_result_if_pending(element)
+            set_result = 0
+        
+        return set_result
+    
     
     def set_exception(self, exception):
         """
@@ -3431,9 +3516,18 @@ class AsyncQueue:
         self._exception = exception
         
         waiter = self._waiter
-        if waiter is not None:
+        if (waiter is not None):
             self._waiter = None
             waiter.set_exception_if_pending(exception)
+        
+        # cancel all waiters
+        set_result_waiters = self._set_result_waiters
+        if (set_result_waiters is not None):
+            self._set_result_waiters = None
+            
+            while set_result_waiters:
+                set_result_waiters.pop(0).set_result_if_pending(False)
+            
     
     def __await__(self):
         """
@@ -3465,9 +3559,24 @@ class AsyncQueue:
             waiter = Future(self._loop)
             self._waiter = waiter
         
-        return (yield from waiter)
+        try:
+            return (yield from waiter)
+        finally:
+            self._poll_from_set_result_waiters()
     
     result = to_coroutine(copy_func(__await__))
+    
+    
+    def _poll_from_set_result_waiters(self):
+        """
+        Polls one future from set result waiters.
+        """
+        set_result_waiters = self._set_result_waiters
+        if (set_result_waiters is not None):
+            set_result_waiters.pop(0).set_result_if_pending(True)
+            if (not set_result_waiters):
+                self._set_result_waiters = None
+    
     
     def result_no_wait(self):
         """
@@ -3489,13 +3598,16 @@ class AsyncQueue:
         """
         results = self._results
         if results:
-            return results.popleft()
+            result = results.popleft()
+            self._poll_from_set_result_waiters()
+            return result
         
         exception = self._exception
         if exception is None:
             raise IndexError('The queue is empty')
         
         raise exception
+    
     
     def __repr__(self):
         """Returns the async queue's representation."""
@@ -3544,6 +3656,7 @@ class AsyncQueue:
         """
         return self
     
+    
     async def __anext__(self):
         """
         Waits till the next element of the queue is set. If the queue has elements set, yields the next of them, or if
@@ -3568,7 +3681,9 @@ class AsyncQueue:
         """
         results = self._results
         if results:
-            return results.popleft()
+            result = results.popleft()
+            self._poll_from_set_result_waiters()
+            return result
         
         exception = self._exception
         if exception is not None:
@@ -3600,11 +3715,13 @@ class AsyncQueue:
         """
         return self._results.maxlen
     
+    
     def clear(self):
         """
         Clears the queue's results.
         """
         self._results.clear()
+    
     
     def copy(self):
         """
@@ -3615,12 +3732,15 @@ class AsyncQueue:
         new : ``AsyncQueue``
         """
         new = object.__new__(type(self))
+        
         new._loop = self._loop
         new._results = self._results.copy()
         new._waiter = None
         new._exception = self._exception
+        new._set_result_waiters = None
         
         return new
+    
     
     def reverse(self):
         """
@@ -3628,11 +3748,13 @@ class AsyncQueue:
         """
         self._results.reverse()
     
+    
     def __len__(self):
         """
         Returns the queue's actual length.
         """
         return len(self._results)
+    
     
     if __debug__:
         def __del__(self):

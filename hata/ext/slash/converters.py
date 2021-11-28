@@ -2573,3 +2573,7 @@ def get_application_command_parameter_auto_completer_converters(func):
         func = analyzer.instance()
     
     return func, parameter_converters
+
+
+def get_form_submit_command_parameter_converters(func):
+    return func, []

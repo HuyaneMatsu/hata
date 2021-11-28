@@ -1261,6 +1261,32 @@ class FormSubmitInteraction:
                     custom_id_value_relation[custom_id] = value
         
         return custom_id_value_relation
+    
+    
+    def get_value_for(self, custom_id):
+        """
+        Returns the value for the given `custom_id`.
+        
+        Parameters
+        ----------
+        custom_id : `str`
+            A components `custom_id` to match.
+        
+        Returns
+        -------
+        value : `None` or `str`
+            The value if any.
+        """
+        options = self.options
+        if options is None:
+            value = None
+        else:
+            for option in options:
+                found, value = option._get_value_for(custom_id)
+                if found:
+                    break
+        
+        return value
 
 
 class FormSubmitInteractionOption:
@@ -1271,14 +1297,12 @@ class FormSubmitInteractionOption:
         The option's respective component's type.
         
     options : `None` or `tuple` of ``FormSubmitInteractionOption``
-        
         Mutually exclusive with the `value` field.
     
     type : ``ComponentType``
         The option respective component's type.
         
     value : `None` or `str`
-    
         Mutually exclusive with the `options` field.
     """
     __slots__ = ('custom_id', 'options', 'type', 'value')
@@ -1449,6 +1473,41 @@ class FormSubmitInteractionOption:
         if (options is not None):
             for option in options:
                 yield from option._iter_custom_id_to_value_relation()
+    
+    
+    def _get_value_for(self, custom_id_to_match):
+        """
+        Returns the whether it found the value and the value for the given `custom_id`.
+        
+        Parameters
+        ----------
+        custom_id_to_match : `str`
+            A components `custom_id` to match.
+        
+        Returns
+        -------
+        found : `bool`
+            Whether the value was found.
+        value : `None` or `str`
+            The value if any.
+        """
+        custom_id = self.custom_id
+        if (custom_id is not None) and (custom_id == custom_id_to_match):
+            found = True
+            value = self.value
+        
+        else:
+            options = self.options
+            if (options is None):
+                found = False
+                value = None
+            else:
+                for option in options:
+                    found, value = option._get_value_for(custom_id_to_match)
+                    if found:
+                        break
+        
+        return found, value
 
 
 INTERACTION_TYPE_TABLE = {

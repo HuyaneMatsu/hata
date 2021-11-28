@@ -511,7 +511,7 @@ class Future:
         return HataFuture(loop)
     
     def __instancecheck__(cls, instance):
-        return isinstance(instance, HataFuture)
+        return isinstance(instance, HataFuture) or isinstance(instance, cls)
 
     def __subclasscheck__(cls, klass):
         return issubclass(klass, HataFuture) or (klass is cls)
@@ -1758,7 +1758,11 @@ class Task(HataTask, metaclass=TaskMeta, ignore=True):
                 raise TypeError(f'`loop` was not given es `{EventThread.__name__}` instance, got '
                     f'{loop.__class__.__name__}.')
         
-        return loop.current_task
+        task = loop.current_task
+        if (task is not None):
+            task = TaskWrapper(task)
+        
+        return task
     
     # Required by anyio
     def get_coro(self):
@@ -2173,7 +2177,89 @@ def current_task(loop=None):
     if loop is None:
         loop = get_running_loop()
     
-    return loop.current_task
+    task = loop.current_task
+    if (task is not None):
+        task = TaskWrapper(task)
+    
+    return task
+
+
+class TaskWrapperCallback:
+    __slots__ = ('task_wrapper_additional_attributes', )
+    def __new__(cls, task_wrapper_additional_attributes):
+        self = object.__new__(cls)
+        self.task_wrapper_additional_attributes = task_wrapper_additional_attributes
+        return self
+    
+    def __call__(self, task):
+        pass
+
+
+class TaskWrapper:
+    __slots__ = ('_additional_attributes', '_task', )
+    
+    def __new__(cls, task):
+        for callback in task._callbacks:
+            if isinstance(callback, TaskWrapperCallback):
+                additional_attributes = callback.task_wrapper_additional_attributes
+                break
+        else:
+            additional_attributes = None
+        
+        self = object.__new__(cls)
+        object.__setattr__(self, '_task', task)
+        object.__setattr__(self, '_additional_attributes', additional_attributes)
+        return self
+    
+    def __getattr__(self, attribute_name):
+        additional_attributes = object.__getattribute__(self, '_additional_attributes')
+        if (additional_attributes is not None):
+            try:
+                return additional_attributes[attribute_name]
+            except KeyError:
+                pass
+        
+        return getattr(object.__getattribute__(self, '_task'), attribute_name)
+    
+    
+    def __setattr__(self, attribute_name, attribute_value):
+        task = object.__getattribute__(self, '_task')
+        
+        descriptor = getattr(type(task), attribute_name, None)
+        if (descriptor is not None):
+            setter = getattr(descriptor, '__set__', None)
+            if (setter is not None):
+                setter(descriptor, task, type(task))
+                return
+        
+        additional_attributes = object.__getattribute__(self, '_additional_attributes')
+        if (additional_attributes is None):
+            additional_attributes = {}
+            object.__setattr__(self, '_additional_attributes', additional_attributes)
+            task.add_done_callback(TaskWrapperCallback(additional_attributes))
+        
+        additional_attributes[attribute_name] = attribute_value
+    
+    def __repr__(self):
+        return (
+            f'<{self.__class__.__name__} '
+                f'task={object.__getattribute__(self, "_task")!r}, '
+                f'additional_attributes={object.__getattribute__(self, "_additional_attributes")!r}'
+            f'>'
+        )
+    
+    def __iter__(self):
+        return object.__getattribute__(self, '_task').__iter__()
+    
+    def __await__(self):
+        return object.__getattribute__(self, '_task').__await__()
+    
+    def __instancecheck__(cls, instance):
+        return isinstance(instance, HataTask) or isinstance(instance, cls)
+
+    def __subclasscheck__(cls, klass):
+        return issubclass(klass, HataTask) or (klass is cls)
+
 
 # asyncio.threads
 # Include: to_thread
@@ -2183,7 +2269,7 @@ async def to_thread(func, *args, **kwargs):
     Asynchronously run function *func* in a separate thread.
     
     Any *args and **kwargs supplied for this function are directly passed to *func*. Also, the current
-    `contextvars.Context` is propogated, allowing context variables from the main thread to be accessed in the separate
+    `contextvars.Context` is propagated, allowing context variables from the main thread to be accessed in the separate
     thread.
     
     Return a coroutine that can be awaited to get the eventual result of *func*.

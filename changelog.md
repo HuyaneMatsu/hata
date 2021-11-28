@@ -1,4 +1,13 @@
-## 1.1.123 *\[2021-12-28\]*
+## 1.1.124 *\[2021-??-??\]*
+
+#### Improvements
+
+##### ext.asyncio
+
+- `Task` instances returned by `current_task()` now support dynamic attributes (They are not tasks anymore.)
+    (winwinwinwin#0001)
+
+## 1.1.123 *\[2021-11-28\]*
 
 #### Improvements
 

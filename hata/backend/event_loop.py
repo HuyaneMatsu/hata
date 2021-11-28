@@ -4163,7 +4163,7 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         async def subprocess_shell(self, command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                 *, extra=None, preexecution_function=None, close_fds=True, cwd=None, startup_info=None,
-                creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
+                creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=(), **process_open_kwargs):
             
             if not isinstance(command, (bytes, str)):
                 raise TypeError(f'`cmd` must be `bytes` or `str` instance, got {command.__class__.__name__}.')
@@ -4177,13 +4177,15 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 'restore_signals' : restore_signals,
                 'start_new_session' : start_new_session,
                 'pass_fds' : pass_fds,
-                    }
+                **process_open_kwargs
+            }
             
             return await AsyncProcess(self, command, True, stdin, stdout, stderr, 0, extra, process_open_kwargs)
         
         async def subprocess_exec(self, program, *args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,  extra=None, preexecution_function=None, close_fds=True, cwd=None,
-                startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
+                startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=(),
+                **process_open_kwargs):
             
             process_open_kwargs = {
                 'preexec_fn' : preexecution_function,
@@ -4194,7 +4196,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
                 'restore_signals' : restore_signals,
                 'start_new_session' : start_new_session,
                 'pass_fds' : pass_fds,
-                    }
+                **process_open_kwargs,
+            }
             
             return await AsyncProcess(self, (program, *args), False, stdin, stdout, stderr, 0, extra,
                 process_open_kwargs)
@@ -4208,12 +4211,13 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         
         async def subprocess_shell(self, cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, *,
                 extra=None, preexecution_function=None, close_fds=True, cwd=None, startup_info=None, creation_flags=0,
-                restore_signals=True, start_new_session=False, pass_fds=()):
+                restore_signals=True, start_new_session=False, pass_fds=(), **process_open_kwargs):
             raise NotImplementedError
         
         async def subprocess_exec(self, program, *args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, extra=None, preexecution_function=None, close_fds=True, cwd=None,
-                startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=()):
+                startup_info=None, creation_flags=0, restore_signals=True, start_new_session=False, pass_fds=(),
+                **process_open_kwargs):
             raise NotImplementedError
     
     set_docs(connect_read_pipe,
@@ -4333,6 +4337,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         pass_fds : `tuple`, Optional
             An optional sequence of file descriptors to keep open between the parent and the child. Providing any
             `pass_fds` forces `close_fds` to be `True`. POSIX only, defaults to empty tuple.
+        **process_open_kwargs : Additional keyword parameters
+            Additional parameters to pass to the `Popen`.
         
         Returns
         -------
@@ -4409,6 +4415,8 @@ class EventThread(Executor, Thread, metaclass=EventThreadType):
         pass_fds : `tuple`, Optional (Keyword only)
             An optional sequence of file descriptors to keep open between the parent and the child. Providing any
             `pass_fds` forces `close_fds` to be `True`. POSIX only, defaults to empty tuple.
+        **process_open_kwargs : Additional keyword parameters
+            Additional parameters to pass to the `Popen`.
         
         Returns
         -------

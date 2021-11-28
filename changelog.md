@@ -1,4 +1,4 @@
-## 1.1.123 *\[2021-12-??\]*
+## 1.1.123 *\[2021-12-28\]*
 
 #### Improvements
 
@@ -8,6 +8,7 @@
 - Add `.subprocess.PIPE`. (winwinwinwin#0001)
 - Add `.subprocess.DEVNULL`. (winwinwinwin#0001)
 - Add `.subprocess.STDOUT`. (winwinwinwin#0001)
+- `ReadProtocolBase` now implements `readexactly`. (winwinwinwin#0001)
 
 #### Bug fixes
 

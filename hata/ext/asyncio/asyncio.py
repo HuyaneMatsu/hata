@@ -29,6 +29,7 @@ from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQueu
     Event as HataEvent, AsyncLifoQueue, is_coroutine, skip_ready_cycle
 from ...backend.executor import Executor
 from ...backend.subprocess import AsyncProcess
+from ...backend.protocol import ReadProtocolBase
 
 IS_UNIX = (sys.platform != 'win32')
 
@@ -157,6 +158,7 @@ def asyncio_run_in_executor(self, executor, func=..., *args):
 
 EventThread.run_in_executor = asyncio_run_in_executor
 del asyncio_run_in_executor
+
 
 #required by anyio
 def asyncio_create_task(self, coroutine):
@@ -294,6 +296,10 @@ async def asyncio_create_unix_server(self, *args, sock=None, socket=None, start_
 EventThread.create_unix_server = asyncio_create_unix_server
 del asyncio_create_unix_server
 
+@KeepType(ReadProtocolBase)
+class ReadProtocolBase:
+    async def readexactly(self, n):
+        return await self.read_exactly(n)
 
 # Reimplement async-io features
 

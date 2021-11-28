@@ -598,7 +598,7 @@ class ComponentInteraction:
         custom_id = data.get('custom_id', None)
         
         # type
-        type_ = ComponentType.get(data['type'])
+        type_ = ComponentType.get(data['component_type'])
         
         # options
         option_datas = data.get('values', None)

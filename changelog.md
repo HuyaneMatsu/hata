@@ -42,7 +42,7 @@
 
 - Added to `setup.py`.
 
-##### ext.asycnio
+##### ext.asyncio
 
 - Add `start_unix_server`. (Forest#2913)
 - Add `Queue.put`. (Forest#2913)
@@ -51,6 +51,10 @@
 
 - `Client.multi_client_message_delete_sequence` was not calling `Message.is_deletable` when getting messages from
 cache.
+
+##### ext.slash
+
+- `abort` was not defining `đhow_for_invoking_user_only` by default. (When was this bug made?)
 
 #### Renames, Deprecation & Removals
 

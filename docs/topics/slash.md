@@ -347,6 +347,10 @@ async def guild_icon(event,
     return Embed(f'{guild.name}\'s {name}', color=color, url=url).add_image(url)
 ```
 
+![](assets/slash_0003.png)
+
+![](assets/slash_0004.png)
+
 If you find defining choice parameters inside of the "function parameter definition" too confusing, consider creating
 a variable and annotate that instead.
 
@@ -394,6 +398,8 @@ async def roll(
     
     return str(amount)
 ```
+
+![](assets/slash_0005.png)
 
 ### Auto completed parameters
 
@@ -458,6 +464,10 @@ async def cookie(client, event,
     return Embed(description=f'{source_user:f} just gifted a cookie to {target_user:f} !')
 ```
 
+![](assets/slash_0006.png)
+
+![](assets/slash_0007.png)
+
 ### Decorator parameters
 
 `client.interactions` has no requires parameters, so can be used just as `@client.interactions` decorator, however in
@@ -479,8 +489,7 @@ become "non-global". More about them in the [Non-global](#non-global-commands) s
 
 Whether the source message should be shown only for the invoker user. Defaults to `False`.
 
-This is a perfect time to change up our `/perms` command. Discord ignores everything except `content`, so we need to
-change up the command as well, to return just a simple string.
+This is a perfect time to change up our `/perms` command.
 
 ```py
 from hata import Embed
@@ -490,12 +499,15 @@ async def perms(event):
     """Shows your permissions."""
     user_permissions = event.user_permissions
     if user_permissions:
-        content = '\n'.join(permission_name.replace('_', '-') for permission_name in user_permissions)
+        description = '\n'.join(permission_name.replace('_', '-') for permission_name in user_permissions)
     else:
-        content = '*none*'
+        description = '*none*'
     
-    return content
+    user = event.user
+    return Embed('Permissions', description).add_author(user.avatar_url, user.full_name)
 ```
+
+![](assets/slash_0008.png)
 
 ##### name
 
@@ -518,6 +530,8 @@ async def idtotime(
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
 
+![](assets/slash_0009.png)
+
 You can resolve name conflicts in an other way as well. Trailing `_` characters are ignored.
 
 ```py
@@ -525,8 +539,8 @@ from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def id_to_datetime_(
-        snowflake : ('int', 'Id please!'),
-            ):
+    snowflake : ('int', 'Id please!'),
+):
     """Converts the given Discord snowflake to time."""
     time = id_to_datetime(snowflake)
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
@@ -545,8 +559,8 @@ class Action:
         self.embed_color = embed_color
     
     async def __call__(self, client, event,
-            user : ('user', 'Who?') = None,
-                ):
+        user : ('user', 'Who?') = None,
+    ):
         if user is None:
             source_user = client
             target_user = event.user
@@ -566,6 +580,11 @@ for action_name, embed_color in (('pat', 0x325b34), ('hug', 0xa4b51b), ('lick', 
 # Cleanup
 del action_name, embed_color
 ```
+
+
+![](assets/slash_0010.png)
+
+![](assets/slash_0011.png)
 
 ##### delete_on_unload
 
@@ -594,13 +613,28 @@ from hata.ext.slash import SlashResponse
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def repeat(
-        text : ('str', 'The content to repeat')
-            ):
+    text : ('str', 'The content to repeat')
+):
     """What should I exactly repeat?"""
     if not text:
         text = 'nothing to repeat'
     
     return SlashResponse(text, allowed_mentions=None)
+```
+
+
+![](assets/slash_0012.png)
+
+![](assets/slash_0013.png)
+
+When checking the message's payload, it is indeed visible, that Koishi was not pinged.
+
+```py
+...
+"mention_everyone": false,
+"mention_roles": [],
+"mentions": [],
+...
 ```
 
 ##### Responding multiple times
@@ -631,6 +665,8 @@ async def improvise():
     yield choice(IMPROVISATION_CHOICES)
 ```
 
+![](assets/slash_0014.png)
+
 > Python limitation, you cannot `return` any value if you use `yield` inside of an `async def`.
 
 ##### Acknowledge the interaction event
@@ -649,6 +685,8 @@ async def ping():
     
     yield f'{delay:.0f} ms'
 ```
+
+![](assets/slash_0015.gif)
 
 Acknowledging can be useful if you do an additional request to an other site, because the event need to be acknowledged
 within 3 seconds to send followup messages. If the event is acknowledged, followup messages can be sent within an
@@ -696,6 +734,8 @@ async def collect_reactions():
     else:
         yield 'No reactions were collected.'
 ```
+
+![](assets/slash_0016.png)
 
 ##### Giving away control flow
 
@@ -751,6 +791,8 @@ async def why(client):
 
 Both works completely fine.
 
+![](assets/slash_0017.gif)
+
 ##### Aborting command
 
 Commands may be aborted using the `abort` function. It leaves from the command's execution and sends the passed
@@ -799,6 +841,10 @@ async def is_banned(client, event,
     yield embed
 ```
 
+![](assets/slash_0018.png)
+
+![](assets/slash_0019.png)
+
 ##### Changing parameter name
 
 Familiarly to the `name` interaction parameter mentioned [above](#name), the tailing `_` characters are removed from
@@ -816,6 +862,8 @@ async def user_id(event,
     
     return str(user_id)
 ```
+
+![](assets/slash_0020.png)
 
 ##### Set command permissions
 
@@ -887,6 +935,8 @@ async def latest_users(event):
     return SlashResponse(embed=embed, allowed_mentions=None)
 ```
 
+![](assets/slash_0021.png)
+
 ## Non-global commands
 
 The slash extension supports non-global commands, which are neither global nor normal guild bound commands. These
@@ -915,8 +965,8 @@ async def ping():
 
 @Nitori.interactions(is_global=True)
 async def enable_ping(client, event,
-        allow: ('bool', 'Enable?')=True,
-            ):
+    allow: ('bool', 'Enable?')=True,
+):
     """Enables the ping command in your guild."""
     guild = event.guild
     if guild is None:
@@ -1019,12 +1069,14 @@ You can also set default sub-command, which is used if a sub command is selected
 > Sub-commands and default commands are not yet fully supported by Discord.
 
 ```py
-@SCARLET.interactions(is_default=True, show_for_invoking_user_only=True)
+@SCARLET.interactions(is_default=True)
 async def devil(client, event):
     """Flandre & Remilia!"""
     yield
-    return await get_image_embed(client, 'flandre_scarlet+remilia_scarlet', 'Scarlet Flandre & Remilia', 0xa12a2a)
+    yield await get_image_embed(client, 'flandre_scarlet+remilia_scarlet', 'Scarlet Flandre & Remilia', 0xa12a2a)
 ```
+
+
 
 ## Manual Responding
 

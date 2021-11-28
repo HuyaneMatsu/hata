@@ -85,6 +85,7 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
             
             elif interaction_event.is_deferred():
                 yield client.interaction_followup_message_create(interaction_event, response)
+            
             elif interaction_event.is_responded():
                 yield client.interaction_followup_message_create(
                     interaction_event,
@@ -545,7 +546,7 @@ class InteractionResponse:
 
 
 def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
-        show_for_invoking_user_only=..., message=..., event=None):
+        show_for_invoking_user_only=True, message=..., event=None):
     """
     Aborts the slash response with sending the passed parameters as a response.
     
@@ -577,6 +578,8 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         Whether the sent message should only be shown to the invoking user.
         
         If given as `True`, only the message's content and embeds and components will be processed by Discord.
+        
+        Defaults to `True`.
     
     Raises
     ------
@@ -590,6 +593,7 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
     response = InteractionResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions,
         components=components, tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, message=message,
         event=event)
+    
     response._is_abort = True
     raise InteractionAbortedError(response)
 

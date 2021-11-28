@@ -7,6 +7,12 @@
 - `Task` instances returned by `current_task()` now support dynamic attributes (They are not tasks anymore.)
     (winwinwinwin#0001)
 
+#### Bug fixes
+
+##### ext.asyncio
+
+- `gather` could never finish. (winwinwinwin#0001)
+
 ## 1.1.123 *\[2021-11-28\]*
 
 #### Improvements

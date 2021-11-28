@@ -2036,7 +2036,6 @@ class _gatherer_done_cb_raise:
         else:
             # should not happen
             exception = None
-            return
         
         if exception is None:
             future.set_result(results)

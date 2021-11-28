@@ -1244,6 +1244,25 @@ class FormSubmitInteraction:
         return True
     
     
+    def iter_custom_ids_and_values(self):
+        """
+        Iterates over all the `custom_id`-s and values of the form submit interaction.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        custom_id : `str`
+            The `custom_id` of a represented component.
+        value : `str`
+            The `value` passed by the user.
+        """
+        options = self.options
+        if (options is not None):
+            for option in options:
+                yield from option.iter_custom_ids_and_values()
+    
+    
     def get_custom_id_value_relation(self):
         """
         Returns a dictionary with `custom_id` to `value` relation.
@@ -1254,39 +1273,62 @@ class FormSubmitInteraction:
         """
         custom_id_value_relation = {}
         
-        options = self.options
-        if (options is not None):
-            for option in options:
-                for custom_id, value in option._iter_custom_id_to_value_relation():
-                    custom_id_value_relation[custom_id] = value
+        for custom_id, value in self.iter_custom_ids_and_values():
+            if (value is not None):
+                custom_id_value_relation[custom_id] = value
         
         return custom_id_value_relation
     
     
-    def get_value_for(self, custom_id):
+    def get_value_for(self, custom_id_to_match):
         """
         Returns the value for the given `custom_id`.
         
         Parameters
         ----------
-        custom_id : `str`
-            A components `custom_id` to match.
+        custom_id_to_match : `str`
+            A respective components `custom_id` to match.
         
         Returns
         -------
         value : `None` or `str`
             The value if any.
         """
-        options = self.options
-        if options is None:
-            value = None
-        else:
-            for option in options:
-                found, value = option._get_value_for(custom_id)
-                if found:
-                    break
+        for custom_id, value in self.iter_custom_ids_and_values():
+            if (custom_id == custom_id):
+                return value
+    
+    
+    def get_match_and_value(self, matcher):
+        """
+        Gets a `custom_id`'s value matching the given `matcher`.
         
-        return value
+        Parameters
+        ----------
+        matcher : `callable`
+            Matcher to call on a `custom_id`
+            
+            Should accept the following parameters:
+            
+            +-----------+-----------+
+            | Name      | Type      |
+            +===========+===========+
+            | custom_id | `str`     |
+            +-----------+-----------+
+            
+            Should return non-`None` on success.
+        
+        Returns
+        -------
+        match : `None` or `Any`
+            The returned value by the ``matcher``
+        value : `None` or `str`
+            The matched `custom_id`'s value.
+        """
+        for custom_id, value in self.iter_custom_ids_and_values():
+            match = matcher(custom_id)
+            if (match is not None):
+                return match, value
 
 
 class FormSubmitInteractionOption:
@@ -1451,11 +1493,11 @@ class FormSubmitInteractionOption:
         return True
     
     
-    def _iter_custom_id_to_value_relation(self):
+    def iter_custom_ids_and_values(self):
         """
-        Iterates over the `custom_id` - `value` relations from self and from the sub-options recursively.
+        Iterates over all the `custom_id`-s and values of the form submit interaction option.
         
-        This function is an iterable generator.
+        This method is an iterable generator.
         
         Yields
         ------
@@ -1465,49 +1507,13 @@ class FormSubmitInteractionOption:
             The `value` passed by the user.
         """
         custom_id = self.custom_id
-        value = self.value
-        if (custom_id is not None) and (value is not None):
-            yield custom_id, value
+        if (custom_id is not None):
+            yield custom_id, self.value
         
         options = self.options
         if (options is not None):
             for option in options:
-                yield from option._iter_custom_id_to_value_relation()
-    
-    
-    def _get_value_for(self, custom_id_to_match):
-        """
-        Returns the whether it found the value and the value for the given `custom_id`.
-        
-        Parameters
-        ----------
-        custom_id_to_match : `str`
-            A components `custom_id` to match.
-        
-        Returns
-        -------
-        found : `bool`
-            Whether the value was found.
-        value : `None` or `str`
-            The value if any.
-        """
-        custom_id = self.custom_id
-        if (custom_id is not None) and (custom_id == custom_id_to_match):
-            found = True
-            value = self.value
-        
-        else:
-            options = self.options
-            if (options is None):
-                found = False
-                value = None
-            else:
-                for option in options:
-                    found, value = option._get_value_for(custom_id_to_match)
-                    if found:
-                        break
-        
-        return found, value
+                yield from option.iter_custom_ids_and_values()
 
 
 INTERACTION_TYPE_TABLE = {

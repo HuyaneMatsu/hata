@@ -3,9 +3,10 @@
 #### Improvements
 
 - Add `FormSubmitInteraction.get_custom_id_value_relation`.
-- Add `FormSubmitInteractionOption._iter_custom_id_to_value_relation`.
 - Add `FormSubmitInteraction.get_value_for`.
-- Add `FormSubmitInteractionOption._get_value_for`.
+- Add `FormSubmitInteraction.get_match_and_value`.
+- Add `FormSubmitInteraction.iter_custom_ids_and_values`.
+- Add `FormSubmitInteractionOption.iter_custom_ids_and_values`.
 
 ## 1.1.121 *\[2021-11-28\]*
 

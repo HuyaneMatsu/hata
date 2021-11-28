@@ -1242,6 +1242,25 @@ class FormSubmitInteraction:
             return False
         
         return True
+    
+    
+    def get_custom_id_value_relation(self):
+        """
+        Returns a dictionary with `custom_id` to `value` relation.
+        
+        Returns
+        -------
+        custom_id_value_relation : `dict` of (`str`, `str`) items
+        """
+        custom_id_value_relation = {}
+        
+        options = self.options
+        if (options is not None):
+            for option in options:
+                for custom_id, value in option._iter_custom_id_to_value_relation():
+                    custom_id_value_relation[custom_id] = value
+        
+        return custom_id_value_relation
 
 
 class FormSubmitInteractionOption:
@@ -1406,6 +1425,30 @@ class FormSubmitInteractionOption:
             return False
         
         return True
+    
+    
+    def _iter_custom_id_to_value_relation(self):
+        """
+        Iterates over the `custom_id` - `value` relations from self and from the sub-options recursively.
+        
+        This function is an iterable generator.
+        
+        Yields
+        ------
+        custom_id : `str`
+            The `custom_id` of a represented component.
+        value : `str`
+            The `value` passed by the user.
+        """
+        custom_id = self.custom_id
+        value = self.value
+        if (custom_id is not None) and (value is not None):
+            yield custom_id, value
+        
+        options = self.options
+        if (options is not None):
+            for option in options:
+                yield from option._iter_custom_id_to_value_relation()
 
 
 INTERACTION_TYPE_TABLE = {

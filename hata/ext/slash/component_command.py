@@ -8,6 +8,7 @@ except ImportError:
     from re import _pattern_type as Pattern
 
 from ...backend.utils import copy_docs
+
 from ...discord.events.handling_helpers import route_value, Router, check_name, route_name
 
 from .wrappers import SlasherCommandWrapper
@@ -20,7 +21,7 @@ from .custom_id_based_command import _validate_name, _validate_custom_ids, split
 
 class ComponentCommand(CustomIdBasedCommand):
     """
-    A command, which is called if a command interaction is executed with a specific `custom_id`.
+    A command, which is called if a message component interaction is received with a matched `custom_id`.
     
     Attributes
     ----------

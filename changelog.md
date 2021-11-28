@@ -1,3 +1,10 @@
+## 1.1.122 *\[2021-12-??\]*
+
+#### Improvements
+
+- Add `FormSubmitInteraction.get_custom_id_value_relation`
+- Add `FormSubmitInteractionOption._iter_custom_id_to_value_relation`.
+
 ## 1.1.121 *\[2021-11-28\]*
 
 #### Improvements

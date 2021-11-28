@@ -186,7 +186,7 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
 
 class CustomIdBasedCommand:
     """
-    Base class for commands based on `custom_id`.
+    Base class for commands based on `custom_id` matching.
     
     Attributes
     ----------

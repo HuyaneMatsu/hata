@@ -128,9 +128,12 @@ for sub_module_name, feature_names, extra_features in (
             ), None,
         ),
         ('subprocess', (
+            'DEVNULL',
+            'PIPE',
+            'Process', # Required by anyio
+            'STDOUT',
             'create_subprocess_exec',
             'create_subprocess_shell',
-            'Process', # Required by anyio
             ), None,
         ),
         ('tasks', (

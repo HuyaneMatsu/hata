@@ -17,7 +17,7 @@ __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'Abstra
 
 import os, sys, warnings
 from threading import current_thread, enumerate as list_threads, main_thread
-from subprocess import PIPE
+from subprocess import PIPE, STDOUT, DEVNULL
 from functools import partial, partial as partial_func
 from collections import deque
 
@@ -1646,7 +1646,7 @@ class StreamReader:
         return val
 
 # asyncio.subprocess
-# Include: create_subprocess_exec, create_subprocess_shell, Process
+# Include: DEVNULL, PIPE, Process, STDOUT, create_subprocess_exec, create_subprocess_shell, Process
 
 if IS_UNIX:
     async def create_subprocess_shell(cmd, stdin=None, stdout=None, stderr=None, loop=None, limit=_DEFAULT_LIMIT,

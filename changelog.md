@@ -5,6 +5,9 @@
 ##### ext.asyncio
 - `create_server` now expects and handles `start_serving` parameter. (Forest#2913)
 - `create_unix_server` now expects and handles `start_serving` parameter. (Forest#2913)
+- Add `.subprocess.PIPE`. (winwinwinwin#0001)
+- Add `.subprocess.DEVNULL`. (winwinwinwin#0001)
+- Add `.subprocess.STDOUT`. (winwinwinwin#0001)
 
 #### Bug fixes
 

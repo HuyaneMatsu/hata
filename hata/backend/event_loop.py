@@ -1374,8 +1374,20 @@ class Server:
     
     def __repr__(self):
         """Returns the server's representation."""
-        return f'<{self.__class__.__name__} sockets={self.sockets!r}>'
-
+        repr_parts = ['<', self.__class__.__name__]
+        
+        if self.serving:
+            repr_parts.append(' serving')
+            
+        repr_parts.append(' sockets=')
+        repr_parts.append(repr(self.sockets))
+        
+        repr_parts.append(', protocol_factory=')
+        repr_parts.append(repr(self.protocol_factory))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
     def _attach(self):
         """
         Adds `1` to the server active counter.

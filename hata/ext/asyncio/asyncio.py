@@ -259,7 +259,8 @@ del asyncio_create_datagram_endpoint
 
 hata_EventThread_create_server = EventThread.create_server
 
-async def asyncio_create_server(self, *args, sock=None, socket=None, reuseport=None, reuse_port=None, **kwargs):
+async def asyncio_create_server(self, *args, sock=None, socket=None, reuseport=None, reuse_port=None,
+        start_serving=True, **kwargs):
 
     if reuseport:
         reuse_port = reuseport
@@ -267,12 +268,31 @@ async def asyncio_create_server(self, *args, sock=None, socket=None, reuseport=N
     if sock is not None:
         socket = sock
     
-    return await hata_EventThread_create_server(self, *args, reuse_port=reuse_port, socket=socket, **kwargs)
+    server = await hata_EventThread_create_server(self, *args, reuse_port=reuse_port, socket=socket, **kwargs)
+    if start_serving:
+        await server.start()
+    
+    return server
 
 EventThread.create_server = asyncio_create_server
 del asyncio_create_server
 
 
+hata_EventThread_create_unix_server = EventThread.create_unix_server
+
+async def asyncio_create_unix_server(self, *args, sock=None, socket=None, start_serving=True, **kwargs):
+
+    if sock is not None:
+        socket = sock
+    
+    server = await hata_EventThread_create_server(self, *args, socket=socket, **kwargs)
+    if start_serving:
+        await server.start()
+    
+    return server
+
+EventThread.create_unix_server = asyncio_create_unix_server
+del asyncio_create_unix_server
 
 
 # Reimplement async-io features

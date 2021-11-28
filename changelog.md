@@ -12,6 +12,8 @@
 
 - Implement `Semaphore`. (winwinwinwin#0001)
 - Implement `BoundedSemaphore`. (winwinwinwin#0001)
+- `create_server` now expects and handles `start_serving` parameter. (Forest#2913)
+- `create_unix_server` now expects and handles `start_serving` parameter. (Forest#2913)
 
 #### Bug fixes
 

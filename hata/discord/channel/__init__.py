@@ -2,6 +2,7 @@ from .channel_base import *
 from .channel_guild_base import *
 from .channel_guild_category import *
 from .channel_guild_directory import *
+from .channel_guild_forum import *
 from .channel_guild_store import *
 from .channel_guild_text import *
 from .channel_guild_undefined import *
@@ -22,6 +23,7 @@ __all__ = (
     *channel_guild_base.__all__,
     *channel_guild_category.__all__,
     *channel_guild_directory.__all__,
+    *channel_guild_forum.__all__,
     *channel_guild_store.__all__,
     *channel_guild_text.__all__,
     *channel_guild_undefined.__all__,

@@ -2,6 +2,9 @@
 
 #### Improvements
 
+- Add `ChannelForum`.
+- Add `CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS`.
+
 ##### ext.asyncio
 
 - `Task` instances returned by `current_task()` now support dynamic attributes (They are not tasks anymore.)

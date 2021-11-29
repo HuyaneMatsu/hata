@@ -77,12 +77,16 @@ In addition also extra groups are defined:
 |                                       | guild_thread_public,          |
 |                                       | guild_thread_private,         |
 |                                       | guild_stage,                  |
-|                                       | guild_directory               |
+|                                       | guild_directory,              |
 |                                       | guild_forum                   |
 +---------------------------------------+-------------------------------+
 | GROUP_THREAD                          | guild_thread_announcements,   |
 |                                       | guild_thread_public,          |
 |                                       | guild_thread_private          |
++---------------------------------------+-------------------------------+
+| GROUP_CAN_CONTAIN_THREADS             | guild_text,                   |
+|                                       | guild_announcements,          |
+|                                       | guild_forum                   |
 +---------------------------------------+-------------------------------+
 """
 guild_text = 0
@@ -166,4 +170,10 @@ GROUP_THREAD = frozenset((
     guild_thread_announcements,
     guild_thread_public,
     guild_thread_private,
+))
+
+GROUP_CAN_CONTAIN_THREADS = frozenset((
+    guild_text,
+    guild_announcements,
+    guild_forum,
 ))

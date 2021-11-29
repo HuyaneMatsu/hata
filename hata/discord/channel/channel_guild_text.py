@@ -17,14 +17,15 @@ from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildMainBase
 from .channel_text_base import ChannelTextBase
 from .channel_thread import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from . import channel_types as CHANNEL_TYPES
 
 from ..http import urls as module_urls
 
 parse_permission_overwrites = include('parse_permission_overwrites')
 
 CHANNEL_TEXT_NAMES = {
-     0: None,
-     5: 'announcements',
+     CHANNEL_TYPES.guild_text: None,
+     CHANNEL_TYPES.guild_announcements: 'announcements',
 }
 
 
@@ -88,8 +89,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     """
     __slots__ = ('default_auto_archive_after', 'nsfw', 'slowmode', 'topic', 'type',) # guild text channel related
     
-    ORDER_GROUP = 0
-    INTERCHANGE = (0, 5,)
+    ORDER_GROUP = CHANNEL_TYPES.guild_text
+    INTERCHANGE = (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements,)
     
     banner = IconSlot(
         'banner',

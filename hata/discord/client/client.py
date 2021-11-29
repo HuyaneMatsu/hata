@@ -27,7 +27,8 @@ from ..emoji import Emoji
 from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
     message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPE_MAP, ChannelTextBase, ChannelVoice, \
     ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
-    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory, CHANNEL_TYPES
+    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory, \
+    CHANNEL_TYPES, ChannelBase
 from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
     DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
     VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
@@ -2732,7 +2733,8 @@ class Client(ClientUserPBase):
         await self.http.channel_move(guild.id, data, reason)
     
     async def channel_edit(self, channel, *, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
-            bitrate=None, region=..., video_quality_mode=None, type_=None, reason=None):
+            bitrate=None, region=..., video_quality_mode=None, type_=None, default_auto_archive_after=None,
+            reason=None):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
         out of place parameters. Only the passed parameters will be edited of the channel.
@@ -2763,6 +2765,9 @@ class Client(ClientUserPBase):
             > By giving as `None`, you can remove the old value.
         video_quality_mode : ``VideoQualityMode`` or `int`, Optional (Keyword only)
             The channel's new video quality mode.
+        default_auto_archive_after : `None` or `int`
+            The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
+            one of: `3600`, `86400`, `259200`, `604800`.
         reason : `None` or `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -2968,6 +2973,22 @@ class Client(ClientUserPBase):
             data['video_quality_mode'] = video_quality_mode_value
         
         
+        if (default_auto_archive_after is not None):
+            if __debug__:
+                if not issubclass(channel_type, (ChannelText, ChannelForum)):
+                    raise AssertionError(f'`default_auto_archive_after` is a valid parameter only for `{ChannelText.__name__}` '
+                        f'instances, but got {channel_type.__name__}.')
+                
+                if not isinstance(default_auto_archive_after, int):
+                    raise AssertionError(f'`default_auto_archive_after` can be given as `None` or as `datetime` instance, got '
+                        f'{default_auto_archive_after.__class__.__name__}.')
+                
+                if default_auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
+                    raise AssertionError(f'`default_auto_archive_after` can be any of: '
+                        f'{AUTO_ARCHIVE_OPTIONS}, got {default_auto_archive_after}.')
+            
+            channel_data['default_auto_archive_duration'] = default_auto_archive_after//60
+        
         await self.http.channel_edit(channel_id, data, reason)
     
     
@@ -3013,6 +3034,9 @@ class Client(ClientUserPBase):
             The channel's voice region.
         video_quality_mode : `None`, ``VideoQualityMode`` or `int`, Optional (Keyword only)
             The channel's video quality mode.
+        default_auto_archive_after : `None` or `int`
+            The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
+            one of: `3600`, `86400`, `259200`, `604800`.
         
         Returns
         -------
@@ -8581,7 +8605,10 @@ class Client(ClientUserPBase):
         #
         # Message cannot be detected by id, only cached ones, so ignore that case.
         
-        if isinstance(message_or_channel, ChannelTextBase):
+        if isinstance(message_or_channel, ChannelBase):
+            if message_or_channel.type not in CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS:
+                raise TypeError(f'{message_or_channel!r} do not supports thread creation.')
+            
             message_id = None
             channel = message_or_channel
             channel_id = channel.id

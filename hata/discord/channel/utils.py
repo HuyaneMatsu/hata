@@ -23,6 +23,7 @@ from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildBase
 from .channel_thread import AUTO_ARCHIVE_OPTIONS
 from .channel_guild_directory import ChannelDirectory
+from .channel_guild_forum import ChannelForum
 from . import channel_types as CHANNEL_TYPES
 
 VoiceRegion = include('VoiceRegion')
@@ -41,6 +42,7 @@ CHANNEL_TYPE_MAP = {
     CHANNEL_TYPES.guild_thread_private: ChannelThread,
     CHANNEL_TYPES.guild_stage: ChannelStage,
     CHANNEL_TYPES.guild_directory: ChannelDirectory,
+    CHANNEL_TYPES.guild_forum: ChannelForum,
 }
 
 export(CHANNEL_TYPE_MAP, 'CHANNEL_TYPE_MAP')
@@ -429,7 +431,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
     
     if (default_auto_archive_after is not None):
         if __debug__:
-            if not issubclass(channel_type, ChannelText):
+            if not issubclass(channel_type, (ChannelText, ChannelForum)):
                 raise AssertionError(f'`default_auto_archive_after` is a valid parameter only for `{ChannelText.__name__}` '
                     f'instances, but got {channel_type.__name__}.')
             

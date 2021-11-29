@@ -1,4 +1,5 @@
-__all__ = ('ChannelDirectory', )
+__all__ = ('ChannelForum',)
+
 
 from ...backend.utils import copy_docs
 from ...backend.export import export, include
@@ -7,18 +8,20 @@ from ..core import CHANNELS
 from ..permission import Permission
 from ..permission.permission import PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY, PERMISSION_MASK_VIEW_CHANNEL
 
-from ..preconverters import preconvert_snowflake, preconvert_str
+from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int_options
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildMainBase
+from . import channel_types as CHANNEL_TYPES
+from .channel_thread import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 parse_permission_overwrites = include('parse_permission_overwrites')
 
 
 @export
-class ChannelDirectory(ChannelGuildMainBase):
+class ChannelForum(ChannelGuildMainBase):
     """
-    Represents a ``Guild`` directory channel.
+    Represents a ``Guild`` forum channel.
     
     Attributes
     ----------
@@ -36,30 +39,33 @@ class ChannelDirectory(ChannelGuildMainBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
+    default_auto_archive_after : `int`
+        The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
+        to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
     
     Class Attributes
     ----------------
-    DEFAULT_TYPE : `int` = `14`
+    DEFAULT_TYPE : `int` = `15`
         The preferred channel type, if there is no channel type included.
-    INTERCHANGE : `tuple` of `int` = `(14,)`
+    INTERCHANGE : `tuple` of `int` = `(15,)`
         Defines to which channel type this channel's type can be interchanged. The channel's direct type must be of
         them.
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
-    type : `int` = `14`
+    type : `int` = `15`
         The channel's Discord side type.
     """
-    __slots__ = ()
+    __slots__ = ('default_auto_archive_after', )
     
     ORDER_GROUP = 0
-    DEFAULT_TYPE = 14
-    INTERCHANGE = (14, )
-    type = 14
+    DEFAULT_TYPE = CHANNEL_TYPES.guild_forum
+    INTERCHANGE = (CHANNEL_TYPES.guild_forum, )
+    type = CHANNEL_TYPES.guild_forum
     
     
     def __new__(cls, data, client, guild_id):
         """
-        Creates a directory channel from the channel data received from Discord. If the channel already exists and if
+        Creates a forum channel from the channel data received from Discord. If the channel already exists and if
         it is partial, then updates it.
         
         Parameters
@@ -88,16 +94,26 @@ class ChannelDirectory(ChannelGuildMainBase):
         self._init_parent_and_position(data, guild_id)
         self.permission_overwrites = parse_permission_overwrites(data)
         
+        
+        default_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_auto_archive_after is None:
+            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_auto_archive_after *= 60
+        self.default_auto_archive_after = default_auto_archive_after
+        
         return self
     
-    # Ignore empty function, keep for reference
-    """
+    
     @classmethod
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, guild_id):
-        self = super(ChannelDirectory, cls)._create_empty(channel_id, channel_type, guild_id)
+        self = super(ChannelForum, cls)._create_empty(channel_id, channel_type, guild_id)
+        
+        self.default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        
         return self
-    """
+    
     
     @property
     @copy_docs(ChannelBase.display_name)
@@ -112,8 +128,15 @@ class ChannelDirectory(ChannelGuildMainBase):
         self.permission_overwrites = parse_permission_overwrites(data)
         
         self.name = data['name']
-    
         
+        default_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_auto_archive_after is None:
+            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_auto_archive_after *= 60
+        self.default_auto_archive_after = default_auto_archive_after
+    
+    
     def _difference_update_attributes(self,data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
@@ -132,17 +155,19 @@ class ChannelDirectory(ChannelGuildMainBase):
         Returned Data Structure
         -----------------------
         
-        +---------------------------+---------------------------------------------------+
-        | Keys                      | Values                                            |
-        +===========================+===================================================+
-        | parent_id                 | `int`                                             |
-        +---------------------------+---------------------------------------------------+
-        | name                      | `str`                                             |
-        +---------------------------+---------------------------------------------------+
-        | permission_overwrites     | `dict` of (`int`, ``PermissionOverwrite``) items  |
-        +---------------------------+---------------------------------------------------+
-        | position                  | `int`                                             |
-        +---------------------------+---------------------------------------------------+
+        +-------------------------------+---------------------------------------------------+
+        | Keys                          | Values                                            |
+        +===============================+===================================================+
+        | default_auto_archive_after    | `int`                                             |
+        +-------------------------------+---------------------------------------------------+
+        | parent_id                     | `int`                                             |
+        +-------------------------------+---------------------------------------------------+
+        | name                          | `str`                                             |
+        +-------------------------------+---------------------------------------------------+
+        | permission_overwrites         | `dict` of (`int`, ``PermissionOverwrite``) items  |
+        +-------------------------------+---------------------------------------------------+
+        | position                      | `int`                                             |
+        +-------------------------------+---------------------------------------------------+
         """
         self._permission_cache = None
         old_attributes = {}
@@ -159,6 +184,15 @@ class ChannelDirectory(ChannelGuildMainBase):
         
         self._update_parent_and_position(data, old_attributes)
         
+        default_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_auto_archive_after is None:
+            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        else:
+            default_auto_archive_after *= 60
+        if self.default_auto_archive_after != default_auto_archive_after:
+            old_attributes['default_auto_archive_after'] = self.default_auto_archive_after
+            self.default_auto_archive_after = default_auto_archive_after
+        
         return old_attributes
     
     
@@ -168,7 +202,7 @@ class ChannelDirectory(ChannelGuildMainBase):
         if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # directory channels do not have thread and voice related permissions
+        # forum channels do not have thread and voice related permissions
         result &= PERMISSION_THREAD_AND_VOICE_DENY
         
         return Permission(result)
@@ -180,7 +214,7 @@ class ChannelDirectory(ChannelGuildMainBase):
         if not result&PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # directory channels do not have thread and voice related permissions
+        # forum channels do not have thread and voice related permissions
         result &= PERMISSION_THREAD_AND_VOICE_DENY
         return Permission(result)
     
@@ -200,12 +234,14 @@ class ChannelDirectory(ChannelGuildMainBase):
         
         Other Parameters
         ----------------
+        default_auto_archive_after : `int`, Optional (Keyword only)
+            The channel's ``.default_auto_archive_after``.
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
         
         Returns
         -------
-        channel : ``ChannelDirectory``
+        channel : ``ChannelForum``
         
         Raises
         ------
@@ -226,6 +262,15 @@ class ChannelDirectory(ChannelGuildMainBase):
             else:
                 name = preconvert_str(name, 'name', 2, 100)
                 processable.append(('name', name))
+            
+            try:
+                default_auto_archive_after = kwargs.pop('default_auto_archive_duration')
+            except KeyError:
+                pass
+            else:
+                default_auto_archive_after = preconvert_int_options(default_auto_archive_after,
+                    'default_auto_archive_after', AUTO_ARCHIVE_OPTIONS)
+                processable.append(('default_auto_archive_after', default_auto_archive_after))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -253,4 +298,9 @@ class ChannelDirectory(ChannelGuildMainBase):
     @copy_docs(ChannelGuildMainBase.to_data)
     def to_data(self):
         # same as `ChannelGuildMainBase`'s. Keep this function here for reference.
-        return ChannelGuildMainBase.to_data(self)
+        data = ChannelGuildMainBase.to_data(self)
+        
+        # default_auto_archive_duration
+        data['default_auto_archive_duration'] = self.default_auto_archive_after // 60
+        
+        return data

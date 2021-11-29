@@ -1179,6 +1179,7 @@ Or an another consideration can be using their system name:
 - `channel_guild_thread_private`
 - `channel_guild_stage`
 - `channel_guild_directory`
+- `channel_guild_forum`
 
 Or a group covering multiple one.
 
@@ -1190,6 +1191,7 @@ Or a group covering multiple one.
 - `channel_group_guild_connectable`
 - `channel_group_guild`
 - `channel_group_thread`
+- `channel_group_cahn_contain_threads`
 
 > Using `channel_id` prefix instead of `channel`, will give back their id instead.
 

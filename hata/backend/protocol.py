@@ -84,11 +84,11 @@ WRITE_CHUNK_LIMIT = 65536
 CONNECTION_ERROR_EOF_NO_HTTP_HEADER = (
     'Stream closed before any data was received. (Might be caused by bad connection on your side, like the other side '
     'might have closed the stream before receiving the full payload.)'
-        )
+)
 
 PAYLOAD_ERROR_EOF_AT_HTTP_HEADER = (
     'EOF received meanwhile reading http headers.'
-        )
+)
 
 class RawMessage:
     """
@@ -105,7 +105,12 @@ class RawMessage:
     """
     __slots__ = ('_upgraded', 'headers', )
     
-    def _get_upgraded(self):
+    @property
+    def upgraded(self):
+        """
+        A get-set descriptor to access whether the message is upgraded. On first access the upgrade state is detected
+        from the headers.
+        """
         upgraded = self._upgraded
         if upgraded == 2:
             try:
@@ -119,17 +124,10 @@ class RawMessage:
         
         return upgraded
     
-    def _set_upgraded(self, value):
+    @upgraded.setter
+    def upgraded(self, value):
         self._upgraded = value
     
-    upgraded = property(_get_upgraded, _set_upgraded)
-    del _get_upgraded, _set_upgraded
-    
-    if DOCS_ENABLED:
-        upgraded.__doc__ = ("""
-        A get-set descriptor to access whether the message is upgraded. On first access the upgrade state is detected
-        from the headers.
-        """)
     
     @property
     def chunked(self):
@@ -146,6 +144,7 @@ class RawMessage:
             return False
         
         return ('chunked' in transfer_encoding.lower())
+    
     
     @property
     def encoding(self):
@@ -165,6 +164,7 @@ class RawMessage:
             encoding = encoding.lower()
         
         return encoding
+
 
 class RawResponseMessage(RawMessage):
     """
@@ -422,6 +422,7 @@ class Frame:
         
         raise WebSocketProtocolError(f'Invalid op_code: {op_code}.')
 
+
 class HTTPStreamWriter:
     """
     Http writer used by ``ClientRequest``.
@@ -442,6 +443,7 @@ class HTTPStreamWriter:
         Asynchronous transport implementation. Set as `None` if at eof.
     """
     __slots__ = ('_at_eof', 'size', 'chunked', 'compressor', 'protocol', 'transport', )
+    
     def __init__(self, protocol, compression, chunked):
         """
         Creates a new ``HTTPStreamWriter`` with the given parameter.

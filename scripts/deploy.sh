@@ -20,7 +20,7 @@ then
     return 0 2>/dev/null || exit 0
 fi
 
-# Check environmnetal variables
+# Check environmental variables
 
 function get_and_set_env {
     local env_var_name=$1
@@ -28,7 +28,7 @@ function get_and_set_env {
     
     if [ -z ${!env_var_name+x} ] || [ -z ${!env_var_name} ]
     then
-        echo "${env_var_name} environmnetal variable is empty or missing."
+        echo "${env_var_name} environmental variable is empty or missing."
         echo "Please define your ${env_var_name} environmental variable:"
         
         read -r env_var_value

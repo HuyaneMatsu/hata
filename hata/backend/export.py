@@ -18,8 +18,8 @@ def include(obj_name):
     
     Returns
     -------
-    spaceholder : `NotImplementedType`
-        Spaceholder to trick the editors.
+    placeholder : `NotImplementedType`
+        Placeholder to trick the editors.
     """
     frame = sys._getframe().f_back
     spec = frame.f_globals['__spec__']

@@ -1,5 +1,5 @@
-from hata import from_json, to_json
-from os.path import exists, isfile as is_file, join as join_paths, isdir, is_directory
+from scarletio import from_json, to_json
+from os.path import exists, isfile as is_file, join as join_paths, isdir, isdir as is_directory
 from os import getcwd as get_current_working_directory, listdir as list_directory
 
 from .checkout import checkout_list_structure, ELEMENT_TYPE_IDENTIFIER_STRING

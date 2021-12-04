@@ -16,3 +16,13 @@ __all__ = (
     *websocket.__all__,
     *web_common.__all__,
 )
+
+import warnings
+
+warnings.warn(
+    (
+        f'Hata\'s backend has been moved out to a separate library.\n'
+        f'Please import from `scarletio` instead.'
+    ),
+    FutureWarning,
+)

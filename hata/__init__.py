@@ -106,16 +106,17 @@ We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master
 __version__ = '1.1.123'
 
 from .env import BACKEND_ONLY
+from .deprecate_backend import deprecate
 
-from .backend import *
 from .discord import *
 from .ext import *
 
 __all__ = (
-    *backend.__all__,
     *discord.__all__,
     *ext.__all__,
 )
 
 from scarletio import check_satisfaction
 check_satisfaction()
+
+deprecate()

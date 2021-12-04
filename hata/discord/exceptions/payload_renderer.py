@@ -216,17 +216,18 @@ def reconstruct_string_into(value, into, indent, is_file):
                     into.append(VALUE_INDENT)
                 
                 into.append(repr(value[start_index:end_index]))
+                into.append('\n')
                 
                 if should_break:
                     break
                 
                 start_index = end_index
                 continue
-        
+            
             for counter in range(indent):
                 into.append(VALUE_INDENT)
             
-            into.append(')')
+            into.append(')\n')
         
         else:
             into.append(repr(value))

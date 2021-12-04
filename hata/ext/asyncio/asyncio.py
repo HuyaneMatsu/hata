@@ -292,6 +292,11 @@ class HataFuture:
     def pending(self):
         return self.is_pending()
 
+@KeepType(HataLock)
+class HataLock:
+    def locked(self):
+        return self.is_locked()
+
 # Reimplement async-io features
 
 # asyncio.base_events

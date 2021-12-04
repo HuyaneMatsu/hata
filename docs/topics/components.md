@@ -135,6 +135,8 @@ async def ping_pong_pong():
     return InteractionResponse(components=BUTTON_PING)
 ```
 
+![](assets/components_0000.gif)
+
 Usually you can separate component commands implementation in 3 parts: defining static variables, defining the
 command and defining the component interaction. Stick to this pattern, and you can't go wrong.
 
@@ -169,6 +171,8 @@ async def cat_fed(event):
         f'Thanks, {event.user:f} for feeding my cat.'
     )
 ```
+
+![](assets/components_0001.gif)
 
 #### Using regex
 
@@ -262,11 +266,14 @@ async def choose_your_poison():
 
 
 @Nitori.interactions(custom_id=[CUSTOM_ID_CAKE, CUSTOM_ID_CAT, CUSTOM_ID_SNAKE, CUSTOM_ID_EGGPLANT])
-async def poison_edit_cake(event):
+async def poison_edit(event):
     emoji = CHOOSE_YOUR_POISON_CUSTOM_ID_TO_EMOJI.get(event.interaction.custom_id, None)
     if (emoji is not None):
         return emoji.as_emoji
 ```
+
+
+![](assets/components_0002.gif)
 
 #### Deleting the component's message
 
@@ -287,8 +294,8 @@ BUTTON_USER_INFO_CLOSE = Button(
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def user_info(client, event,
-        user: ('user', 'Check out someone other user?') = None,
-            ):
+    user: ('user', 'Check out someone other user?') = None,
+):
     if user is None:
         user = event.user
     
@@ -325,6 +332,8 @@ async def close_user_info(client, event):
     await client.interaction_component_acknowledge(event)
     await client.interaction_response_message_delete(event)
 ```
+
+![](assets/components_0003.gif)
 
 #### Sending notification
 
@@ -386,6 +395,8 @@ async def party(client, event):
     )
 ```
 
+![](assets/components_0004.gif)
+
 ## Waiting for component interaction
 
 You can wait for component interaction on a message by using the `wait_for_component_interaction` coroutine function.
@@ -407,9 +418,9 @@ def check_is_user_same(user, event):
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def add_emoji(client, event,
-        emoji: ('str', 'The emoji to add.'),
-        name: ('str', 'Custom name to add the emoji with.') = None
-            ):
+    emoji: ('str', 'The emoji to add.'),
+    name: ('str', 'Custom name to add the emoji with.') = None
+):
     """Adds an emoji to the guild."""
     if not client.is_owner(event.user):
         abort('Owner only!')
@@ -456,6 +467,8 @@ async def add_emoji(client, event,
     
     yield InteractionResponse(embed=embed, components=None, message=message, event=component_interaction)
 ```
+
+![](assets/components_0005.gif)
 
 > By passing `event` to `InteractionResponse`, you can change the interact event to respond to. When passing it
 > as a component interaction event, it will acknowledge it and/or edit the source message.

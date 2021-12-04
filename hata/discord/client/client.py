@@ -10,14 +10,11 @@ from json import JSONDecodeError
 
 from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
 from ...ext import get_and_validate_setup_functions, run_setup_functions
-from ...backend.utils import imultidict, methodize, change_on_switch, from_json
-from ...backend.futures import Future, Task, sleep, CancelledError, WaitTillAll, WaitTillFirst, future_or_timeout
-from ...backend.event_loop import EventThread, LOOP_TIME
-from ...backend.headers import AUTHORIZATION
-from ...backend.helpers import BasicAuth
-from ...backend.url import URL
-from ...backend.export import export
-from ...backend.formdata import Formdata
+from scarletio import IgnoreCaseMultiValueDictionary, methodize, change_on_switch, from_json, Future, Task, sleep, \
+    CancelledError, WaitTillAll, WaitTillFirst, future_or_timeout, EventThread, LOOP_TIME, export
+from scarletio.web_common.headers import AUTHORIZATION
+from scarletio.web_common import URL, Formdata, BasicAuth
+
 
 from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_media_type, Relationship, \
     MEDIA_TYPE_TO_EXTENSION, datetime_to_timestamp
@@ -1326,7 +1323,7 @@ class Client(ClientUserPBase):
             'scope': scopes,
         }
         
-        data = await self.http.oauth2_token(data, imultidict())
+        data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         if len(data) == 1:
             return
         
@@ -1396,7 +1393,7 @@ class Client(ClientUserPBase):
             'scope': scopes,
         }
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
         data = await self.http.oauth2_token(data, headers)
         return OA2Access(data, '')
@@ -1441,7 +1438,7 @@ class Client(ClientUserPBase):
             raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
                 f'instance, but got {access.__class__.__name__}.')
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_info_get(headers)
         return UserOA2(data, access)
@@ -1488,7 +1485,7 @@ class Client(ClientUserPBase):
             raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
                 f'instance, but got {access.__class__.__name__}.')
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_connection_get_all(headers)
         return [Connection(connection_data) for connection_data in data]
@@ -1541,7 +1538,7 @@ class Client(ClientUserPBase):
                 'scope': ' '.join(access.scopes),
             }
         
-        data = await self.http.oauth2_token(data, imultidict())
+        data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         
         access._renew(data)
     
@@ -1730,7 +1727,7 @@ class Client(ClientUserPBase):
             raise TypeError(f'`access` can be given as `{OA2Access.__name__}`, `{UserOA2.__name__}` or `str`'
                 f'instance, but got {access.__class__.__name__}.')
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_guild_get_all(headers)
         return [(create_partial_guild_from_data(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
@@ -2029,7 +2026,7 @@ class Client(ClientUserPBase):
                 f'instance, but got {access.__class__.__name__}.')
         
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         
         data = await self.http.user_achievement_get_all(self.application.id, headers)
@@ -14758,7 +14755,7 @@ class Client(ClientUserPBase):
                 '.connect\n',
             ]
             
-            await KOKORO.render_exc_async(err, before, after)
+            await KOKORO.render_exception_async(err, before, after)
             return False
         
         # Some Discord implementations send string response for some weird reason.
@@ -14815,7 +14812,7 @@ class Client(ClientUserPBase):
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
                     try:
-                        await KOKORO.render_exc_async(err, [
+                        await KOKORO.render_exception_async(err, [
                             'Ignoring unexpected outer Task or coroutine cancellation at ',
                             repr(self),
                             '._connect:\n',
@@ -14857,7 +14854,7 @@ class Client(ClientUserPBase):
                                 break
                         except (GeneratorExit, CancelledError) as err:
                             try:
-                                await KOKORO.render_exc_async(err, [
+                                await KOKORO.render_exception_async(err, [
                                     'Ignoring unexpected outer Task or coroutine cancellation at ',
                                     repr(self),
                                     '._connect:\n',
@@ -14879,7 +14876,7 @@ class Client(ClientUserPBase):
                     f'{err!r}\n'
                 )
             else:
-                await KOKORO.render_exc_async(err, [
+                await KOKORO.render_exception_async(err, [
                     'Unexpected exception occurred at ',
                     repr(self),
                     '._connect\n',

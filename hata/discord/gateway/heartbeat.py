@@ -2,7 +2,7 @@ __all__ = ()
 
 from time import perf_counter
 
-from ...backend.futures import sleep, Task, future_or_timeout, Future, CancelledError, skip_ready_cycle
+from scarletio import sleep, Task, future_or_timeout, Future, CancelledError, skip_ready_cycle
 
 from ..core import KOKORO
 

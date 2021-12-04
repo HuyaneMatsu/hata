@@ -4,7 +4,7 @@ import re
 from math import floor
 from random import Random
 
-from ..backend.utils import modulize
+from scarletio import modulize
 
 class Color(int):
     """

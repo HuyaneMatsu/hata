@@ -2,8 +2,7 @@
     'EMOJIS', 'EULAS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES', 'SCHEDULED_EVENTS',
     'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS')
 
-from ..backend.utils import WeakValueDictionary, WeakKeyDictionary
-from ..backend.event_loop import EventThread
+from scarletio import WeakValueDictionary, WeakKeyDictionary, get_event_loop, EventThread
 
 __doc__ = """
 Contains core cache and other objects relative to hata.
@@ -171,4 +170,7 @@ INTERACTION_EVENT_MESSAGE_WAITERS = WeakKeyDictionary()
 BUILTIN_EMOJIS = {}
 UNICODE_TO_EMOJI = {}
 
-KOKORO = EventThread(daemon=False, name='KOKORO')
+try:
+    KOKORO = get_event_loop()
+except RuntimeError:
+    KOKORO = EventThread(daemon=False, name='KOKORO')

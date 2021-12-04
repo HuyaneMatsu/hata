@@ -2,8 +2,7 @@ __all__ = ('SlasherApplicationCommand', )
 
 from functools import partial as partial_func
 
-from ...backend.utils import WeakReferer, copy_docs
-from ...backend.export import export, include
+from scarletio import WeakReferer, copy_docs, export, include
 
 from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
     create_event_from_class

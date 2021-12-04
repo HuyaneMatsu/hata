@@ -3,7 +3,7 @@ __all__ = ('SolarPlayer', )
 from random import randrange
 from datetime import datetime
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ...discord.core import GUILDS
 from ...discord.utils import datetime_to_timestamp

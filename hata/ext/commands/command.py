@@ -2,10 +2,9 @@
 __all__ = ('Category', 'Command', 'CommandProcesser', 'normalize_description', )
 
 import re, reprlib
+from types import FunctionType
 
-from ...backend.utils import sortedlist, DOCS_ENABLED, name_property, FunctionType
-from ...backend.analyzer import CallableAnalyzer
-from ...backend.futures import is_coroutine_generator
+from scarletio import SortedList, DOCS_ENABLED, name_property, CallableAnalyzer, is_coroutine_generator
 
 from ...discord.utils import USER_MENTION_RP
 from ...discord.events.handling_helpers import EventWaitforBase, compare_converted, check_name, \
@@ -1625,7 +1624,7 @@ class Category:
         self = object.__new__(cls)
         self.name = name
         self.display_name = display_name
-        self.commands = sortedlist()
+        self.commands = SortedList()
         self._checks = checks_processed
         self.description = description
         return self
@@ -2001,7 +2000,7 @@ class CommandProcesser(EventWaitforBase):
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    categories : `sortedlist` of ``Category``
+    categories : `SortedList` of ``Category``
         The command processer's categories.
     commands : `dict` of (`str`, `Command`) items
         Command `alternative-name` - ``Command`` relation used to lookup commands.
@@ -2164,7 +2163,7 @@ class CommandProcesser(EventWaitforBase):
         self.update_prefix(prefix, ignorecase)
         self._ignorecase = ignorecase
         self._default_category_name = default_category.name
-        self.categories = categories = sortedlist()
+        self.categories = categories = SortedList()
         categories.add(default_category)
         
         return self

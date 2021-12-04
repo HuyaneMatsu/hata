@@ -1,6 +1,6 @@
 __all__ = ('CommandContext', )
 
-from ...backend.export import export
+from scarletio import export
 
 from .command_helpers import get_command_category_trace, handle_exception, run_checks
 from .exceptions import CommandCheckError

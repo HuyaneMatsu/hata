@@ -1,4 +1,4 @@
-from ...backend.futures import render_exc_to_list
+from scarletio.utils.trace import render_exception_into
 from os.path import abspath as get_absolute_path, join as join_paths, exists, isdir as is_directory, \
     isfile as is_file, getcwd as get_current_working_directory
 from os import makedirs as make_directories
@@ -17,7 +17,7 @@ def render_exception(exception):
     traceback : `str`
     """
     extracted = []
-    render_exc_to_list(exception, extend=extracted)
+    render_exception_into(exception, extend=extracted)
     return ''.join(extracted)
 
 

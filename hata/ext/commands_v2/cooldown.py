@@ -1,6 +1,6 @@
 __all__ = ('CooldownHandler', )
 
-from ...backend.event_loop import LOOP_TIME
+from scarletio import LOOP_TIME
 
 from ...discord.channel import ChannelGuildBase
 from ...discord.core import KOKORO

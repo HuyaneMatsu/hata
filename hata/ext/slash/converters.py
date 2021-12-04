@@ -2,9 +2,7 @@ __all__ = ('SlashParameter', )
 
 import reprlib
 
-from ...backend.analyzer import CallableAnalyzer
-from ...backend.utils import un_map_pack, copy_docs
-from ...backend.export import include
+from scarletio import CallableAnalyzer, un_map_pack, copy_docs, include
 
 from ...discord.core import ROLES, CHANNELS
 from ...discord.exceptions import DiscordException, ERROR_CODES

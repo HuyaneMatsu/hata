@@ -2,8 +2,7 @@ __all__ = ('User', 'ZEROUSER')
 
 from ...env import CACHE_USER, CACHE_PRESENCE
 
-from ...backend.utils import set_docs
-from ...backend.export import include
+from scarletio import set_docs, include
 
 from ..core import USERS
 

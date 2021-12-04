@@ -6,8 +6,7 @@ __all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EM
 from re import compile as re_compile, I as re_ignore_case, escape as re_escape
 
 from ...env import CACHE_PRESENCE, CACHE_USER
-from ...backend.utils import WeakValueDictionary
-from ...backend.export import export, include
+from scarletio import WeakValueDictionary, export, include
 
 from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..core import GUILDS

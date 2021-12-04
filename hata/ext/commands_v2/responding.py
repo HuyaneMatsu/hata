@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.futures import is_coroutine_generator
+from scarletio import is_coroutine_generator
 
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase

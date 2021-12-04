@@ -3,8 +3,8 @@ __all__ = ()
 import reprlib
 from json import JSONDecodeError
 
-from ...backend.utils import from_json
-from ...backend.formdata import Formdata
+from scarletio import from_json
+from scarletio.web_common import Formdata
 
 TYPE_NAME_UNEXPECTED = 'object'
 TYPE_NAME_STRING = 'string'

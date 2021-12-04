@@ -2,7 +2,7 @@ __all__ = ('GuildProfile', )
 
 from datetime import datetime
 
-from ...backend.export import include
+from scarletio import include
 
 from ..bases import IconSlot, Slotted
 from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START

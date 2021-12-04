@@ -1,6 +1,6 @@
 __all__ = ('MessageType', 'MessageActivityType')
 
-from ...backend.utils import any_to_any
+from scarletio import any_to_any
 
 from ..bases import PreinstancedBase, Preinstance as P
 from ..utils import sanitize_mentions

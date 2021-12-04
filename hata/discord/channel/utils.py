@@ -4,7 +4,7 @@ __all__ = ('CHANNEL_TYPE_MAP', 'cr_pg_channel_object', 'create_partial_channel_f
 from datetime import datetime
 import warnings
 
-from ...backend.export import export, include
+from scarletio import export, include
 
 from ..bases import maybe_snowflake
 from ..core import CHANNELS

@@ -2,10 +2,10 @@ __all__ = ('ConverterFlag', )
 
 import re
 from datetime import timedelta
+from types import FunctionType
 
 from ...env import CACHE_USER
-from ...backend.utils import cached_property, copy_docs, FunctionType
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import cached_property, copy_docs, CallableAnalyzer
 from ...discord.utils import USER_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, parse_tdelta, parse_rdelta, \
     INVITE_CODE_RP, CHANNEL_MESSAGE_RP
 from ...discord.bases import FlagBase

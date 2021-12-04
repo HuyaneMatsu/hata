@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 __all__ = ('ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'MessageCreateWaitfor', 'WaitAndContinue',
     'wait_for_message', 'wait_for_reaction')
 
-from ...backend import Task, Future
+from scarletio import Task, Future
 from ...discord.events.handling_helpers import EventWaitforBase
 from ...discord.core import KOKORO
 

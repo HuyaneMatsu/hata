@@ -1,6 +1,6 @@
 __all__ = ('EmbedCore', )
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ..utils import timestamp_to_datetime, sanitize_mentions, datetime_to_timestamp
 from ..color import Color

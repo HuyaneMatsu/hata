@@ -2,7 +2,7 @@ __all__ = ('abort', 'InteractionResponse',)
 
 import warnings
 
-from ...backend.futures import is_coroutine_generator
+from scarletio import is_coroutine_generator
 
 from ...discord.embed import EmbedBase
 from ...discord.client import Client

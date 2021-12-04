@@ -3,7 +3,7 @@ __all__ = ('DiscordException',)
 import warnings
 
 from ...env import RICH_DISCORD_EXCEPTION
-from ...backend.headers import RETRY_AFTER, DATE
+from scarletio.web_common.headers import RETRY_AFTER, DATE
 
 from ..utils import parse_date_header_to_datetime, DATETIME_FORMAT_CODE
 

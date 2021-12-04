@@ -1,6 +1,6 @@
 __all__ = ('ActivityCustom',)
 
-from ...backend.export import include
+from scarletio import include
 from ..utils import DISCORD_EPOCH_START, unix_time_to_datetime, datetime_to_unix_time
 
 from .activity_base import ActivityBase

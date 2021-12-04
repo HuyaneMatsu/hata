@@ -3,7 +3,7 @@ __all__ = ('GetTracksResult', 'Track', )
 from math import floor
 from base64 import b64decode
 
-from ...backend.utils import un_map_pack
+from scarletio import un_map_pack
 
 from .constants import LAVALINK_KEY_TRACK, LAVALINK_KEY_START_TIME, LAVALINK_KEY_END_TIME, LAVALINK_KEY_TRACK_BASE64, \
     LAVALINK_KEY_TRACK_DICT, LAVALINK_KEY_TRACK_IDENTIFIER, LAVALINK_KEY_TRACK_SEEKABLE, LAVALINK_KEY_TRACK_AUTHOR, \

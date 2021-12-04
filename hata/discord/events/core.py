@@ -8,8 +8,7 @@ try:
 except ImportError:
     from weakref import WeakSet
 
-from ...backend.export import export
-from ...backend.futures import Task
+from scarletio import export, Task
 
 from ..core import KOKORO
 

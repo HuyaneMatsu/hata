@@ -5,9 +5,7 @@ from datetime import datetime
 from base64 import b64decode
 from binascii import Error as Base64DecodeError
 
-from ...backend.utils import basemethod
-from ...backend.event_loop import LOOP_TIME
-from ...backend.futures import Future, Task, WaitTillFirst
+from scarletio import BaseMethodType, LOOP_TIME, Future, Task, WaitTillFirst
 
 from ..core import KOKORO, CLIENTS, CHANNELS
 from ..http import RateLimitProxy
@@ -245,7 +243,7 @@ class DiscoveryCategoryRequestCacher:
         if client is None:
             return self
         
-        return basemethod(self.__class__.execute, self, client)
+        return BaseMethodType(self.__class__.execute, self, client)
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
@@ -414,7 +412,7 @@ class DiscoveryTermRequestCacher:
         if client is None:
             return self
         
-        return basemethod(self.__class__.execute, self, client)
+        return BaseMethodType(self.__class__.execute, self, client)
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')

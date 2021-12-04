@@ -2,8 +2,7 @@ __all__ = ('ChannelGuildBase', 'ChannelGuildMainBase')
 
 import re, warnings
 
-from ...backend.utils import copy_docs
-from ...backend.export import export, include
+from scarletio import copy_docs,  export, include
 
 from ..permission import Permission, PermissionOverwriteTargetType
 from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, \

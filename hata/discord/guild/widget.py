@@ -1,6 +1,6 @@
 __all__ = ('GuildWidget', 'GuildWidgetChannel', 'GuildWidgetUser',)
 
-from ...backend.utils import cached_property
+from scarletio import cached_property
 
 from ..bases import DiscordEntity
 from ..user import Status

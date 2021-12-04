@@ -76,11 +76,11 @@ class AsynchronousInteractiveConsole(InteractiveConsole):
         
         except BaseException as err:
             future = self.future
-            if (not future.done()):
+            if (not future.is_done()):
                 future.cancel()
             
             task = self.task
-            if (task is not None) and (not task.done()):
+            if (task is not None) and (not task.is_done()):
                 task.cancel()
             
             if isinstance(err, SystemExit):

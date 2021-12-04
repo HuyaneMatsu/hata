@@ -2,10 +2,7 @@ __all__ = ('RateLimitProxy', )
 
 from threading import current_thread
 
-from ...backend.export import include
-from ...backend.utils import WeakReferer
-from ...backend.futures import Future
-from ...backend.event_loop import LOOP_TIME
+from scarletio import include, WeakReferer, Future, LOOP_TIME
 
 from .rate_limit import RateLimitGroup, LIMITER_GLOBAL, LIMITER_UNLIMITED, LIMITER_CHANNEL, LIMITER_WEBHOOK, \
     LIMITER_INTERACTION, LIMITER_GUILD, RateLimitHandler, UNLIMITED_SIZE_VALUE

@@ -10,9 +10,10 @@ try:
 except ImportError:
     relativedelta = None
 
+from types import MethodType, FunctionType
+
 from ...env import CACHE_USER
-from ...backend.utils import MethodLike, module_property, MethodType, FunctionType
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import MethodLike, module_property,  CallableAnalyzer
 
 from ...discord.bases import FlagBase
 from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, INVITE_CODE_RP, parse_rdelta,\

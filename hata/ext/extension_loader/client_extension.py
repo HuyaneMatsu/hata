@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.utils import KeepType
+from scarletio import KeepType
 from ...discord.client import Client
 
 from .extension import EXTENSIONS, EXTENSION_STATE_LOADED

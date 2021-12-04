@@ -1,6 +1,6 @@
 __all__ = ('PermissionOverwrite', )
 
-from ...backend.export import include
+from scarletio import include
 from ..permission import Permission
 from .utils import get_permission_overwrite_key_value, PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
 from .preinstanced import PermissionOverwriteTargetType

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.utils import KeepType
+from scarletio import KeepType
 
 from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter

@@ -2,15 +2,12 @@ __all__ = ('DiscordHTTPClient', 'LIBRARY_USER_AGENT',)
 
 import sys
 
-from ...backend.utils import imultidict, WeakMap, WeakKeyDictionary, to_json, from_json, call
-from ...backend.futures import sleep, Future
-from ...backend.http import HTTPClient, RequestCM
-from ...backend.connector import TCPConnector
-from ...backend.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_POST, METHOD_PUT, CONTENT_TYPE, \
+from scarletio import IgnoreCaseMultiValueDictionary, WeakMap, WeakKeyDictionary, to_json, from_json, call, \
+    LOOP_TIME, sleep, Future
+from scarletio.web_common import Formdata, quote
+from scarletio.http_client import TCPConnector, HTTPClient, RequestContextManager
+from scarletio.web_common.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_POST, METHOD_PUT, CONTENT_TYPE, \
     USER_AGENT, AUTHORIZATION
-from ...backend.quote import quote
-from ...backend.event_loop import LOOP_TIME
-from ...backend.formdata import Formdata
 
 from ...env import API_VERSION, LIBRARY_URL
 
@@ -95,7 +92,7 @@ class DiscordHTTPClient(HTTPClient):
         The time when global rate limit will expire in monotonic time.
     handlers : ``WeakMap`` of ``RateLimitHandler``
         Rate limit handlers of the Discord requests.
-    headers : `imultidict`
+    headers : `IgnoreCaseMultiValueDictionary`
         Headers used by every every Discord request.
     loop : ``EventThread``
         The event loop of the http session.
@@ -144,7 +141,7 @@ class DiscordHTTPClient(HTTPClient):
         
         HTTPClient.__init__(self, loop, proxy_url, proxy_auth, connector = connector)
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[USER_AGENT] = LIBRARY_USER_AGENT
         headers[AUTHORIZATION] = f'Bot {client.token}' if client.is_bot else client.token
         
@@ -210,7 +207,7 @@ class DiscordHTTPClient(HTTPClient):
             Payload to request with.
         params : `Any`, Optional
             Query parameters.
-        headers : `imultidict`, Optional
+        headers : `IgnoreCaseMultiValueDictionary`, Optional
             Headers to do the request with. If passed then the session's own headers wont be used.
         reason : `str`, Optional
             Shows up at the request's respective guild if applicable.
@@ -258,7 +255,7 @@ class DiscordHTTPClient(HTTPClient):
             await handler.enter()
             with handler.ctx() as lock:
                 try:
-                    async with RequestCM(self._request(method, url, headers, data, params)) as response:
+                    async with RequestContextManager(self._request(method, url, headers, data, params)) as response:
                         response_data = await response.text(encoding='utf-8')
                 except OSError as err:
                     if not try_again:
@@ -1016,7 +1013,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.guild_widget_get, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/widget.json',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def guild_user_get_chunk(self, guild_id, data):
@@ -1275,7 +1272,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_get_token, webhook_id),
             METHOD_GET,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def webhook_delete_token(self, webhook_id, webhook_token):
@@ -1283,7 +1280,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_delete_token, webhook_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def webhook_delete(self, webhook_id):
@@ -1299,7 +1296,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
             data,
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def webhook_edit(self, webhook_id, data):
@@ -1315,7 +1312,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_create, webhook_id),
             METHOD_POST,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}',
-            data, headers = imultidict(),
+            data, headers = IgnoreCaseMultiValueDictionary(),
             params = query_parameters,
         )
     
@@ -1325,7 +1322,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_PATCH,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
             data,
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def webhook_message_delete(self, webhook_id, webhook_token, message_id):
@@ -1333,7 +1330,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_edit, webhook_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def webhook_message_get(self, webhook_id, webhook_token, message_id):
@@ -1341,7 +1338,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.webhook_message_get, webhook_id),
             METHOD_GET,
             f'{API_ENDPOINT}/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     # user
@@ -1967,7 +1964,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.status_incident_unresolved, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{STATUS_ENDPOINT}/incidents/unresolved.json',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def status_maintenance_active(self):
@@ -1975,7 +1972,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.status_maintenance_active, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{STATUS_ENDPOINT}/scheduled-maintenances/active.json',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )
     
     async def status_maintenance_upcoming(self):
@@ -1983,5 +1980,5 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.status_maintenance_upcoming, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{STATUS_ENDPOINT}/scheduled-maintenances/upcoming.json',
-            headers = imultidict(),
+            headers = IgnoreCaseMultiValueDictionary(),
         )

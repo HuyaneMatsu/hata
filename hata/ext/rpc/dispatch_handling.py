@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.futures import Task
+from scarletio import Task
 from ...discord.user import User
 from ...discord.events.handling_helpers import asynclist
 from ...discord.core import KOKORO, MESSAGES, CHANNELS

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend import Task, WaitTillAll
+from scarletio import Task, WaitTillAll
 
 from ...discord.core import KOKORO
 

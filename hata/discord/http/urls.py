@@ -7,7 +7,7 @@ import re
 from ...env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, \
     API_VERSION
 
-from ...backend.export import export, include
+from scarletio import export, include
 
 from ..bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
 

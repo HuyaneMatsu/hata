@@ -5,8 +5,7 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from importlib import reload as reload_module
 from py_compile import compile as compile_module
 
-from ...backend.utils import HybridValueDictionary, WeakValueDictionary
-from ...backend.export import include
+from scarletio import HybridValueDictionary, WeakValueDictionary, include
 
 from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snapshot
 from .utils import _validate_entry_or_exit, PROTECTED_NAMES, _get_path_extension_name

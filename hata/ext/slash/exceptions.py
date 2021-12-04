@@ -2,9 +2,8 @@ __all__ = ('SlasherCommandError', 'SlasherApplicationCommandParameterConversionE
 
 from random import choice
 
-from ...backend.utils import copy_docs
-from ...backend.export import include
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import copy_docs
+from scarletio import include, CallableAnalyzer
 
 from ...discord.interaction import InteractionType
 from ...discord.exceptions import DiscordException, ERROR_CODES

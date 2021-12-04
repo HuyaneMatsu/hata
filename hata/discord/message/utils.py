@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.export import include
+from scarletio import include
 
 from ..core import INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS
 

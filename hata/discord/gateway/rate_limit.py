@@ -2,8 +2,7 @@ __all__ = ()
 
 from collections import deque
 
-from ...backend.futures import Future
-from ...backend.event_loop import LOOP_TIME
+from scarletio import Future, LOOP_TIME
 
 from ..core import KOKORO
 

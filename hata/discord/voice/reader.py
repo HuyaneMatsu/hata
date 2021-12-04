@@ -2,7 +2,7 @@ __all__ = ()
 
 from collections import deque
 
-from ...backend.futures import Task, CancelledError, sleep
+from scarletio import Task, CancelledError, sleep
 
 from ..core import KOKORO
 
@@ -273,7 +273,7 @@ class AudioReader:
                     if isinstance(err, CancelledError) and self.done:
                         return
                     
-                    await KOKORO.render_exc_async(err, before=[
+                    await KOKORO.render_exception_async(err, before=[
                         'Exception occurred at decoding voice packet at\n',
                         repr(self),
                         '\n',
@@ -287,7 +287,7 @@ class AudioReader:
             if isinstance(err, CancelledError) and self.done:
                 return
             
-            await KOKORO.render_exc_async(err, before=[
+            await KOKORO.render_exception_async(err, before=[
                 'Exception occurred at \n',
                 repr(self),
                 '\n',

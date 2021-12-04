@@ -2,7 +2,7 @@ __all__ = ('ChannelBase',)
 
 import re
 
-from ...backend.export import export, include
+from scarletio import export, include
 
 from ..bases import DiscordEntity
 from ..permission import Permission

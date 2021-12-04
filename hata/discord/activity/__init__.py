@@ -1,6 +1,6 @@
 import warnings
 
-from ...backend.export import export
+from scarletio import export
 
 from .activity_base import *
 from .activity_custom import *

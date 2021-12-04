@@ -1,7 +1,6 @@
 __all__ = ('AUTO_ARCHIVE_DEFAULT', 'AUTO_ARCHIVE_OPTIONS', 'ChannelThread', )
 
-from ...backend.utils import copy_docs
-from ...backend.export import export
+from scarletio import copy_docs, export
 
 from ..core import CHANNELS, GUILDS
 from ..permission import Permission

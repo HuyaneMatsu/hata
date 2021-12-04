@@ -1,6 +1,6 @@
 __all__ = ('Role', )
 
-from ...backend.export import export, include
+from scarletio import export, include
 
 from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..core import ROLES, GUILDS

@@ -1,10 +1,9 @@
 __all__ = ('TopGGClient', )
 
-from ...backend.utils import WeakReferer, imultidict, to_json, from_json
-from ...backend.futures import Task, sleep, Future, shield
-from ...backend.headers import RETRY_AFTER, METHOD_GET, METHOD_POST, AUTHORIZATION, CONTENT_TYPE, USER_AGENT
-from ...backend.http import RequestCM
-from ...backend.event_loop import LOOP_TIME
+from scarletio import WeakReferer, IgnoreCaseMultiValueDictionary, to_json, from_json, LOOP_TIME
+from scarletio import Task, sleep, Future, shield
+from scarletio.web_common.headers import RETRY_AFTER, METHOD_GET, METHOD_POST, AUTHORIZATION, CONTENT_TYPE, USER_AGENT
+from scarletio.http_client import RequestContextManager
 
 from ...discord.client import Client
 from ...discord.core import KOKORO
@@ -162,7 +161,7 @@ class TopGGClient:
         Whether auto posting is still running.
     _global_rate_limit_expires_at : `float`
         When the global rate limit expires in monotonic time.
-    _headers : `imultidict`
+    _headers : `IgnoreCaseMultiValueDictionary`
         Request headers.
     _raise_on_top_gg_global_rate_limit : `bool`
         Whether ``TopGGGloballyRateLimited`` should be raised when the client gets globally rate limited.
@@ -235,7 +234,7 @@ class TopGGClient:
         
         client_reference = WeakReferer(client)
         
-        headers = imultidict()
+        headers = IgnoreCaseMultiValueDictionary()
         headers[USER_AGENT] = LIBRARY_USER_AGENT
         headers[AUTHORIZATION] = top_gg_token
         
@@ -819,7 +818,7 @@ class TopGGClient:
             
             async with rate_limit_handler.ctx():
                 try:
-                    async with RequestCM(self.http._request(method, url, headers, data, query_parameters)) as response:
+                    async with RequestContextManager(self.http._request(method, url, headers, data, query_parameters)) as response:
                         response_data = await response.text(encoding='utf-8')
                 except OSError as err:
                     if not try_again:

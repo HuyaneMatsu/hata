@@ -3,10 +3,9 @@ __all__ = ()
 import sys, zlib
 
 from ...env import CACHE_PRESENCE
-from ...backend.futures import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously, \
-    repeat_timeout
-from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
-from ...backend.utils import to_json, from_json
+from scarletio import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously, \
+    repeat_timeout, to_json, from_json
+from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from ..activity import ACTIVITY_UNKNOWN
 from ..events.core import PARSERS
@@ -238,7 +237,7 @@ class DiscordGateway:
             
             self._decompressor = zlib.decompressobj()
             gateway_url = await self.client.client_gateway_url()
-            self.websocket = await self.client.http.connect_ws(gateway_url)
+            self.websocket = await self.client.http.connect_websocket(gateway_url)
             self.kokoro.start_beating()
             
             if not resume:

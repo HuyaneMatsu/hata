@@ -108,19 +108,14 @@ __version__ = '1.1.123'
 from .env import BACKEND_ONLY
 
 from .backend import *
+from .discord import *
+from .ext import *
 
-if BACKEND_ONLY:
-    __all__ = backend.__all__
+__all__ = (
+    *backend.__all__,
+    *discord.__all__,
+    *ext.__all__,
+)
 
-else:
-    from .discord import *
-    from .ext import *
-    
-    __all__ = (
-        *backend.__all__,
-        *discord.__all__,
-        *ext.__all__,
-    )
-
-from .backend.export import check_satisfaction
+from scarletio import check_satisfaction
 check_satisfaction()

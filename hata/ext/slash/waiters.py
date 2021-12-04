@@ -2,8 +2,7 @@ __all__ = ('Timeouter', 'iter_component_interactions', 'wait_for_component_inter
 
 from collections import deque
 
-from ...backend.futures import Future
-from ...backend.event_loop import LOOP_TIME
+from scarletio import Future, LOOP_TIME
 
 from ...discord.core import APPLICATION_ID_TO_CLIENT, KOKORO
 from ...discord.message import Message

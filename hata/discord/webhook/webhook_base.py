@@ -1,6 +1,6 @@
 __all__ = ('WebhookBase',)
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ..user import UserBase
 from ..core import CHANNELS

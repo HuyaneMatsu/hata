@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.futures import Task
+from scarletio import Task
 from ...discord.core import KOKORO
 
 from .constants import LAVALINK_KEY_EVENT_TRACK_END, LAVALINK_KEY_EVENT_TRACK_EXCEPTION, LAVALINK_KEY_GUILD_ID, \

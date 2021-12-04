@@ -3,7 +3,7 @@ __all__ = ('create_partial_emoji_data', 'create_partial_emoji_from_data', 'creat
 
 import warnings
 
-from ...backend.export import export
+from scarletio import export
 
 from ..utils import EMOJI_RP, REACTION_RP
 

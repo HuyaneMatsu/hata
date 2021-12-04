@@ -2,7 +2,7 @@ __all__ = ()
 
 import sys
 
-from ...backend.futures import Task, WaitTillAll
+from scarletio import Task, WaitTillAll
 
 from ..core import KOKORO
 from ..voice import VoiceClient
@@ -31,7 +31,7 @@ async def default_error_event_handler(client, name, err):
     ]
     
     if isinstance(err, BaseException):
-        await KOKORO.render_exc_async(err, extracted)
+        await KOKORO.render_exception_async(err, extracted)
         return
     
     if not isinstance(err, str):

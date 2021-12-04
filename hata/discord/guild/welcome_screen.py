@@ -2,7 +2,7 @@ __all__ = ('WelcomeChannel', 'WelcomeScreen')
 
 import reprlib
 
-from ...backend.utils import BaseMethodDescriptor
+from scarletio import BaseMethodDescriptor
 
 from ..core import CHANNELS
 from ..channel import ChannelText, ChannelBase

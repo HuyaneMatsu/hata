@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('KOKORO_STRATEGY', )
 
 from threading import current_thread
@@ -7,8 +6,7 @@ from sqlalchemy import util
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.strategies import DefaultEngineStrategy
 
-from ...backend.utils import alchemy_incendiary
-from ...backend.executor import ExecutorThread
+from scarletio import alchemy_incendiary, ExecutorThread
 
 
 class KOKOROEngine:

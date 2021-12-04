@@ -3,7 +3,7 @@ __all__ = ('FailingAddress', 'RoutePlannerBase', 'RoutePlannerNanoIP', 'RoutePla
 
 import warnings
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ...discord.utils import unix_time_to_datetime, DATETIME_FORMAT_CODE
 

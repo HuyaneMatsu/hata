@@ -3,10 +3,8 @@ __all__ = ('SolarClient', )
 from random import choice
 from threading import current_thread
 
-from ...backend.utils import to_json, WeakReferer
-from ...backend.headers import AUTHORIZATION, CONTENT_TYPE
-from ...backend.futures import Task, WaitTillAll
-from ...backend.event_loop import EventThread
+from scarletio import to_json, WeakReferer, Task, WaitTillAll, EventThread
+from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE
 
 from ...discord.core import KOKORO
 from ...discord.voice.utils import try_get_voice_region

@@ -5,7 +5,7 @@ from random import randrange
 from time import monotonic
 from datetime import datetime
 
-from ...backend.futures import Future, Task
+from scarletio import Future, Task
 
 from ...discord.core import KOKORO, GUILDS, CHANNELS
 from ...discord.channel import ChannelVoiceBase

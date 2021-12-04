@@ -2,8 +2,7 @@ __all__ = ('SubterraneanHelpCommand', )
 
 from functools import partial as partial_func
 
-from ....backend.utils import DOCS_ENABLED, doc_property
-from ....backend.analyzer import CallableAnalyzer
+from scarletio import DOCS_ENABLED, docs_property,  CallableAnalyzer
 from ....discord.embed import Embed, EmbedBase
 from ....discord.utils import chunkify
 from ....discord.preconverters import preconvert_str
@@ -592,7 +591,7 @@ class SubterraneanHelpCommand:
         """
         return SubterraneanHelpHelp(self)
     
-    __doc__ = doc_property()
+    __doc__ = docs_property()
     
     __slots__ = ('embed_postprocessor', 'prefix')
     

@@ -3,7 +3,7 @@ __all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', '
 
 import sys
 
-from ...backend.utils import DOCS_ENABLED, doc_property
+from scarletio import DOCS_ENABLED, docs_property
 from .preinstanced import PreinstancedBase, Preinstance as P
 
 class IconType(PreinstancedBase):
@@ -253,7 +253,7 @@ class IconSlot:
     icon : ``Icon``
     """)
         
-        __doc__ = doc_property()
+        __doc__ = docs_property()
     
     __slots__ = ('internal_name', 'discord_side_name', 'added_instance_attributes', 'added_class_attributes')
     

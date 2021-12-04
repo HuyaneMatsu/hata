@@ -3,7 +3,7 @@ __all__ = ()
 
 from html import escape as html_escape
 
-from ...backend.export import export
+from scarletio import export
 
 from .graver import GravedDescription, GravedAttributeDescription
 from .parser import ATTRIBUTE_SECTION_NAME_RP, ATTRIBUTE_NAME_RP

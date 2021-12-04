@@ -1,6 +1,6 @@
 __all__ = ('ReactionAddEvent', 'ReactionDeleteEvent', )
 
-from ...backend.futures import Task
+from scarletio import Task
 
 from ..core import KOKORO
 from ..bases import EventBase

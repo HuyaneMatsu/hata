@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Checks can be added to commands or to categories to limit their usage to set users or places.
 
@@ -98,9 +97,8 @@ If a command's check fails, then `command` is given as `Command` instance, tho c
 commands and at those cases, `command` is given as `str`.
 """
 
-from ...backend.utils import NEEDS_DUMMY_INIT
-from ...backend.futures import Task
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import Task, CallableAnalyzer
+from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
 from ...discord.core import KOKORO
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake

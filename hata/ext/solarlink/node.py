@@ -1,8 +1,7 @@
 __all__ = ('SolarNode', )
 
-from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
-from ...backend.futures import sleep, Task, future_or_timeout, Future
-from ...backend.utils import to_json, from_json
+from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
+from scarletio import sleep, Task, future_or_timeout, Future,  to_json, from_json
 from ...discord.core import KOKORO
 from ...discord.guild import VoiceRegion
 
@@ -229,7 +228,7 @@ class SolarNode:
                 await websocket.close(4000)
                 self.websocket = None
             
-            self.websocket = await self.client.http.connect_ws(
+            self.websocket = await self.client.http.connect_websocket(
                 f'ws://{self._host}:{self._port}',
                 headers = headers,
             )
@@ -315,7 +314,7 @@ class SolarNode:
                         sleep_amount = 1.0
                     
                     if not reconnect_attempts:
-                        await KOKORO.render_exc_async(err, [
+                        await KOKORO.render_exception_async(err, [
                             'Failed to connect to lavalink az ',
                             repr(self),
                             '.run:\n',

@@ -1,7 +1,6 @@
 __all__ = ('ChannelPrivate', 'ChannelGroup', )
 
-from ...backend.utils import copy_docs
-from ...backend.export import export
+from scarletio import copy_docs, export
 
 from ..bases import IconSlot, ICON_TYPE_NONE
 from ..core import CHANNELS

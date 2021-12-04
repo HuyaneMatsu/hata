@@ -10,9 +10,7 @@ except ImportError:
 
 from ...env import MESSAGE_CACHE_SIZE
 
-from ...backend.utils import WeakReferer
-from ...backend.event_loop import LOOP_TIME
-from ...backend.export import export
+from scarletio import WeakReferer, LOOP_TIME, export
 
 from ..core import MESSAGES, KOKORO
 from ..message import Message

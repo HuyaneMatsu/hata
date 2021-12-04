@@ -1,7 +1,7 @@
 __all__ = ('ScheduledEventEntityMetadata', 'StageEntityMetadata')
 
 from ..user import ClientUserBase, create_partial_user_from_id
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 class ScheduledEventEntityMetadata:
     """

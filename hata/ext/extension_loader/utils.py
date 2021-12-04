@@ -4,8 +4,7 @@ from sys import path as route_paths, _getframe as get_frame
 from os.path import join as join_paths, isdir as is_folder, isfile as is_file, exists, basename as base_name, \
     isabs as is_absolute_path_name
 from os import listdir as list_directory
-from ...backend.utils import HybridValueDictionary
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import HybridValueDictionary, CallableAnalyzer
 from .exceptions import DoNotLoadExtension
 
 def _validate_entry_or_exit(point):

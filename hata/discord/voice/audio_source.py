@@ -4,8 +4,7 @@ __all__ = ('AudioSource', 'DownloadError', 'LocalAudio', 'YTAudio')
 import os, sys, subprocess, shlex
 from pathlib import Path
 
-from ...backend.utils import alchemy_incendiary
-from ...backend.futures import Task, CancelledError
+from scarletio import alchemy_incendiary, Task, CancelledError
 
 from ..core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE

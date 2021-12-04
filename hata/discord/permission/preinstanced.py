@@ -1,7 +1,7 @@
 __all__ = ('PermissionOverwriteTargetType',)
 
 from ...env import API_VERSION
-from ...backend.utils import set_docs
+from scarletio import set_docs
 from ..bases import PreinstancedBase, Preinstance as P
 
 

@@ -6,9 +6,7 @@ from os import  getpid as get_process_identifier
 from threading import current_thread
 from math import floor
 
-from ...backend.utils import to_json, from_json
-from ...backend.event_loop import EventThread
-from ...backend.futures import Task, Future, future_or_timeout, sleep
+from scarletio import to_json, from_json, EventThread, Task, Future, future_or_timeout, sleep
 from ...discord.core import KOKORO
 from ...discord.preconverters import preconvert_snowflake
 from ...discord.client.request_helpers import get_user_id, get_guild_id, get_channel_id
@@ -301,7 +299,7 @@ class RPCClient:
     
     if PLATFORM in ('linux', 'darwin'):
         async def _open_pipe(self, ipc_path):
-            protocol = await KOKORO.open_unix_connection(ipc_path)
+            protocol = await KOKORO.open_unix_connection_to(ipc_path)
             self._protocol = protocol
     else:
         async def _open_pipe(self, ipc_path):

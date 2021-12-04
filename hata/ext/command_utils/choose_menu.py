@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('ChooseMenu', )
 
-from ...backend.futures import CancelledError
-from ...backend.utils import copy_docs
+from scarletio import CancelledError, copy_docs
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message

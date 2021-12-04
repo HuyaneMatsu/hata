@@ -10,8 +10,8 @@ else:
     SecretBox = nacl.secret.SecretBox
     del nacl
 
-from ...backend.exceptions import ConnectionClosed
-from ...backend.utils import to_json, from_json
+from scarletio.web_common import ConnectionClosed
+from scarletio import to_json, from_json
 
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
 
@@ -144,7 +144,7 @@ class DiscordGatewayVoice:
             self.websocket = None
         
         gateway = f'wss://{self.client._endpoint}/?v=4'
-        self.websocket = await self.client.client.http.connect_ws(gateway)
+        self.websocket = await self.client.client.http.connect_websocket(gateway)
         
         kokoro = self.kokoro
         if kokoro is None:

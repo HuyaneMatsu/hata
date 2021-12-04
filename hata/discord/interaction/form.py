@@ -2,7 +2,7 @@ __all__ = ('InteractionForm',)
 
 import reprlib
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from .components import ComponentBase, ComponentRow, create_component
 

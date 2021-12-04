@@ -5,7 +5,7 @@ from os.path import join as join_paths
 from os import listdir as list_directory, environ as ENVIRONMENTAL_VARIABLES
 from tempfile import gettempdir as get_temporary_directory
 
-from ...backend.utils import set_docs
+from scarletio import set_docs
 
 from .constants import PAYLOAD_KEY_EVENT, EVENT_ERROR, PAYLOAD_KEY_DATA
 from. exceptions import DiscordRPCError

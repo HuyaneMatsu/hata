@@ -1,7 +1,7 @@
 __all__ = ('execute_command_from_system_parameters', )
 
 import sys
-from ...backend.utils import WeakReferer, copy_docs
+from scarletio import WeakReferer, copy_docs
 
 COMMAND_RESULT_CODE_CONVERSION_FAILED = 1
 COMMAND_RESULT_CODE_PARAMETER_REQUIRED = 2

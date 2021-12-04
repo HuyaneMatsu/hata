@@ -3,10 +3,8 @@ __all__ = ()
 from re import compile as re_compile, escape as re_escape, M as re_multi_line, S as re_dotall, I as re_ignore_case, \
     match as re_match
 from functools import partial as partial_func
-
-from ...backend.utils import FunctionType
-from ...backend.analyzer import CallableAnalyzer
-from ...backend.export import include
+from types import FunctionType
+from scarletio import CallableAnalyzer, include
 
 from ...discord.permission.permission import PERMISSION_CAN_SEND_MESSAGES_ALL
 

@@ -3,9 +3,7 @@ __all__ = ('SubterraneanHelpCommand', )
 
 from functools import partial as partial_func
 
-from ....backend.utils import DOCS_ENABLED, doc_property
-from ....backend.futures import is_awaitable
-from ....backend.analyzer import CallableAnalyzer
+from scarletio import DOCS_ENABLED, docs_property, is_awaitable, CallableAnalyzer
 from ....discord.embed import Embed
 from ....discord.utils import chunkify
 from ....discord.preconverters import preconvert_color, preconvert_str
@@ -347,7 +345,7 @@ class SubterraneanHelpCommand:
         """
         return SubterraneanHelpHelp(self)
     
-    __doc__ = doc_property()
+    __doc__ = docs_property()
     
     __slots__ = ('color_getter', 'embed_postprocessor', 'prefix')
     

@@ -1,13 +1,9 @@
 __all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 
-import warnings
 from io import StringIO
 from threading import current_thread
 
-from ...backend.event_loop import EventThread
-from ...backend.utils import alchemy_incendiary, HybridValueDictionary
-from ...backend.futures import is_coroutine_function, Task
-from ...backend.export import export
+from scarletio import EventThread, alchemy_incendiary, HybridValueDictionary, is_coroutine_function, Task, export
 
 from ...discord.core import KOKORO
 
@@ -169,13 +165,13 @@ class ExtensionLoader:
     Traceback (most recent call last):
       File "<pyshell#13>", line 1, in <module>
         EXTENSION_LOADER.reload_all()
-      File ".../hata/backend/extension_loader.py", line 652, in reload_all
+      File ".../hata/ext/extension_loader/extension_loader.py", line 652, in reload_all
         task.sync_wrap().wait()
-      File ".../hata/backend/futures.py", line 823, in wait
+      File ".../scarletion/core/traps/future_sync_wrapper.py", line 823, in wait
         return self.result()
-      File ".../hata/backend/futures.py", line 723, in result
+      File ".../scarletion/core/traps/future_sync_wrapper.py", line 723, in result
         raise exception
-      File ".../hata/backend/futures.py", line 1602, in _step
+      File ".../scarletion/core/traps/task.py", line 1602, in _step
         result = coroutine.throw(exception)
       File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all
         raise ExtensionError(error_messages) from None
@@ -185,7 +181,7 @@ class ExtensionLoader:
     Traceback (most recent call last):
       File ".../hata/ext/extension_loader/extension_loader.py", line 675, in _load_extension
         lib = await KOKORO.run_in_executor(extension.load)
-      File ".../hata/extension_loader.py", line 270, in load
+      File ".../hata/ext/extension_loader/extension_loader.py", line 270, in load
         reload_module(lib)
       File ".../importlib/__init__.py", line 169, in reload
         _bootstrap._exec(spec, module)
@@ -1226,7 +1222,7 @@ class ExtensionLoader:
         This function should run in an executor.
         """
         file = StringIO()
-        EventThread._render_exc_sync(exception, before=header, after=None, file=file)
+        EventThread._render_exception_sync(exception, before=header, after=None, file=file)
         message = file.getvalue()
         file.close()
         

@@ -3,11 +3,9 @@ __all__ = ('VoiceClient', )
 import socket as module_socket
 from datetime import datetime
 
-from ...backend.utils import DOCS_ENABLED
-from ...backend.futures import Future, Task, sleep, future_or_timeout, Lock, Event
-from ...backend.exceptions import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
-from ...backend.protocol import DatagramMergerReadProtocol
-from ...backend.export import export
+from scarletio import DOCS_ENABLED, Future, Task, sleep, future_or_timeout, Lock, Event, DatagramMergerReadProtocol, \
+    export
+from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from ..core import KOKORO, GUILDS, CHANNELS
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
@@ -1215,8 +1213,8 @@ class VoiceClient:
         
         socket = module_socket.socket(module_socket.AF_INET, module_socket.SOCK_DGRAM)
         
-        transport, protocol = await KOKORO.create_datagram_endpoint(DatagramMergerReadProtocol(KOKORO), socket=socket)
-        self._transport = transport
+        protocol = await KOKORO.create_datagram_endpoint_with(DatagramMergerReadProtocol(KOKORO), socket=socket)
+        self._transport = protocol.get_transport()
         self._protocol = protocol
         self._socket = socket
         
@@ -1224,7 +1222,7 @@ class VoiceClient:
             self.reader = AudioReader(self)
         
         handshake_complete = self._handshake_complete
-        if handshake_complete.done():
+        if handshake_complete.is_done():
             # terminate the websocket and handle the reconnect loop if necessary.
             handshake_complete.clear()
             await self.gateway.terminate()

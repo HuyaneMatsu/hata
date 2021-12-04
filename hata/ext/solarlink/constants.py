@@ -1,7 +1,7 @@
 __all__ = ()
 
-from ...backend.headers import AUTHORIZATION as HEADER_AUTHORIZATION
-from ...backend.utils import istr
+from scarletio.web_common.headers import AUTHORIZATION as HEADER_AUTHORIZATION
+from scarletio import IgnoreCaseString
 
 LAVALINK_KEY_STATS_UPTIME = 'uptime'
 LAVALINK_KEY_STATS_PLAYER_COUNT = 'players'
@@ -104,10 +104,10 @@ LAVALINK_KEY_ROUTEPLANNER_OBJECT_ROTATE_INDEX_STRING = 'rotateIndex'
 LAVALINK_KEY_ROUTEPLANNER_OBJECT_IP_INDEX_STRING = 'ipIndex'
 LAVALINK_KEY_ROUTEPLANNER_OBJECT_CURRENT_ADDRESS = 'currentAddress'
 
-HEADER_USER_ID = istr('User-Id')
-HEADER_CLIENT_NAME = istr('Client-Name')
-HEADER_SHARD_COUNT = istr('Num-Shards')
-HEADER_RESUME_KEY = istr('Resume-Key')
+HEADER_USER_ID = IgnoreCaseString('User-Id')
+HEADER_CLIENT_NAME = IgnoreCaseString('Client-Name')
+HEADER_SHARD_COUNT = IgnoreCaseString('Num-Shards')
+HEADER_RESUME_KEY = IgnoreCaseString('Resume-Key')
 
 
 LAVALINK_BAND_COUNT = 15

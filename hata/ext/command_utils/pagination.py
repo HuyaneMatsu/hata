@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Pagination',)
 
-from ...backend.utils import copy_docs
-from ...backend.futures import CancelledError
+from scarletio import copy_docs, CancelledError
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message

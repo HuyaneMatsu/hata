@@ -164,10 +164,7 @@ from functools import partial as partial_func
 from datetime import datetime
 
 
-from ...backend.futures import Task
-from ...backend.analyzer import CallableAnalyzer
-from ...backend.utils import copy_docs
-from ...backend.export import export
+from scarletio import Task, CallableAnalyzer, copy_docs, export
 
 from ...discord.core import KOKORO
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake

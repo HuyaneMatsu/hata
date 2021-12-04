@@ -1,7 +1,7 @@
 __all__ = ('BotInfo', 'BotStats', 'BotVote', 'BotsQueryResult', 'BriefUserInfo', 'GuildVote', 'UserConnections',
     'UserInfo', 'VoteBase')
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 from ...discord.utils import timestamp_to_datetime
 from ...discord.bases import IconSlot, Slotted
 from ...discord.http import urls as module_urls

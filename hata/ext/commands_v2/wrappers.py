@@ -1,7 +1,6 @@
 __all__ = ('CommandCooldownWrapper', 'CommandCheckWrapper', 'CommandConverterConfigurerWrapper', 'CommandWrapper', )
 
-from ...backend.utils import copy_docs
-from ...backend.export import export
+from scarletio import copy_docs, export
 
 from .content_parser import get_detail_for_value, ConverterFlag
 from .cooldown import CooldownHandler

@@ -1,6 +1,6 @@
 __all__ = ('Pagination', )
 
-from ....backend.futures import CancelledError
+from scarletio import CancelledError
 from ....discord.interaction import ComponentButton, ComponentRow
 
 from .menu import Menu

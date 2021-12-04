@@ -3,7 +3,7 @@ __all__ = ()
 from time import perf_counter
 from audioop import mul as audio_mul
 
-from ...backend.futures import Task, Event, sleep, CancelledError
+from scarletio import Task, Event, sleep, CancelledError
 
 from ..core import KOKORO
 from .opus import FRAME_LENGTH, SAMPLES_PER_FRAME
@@ -154,7 +154,7 @@ class AudioPlayer:
             if isinstance(err, CancelledError):
                 return
             
-            await KOKORO.render_exc_async(err, before=[
+            await KOKORO.render_exception_async(err, before=[
                 'Exception occurred at \n',
                 repr(self),
                 '\n',

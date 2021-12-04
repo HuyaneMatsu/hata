@@ -3,9 +3,8 @@ __all__ = ()
 from datetime import datetime, timezone
 from collections import deque
 
-from ...backend.futures import Future, ScarletLock
-from ...backend.headers import DATE
-from ...backend.event_loop import LOOP_TIME
+from scarletio import Future, ScarletLock, LOOP_TIME
+from scarletio.web_common.headers import DATE
 
 from ..core import KOKORO
 from .headers import RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER, RATE_LIMIT_REMAINING, RATE_LIMIT_LIMIT

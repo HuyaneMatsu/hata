@@ -1,6 +1,6 @@
 __all__ = ('create_partial_role_from_id', 'cr_p_role_object', 'parse_role', 'parse_role_mention')
 
-from ...backend.export import export
+from scarletio import export
 
 from ..core import ROLES
 from ..color import Color

@@ -4,8 +4,7 @@ from collections import deque
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
-from ...backend.utils import WeakReferer, set_docs
-from ...backend.futures import Future, sleep, Task, WaitTillAll, CancelledError, future_or_timeout
+from scarletio import WeakReferer, set_docs,  Future, sleep, Task, WaitTillAll, CancelledError, future_or_timeout
 
 from ..core import KOKORO
 from ..gateway.client_gateway import REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS

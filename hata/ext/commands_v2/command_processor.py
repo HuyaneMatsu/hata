@@ -1,6 +1,6 @@
 __all__ = ('CommandProcessor', )
 
-from ...backend.utils import WeakReferer
+from scarletio import WeakReferer
 from ...discord.events.handling_helpers import EventWaitforBase
 from ...discord.preconverters import preconvert_bool
 from ...discord.utils import USER_MENTION_RP

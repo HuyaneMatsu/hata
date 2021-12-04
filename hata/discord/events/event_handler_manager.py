@@ -2,8 +2,7 @@ __all__ = ()
 
 from functools import partial as partial_func
 
-from ...backend.utils import WeakReferer
-from ...backend.futures import Task
+from scarletio import WeakReferer, Task
 
 from ..core import KOKORO
 

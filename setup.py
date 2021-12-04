@@ -103,6 +103,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
+        'scarletio',
         'chardet>=2.0',
     ],
     extras_require = {

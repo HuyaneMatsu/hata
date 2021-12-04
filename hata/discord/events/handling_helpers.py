@@ -1,10 +1,11 @@
 __all__ = ('EventHandlerBase', 'EventWaitforBase', 'eventlist', )
 
 from functools import partial as partial_func
+from types import FunctionType
 
-from ...backend.utils import FunctionType, RemovedDescriptor, MethodLike, WeakKeyDictionary, NEEDS_DUMMY_INIT
-from ...backend.futures import Task, is_coroutine_function, WaitTillAll
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import RemovedDescriptor, MethodLike, WeakKeyDictionary, Task, is_coroutine_function, WaitTillAll, \
+    CallableAnalyzer
+from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
 from ..core import KOKORO
 from ..message import Message

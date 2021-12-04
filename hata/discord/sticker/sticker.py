@@ -2,7 +2,7 @@ __all__ = ('Sticker', )
 
 import warnings
 
-from ...backend.export import include
+from scarletio import include
 
 from ..core import STICKERS, GUILDS, STICKER_PACKS
 from ..bases import DiscordEntity

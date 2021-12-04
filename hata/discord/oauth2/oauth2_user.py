@@ -1,6 +1,6 @@
 __all__ = ('UserOA2',)
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ..user import UserFlag, UserBase, PremiumType
 from ..user.helpers import get_banner_color_from_data

@@ -2,7 +2,7 @@ __all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent',)
 
 from ...env import CACHE_PRESENCE
 
-from ...backend.utils import set_docs
+from scarletio import set_docs
 
 from ..bases import EventBase
 from ..user import User

@@ -3,9 +3,7 @@ __all__ = ('Menu',)
 from collections import OrderedDict
 from types import MemberDescriptorType
 
-from ....backend.analyzer import CallableAnalyzer
-from ....backend.utils import copy_docs
-from ....backend.futures import Task, CancelledError
+from scarletio import CallableAnalyzer, copy_docs, Task, CancelledError
 
 from ....discord.core import KOKORO
 from ....discord.interaction.components import _debug_component_components, _debug_component_custom_id, \

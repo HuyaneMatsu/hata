@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.futures import Task
+from scarletio import Task
 
 from ..exceptions import DiscordException
 from ..core import KOKORO

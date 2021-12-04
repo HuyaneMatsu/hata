@@ -51,7 +51,7 @@ assert SYSTEM_DEFAULT_PARAMETER in COMMAND_MAP
 
 
 def command_not_found():
-    from hata.backend.utils import get_short_executable
+    from scarletio import get_short_executable
     
     output_parts = ['No command is added for: ']
     

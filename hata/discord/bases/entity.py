@@ -1,6 +1,6 @@
 __all__ = ('DiscordEntity', 'Slotted', )
 
-from ...backend.export import include
+from scarletio import include
 
 id_to_datetime = include('id_to_datetime')
 

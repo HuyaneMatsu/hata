@@ -4,10 +4,7 @@ import warnings
 from threading import current_thread
 from functools import partial as partial_func
 
-from ...backend.futures import Task, WaitTillAll
-from ...backend.event_loop import EventThread
-from ...backend.utils import WeakReferer, WeakKeyDictionary
-from ...backend.export import export
+from scarletio import Task, WaitTillAll, EventThread, WeakReferer, WeakKeyDictionary, export
 
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import Router, asynclist, EventHandlerBase

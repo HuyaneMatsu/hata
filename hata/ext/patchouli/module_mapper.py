@@ -7,8 +7,7 @@ from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodTy
     MemberDescriptorType
 from difflib import get_close_matches
 
-from ...backend.utils import cached_property, MethodLike, module_property, basemethod, weakmethod
-from ...backend.export import include
+from scarletio import cached_property, MethodLike, module_property, BaseMethodType, weak_method, include
 from ...discord.bases import IconSlot
 
 from .qualpath import QualPath
@@ -29,8 +28,8 @@ METHOD_TYPES = {
     WrapperDescriptorType,
     MethodDescriptorType,
     MethodLike,
-    basemethod,
-    weakmethod,
+    BaseMethodType,
+    weak_method,
 }
 
 FUNCTION_TYPES = {

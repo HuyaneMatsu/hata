@@ -2,7 +2,7 @@ __all__ = ('Stage',)
 
 import reprlib
 
-from ...backend.export import export, include
+from scarletio import export, include
 
 from ..bases import DiscordEntity
 from ..channel import ChannelStage, create_partial_channel_from_id

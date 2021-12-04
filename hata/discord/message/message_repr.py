@@ -1,6 +1,6 @@
 __all__ = ('MessageRepr', )
 
-from ...backend.export import include
+from scarletio import include
 
 from ..bases import DiscordEntity
 from ..core import GUILDS, CHANNELS

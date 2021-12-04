@@ -1,6 +1,6 @@
 __all__ = ('create_partial_integration_from_id', )
 
-from ...backend.export import export
+from scarletio import export
 
 from ..core import INTEGRATIONS
 from ..user import ZEROUSER

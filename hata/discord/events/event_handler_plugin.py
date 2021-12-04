@@ -1,7 +1,7 @@
 __all__ = ('Event', 'EventHandlerPlugin', )
 
 
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import CallableAnalyzer
 from ..bases.entity import _get_direct_parents_and_merge_slots
 
 from .core import DEFAULT_EVENT_HANDLER

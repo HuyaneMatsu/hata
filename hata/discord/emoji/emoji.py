@@ -1,6 +1,6 @@
 ﻿__all__ = ('Emoji',)
 
-from ...backend.export import include, export
+from scarletio import include, export
 
 from ..bases import DiscordEntity, id_sort_key
 from ..core import EMOJIS, GUILDS, BUILTIN_EMOJIS, UNICODE_TO_EMOJI

@@ -4,8 +4,7 @@ __all__ = ('EMBED_UPDATE_EMBED_ADD', 'EMBED_UPDATE_EMBED_REMOVE', 'EMBED_UPDATE_
 import warnings
 from datetime import datetime
 
-from ...backend.utils import BaseMethodDescriptor
-from ...backend.export import export, include
+from scarletio import BaseMethodDescriptor, export, include
 
 from ..bases import DiscordEntity, id_sort_key
 from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, datetime_to_id, DATETIME_FORMAT_CODE, \

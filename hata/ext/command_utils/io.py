@@ -3,8 +3,7 @@ __all__ = ('get_channel_stdin', 'get_channel_stdout',)
 from collections import deque
 from datetime import datetime, timedelta
 
-from ...backend.futures import Task, sleep, shield, future_or_timeout, Future, CancelledError
-from ...backend.event_loop import LOOP_TIME
+from scarletio import Task, sleep, shield, future_or_timeout, Future, CancelledError, LOOP_TIME
 from ...discord.core import KOKORO
 from ...discord.utils import sanitize_content
 
@@ -322,7 +321,7 @@ class ChannelInputStream:
         +-------------------+---------------+
         | Name              | Type          |
         +===================+===============+
-        | should_redirect   | ``bool``      |
+        | should_redirect   | `bool`        |
         +-------------------+---------------+
     
     _client : ``Client``

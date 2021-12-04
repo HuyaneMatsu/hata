@@ -3,8 +3,7 @@ __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'GuildFeature', 'MFA', 'Messag
 
 import warnings
 
-from ...backend.export import export
-from ...backend.utils import class_property
+from scarletio import export, class_property
 from ..bases import PreinstancedBase, Preinstance as P
 
 

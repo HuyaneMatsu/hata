@@ -1,6 +1,6 @@
 from html import escape as html_escape
 
-from ...backend.quote import quote
+from scarletio.web_common import quote
 
 from .graver import GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GravedListing, GravedDescription, GravedTable, \
     GravedCodeBlock, DO_NOT_ADD_SPACE_AFTER , GravedAttributeDescription, GravedBlockQuote, GRAVE_TYPE_LINK, \

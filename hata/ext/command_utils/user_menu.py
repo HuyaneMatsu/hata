@@ -1,8 +1,6 @@
 __all__ = ('UserMenuFactory', 'UserMenuRunner', 'UserPagination',)
 
-from ...backend.futures import CancelledError
-from ...backend.utils import copy_docs
-from ...backend.analyzer import CallableAnalyzer
+from scarletio import CancelledError, copy_docs, CallableAnalyzer
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.emoji import Emoji
 from ...discord.interaction import InteractionEvent

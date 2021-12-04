@@ -48,7 +48,7 @@ def register_library_extension(extension_name):
         try:
             hook()
         except BaseException as err:
-            KOKORO.render_exc_maybe_async(err, [
+            KOKORO.render_exception_maybe_async(err, [
                 'register_library_extension(', repr(extension_name), ') ignores occurred exception meanwhile calling ',
                 repr(hook), ' satisfied library extension hook.\n.'
             ])
@@ -75,7 +75,7 @@ def add_library_extension_hook(hook, requirements):
     try:
         hook()
     except BaseException as err:
-        KOKORO.render_exc_maybe_async(err, [
+        KOKORO.render_exception_maybe_async(err, [
             'add_library_extension_hook(', repr(hook), ', ', repr(requirements), ') ignores occurred exception '
             'meanwhile calling ', repr(hook), ' satisfied library extension hook.\n.'
         ])

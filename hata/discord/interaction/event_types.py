@@ -6,8 +6,7 @@ __all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutoc
 
 import reprlib, warnings
 
-from ...backend.export import export
-from ...backend.futures import Future, shield, future_or_timeout
+from scarletio import export, Future, shield, future_or_timeout
 
 from ..bases import EventBase, DiscordEntity
 from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS, CHANNELS, GUILDS, \

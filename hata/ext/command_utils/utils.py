@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __all__ = ('Timeouter', 'multievent', )
 
-from ...backend.event_loop import LOOP_TIME
+from scarletio import LOOP_TIME
 from ...discord.core import KOKORO
 
 class multievent:

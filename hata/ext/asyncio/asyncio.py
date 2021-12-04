@@ -20,18 +20,14 @@ from threading import current_thread, enumerate as list_threads, main_thread
 from subprocess import PIPE, STDOUT, DEVNULL
 from functools import partial, partial as partial_func
 from collections import deque
+import socket as module_socket
 
 from ...env import BACKEND_ONLY
-from ...backend.utils import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary
-from ...backend.event_loop import EventThread
-from ...backend.futures import Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, \
-    WaitTillAll, WaitTillExc, future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, \
-    Event as HataEvent, AsyncLifoQueue, is_coroutine, skip_ready_cycle
-from ...backend.executor import Executor
-from ...backend.subprocess import AsyncProcess
-from ...backend.protocol import ReadProtocolBase
+from scarletio import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary, EventThread, IS_UNIX, \
+    Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, WaitTillAll, WaitTillExc, \
+    future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, Event as HataEvent, \
+    AsyncLifoQueue, is_coroutine, skip_ready_cycle, Executor, AsyncProcess, ReadProtocolBase, AbstractProtocolBase
 
-IS_UNIX = (sys.platform != 'win32')
 
 __path__ = os.path.dirname(__file__)
 
@@ -80,11 +76,11 @@ class EventThread:
     def is_closed(self):
         return (not self.running)
     
-    # Required by dpy 3.8
+    # Required by dead.py 3.8
     def add_signal_handler(self, sig, callback, *args):
         pass
     
-    # Required by dpy 3.8
+    # Required by dead.py 3.8
     def run_forever(self):
         local_thread = current_thread()
         if isinstance(local_thread, EventThread):
@@ -93,7 +89,7 @@ class EventThread:
         self.wake_up()
         self.join()
     
-    # Required by dpy 3.8
+    # Required by dead.py 3.8
     def run_until_complete(self, future):
         local_thread = current_thread()
         if isinstance(local_thread, EventThread):
@@ -101,7 +97,7 @@ class EventThread:
         
         self.run(future)
     
-    # Required by dpy 3.8
+    # Required by dead.py 3.8
     def close(self):
         self.stop()
     
@@ -134,10 +130,79 @@ class EventThread:
         extracted.append('\n')
         
         if exception is None:
-            self.render_exc_async(exception, extracted)
+            self.render_exception_async(exception, extracted)
         else:
             extracted.append('*no exception provided*\n')
             sys.stderr.write(''.join(extracted))
+    
+    
+    async def create_connection(self, protocol_factory, host=None, port=None, *, ssl=None, family=0, proto=0, flags=0,
+            sock=None, local_addr=None, server_hostname=None, ssl_handshake_timeout=None, happy_eyeballs_delay=None,
+            interleave=None):
+        
+        
+        if sock is None:
+            protocol = await self.create_connection_to(protocol_factory, host, port, ssl=ssl, socket_family=family,
+                socket_protocol=proto, socket_flags=flags, local_address=local_addr,
+                server_host_name=server_hostname)
+        else:
+            protocol = await self.create_connection_with(protocol_factory, sock, ssl=ssl, server_host_name=server_hostname)
+        
+        if isinstance(protocol, AbstractProtocolBase):
+            transport = protocol.get_transport()
+        else:
+            transport = getattr(protocol, '_transport', None)
+        
+        return transport, protocol
+    
+    async def create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None, *, family=0, proto=0,
+            flags=0, reuse_address=None, reuse_port=None, allow_broadcast=None, sock=None):
+        
+        if sock is None:
+            protocol = await self.create_datagram_connection_to(protocol_factory, local_addr, remote_addr,
+                socket_family=family, socket_protocol=proto, socket_flags=flags, reuse_port=reuse_port,
+                allow_broadcast=allow_broadcast)
+        
+        else:
+            protocol = await self.create_datagram_connection_with(protocol_factory, sock)
+        
+        if isinstance(protocol, AbstractProtocolBase):
+            transport = protocol.get_transport()
+        else:
+            transport = getattr(protocol, '_transport', None)
+        
+        return transport, protocol
+    
+    async def create_server(self, protocol_factory, host=None, port=None, *, family=module_socket.AF_UNSPEC,
+            flags=module_socket.AI_PASSIVE, sock=None, backlog=100, ssl=None, reuse_address=None, reuse_port=None,
+            ssl_handshake_timeout=None, start_serving=True):
+        
+        if sock is None:
+            server = await self.create_server_to(protocol_factory, host, port, socket_family=family,
+                socket_flags=flags, backlog=backlog, ssl=ssl, reuse_port=reuse_port)
+        
+        else:
+            server =  await self.create_server_with(protocol_factory, sock, backlog=backlog, ssl=ssl)
+        
+        if start_serving:
+            await server.start()
+        
+        return server
+        
+    
+    async def create_unix_server(self, protocol_factory, path=None, *, sock=None, backlog=100, ssl=None,
+            ssl_handshake_timeout=None, start_serving=True):
+        
+        if sock is None:
+            server = await self.create_unix_server_to(protocol_factory, path, backlog=backlog, ssl=ssl)
+        
+        else:
+            server = await self.create_unix_server_with(protocol_factory, sock, backlog=backlog, ssl=ssl)
+        
+        if start_serving:
+            await server.start()
+        
+        return server
 
 
 async def in_coro(future):
@@ -160,7 +225,7 @@ EventThread.run_in_executor = asyncio_run_in_executor
 del asyncio_run_in_executor
 
 
-#required by anyio
+# required by anyio
 def asyncio_create_task(self, coroutine):
     return Task(coroutine, self)
 
@@ -210,96 +275,22 @@ EventThread.subprocess_exec = asyncio_subprocess_exec
 del asyncio_subprocess_exec
 
 
-hata_EventThread_create_connection = EventThread.create_connection
-
-async def asyncio_create_connection(self, *args, protocol=0, proto=0, socket=None, sock=None, local_address=None,
-        local_addr = None, **kwargs):
-    
-    if proto != 0:
-        protocol = proto
-    
-    if sock is not None:
-        socket = sock
-    
-    if local_addr is not None:
-        local_address = local_addr
-    
-    return await hata_EventThread_create_connection(self, *args, protocol=protocol, socket=socket,
-        local_address=local_address, **kwargs)
-
-EventThread.create_connection = asyncio_create_connection
-del asyncio_create_connection
-
-
-hata_EventThread_create_datagram_endpoint = EventThread.create_datagram_endpoint
-
-async def asyncio_create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None,
-        local_address=None, remote_address=None, proto=0, protocol=0, reuseport=False, reuse_port=False,
-        sock=None, socket=None, **kwargs):
-    
-    if local_addr is not None:
-        local_address = local_addr
-    
-    if remote_addr is not None:
-        remote_address = remote_addr
-    
-    if proto != 0:
-        protocol = proto
-    
-    if reuseport:
-        reuse_port = reuseport
-    
-    if sock is not None:
-        socket = sock
-    
-    return await hata_EventThread_create_datagram_endpoint(self, protocol_factory, local_address=local_address,
-        remote_address=remote_address, protocol=protocol, reuse_port=reuse_port, socket=socket, **kwargs)
-
-EventThread.create_datagram_endpoint = asyncio_create_datagram_endpoint
-del asyncio_create_datagram_endpoint
-
-
-hata_EventThread_create_server = EventThread.create_server
-
-async def asyncio_create_server(self, *args, sock=None, socket=None, reuseport=None, reuse_port=None,
-        start_serving=True, **kwargs):
-
-    if reuseport:
-        reuse_port = reuseport
-    
-    if sock is not None:
-        socket = sock
-    
-    server = await hata_EventThread_create_server(self, *args, reuse_port=reuse_port, socket=socket, **kwargs)
-    if start_serving:
-        await server.start()
-    
-    return server
-
-EventThread.create_server = asyncio_create_server
-del asyncio_create_server
-
-
-hata_EventThread_create_unix_server = EventThread.create_unix_server
-
-async def asyncio_create_unix_server(self, *args, sock=None, socket=None, start_serving=True, **kwargs):
-
-    if sock is not None:
-        socket = sock
-    
-    server = await hata_EventThread_create_server(self, *args, socket=socket, **kwargs)
-    if start_serving:
-        await server.start()
-    
-    return server
-
-EventThread.create_unix_server = asyncio_create_unix_server
-del asyncio_create_unix_server
-
 @KeepType(ReadProtocolBase)
 class ReadProtocolBase:
     async def readexactly(self, n):
         return await self.read_exactly(n)
+
+
+@KeepType(HataFuture)
+class HataFuture:
+    def done(self):
+        return self.is_done()
+    
+    def cancelled(self):
+        return self.is_cancelled()
+    
+    def pending(self):
+        return self.is_pending()
 
 # Reimplement async-io features
 
@@ -325,7 +316,7 @@ def _run_until_complete_cb(future): # needed by anyio
 # async-io.coroutines
 # include: coroutine, iscoroutinefunction, iscoroutine
 from types import coroutine
-from ...backend.futures import is_coroutine_function as iscoroutinefunction
+from scarletio import is_coroutine_function as iscoroutinefunction
 iscoroutine = is_coroutine
 # asyncio.events
 # include: AbstractEventLoopPolicy, AbstractEventLoop, AbstractServer, Handle, TimerHandle, get_event_loop_policy,
@@ -337,9 +328,7 @@ class AbstractEventLoopPolicy:
         raise NotImplemented
 
 AbstractEventLoop = EventThread
-from ...backend.event_loop import Server as AbstractServer
-from ...backend.event_loop import Handle
-from ...backend.event_loop import TimerHandle
+from scarletio import Server as AbstractServer, Handle, TimerHandle
 
 def get_event_loop_policy():
     raise NotImplementedError
@@ -445,8 +434,7 @@ class SendfileNotAvailableError(RuntimeError):
 # asyncio.exceptions
 # include: CancelledError, InvalidStateError, TimeoutError, IncompleteReadError, LimitOverrunError,
 #    SendfileNotAvailableError
-from ...backend.futures import CancelledError
-from ...backend.futures import InvalidStateError
+from scarletio import CancelledError, InvalidStateError
 TimeoutError = TimeoutError
 
 class IncompleteReadError(EOFError):
@@ -591,7 +579,7 @@ class Lock(HataLock):
            ...
         ```
     """
-    # Required by dpy
+    # Required by dead.py
     __slots__ = ('__weakref__', )
     
     def __new__(cls, *, loop=None):
@@ -1724,11 +1712,11 @@ class TaskMeta(type):
         
         return type.__new__(type, class_name, class_parents, class_attributes)
     
-    # Required by dpy
+    # Required by dead.py
     def _subclass_init(self, *args, **kwargs):
         pass
     
-    # Required by dpy
+    # Required by dead.py
     def _subclass_new(cls, *args, coro=None, loop=None, **kwargs):
         self = Task.__new__(cls, coro, loop=loop)
         self.__init__(*args, coro=coro, loop=loop, **kwargs)
@@ -2428,7 +2416,7 @@ class _FlowControlMixin(Transport):
             except (SystemExit, KeyboardInterrupt):
                 raise
             except BaseException as err:
-                self._loop.render_exc_async(err, 'protocol.pause_writing() failed\n')
+                self._loop.render_exception_async(err, 'protocol.pause_writing() failed\n')
     
 
     def _maybe_resume_protocol(self):
@@ -2439,7 +2427,7 @@ class _FlowControlMixin(Transport):
             except (SystemExit, KeyboardInterrupt):
                 raise
             except BaseException as err:
-                self._loop.render_exc_async(err, 'protocol.resume_writing() failed\n')
+                self._loop.render_exception_async(err, 'protocol.resume_writing() failed\n')
     
     def get_write_buffer_limits(self):
         return (self._low_water, self._high_water)

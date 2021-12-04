@@ -2,7 +2,7 @@ __all__ = ('EvaluationError', 'evaluate_text', )
 
 import math
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 from ...discord.utils import sanitize_content
 
 from .exceptions import SlasherCommandError

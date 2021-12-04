@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.utils import to_json
+from scarletio import to_json
 from ...discord.utils import datetime_to_timestamp
 
 from .constants import JSON_KEY_BOT_INFO_ID, JSON_KEY_BOT_INFO_NAME, JSON_KEY_BOT_INFO_DISCRIMINATOR_STRING, \

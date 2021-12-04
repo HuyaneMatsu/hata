@@ -1,7 +1,7 @@
 __all__ = ('DefaultAvatar', 'FriendRequestFlag', 'HypesquadHouse', 'PremiumType', 'RelationshipType', 'Status',
     'Theme', )
 
-from ...backend.export import export
+from scarletio import export
 
 from ..bases import PreinstancedBase, Preinstance as P
 from ..color import Color

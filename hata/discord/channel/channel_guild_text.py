@@ -1,8 +1,8 @@
 __all__ = ('ChannelText',)
 
 
-from ...backend.utils import copy_docs
-from ...backend.export import export, include
+from scarletio import copy_docs
+from scarletio import export, include
 
 from ..bases import IconSlot, ICON_TYPE_NONE
 from ..core import CHANNELS

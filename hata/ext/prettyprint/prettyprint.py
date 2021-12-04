@@ -6,7 +6,7 @@ try:
 except ImportError:
     relativedelta = None
 
-from ...backend.utils import multidict
+from scarletio import MultiValueDictionary
 
 from ...discord.utils import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 if (relativedelta is not None):
@@ -938,7 +938,7 @@ def str_guild(guild, index=None, **kwargs):
     result.append(str_list(guild.channel_list, write_parents=False), 1)
     result.append(str_list(guild.role_list, write_parents=False), 1)
     if guild.voice_states:
-        voice_states = multidict()
+        voice_states = MultiValueDictionary()
         for voice_state in guild.voice_states.values():
             voice_states[voice_state.channel]=voice_state.user
         result.append(f'Voice_states : {len(guild.voice_states)}', 1)

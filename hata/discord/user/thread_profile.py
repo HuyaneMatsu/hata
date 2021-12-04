@@ -2,7 +2,7 @@ __all__ = ('ThreadProfile', 'thread_user_create', 'thread_user_delete', 'thread_
 
 from datetime import datetime
 
-from ...backend.export import include
+from scarletio import include
 
 from ..utils import timestamp_to_datetime
 

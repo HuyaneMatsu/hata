@@ -7,7 +7,7 @@ except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ...discord.events.handling_helpers import route_value, Router, check_name, route_name
 

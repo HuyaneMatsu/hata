@@ -5,8 +5,7 @@ from os import urandom as random_bytes
 from base64 import b85encode as to_base85
 import reprlib
 
-from ...backend.utils import copy_docs
-from ...backend.export import export
+from scarletio import copy_docs, export
 
 from ..bases import PreinstancedBase
 from ..preconverters import preconvert_preinstanced_type

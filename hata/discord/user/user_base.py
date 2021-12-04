@@ -1,6 +1,6 @@
 __all__ = ('UserBase', )
 
-from ...backend.export import include
+from scarletio import include
 
 from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..utils import DATETIME_FORMAT_CODE

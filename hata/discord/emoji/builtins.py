@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...backend.utils import call
+from scarletio import call
 
 from .emoji import Emoji
 

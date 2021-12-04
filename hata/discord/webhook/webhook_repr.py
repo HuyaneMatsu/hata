@@ -1,6 +1,6 @@
 __all__ = ('WebhookRepr',)
 
-from ...backend.export import export
+from scarletio import export
 
 from .utils import create_partial_webhook_from_id
 from .webhook_base import WebhookBase

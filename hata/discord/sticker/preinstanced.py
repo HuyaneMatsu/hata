@@ -1,6 +1,6 @@
 __all__ = ('StickerFormat', 'StickerType', )
 
-from ...backend.export import export
+from scarletio import export
 
 from ..bases import PreinstancedBase, Preinstance as P
 

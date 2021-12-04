@@ -1,6 +1,6 @@
 __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
-from ...backend.utils import copy_docs
+from scarletio import copy_docs
 
 from ..core import USERS, GUILDS
 

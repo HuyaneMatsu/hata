@@ -83,6 +83,7 @@ class VoiceState:
                 pass
         
         self = object.__new__(cls)
+        self._cache_user = None
         self.channel_id = channel_id
         self.guild_id = guild_id
         self.user_id = user_id

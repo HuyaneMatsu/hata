@@ -1,3 +1,10 @@
+## 1.1.125 *\[2021-12-05\]*
+
+#### Bug fixes
+
+- Connecting to voice failed (new typo).
+- `VoiceState.__new__` was not setting an attribute correctly.
+
 ## 1.1.124 *\[2021-12-05\]*
 
 ### Summary

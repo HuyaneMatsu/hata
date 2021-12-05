@@ -2,6 +2,7 @@ __all__ = ('VoiceClient', )
 
 import socket as module_socket
 from datetime import datetime
+from functools import partial as partial_func
 
 from scarletio import DOCS_ENABLED, Future, Task, sleep, future_or_timeout, Lock, Event, DatagramMergerReadProtocol, \
     export
@@ -1213,7 +1214,7 @@ class VoiceClient:
         
         socket = module_socket.socket(module_socket.AF_INET, module_socket.SOCK_DGRAM)
         
-        protocol = await KOKORO.create_datagram_endpoint_with(DatagramMergerReadProtocol(KOKORO), socket=socket)
+        protocol = await KOKORO.create_datagram_connection_with(partial_func(DatagramMergerReadProtocol, KOKORO), socket=socket)
         self._transport = protocol.get_transport()
         self._protocol = protocol
         self._socket = socket

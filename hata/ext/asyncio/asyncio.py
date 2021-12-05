@@ -22,7 +22,6 @@ from functools import partial, partial as partial_func
 from collections import deque
 import socket as module_socket
 
-from ...env import BACKEND_ONLY
 from scarletio import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary, EventThread, IS_UNIX, \
     Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, WaitTillAll, WaitTillExc, \
     future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, Event as HataEvent, \
@@ -39,10 +38,9 @@ for thread in list_threads():
         EVENT_LOOP_RELATION[main_thread()] = thread
         break
 else:
-    if (not BACKEND_ONLY):
-        from ...discord.core import KOKORO
-        EVENT_LOOP_RELATION[main_thread()] = KOKORO
-        del KOKORO
+    from ...discord.core import KOKORO
+    EVENT_LOOP_RELATION[main_thread()] = KOKORO
+    del KOKORO
 
 
 # Additions to EventThread

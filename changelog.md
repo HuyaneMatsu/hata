@@ -1,4 +1,4 @@
-## 1.1.126 *\[2021-12-??\]*
+## 1.1.126 *\[2021-12-05\]*
 
 #### Improvements
 
@@ -8,6 +8,11 @@
 
 ##### ext.slash
 - Add missing `ComponentDescriptorState.__dir__`.
+
+#### Bug fixes
+
+##### ext.asyncio
+- A removed value was imported.
 
 ## 1.1.125 *\[2021-12-05\]*
 

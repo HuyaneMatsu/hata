@@ -8,7 +8,7 @@ from ...env import API_VERSION
 from scarletio import to_json, include
 from scarletio.web_common import Formdata
 
-from ..core import MESSAGES, CHANNELS, GUILDS, USERS, STICKERS, SCHEDULED_EVENTS
+from ..core import MESSAGES, CHANNELS, GUILDS, USERS, STICKERS, SCHEDULED_EVENTS, STICKER_PACKS
 from ..message import Message, MessageReference, MessageRepr, Attachment
 from ..user import ClientUserBase
 from ..channel import ChannelText, ChannelStage
@@ -21,7 +21,7 @@ from ..role import Role
 from ..stage import Stage
 from ..webhook import Webhook
 from ..emoji import Emoji, parse_reaction
-from ..sticker import Sticker
+from ..sticker import Sticker, StickerPack
 from ..scheduled_event import ScheduledEvent
 
 
@@ -1561,19 +1561,50 @@ def get_sticker_and_id(sticker):
         
         sticker_id = maybe_snowflake(sticker)
         if (sticker_id is not None):
-            try:
-                sticker = STICKERS[sticker_id]
-            except KeyError:
-                sticker = None
-                break
-            
-            if isinstance(sticker, Sticker):
-                break
+            sticker = STICKERS.get(sticker_id, None)
+            break
         
         raise TypeError(f'`sticker` can be either given as `{Sticker.__name__}` or as `int` instance, '
             f'got {sticker.__class__.__name__}.')
         
     return sticker, sticker_id
+
+
+def get_sticker_pack_and_id(sticker_pack):
+    """
+    Gets sticker pack and it's identifier from the given sticker pack or of it's identifier.
+    
+    Parameters
+    ----------
+    sticker_pack : ``StickerPack``, `int`
+        The sticker, or it's identifier.
+    
+    Returns
+    -------
+    sticker_pack : ``StickerPack`` or `None`
+        The sticker pack if found.
+    sticker_pack_id : `int`
+        The sticker pack's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `sticker_pack`'s type is incorrect.
+    """
+    while True:
+        if isinstance(sticker_pack, StickerPack):
+            sticker_pack_id = sticker_pack.id
+            break
+        
+        sticker_pack_id = maybe_snowflake(sticker_pack)
+        if (sticker_pack_id is not None):
+            sticker_pack = STICKER_PACKS.get(sticker_pack_id, None)
+            break
+        
+        raise TypeError(f'`sticker` can be either given as `{StickerPack.__name__}` or as `int` instance, '
+            f'got {sticker_pack.__class__.__name__}.')
+        
+    return sticker_pack, sticker_pack_id
 
 
 def get_scheduled_event_id(scheduled_event):

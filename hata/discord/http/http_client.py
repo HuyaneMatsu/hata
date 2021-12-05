@@ -1910,6 +1910,13 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/guilds/{guild_id}/stickers',
         )
     
+    async def sticker_pack_get(self, sticker_pack_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.sticker_pack_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/sticker-packs/{sticker_pack_id}',
+        )
+    
     async def sticker_pack_get_all(self):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.sticker_pack_get_all, NO_SPECIFIC_RATE_LIMITER),

@@ -1501,6 +1501,14 @@ Group Details
     - Limit : `N/A`
     - Resets after : `N/A`
 
+- sticker_pack_get
+    - Endpoint : `/sticker-packs/{sticker_pack_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `UN`
+    - Limit : `N/A`
+    - Resets after : `N/A`
+
 - sticker_get
     - Endpoint : `/stickers/{sticker_id}`
     - Method : `GET`
@@ -2009,6 +2017,7 @@ stage_get = RateLimitGroup()
 stage_delete = RateLimitGroup()
 stage_edit = RateLimitGroup()
 sticker_pack_get_all = RateLimitGroup.unlimited()
+sticker_pack_get = RateLimitGroup.unlimited()
 sticker_get = RateLimitGroup()
 eula_get = RateLimitGroup(optimistic=True)
 user_info_get = RateLimitGroup(optimistic=True)

@@ -25,8 +25,9 @@ import socket as module_socket
 from scarletio import WeakReferer, alchemy_incendiary, KeepType, WeakKeyDictionary, EventThread, IS_UNIX, \
     Future as HataFuture, Lock as HataLock, AsyncQueue, Task as HataTask, WaitTillFirst, WaitTillAll, WaitTillExc, \
     future_or_timeout, sleep as hata_sleep, shield as hata_shield, WaitContinuously, Event as HataEvent, \
-    AsyncLifoQueue, is_coroutine, skip_ready_cycle, Executor, AsyncProcess, ReadProtocolBase, AbstractProtocolBase
-
+    AsyncLifoQueue, is_coroutine, skip_ready_cycle, Executor, AsyncProcess, ReadProtocolBase, AbstractProtocolBase, \
+    DatagramSocketTransportLayer
+from scarletio.core.event_loop.event_loop_functionality_helpers import _is_stream_socket
 
 __path__ = os.path.dirname(__file__)
 
@@ -140,36 +141,342 @@ class EventThread:
         
         
         if sock is None:
-            protocol = await self.create_connection_to(protocol_factory, host, port, ssl=ssl, socket_family=family,
-                socket_protocol=proto, socket_flags=flags, local_address=local_addr,
+            return await self._asyncio_create_connection_to(protocol_factory, host, port, ssl=ssl,
+                socket_family=family, socket_protocol=proto, socket_flags=flags, local_address=local_addr,
                 server_host_name=server_hostname)
         else:
-            protocol = await self.create_connection_with(protocol_factory, sock, ssl=ssl, server_host_name=server_hostname)
+            return await self._asyncio_create_connection_with(protocol_factory, sock, ssl=ssl,
+                server_host_name=server_hostname)
+    
+    
+
+    async def _asyncio_create_connection_to(self, protocol_factory, host, port, *, ssl=None, socket_family=0,
+            socket_protocol=0, socket_flags=0, local_address=None, server_host_name=None):
+        ssl, server_host_name = self._create_connection_shared_precheck(ssl, server_host_name, host)
         
-        if isinstance(protocol, AbstractProtocolBase):
-            transport = protocol.get_transport()
+        future_1 = self._ensure_resolved((host, port), family=socket_family, type=module_socket.SOCK_STREAM,
+            protocol=socket_protocol, flags=socket_flags)
+        
+        futures = [future_1]
+        if local_address is not None:
+            future_2 = self._ensure_resolved(local_address, family=socket_family, type=module_socket.SOCK_STREAM,
+                protocol=socket_protocol, flags=socket_flags)
+            
+            futures.append(future_2)
+        
         else:
-            transport = getattr(protocol, '_transport', None)
+            future_2 = None
+        
+        await WaitTillAll(futures, self)
+        
+        infos = future_1.result()
+        if not infos:
+            raise OSError('`get_address_info` returned empty list')
+        
+        if (future_2 is not None):
+            local_address_infos = future_2.result()
+            if not local_address_infos:
+                raise OSError('`get_address_info` returned empty list')
+        
+        exceptions = []
+        for socket_family, socket_type, socket_protocol, canonical_name, address in infos:
+            
+            socket = module_socket.socket(family=socket_family, type=socket_type, proto=socket_protocol)
+            
+            try:
+                socket.setblocking(False)
+                
+                if (future_2 is not None):
+                    for element in local_address_infos:
+                        local_address = element[4]
+                        try:
+                            socket.bind(local_address)
+                            break
+                        except OSError as err:
+                            err = OSError(err.errno, f'Error while attempting to bind on address '
+                                f'{local_address!r}: {err.strerror.lower()}.')
+                            exceptions.append(err)
+                    else:
+                        socket.close()
+                        socket = None
+                        continue
+                
+                await self.socket_connect(socket, address)
+            except OSError as err:
+                if (socket is not None):
+                    socket.close()
+                
+                exceptions.append(err)
+            
+            except:
+                if (socket is not None):
+                    socket.close()
+                
+                raise
+            
+            else:
+                break
+        else:
+            if len(exceptions) == 1:
+                raise exceptions[0]
+            else:
+                # If they all have the same str(), raise one.
+                exception_representations = [repr(exception) for exception in exceptions]
+                exception_representation_model = exception_representations[0]
+                
+                for exception_representation in exception_representations:
+                    if exception_representation != exception_representation_model:
+                        break
+                else:
+                    raise exceptions[0]
+                
+                # Raise a combined exception so the user can see all the various error messages.
+                raise OSError(f'Multiple exceptions: {", ".join(exception_representations)}')
+        
+        return await self._asyncio_create_connection_transport(socket, protocol_factory, ssl, server_host_name, False)
+    
+    
+    async def _asyncio_create_connection_with(self, protocol_factory, socket, *, ssl=None, server_host_name=None):
+        ssl, server_host_name = self._create_connection_shared_precheck(ssl, server_host_name, None)
+        
+        if not _is_stream_socket(socket):
+            raise ValueError(f'A stream socket was expected, got {socket!r}.')
+        
+        return await self._asyncio_create_connection_transport(socket, protocol_factory, ssl, server_host_name, False)
+    
+    
+    async def _asyncio_create_connection_transport(self, socket, protocol_factory, ssl, server_host_name, server_side):
+        socket.setblocking(False)
+        
+        protocol = protocol_factory()
+        waiter = HataFuture(self)
+        
+        if ssl is None:
+            transport = self._make_socket_transport(socket, protocol, waiter)
+        else:
+            transport = self._make_ssl_transport(socket, protocol, ssl, waiter, server_side=server_side,
+                server_host_name=server_host_name)
+        
+        try:
+            await waiter
+        except:
+            transport.close()
+            raise
         
         return transport, protocol
+    
     
     async def create_datagram_endpoint(self, protocol_factory, local_addr=None, remote_addr=None, *, family=0, proto=0,
             flags=0, reuse_address=None, reuse_port=None, allow_broadcast=None, sock=None):
         
         if sock is None:
-            protocol = await self.create_datagram_connection_to(protocol_factory, local_addr, remote_addr,
+            return await self._asyncio_create_datagram_connection_to(protocol_factory, local_addr, remote_addr,
                 socket_family=family, socket_protocol=proto, socket_flags=flags, reuse_port=reuse_port,
                 allow_broadcast=allow_broadcast)
         
         else:
-            protocol = await self.create_datagram_connection_with(protocol_factory, sock)
+            return await self._asyncio_create_datagram_connection_with(protocol_factory, sock)
+
+    
+
+    async def _asyncio_create_datagram_connection_to(self, protocol_factory, local_address, remote_address, *,
+            socket_family=0, socket_protocol=0, socket_flags=0, reuse_port=False, allow_broadcast=False):
+        address_info = []
         
-        if isinstance(protocol, AbstractProtocolBase):
-            transport = protocol.get_transport()
+        if (local_address is None) and (remote_address is None):
+            if socket_family == 0:
+                raise ValueError(f'Unexpected address family: {socket_family!r}.')
+            
+            address_info.append((socket_family, socket_protocol, None, None))
+        
+        elif hasattr(module_socket, 'AF_UNIX') and socket_family == module_socket.AF_UNIX:
+            if __debug__:
+                if (local_address is not None):
+                    if not isinstance(local_address, (str, bytes)):
+                        raise TypeError('`local_address` should be given as `None` or as `str` or `bytes` '
+                            f'instance, if `socket_family` is given as `AF_UNIX`, got '
+                            f'{local_address.__class__.__name__}')
+                
+                if (remote_address is not None):
+                    if not isinstance(remote_address, (str, bytes)):
+                        raise TypeError('`remote_address` should be given as `None` or as `str` or `bytes` '
+                            f'instance, if `socket_family` is given as `AF_UNIX`, got '
+                            f'{remote_address.__class__.__name__}')
+            
+            if (local_address is not None) and local_address and \
+                    (local_address[0] != (0 if isinstance(local_address, bytes) else '\x00')):
+                try:
+                    if S_ISSOCK(os.stat(local_address).st_mode):
+                        os.remove(local_address)
+                except FileNotFoundError:
+                    pass
+                except OSError as err:
+                    # Directory may have permissions only to create socket.
+                    sys.stderr.write(f'Unable to check or remove stale UNIX socket {local_address!r}: {err!s}.\n')
+            
+            address_info.append((socket_family, socket_protocol, local_address, remote_address))
+        
         else:
-            transport = getattr(protocol, '_transport', None)
+            # join address by (socket_family, socket_protocol)
+            address_infos = {}
+            if (local_address is not None):
+                infos = await self._ensure_resolved(local_address, family=socket_family, type=module_socket.SOCK_DGRAM,
+                    protocol=socket_protocol, flags=socket_flags)
+                
+                if not infos:
+                    raise OSError('`get_address_info` returned empty list')
+                
+                for (
+                    iterated_socket_family,
+                    iterated_socket_type,
+                    iterated_socket_protocol,
+                    iterated_socket_canonical_name,
+                    iterated_socket_address
+                ) in infos:
+                    address_infos[(iterated_socket_family, iterated_socket_protocol)] = (iterated_socket_address, None)
+            
+            if (remote_address is not None):
+                infos = await self._ensure_resolved(remote_address, family=socket_family, type=module_socket.SOCK_DGRAM,
+                    protocol=socket_protocol, flags=socket_flags)
+                
+                if not infos:
+                    raise OSError('`get_address_info` returned empty list')
+                
+                
+                for (
+                    iterated_socket_family,
+                    iterated_socket_type,
+                    iterated_socket_protocol,
+                    iterated_canonical_name,
+                    iterated_socket_address,
+                ) in infos:
+                    key = (iterated_socket_family, iterated_socket_protocol)
+                    
+                    try:
+                        value = address_infos[key]
+                    except KeyError:
+                        address_value_local = None
+                    else:
+                        address_value_local = value[0]
+                    
+                    address_infos[key] = (address_value_local, iterated_socket_address)
+            
+            for key, (address_value_local, address_value_remote) in address_infos.items():
+                if (local_address is not None) and (address_value_local is None):
+                    continue
+                
+                if (remote_address is not None) and (address_value_remote is None):
+                    continue
+                
+                address_info.append((*key, address_value_local, address_value_remote))
+            
+            if not address_info:
+                raise ValueError('Can not get address information.')
+        
+        exception = None
+        
+        for socket_family, socket_protocol, local_address, remote_address in address_info:
+            try:
+                socket = module_socket.socket(
+                    family = socket_family,
+                    type = module_socket.SOCK_DGRAM,
+                    proto = socket_protocol,
+                )
+                
+                if reuse_port:
+                    _set_reuse_port(socket)
+                
+                if allow_broadcast:
+                    socket.setsockopt(module_socket.SOL_SOCKET, module_socket.SO_BROADCAST, 1)
+                
+                socket.setblocking(False)
+                
+                if (local_address is not None):
+                    socket.bind(local_address)
+                
+                if (remote_address is not None):
+                    if not allow_broadcast:
+                        await self.socket_connect(socket, remote_address)
+            
+            except BaseException as err:
+                if (socket is not None):
+                    socket.close()
+                    socket = None
+                
+                if not isinstance(err, OSError):
+                    raise
+                
+                if (exception is None):
+                    exception = err
+                
+            else:
+                break
+        
+        else:
+            raise exception
+        
+        return await self._asyncio_create_datagram_connection(protocol_factory, socket, remote_address)
+    
+
+    async def _asyncio_create_datagram_connection_with(self, protocol_factory, socket):
+        if socket.type != module_socket.SOCK_DGRAM:
+            raise ValueError(f'A UDP socket was expected, got {socket!r}.')
+        
+        socket.setblocking(False)
+        
+        return await self._asyncio_create_datagram_connection(protocol_factory, socket, None)
+    
+    
+    async def _asyncio_create_datagram_connection(self, protocol_factory, socket, address):
+        protocol = protocol_factory()
+        waiter = HataFuture(self)
+        transport = DatagramSocketTransportLayer(self, None, socket, protocol, waiter, address)
+        
+        try:
+            await waiter
+        except:
+            transport.close()
+            raise
         
         return transport, protocol
+    
+    async def create_unix_connection(self, protocol_factory, path=None, *, ssl=None, sock=None, server_hostname=None,
+            ssl_handshake_timeout=None):
+        if sock is None:
+            return await self._asyncio_create_unix_connection_to(protocol_factory, path, ssl=ssl,
+                server_host_name=server_hostname)
+        
+        else:
+            return await self._asyncio_create_unix_connection_with(protocol_factory, sock, ssl=ssl,
+                server_host_name=server_hostname)
+    
+    
+    async def _asyncio_create_unix_connection_to(self, protocol_factory, path, *, ssl=None, server_host_name=None):
+        ssl, server_host_name = self._create_unix_connection_shared_precheck(ssl, server_host_name)
+        
+        path = os.fspath(path)
+        socket = module_socket.socket(module_socket.AF_UNIX, module_socket.SOCK_STREAM, 0)
+        
+        try:
+            socket.setblocking(False)
+            await self.socket_connect(socket, path)
+        except:
+            socket.close()
+            raise
+        
+        return await self._asyncio_create_connection_transport(socket, protocol_factory, ssl, server_host_name, False)
+    
+    
+    async def _asyncio_create_unix_connection_with(self, protocol_factory, socket, *, ssl=None, server_host_name=None):
+        ssl, server_host_name = self._create_unix_connection_shared_precheck(ssl, server_host_name)
+        
+        if socket.family not in (module_socket.AF_UNIX, module_socket.SOCK_STREAM):
+            raise ValueError(f'A UNIX Domain Stream Socket was expected, got {socket!r}.')
+        
+        socket.setblocking(False)
+    
+        return await self._asyncio_create_connection_transport(socket, protocol_factory, ssl, server_host_name, False)
+    
     
     async def create_server(self, protocol_factory, host=None, port=None, *, family=module_socket.AF_UNSPEC,
             flags=module_socket.AI_PASSIVE, sock=None, backlog=100, ssl=None, reuse_address=None, reuse_port=None,
@@ -186,7 +493,7 @@ class EventThread:
             await server.start()
         
         return server
-        
+    
     
     async def create_unix_server(self, protocol_factory, path=None, *, sock=None, backlog=100, ssl=None,
             ssl_handshake_timeout=None, start_serving=True):

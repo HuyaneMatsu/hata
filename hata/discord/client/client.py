@@ -84,7 +84,7 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
     get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
-    get_scheduled_event_id, get_scheduled_event_and_id
+    get_scheduled_event_id, get_scheduled_event_and_id, get_sticker_pack_and_id
 from .utils import UserGuildPermission, Typer, BanEntry
 from .ready_state import ReadyState
 
@@ -13929,6 +13929,40 @@ class Client(ClientUserPBase):
         return sticker
     
     
+    async def sticker_pack_get(self, sticker_pack, force_update=False):
+        """
+        Gets the sticker packs. If the sticker-packs are already loaded, updates them.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        sticker_pack : ``StickerPack`` or `int`
+            The sticker pack' identifier.
+        force_update : `bool`, Optional
+            Whether the sticker-pack should be requested even if it supposed to be up to date.
+        
+        Returns
+        -------
+        sticker_packs : `list` of ``StickerPack``
+        
+        Raises
+        ------
+        TypeError
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        sticker_pack, sticker_pack_id = get_sticker_pack_and_id(sticker_pack)
+        
+        if (sticker_pack is None) or force_update:
+            sticker_pack_data = await self.http.sticker_pack_get(sticker_pack_id)
+            sticker_pack = StickerPack._create_and_update(sticker_pack_data)
+        
+        return sticker_pack
+    
+    
     async def sticker_pack_get_all(self, force_update=False):
         """
         Gets the sticker packs. If the sticker-packs are already loaded, updates them.
@@ -13937,7 +13971,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        force_update : `bool`
+        force_update : `bool`, Optional
             Whether the sticker-packs should be requested even if it supposed to be up to date.
         
         Returns

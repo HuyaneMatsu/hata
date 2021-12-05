@@ -1,3 +1,9 @@
+## 1.1.125 *\[2021-12-??\]*
+
+#### Improvements
+
+- Add missing `EventHandlerManager.__dir__`.
+
 ## 1.1.125 *\[2021-12-05\]*
 
 #### Bug fixes

@@ -1061,6 +1061,21 @@ class EventHandlerManager:
         raise AttributeError(f'Unknown attribute: `{name!r}`.')
     
     
+    def __dir__(self):
+        """Returns the attributes of the event handler manager."""
+        directory = object.__dir__(self)
+        plugins = self._plugins
+        if (plugins is not None):
+            directory = set(directory)
+            
+            for plugin in plugins:
+                directory.update(plugin._plugin_event_names)
+            
+            directory = sorted(directory)
+        
+        return directory
+    
+    
     def get_handler(self, name, type_):
         """
         Gets an event handler from the client's.

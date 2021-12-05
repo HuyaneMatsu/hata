@@ -440,6 +440,7 @@ class EventThread:
         
         return transport, protocol
     
+    
     async def create_unix_connection(self, protocol_factory, path=None, *, ssl=None, sock=None, server_hostname=None,
             ssl_handshake_timeout=None):
         if sock is None:

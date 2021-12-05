@@ -1,7 +1,7 @@
 __all__ = ('SolarNode', )
 
 from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
-from scarletio import sleep, Task, future_or_timeout, Future,  to_json, from_json
+from scarletio import sleep, Task, future_or_timeout, Future,  to_json, from_json, repeat_timeout
 from ...discord.core import KOKORO
 from ...discord.guild import VoiceRegion
 
@@ -153,6 +153,7 @@ class SolarNode:
         
         return available
     
+    
     @property
     def penalty(self):
         """
@@ -271,22 +272,31 @@ class SolarNode:
                         waiter = None
                     
                     while True:
-                        task = Task(self._poll_event(), KOKORO)
-                        future_or_timeout(task, 60.0)
                         try:
-                            should_reconnect = await task
+                            with repeat_timeout(60.0) as loop:
+                                for _ in loop:
+                                    should_reconnect = await self.self._poll_event()
+                                    if should_reconnect:
+                                        break
                         except TimeoutError:
-                            # timeout, no internet probably
-                            return
-                        
-                        if should_reconnect:
+                            # timeout, no internet probably; try to reconnect
+                            
+                            # Make sure we are still online
                             if not client.running:
                                 return
                             
-                            reconnect_attempts = self.reconnect_attempts
-                            task = Task(self._connect(), KOKORO)
-                            future_or_timeout(task, 30.0)
-                            await task
+                            # Try to reconnect later.
+                            await sleep(5.0, KOKORO)
+                            break
+                        
+                        if not client.running:
+                            return
+                        
+                        reconnect_attempts = self.reconnect_attempts
+                        task = Task(self._connect(), KOKORO)
+                        future_or_timeout(task, 30.0)
+                        await task
+                
                 
                 except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
                         InvalidHandshake, ValueError) as err:
@@ -330,6 +340,7 @@ class SolarNode:
                         await sleep(sleep_amount, KOKORO)
                     
                     continue
+                
         
         except GeneratorExit:
             if (waiter is not None):

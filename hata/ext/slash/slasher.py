@@ -838,16 +838,16 @@ class Slasher(EventHandlerBase):
         A dictionary which contains component commands based on regex patterns.
     
     _regex_custom_id_to_form_submit_command : `dict` of (``RegexMatcher``, ``FormSubmitCommand``) items
-        A dictionary which contains form commands based on regex patterns.
+        A dictionary which contains form submit commands based on regex patterns.
     
     _self_reference : `None` or ``WeakReferer`` to ``Slasher``
         Reference back to the slasher. Used to reference back from commands.
     
     _string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
-        A dictionary which contains component commands for `custom_id`-s.
+        A dictionary which contains component commands by their `custom_id`.
     
     _string_custom_id_to_form_submit_command : `dict` of (`str`, ``FormSubmitCommand``) items
-        A dictionary which contains form commands for `custom_id`-s.
+        A dictionary which contains form submit commands by their `custom_id`.
     
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
@@ -2633,7 +2633,7 @@ class Slasher(EventHandlerBase):
     
     def _add_form_submit_command(self, form_submit_command):
         """
-        Adds a form_submit command to the ``Slasher`` if applicable.
+        Adds a form submit command to the ``Slasher`` if applicable.
         
         Parameters
         ---------
@@ -2658,6 +2658,12 @@ class Slasher(EventHandlerBase):
         ---------
         custom_id_based_command : ``CustomIdBasedCommand``
             The command to add.
+        custom_id_based_commands : `set` of ``CustomIdBasedCommand``
+            A set of all the added commands.
+        string_custom_id_to_custom_id_based_command : `dict` of (`str`, ``CustomIdBasedCommand``) items
+            A dictionary which contains commands by their `custom_id`.
+        regex_custom_id_to_custom_id_based_command : ``dict` of (``RegexMatcher``, ``CustomIdBasedCommand``) items
+            A dictionary which contains commands based on regex patterns.
         
         Raises
         ------
@@ -2740,26 +2746,56 @@ class Slasher(EventHandlerBase):
         component_command : ``ComponentCommand``
             The command to remove.
         """
+        self._remove_custom_id_based_command(component_command, self._component_commands,
+            self._string_custom_id_to_component_command, self._regex_custom_id_to_component_command)
+    
+    
+    def _remove_form_submit_command(self, form_submit_command):
+        """
+        Removes the given form submit command from the ``Slasher`` if applicable.
+        
+        Parameters
+        ---------
+        form_submit_command : ``FormSubmitCommand``
+            The command to remove.
+        """
+        self._add_custom_id_based_command(form_submit_command, self._form_submit_commands,
+            self._string_custom_id_to_form_submit_command, self._regex_custom_id_to_form_submit_command)
+    
+    
+    def _remove_custom_id_based_command(self, custom_id_based_command, custom_id_based_commands,
+            string_custom_id_to_custom_id_based_command, regex_custom_id_to_custom_id_based_command):
+        """
+        Removes a custom id based command from the ``Slasher`` if applicable.
+        
+        Parameters
+        ---------
+        custom_id_based_command : ``CustomIdBasedCommand``
+            The command to remove.
+        custom_id_based_commands : `set` of ``CustomIdBasedCommand``
+            A set of all the added commands.
+        string_custom_id_to_custom_id_based_command : `dict` of (`str`, ``CustomIdBasedCommand``) items
+            A dictionary which contains commands by their `custom_id`.
+        regex_custom_id_to_custom_id_based_command : ``dict` of (``RegexMatcher``, ``CustomIdBasedCommand``) items
+            A dictionary which contains commands based on regex patterns.
+        """
         try:
-            self._component_commands.remove(component_command)
+            custom_id_based_commands.remove(custom_id_based_command)
         except KeyError:
             pass
         else:
-            string_custom_id_to_component_command = self._string_custom_id_to_component_command
-            
-            string_custom_ids = component_command._string_custom_ids
+            string_custom_ids = custom_id_based_command._string_custom_ids
             if (string_custom_ids is not None):
                 for string_custom_id in string_custom_ids:
-                    if string_custom_id_to_component_command[string_custom_id] is component_command:
-                        del string_custom_id_to_component_command[string_custom_id]
+                    if string_custom_id_to_custom_id_based_command[string_custom_id] is custom_id_based_command:
+                        del string_custom_id_to_custom_id_based_command[string_custom_id]
             
-            regex_custom_id_to_component_command = self._regex_custom_id_to_component_command
             
-            regex_custom_ids = component_command._regex_custom_ids
+            regex_custom_ids = custom_id_based_command._regex_custom_ids
             if (regex_custom_ids is not None):
                 for regex_custom_id in regex_custom_ids:
-                    if regex_custom_id_to_component_command[regex_custom_id] is component_command:
-                        del regex_custom_id_to_component_command[regex_custom_id]
+                    if regex_custom_id_to_custom_id_based_command[regex_custom_id] is custom_id_based_command:
+                        del regex_custom_id_to_custom_id_based_command[regex_custom_id]
     
     
     def get_global_command_count(self):

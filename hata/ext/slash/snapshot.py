@@ -17,7 +17,8 @@ def take_slasher_snapshot(client):
     Returns
     -------
     collected : `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``)
+            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``, \
+            `None` or `set` of ``FormSubmitCommand``)
         The collected commands of the slasher.
     """
     slasher = getattr(client, 'slasher', None)
@@ -54,12 +55,27 @@ def take_slasher_snapshot(client):
         else:
             collected_component_commands = None
         
-        if (collected_application_commands is None) and (collected_component_commands is None):
+        collected_form_submit_commands = slasher._form_submit_commands
+        if collected_form_submit_commands:
+            collected_form_submit_commands = collected_form_submit_commands.copy()
+        else:
+            collected_form_submit_commands = None
+        
+        if (
+            (collected_application_commands is None) and
+            (collected_component_commands is None) and
+            (collected_form_submit_commands is None)
+        ):
             collected = None
         else:
-            collected = (collected_application_commands, collected_component_commands)
+            collected = (
+                collected_application_commands,
+                collected_component_commands,
+                collected_form_submit_commands,
+            )
     
     return collected
+
 
 def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     """
@@ -70,17 +86,20 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     client : ``Client``
         The respective client.
     snapshot_old :  `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``)
+            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``, \
+            `None` or `set` of ``FormSubmitCommand``)
         An old snapshot taken.
     snapshot_new :  `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``)
+            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``, \
+            `None` or `set` of ``FormSubmitCommand``)
         A new snapshot.
     
     Returns
     -------
-    snapshot_difference : `None` or `tuple` (`tuple` (`set` of ``SlasherApplicationCommand``, `set` of \
-            ``SlasherApplicationCommand``), `tuple` (`None` or `set` of ``ComponentCommand``, `None` or \
-            `set` of ``ComponentCommand``)
+    snapshot_difference : `None` or `tuple` (`tuple` (`None` or `set` of ``SlasherApplicationCommand``, `None` or
+            `set` of ``SlasherApplicationCommand``), `tuple` (`None` or `set` of ``ComponentCommand``, `None` or \
+            `set` of ``ComponentCommand``), `tuple` (`None` or `set` of ``FormSubmitCommand``, `None` or \
+            `set` of ``FormSubmitCommand``))
         The difference between the two snapshots.
     """
     if (snapshot_old is None) and (snapshot_new is None):
@@ -90,15 +109,23 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     if snapshot_old is None:
         application_command_snapshot_old = None
         component_command_snapshot_old = None
+        form_submit_command_snapshot_old = None
     else:
-        application_command_snapshot_old, component_command_snapshot_old = snapshot_old
+        application_command_snapshot_old, \
+        component_command_snapshot_old, \
+        form_submit_command_snapshot_old \
+            = snapshot_old
     
     if snapshot_new is None:
         application_command_snapshot_new = None
         component_command_snapshot_new = None
+        form_submit_command_snapshot_new = None
     else:
-        application_command_snapshot_new, component_command_snapshot_new = snapshot_new
-        
+        application_command_snapshot_new, \
+        component_command_snapshot_new, \
+        form_submit_command_snapshot_new \
+            = snapshot_new
+    
     
     if (application_command_snapshot_old is not None) or (application_command_snapshot_new is not None):
         added_application_commands = []
@@ -166,6 +193,7 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     else:
         application_command_difference = None
     
+    # component commands
     if (component_command_snapshot_old is None) or (component_command_snapshot_new is None):
         removed_component_commands = component_command_snapshot_old
         added_component_commands = component_command_snapshot_new
@@ -184,12 +212,42 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     else:
         component_command_difference = (removed_component_commands, added_component_commands)
     
-    if (application_command_difference is None) and (component_command_difference is None):
+    # form submit commands
+    if (form_submit_command_snapshot_old is None) or (form_submit_command_snapshot_new is None):
+        removed_form_submit_commands = form_submit_command_snapshot_old
+        added_form_submit_commands = form_submit_command_snapshot_new
+    else:
+        removed_form_submit_commands = form_submit_command_snapshot_old-form_submit_command_snapshot_new
+        added_form_submit_commands = form_submit_command_snapshot_new-form_submit_command_snapshot_old
+        
+        if (not removed_form_submit_commands):
+            removed_form_submit_commands = None
+        
+        if (not added_form_submit_commands):
+            added_form_submit_commands = None
+    
+    if (added_form_submit_commands is None) and (removed_form_submit_commands is None):
+        form_submit_command_difference = None
+    else:
+        form_submit_command_difference = (removed_form_submit_commands, added_form_submit_commands)
+    
+    # Merging
+    if (
+        (application_command_difference is None) and
+        (component_command_difference is None) and
+        (form_submit_command_difference is None)
+    
+    ):
         snapshot_difference = None
     else:
-        snapshot_difference = (application_command_difference, component_command_difference)
+        snapshot_difference = (
+            application_command_difference,
+            component_command_difference,
+            form_submit_command_difference,
+        )
     
     return snapshot_difference
+
 
 def revert_slasher_snapshot(client, snapshot_difference):
     """
@@ -199,9 +257,10 @@ def revert_slasher_snapshot(client, snapshot_difference):
     ----------
     client : ``Client``
         The respective client instance.
-    snapshot_difference : `None` or `tuple` (`tuple` (`set` of ``SlasherApplicationCommand``, `set` of \
-            ``SlasherApplicationCommand``), `tuple` (`None` or `set` of ``ComponentCommand``, `None` or \
-            `set` of ``ComponentCommand``)
+    snapshot_difference : `None` or `tuple` (`tuple` (`None` or `set` of ``SlasherApplicationCommand``, `None` or
+            `set` of ``SlasherApplicationCommand``), `tuple` (`None` or `set` of ``ComponentCommand``, `None` or \
+            `set` of ``ComponentCommand``), `tuple` (`None` or `set` of ``FormSubmitCommand``, `None` or \
+            `set` of ``FormSubmitCommand``))
         The taken snapshot.
     """
     slasher = getattr(client, 'slasher', None)
@@ -209,8 +268,13 @@ def revert_slasher_snapshot(client, snapshot_difference):
         return
     
     if (snapshot_difference is not None):
-        application_command_difference, component_command_difference = snapshot_difference
         
+        application_command_difference, \
+        component_command_difference, \
+        form_submit_command_difference \
+            = snapshot_difference
+        
+        # application_command_difference
         if (application_command_difference is not None):
             added_application_commands, removed_application_commands = application_command_difference
             if (added_application_commands is not None):
@@ -224,6 +288,7 @@ def revert_slasher_snapshot(client, snapshot_difference):
             if client.running and client.application.id:
                 slasher.sync()
         
+        # component_command_difference
         if (component_command_difference is not None):
             added_component_commands, removed_component_commands = component_command_difference
             
@@ -234,6 +299,19 @@ def revert_slasher_snapshot(client, snapshot_difference):
             if (removed_component_commands is not None):
                 for component_command in removed_component_commands:
                     slasher._add_component_command(component_command)
+        
+        # form_submit_command_difference
+        if (form_submit_command_difference is not None):
+            added_form_submit_commands, removed_form_submit_commands = form_submit_command_difference
+            
+            if (added_form_submit_commands is not None):
+                for form_submit_command in added_form_submit_commands:
+                    slasher._remove_form_submit_command(form_submit_command)
+
+            if (removed_form_submit_commands is not None):
+                for form_submit_command in removed_form_submit_commands:
+                    slasher._add_form_submit_command(form_submit_command)
+
 
 SNAPSHOT_TAKERS['client.slasher'] = (
     take_slasher_snapshot,

@@ -3,7 +3,7 @@ __all__ = ('Menu',)
 from collections import OrderedDict
 from types import MemberDescriptorType
 
-from scarletio import CallableAnalyzer, copy_docs, Task, CancelledError
+from scarletio import CallableAnalyzer, copy_docs, Task, CancelledError, RichAttributeErrorBaseType
 
 from ....discord.core import KOKORO
 from ....discord.interaction.components import _debug_component_components, _debug_component_custom_id, \
@@ -272,7 +272,18 @@ class ComponentDescriptorState(ComponentBase):
             if isinstance(getter, MemberDescriptorType):
                 return MemberDescriptorType.__get__(getter, component)
         
-        raise AttributeError(attribute_name)
+        RichAttributeErrorBaseType.__getattr__(self, attribute_name)
+    
+    
+    @copy_docs(ComponentBase.__dir__)
+    def __dir__(self):
+        directory = set(object.__dir__(self))
+        
+        for attribute_name, attribute_value in type(self._component).__dict__:
+            if isinstance(attribute_value, MemberDescriptorType):
+                directory.add(attribute_name)
+        
+        return sorted(directory)
     
     
     @copy_docs(ComponentBase.to_data)

@@ -2,7 +2,7 @@ __all__ = ()
 
 from functools import partial as partial_func
 
-from scarletio import WeakReferer, Task
+from scarletio import WeakReferer, Task, RichAttributeErrorBaseType
 
 from ..core import KOKORO
 
@@ -36,7 +36,7 @@ EVENT_HANDLER_ATTRIBUTES = frozenset((
     '_plugins',
 ))
 
-class EventHandlerManager:
+class EventHandlerManager(RichAttributeErrorBaseType):
     """
     After a client gets a dispatch event from Discord, it's parser might ensure an event. These events are stored
     inside of a ``EventHandlerManager`` and can be accessed through ``Client.events``.
@@ -1058,7 +1058,7 @@ class EventHandlerManager:
             else:
                 return getattr(event_handler_plugin, name)
         
-        raise AttributeError(f'Unknown attribute: `{name!r}`.')
+        RichAttributeErrorBaseType.__getattr__(self, name)
     
     
     def __dir__(self):

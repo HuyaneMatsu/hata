@@ -3,7 +3,7 @@ __all__ = ('GetTracksResult', 'Track', )
 from math import floor
 from base64 import b64decode
 
-from scarletio import un_map_pack
+from scarletio import un_map_pack, RichAttributeErrorBaseType
 
 from .constants import LAVALINK_KEY_TRACK, LAVALINK_KEY_START_TIME, LAVALINK_KEY_END_TIME, LAVALINK_KEY_TRACK_BASE64, \
     LAVALINK_KEY_TRACK_DICT, LAVALINK_KEY_TRACK_IDENTIFIER, LAVALINK_KEY_TRACK_SEEKABLE, LAVALINK_KEY_TRACK_AUTHOR, \
@@ -288,7 +288,7 @@ class Track:
 
 TRACK_ATTRIBUTE_GETTERS = {attribute_name: getattr(Track, attribute_name) for attribute_name in Track.__slots__}
 
-class ConfiguredTrack:
+class ConfiguredTrack(RichAttributeErrorBaseType):
     """
     Represents a track added to a player. Not like generic tracks, this supports additional attributes as well.
     
@@ -396,7 +396,19 @@ class ConfiguredTrack:
         else:
             return getter.__get__(self.track, Track)
         
-        raise AttributeError(attribute_name)
+        RichAttributeErrorBaseType.__getattr__(self, attribute_name)
+    
+    
+    def __dir__(self):
+        """Returns the attribute names of the object."""
+        directory = set(object.__dir__(self))
+        added_attributes = self._added_attributes
+        if (added_attributes is not None):
+            directory.update(added_attributes.keys())
+        
+        directory.update(TRACK_ATTRIBUTE_GETTERS.keys())
+        
+        return sorted(directory)
     
     
     def un_pack(self):
@@ -441,6 +453,7 @@ class ConfiguredTrack:
         
         return ''.join(repr_parts)
     
+    
     def __hash__(self):
         """Returns the configured track's hash value."""
         hash_value = 0
@@ -465,6 +478,7 @@ class ConfiguredTrack:
                 hash_value ^= hash(item)
         
         return hash_value
+    
     
     def __eq__(self, other):
         """Returns whether the two configured tracks are the same."""
@@ -537,6 +551,7 @@ class GetTracksResult:
         self.selected_track_index = selected_track_index
         self.tracks = tracks
         return self
+    
     
     def __repr__(self):
         """Returns the get tracks result's representation."""

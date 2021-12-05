@@ -5,7 +5,7 @@ from os import urandom as random_bytes
 from base64 import b85encode as to_base85
 import reprlib
 
-from scarletio import copy_docs, export
+from scarletio import copy_docs, export, RichAttributeErrorBaseType
 
 from ..bases import PreinstancedBase
 from ..preconverters import preconvert_preinstanced_type
@@ -410,7 +410,7 @@ def create_auto_custom_id():
 
 
 @export
-class ComponentBase:
+class ComponentBase(RichAttributeErrorBaseType):
     """
     Base class for 3rd party components.
     
@@ -2786,9 +2786,18 @@ class ComponentDynamic(ComponentBase):
             if attribute_name in COMPONENT_ATTRIBUTE_NAMES:
                 attribute_value = None
             else:
-                raise AttributeError(attribute_name)
+                # Linter wont cry if we do a return or such.
+                return RichAttributeErrorBaseType.__getattr__(self, attribute_name)
         
         return attribute_value
+    
+    
+    def __dir__(self):
+        """Returns the attributes of the component."""
+        directory = set(object.__dir__(self))
+        directory.update(self._data.keys())
+        directory.update(COMPONENT_ATTRIBUTE_NAMES)
+        return sorted(directory)
 
 
 COMPONENT_TYPE_TO_STYLE = {

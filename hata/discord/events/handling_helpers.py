@@ -4,7 +4,7 @@ from functools import partial as partial_func
 from types import FunctionType
 
 from scarletio import RemovedDescriptor, MethodLike, WeakKeyDictionary, Task, is_coroutine_function, WaitTillAll, \
-    CallableAnalyzer
+    CallableAnalyzer, RichAttributeErrorBaseType
 from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
 from ..core import KOKORO
@@ -385,7 +385,7 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
     return constructor(*(parameters_by_name[parameter_name][0] for parameter_name in parameter_names))
 
 
-class _EventHandlerManager:
+class _EventHandlerManager(RichAttributeErrorBaseType):
     """
     Gives a decorator functionality to an event handler, because 'rich' event handlers still can not be used a
     decorator, their `__call__` is already allocated for handling their respective event.
@@ -492,8 +492,19 @@ class _EventHandlerManager:
     
     def __getattr__(self, name):
         """Returns the attribute of the event handler manager's parent."""
-        return getattr(self.parent, name)
+        try:
+            return getattr(self.parent, name)
+        except AttributeError:
+            pass
+        
+        # pass at exception handling to remove cause
+        RichAttributeErrorBaseType.__getattr__(self, name)
     
+    
+    def __dir__(self):
+        """Returns the attribute names of the object."""
+        return sorted(set(object.__dir__(self))|set(dir(self.parent)))
+        
     
     def extend(self, iterable):
         """

@@ -1,8 +1,13 @@
-## 1.1.125 *\[2021-12-??\]*
+## 1.1.126 *\[2021-12-??\]*
 
 #### Improvements
 
 - Add missing `EventHandlerManager.__dir__`.
+- Add missing `_EventHandlerManager.__dir__`.
+- Add missing `ComponentDynamic.__dir__`.
+
+##### ext.slash
+- Add missing `ComponentDescriptorState.__dir__`.
 
 ## 1.1.125 *\[2021-12-05\]*
 
@@ -25,14 +30,12 @@ around the board.
 - `DiscordEntity`-s now drop rich `AttributeError`. Soon coming for other types as well.
 
 ##### ext.asyncio
-
 - `Task` instances returned by `current_task()` now support dynamic attributes (They are not tasks anymore.)
     (winwinwinwin#0001)
 
 #### Bug fixes
 
 ##### ext.asyncio
-
 - `gather` could never finish. (winwinwinwin#0001)
 
 ## 1.1.123 *\[2021-11-28\]*
@@ -103,27 +106,22 @@ around the board.
 - Add images to `slash.md`.
 
 ##### ext.extension_loader
-
 - Syntax is checked before executing a module when reloading.
 - Add `Extension.file_name`.
 
 ##### ext.top_gg
-
 - Added to `setup.py`.
 
 ##### ext.asyncio
-
 - Add `start_unix_server`. (Forest#2913)
 - Add `Queue.put`. (Forest#2913)
 
 #### Bug Fixes
-
 - `Client.multi_client_message_delete_sequence` was not calling `Message.is_deletable` when getting messages from
 cache.
 - Fix bad logic in `EventThread.create_server`. (Forest#2913)
 
 ##### ext.slash
-
 - `abort` was not defining `đhow_for_invoking_user_only` by default. (When was this bug made?)
 
 #### Renames, Deprecation & Removals
@@ -132,7 +130,6 @@ cache.
 - Deprecate `ComponentInteraction.component_type`.
 
 ##### ext.slash
-
 - Rename `Slasher.regex_custom_id_to_component_command` to `._regex_custom_id_to_component_command`.
 - Rename `Slasher.string_custom_id_to_component_command` to `._string_custom_id_to_component_command`.
 - Deprecate `Slasher.regex_custom_id_to_component_command`.

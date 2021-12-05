@@ -20,9 +20,6 @@ HATA_API_VERSION : `int` = `9`
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still
     present.
 
-HATA_BACKEND_ONLY : `bool` = `False`
-    Whether `hata.discord` should not be imported as well.
-
 HATA_CACHE_PRESENCE : `bool` = `True`
     Whether hata should enable presence related attributes and dispatch users presence related events. By disabling it,
     ``User.status``, ``User.statuses``, ``User.platform``, ``User.activities``, ``User.activity`` will be disabled. And
@@ -68,7 +65,7 @@ except ModuleNotFoundError:
 else:
     load_dotenv()
 
-__all__ = ('ALLOW_DEAD_EVENTS', 'API_VERSION', 'BACKEND_ONLY', 'CACHE_PRESENCE', 'CACHE_USER', 'CUSTOM_API_ENDPOINT',
+__all__ = ('ALLOW_DEAD_EVENTS', 'API_VERSION', 'CACHE_PRESENCE', 'CACHE_USER', 'CUSTOM_API_ENDPOINT',
     'CUSTOM_CDN_ENDPOINT', 'CUSTOM_DISCORD_ENDPOINT', 'CUSTOM_STATUS_ENDPOINT', 'DOCS_ENABLED', 'LIBRARY_URL',
     'MESSAGE_CACHE_SIZE', 'RICH_DISCORD_EXCEPTION')
 
@@ -178,7 +175,6 @@ def get_int_env(name, default, *, warn_if_empty=True):
     return default
 
 
-BACKEND_ONLY = get_bool_env('HATA_BACKEND_ONLY', False)
 CACHE_PRESENCE = get_bool_env('HATA_CACHE_PRESENCE', True)
 CACHE_USER = get_bool_env('HATA_CACHE_USERS', True)
 MESSAGE_CACHE_SIZE = get_int_env('HATA_MESSAGE_CACHE_SIZE', 10)

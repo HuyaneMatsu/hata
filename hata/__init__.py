@@ -105,7 +105,6 @@ We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master
 """
 __version__ = '1.1.123'
 
-from .env import BACKEND_ONLY
 from .deprecate_backend import deprecate
 
 from .discord import *

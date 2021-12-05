@@ -1,6 +1,6 @@
 __all__ = ('DiscordEntity', 'Slotted', )
 
-from scarletio import include
+from scarletio import include, RichAttributeErrorBaseType
 
 id_to_datetime = include('id_to_datetime')
 
@@ -170,7 +170,7 @@ class DiscordEntityMeta(Slotted):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
-class DiscordEntity(object, metaclass=DiscordEntityMeta):
+class DiscordEntity(RichAttributeErrorBaseType, metaclass=DiscordEntityMeta):
     """
     Base class for Discord entities.
     

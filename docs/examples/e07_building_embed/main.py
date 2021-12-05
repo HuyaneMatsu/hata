@@ -1,4 +1,5 @@
-from hata import Client, Embed, ReuAsyncIO
+from hata import Client, Embed
+from scarletio import ReuAsyncIO
 
 TOKEN = ''
 

@@ -643,7 +643,7 @@ Sometimes you might wanna respond multiple times on an event. At this case use `
 
 ```py
 from random import random, choice
-from hata import sleep
+from scarletio import sleep
 
 IMPROVISATION_CHOICES = [
     'Did Marisa really adopt Reimu?',
@@ -715,7 +715,7 @@ causing no `Message` instance to be retrieved. `SlashResponse` will always ackno
 meaning it will always yield back a `Message` instance.
 
 ```py
-from hata import sleep
+from scarletio import sleep
 from hata.ext.slash import SlashResponse
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -1108,7 +1108,7 @@ The followup message methods are the following:
 An example using pure client methods:
 
 ```py
-from hata import sleep
+from scarletio import sleep
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def kaboom(client, event):
@@ -1133,7 +1133,7 @@ async def kaboom(client, event):
 An example using mixed `yield` and `Client` methods:
 
 ```py
-from hata import sleep
+from scarletio import sleep
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def kaboom_mixed(client, event):

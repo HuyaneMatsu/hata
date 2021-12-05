@@ -1,9 +1,15 @@
-## 1.1.124 *\[2021-??-??\]*
+## 1.1.124 *\[2021-12-05\]*
+
+### Summary
+
+Hata's backend has been moved to it's [repo](https://github.com/HuyaneMatsu/scarletio); This was a common request
+around the board.
 
 #### Improvements
 
 - Add `ChannelForum`.
 - Add `CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS`.
+- `DiscordEntity`-s now drop rich `AttributeError`. Soon coming for other types as well.
 
 ##### ext.asyncio
 

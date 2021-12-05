@@ -678,6 +678,8 @@ async def handle_waifu_select(client, event):
     yield InteractionResponse(embed=embed, components=select)
 ```
 
+![](assets/components_0007.gif)
+
 And advantage of select over generic choices might be, that you cna allow the user to select non, or multiple options.
 
 ```py
@@ -761,3 +763,5 @@ async def zoo(event):
     
     yield InteractionResponse(content, components=None, message=message, event=component_interaction)
 ```
+
+![](assets/components_0006.gif)

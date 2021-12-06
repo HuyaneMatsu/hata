@@ -5,6 +5,7 @@
 - Add `DiscordHTTPClient.sticker_pack_get`.
 - Add `RATE_LIMIT_GROUPS.sticker_pack_get`.
 - Add `Client.sticker_pack_get`.
+- Add `ApplicationCommandTargetType.channel`.
 
 ## 1.1.126 *\[2021-12-05\]*
 

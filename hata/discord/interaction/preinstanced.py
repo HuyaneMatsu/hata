@@ -2,8 +2,6 @@ __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwrit
     'ApplicationCommandTargetType', 'ButtonStyle', 'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES', 'ComponentType',
     'InteractionType', 'TextInputStyle')
 
-import warnings
-
 from scarletio import export
 
 from ..bases import PreinstancedBase, Preinstance as P
@@ -354,6 +352,8 @@ class ApplicationCommandTargetType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | message               | message           | 3     |
     +-----------------------+-------------------+-------+
+    | channel               | channel           | 4     |
+    +-----------------------+-------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -365,8 +365,11 @@ class ApplicationCommandTargetType(PreinstancedBase):
     chat = P(1, 'chat',)
     user = P(2, 'user',)
     message = P(3, 'message',)
+    channel = P(4, 'channel')
+
 
 APPLICATION_COMMAND_CONTEXT_TARGET_TYPES = frozenset((
     ApplicationCommandTargetType.user,
     ApplicationCommandTargetType.message,
+    ApplicationCommandTargetType.channel
 ))

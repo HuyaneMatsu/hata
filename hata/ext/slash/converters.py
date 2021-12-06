@@ -2,6 +2,13 @@ __all__ = ('SlashParameter', )
 
 import reprlib
 
+try:
+    # CPython
+    from re import Pattern
+except ImportError:
+    # ChadPython (PyPy)
+    from re import _pattern_type as Pattern
+
 from scarletio import CallableAnalyzer, un_map_pack, copy_docs, include
 
 from ...discord.core import ROLES, CHANNELS
@@ -1104,7 +1111,7 @@ def postprocess_channel_types(processed_channel_types, parsed_channel_types):
     return channel_types
 
 
-def process_max_nad_min_value(type_, value, value_name):
+def process_max_and_min_value(type_, value, value_name):
     """
     Processes max and min values.
     
@@ -1597,8 +1604,8 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
     
-    max_value = process_max_nad_min_value(type_, slash_parameter.max_value, 'max_value')
-    min_value = process_max_nad_min_value(type_, slash_parameter.min_value, 'min_value')
+    max_value = process_max_and_min_value(type_, slash_parameter.max_value, 'max_value')
+    min_value = process_max_and_min_value(type_, slash_parameter.min_value, 'min_value')
     
     description = slash_parameter.description
     if (description is not None):
@@ -1832,7 +1839,7 @@ class RegexParameterConverter(ParameterConverter):
     
     @copy_docs(ParameterConverter.__repr__)
     def __repr__(self):
-        repr_parts =[
+        repr_parts = [
             '<',
             self.__class__.__name__,
             ' parameter_name=',
@@ -1847,6 +1854,118 @@ class RegexParameterConverter(ParameterConverter):
         
         repr_parts.append('>')
         
+        return ''.join(repr_parts)
+
+
+def _keyword_parameter_converter_string(converter, interaction_event):
+    value = interaction_event.interaction.get_value_for(converter.annotation)
+    if (value is None):
+        value = converter.default
+    
+    return value
+
+def _keyword_parameter_converter_regex(converter, interaction_event):
+    match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
+    if (value is None):
+        value = converter.default
+    
+    return value
+
+def _keyword_parameter_converter_regex_group_dict(converter, interaction_event):
+    match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
+    if (value is None):
+        value = converter.default
+    
+    groups = match.groupdict()
+    return groups, value
+
+def _keyword_parameter_converter_regex_group_tuple(converter, interaction_event):
+    match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
+    if (value is None):
+        value = converter.default
+    
+    groups = match.groups()
+    return groups, value
+
+
+class KeywordParameterConverter(ParameterConverter):
+    """
+    Regex and string matcher and `custom_id` matching parameter parser for forms.
+    
+    Attributes
+    ----------
+    parameter_name : `str`
+        The parameter's name.
+    annotation : `str` or `Pattern`
+        Annotation defaulting to the parameter's name if required.
+    default : `Any`
+        Default value of the parameter.
+    matcher : `FunctionType`
+        Matches interaction options based on their `custom_id`.
+    """
+    __slots__ = ('parameter_name', 'default', 'required', 'matcher')
+    
+    def __new__(cls, parameter):
+        """
+        Creates a new keyword parameter converter used by form submit fields.
+        
+        Parameters
+        ----------
+        parameter : ``Parameter``
+            The parameter to create converter from.
+        """
+        # Default annotation to parameter name
+        annotation = parameter.annotation
+        if (annotation is None) or (not isinstance(annotation, (str, Pattern))):
+            annotation = parameter.name
+        
+        if isinstance(annotation, str):
+            matcher = _keyword_parameter_converter_string
+        else:
+            group_count = annotation.groups
+            group_dict = annotation.groupindex
+            group_dict_length = len(group_dict)
+            
+            if group_dict_length and (group_dict_length != group_count):
+                raise ValueError(f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
+                    f'{annotation!r}.')
+            
+            if group_count:
+                if group_dict_length:
+                    matcher = _keyword_parameter_converter_regex_group_dict
+                else:
+                    matcher = _keyword_parameter_converter_regex_group_tuple
+            else:
+                matcher = _keyword_parameter_converter_regex
+        
+        self = object.__new__(cls)
+        self.parameter_name = parameter.name
+        self.default = parameter.default
+        self.matcher = matcher
+        return self
+    
+    
+    @copy_docs(ParameterConverter.__call__)
+    async def __call__(self, client, interaction_event, value):
+        return self.matcher(self, interaction_event)
+    
+    
+    @copy_docs(ParameterConverter.__repr__)
+    def __repr__(self):
+        repr_parts =[
+            '<',
+            self.__class__.__name__,
+            ' parameter_name=',
+            repr(self.parameter_name),
+        ]
+        
+        repr_parts.append(', annotation=')
+        repr_parts.append(repr(self.annotation))
+        
+        repr_parts.append(', default=')
+        repr_parts.append(repr(self.default))
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
 
 
@@ -2282,7 +2401,7 @@ def create_value_parameter_converter(parameter):
     return InternalParameterConverter(parameter.name, ANNOTATION_TYPE_SELF_VALUE, converter_self_interaction_value)
 
 
-def check_command_coroutine(func, allow_coroutine_generator_functions):
+def check_command_coroutine(func, allow_coroutine_generator_functions, allow_keyword_only_parameters):
     """
     Checks whether the given `func` is a coroutine and whether it accepts only positional only parameters.
     
@@ -2290,6 +2409,10 @@ def check_command_coroutine(func, allow_coroutine_generator_functions):
     ----------
     func : `async-callable`
         Command coroutine.
+    allow_coroutine_generator_functions : `bool`
+        Whether coroutine generator functions are allowed.
+    allow_keyword_only_parameters : `bool`
+        Whether keyword parameters are allowed.
     
     Returns
     -------
@@ -2332,9 +2455,10 @@ def check_command_coroutine(func, allow_coroutine_generator_functions):
         )
     
     
-    keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_parameter_count()
-    if keyword_only_parameter_count:
-        raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
+    if (not allow_keyword_only_parameters):
+        keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_parameter_count()
+        if keyword_only_parameter_count:
+            raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
     
     if real_analyzer.accepts_args():
         raise TypeError(f'`{real_analyzer.real_function!r}` accepts *args.')
@@ -2385,7 +2509,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
         - If a parameter's `choice` name is duped.
         - If a parameter's `choice` values are mixed types.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2442,7 +2566,7 @@ def get_component_command_parameter_converters(func):
         - If `func` accepts `*args`.
         - If `func` accepts `**kwargs`.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2497,7 +2621,7 @@ def get_context_command_parameter_converters(func):
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2552,7 +2676,7 @@ def get_application_command_parameter_auto_completer_converters(func):
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2582,4 +2706,57 @@ def get_application_command_parameter_auto_completer_converters(func):
 
 
 def get_form_submit_command_parameter_converters(func):
-    return func, []
+    """
+    Parses the given `func`'s parameters.
+    
+    Parameters
+    ----------
+    func : `async-callable`
+        The function used by a ``FormSubmitCommand``.
+    
+    Returns
+    -------
+    func : `async-callable`
+        The converted function.
+    positional_parameter_converters : `tuple` of ``ParameterConverter``
+        Parameter converters for the given `func` in order.
+    keyword_parameter_converters : `tuple` of ``ParameterConverter``
+        Parameter converters for the given `func` for it's keyword parameters.
+    
+    Raises
+    ------
+    TypeError
+        - If `func` is not async callable, neither cannot be instanced to async.
+        - If `func` accepts `*args`.
+        - If `func` accepts `**kwargs`.
+    """
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, True)
+    
+    positional_parameters = real_analyzer.get_non_reserved_positional_parameters()
+    
+    positional_parameter_converters = []
+    
+    for parameter in positional_parameters:
+        parameter_converter = create_internal_parameter_converter(parameter)
+        positional_parameter_converters.append(parameter_converter)
+    
+    parameter_index = 0
+    for index in range(len(positional_parameter_converters)):
+        parameter_converter = positional_parameter_converters[index]
+        if (parameter_converter is not None):
+            continue
+        
+        parameter = positional_parameters[index]
+        parameter_converter = RegexParameterConverter(parameter, parameter_index)
+        positional_parameter_converters[index] = parameter_converter
+        parameter_index += 1
+    
+    positional_parameter_converters = tuple(positional_parameter_converters)
+    
+    keyword_parameters = real_analyzer.get_non_reserved_keyword_only_parameters()
+    keyword_parameter_converters = tuple(KeywordParameterConverter(parameter) for parameter in keyword_parameters)
+    
+    if should_instance:
+        func = analyzer.instance()
+    
+    return func, positional_parameter_converters, keyword_parameter_converters

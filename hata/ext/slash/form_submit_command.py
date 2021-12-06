@@ -45,6 +45,8 @@ class FormSubmitCommand(CustomIdBasedCommand):
         The component commands name.
         
         Only used for debugging.
+    _keyword_parameter_converters : `tuple` of ``ParameterConverter``
+        Parameter converters for keyword parameters.
     
     Class Attributes
     ----------------
@@ -55,7 +57,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
     COMMAND_NAME_NAME : `str`
         The command's command defining parameter's name.
     """
-    __slots__ = ()
+    __slots__ = ('_keyword_parameter_converters',)
 
 
     def __new__(cls, func, custom_id, name=None):
@@ -99,7 +101,8 @@ class FormSubmitCommand(CustomIdBasedCommand):
         name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
         custom_id, route_to = _check_maybe_route('custom_id', custom_id, route_to, _validate_custom_ids)
         
-        command, parameter_converters = get_form_submit_command_parameter_converters(command)
+        command, parameter_converters, keyword_parameter_converters = \
+            get_form_submit_command_parameter_converters(command)
         
         if route_to:
             custom_id = route_value(custom_id, route_to)
@@ -114,6 +117,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
                 self = object.__new__(cls)
                 self._command_function = command
                 self._parameter_converters = parameter_converters
+                self._keyword_parameter_converters = keyword_parameter_converters
                 self._string_custom_ids = string_custom_ids
                 self._regex_custom_ids = regex_custom_ids
                 self._parent_reference = None
@@ -136,6 +140,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
             self = object.__new__(cls)
             self._command_function = command
             self._parameter_converters = parameter_converters
+            self._keyword_parameter_converters = keyword_parameter_converters
             self._string_custom_ids = string_custom_ids
             self._regex_custom_ids = regex_custom_ids
             self._parent_reference = None
@@ -151,7 +156,8 @@ class FormSubmitCommand(CustomIdBasedCommand):
     
     @copy_docs(CustomIdBasedCommand.__call__)
     async def __call__(self, client, interaction_event, regex_match):
-        parameters = []
+        # Positional parameters
+        positional_parameters = []
         
         for parameter_converter in self._parameter_converters:
             try:
@@ -159,7 +165,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
             except BaseException as err:
                 exception = err
             else:
-                parameters.append(parameter)
+                positional_parameters.append(parameter)
                 continue
             
             await handle_command_exception(
@@ -170,7 +176,28 @@ class FormSubmitCommand(CustomIdBasedCommand):
             )
             return
         
-        command_coroutine = self._command_function(*parameters)
+        # Keyword parameters
+        keyword_parameters = {}
+        
+        for parameter_converter in self._keyword_parameter_converters:
+            try:
+                parameter = await parameter_converter(client, interaction_event, regex_match)
+            except BaseException as err:
+                exception = err
+            else:
+                keyword_parameters[parameter_converter.name] = parameter
+                continue
+            
+            await handle_command_exception(
+                self,
+                client,
+                interaction_event,
+                exception,
+            )
+            return
+        
+        # Call command
+        command_coroutine = self._command_function(*positional_parameters, **keyword_parameters)
         
         try:
             await process_command_coroutine(client, interaction_event, False, command_coroutine)

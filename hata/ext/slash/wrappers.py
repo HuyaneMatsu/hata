@@ -9,7 +9,7 @@ from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
 
 from .converters import parse_annotation_description, parse_annotation_type_and_choice, parse_annotation_name, \
-    ANNOTATION_TYPE_TO_STR_ANNOTATION, process_max_nad_min_value, postprocess_channel_types, preprocess_channel_types
+    ANNOTATION_TYPE_TO_STR_ANNOTATION, process_max_and_min_value, postprocess_channel_types, preprocess_channel_types
 
 class SlasherCommandWrapper:
     """
@@ -110,6 +110,7 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         The permission overwrite to apply.
     """
     __slots__ = ('_guild_id', '_permission_overwrite')
+    
     def __new__(cls, guild, target, allow):
         """
         Creates a partial function to wrap a slash command.
@@ -281,8 +282,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
         
-        max_value = process_max_nad_min_value(type_, max_value, 'max_value')
-        min_value = process_max_nad_min_value(type_, min_value, 'min_value')
+        max_value = process_max_and_min_value(type_, max_value, 'max_value')
+        min_value = process_max_and_min_value(type_, min_value, 'min_value')
         
         processed_channel_types = preprocess_channel_types(channel_types)
         channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)

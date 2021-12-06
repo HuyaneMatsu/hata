@@ -1858,20 +1858,69 @@ class RegexParameterConverter(ParameterConverter):
 
 
 def _keyword_parameter_converter_string(converter, interaction_event):
+    """
+    String form submit interaction option value matcher.
+    
+    Parameters
+    ----------
+    converter : ``KeywordParameterConverter``
+        The parent converter instance using this function.
+    interaction_event : ``InteractionEvent``
+        A received interaction eve,t
+    
+    Returns
+    -------
+    value : `Any`
+        The matched value or the converter's default value.
+    """
     value = interaction_event.interaction.get_value_for(converter.annotation)
     if (value is None):
         value = converter.default
     
     return value
 
+
 def _keyword_parameter_converter_regex(converter, interaction_event):
+    """
+    Regex form submit interaction option value matcher.
+    
+    Parameters
+    ----------
+    converter : ``KeywordParameterConverter``
+        The parent converter instance using this function.
+    interaction_event : ``InteractionEvent``
+        A received interaction eve,t
+    
+    Returns
+    -------
+    value : `Any`
+        The matched value or the converter's default value.
+    """
     match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
     if (value is None):
         value = converter.default
     
     return value
 
+
 def _keyword_parameter_converter_regex_group_dict(converter, interaction_event):
+    """
+    Regex form submit interaction option value matcher returning the matched group dictionary as well.
+    
+    Parameters
+    ----------
+    converter : ``KeywordParameterConverter``
+        The parent converter instance using this function.
+    interaction_event : ``InteractionEvent``
+        A received interaction eve,t
+    
+    Returns
+    -------
+    value : `Any`
+        The matched value or the converter's default value.
+    groups : `dict` of (`str`, `str`) items
+        The matched values by the regex pattern.
+    """
     match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
     if (value is None):
         value = converter.default
@@ -1879,7 +1928,25 @@ def _keyword_parameter_converter_regex_group_dict(converter, interaction_event):
     groups = match.groupdict()
     return groups, value
 
+
 def _keyword_parameter_converter_regex_group_tuple(converter, interaction_event):
+    """
+    Regex form submit interaction option value matcher returning the matched group tuple as well.
+    
+    Parameters
+    ----------
+    converter : ``KeywordParameterConverter``
+        The parent converter instance using this function.
+    interaction_event : ``InteractionEvent``
+        A received interaction eve,t
+    
+    Returns
+    -------
+    value : `Any`
+        The matched value or the converter's default value.
+    groups : `tuple` of `str`
+        The matched values by the regex pattern.
+    """
     match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
     if (value is None):
         value = converter.default

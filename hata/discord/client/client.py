@@ -63,7 +63,7 @@ from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY, PERMIS
 from ..bases import ICON_TYPE_NONE
 from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, INTERACTION_RESPONSE_TYPES, ApplicationCommandPermission, \
-    ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext
+    ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext, InteractionForm
 from ..interaction.application_command import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ..color import Color
@@ -13040,6 +13040,78 @@ class Client(ClientUserPBase):
         
         with InteractionResponseContext(interaction, True, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+    
+    
+    async def interaction_form_send(self, interaction, form):
+        """
+        Responds on an interaction with a form.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        interaction : ``InteractionEvent``
+            Interaction to respond to.
+        form : ``InteractionForm``
+            The to respond with.
+        
+        Raises
+        ------
+        RuntimeError
+            If cannot respond with a form on the given `interaction`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `interaction` is not ``InteractionEvent`` instance.
+            - If `form` is not is not ``InteractionForm`` instance.
+        
+        Notes
+        -----
+        Discord do not returns message data, so the method cannot return a ``Message`` either.
+        
+        If the interaction is already timed or out or was used, you will get:
+        
+        ```
+        DiscordException Not Found (404), code=10062: Unknown interaction
+        ```
+        """
+        if __debug__:
+            if not isinstance(interaction, InteractionEvent):
+                raise AssertionError(f'`interaction` can be given as `{InteractionEvent.__name__}` instance, got '
+                    f'{interaction.__class__.__name__}.')
+        
+        if not interaction.is_unanswered():
+            warnings.warn(
+                f'`{self.__class__.__name__}.interaction_response_form` called on an interaction already acknowledged /'
+                f'answered: {interaction!r}. Returning `None`.',
+                ResourceWarning)
+            
+            return None
+        
+        if __debug__:
+            if not isinstance(form, InteractionForm):
+                raise AssertionError(f'`form` can be `{InteractionForm.__name__}` instance, got '
+                    f'{form.__class__.__name__}.')
+        
+        if (
+            (interaction.type is not InteractionType.application_command) and
+            (interaction.type is not InteractionType.message_component)
+        ):
+            raise RuntimeError(f'Only `application_command` and `message_component` interactions can be answered with '
+                f'form, got `{interaction.type.name}`; {interaction!r}.')
+        
+        # Build payload
+        data = {
+            'data': form.to_data(),
+            'type': INTERACTION_RESPONSE_TYPES.form
+        }
+        
+        with InteractionResponseContext(interaction, False, True):
+            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        
+        return None
     
     
     async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,

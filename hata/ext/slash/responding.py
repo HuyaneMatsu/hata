@@ -1,12 +1,11 @@
 __all__ = ('abort', 'InteractionResponse',)
 
-import warnings
-
 from scarletio import is_coroutine_generator
 
 from ...discord.embed import EmbedBase
 from ...discord.client import Client
-from ...discord.interaction import InteractionType
+from ...discord.interaction import InteractionType, InteractionForm
+
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -97,6 +96,10 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
             yield client.interaction_component_message_edit(interaction_event, response)
         
         # No more cases
+        return
+    
+    if isinstance(response, InteractionForm):
+        yield client.interaction_form_send(interaction_event, response)
         return
     
     if is_coroutine_generator(response):

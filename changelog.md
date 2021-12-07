@@ -1,4 +1,4 @@
-## 1.1.126 *\[2021-12-??\]*
+## 1.1.1267*\[2021-12-??\]*
 
 #### Improvements
 
@@ -6,6 +6,8 @@
 - Add `RATE_LIMIT_GROUPS.sticker_pack_get`.
 - Add `Client.sticker_pack_get`.
 - Add `ApplicationCommandTargetType.channel`.
+- Add `INTERACTION_RESPONSE_TYPES.form`.
+- Add `Client.interaction_form_send`.
 
 ## 1.1.126 *\[2021-12-05\]*
 

@@ -24,6 +24,8 @@ Contains the interaction response type's, which are the following:
 +-------------------------------------------+-------+---------------+
 | application_command_autocomplete_result   | 8     | -             |
 +-------------------------------------------+-------+---------------+
+| form                                      | 9     | -             |
++-------------------------------------------+-------+---------------+
 """
 
 none = 0
@@ -35,3 +37,4 @@ source = 5
 component = 6
 component_message_edit = 7
 application_command_autocomplete_result = 8
+form = 9

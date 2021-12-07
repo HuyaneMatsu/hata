@@ -1896,7 +1896,7 @@ def _keyword_parameter_converter_regex(converter, interaction_event):
     value : `Any`
         The matched value or the converter's default value.
     """
-    match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
+    match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
     if (value is None):
         value = converter.default
     
@@ -1921,7 +1921,7 @@ def _keyword_parameter_converter_regex_group_dict(converter, interaction_event):
     groups : `dict` of (`str`, `str`) items
         The matched values by the regex pattern.
     """
-    match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
+    match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
     if (value is None):
         value = converter.default
     
@@ -1947,7 +1947,7 @@ def _keyword_parameter_converter_regex_group_tuple(converter, interaction_event)
     groups : `tuple` of `str`
         The matched values by the regex pattern.
     """
-    match, value = interaction_event.interaction.get_match_and_value(converter.annotation)
+    match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
     if (value is None):
         value = converter.default
     
@@ -1970,7 +1970,7 @@ class KeywordParameterConverter(ParameterConverter):
     matcher : `FunctionType`
         Matches interaction options based on their `custom_id`.
     """
-    __slots__ = ('parameter_name', 'default', 'required', 'matcher')
+    __slots__ = ('annotation', 'default', 'matcher')
     
     def __new__(cls, parameter):
         """
@@ -2007,6 +2007,7 @@ class KeywordParameterConverter(ParameterConverter):
         
         self = object.__new__(cls)
         self.parameter_name = parameter.name
+        self.annotation = annotation
         self.default = parameter.default
         self.matcher = matcher
         return self

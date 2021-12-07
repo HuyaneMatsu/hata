@@ -197,7 +197,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
             except BaseException as err:
                 exception = err
             else:
-                keyword_parameters[parameter_converter.name] = parameter
+                keyword_parameters[parameter_converter.parameter_name] = parameter
                 continue
             
             await handle_command_exception(

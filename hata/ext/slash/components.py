@@ -1,10 +1,11 @@
-__all__ = ('Button', 'ButtonStyle', 'Row', 'Select', 'Option')
+__all__ = ('Button', 'ButtonStyle', 'Form', 'Option', 'Row', 'Select', 'TextInput', 'TextInputStyle')
 
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.core import APPLICATION_ID_TO_CLIENT
 
 from ...discord.interaction import ComponentButton as Button, ComponentRow as Row, ComponentSelect as Select, \
-    ComponentSelectOption as Option, ButtonStyle
+    ComponentSelectOption as Option, ButtonStyle, InteractionForm as Form, ComponentTextInput as TextInput, \
+    TextInputStyle
 
 
 async def acknowledge_component_interaction(interaction_event):

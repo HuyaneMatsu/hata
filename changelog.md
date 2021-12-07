@@ -1,4 +1,4 @@
-## 1.1.1267*\[2021-12-??\]*
+## 1.1.127 *\[2021-12-??\]*
 
 #### Improvements
 
@@ -8,6 +8,7 @@
 - Add `ApplicationCommandTargetType.channel`.
 - Add `INTERACTION_RESPONSE_TYPES.form`.
 - Add `Client.interaction_form_send`.
+- Add `InteractionForm.title`.
 
 ## 1.1.126 *\[2021-12-05\]*
 

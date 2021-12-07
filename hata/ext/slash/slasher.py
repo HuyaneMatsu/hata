@@ -18,8 +18,8 @@ from .utils import UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, SYNC_ID
 from .application_command import SlasherApplicationCommand, APPLICATION_COMMAND_HANDLER_DEEPNESS, \
     SlasherApplicationCommandParameterAutoCompleter, _build_auto_complete_parameter_names, \
     _register_autocomplete_function
-from .component_command import ComponentCommand
-from .form_submit_command import FormSubmitCommand
+from .component_command import ComponentCommand, COMMAND_TARGETS_COMPONENT_COMMAND
+from .form_submit_command import FormSubmitCommand, COMMAND_TARGETS_FORM_COMPONENT_COMMAND
 from .exceptions import test_exception_handler, default_slasher_exception_handler, \
     default_slasher_random_error_message_getter, _validate_random_error_message_getter, _register_exception_handler
 
@@ -28,8 +28,6 @@ INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
 INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
 
-COMMAND_TARGET_COMPONENT_COMMAND = 'component'
-COMMAND_TARGET_FORM_COMPONENT_COMMAND = 'form'
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
     """
@@ -1249,13 +1247,13 @@ class Slasher(EventHandlerBase):
         
         if 'custom_id' in kwargs:
             target = kwargs.get('target', None)
-            if (target is None) or (target == COMMAND_TARGET_COMPONENT_COMMAND):
+            if (target is None) or (target in COMMAND_TARGETS_COMPONENT_COMMAND):
                 command = ComponentCommand(func, *args, **kwargs)
-            elif (target == COMMAND_TARGET_FORM_COMPONENT_COMMAND):
+            elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
                 command = FormSubmitCommand(func, *args, **kwargs)
             else:
                 raise ValueError(f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
-                    f'can be any of: {COMMAND_TARGET_COMPONENT_COMMAND!r}, {COMMAND_TARGET_FORM_COMPONENT_COMMAND!r}.')
+                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND|COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.')
         
         else:
             command = SlasherApplicationCommand(func, *args, **kwargs)

@@ -19,6 +19,11 @@ from .exceptions import handle_command_exception
 from .custom_id_based_command import _validate_name, _validate_custom_ids, split_and_check_satisfaction, \
     CustomIdBasedCommand
 
+COMMAND_TARGETS_FORM_COMPONENT_COMMAND = frozenset((
+    'form',
+    'form_submit',
+))
+
 
 class FormSubmitCommand(CustomIdBasedCommand):
     """
@@ -60,7 +65,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
     __slots__ = ('_keyword_parameter_converters',)
 
 
-    def __new__(cls, func, custom_id, name=None):
+    def __new__(cls, func, custom_id, name=None, target=None):
         """
         Creates a new ``FormSubmitCommand`` instance with the given parameters
         
@@ -72,6 +77,8 @@ class FormSubmitCommand(CustomIdBasedCommand):
             Custom id to match by the component command.
         name : `str` or `None`, Optional
             The name of the component command.
+        target : `str` or `None`, Optional
+            The form submit command's target.
         
         Returns
         -------
@@ -89,7 +96,12 @@ class FormSubmitCommand(CustomIdBasedCommand):
         ValueError:
             - If no `custom_id` was received.
             - If `custom_id` contains incorrect value.
+            - If `target`'s value is not correct.
         """
+        if (target is not None) and (target not in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
+            raise ValueError(f'`target` can be either `None` or any of `{COMMAND_TARGETS_FORM_COMPONENT_COMMAND!r}`\s '
+                f'values, got {target!r}')
+        
         if (func is not None) and isinstance(func, SlasherCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:

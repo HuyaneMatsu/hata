@@ -31,6 +31,9 @@ COMPONENT_MAX_LENGTH_MIN = 0
 COMPONENT_MAX_LENGTH_MAX = 2147483647
 COMPONENT_MIN_LENGTH_MIN = 0
 COMPONENT_MIN_LENGTH_MAX = 2147483647
+COMPONENT_TITLE_LENGTH_MIN = 1
+COMPONENT_TITLE_LENGTH_MAX = 2147483647
+
 
 def _debug_component_components(components):
     """
@@ -145,6 +148,40 @@ def _debug_component_label(label):
     else:
         raise AssertionError(f'`label` can be given either as `None` or as `str` instance, got '
             f'{label.__class__.__name__}.')
+
+    
+def _debug_component_title(title):
+    """
+    Checks whether the given `component.title` value is correct.
+    
+    Parameters
+    ----------
+    title : `None` or `str`
+        Title of the component.
+    
+    Raises
+    ------
+    AssertionError
+        - If `title` was not given neither as `None` nor as `int` instance.
+        - If `title`'s length is out of the expected range.
+    """
+    if title is None:
+        raise AssertionError(f'`title`\'s is nto nullable.')
+        
+    elif isinstance(title, str):
+        title_length = len(title)
+        
+        if title_length < COMPONENT_TITLE_LENGTH_MIN:
+            raise AssertionError(f'`title`\'s min length can be {COMPONENT_TITLE_LENGTH_MIN!r}, got '
+                f'{len(title)!r}; {title!r}.')
+        
+        if title_length > COMPONENT_TITLE_LENGTH_MAX:
+            raise AssertionError(f'`title`\'s max length can be {COMPONENT_TITLE_LENGTH_MAX!r}, got '
+                f'{len(title)!r}; {title!r}.')
+    
+    else:
+        raise AssertionError(f'`title` can be given either as `None` or as `str` instance, got '
+            f'{title.__class__.__name__}.')
 
 
 def _debug_component_enabled(enabled):

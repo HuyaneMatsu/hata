@@ -1505,7 +1505,7 @@ Group Details
     - Endpoint : `/sticker-packs/{sticker_pack_id}`
     - Method : `GET`
     - Required auth : `bot`
-    - Limiter : `UN`
+    - Limiter : `UNLIMITED`
     - Limit : `N/A`
     - Resets after : `N/A`
 

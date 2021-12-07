@@ -63,7 +63,8 @@ from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY, PERMIS
 from ..bases import ICON_TYPE_NONE
 from ..embed import EmbedImage
 from ..interaction import ApplicationCommand, INTERACTION_RESPONSE_TYPES, ApplicationCommandPermission, \
-    ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext, InteractionForm
+    ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext, InteractionForm, \
+    InteractionType
 from ..interaction.application_command import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ..color import Color

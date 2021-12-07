@@ -19,7 +19,6 @@ from .wrappers import *
 __all__ = (
     'P',
     'configure_parameter',
-    'Form',
     'set_permission',
     'setup_ext_slash',
     *application_command.__all__,
@@ -47,8 +46,6 @@ from .client_wrapper_extension import *
 set_permission = SlasherApplicationCommandPermissionOverwriteWrapper
 configure_parameter = SlasherApplicationCommandParameterConfigurerWrapper
 P = SlashParameter
-
-from ...discord.interaction import InteractionForm as Form
 
 
 def setup_ext_slash(client, **kwargs):

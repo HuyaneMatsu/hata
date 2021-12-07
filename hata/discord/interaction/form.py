@@ -4,7 +4,8 @@ import reprlib
 
 from scarletio import copy_docs
 
-from .components import ComponentBase, ComponentRow, create_component
+from .components import ComponentBase, ComponentRow, create_component, _debug_component_components, \
+    _debug_component_custom_id, _debug_component_title
 
 class InteractionForm(ComponentBase):
     """
@@ -14,22 +15,30 @@ class InteractionForm(ComponentBase):
     ----------
     components : `None` or `tuple` of ``ComponentBase`` instances
         Stored components.
+    custom_id : `None` or `str`
+        Custom identifier to match the form data when receiving it's interaction back.
+    title : `None` or `str`
+        The form's title.
     
     Class Attributes
     ----------------
     type : ``ComponentType`` = `ComponentType.none`
         The component's type.
     """
-    __slots__ = ('custom_id', 'components')
+    __slots__ = ('components', 'custom_id', 'title')
     
-    def __new__(cls, *components, custom_id=None):
+    def __new__(cls, title, components, custom_id=None):
         """
         Creates an form interaction instance.
         
         Parameters
         ----------
-        *components : ``ComponentBase`` instances
+        title : `None` or `str`
+            The form's title.
+        components : ``ComponentBase`` instances
             Sub components.
+        custom_id : `None` or `str`, Optional
+             Custom identifier for the form.
         
         Raises
         ------
@@ -37,14 +46,16 @@ class InteractionForm(ComponentBase):
             - If `components` contains a non ``ComponentBase`` instance.
             - If `custom_id` was not given neither as `None` or `str` instance.
             - If `custom_id`'s length is over `100`.
+            - If `title`'s length is out of the expected range.
         """
         if __debug__:
             _debug_component_components(components)
             _debug_component_custom_id(custom_id)
+            _debug_component_title(title)
         
         # components
         if components:
-            tuple(
+            components = tuple(
                 component if isinstance(component, ComponentRow) else ComponentRow(component)
                 for component in components
             )
@@ -55,9 +66,13 @@ class InteractionForm(ComponentBase):
         if (custom_id is None) and (not custom_id):
             custom_id = create_auto_custom_id()
         
+        # title
+        # No additional checks
+        
         self = object.__new__(cls)
         self.components = components
         self.custom_id = custom_id
+        self.title = title
         return self
     
     
@@ -76,6 +91,12 @@ class InteractionForm(ComponentBase):
         
         # custom_id
         self.custom_id = data.get('custom_id', None)
+        
+        # title
+        title = data.get('title', None)
+        if (title is not None) and (not title):
+            title = None
+        self.title = title
         
         return self
     
@@ -97,6 +118,12 @@ class InteractionForm(ComponentBase):
         if (custom_id is not None):
             data['custom_id'] = custom_id
         
+        
+        # title
+        title = self.title
+        if (title is not None):
+            data['title'] = title
+        
         return data
     
 
@@ -111,6 +138,14 @@ class InteractionForm(ComponentBase):
         if (custom_id is not None):
             repr_parts.append(', custom_id=')
             repr_parts.append(reprlib.repr(custom_id))
+        
+        # Text fields : label & placeholder
+        
+        # title
+        title = self.title
+        if (title is not None):
+            repr_parts.append(', title=')
+            repr_parts.append(reprlib.repr(title))
         
         # sub-component fields : components
         
@@ -158,6 +193,9 @@ class InteractionForm(ComponentBase):
         # custom_id
         new.custom_id = self.custom_id
         
+        # title
+        new.title = self.title
+        
         return new
     
     
@@ -178,6 +216,9 @@ class InteractionForm(ComponentBase):
         custom_id : `None` or `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
         
+        title : `None` or `str`, Optional (Keyword only)
+            The form's title.
+        
         Returns
         -------
         new : ``InteractionForm``
@@ -194,7 +235,7 @@ class InteractionForm(ComponentBase):
                 _debug_component_components(components)
             
             if components:
-                tuple(
+                components = tuple(
                     component if isinstance(component, ComponentRow) else ComponentRow(component)
                     for component in components
                 )
@@ -213,10 +254,20 @@ class InteractionForm(ComponentBase):
             if (custom_id is None) or (not custom_id):
                 custom_id = create_auto_custom_id()
         
+        # title
+        try:
+            title = kwargs.pop('title')
+        except KeyError:
+            title = self.title
+            
+            if __debug__:
+                _debug_component_title(title)
+        
         
         new = object.__new__(type(self))
         new.components = components
         new.custom_id = custom_id
+        new.title = title
         return new
     
     
@@ -231,6 +282,10 @@ class InteractionForm(ComponentBase):
         
         # custom_id
         if self.custom_id != other.custom_id:
+            return False
+        
+        # title
+        if self.title != other.title:
             return False
         
         return True
@@ -252,6 +307,11 @@ class InteractionForm(ComponentBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             hash_value ^= hash(custom_id)
+        
+        # title
+        title = self.title
+        if (title is not None):
+            hash_value ^= hash(title)
         
         return hash_value
     

@@ -1,3 +1,10 @@
+## 1.1.128 *\[2021-12-??\]*
+
+#### Improvements
+
+- Add `ERROR_CODES.invalid_guild`.
+- Add `ERROR_CODES.rate_limit_server_send`.
+
 ## 1.1.127 *\[2021-12-07\]*
 
 #### Improvements

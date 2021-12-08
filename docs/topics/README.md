@@ -18,6 +18,7 @@ Hata has tutorials on topics.
     
     With continuation:
     - [components](components.md): Using components and interacting with them.
+    - [forms\[Work in progress\]](forms[WIP].md): Building forms and receiving them.
 
 - [commands_v2](commands_v2.md): Everything what you should know about command framework.
 

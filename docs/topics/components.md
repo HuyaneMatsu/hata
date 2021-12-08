@@ -158,7 +158,7 @@ async def cat_feeder():
     """Hungry cat feeder!"""
     return InteractionResponse(
         f'Please feed my cat {CAT_FEEDER_CAT_EMOJI:e}, she is hungry.',
-        components=Button('Feed cat', CAT_FEEDER_FOOD_EMOJI, custom_id=CAT_FEEDER_CUSTOM_ID, style=ButtonStyle.green)
+        components = Button('Feed cat', CAT_FEEDER_FOOD_EMOJI, custom_id=CAT_FEEDER_CUSTOM_ID, style=ButtonStyle.green)
     )
 
 

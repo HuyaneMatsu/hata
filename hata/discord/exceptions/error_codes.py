@@ -117,6 +117,8 @@ These are the following:
 +-------------------------------------------------------+-----------+-----------+
 | rate_limit_channel_write                              | 20028     | -         |
 +-------------------------------------------------------+-----------+-----------+
+| rate_limit_server_send                                | 20029     | -         |
++-------------------------------------------------------+-----------+-----------+
 | name_contains_disallowed_word                         | 20031     | -         |
 +-------------------------------------------------------+-----------+-----------+
 | guild_subscription_level_too_low                      | 20035     | -         |
@@ -294,6 +296,8 @@ These are the following:
 | invalid_gift_redemption_owned                         | 50051     | -         |
 +-------------------------------------------------------+-----------+-----------+
 | cannot_self_redeem_this_gift                          | 50054     | -         |
++-------------------------------------------------------+-----------+-----------+
+| invalid_guild                                         | 50055     | -         |
 +-------------------------------------------------------+-----------+-----------+
 | invalid_message_type                                  | 50068     | -         |
 +-------------------------------------------------------+-----------+-----------+
@@ -473,6 +477,7 @@ team_ownership_required = 20018
 rate_limit_announcement_message_edit = 20022
 under_minimum_age = 20024
 rate_limit_channel_write = 20028
+rate_limit_server_send = 20029
 name_contains_disallowed_word = 20031
 guild_subscription_level_too_low = 20035
 
@@ -561,6 +566,7 @@ invalid_asset = 50046
 invalid_application_name = 50050
 invalid_gift_redemption_owned = 50051
 cannot_self_redeem_this_gift = 50054
+invalid_guild = 50055
 invalid_message_type = 50068
 payment_source_required_to_redeem_gift = 50070
 cannot_delete_community_channel = 50074

@@ -85,6 +85,9 @@ submitted form.
 ```py
 import re
 
+from hata import DiscordException, ERROR_CODES, Embed
+from hata.ext.slash import abort
+
 ADD_ROLE_FORM = Form(
     'Add role', # Any dummie title does it
     [
@@ -103,6 +106,19 @@ def add_role(
     user: ('user', 'User to add role to'),
     role :('role', 'The role to give'),
 ):
+    # Check for permissions
+    if not event.user_permissions.can_manage_roles:
+        abort('You need `manage roles` permission to invoke this command.')
+    
+    if not event.guild.cached_permissions_for(client).can_manage_roles:
+        abort('I need `manage roles` permission to execute this command.')
+    
+    if not event.user.has_higher_role_than(role):
+        abort('You must have higher role than the role to be given.')
+    
+    if not client.has_higher_role_than(role):
+        abort('I must have higher role than the role to be given.')
+    
     # Using `.copy_to` on forms works as well.
     return ADD_ROLE_FORM.copy_with(
         title = f'Add role {role.name} to {user.full_name}',
@@ -121,5 +137,40 @@ async def add_role(client, event, user_id, role_id, *, message):
     
     # Try to send DM to the poor being.
     channel = await.channel_private_create(user_id)
+    
+    guild = event.guild
+    role = guild.roles[role_id]
+    
+    try:
+        await client.message_create(
+            channel,
+            embed = Embed(
+                description = 'You have received role {role.name} in {guild.name}.'
+            ).add_field(
+                'Message',
+                message,
+            )
+        )
+    except DiscordException as err:
+        # Ignore the exception if the user has dm-s disabled.
+        if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disallowed
+            raise
+    
+    # Note: The user might not be cached at this point. Request it. If you have user caching enabled + intent, it will
+    do nothing.
+    user = await client.user_get(user_id)
+    
+    yield Embed(
+        description = 'You gave {role.name} to {user.full_name}',
+    ).add_field(
+        'Message',
+        message,
+    )
 ```
+
+With annotating keyword parameters with string or with regex, you can customize what `custom_id`-s they are matching.
+If the annotation is neither string nor regex pattern, it is ignored.
+
+
+
 # TODO

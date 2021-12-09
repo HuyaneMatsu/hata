@@ -2247,6 +2247,7 @@ class Slasher(EventHandlerBase):
         
         return await self._register_command(client, command, command_state, guild_id, application_command)
     
+    
     def sync(self):
         """
         Syncs the slash commands with the client.
@@ -2285,6 +2286,12 @@ class Slasher(EventHandlerBase):
         KOKORO.wake_up()
         return task.sync_wrap().wait()
     
+    
+    def discard_kept_command(self):
+        """
+        Purges the kept application commands out.
+        """
+        
     
     async def _do_main_sync(self, client):
         """

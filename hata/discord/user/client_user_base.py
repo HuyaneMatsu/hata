@@ -9,7 +9,7 @@ from ..activity import create_activity_from_data, ActivityRich, ActivityCustom
 
 from .preinstanced import Status
 
-from .user_base import UserBase
+from .user_base import UserBase, _try_get_guild_id, _try_get_guild_and_id
 from .flags import UserFlag
 from .guild_profile import GuildProfile
 from .activity_change import ActivityChange, ActivityUpdate
@@ -348,13 +348,14 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.color_at)
     def color_at(self, guild):
-        if (guild is not None):
-            try:
-                guild_profile = self.guild_profiles[guild.id]
-            except KeyError:
-                pass
-            else:
-                return guild_profile.color
+        guild_id = _try_get_guild_id(guild)
+        
+        try:
+            guild_profile = self.guild_profiles[guild_id]
+        except KeyError:
+            pass
+        else:
+            return guild_profile.color
         
         return Color()
     
@@ -399,13 +400,14 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.top_role_at)
     def top_role_at(self, guild, default=None):
-        if (guild is not None):
-            try:
-                guild_profile = self.guild_profiles[guild.id]
-            except KeyError:
-                pass
-            else:
-                return guild_profile.get_top_role(default)
+        guild_id = _try_get_guild_id(guild)
+        
+        try:
+            guild_profile = self.guild_profiles[guild_id]
+        except KeyError:
+            pass
+        else:
+            return guild_profile.get_top_role(default)
         
         return default
     
@@ -473,24 +475,25 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.has_higher_role_than_at)
     def has_higher_role_than_at(self, user, guild):
-        if (guild is None):
+        guild, guild_id = _try_get_guild_and_id(guild)
+        if (not guild_id):
             return False
         
         try:
-            own_profile = self.guild_profiles[guild.id]
+            own_profile = self.guild_profiles[guild_id]
         except KeyError:
             return False
         
-        if guild.owner_id == self.id:
+        if (guild is not None) and (guild.owner_id == self.id):
             return True
         
         try:
-            other_profile = user.guild_profiles[guild.id]
+            other_profile = user.guild_profiles[guild_id]
         except KeyError:
             # We always have higher permissions if the other user is not in the guild or if it is a webhook.
             return True
         
-        if guild.owner_id == user.id:
+        if (guild is not None) and (guild.owner_id == user.id):
             return False
         
         own_top_role = own_profile.get_top_role()
@@ -509,8 +512,8 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.get_guild_profile_for)
     def get_guild_profile_for(self, guild):
-        if (guild is not None):
-            return self.guild_profiles.get(guild.id, None)
+        guild_id = _try_get_guild_id(guild)
+        return self.guild_profiles.get(guild_id, None)
     
     
     @copy_docs(UserBase.iter_guild_profiles)

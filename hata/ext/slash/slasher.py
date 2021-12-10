@@ -319,6 +319,25 @@ class CommandState:
         return commands
     
     
+    def exhaust_kept_commands(self):
+        """
+        Iterates over the kept commands of the command state. Each yielded command is popped out.
+        
+        This function is an iterable generator.
+        
+        Yields
+        ------
+        Yields
+        """
+        kept_commands = self._kept
+        
+        if (kept_commands is not None):
+            while kept_commands:
+                yield kept_commands.pop()
+        
+        self._kept = None
+    
+    
     def _try_purge_from_changes(self, name, target_type):
         """
         Purges the commands with the given names from the changed ones.
@@ -2287,12 +2306,6 @@ class Slasher(EventHandlerBase):
         return task.sync_wrap().wait()
     
     
-    def discard_kept_command(self):
-        """
-        Purges the kept application commands out.
-        """
-        
-    
     async def _do_main_sync(self, client):
         """
         Syncs the slash commands with the client. This method is the internal method of ``.sync``.
@@ -2374,6 +2387,87 @@ class Slasher(EventHandlerBase):
                 del self._sync_tasks[SYNC_ID_MAIN]
             except KeyError:
                 pass
+    
+    
+    def discard_kept_command(self):
+        """
+        Discards the kept application commands out. If needed, triggers syncing.
+        
+        Returns
+        -------
+        task : `bool`, ``Task`` or ``FutureAsyncWrapper``
+            - If the method was called from the client's thread (KOKORO), then returns a ``Task``. The task will return
+                `True`, if syncing was successful.
+            - If the method was called from an ``EventThread``, but not from the client's, then returns a
+                ``FutureAsyncWrapper``. The task will return `True`, if syncing was successful.
+            - If the method was called from any other thread, then waits for the syncing task to finish and returns
+                `True`, if it was successful.
+        
+        Raises
+        ------
+        RuntimeError
+            The slasher's client was already garbage collected.
+        """
+        client = self._client_reference()
+        if client is None:
+            raise RuntimeError('The slasher\'s client was already garbage collected.')
+        
+        task = Task(self._do_discard_kept_command(client), KOKORO)
+        
+        thread = current_thread()
+        if thread is KOKORO:
+            return task
+        
+        if isinstance(thread, EventThread):
+            # `.async_wrap` wakes up KOKORO
+            return task.async_wrap(thread)
+        
+        KOKORO.wake_up()
+        return task.sync_wrap().wait()
+    
+    
+    def _discard_kept_command_and_update_sync_states(self):
+        """
+        Discards all kept commands and updates sync states.
+        
+        After calling this method syncing should be triggered. If any sync state was updated, it will trigger the sync
+        task.
+        """
+        command_unloading_behaviour = self._command_unloading_behaviour
+        if command_unloading_behaviour != UNLOADING_BEHAVIOUR_KEEP:
+            return
+        
+        self._command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
+        
+        for command_state in self._command_states.values():
+            for command in command_state.exhaust_kept_commands():
+                for sync_id in command._iter_sync_ids():
+                    self._sync_should.add(sync_id)
+                    self._sync_done.discard(sync_id)
+        
+        self._command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
+    
+    
+    async def _do_discard_kept_command(self, client):
+        """
+        Discards the kept application commands out. If needed, triggers syncing. This method is the internal method of
+        ``.discard_kept_command``.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client.
+        
+        Returns
+        -------
+        success : `bool`
+            Whether the sync was successful.
+        """
+        self._discard_kept_command_and_update_sync_states()
+        return await self._do_main_sync(client)
+        
     
     def _maybe_register_guild_command(self, application_command, guild_id):
         """

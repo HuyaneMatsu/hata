@@ -7,6 +7,7 @@ from ..utils import DATETIME_FORMAT_CODE
 from ..color import Color
 
 from ..http import urls as module_urls
+from ..core import GUILDS
 
 from .preinstanced import Status, DefaultAvatar
 from .flags import UserFlag
@@ -14,6 +15,63 @@ from .helpers import get_banner_color_from_data
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')
+Guild = include('Guild')
+
+
+def _try_get_guild_id(guild):
+    """
+    Tries to get the guild's identifier.
+    
+    Parameters
+    ----------
+    guild : `None`, `int`, ``Guild``
+        The guild or it's identifier.
+    
+    Returns
+    -------
+    guild_id : `int`
+        The guild's identifier. Defaults to `0`.
+    """
+    if isinstance(guild, int):
+        guild_id = guild
+    elif guild is None:
+        guild_id = 0
+    elif isinstance(guild, Guild):
+        guild_id = guild.id
+    else:
+        guild_id = 0
+    
+    return guild_id
+
+
+def _try_get_guild_and_id(guild):
+    """
+    Tries to get the guild and it's identifier.
+    
+    Parameters
+    ----------
+    guild : `None`, `int`, ``Guild``
+        The guild or it's identifier.
+    
+    Returns
+    -------
+    guild : `None` or ``Guild``
+        The guild if found.
+    guild_id : `int`
+        The guild's identifier. Defaults to `0`.
+    """
+    if isinstance(guild, int):
+        guild_id = guild
+        guild = GUILDS.get(guild_id)
+    elif guild is None:
+        guild_id = 0
+    elif isinstance(guild, Guild):
+        guild_id = guild.id
+    else:
+        guild_id = 0
+        guild = None
+    
+    return guild, guild_id
 
 
 class UserBase(DiscordEntity, immortal=True):
@@ -469,7 +527,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``, `int`
             The guild, where the user's color will be checked.
             
             Can be given as `None`.
@@ -487,7 +545,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild`` or `int`
             The guild, where the user's nick will be checked.
             
             Can be given as `None`.
@@ -521,10 +579,10 @@ class UserBase(DiscordEntity, immortal=True):
         
         role_mentions = message.role_mentions
         if (role_mentions is not None):
-            guild = message.guild
-            if (guild is not None):
+            guild_id = message.guild_id
+            if guild_id:
                 try:
-                    guild_profile = self.guild_profiles[guild.id]
+                    guild_profile = self.guild_profiles[guild_id]
                 except KeyError:
                     pass
                 else:
@@ -559,7 +617,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : ``Guild`` or `None`
+        guild : ``Guild``, `None` or `int`
             The guild where the user's top role will be looked up.
             
             Can be given as `None`.
@@ -619,7 +677,7 @@ class UserBase(DiscordEntity, immortal=True):
         ----------
         user : ``User``
             The other user to check.
-        guild : ``Guild`` or `None`
+        guild : ``Guild``, `None` or `int`
             The guild where the users' top roles will be checked.
             
             Can be given as `None`.
@@ -637,7 +695,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : `None`, ``Guild`` or `int`
             The guild to get guild profile for.
         
         Returns

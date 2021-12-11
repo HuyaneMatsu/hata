@@ -168,9 +168,100 @@ async def add_role(client, event, user_id, role_id, *, message):
     )
 ```
 
-With annotating keyword parameters with string or with regex, you can customize what `custom_id`-s they are matching.
+By annotating keyword parameters with string or with regex, you can customize what `custom_id`-s they are matching.
 If the annotation is neither string nor regex pattern, it is ignored.
 
+> Annotating a parameter with "regular" regex is pretty pointless. Could be good when updating old code,
+> and you want to support multiple `custom_id`-s.
 
+```py
+import re
+from hata import Embed
+from hata.ext.slash import Form, TextInput, TextInputStyle, abort
+
+# Define constants
+
+WAIFUS = {}
+
+CUSTOM_ID_WAIFU_FORM = 'waifu.form'
+CUSTOM_ID_WAIFU_NAME = 'waifu.name'
+CUSTOM_ID_WAIFU_DESCRIPTION = 'waifu.description'
+
+CUSTOM_ID_WAIFU_DESCRIPTION_REGEX = re.compile('waifu\.description(?:\.long)')
+
+WAIFU_FORM = Form(
+    'Describe your waifu'
+    [
+        TextInput(
+            'What is their name?',
+            min_length = 2,
+            max_length = 128,
+            custom_id = CUSTOM_ID_WAIFU_NAME,
+        ),
+        TextInput(
+            'Describe them!'
+            style = TextInputStyle.paragraph,
+            min_length = 64,
+            max_length = 1024,
+            custom_id = CUSTOM_ID_DESCRIPTION,
+        ),
+    ],
+    custom_id = CUSTOM_ID_WAIFU_FORM,
+)
+ 
+# Add command
+
+@Nitori.interactions(guild=TEST_GUILD):
+def add_waifu():
+    return WAIFU_FORM
+
+@Nitori.interactions(custom_id=CUSTOM_ID_WAIFU_FORM, target='form')
+async def waifu_add_form_submit(
+    event,
+    *,
+    name : CUSTOM_ID_WAIFU_NAME,
+    desciption : CUSTOM_ID_WAIFU_DESCRIPTION_REGEX,
+):
+    key = name.casefold()
+    if key in WAIFUS:
+        abort(
+            Embed(
+               description = (
+                    'There is already a waifu named: {name!r}.\n'
+                    'Try again with a difefernt name.'
+                ),
+            ).add_field(
+                'Description given',
+                description,
+            )
+        )
+    
+    WAIFUS[key] = (name, desciption, event.user)
+    
+    return Embed(name, description).add_footer('Great success !!!')
+
+# Get command
+
+@Nitori.interactions(guild=TEST_GUILD):
+def get_waifu(
+    name: ('str', 'Their name?')
+):
+    try:
+        name, description, adder = WAIFUS[name.casefold()]
+    except KeyError:
+        abort('There is no waifu named like: {name}.')
+    
+    return Embed(name, description).add_footer(f'Added by: {user:f}')
+
+
+@get_waifu.autocomplete('name')
+async def autocomplete_waifu_name(value):
+    if (value is None):
+        # Return the 20 newest waifu
+        return [waifu[0] for waifu, _ in zip(WAIFUS.values(), range(20))]
+    
+    value = value.casefold()
+    return [waifu[0] for key, waifu in WAIFUS.items() if value in key]
+```
 
 # TODO

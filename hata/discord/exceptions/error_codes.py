@@ -167,6 +167,8 @@ These are the following:
 +-------------------------------------------------------+-----------+-----------+
 | max_thread_participants                               | 30033     | 1000      |
 +-------------------------------------------------------+-----------+-----------+
+| rate_limit_daily_application_command_creation         | 30034     | 200       |
++-------------------------------------------------------+-----------+-----------+
 | max_bans                                              | 30035     | 2500~     |
 +-------------------------------------------------------+-----------+-----------+
 | max_ban_fetches                                       | 30037     | -         |
@@ -503,6 +505,7 @@ max_guild_discovery_category = 30030 # 5
 guild_has_template = 30031
 max_application_commands = 30032
 max_thread_participants = 30033
+rate_limit_daily_application_command_creation = 30034
 max_bans = 30035
 max_ban_fetches = 30037
 max_scheduled_events = 30038

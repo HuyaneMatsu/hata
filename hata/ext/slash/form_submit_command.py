@@ -52,6 +52,8 @@ class FormSubmitCommand(CustomIdBasedCommand):
         Only used for debugging.
     _keyword_parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters for keyword parameters.
+    _multi_parameter_converter : `None` or ``ParameterConverter``
+        Parameter converter for `*args` parameter.
     
     Class Attributes
     ----------------
@@ -62,7 +64,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
     COMMAND_NAME_NAME : `str`
         The command's command defining parameter's name.
     """
-    __slots__ = ('_keyword_parameter_converters',)
+    __slots__ = ('_keyword_parameter_converters', '_multi_parameter_converter')
 
 
     def __new__(cls, func, custom_id, name=None, target=None):
@@ -113,7 +115,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
         name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
         custom_id, route_to = _check_maybe_route('custom_id', custom_id, route_to, _validate_custom_ids)
         
-        command, parameter_converters, keyword_parameter_converters = \
+        command, parameter_converters, multi_parameter_converter, keyword_parameter_converters = \
             get_form_submit_command_parameter_converters(command)
         
         if route_to:
@@ -130,6 +132,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
                 self._command_function = command
                 self._parameter_converters = parameter_converters
                 self._keyword_parameter_converters = keyword_parameter_converters
+                self._multi_parameter_converter = multi_parameter_converter
                 self._string_custom_ids = string_custom_ids
                 self._regex_custom_ids = regex_custom_ids
                 self._parent_reference = None
@@ -153,6 +156,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
             self._command_function = command
             self._parameter_converters = parameter_converters
             self._keyword_parameter_converters = keyword_parameter_converters
+            self._multi_parameter_converter = multi_parameter_converter
             self._string_custom_ids = string_custom_ids
             self._regex_custom_ids = regex_custom_ids
             self._parent_reference = None
@@ -187,6 +191,28 @@ class FormSubmitCommand(CustomIdBasedCommand):
                 exception,
             )
             return
+        
+        parameter_converter = self._multi_parameter_converter
+        if (parameter_converter is not None):
+            try:
+                parameters = await parameter_converter(client, interaction_event, regex_match)
+            except BaseException as err:
+                exception = err
+            else:
+                if (parameters is not None):
+                    positional_parameters.extend(parameters)
+                
+                exception = None
+            
+            # Call it here to not include the received exception as context
+            if (exception is not None):
+                await handle_command_exception(
+                    self,
+                    client,
+                    interaction_event,
+                    exception,
+                )
+                return
         
         # Keyword parameters
         keyword_parameters = {}

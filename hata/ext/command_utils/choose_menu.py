@@ -213,7 +213,7 @@ class ChooseMenu(PaginationBase):
             +-------------------+-----------------------------------------------------------+
             
             The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
-            `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
+            `tuple` instance, then it's elements will be passed, however if the choice is any other type, then only that
             object will be passed.
         embed : ``EmbedBase``
             An embed base, what's description and footer will be rendered with the given choices and with information

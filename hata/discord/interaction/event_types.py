@@ -1328,6 +1328,42 @@ class FormSubmitInteraction:
             match = matcher(custom_id)
             if (match is not None):
                 return match, value
+        
+        return None, None
+    
+    
+    def iter_matches_and_values(self, matcher):
+        """
+        Gets a `custom_id`'s value matching the given `matcher`.
+        
+        This method is an iterable generator.
+        
+        Parameters
+        ----------
+        matcher : `callable`
+            Matcher to call on a `custom_id`
+            
+            Should accept the following parameters:
+            
+            +-----------+-----------+
+            | Name      | Type      |
+            +===========+===========+
+            | custom_id | `str`     |
+            +-----------+-----------+
+            
+            Should return non-`None` on success.
+        
+        Yields
+        -------
+        match : `None` or `Any`
+            The returned value by the ``matcher``
+        value : `None` or `str`
+            The matched `custom_id`'s value.
+        """
+        for custom_id, value in self.iter_custom_ids_and_values():
+            match = matcher(custom_id)
+            if (match is not None):
+                yield match, value
 
 
 class FormSubmitInteractionOption:

@@ -1857,105 +1857,7 @@ class RegexParameterConverter(ParameterConverter):
         return ''.join(repr_parts)
 
 
-def _keyword_parameter_converter_string(converter, interaction_event):
-    """
-    String form submit interaction option value matcher.
-    
-    Parameters
-    ----------
-    converter : ``KeywordParameterConverter``
-        The parent converter instance using this function.
-    interaction_event : ``InteractionEvent``
-        A received interaction eve,t
-    
-    Returns
-    -------
-    value : `Any`
-        The matched value or the converter's default value.
-    """
-    value = interaction_event.interaction.get_value_for(converter.annotation)
-    if (value is None):
-        value = converter.default
-    
-    return value
-
-
-def _keyword_parameter_converter_regex(converter, interaction_event):
-    """
-    Regex form submit interaction option value matcher.
-    
-    Parameters
-    ----------
-    converter : ``KeywordParameterConverter``
-        The parent converter instance using this function.
-    interaction_event : ``InteractionEvent``
-        A received interaction eve,t
-    
-    Returns
-    -------
-    value : `Any`
-        The matched value or the converter's default value.
-    """
-    match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
-    if (value is None):
-        value = converter.default
-    
-    return value
-
-
-def _keyword_parameter_converter_regex_group_dict(converter, interaction_event):
-    """
-    Regex form submit interaction option value matcher returning the matched group dictionary as well.
-    
-    Parameters
-    ----------
-    converter : ``KeywordParameterConverter``
-        The parent converter instance using this function.
-    interaction_event : ``InteractionEvent``
-        A received interaction eve,t
-    
-    Returns
-    -------
-    value : `Any`
-        The matched value or the converter's default value.
-    groups : `dict` of (`str`, `str`) items
-        The matched values by the regex pattern.
-    """
-    match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
-    if (value is None):
-        value = converter.default
-    
-    groups = match.groupdict()
-    return groups, value
-
-
-def _keyword_parameter_converter_regex_group_tuple(converter, interaction_event):
-    """
-    Regex form submit interaction option value matcher returning the matched group tuple as well.
-    
-    Parameters
-    ----------
-    converter : ``KeywordParameterConverter``
-        The parent converter instance using this function.
-    interaction_event : ``InteractionEvent``
-        A received interaction eve,t
-    
-    Returns
-    -------
-    value : `Any`
-        The matched value or the converter's default value.
-    groups : `tuple` of `str`
-        The matched values by the regex pattern.
-    """
-    match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
-    if (value is None):
-        value = converter.default
-    
-    groups = match.groups()
-    return groups, value
-
-
-class KeywordParameterConverter(ParameterConverter):
+class FormFieldKeywordParameterConverter(ParameterConverter):
     """
     Regex and string matcher and `custom_id` matching parameter parser for forms.
     
@@ -1974,7 +1876,7 @@ class KeywordParameterConverter(ParameterConverter):
     
     def __new__(cls, parameter):
         """
-        Creates a new keyword parameter converter used by form submit fields.
+        Creates a new parameter converter used by form submit fields.
         
         Parameters
         ----------
@@ -1987,7 +1889,7 @@ class KeywordParameterConverter(ParameterConverter):
             annotation = parameter.name
         
         if isinstance(annotation, str):
-            matcher = _keyword_parameter_converter_string
+            matcher = cls._converter_string
         else:
             group_count = annotation.groups
             group_dict = annotation.groupindex
@@ -1999,11 +1901,11 @@ class KeywordParameterConverter(ParameterConverter):
             
             if group_count:
                 if group_dict_length:
-                    matcher = _keyword_parameter_converter_regex_group_dict
+                    matcher = cls._converter_regex_group_dict
                 else:
-                    matcher = _keyword_parameter_converter_regex_group_tuple
+                    matcher = cls._converter_regex_group_tuple
             else:
-                matcher = _keyword_parameter_converter_regex
+                matcher = cls._converter_regex
         
         self = object.__new__(cls)
         self.parameter_name = parameter.name
@@ -2035,6 +1937,243 @@ class KeywordParameterConverter(ParameterConverter):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    @staticmethod
+    def _converter_string(converter, interaction_event):
+        """
+        String form submit interaction option value matcher.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        value : `Any`
+            The matched value or the converter's default value.
+        """
+        value = interaction_event.interaction.get_value_for(converter.annotation)
+        if (value is None):
+            value = converter.default
+        
+        return value
+    
+    
+    @staticmethod
+    def _converter_regex(converter, interaction_event):
+        """
+        Regex form submit interaction option value matcher.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        value : `Any`
+            The matched value or the converter's default value.
+        """
+        match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
+        if (value is None):
+            value = converter.default
+        
+        return value
+    
+    
+    @staticmethod
+    def _converter_regex_group_dict(converter, interaction_event):
+        """
+        Regex form submit interaction option value matcher returning the matched group dictionary as well.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        value : `Any`
+            The matched value or the converter's default value.
+        groups : `dict` of (`str`, `str`) items
+            The matched values by the regex pattern.
+        """
+        match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
+        if (value is None):
+            value = converter.default
+        
+        groups = match.groupdict()
+        return groups, value
+    
+    
+    @staticmethod
+    def _converter_regex_group_tuple(converter, interaction_event):
+        """
+        Regex form submit interaction option value matcher returning the matched group tuple as well.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        value : `Any`
+            The matched value or the converter's default value.
+        groups : `tuple` of `str`
+            The matched values by the regex pattern.
+        """
+        match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
+        if (value is None):
+            value = converter.default
+        
+        groups = match.groups()
+        return groups, value
+
+
+class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
+    """
+    Regex and string matcher and `custom_id` matching multi parameter parser for forms.
+    
+    Attributes
+    ----------
+    parameter_name : `str`
+        The parameter's name.
+    annotation : `str` or `Pattern`
+        Annotation defaulting to the parameter's name if required.
+    default : `Any`
+        Default value of the parameter.
+    matcher : `FunctionType`
+        Matches interaction options based on their `custom_id`.
+    """
+    __slots__ = ()
+    
+    @staticmethod
+    def _converter_string(converter, interaction_event):
+        """
+        String form submit interaction option multi value matcher.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        values : `None` or `list` of `Any`
+            The matched values.
+        """
+        value = interaction_event.interaction.get_value_for(converter.annotation)
+        
+        if (value is None):
+            values = None
+        else:
+            values = [value]
+        
+        return values
+    
+    
+    @staticmethod
+    def _converter_regex(converter, interaction_event):
+        """
+        Regex form submit interaction option multi value matcher.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        values : `None` or `list` of `Any`
+            The matched values.
+        """
+        values = None
+        
+        for match, value in interaction_event.interaction.iter_match_and_value(converter.annotation.fullmatch):
+            if (value is not None):
+                if (values is None):
+                    values = []
+                
+                values.append(value)
+        
+        return values
+    
+    
+    @staticmethod
+    def _converter_regex_group_dict(converter, interaction_event):
+        """
+        Regex form submit interaction option multi value matcher returning the matched group dictionaries as well.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        groups_and_values : `None` or `list` of `tuple` (`dict` of (`str`, `str`) items, `Any`)
+            The matched values from the field's `custom_id` and their values.
+        """
+        values = None
+        
+        for match, value in interaction_event.interaction.iter_match_and_value(converter.annotation.fullmatch):
+            
+            groups = match.groupdict()
+            
+            if (values is None):
+                values = []
+            
+            values.append((groups, value))
+       
+        return values
+    
+    
+    @staticmethod
+    def _converter_regex_group_tuple(converter, interaction_event):
+        """
+        Regex form submit interaction option multi value matcher returning the matched group tuples as well.
+        
+        Parameters
+        ----------
+        converter : ``FormFieldKeywordParameterConverter``
+            The parent converter instance using this function.
+        interaction_event : ``InteractionEvent``
+            A received interaction event.
+        
+        Returns
+        -------
+        groups_and_values : `None` or `list` of `tuple` (`tuple` of `str`, `Any`)
+            The matched values from the field's `custom_id` and their values.
+        """
+        values = None
+        
+        for match, value in interaction_event.interaction.iter_match_and_value(converter.annotation.fullmatch):
+            
+            groups = match.groups()
+            
+            if (values is None):
+                values = []
+            
+            values.append((groups, value))
+       
+        return values
 
 
 class InternalParameterConverter(ParameterConverter):
@@ -2469,7 +2608,13 @@ def create_value_parameter_converter(parameter):
     return InternalParameterConverter(parameter.name, ANNOTATION_TYPE_SELF_VALUE, converter_self_interaction_value)
 
 
-def check_command_coroutine(func, allow_coroutine_generator_functions, allow_keyword_only_parameters):
+def check_command_coroutine(
+    func,
+    allow_coroutine_generator_functions,
+    allow_args_parameters,
+    allow_keyword_only_parameters,
+    allow_kwargs_parameters,
+):
     """
     Checks whether the given `func` is a coroutine and whether it accepts only positional only parameters.
     
@@ -2479,8 +2624,12 @@ def check_command_coroutine(func, allow_coroutine_generator_functions, allow_key
         Command coroutine.
     allow_coroutine_generator_functions : `bool`
         Whether coroutine generator functions are allowed.
+    allow_args_parameters : `bool`
+        Whether `*args` parameters are allowed.
     allow_keyword_only_parameters : `bool`
         Whether keyword parameters are allowed.
+    allow_kwargs_parameters : `bool`
+        Whether `**kwargs` parameters are allowed.
     
     Returns
     -------
@@ -2528,11 +2677,13 @@ def check_command_coroutine(func, allow_coroutine_generator_functions, allow_key
         if keyword_only_parameter_count:
             raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
     
-    if real_analyzer.accepts_args():
-        raise TypeError(f'`{real_analyzer.real_function!r}` accepts *args.')
+    if (not allow_args_parameters):
+        if real_analyzer.accepts_args():
+            raise TypeError(f'`{real_analyzer.real_function!r}` accepts `*args`.')
     
-    if real_analyzer.accepts_kwargs():
-        raise TypeError(f'`{real_analyzer.real_function!r}` accepts **kwargs.')
+    if (not allow_kwargs_parameters):
+        if real_analyzer.accepts_kwargs():
+            raise TypeError(f'`{real_analyzer.real_function!r}` accepts `**kwargs`.')
     
     return analyzer, real_analyzer, should_instance
 
@@ -2577,7 +2728,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
         - If a parameter's `choice` name is duped.
         - If a parameter's `choice` values are mixed types.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2634,7 +2785,7 @@ def get_component_command_parameter_converters(func):
         - If `func` accepts `*args`.
         - If `func` accepts `**kwargs`.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2689,7 +2840,7 @@ def get_context_command_parameter_converters(func):
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2744,7 +2895,7 @@ def get_application_command_parameter_auto_completer_converters(func):
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, False, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2788,6 +2939,8 @@ def get_form_submit_command_parameter_converters(func):
         The converted function.
     positional_parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters for the given `func` in order.
+    multi_parameter_converter : ``ParameterConverter``
+         Parameter converter for `*args` parameter.
     keyword_parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters for the given `func` for it's keyword parameters.
     
@@ -2798,7 +2951,7 @@ def get_form_submit_command_parameter_converters(func):
         - If `func` accepts `*args`.
         - If `func` accepts `**kwargs`.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, True)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, True, True, False)
     
     positional_parameters = real_analyzer.get_non_reserved_positional_parameters()
     
@@ -2822,9 +2975,15 @@ def get_form_submit_command_parameter_converters(func):
     positional_parameter_converters = tuple(positional_parameter_converters)
     
     keyword_parameters = real_analyzer.get_non_reserved_keyword_only_parameters()
-    keyword_parameter_converters = tuple(KeywordParameterConverter(parameter) for parameter in keyword_parameters)
+    keyword_parameter_converters = tuple(FormFieldKeywordParameterConverter(parameter) for parameter in keyword_parameters)
+    
+    args_parameter = real_analyzer.args_parameter
+    if (args_parameter is None):
+        multi_parameter_converter = None
+    else:
+        multi_parameter_converter = FormFieldMultiParameterConverter(parameter)
     
     if should_instance:
         func = analyzer.instance()
     
-    return func, positional_parameter_converters, keyword_parameter_converters
+    return func, positional_parameter_converters, multi_parameter_converter, keyword_parameter_converters

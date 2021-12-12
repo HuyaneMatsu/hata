@@ -50,6 +50,7 @@ INRTODUCTION_FORM = Form(
  
 @Nitori.interactions(guild=TEST_GUILD):
 def introduce_myself():
+    """Creates an introduction embed after filling a form."""
     return INRTODUCTION_FORM
 ```
 
@@ -106,6 +107,7 @@ def add_role(
     user: ('user', 'User to add role to'),
     role :('role', 'The role to give'),
 ):
+    """Add role to a user."""
     # Check for permissions
     if not event.user_permissions.can_manage_roles:
         abort('You need `manage roles` permission to invoke this command.')
@@ -187,7 +189,7 @@ CUSTOM_ID_WAIFU_FORM = 'waifu.form'
 CUSTOM_ID_WAIFU_NAME = 'waifu.name'
 CUSTOM_ID_WAIFU_DESCRIPTION = 'waifu.description'
 
-CUSTOM_ID_WAIFU_DESCRIPTION_REGEX = re.compile('waifu\.description(?:\.long)')
+CUSTOM_ID_WAIFU_DESCRIPTION_REGEX = re.compile('waifu\.description(?:\.long)?')
 
 WAIFU_FORM = Form(
     'Describe your waifu'
@@ -213,14 +215,15 @@ WAIFU_FORM = Form(
 
 @Nitori.interactions(guild=TEST_GUILD):
 def add_waifu():
+    """Add a new waifu to the database!"""
     return WAIFU_FORM
 
 @Nitori.interactions(custom_id=CUSTOM_ID_WAIFU_FORM, target='form')
 async def waifu_add_form_submit(
     event,
     *,
-    name : CUSTOM_ID_WAIFU_NAME,
-    desciption : CUSTOM_ID_WAIFU_DESCRIPTION_REGEX,
+    name: CUSTOM_ID_WAIFU_NAME,
+    desciption: CUSTOM_ID_WAIFU_DESCRIPTION_REGEX,
 ):
     key = name.casefold()
     if key in WAIFUS:
@@ -246,6 +249,7 @@ async def waifu_add_form_submit(
 def get_waifu(
     name: ('str', 'Their name?')
 ):
+    """Returns an added waifu."""
     try:
         name, description, adder = WAIFUS[name.casefold()]
     except KeyError:
@@ -264,4 +268,75 @@ async def autocomplete_waifu_name(value):
     return [waifu[0] for key, waifu in WAIFUS.items() if value in key]
 ```
 
-# TODO
+When using capturing groups or named capturing groups, you will get the captured values back as well. This can be
+useful, when dynamically generating form fields.
+
+```py
+# Example wanted.
+```
+
+To capture multiple fields in one parameter, you might use `*args`.
+
+When using capturing groups in regex, each element will be a tuple, familiarly to the the keyword parameters above.
+
+```py
+import re
+from hata import Embed, BUILTIN_EMOJIS
+from hata.ext.slash import Form, TextInput, TextInputStyle, abort
+
+EMOJI_CAKE = BUILTIN_EMOJIS['cake']
+
+CUSTOM_ID_RATE_CAKE = 'rate_cake'
+CUSTOM_ID_RATE_CAKE_FIELD = 'rate_cake.field'
+
+
+CAKE_NAMES = ['butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless',
+    'unbaked flourless', 'carrot', 'red velvet', ]
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def rate_cakes(
+    cake_1: ('str', 'Please rate this cake'),
+    cake_2: ('str', 'Please rate this cake') = None,
+    cake_3: ('str', 'Please rate this cake') = None,
+    cake_4: ('str', 'Please rate this cake') = None,
+    cake_5: ('str', 'Please rate this cake') = None,
+):
+    """Rate cakes."""
+    # Filter 
+    cakes = {cake for cake in (cake_1, cake_2, cake_3, cake_4, cake_5) if (cake is no None)}
+    
+    return Form(
+        'Rate your cakes'
+        [
+            TextInput(
+                f'Please rate {cake}',
+                min_length = 2,
+                max_length = 128,
+                custom_id = f'{CUSTOM_ID_RATE_CAKE_FIELD}[{cake}]',
+            ) for cake in cakes
+        ],
+        custom_id = CUSTOM_ID_RATE_CAKE,
+    )
+
+@cake_love.autocomplete('cake-1', 'cake-2', 'cake-3', 'cake-4', 'cake-5')
+async def autocomplete_cake_type(value):
+    if value is None:
+        return CAKE_NAMES[:20]
+    
+    value = value.casefold()
+    return [cake_name for cake_name in CAKE_NAMES if (value in cake_name)]
+
+
+@Nitori.interactions(custom_id=CUSTOM_ID_RATE_CAKE, target='form')
+async def rate_cake_form_submit(
+    event,
+    *cakes: re.compile(f'{CUSTOM_ID_RATE_CAKE_FIELD}\[(\w+)\]'),
+):
+    user = event.user
+    embed = Embed(f'{user:f}\'s cake ratings').add_thumbnail(user.avatar_url)
+    
+    for ((cake, ), rating in cakes:
+        embed.add_field(cake, rating)
+    
+    return embed
+```

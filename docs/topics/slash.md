@@ -417,7 +417,7 @@ EMOJI_CAKE = BUILTIN_EMOJIS['cake']
 async def cake_love(
     cake_type: ('str', 'Please define a cake type to pick from.')
 ):
-    return f'Hmmm, yes, I love {cake_type} {EMOJI_CAKE:e} as well.'
+    return f'Hmmm, yes, I love {cake_type} {EMOJI_CAKE} as well.'
 
 CAKE_NAMES = ['butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless',
     'unbaked flourless', 'carrot', 'red velvet', ]
@@ -425,10 +425,10 @@ CAKE_NAMES = ['butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', '
 @cake_love.autocomplete('cake_type') # Define which parameter we want to auto-complete.
 async def autocomplete_cake_type(value):
     if value is None:
-        return CAKE_NAMES
+        return CAKE_NAMES[:20]
     
-    value = value.lower()
-    return [cake_name for cake_name in CAKE_NAMES if cake_name.startswith(value)]
+    value = value.casefold()
+    return [cake_name for cake_name in CAKE_NAMES if (value in cake_name)]
 ```
 
 Autocomplete functions support 1 additional parameter outside of client and event, which is the value what the user

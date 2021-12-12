@@ -225,7 +225,7 @@ def _debug_component_url(url):
             f'{url.__class__.__name__}.')
 
 
-def _debug_component_value(value):
+def _debug_component_select_option_value(value):
     """
     Checks whether the given `component_option.value` value is correct.
     
@@ -240,7 +240,26 @@ def _debug_component_value(value):
         If `value` was not given as `str` instance.
     """
     if not isinstance(value, str):
-        raise AssertionError(f'`value` can be given either as  `str` instance, got '
+        raise AssertionError(f'`value` can be given either as `str` instance, got '
+            f'{value.__class__.__name__}.')
+
+
+def _debug_component_initial_value(value):
+    """
+    Checks whether the given `component_option.value` value is correct.
+    
+    Parameters
+    ----------
+    value : `str`
+        A component option's value.
+    
+    Raises
+    ------
+    AssertionError
+        If `value` was not given as `str` instance.
+    """
+    if not isinstance(value, str):
+        raise AssertionError(f'`value` can be given either as `str` instance, got '
             f'{value.__class__.__name__}.')
 
 
@@ -303,7 +322,7 @@ def _debug_component_options(options):
     """
     if options is None:
         option_length = 0
-    if isinstance(options, (tuple, list)):
+    elif isinstance(options, (tuple, list)):
         for option in options:
             if not isinstance(option, ComponentSelectOption):
                 raise AssertionError(f'`option` can be given as `{ComponentSelectOption.__name__}` instance, got '
@@ -432,6 +451,44 @@ def _debug_component_min_length(min_length):
     if (min_length < COMPONENT_MIN_LENGTH_MIN) or (min_length > COMPONENT_MIN_LENGTH_MAX):
         raise AssertionError(f'`min_length` can be in range '
             f'[{COMPONENT_MIN_LENGTH_MIN}:{COMPONENT_MIN_LENGTH_MAX}], got {min_length!r}.')
+
+
+def _debug_component_required(required):
+    """
+    Checks whether the given `component_text_input.required` value is correct.
+    
+    Parameters
+    ----------
+    required : `bool`
+        Whether this component text input is required.
+    
+    Raises
+    ------
+    AssertionError
+        If `required` was not given neither as `None` or `bool` instance.
+    """
+    if (required is not None) and (not isinstance(required, bool)):
+        raise AssertionError(f'`required` can be given as `None` or as `bool` instance, got '
+            f'{required.__class__.__name__}.')
+
+
+def _debug_component_text_input_value(value):
+    """
+    Checks whether the given `component_text_input.value` value is correct.
+    
+    Parameters
+    ----------
+    value : `None` or `str`
+        The default value of the text input.
+    
+    Raises
+    ------
+    AssertionError
+        If `value` was not given neither as `None` or `str` instance.
+    """
+    if (value is not None) and (not isinstance(value, bool)):
+        raise AssertionError(f'`value` can be given as `None` or as `bool` instance, got '
+            f'{value.__class__.__name__}.')
 
 
 def create_auto_custom_id():
@@ -1353,7 +1410,7 @@ class ComponentSelectOption(ComponentBase):
             _debug_component_description(description)
             _debug_component_emoji(emoji)
             _debug_component_label(label)
-            _debug_component_value(value)
+            _debug_component_select_option_value(value)
         
         # default
         # No additional checks
@@ -1562,7 +1619,7 @@ class ComponentSelectOption(ComponentBase):
             value = self.value
         else:
             if __debug__:
-                _debug_component_value(value)
+                _debug_component_select_option_value(value)
         
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -2147,8 +2204,14 @@ class ComponentTextInput(ComponentBase):
     placeholder : `str`
         Placeholder text of the text input.
     
+    required : `bool`
+        Whether the field is required to be fulfilled.
+    
     style : `None` or ``TextInputStyle``
         The text input's style.
+    
+    value : `None` or `str`
+        The text input's default value.
     
     Class Attributes
     ----------------
@@ -2160,10 +2223,11 @@ class ComponentTextInput(ComponentBase):
     default_style = TextInputStyle.short
     type = ComponentType.text_input
     
-    __slots__ = ('custom_id', 'enabled', 'label', 'max_length', 'min_length', 'placeholder', 'style', )
+    __slots__ = ('custom_id', 'enabled', 'label', 'max_length', 'min_length', 'placeholder', 'required', 'style',
+        'value')
     
     def __new__(cls, label=None, *, custom_id=None, enabled=True, max_length=0, min_length=0, placeholder=None,
-            style=None, ):
+            required=None, style=None, ):
         """
         Creates a new component instance with the given parameters.
         
@@ -2191,8 +2255,16 @@ class ComponentTextInput(ComponentBase):
         placeholder : `None` or `str`, Optional (Keyword only)
             Placeholder text of the select.
         
+        required : `None` or `bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
+            
+            If not given, or given as `None`, will default to `True` if `min_length` is defined as higher than `0`.
+        
         style : `None`, ``TextInputStyle``, `int`, Optional (Keyword only)
             The text input's style.
+        
+        value : `None` or `str`, Optional (Keyword only)
+            The text input's default value.
         
         Raises
         ------
@@ -2209,6 +2281,8 @@ class ComponentTextInput(ComponentBase):
             - If `man_length`'s is out of the expected range.
             - If `min_length` was not given as `int` instance.
             - If `min_length`'s is out of the expected range.
+            - If `required` is neither `None` nor `bool` instance.
+            - If `value` is neither `None` nor `bool` instance.
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
@@ -2217,6 +2291,8 @@ class ComponentTextInput(ComponentBase):
             _debug_component_max_length(max_length)
             _debug_component_min_length(min_length)
             _debug_component_placeholder(placeholder)
+            _debug_component_required(required)
+            _debug_component_text_input_value(value)
         
         # custom_id
         if (custom_id is not None) and (not custom_id):
@@ -2229,31 +2305,45 @@ class ComponentTextInput(ComponentBase):
         if (label is not None) and (not label):
             label = None
         
-        # placeholder
-        if (placeholder is not None) and (not placeholder):
-            placeholder = None
-        
-        # style
-        if style is None:
-            style = cls.default_style
-        else:
-            style = preconvert_preinstanced_type(style, 'style', TextInputStyle)
-        
         # max_length
         # No additional checks
         
         # min_length
         # No additional checks
         
+        # placeholder
+        if (placeholder is not None) and (not placeholder):
+            placeholder = None
+        
+        # required
+        # If required is `None`, we detect it from `min_value`.
+        if (required is None):
+            if min_length > 0:
+                required = True
+            else:
+                required = False
+        
+        # style
+        if style is None:
+            style = cls.default_style
+        else:
+            style = preconvert_preinstanced_type(style, 'style', TextInputStyle)
+
+        # value
+        if (value is not None) and (not value):
+            value = None
+        
         self = object.__new__(cls)
         
         self.custom_id = custom_id
         self.enabled = enabled
         self.label = label
-        self.placeholder = placeholder
-        self.style = style
         self.max_length = max_length
         self.min_length = min_length
+        self.placeholder = placeholder
+        self.required = required
+        self.style = style
+        self.value = value
         
         return self
     
@@ -2284,11 +2374,21 @@ class ComponentTextInput(ComponentBase):
             placeholder = None
         self.placeholder = placeholder
         
+        # required
+        self.required = data.get('required', True)
+        
         # style
         style = data.get('style', None)
         if (style is not None):
             style = TextInputStyle.get(style)
         self.style = style
+        
+        # value
+        value = data['value']
+        if (value is not None) and (not value):
+            value = None
+        self.value = value
+        
         
         return self
     
@@ -2329,10 +2429,19 @@ class ComponentTextInput(ComponentBase):
         if (placeholder is not None):
             data['placeholder'] = placeholder
         
+        # required
+        if (not self.requried):
+            data['required'] = False
+        
         # style
         style = self.style
         if (style is not None):
             data['style'] = style.value
+        
+        # value
+        value = self.value
+        if (value is not None):
+            data['value'] = value
         
         return data
     
@@ -2367,7 +2476,7 @@ class ComponentTextInput(ComponentBase):
             repr_parts.append(', custom_id=')
             repr_parts.append(reprlib.repr(custom_id))
         
-        # Text fields : label & placeholder
+        # Text fields : label & placeholder & value
         
         # label
         label = self.label
@@ -2381,7 +2490,13 @@ class ComponentTextInput(ComponentBase):
             repr_parts.append(', placeholder=')
             repr_parts.append(repr(placeholder))
         
-        # Optional descriptive fields : max_length & min_length & enabled
+        # value
+        value = self.value
+        if (value is not None):
+            repr_parts.append(', value=')
+            repr_parts.append(repr(value))
+        
+        # Optional descriptive fields : max_length & min_length & required & enabled
         
         # min_length
         min_length = self.min_length
@@ -2394,6 +2509,12 @@ class ComponentTextInput(ComponentBase):
         if max_length:
             repr_parts.append(', max_length=')
             repr_parts.append(repr(max_length))
+        
+        # required (relation with `min_length`)
+        required = self.required
+        if (min_length > 0) ^ required:
+            repr_parts.append(', required=')
+            repr_parts.append(repr(required))
         
         # enabled
         enabled = self.enabled
@@ -2415,8 +2536,10 @@ class ComponentTextInput(ComponentBase):
         new.label = self.label
         new.max_length = self.max_length
         new.min_length = self.min_length
-        new.style = self.style
         new.placeholder = self.placeholder
+        new.required = self.required
+        new.style = self.style
+        new.value = self.value
         
         return new
     
@@ -2450,8 +2573,16 @@ class ComponentTextInput(ComponentBase):
         placeholder : `None` or `str`, Optional (Keyword only)
             Placeholder text of the select.
         
+        required : `None` or `bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
+            
+            If not given, or given as `None`, will default to `True` if `min_length` is defined as higher than `0`.
+        
         style : `None`, ``TextInputStyle``, `int`, Optional (Keyword only)
             The text input's style.
+        
+        value : `None` or `str`, Optional (Keyword only)
+            The text input's default value.
         
         Returns
         -------
@@ -2520,6 +2651,21 @@ class ComponentTextInput(ComponentBase):
             if (placeholder is not None) and (not placeholder):
                 placeholder = None
         
+        # required
+        try:
+            required = kwargs.pop('required')
+        except KeyError:
+            required = self.requried
+        else:
+            if __debug__:
+                _debug_component_required(required)
+            
+            if (required is None):
+                if min_length > 0:
+                    required = True
+                else:
+                    required = False
+        
         # style
         try:
             style = kwargs.pop('style')
@@ -2530,6 +2676,18 @@ class ComponentTextInput(ComponentBase):
             style = cls.default_style
         else:
             style = preconvert_preinstanced_type(style, 'style', TextInputStyle)
+        
+        # value
+        try:
+            value = kwargs.pop('value')
+        except KeyError:
+            value = None
+        else:
+            if __debug__:
+                _debug_component_text_input_value(value)
+            
+            if (value is not None) and (not value):
+                value = None
         
         if kwargs:
             raise TypeError(f'Unused or unsettable attributes: {kwargs}')
@@ -2542,7 +2700,9 @@ class ComponentTextInput(ComponentBase):
         new.max_length = max_length
         new.min_length = min_length
         new.placeholder = placeholder
+        new.required = required
         new.style = style
+        new.value = value
         
         return new
     
@@ -2576,8 +2736,16 @@ class ComponentTextInput(ComponentBase):
         if self.placeholder != other.placeholder:
             return False
         
+        # required
+        if self.required != other.required:
+            return False
+        
         # style
         if self.style is not other.style:
+            return False
+        
+        # value
+        if self.value != other.value:
             return False
         
         return True
@@ -2617,10 +2785,19 @@ class ComponentTextInput(ComponentBase):
         if (placeholder is not None):
             hash_value ^= hash(placeholder)
         
+        # required
+        if self.required:
+            hash_value ^= (1<<28)
+        
         # style
         style = self.style
         if (style is not None):
             hash_value ^= style.value
+        
+        # value
+        value = self.value
+        if (value is not None):
+            hash_value ^= hash(value)
         
         return hash_value
 
@@ -2656,8 +2833,10 @@ COMPONENT_ATTRIBUTE_NAMES = frozenset((
     'min_values',
     'options',
     'placeholder',
+    'required',
     'style',
     'url',
+    'value',
 ))
 
 

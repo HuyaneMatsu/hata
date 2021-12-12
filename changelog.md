@@ -6,6 +6,8 @@
 - Add `ERROR_CODES.rate_limit_server_send`.
 - Add `ERROR_CODES.rate_limit_daily_application_command_creation`.
 - Add `FormSubmitInteraction.iter_matches_and_values`.
+- Add `ComponentTextInput.required`.
+- Add `ComponentTextInput.value`.
 
 ## 1.1.127 *\[2021-12-07\]*
 

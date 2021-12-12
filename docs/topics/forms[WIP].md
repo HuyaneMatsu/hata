@@ -85,7 +85,6 @@ submitted form.
 
 ```py
 import re
-
 from hata import DiscordException, ERROR_CODES, Embed
 from hata.ext.slash import abort
 
@@ -272,7 +271,7 @@ When using capturing groups or named capturing groups, you will get the captured
 useful, when dynamically generating form fields.
 
 ```py
-# Example wanted.
+# Add more fields to add waifu and make this an edit command
 ```
 
 To capture multiple fields in one parameter, you might use `*args`.
@@ -282,7 +281,7 @@ When using capturing groups in regex, each element will be a tuple, familiarly t
 ```py
 import re
 from hata import Embed, BUILTIN_EMOJIS
-from hata.ext.slash import Form, TextInput, TextInputStyle, abort
+from hata.ext.slash import Form, TextInput, TextInputStyle
 
 EMOJI_CAKE = BUILTIN_EMOJIS['cake']
 

@@ -2227,7 +2227,7 @@ class ComponentTextInput(ComponentBase):
         'value')
     
     def __new__(cls, label=None, *, custom_id=None, enabled=True, max_length=0, min_length=0, placeholder=None,
-            required=None, style=None, ):
+            required=None, style=None, value=None):
         """
         Creates a new component instance with the given parameters.
         

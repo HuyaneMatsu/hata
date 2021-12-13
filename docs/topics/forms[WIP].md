@@ -186,9 +186,37 @@ WAIFUS = {}
 
 CUSTOM_ID_WAIFU_FORM = 'waifu.form'
 CUSTOM_ID_WAIFU_NAME = 'waifu.name'
-CUSTOM_ID_WAIFU_DESCRIPTION = 'waifu.description'
+CUSTOM_ID_WAIFU_BIO = 'waifu.bio'
 
-CUSTOM_ID_WAIFU_DESCRIPTION_REGEX = re.compile('waifu\.description(?:\.long)?')
+CUSTOM_ID_WAIFU_BIO_REGEX = re.compile('waifu\.(?:description|bio)')
+
+class Waifu:
+    __slots__ = ('age', 'bio', 'hair', 'name', 'user')
+    
+    def __init__(self, age, bio, hair, name, user):
+        self.age = age
+        self.bio = bio
+        self.hair = hair
+        self.name = name
+        self.user = user
+    
+    @property
+    def embed(self):
+        return Embed(
+            self.name,
+            self.description,
+        ).add_field(
+            'age',
+            self.age,
+            inline = True,
+        ).add_field(
+            'hair',
+            self.hair,
+            inline = True,
+        ).add_footer(
+            f'Added by: {self.user:f}'
+        )
+
 
 WAIFU_FORM = Form(
     'Describe your waifu'
@@ -200,11 +228,23 @@ WAIFU_FORM = Form(
             custom_id = CUSTOM_ID_WAIFU_NAME,
         ),
         TextInput(
-            'Describe them!'
-            style = TextInputStyle.paragraph,
+            'Bio'
+            style = TextInputStyle.bio,
             min_length = 64,
             max_length = 1024,
             custom_id = CUSTOM_ID_DESCRIPTION,
+        ),
+        TextInput(
+            'Age'
+            min_length = 1,
+            max_length = 1024,
+            custom_id = CUSTOM_ID_AGE,
+        ),
+        TextInput(
+            'hair'
+            min_length = 1,
+            max_length = 1024,
+            custom_id = CUSTOM_ID_HAIR,
         ),
     ],
     custom_id = CUSTOM_ID_WAIFU_FORM,
@@ -222,7 +262,7 @@ async def waifu_add_form_submit(
     event,
     *,
     name: CUSTOM_ID_WAIFU_NAME,
-    desciption: CUSTOM_ID_WAIFU_DESCRIPTION_REGEX,
+    desciption: CUSTOM_ID_WAIFU_BIO_REGEX,
 ):
     key = name.casefold()
     if key in WAIFUS:

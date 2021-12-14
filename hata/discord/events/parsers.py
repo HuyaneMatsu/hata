@@ -4145,17 +4145,56 @@ del GUILD_SCHEDULED_EVENT_CREATE__CAL_SC, \
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_SC(client, data):
     scheduled_event = ScheduledEvent(data)
     
+    try:
+        guild = GUILDS[scheduled_event.guild_id]
+    except KeyError:
+        pass
+    else:
+        try:
+            del guild[scheduled_event.id]
+        except KeyError:
+            pass
+    
     Task(client.events.scheduled_event_delete(client, scheduled_event), KOKORO)
 
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
-    scheduled_event = ScheduledEvent(data)
+    guild_id = int(data['guild_id'])
     
-    event_handler = client.events.scheduled_event_delete
-    if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, scheduled_event), KOKORO)
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    scheduled_event = ScheduledEvent(data)
+    if (clients is None):
+        event_handler = client.events.scheduled_event_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, scheduled_event), KOKORO)
+    else:
+        for client in clients:
+            event_handler = client.events.scheduled_event_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, scheduled_event), KOKORO)
 
 def GUILD_SCHEDULED_EVENT_DELETE__OPT(client, data):
-    pass
+    guild_id = int(data['guild_id'])
+    
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        pass
+    else:
+        scheduled_event_id = int(data['id'])
+        
+        try:
+            del guild[scheduled_event_id]
+        except KeyError:
+            pass
 
 add_parser(
     'GUILD_SCHEDULED_EVENT_DELETE',
@@ -4188,13 +4227,12 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
     try:
         guild = GUILDS[guild_id]
     except KeyError:
-        # Should not happen.
-        return
-    
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS)
-    if clients.send(None) is not client:
-        clients.close()
-        return
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
     
     scheduled_event_id = int(data['id'])
     try:
@@ -4205,12 +4243,19 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
     else:
         old_attributes = scheduled_event._difference_update_attributes(data)
         if not old_attributes:
+            if (clients is not None):
+                clients.close()
             return
     
-    for client in clients:
+    if clients is None:
         event_handler = client.events.scheduled_event_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, scheduled_event, old_attributes), KOKORO)
+    else:
+        for client in clients:
+            event_handler = client.events.scheduled_event_edit
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, scheduled_event, old_attributes), KOKORO)
 
 
 def GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC(client, data):
@@ -4234,17 +4279,11 @@ def GUILD_SCHEDULED_EVENT_UPDATE__OPT_MC(client, data):
     try:
         guild = GUILDS[guild_id]
     except KeyError:
-        # Should not happen.
-        return
+        pass
+    else:
+        if first_client(guild.clients, INTENT_MASK_GUILDS) is not client:
+            return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS)
-    if clients.send(None) is not client:
-        clients.close()
-        return
-    
-    if first_client(guild.clients, INTENT_MASK_GUILDS) is not client:
-        return
-
     scheduled_event._update_attributes(data)
 
 add_parser(

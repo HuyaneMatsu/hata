@@ -1,5 +1,39 @@
 ## 1.1.128 *\[2021-12-??\]*
 
+### Scheduled event checklist:
+
+- `guild_object.guild_scheduled_events`
+- `guild_scheduled_event_object`
+- `guild_scheduled_event_object.id`
+- `guild_scheduled_event_object.guild_id`
+- `guild_scheduled_event_object.channel_id`
+- `guild_scheduled_event_object.creator_id`
+- `guild_scheduled_event_object.name`
+- `guild_scheduled_event_object.description`
+- `guild_scheduled_event_object.scheduled_start_time`
+- `guild_scheduled_event_object.scheduled_end_time`
+- `guild_scheduled_event_object.privacy_level`
+- `guild_scheduled_event_object.privacy_level.GUILD_ONLY`
+- `guild_scheduled_event_object.status`
+- `guild_scheduled_event_object.status.SCHEDULED`
+- `guild_scheduled_event_object.status.ACTIVE`
+- `guild_scheduled_event_object.status.COMPLETED`
+- `guild_scheduled_event_object.status.CANCELED`
+- `guild_scheduled_event_object.entity_type`
+- `guild_scheduled_event_object.entity_type.STAGE_INSTANCE`
+- `guild_scheduled_event_object.entity_type.VOICE`
+- `guild_scheduled_event_object.entity_type.EXTERNAL`
+- `guild_scheduled_event_object.entity_id`
+- `guild_scheduled_event_object.entity_metadata`
+- `guild_scheduled_event_object.entity_metadata.location`
+- `guild_scheduled_event_object.creator`
+- `guild_scheduled_event_object.user_count`
+- `GET /guilds/{guild_id}/scheduled-events`
+- `POST /guilds/{guild_id}/scheduled-events`
+- `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
+- `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
+- `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
+
 #### Improvements
 
 - Add `ERROR_CODES.invalid_guild`.

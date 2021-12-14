@@ -185,8 +185,10 @@ from hata.ext.slash import Form, TextInput, TextInputStyle, abort
 WAIFUS = {}
 
 CUSTOM_ID_WAIFU_FORM = 'waifu.form'
-CUSTOM_ID_WAIFU_NAME = 'waifu.name'
+CUSTOM_ID_WAIFU_AGE = 'waifu.age'
 CUSTOM_ID_WAIFU_BIO = 'waifu.bio'
+CUSTOM_ID_WAIFU_HAIR = 'waifu.hair'
+CUSTOM_ID_WAIFU_NAME = 'waifu.name'
 
 CUSTOM_ID_WAIFU_BIO_REGEX = re.compile('waifu\.(?:description|bio)')
 
@@ -218,34 +220,42 @@ class Waifu:
         )
 
 
+# We will need these 3 in an example later
+
+TEXT_INPUT_WAIFU_BIO = TextInput(
+    'Bio'
+    style = TextInputStyle.bio,
+    min_length = 64,
+    max_length = 1024,
+    custom_id = CUSTOM_ID_WAIFU_BIO,
+)
+
+TEXT_INPUT_WAIFU_AGE = TextInput(
+    'Age'
+    min_length = 1,
+    max_length = 1024,
+    custom_id = CUSTOM_ID_WAIFU_AGE,
+)
+
+TEXT_INPUT_WAIFU_HAIR = TextInput(
+    'hair'
+    min_length = 1,
+    max_length = 1024,
+    custom_id = CUSTOM_ID_WAIFU_HAIR,
+)
+
 WAIFU_FORM = Form(
     'Describe your waifu'
     [
         TextInput(
-            'What is their name?',
+            'Name'
             min_length = 2,
-            max_length = 128,
+            max_length = 64,
             custom_id = CUSTOM_ID_WAIFU_NAME,
         ),
-        TextInput(
-            'Bio'
-            style = TextInputStyle.bio,
-            min_length = 64,
-            max_length = 1024,
-            custom_id = CUSTOM_ID_DESCRIPTION,
-        ),
-        TextInput(
-            'Age'
-            min_length = 1,
-            max_length = 1024,
-            custom_id = CUSTOM_ID_AGE,
-        ),
-        TextInput(
-            'hair'
-            min_length = 1,
-            max_length = 1024,
-            custom_id = CUSTOM_ID_HAIR,
-        ),
+        TEXT_INPUT_WAIFU_BIO,
+        TEXT_INPUT_WAIFU_AGE,
+        TEXT_INPUT_WAIFU_HAIR,
     ],
     custom_id = CUSTOM_ID_WAIFU_FORM,
 )
@@ -257,61 +267,118 @@ def add_waifu():
     """Add a new waifu to the database!"""
     return WAIFU_FORM
 
+
 @Nitori.interactions(custom_id=CUSTOM_ID_WAIFU_FORM, target='form')
 async def waifu_add_form_submit(
     event,
     *,
+    age: CUSTOM_ID_WAIFU_AGE,
+    bio: CUSTOM_ID_WAIFU_BIO_REGEX,
+    hair: CUSTOM_ID_WAIFU_HAIR,
     name: CUSTOM_ID_WAIFU_NAME,
-    desciption: CUSTOM_ID_WAIFU_BIO_REGEX,
 ):
     key = name.casefold()
     if key in WAIFUS:
-        abort(
-            Embed(
-               description = (
-                    'There is already a waifu named: {name!r}.\n'
-                    'Try again with a difefernt name.'
-                ),
-            ).add_field(
-                'Description given',
-                description,
-            )
-        )
+        abort('A waifu with the given name is already added.')
     
-    WAIFUS[key] = (name, desciption, event.user)
+    WAIFUS[key] = waifu = Waifu(age, bio, hair, name, event.user)
     
-    return Embed(name, description).add_footer('Great success !!!')
+    return waifu.embed
 
 # Get command
 
-@Nitori.interactions(guild=TEST_GUILD):
+@Nitori.interactions(guild=TEST_GUILD)
 def get_waifu(
     name: ('str', 'Their name?')
 ):
     """Returns an added waifu."""
     try:
-        name, description, adder = WAIFUS[name.casefold()]
+        waifu = WAIFUS[name.casefold()]
     except KeyError:
-        abort('There is no waifu named like: {name}.')
+        abort(f'There is no waifu named like: {name}.')
     
-    return Embed(name, description).add_footer(f'Added by: {user:f}')
+    return waifu.embed
 
 
 @get_waifu.autocomplete('name')
 async def autocomplete_waifu_name(value):
     if (value is None):
-        # Return the 20 newest waifu
-        return [waifu[0] for waifu, _ in zip(WAIFUS.values(), range(20))]
+        # Return the 20 newest oldest
+        return [waifu.name for waifu, _ in zip(WAIFUS.values(), range(20))]
     
     value = value.casefold()
-    return [waifu[0] for key, waifu in WAIFUS.items() if value in key]
+    return [waifu.name for key, waifu in WAIFUS.items() if value in key]
 ```
 
 When using capturing groups or named capturing groups, you will get the captured values back as well. This can be
 useful, when dynamically generating form fields.
 
 ```py
-# Add more fields to add waifu and make this an edit command
+CUSTOM_ID_WAIFU_EDIT_BASE = 'waifu.edit.'
+CUSTOM_ID_WAIFU_EDIT_REGEX = 'waifu\.edit\.(.*)'
+CUSTOM_ID_WAIFU_FIELD_ALL = 'waifu\.(?P<field>age|bio|hair)'
+
+FIELD_TO_TEXT_INPUT = {
+    'age': TEXT_INPUT_WAIFU_AGE,
+    'bio': TEXT_INPUT_WAIFU_BIO,
+    'hair': TEXT_INPUT_WAIFU_HAIR',
+}
+
+FIELD_TO_ATTRIBUTE = {
+    'age': Waifu.age,
+    'bio': Waifu.bio,
+    'hair': Waifu.hair,
+}
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def edit_waifu(
+    event,
+    name: ('str', 'Their name?'),
+    field : (['age', 'bio', 'hair'], 'Which field to edit?'),
+):
+    """Edits a waifu. | You must own her."""
+    key = name.casefold()
+    try:
+        waifu = WAIFUS[key]
+    except KeyError:
+        abort(f'There is no waifu named like: {name}.')
+    
+    if waifu.user is not event.user:
+        abort('You can only edit waifus added by yourself.')
+    
+    text_input = FIELD_TO_TEXT_INPUT[field]
+    return Form(
+        'Editing {waifu.name}'
+        text_input,
+        custom_id = f'{CUSTOM_ID_WAIFU_EDIT_BASE}{key}',
+    )
+
+@edit_waifu.autocomplete('name')
+async def autocomplete_waifu_name(event, value):
+    user = event.user
+    
+    if (value is None):
+        # Return the 20 newest oldest
+        return [waifu.name for waifu, _ in zip((waifu for waifu in WAIFUS.values() if waifu.user is user), range(20))]
+    
+    value = value.casefold()
+    return [waifu.name for key, waifu in WAIFUS.items() if value in key and waifu.user is user]
+
+
+@Nitori.interactions(custom_id=CUSTOM_ID_WAIFU_EDIT_REGEX, target='form')
+async def waifu_edit_form_submit(
+    key,
+    *,
+    edited_field: CUSTOM_ID_WAIFU_FIELD_ALL,
+):
+    # Both `group_dict` and `value` might be `None` at cases, so check them if you are not sure.
+    group_dict, value = edited_field
+    field = group_dict['field']
+    
+    waifu = WAIFUS[key]
+    FIELD_TO_ATTRIBUTE[field].__set__(waifu, value)
+    
+    return waifu.embed
 ```
 
 To capture multiple fields in one parameter, you might use `*args`.

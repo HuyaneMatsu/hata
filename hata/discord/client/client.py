@@ -14682,7 +14682,7 @@ class Client(ClientUserPBase):
         if old_shard_count == 0:
             old_shard_count = 1
         
-        new_shard_count = data['shards']
+        new_shard_count = data.get('shards', 1)
         
         # Do we have more shards already?
         if (not force) and (old_shard_count >= new_shard_count):

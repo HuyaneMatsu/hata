@@ -10,6 +10,11 @@
 - Add `ComponentTextInput.value`.
 - Add `Guild.scheduled_events`.
 
+#### Bug Fixes
+
+- `KeyError` in `DiscordGateway._received_message` when using fosscord. (Forest#2913)
+- `KeyError` in `Client.client_gateway_reshard` when using fosscord. (Forest#2913)
+
 ## 1.1.127 *\[2021-12-07\]*
 
 #### Improvements

@@ -326,7 +326,7 @@ class DiscordGateway:
         
         operation = message['op']
         data = message['d']
-        sequence = message['s']
+        sequence = message.get('s', None)
         
         if sequence is not None:
             self.sequence = sequence

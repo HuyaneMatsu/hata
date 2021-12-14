@@ -1637,13 +1637,13 @@ def get_scheduled_event_id(scheduled_event):
     return scheduled_event_id
 
 
-def get_scheduled_event_and_id(scheduled_event):
+def get_scheduled_event_guild_id_and_id(scheduled_event):
     """
     Gets the scheduled event's identifier from the given guild or of it's identifier.
     
     Parameters
     ----------
-    scheduled_event : ``ScheduledEvent``, `int`
+    scheduled_event : ``ScheduledEvent``, `tuple` (`int`, `int`)
         The scheduled event, or it's identifier.
     
     Returns
@@ -1661,12 +1661,20 @@ def get_scheduled_event_and_id(scheduled_event):
     if isinstance(scheduled_event, ScheduledEvent):
         scheduled_event =  scheduled_event
         scheduled_event_id = scheduled_event.id
+        guild_id = scheduled_event.guild_id
     else:
         scheduled_event_id = maybe_snowflake(scheduled_event)
         if scheduled_event_id is None:
-            raise TypeError(f'`scheduled_event` can be given as `{ScheduledEvent.__name__}` or `int` instance, got '
-                f'{scheduled_event.__class__.__name__}.')
+            raise TypeError(f'`scheduled_event` can be given as `{ScheduledEvent.__name__}` or `tuple` (`int`, `int`), '
+                f'got {scheduled_event.__class__.__name__}.')
+        
+            snowflake_pair = maybe_snowflake_pair(scheduled_event)
+            if snowflake_pair is None:
+                raise TypeError(f'`scheduled_event` should have be given as `{ScheduledEvent.__name__}` or as '
+                    f'`tuple` of (`int`, `int`), got {scheduled_event.__class__.__name__}.')
+            
+            guild_id, scheduled_event_id = snowflake_pair
         
         scheduled_event = SCHEDULED_EVENTS.get(scheduled_event_id, None)
     
-    return  scheduled_event, scheduled_event_id
+    return  scheduled_event, guild_id, scheduled_event_id

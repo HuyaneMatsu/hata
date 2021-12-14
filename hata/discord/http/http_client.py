@@ -1541,7 +1541,7 @@ class DiscordHTTPClient(HTTPClient):
     # Scheduled events
     
     async def scheduled_event_create(self, guild_id, data):
-        return await self.dicscord_request(
+        return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_create, guild_id),
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events',
@@ -1550,7 +1550,7 @@ class DiscordHTTPClient(HTTPClient):
     
     
     async def scheduled_event_edit(self, scheduled_event_id, data):
-        return await self.dicscord_request(
+        return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_edit, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guild-events/{scheduled_event_id}',
@@ -1558,25 +1558,25 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def scheduled_event_delete(self, scheduled_event_id, data):
-        return await self.dicscord_request(
+    async def scheduled_event_delete(self, scheduled_event_id):
+        return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guild-events/{scheduled_event_id}',
         )
     
     
-    async def scheduled_event_get(self, scheduled_event_id, params):
-        return await self.dicscord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get, NO_SPECIFIC_RATE_LIMITER),
+    async def scheduled_event_get(self, guild_id, scheduled_event_id, params):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get, guild_id),
             METHOD_GET,
-            f'{API_ENDPOINT}/guild-events/{scheduled_event_id}',
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}',
             params = params,
         )
     
     
     async def scheduled_event_get_all_guild(self, guild_id, params):
-        return await self.dicscord_request(
+        return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get_all_guild, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events',

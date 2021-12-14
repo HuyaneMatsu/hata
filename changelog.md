@@ -28,9 +28,9 @@
 - `guild_scheduled_event_object.entity_metadata.location` \[x\]
 - `guild_scheduled_event_object.creator` \[x\] 1.1.128
 - `guild_scheduled_event_object.user_count` \[x\]
-- `GET /guilds/{guild_id}/scheduled-events`
+- `GET /guilds/{guild_id}/scheduled-events` \[x\]
     - `with_user_count` \[x\]
-- `POST /guilds/{guild_id}/scheduled-events`
+- `POST /guilds/{guild_id}/scheduled-events` \[x\]
     - `channel_id` \[x\]
     - `entity_metadata` \[x\]
     - `name` \[x\]
@@ -39,7 +39,7 @@
     - `scheduled_end_time` \[x\]
     - `description` \[x\]
     - `entity_type` \[x\]
-- `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
+- `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}` \[x\]
     - `with_user_count` \[x\]
 - `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
     - `channel_id` \[x\]
@@ -71,11 +71,14 @@
 - Add `status` parameter to `Client.scheduled_event_edit`.
 - Update `scheduled_event_get_all_guild` updated.
 - Update `scheduled_event_create` endpoint.
+- `ScheduledEvent` instances now support weakreferencing.
+- Update `scheduled_event_get` endpoint.
 
 #### Bug Fixes
 
 - `KeyError` in `DiscordGateway._received_message` when using fosscord. (Forest#2913)
 - `KeyError` in `Client.client_gateway_reshard` when using fosscord. (Forest#2913)
+- `AttributeError` in `ScheduledEvent.__new__`.
 
 ## 1.1.127 *\[2021-12-07\]*
 

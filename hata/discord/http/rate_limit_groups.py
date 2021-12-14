@@ -815,14 +815,6 @@ Group Details
     - Limit : `UN`
     - Resets after : `UN`
 
-- scheduled_event_get
-    - Endpoint : `/guild-events/{scheduled_event_id}`
-    - Method : `GET`
-    - Required auth : `UN`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-
 - scheduled_event_edit
     - Endpoint : `/guild-events/{scheduled_event_id}`
     - Method : `PATCH`
@@ -1272,6 +1264,14 @@ Group Details
     - Limiter : `guild_id`
     - Limit : `5`
     - Resets after : `60.0`
+
+- scheduled_event_get
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `1`
+    - Resets after : `5.0`
 
 - sticker_guild_get_all
     - Endpoint : `/guilds/{guild_id}/stickers`
@@ -1934,7 +1934,6 @@ client_gateway_hooman = RateLimitGroup()
 client_gateway_bot = RateLimitGroup()
 discovery_guild_get_all = RateLimitGroup(optimistic=True) # untested, not yet added
 scheduled_event_delete = RateLimitGroup(optimistic=True) # untested
-scheduled_event_get = RateLimitGroup(optimistic=True) # untested
 scheduled_event_edit = RateLimitGroup(optimistic=True) # untested
 guild_create = RateLimitGroup.unlimited()
 guild_delete = RateLimitGroup.unlimited()
@@ -1990,6 +1989,7 @@ role_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 role_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get_all_guild = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_create = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_get_all = RateLimitGroup.unlimited()
 sticker_guild_create = RateLimitGroup()
 sticker_guild_edit = RateLimitGroup()

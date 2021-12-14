@@ -85,7 +85,7 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
     get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
-    get_scheduled_event_id, get_scheduled_event_and_id, get_sticker_pack_and_id
+    get_scheduled_event_id, get_sticker_pack_and_id, get_scheduled_event_guild_id_and_id
 from .utils import UserGuildPermission, Typer, BanEntry
 from .ready_state import ReadyState
 
@@ -8490,7 +8490,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        scheduled_event : ``ScheduledEvent`` or `int`
+        scheduled_event : ``ScheduledEvent`` or `tuple` `int` and `int`
             The scheduled event to get.
         force_update : `bool`
             Whether the scheduled event should be requested even if it supposed to be up to date.
@@ -8502,15 +8502,15 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `scheduled_event` is neither ``ScheduledEvent``, nor `int` instance.
+            If `scheduled_event` is neither ``ScheduledEvent``, nor `tuple` (`int`, `int`) instance.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        scheduled_event, scheduled_event_id = get_scheduled_event_and_id(scheduled_event)
+        scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         if (scheduled_event is None) or force_update:
-            data = await self.http.scheduled_event_get(scheduled_event_id, {'with_user_count', None})
+            data = await self.http.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count', None})
         
             if scheduled_event is None:
                 try:

@@ -52,9 +52,14 @@ class ScheduledEvent(DiscordEntity):
         The status of the event.
     user_count : `int`
         Users subscribed to the event.
+    
+    Notes
+    -----
+    Scheduled event instances support weakreferencing.
     """
-    __slots__ = ('channel_id', 'creator', 'description', 'end', 'entity_id', 'entity_metadata', 'entity_type',
-        'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status', 'user_count' )
+    __slots__ = ('__weakref__', 'channel_id', 'creator', 'description', 'end', 'entity_id', 'entity_metadata',
+        'entity_type', 'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status',
+        'user_count' )
     
     image = IconSlot('image', 'image', None, None, add_updater=False)
     
@@ -274,7 +279,7 @@ class ScheduledEvent(DiscordEntity):
         
         return old_attributes
     
-    def update_counts_only(self, data):
+    def _update_counts_only(self, data):
         """
         Updates the scheduled event's count attributes only.
         

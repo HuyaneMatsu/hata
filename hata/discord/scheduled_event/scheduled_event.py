@@ -4,7 +4,7 @@ from ..bases import DiscordEntity, IconSlot
 from ..core import SCHEDULED_EVENTS, CHANNELS, GUILDS
 from ..channel import CHANNEL_TYPES, create_partial_channel_from_id
 from ..utils import timestamp_to_datetime
-from ..user import create_partial_user_from_id
+from ..user import User, ZEROUSER
 
 from .preinstanced import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel
 
@@ -18,8 +18,8 @@ class ScheduledEvent(DiscordEntity):
         The stage channel id of the event.
         
         Defaults to `0` if not applicable.
-    creator_id : `int`
-        The user's identifier, who created the event.
+    creator : `int`
+        The event's creator.
     description : `None` or `str`
         Description of the event.
     entity_id : `int`
@@ -30,7 +30,7 @@ class ScheduledEvent(DiscordEntity):
         To which type of entity the event is bound to.
     guild_id : `int`
         The respective event's identifier.
-    entity_metadata : `None` or ``ScheduledEventMetadata`` instance
+    entity_metadata : `None` or ``ScheduledEventEntityMetadata`` instance
         Metadata about the target entity.
     image_type : ``IconType``
         The event's image's type.
@@ -53,7 +53,7 @@ class ScheduledEvent(DiscordEntity):
     user_count : `int`
         Users subscribed to the event.
     """
-    __slots__ = ('channel_id', 'creator_id', 'description', 'end', 'entity_id', 'entity_metadata', 'entity_type',
+    __slots__ = ('channel_id', 'creator', 'description', 'end', 'entity_id', 'entity_metadata', 'entity_type',
         'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status', 'user_count' )
     
     image = IconSlot('image', 'image', None, None, add_updater=False)
@@ -135,12 +135,12 @@ class ScheduledEvent(DiscordEntity):
             entity_id = int(entity_id)
         self.entity_id = entity_id
         
-        creator_id = data.get('creator_id', None)
-        if creator_id is None:
-            creator_id = 0
+        creator_data = data.get('creator', None)
+        if creator_data is None:
+            creator = ZEROUSER
         else:
-            creator_id = int(creator_id)
-        self.creator_id = creator_id
+            creator = User(creator_data)
+        self.creator = creator
         
         self._update_attributes(data)
     
@@ -374,14 +374,12 @@ class ScheduledEvent(DiscordEntity):
     
     
     @property
-    def creator(self):
+    def creator_id(self):
         """
-        Returns the event's creator.
-        
-        If the user is not cached, will return a partial user.
+        The event's creator's identifier.
         
         Returns
         -------
-        user : ``ClientUserBase``
+        user_id : `int`
         """
-        return create_partial_user_from_id(self.creator_id)
+        return self.creator.id

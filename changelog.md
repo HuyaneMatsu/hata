@@ -2,32 +2,32 @@
 
 ### Scheduled event checklist:
 
-- `guild_object.guild_scheduled_events` [x] 1.1.128
-- `guild_scheduled_event_object` [x]
-- `guild_scheduled_event_object.id` [x]
-- `guild_scheduled_event_object.guild_id` [x]
-- `guild_scheduled_event_object.channel_id` [x]
-- `guild_scheduled_event_object.creator_id` [x] 1.1.128
-- `guild_scheduled_event_object.name`
-- `guild_scheduled_event_object.description`
-- `guild_scheduled_event_object.scheduled_start_time`
-- `guild_scheduled_event_object.scheduled_end_time`
-- `guild_scheduled_event_object.privacy_level`
-- `guild_scheduled_event_object.privacy_level.GUILD_ONLY`
-- `guild_scheduled_event_object.status`
-- `guild_scheduled_event_object.status.SCHEDULED`
-- `guild_scheduled_event_object.status.ACTIVE`
-- `guild_scheduled_event_object.status.COMPLETED`
-- `guild_scheduled_event_object.status.CANCELED`
-- `guild_scheduled_event_object.entity_type`
-- `guild_scheduled_event_object.entity_type.STAGE_INSTANCE`
-- `guild_scheduled_event_object.entity_type.VOICE`
-- `guild_scheduled_event_object.entity_type.EXTERNAL`
-- `guild_scheduled_event_object.entity_id`
-- `guild_scheduled_event_object.entity_metadata`
-- `guild_scheduled_event_object.entity_metadata.location`
-- `guild_scheduled_event_object.creator`
-- `guild_scheduled_event_object.user_count`
+- `guild_object.guild_scheduled_events` \[x\] 1.1.128
+- `guild_scheduled_event_object` \[x\]
+- `guild_scheduled_event_object.id` \[x\]
+- `guild_scheduled_event_object.guild_id` \[x\]
+- `guild_scheduled_event_object.channel_id` \[x\]
+- `guild_scheduled_event_object.creator_id` \[x\] (check `.creator`)
+- `guild_scheduled_event_object.name` \[x\]
+- `guild_scheduled_event_object.description` \[x\]
+- `guild_scheduled_event_object.scheduled_start_time` \[x\]
+- `guild_scheduled_event_object.scheduled_end_time` \[x\]
+- `guild_scheduled_event_object.privacy_level` \[x\]
+- `guild_scheduled_event_object.privacy_level.GUILD_ONLY` \[x\]
+- `guild_scheduled_event_object.status` \[x\]
+- `guild_scheduled_event_object.status.SCHEDULED` \[x\]
+- `guild_scheduled_event_object.status.ACTIVE` \[x\]
+- `guild_scheduled_event_object.status.COMPLETED` \[x\]
+- `guild_scheduled_event_object.status.CANCELED` \[x\]
+- `guild_scheduled_event_object.entity_type` \[x\]
+- `guild_scheduled_event_object.entity_type.STAGE_INSTANCE` \[x\]
+- `guild_scheduled_event_object.entity_type.VOICE` \[x\]
+- `guild_scheduled_event_object.entity_type.EXTERNAL` \[x\]
+- `guild_scheduled_event_object.entity_id` \[x\]
+- `guild_scheduled_event_object.entity_metadata` \[x\]
+- `guild_scheduled_event_object.entity_metadata.location` \[x\]
+- `guild_scheduled_event_object.creator` \[x\] 1.1.128
+- `guild_scheduled_event_object.user_count` \[x\]
 - `GET /guilds/{guild_id}/scheduled-events`
 - `POST /guilds/{guild_id}/scheduled-events`
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`

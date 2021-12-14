@@ -69,6 +69,7 @@
 - Add `voice` parameter to `Client.scheduled_event_edit`.
 - Add `location` parameter to `Client.scheduled_event_edit`.
 - Add `status` parameter to `Client.scheduled_event_edit`.
+- `scheduled_event_get_all_guild` endpoint updated.
 
 #### Bug Fixes
 

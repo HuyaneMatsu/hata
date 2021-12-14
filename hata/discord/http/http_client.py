@@ -1577,9 +1577,9 @@ class DiscordHTTPClient(HTTPClient):
     
     async def scheduled_event_get_all_guild(self, guild_id, params):
         return await self.dicscord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get_all_guild, NO_SPECIFIC_RATE_LIMITER),
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_get_all_guild, guild_id),
             METHOD_GET,
-            f'{API_ENDPOINT}/guilds/{guild_id}/events',
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events',
             params = params,
         )
     

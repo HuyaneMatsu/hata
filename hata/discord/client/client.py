@@ -8303,7 +8303,7 @@ class Client(ClientUserPBase):
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...,
-            privacy_level=...):
+            privacy_level=..., location=None, stage=None, voice=None):
         """
         Edits the given scheduled event.
         
@@ -8328,6 +8328,13 @@ class Client(ClientUserPBase):
             Pass it as `None` to remove the old end.
         privacy_level : ``PrivacyLevel`` or `int`, Optional (Keyword only)
             The privacy level of the event. Whether it is global or guild only.
+        
+        location : `str`, Optional (Keyword only)
+            The new location, where the event will take place.
+        stage : ``ChannelStage`` or `int`, Optional (Keyword only)
+            The new stage channel, where the event will take place.
+        voice : ``ChannelVoice`` or `int`, Optional (Keyword only)
+            The new voice channel, where the event will take place.
         
         Raises
         ------
@@ -8402,6 +8409,35 @@ class Client(ClientUserPBase):
             else:
                 raise TypeError(f'`privacy_level` can be given either as {PrivacyLevel.__name__} or `int` '
                     f'instance, got {privacy_level.__class__.__name__}.')
+            
+            data['privacy_level'] = privacy_level_value
+        
+        if (location is not None) or (stage is not None) or (voice is not None):
+            if (location is not None):
+                if __debug__:
+                    if not isinstance(location, str):
+                        raise AssertionError(f'`location` can be given as `str` instance, got '
+                            f'{location.__class__.__name__}.')
+                
+                channel_id = None
+                entity_metadata = {'location': location}
+                entity_type = ScheduledEventEntityType.location
+            
+            elif (stage is not None):
+                channel_id = get_channel_id(stage, ChannelStage)
+                entity_metadata = None
+                entity_type = ScheduledEventEntityType.stage
+            
+            # elif (voice is not None):
+            else:
+                channel_id = get_channel_id(voice, ChannelVoice)
+                entity_metadata = None
+                entity_type = ScheduledEventEntityType.voice
+            
+            data['channel_id'] = channel_id
+            data['entity_metadata'] = entity_metadata
+            data['entity_type'] = entity_type.value
+        
         
         if data:
             await self.http.scheduled_event_edit(scheduled_event_id, data)

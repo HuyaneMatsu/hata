@@ -42,14 +42,14 @@
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
     - `with_user_count` \[x\]
 - `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
-    - `channel_id`
-    - `entity_metadata`
+    - `channel_id` \[x\]
+    - `entity_metadata` \[x\]
     - `name` \[x\]
     - `privacy_level` \[x\]
     - `scheduled_start_time` \[x\]
     - `scheduled_end_time` \[x\]
     - `description` \[x\]
-    - `entity_type`
+    - `entity_type` \[x\]
     - `status`
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
 
@@ -65,6 +65,9 @@
 - Add `ScheduledEvent.creator_id`.
 - Add `ScheduledEvent.creator`.
 - Add `scheduled_event_edit` parameter to `Client.scheduled_event_edit`.
+- Add `stage` parameter to `Client.scheduled_event_edit`.
+- Add `voice` parameter to `Client.scheduled_event_edit`.
+- Add `location` parameter to `Client.scheduled_event_edit`.
 
 #### Bug Fixes
 

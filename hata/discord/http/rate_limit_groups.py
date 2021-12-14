@@ -1037,14 +1037,6 @@ Group Details
     - Limit : `1`
     - Resets after : `2.0`
 
-- scheduled_event_create
-    - Endpoint : `/guilds/{guild_id}/events`
-    - Method : `POST`
-    - Required auth : `UN`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-
 - integration_get_all
     - Endpoint : `/guilds/{guild_id}/integrations`
     - Method : `GET`
@@ -1272,6 +1264,14 @@ Group Details
     - Limiter : `guild_id`
     - Limit : `1`
     - Resets after : `10.0`
+
+- scheduled_event_create
+    - Endpoint : `/guilds/{guild_id}/scheduled-events`
+    - Method : `POST`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `5`
+    - Resets after : `60.0`
 
 - sticker_guild_get_all
     - Endpoint : `/guilds/{guild_id}/stickers`
@@ -1960,7 +1960,6 @@ emoji_create = RateLimitGroup()
 emoji_delete = RateLimitGroup()
 emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 emoji_edit = RateLimitGroup()
-scheduled_event_create = RateLimitGroup(optimistic=True) # untested
 integration_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 integration_create = RateLimitGroup(optimistic=True) # untested
 integration_delete = RateLimitGroup(optimistic=True) # untested
@@ -1990,6 +1989,7 @@ role_create = RateLimitGroup(LIMITER_GUILD)
 role_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 role_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get_all_guild = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_create = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_get_all = RateLimitGroup.unlimited()
 sticker_guild_create = RateLimitGroup()
 sticker_guild_edit = RateLimitGroup()

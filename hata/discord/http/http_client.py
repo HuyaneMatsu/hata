@@ -1544,7 +1544,7 @@ class DiscordHTTPClient(HTTPClient):
         return await self.dicscord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_create, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
-            f'{API_ENDPOINT}/guilds/{guild_id}/events',
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events',
             data,
         )
     

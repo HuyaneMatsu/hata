@@ -45,7 +45,7 @@
     - `channel_id`
     - `entity_metadata`
     - `name` \[x\]
-    - `privacy_level`
+    - `privacy_level` \[x\]
     - `scheduled_start_time` \[x\]
     - `scheduled_end_time` \[x\]
     - `description` \[x\]
@@ -64,6 +64,7 @@
 - Add `Guild.scheduled_events`.
 - Add `ScheduledEvent.creator_id`.
 - Add `ScheduledEvent.creator`.
+- Add `scheduled_event_edit` parameter to `Client.scheduled_event_edit`.
 
 #### Bug Fixes
 

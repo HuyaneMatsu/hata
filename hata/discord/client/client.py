@@ -8302,7 +8302,8 @@ class Client(ClientUserPBase):
     
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
-    async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...):
+    async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...,
+            privacy_level=...):
         """
         Edits the given scheduled event.
         
@@ -8325,6 +8326,8 @@ class Client(ClientUserPBase):
             The end of the of the scheduled event.
             
             Pass it as `None` to remove the old end.
+        privacy_level : ``PrivacyLevel`` or `int`, Optional (Keyword only)
+            The privacy level of the event. Whether it is global or guild only.
         
         Raises
         ------
@@ -8333,6 +8336,7 @@ class Client(ClientUserPBase):
             - If `privacy_level` is neither ``PrivacyLevel``, nor `int` instance.
             - If `stage` is neither ``ChannelStage``, nor `int` instance.
             - If `voice` is neither ``ChannelVoice``, nor `int` instance.
+            - If `privacy_level` is neither ``PrivacyLevel``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8390,9 +8394,18 @@ class Client(ClientUserPBase):
             
             data['scheduled_end_time'] = None if end is None else datetime_to_timestamp(end)
         
+        if (privacy_level is not ...):
+            if isinstance(privacy_level, PrivacyLevel):
+                privacy_level_value = privacy_level.value
+            elif isinstance(privacy_level, int):
+                privacy_level_value = privacy_level
+            else:
+                raise TypeError(f'`privacy_level` can be given either as {PrivacyLevel.__name__} or `int` '
+                    f'instance, got {privacy_level.__class__.__name__}.')
+        
         if data:
             await self.http.scheduled_event_edit(scheduled_event_id, data)
-        
+    
     
     async def scheduled_event_delete(self, scheduled_event):
         """

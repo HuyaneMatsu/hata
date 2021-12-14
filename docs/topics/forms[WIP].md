@@ -106,7 +106,7 @@ ADD_ROLE_FORM = Form(
 @Nitori.interactions(guild=TEST_GUILD):
 def add_role(
     user: ('user', 'User to add role to'),
-    role :('role', 'The role to give'),
+    role: ('role', 'The role to give'),
 ):
     """Add role to a user."""
     # Check for permissions

@@ -362,7 +362,7 @@ async def edit_waifu(
     text_input = text_input.copy_with(value=FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
     
     return Form(
-        'Editing {waifu.name}'
+        f'Editing {waifu.name}'
         [text_input],
         custom_id = f'{CUSTOM_ID_WAIFU_EDIT_BASE}{key}',
     )

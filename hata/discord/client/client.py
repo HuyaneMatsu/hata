@@ -71,7 +71,7 @@ from ..color import Color
 from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
 from ..bases import maybe_snowflake, maybe_snowflake_pair
-from ..scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntityType
+from ..scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntityType, ScheduledEventStatus
 from ..message.utils import process_message_chunk
 
 from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
@@ -8303,7 +8303,7 @@ class Client(ClientUserPBase):
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...,
-            privacy_level=..., location=None, stage=None, voice=None):
+            privacy_level=..., status=..., location=None, stage=None, voice=None):
         """
         Edits the given scheduled event.
         
@@ -8329,6 +8329,9 @@ class Client(ClientUserPBase):
         privacy_level : ``PrivacyLevel`` or `int`, Optional (Keyword only)
             The privacy level of the event. Whether it is global or guild only.
         
+        status : `str` or ``ScheduledEventStatus``, Optional (Keyword only)
+            Thew new status of the scheduled event.
+        
         location : `str`, Optional (Keyword only)
             The new location, where the event will take place.
         stage : ``ChannelStage`` or `int`, Optional (Keyword only)
@@ -8344,6 +8347,7 @@ class Client(ClientUserPBase):
             - If `stage` is neither ``ChannelStage``, nor `int` instance.
             - If `voice` is neither ``ChannelVoice``, nor `int` instance.
             - If `privacy_level` is neither ``PrivacyLevel``, nor `int` instance.
+            - If `status` is neither ``ScheduledEventStatus``, nor `int` instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8411,6 +8415,17 @@ class Client(ClientUserPBase):
                     f'instance, got {privacy_level.__class__.__name__}.')
             
             data['privacy_level'] = privacy_level_value
+        
+        if (status is not ...):
+            if isinstance(status, ScheduledEventStatus):
+                status_value = status.value
+            elif isinstance(status, int):
+                status_value = status
+            else:
+                raise TypeError(f'`status` can be given either as {ScheduledEventStatus.__name__} or `int` '
+                    f'instance, got {status.__class__.__name__}.')
+            
+            data['status'] = status_value
         
         if (location is not None) or (stage is not None) or (voice is not None):
             if (location is not None):

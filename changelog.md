@@ -68,6 +68,7 @@
 - Add `stage` parameter to `Client.scheduled_event_edit`.
 - Add `voice` parameter to `Client.scheduled_event_edit`.
 - Add `location` parameter to `Client.scheduled_event_edit`.
+- Add `status` parameter to `Client.scheduled_event_edit`.
 
 #### Bug Fixes
 

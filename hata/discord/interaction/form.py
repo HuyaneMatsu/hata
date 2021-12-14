@@ -5,7 +5,7 @@ import reprlib
 from scarletio import copy_docs
 
 from .components import ComponentBase, ComponentRow, create_component, _debug_component_components, \
-    _debug_component_custom_id, _debug_component_title
+    _debug_component_custom_id, _debug_component_title, create_auto_custom_id
 
 class InteractionForm(ComponentBase):
     """

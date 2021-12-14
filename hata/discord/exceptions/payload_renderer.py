@@ -195,7 +195,7 @@ def reconstruct_string_into(value, into, indent, is_file):
     
     else:
         if length > STRING_BREAK_TO_MULTI_LINE_OVER:
-            into.append('(')
+            into.append('(\n')
             
             string_indent = indent+1
             

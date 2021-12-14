@@ -2295,7 +2295,7 @@ class ComponentTextInput(ComponentBase):
             _debug_component_text_input_value(value)
         
         # custom_id
-        if (custom_id is not None) and (not custom_id):
+        if (custom_id is None) or (not custom_id):
             custom_id = create_auto_custom_id()
         
         # enabled
@@ -2430,7 +2430,7 @@ class ComponentTextInput(ComponentBase):
             data['placeholder'] = placeholder
         
         # required
-        if (not self.requried):
+        if (not self.required):
             data['required'] = False
         
         # style
@@ -2655,7 +2655,7 @@ class ComponentTextInput(ComponentBase):
         try:
             required = kwargs.pop('required')
         except KeyError:
-            required = self.requried
+            required = self.required
         else:
             if __debug__:
                 _debug_component_required(required)

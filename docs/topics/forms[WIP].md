@@ -357,9 +357,13 @@ async def edit_waifu(
         abort('You can only edit waifus added by yourself.')
     
     text_input = FIELD_TO_TEXT_INPUT[field]
+    
+    # We autofill the current value
+    text_input = text_input.copy_with(value=FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
+    
     return Form(
         'Editing {waifu.name}'
-        text_input,
+        [text_input],
         custom_id = f'{CUSTOM_ID_WAIFU_EDIT_BASE}{key}',
     )
 

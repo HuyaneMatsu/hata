@@ -76,6 +76,13 @@ class ScheduledEvent(DiscordEntity):
             SCHEDULED_EVENTS[event_id] = self
             
             self._set_attributes(data)
+            
+            try:
+                guild = GUILDS[self.guild_id]
+            except KeyError:
+                pass
+            else:
+                guild.scheduled_events[event_id] = self
         else:
             self._update_counts_only(data)
         

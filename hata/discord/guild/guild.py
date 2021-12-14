@@ -23,6 +23,7 @@ from .preinstanced import GuildFeature, VoiceRegion, VerificationLevel, MessageN
     ContentFilterLevel, NsfwLevel
 from ..sticker import Sticker, StickerFormat
 from ..http import urls as module_urls
+from ..scheduled_event import ScheduledEvent
 
 from .flags import SystemChannelFlag
 
@@ -190,6 +191,8 @@ class Guild(DiscordEntity, immortal=True):
         The channel's identifier where the system messages are sent.
         
         Defaults to `0`.
+    scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
+        The scheduled events of the guild.
     system_channel_flags : ``SystemChannelFlag``
         Describe which type of messages are sent automatically to the system channel.
     threads : `dict` of (`int`, ``ChannelThread``)
@@ -225,9 +228,9 @@ class Guild(DiscordEntity, immortal=True):
         'approximate_user_count', 'available', 'boost_progress_bar_enabled', 'booster_count', 'channels', 'clients',
         'content_filter', 'description', 'emojis', 'features', 'is_large', 'max_presences', 'max_users',
         'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale',
-        'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles', 'rules_channel_id', 'stages',
-        'stickers', 'system_channel_id', 'system_channel_flags', 'threads', 'user_count', 'users', 'vanity_code',
-        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled')
+        'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles', 'rules_channel_id',
+        'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count',
+        'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled')
     
     banner = IconSlot(
         'banner',
@@ -290,6 +293,7 @@ class Guild(DiscordEntity, immortal=True):
             self.features = []
             self.threads = {}
             self.stickers = {}
+            self.scheduled_events = {}
             self._permission_cache = None
             self._boosters = None
             self.user_count = 1
@@ -396,6 +400,14 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 for thread_data in thread_datas:
                     CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, guild_id)
+            
+            try:
+                scheduled_event_datas = data['guild_scheduled_events']
+            except KeyError:
+                pass
+            else:
+                for scheduled_event_data in scheduled_event_datas:
+                    ScheduledEvent(scheduled_event_data)
             
             stage_datas = data.get('stage_instances', None)
             if (stage_datas is not None) and stage_datas:
@@ -652,6 +664,7 @@ class Guild(DiscordEntity, immortal=True):
         self.stages = None
         self.nsfw_level = NsfwLevel.none
         self.stickers = {}
+        self.scheduled_events = {}
         return self
     
     

@@ -8,6 +8,7 @@
 - Add `FormSubmitInteraction.iter_matches_and_values`.
 - Add `ComponentTextInput.required`.
 - Add `ComponentTextInput.value`.
+- Add `Guild.scheduled_events`.
 
 ## 1.1.127 *\[2021-12-07\]*
 

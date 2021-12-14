@@ -4,6 +4,7 @@ from ..bases import DiscordEntity, IconSlot
 from ..core import SCHEDULED_EVENTS, CHANNELS, GUILDS
 from ..channel import CHANNEL_TYPES, create_partial_channel_from_id
 from ..utils import timestamp_to_datetime
+from ..user import create_partial_user_from_id
 
 from .preinstanced import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel
 
@@ -17,6 +18,8 @@ class ScheduledEvent(DiscordEntity):
         The stage channel id of the event.
         
         Defaults to `0` if not applicable.
+    creator_id : `int`
+        The user's identifier, who created the event.
     description : `None` or `str`
         Description of the event.
     entity_id : `int`
@@ -50,8 +53,8 @@ class ScheduledEvent(DiscordEntity):
     user_count : `int`
         Users subscribed to the event.
     """
-    __slots__ = ('channel_id', 'description', 'entity_id', 'entity_metadata', 'entity_type', 'guild_id', 'name',
-        'privacy_level', 'end', 'start', 'send_start_notification', 'sku_ids', 'status', 'user_count' )
+    __slots__ = ('channel_id', 'creator_id', 'description', 'end', 'entity_id', 'entity_metadata', 'entity_type',
+        'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status', 'user_count' )
     
     image = IconSlot('image', 'image', None, None, add_updater=False)
     
@@ -132,7 +135,15 @@ class ScheduledEvent(DiscordEntity):
             entity_id = int(entity_id)
         self.entity_id = entity_id
         
+        creator_id = data.get('creator_id', None)
+        if creator_id is None:
+            creator_id = 0
+        else:
+            creator_id = int(creator_id)
+        self.creator_id = creator_id
+        
         self._update_attributes(data)
+    
     
     def _update_attributes(self, data):
         """
@@ -360,5 +371,17 @@ class ScheduledEvent(DiscordEntity):
         guild : `None` or ``Guild``
         """
         return GUILDS.get(self.guild_id, None)
-
-
+    
+    
+    @property
+    def creator(self):
+        """
+        Returns the event's creator.
+        
+        If the user is not cached, will return a partial user.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+        """
+        return create_partial_user_from_id(self.creator_id)

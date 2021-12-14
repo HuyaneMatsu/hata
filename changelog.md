@@ -2,12 +2,12 @@
 
 ### Scheduled event checklist:
 
-- `guild_object.guild_scheduled_events`
-- `guild_scheduled_event_object`
-- `guild_scheduled_event_object.id`
-- `guild_scheduled_event_object.guild_id`
-- `guild_scheduled_event_object.channel_id`
-- `guild_scheduled_event_object.creator_id`
+- `guild_object.guild_scheduled_events` [x] 1.1.128
+- `guild_scheduled_event_object` [x]
+- `guild_scheduled_event_object.id` [x]
+- `guild_scheduled_event_object.guild_id` [x]
+- `guild_scheduled_event_object.channel_id` [x]
+- `guild_scheduled_event_object.creator_id` [x] 1.1.128
 - `guild_scheduled_event_object.name`
 - `guild_scheduled_event_object.description`
 - `guild_scheduled_event_object.scheduled_start_time`
@@ -43,6 +43,8 @@
 - Add `ComponentTextInput.required`.
 - Add `ComponentTextInput.value`.
 - Add `Guild.scheduled_events`.
+- Add `ScheduledEvent.creator_id`.
+- Add `ScheduledEvent.creator`.
 
 #### Bug Fixes
 

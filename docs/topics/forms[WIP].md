@@ -35,6 +35,8 @@ INRTODUCTION_FORM = Form(
     [
         TextInput(
             'What is your name?',
+            min_length = 2,
+            max_length = 128,
             custom_id = 'name',
         ),
         TextInput(
@@ -142,16 +144,19 @@ async def add_role(client, event, user_id, role_id, *, message):
     guild = event.guild
     role = guild.roles[role_id]
     
-    try:
-        await client.message_create(
-            channel,
-            embed = Embed(
-                description = 'You have received role {role.name} in {guild.name}.'
-            ).add_field(
-                'Message',
-                message,
-            )
+    embed = Embed(
+        description = 'You have received role {role.name} in {guild.name}.',
+    )
+    
+    # Since message has no `required`, nor `min_length` passed, it can be `None`.
+    if (message is not None):
+        embed.add_field(
+            'Message',
+            message,
         )
+
+    try:
+        await client.message_create(channel, embed=embed) 
     except DiscordException as err:
         # Ignore the exception if the user has dm-s disabled.
         if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disallowed
@@ -161,12 +166,17 @@ async def add_role(client, event, user_id, role_id, *, message):
     do nothing.
     user = await client.user_get(user_id)
     
-    yield Embed(
+    embed = Embed(
         description = 'You gave {role.name} to {user.full_name}',
-    ).add_field(
-        'Message',
-        message,
     )
+    
+    if (message is not None):
+        embed.add_field(
+            'Message',
+            message,
+        )
+    
+    yield embed
 ```
 
 By annotating keyword parameters with string or with regex, you can customize what `custom_id`-s they are matching.

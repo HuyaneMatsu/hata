@@ -18,7 +18,7 @@ class ScheduledEvent(DiscordEntity):
         The stage channel id of the event.
         
         Defaults to `0` if not applicable.
-    creator : `int`
+    creator : ``ClientUserBase``
         The event's creator.
     description : `None` or `str`
         Description of the event.

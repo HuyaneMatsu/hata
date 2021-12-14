@@ -29,9 +29,28 @@
 - `guild_scheduled_event_object.creator` \[x\] 1.1.128
 - `guild_scheduled_event_object.user_count` \[x\]
 - `GET /guilds/{guild_id}/scheduled-events`
+    - `with_user_count` \[x\]
 - `POST /guilds/{guild_id}/scheduled-events`
+    - `channel_id` \[x\]
+    - `entity_metadata` \[x\]
+    - `name` \[x\]
+    - `privacy_level` \[x\]
+    - `scheduled_start_time` \[x\]
+    - `scheduled_end_time` \[x\]
+    - `description` \[x\]
+    - `entity_type` \[x\]
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
+    - `with_user_count` \[x\]
 - `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
+    - `channel_id`
+    - `entity_metadata`
+    - `name` \[x\]
+    - `privacy_level`
+    - `scheduled_start_time` \[x\]
+    - `scheduled_end_time` \[x\]
+    - `description` \[x\]
+    - `entity_type`
+    - `status`
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
 
 #### Improvements

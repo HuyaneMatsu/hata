@@ -50,7 +50,7 @@
     - `scheduled_end_time` \[x\]
     - `description` \[x\]
     - `entity_type` \[x\]
-    - `status`
+    - `status` \[x\]
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
 
 #### Improvements

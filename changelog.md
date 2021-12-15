@@ -87,12 +87,14 @@
 - Add `RATELIMIT_GROUPS.scheduled_event_user_get_chunk`
 - Add `DiscordHTTPClient.scheduled_event_user_get_chunk`.
 - Add `Client.scheduled_event_user_get_chunk`.
+- Add `Client.scheduled_event_user_get_all`.
 
 #### Bug Fixes
 
 - `KeyError` in `DiscordGateway._received_message` when using fosscord. (Forest#2913)
 - `KeyError` in `Client.client_gateway_reshard` when using fosscord. (Forest#2913)
 - `AttributeError` in `ScheduledEvent.__new__`.
+- `NameError` in `Client.thread_user_get`.
 
 ## 1.1.127 *\[2021-12-07\]*
 

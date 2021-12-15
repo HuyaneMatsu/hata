@@ -85,7 +85,7 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
     get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
-    get_sticker_pack_and_id, get_scheduled_event_guild_id_and_id, get_guild_and_id_scheduled_event_id, \
+    get_sticker_pack_and_id, get_scheduled_event_guild_id_and_id, get_guild_and_id_and_scheduled_event_id, \
     get_guild_id_and_scheduled_event_id
 from .utils import UserGuildPermission, Typer, BanEntry
 from .ready_state import ReadyState
@@ -8560,7 +8560,7 @@ class Client(ClientUserPBase):
         return [ScheduledEvent(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
     
     
-    async def scheduled_event_user_get_chunk(self, scheduled_event, limit=100, *, before=None, after=None):
+    async def scheduled_event_user_get_chunk(self, scheduled_event, *, limit=None, before=None, after=None):
         """
         Requests a chunk user subscribed to a scheduled event.
         
@@ -8570,7 +8570,7 @@ class Client(ClientUserPBase):
         ----------
         scheduled_event : ``ScheduledEvent`` or `tuple` `int` and `int`
             The scheduled event to get.
-        limit : `int`, Optional
+        limit : `int`, Optional (Keyword only)
             The amount of messages to request. Can be between 1 and 100.
         after : `int`, ``DiscordEntity`` or `datetime`, Optional (Keyword only)
             The timestamp after the subscribed users were created.
@@ -8590,21 +8590,26 @@ class Client(ClientUserPBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-
         AssertionError
             - If `limit` was not given as `int` instance.
             - If `limit` is out of range [1:100].
         """
-        guild, guild_id, scheduled_event_id = get_guild_and_id_scheduled_event_id(scheduled_event)
+        guild, guild_id, scheduled_event_id = get_guild_and_id_and_scheduled_event_id(scheduled_event)
         
-        if __debug__:
-            if not isinstance(limit, int):
-                raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
-            
-            if (limit < 1) or (limit > 100):
-                raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
+        if limit is None:
+            limit = 100
+        else:
+            if __debug__:
+                if not isinstance(limit, int):
+                    raise AssertionError(f'`limit` can be given as `int` instance, got {limit.__class__.__name__}.')
+                
+                if (limit < 1) or (limit > 100):
+                    raise AssertionError(f'`limit` is out from the expected [1:100] range, got {limit!r}.')
         
-        data = {'limit': limit}
+        data = {}
+        
+        if limit != 100:
+            data['limit'] = limit
         
         if (after is not None):
             data['after'] = log_time_converter(after)
@@ -8625,6 +8630,58 @@ class Client(ClientUserPBase):
             
             user = User(user_data, guild)
             users.append(user)
+        
+        return users
+    
+    
+    async def scheduled_event_user_get_all(self, scheduled_event):
+        """
+        Requests a chunk user subscribed to a scheduled event.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        scheduled_event : ``ScheduledEvent`` or `tuple` `int` and `int`
+            The scheduled event to get.
+        
+        Returns
+        -------
+        users : `list` of ``ClientUserBase``
+        
+        Raises
+        ------
+        TypeError
+            - If `scheduled_event` is neither ``ScheduledEvent``, nor `tuple` (`int`, `int`) instance.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, guild_id, scheduled_event_id = get_guild_and_id_and_scheduled_event_id(scheduled_event)
+        
+        data = {'after': 0}
+        users = []
+        
+        while True:
+            scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(
+                guild_id,
+                scheduled_event_id,
+                data,
+            )
+            
+            for scheduled_event_user_data in scheduled_event_user_datas:
+                user_data = scheduled_event_user_data['user']
+                if (guild is not None):
+                    user_data['member'] = scheduled_event_user_data['member']
+                
+                user = User(user_data, guild)
+                users.append(user)
+            
+            if len(scheduled_event_user_datas) < 100:
+                break
+            
+            data['after'] = users[-1].id
         
         return users
     
@@ -8924,7 +8981,7 @@ class Client(ClientUserPBase):
         thread_user_data = await self.http.thread_user_get(channel_id, user_id)
         
         if user is None:
-            user = create_partial_user(user_id)
+            user = create_partial_user_from_id(user_id)
         
         if channel is None:
             channel = create_partial_channel_from_id(channel_id, 12, 0)

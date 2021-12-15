@@ -1682,7 +1682,7 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
     return scheduled_event, guild_id, scheduled_event_id
 
 
-def get_guild_and_id_scheduled_event_id(scheduled_event):
+def get_guild_and_id_and_scheduled_event_id(scheduled_event):
     """
     Gets the scheduled event's guild, it's identifier and the scheduled event's own identifier as well.
     

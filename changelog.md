@@ -73,6 +73,7 @@
 - Update `scheduled_event_create` endpoint.
 - `ScheduledEvent` instances now support weakreferencing.
 - Update `scheduled_event_get` endpoint.
+- Update `scheduled_event_edit` endpoint.
 
 #### Bug Fixes
 

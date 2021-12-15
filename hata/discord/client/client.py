@@ -85,7 +85,8 @@ from .request_helpers import  get_components_data, validate_message_to_delete,va
     get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
     get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
     get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
-    get_scheduled_event_id, get_sticker_pack_and_id, get_scheduled_event_guild_id_and_id
+    get_scheduled_event_id, get_sticker_pack_and_id, get_scheduled_event_guild_id_and_id, \
+    get_guild_id_and_scheduled_event_id
 from .utils import UserGuildPermission, Typer, BanEntry
 from .ready_state import ReadyState
 
@@ -8311,7 +8312,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        scheduled_event : ``ScheduledEvent`` or `int`
+        scheduled_event : ``ScheduledEvent`` or `tuple`, (`int`, `int`)
             The scheduled event to edit.
         name : `str`, Optional (Keyword only)
             The new name of the scheduled event. It's length can be in range [1:100].
@@ -8342,7 +8343,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `scheduled_event` is neither ``ScheduledEvent``, nor `int` instance.
+            - If `scheduled_event` is neither ``ScheduledEvent``, nor `tuple` (`int`, `int`).
             - If `privacy_level` is neither ``PrivacyLevel``, nor `int` instance.
             - If `stage` is neither ``ChannelStage``, nor `int` instance.
             - If `voice` is neither ``ChannelVoice``, nor `int` instance.
@@ -8361,7 +8362,7 @@ class Client(ClientUserPBase):
             - If `start` is not `datetime` instance.
             - If `end `is neither `None`, nor `datetime` instance.
         """
-        scheduled_event_id = get_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
         
         data = {}
         
@@ -8455,7 +8456,7 @@ class Client(ClientUserPBase):
         
         
         if data:
-            await self.http.scheduled_event_edit(scheduled_event_id, data)
+            await self.http.scheduled_event_edit(guild_id, scheduled_event_id, data)
     
     
     async def scheduled_event_delete(self, scheduled_event):

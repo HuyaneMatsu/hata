@@ -27,6 +27,7 @@ from .webhook import *
 from .allowed_mentions import *
 from .color import *
 from .core import *
+from .object_binding import *
 from .preconverters import *
 from .utils import *
 
@@ -58,6 +59,7 @@ __all__ = (
     *webhook.__all__,
     
     *allowed_mentions.__all__,
+    *object_binding.__all__,
     *core.__all__,
     *color.__all__,
     *preconverters.__all__,

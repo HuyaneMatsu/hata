@@ -41,16 +41,16 @@
     - `entity_type` \[x\]
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}` \[x\]
     - `with_user_count` \[x\]
-- `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}`
-    - `channel_id` \[x\]
-    - `entity_metadata` \[x\]
+- `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}` \[x\]
+    - `channel_id` \[x\] 1.1.128
+    - `entity_metadata` \[x\] 1.1.128
     - `name` \[x\]
-    - `privacy_level` \[x\]
+    - `privacy_level` \[x\] 1.1.128
     - `scheduled_start_time` \[x\]
     - `scheduled_end_time` \[x\]
     - `description` \[x\]
-    - `entity_type` \[x\]
-    - `status` \[x\]
+    - `entity_type` \[x\] 1.1.128
+    - `status` \[x\] 1.1.128
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
 
 #### Improvements
@@ -74,6 +74,7 @@
 - `ScheduledEvent` instances now support weakreferencing.
 - Update `scheduled_event_get` endpoint.
 - Update `scheduled_event_edit` endpoint.
+- Update `scheduled_event_delete` endpoint.
 
 #### Bug Fixes
 

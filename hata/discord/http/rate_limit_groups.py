@@ -807,14 +807,6 @@ Group Details
     - Resets after : `UN`
     - Notes : Untested. `DiscordException Not Found (404): 404: Not Found`
 
-- scheduled_event_delete
-    - Endpoint : `/guild-events/{scheduled_event_id}`
-    - Method : `DELETE`
-    - Required auth : `UN`
-    - Limiter : `UN`
-    - Limit : `UN`
-    - Resets after : `UN`
-
 - guild_create
     - Endpoint : `/guilds`
     - Method : `POST`
@@ -1256,6 +1248,14 @@ Group Details
     - Limiter : `guild_id`
     - Limit : `5`
     - Resets after : `60.0`
+
+- scheduled_event_delete
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}`
+    - Method : `DELETE`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `5`
+    - Resets after : `20.0`
 
 - scheduled_event_get
     - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}`
@@ -1933,7 +1933,6 @@ discovery_validate_term = RateLimitGroup()
 client_gateway_hooman = RateLimitGroup()
 client_gateway_bot = RateLimitGroup()
 discovery_guild_get_all = RateLimitGroup(optimistic=True) # untested, not yet added
-scheduled_event_delete = RateLimitGroup(optimistic=True) # untested
 guild_create = RateLimitGroup.unlimited()
 guild_delete = RateLimitGroup.unlimited()
 guild_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
@@ -1988,6 +1987,7 @@ role_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 role_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get_all_guild = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_create = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_get_all = RateLimitGroup.unlimited()

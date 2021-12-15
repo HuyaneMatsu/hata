@@ -8467,20 +8467,20 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        scheduled_event : ``ScheduledEvent`` or `int`
+        scheduled_event : ``ScheduledEvent`` or `tuple` (`int`, `int`)
             The scheduled event to edit.
         
         Raises
         ------
         TypeError
-            If `scheduled_event` is neither ``ScheduledEvent``, nor `int` instance.
+            If `scheduled_event` is neither ``ScheduledEvent``, nor `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        scheduled_event_id = get_scheduled_event_id(scheduled_event)
-        await self.http.scheduled_event_delete(scheduled_event_id)
+        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
+        await self.http.scheduled_event_delete(guild_id, scheduled_event_id)
     
     
     async def scheduled_event_get(self, scheduled_event, *, force_update=False):

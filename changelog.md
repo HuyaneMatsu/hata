@@ -82,7 +82,7 @@
 - Add `voice` parameter to `Client.scheduled_event_edit`.
 - Add `location` parameter to `Client.scheduled_event_edit`.
 - Add `status` parameter to `Client.scheduled_event_edit`.
-- Update `scheduled_event_get_all_guild` updated.
+- Update `scheduled_event_get_all_guild` endpoint.
 - Update `scheduled_event_create` endpoint.
 - `ScheduledEvent` instances now support weakreferencing.
 - Update `scheduled_event_get` endpoint.

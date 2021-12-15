@@ -39,6 +39,8 @@
     - `scheduled_end_time` \[x\]
     - `description` \[x\]
     - `entity_type` \[x\]
+    - `reason` \[x\] 1.1.128
+- `DELETE /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}` \[x\]
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}` \[x\]
     - `with_user_count` \[x\]
 - `PATCH /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}` \[x\]
@@ -51,6 +53,7 @@
     - `description` \[x\]
     - `entity_type` \[x\] 1.1.128
     - `status` \[x\] 1.1.128
+    - `reason` \[x\] 1.1.128
 - `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
 
 #### Improvements
@@ -75,6 +78,8 @@
 - Update `scheduled_event_get` endpoint.
 - Update `scheduled_event_edit` endpoint.
 - Update `scheduled_event_delete` endpoint.
+- Add `reason` parameter to `Client.scheduled_event_edit`.
+- Add `reason` parameter to `Client.scheduled_event_create`.
 
 #### Bug Fixes
 

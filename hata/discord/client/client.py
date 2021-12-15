@@ -8164,7 +8164,7 @@ class Client(ClientUserPBase):
     # Scheduled events
     
     async def scheduled_event_create(self, guild, name, start, *, description=None, end=None,
-            privacy_level=PrivacyLevel.guild_only, location=None, stage=None, voice=None):
+            privacy_level=PrivacyLevel.guild_only, location=None, stage=None, voice=None, reason=None):
         """
         Creates a guild scheduled events.
         
@@ -8192,6 +8192,8 @@ class Client(ClientUserPBase):
             The stage channel, where the event will take place.
         voice : ``ChannelVoice`` or `int`, Optional (Keyword only)
             The voice channel, where the event will take place.
+        reason : `None` or `str`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Returns
         -------
@@ -8298,13 +8300,13 @@ class Client(ClientUserPBase):
         if (end is not None):
             data['scheduled_end_time'] = datetime_to_timestamp(end)
         
-        data = await self.http.scheduled_event_create(guild_id, data)
+        data = await self.http.scheduled_event_create(guild_id, data, reason)
         return ScheduledEvent(data)
     
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...,
-            privacy_level=..., status=..., location=None, stage=None, voice=None):
+            privacy_level=..., status=..., location=None, stage=None, voice=None, reason=None):
         """
         Edits the given scheduled event.
         
@@ -8339,6 +8341,8 @@ class Client(ClientUserPBase):
             The new stage channel, where the event will take place.
         voice : ``ChannelVoice`` or `int`, Optional (Keyword only)
             The new voice channel, where the event will take place.
+        reason : `None` or `str`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Raises
         ------
@@ -8456,7 +8460,7 @@ class Client(ClientUserPBase):
         
         
         if data:
-            await self.http.scheduled_event_edit(guild_id, scheduled_event_id, data)
+            await self.http.scheduled_event_edit(guild_id, scheduled_event_id, data, reason)
     
     
     async def scheduled_event_delete(self, scheduled_event):

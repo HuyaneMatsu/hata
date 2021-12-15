@@ -1540,21 +1540,23 @@ class DiscordHTTPClient(HTTPClient):
     
     # Scheduled events
     
-    async def scheduled_event_create(self, guild_id, data):
+    async def scheduled_event_create(self, guild_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_create, guild_id),
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events',
             data,
+            reason = reason,
         )
     
     
-    async def scheduled_event_edit(self, guild_id, scheduled_event_id, data):
+    async def scheduled_event_edit(self, guild_id, scheduled_event_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_edit, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}',
             data,
+            reason = reason,
         )
     
     

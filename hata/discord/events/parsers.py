@@ -4183,10 +4183,10 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
         except KeyError:
             pass
         
-        for client in clients:
-            event_handler = client.events.scheduled_event_delete
+        for client_ in clients:
+            event_handler = client_.events.scheduled_event_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, scheduled_event), KOKORO)
+                Task(event_handler(client_, scheduled_event), KOKORO)
 
 
 def GUILD_SCHEDULED_EVENT_DELETE__OPT(client, data):
@@ -4260,10 +4260,10 @@ def GUILD_SCHEDULED_EVENT_UPDATE__CAL_MC(client, data):
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, scheduled_event, old_attributes), KOKORO)
     else:
-        for client in clients:
-            event_handler = client.events.scheduled_event_edit
+        for client_ in clients:
+            event_handler = client_.events.scheduled_event_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, scheduled_event, old_attributes), KOKORO)
+                Task(event_handler(client_, scheduled_event, old_attributes), KOKORO)
 
 
 def GUILD_SCHEDULED_EVENT_UPDATE__OPT_SC(client, data):

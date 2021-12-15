@@ -59,6 +59,12 @@
     - `before` \[x\] 1.1.128
     - `after` \[x\] 1.1.128
     - `limit` \[x\] 1.1.128
+- `GUILD_SCHEDULED_EVENTS (1 << 16)` \[x\] 1.1.128
+    - `GUILD_SCHEDULED_EVENT_CREATE` \[x\]
+    - `GUILD_SCHEDULED_EVENT_UPDATE` \[x\]
+    - `GUILD_SCHEDULED_EVENT_DELETE` \[x\]
+    - `GUILD_SCHEDULED_EVENT_USER_ADD` \[x\]
+    - `GUILD_SCHEDULED_EVENT_USER_REMOVE` \[x\]
 
 #### Improvements
 
@@ -88,6 +94,7 @@
 - Add `DiscordHTTPClient.scheduled_event_user_get_chunk`.
 - Add `Client.scheduled_event_user_get_chunk`.
 - Add `Client.scheduled_event_user_get_all`.
+- Add `IntentFlag.guild_scheduled_events`.
 
 #### Bug Fixes
 

@@ -19,6 +19,7 @@ INTENT_SHIFT_GUILD_TYPINGS = 11
 INTENT_SHIFT_DIRECT_MESSAGES = 12
 INTENT_SHIFT_DIRECT_REACTIONS = 13
 INTENT_SHIFT_DIRECT_TYPINGS = 14
+INTENT_SHIFT_GUILD_SCHEDULED_EVENTS = 16
 
 INTENT_MASK_GUILDS = 1<<INTENT_SHIFT_GUILDS
 INTENT_MASK_GUILD_USERS = 1<<INTENT_SHIFT_GUILD_USERS
@@ -35,7 +36,7 @@ INTENT_MASK_GUILD_TYPINGS = 1<<INTENT_SHIFT_GUILD_TYPINGS
 INTENT_MASK_DIRECT_MESSAGES = 1<<INTENT_SHIFT_DIRECT_MESSAGES
 INTENT_MASK_DIRECT_REACTIONS = 1<<INTENT_SHIFT_DIRECT_REACTIONS
 INTENT_MASK_DIRECT_TYPINGS = 1<<INTENT_SHIFT_DIRECT_TYPINGS
-
+INTENT_MASK_GUILD_SCHEDULED_EVENTS = 1<<INTENT_SHIFT_GUILD_SCHEDULED_EVENTS
 
 INTENT_SHIFT_EVENTS = {
     INTENT_SHIFT_GUILDS: (
@@ -59,11 +60,6 @@ INTENT_SHIFT_EVENTS = {
         'THREAD_MEMBER_UPDATE',
         'THREAD_MEMBERS_UPDATE',
         'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE',
-        'GUILD_SCHEDULED_EVENT_CREATE',
-        'GUILD_SCHEDULED_EVENT_UPDATE',
-        'GUILD_SCHEDULED_EVENT_DELETE',
-        'GUILD_SCHEDULED_EVENT_USER_ADD',
-        'GUILD_SCHEDULED_EVENT_USER_REMOVE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
@@ -128,8 +124,15 @@ INTENT_SHIFT_EVENTS = {
         'MESSAGE_REACTION_REMOVE_ALL',
         'MESSAGE_REACTION_REMOVE_EMOJI',
     ),
-    INTENT_SHIFT_DIRECT_TYPINGS : (
+    INTENT_SHIFT_DIRECT_TYPINGS: (
         'TYPING_START',
+    ),
+    INTENT_SHIFT_GUILD_SCHEDULED_EVENTS: (
+        'GUILD_SCHEDULED_EVENT_CREATE',
+        'GUILD_SCHEDULED_EVENT_UPDATE',
+        'GUILD_SCHEDULED_EVENT_DELETE',
+        'GUILD_SCHEDULED_EVENT_USER_ADD',
+        'GUILD_SCHEDULED_EVENT_USER_REMOVE',
     ),
 }
 
@@ -215,13 +218,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                        |       |                            | THREAD_DELETE,                              |
     |                                        |       |                            | THREAD_LIST_SYNC,                           |
     |                                        |       |                            | THREAD_MEMBER_UPDATE,                       |
-    |                                        |       |                            | THREAD_MEMBERS_UPDATE,                      |
-    |                                        |       |                            | GUILD_APPLICATION_COMMAND_COUNTS_UPDATE,    |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_CREATE,               |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_UPDATE,               |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_DELETE,               |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_ADD,          |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_REMOVE,          |
+    |                                        |       |                            | THREAD_MEMBERS_UPDATE                       |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_USERS               | 1     | guild_users                | GUILD_MEMBER_ADD,                           |
     |                                        |       |                            | GUILD_MEMBER_UPDATE,                        |
@@ -275,6 +272,13 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_DIRECT_TYPINGS            | 14    | direct_typings             | TYPING_START                                |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_GUILD_SCHEDULED_EVENTS    | 16    | guild_scheduled_events     | GUILD_APPLICATION_COMMAND_COUNTS_UPDATE,    |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_CREATE,               |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_UPDATE,               |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_DELETE,               |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_ADD,             |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_REMOVE          |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
     """
     __keys__ = {
         'guilds': INTENT_SHIFT_GUILDS,
@@ -292,6 +296,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         'direct_messages': INTENT_SHIFT_DIRECT_MESSAGES,
         'direct_reactions': INTENT_SHIFT_DIRECT_REACTIONS,
         'direct_typings': INTENT_SHIFT_DIRECT_TYPINGS,
+        'guild_scheduled_events': INTENT_SHIFT_GUILD_SCHEDULED_EVENTS
     }
     
     def __new__(cls, int_=-1):
@@ -317,7 +322,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         
         Notes
         -----
-        The defaultly created intent flags contain the privileged gateway intents, so if you have those disabled, or
+        The default created intent flags contain the privileged gateway intents, so if you have those disabled, or
         if those are not allowed for you, then make sure, you specify them.
         """
         if not isinstance(int_, int):

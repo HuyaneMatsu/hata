@@ -8626,7 +8626,12 @@ class Client(ClientUserPBase):
         for scheduled_event_user_data in scheduled_event_user_datas:
             user_data = scheduled_event_user_data['user']
             if (guild is not None):
-                user_data['member'] = scheduled_event_user_data['member']
+                try:
+                    guild_profile_data = scheduled_event_user_data['member']
+                except KeyError:
+                    pass
+                else:
+                    user_data['member'] = guild_profile_data
             
             user = User(user_data, guild)
             users.append(user)
@@ -8661,6 +8666,10 @@ class Client(ClientUserPBase):
         guild, guild_id, scheduled_event_id = get_guild_and_id_and_scheduled_event_id(scheduled_event)
         
         data = {'after': 0}
+        
+        if (guild is not None):
+            data['with_member'] = True
+        
         users = []
         
         while True:
@@ -8673,7 +8682,12 @@ class Client(ClientUserPBase):
             for scheduled_event_user_data in scheduled_event_user_datas:
                 user_data = scheduled_event_user_data['user']
                 if (guild is not None):
-                    user_data['member'] = scheduled_event_user_data['member']
+                    try:
+                        guild_profile_data = scheduled_event_user_data['member']
+                    except KeyError:
+                        pass
+                    else:
+                        user_data['member'] = guild_profile_data
                 
                 user = User(user_data, guild)
                 users.append(user)

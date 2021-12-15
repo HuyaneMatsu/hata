@@ -302,7 +302,7 @@ class ScheduledEvent(DiscordEntity):
             '<', self.__class__.__name__,
             ' id=', repr(self.id),
             ', name=', repr(self.name),
-            ', guild_id', repr(self.guild_id),
+            ', guild_id=', repr(self.guild_id),
         ]
         
         entity_type = self.entity_type
@@ -324,7 +324,7 @@ class ScheduledEvent(DiscordEntity):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
-
+    
     
     @property
     def entity(self):

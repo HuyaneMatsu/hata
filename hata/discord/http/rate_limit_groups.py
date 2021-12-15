@@ -1273,6 +1273,22 @@ Group Details
     - Limit : `5`
     - Resets after : `20.0`
 
+- scheduled_event_edit
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `5`
+    - Resets after : `20.0`
+
+- scheduled_event_users_get_chunk
+    - Endpoint : `/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users`
+    - Method : `PATCH`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `5`
+    - Resets after : `30.0`
+
 - sticker_guild_get_all
     - Endpoint : `/guilds/{guild_id}/stickers`
     - Method : `GET`
@@ -1990,6 +2006,7 @@ scheduled_event_create = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_delete = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
+scheduled_event_users_get_chunk = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_get_all = RateLimitGroup.unlimited()
 sticker_guild_create = RateLimitGroup()
 sticker_guild_edit = RateLimitGroup()

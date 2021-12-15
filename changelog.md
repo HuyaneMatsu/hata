@@ -54,7 +54,11 @@
     - `entity_type` \[x\] 1.1.128
     - `status` \[x\] 1.1.128
     - `reason` \[x\] 1.1.128
-- `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users`
+- `GET /guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users` \[x\] 1.1.128
+    - `with_member` \[x\] 1.1.128
+    - `before` \[x\] 1.1.128
+    - `after` \[x\] 1.1.128
+    - `limit` \[x\] 1.1.128
 
 #### Improvements
 
@@ -80,6 +84,9 @@
 - Update `scheduled_event_delete` endpoint.
 - Add `reason` parameter to `Client.scheduled_event_edit`.
 - Add `reason` parameter to `Client.scheduled_event_create`.
+- Add `RATELIMIT_GROUPS.scheduled_event_users_get_chunk`
+- Add `DiscordHTTPClient.scheduled_event_users_get_chunk`.
+- Add `Client.scheduled_event_users_get_chunk`.
 
 #### Bug Fixes
 

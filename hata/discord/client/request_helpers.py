@@ -1607,36 +1607,6 @@ def get_sticker_pack_and_id(sticker_pack):
     return sticker_pack, sticker_pack_id
 
 
-def get_scheduled_event_id(scheduled_event):
-    """
-    Gets the scheduled event's identifier from the given scheduled event or of it's identifier.
-    
-    Parameters
-    ----------
-    scheduled_event : ``ScheduledEvent``, `int`
-        The scheduled event, or it's identifier.
-    
-    Returns
-    -------
-    scheduled_event_id : `int`
-        The scheduled event's identifier.
-    
-    Raises
-    ------
-    TypeError
-        If `scheduled_event`'s type is incorrect.
-    """
-    if isinstance(scheduled_event, ScheduledEvent):
-        scheduled_event_id = scheduled_event.id
-    else:
-        scheduled_event_id = maybe_snowflake(scheduled_event)
-        if scheduled_event_id is None:
-            raise TypeError(f'`scheduled_event` can be given as `{ScheduledEvent.__name__}` or `int` instance, got '
-                f'{scheduled_event.__class__.__name__}.')
-    
-    return scheduled_event_id
-
-
 def get_guild_id_and_scheduled_event_id(scheduled_event):
     """
     Gets the scheduled event's and it's identifier from the given scheduled event or from a tuple of 2 identifiers.
@@ -1685,7 +1655,8 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
     -------
     scheduled_event : `None` or ``ScheduledEvent``
         The scheduled event.
-    guild_id
+    guild_id : `int`
+        The scheduled event's guild's identifier.
     scheduled_event_id : `int`
         The scheduled event's identifier.
     
@@ -1708,4 +1679,43 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
         
         scheduled_event = SCHEDULED_EVENTS.get(scheduled_event_id, None)
     
-    return  scheduled_event, guild_id, scheduled_event_id
+    return scheduled_event, guild_id, scheduled_event_id
+
+
+def get_guild_and_id_scheduled_event_id(scheduled_event):
+    """
+    Gets the scheduled event's guild, it's identifier and the scheduled event's own identifier as well.
+    
+    Parameters
+    ----------
+    scheduled_event : ``ScheduledEvent``, `tuple` (`int`, `int`)
+        The scheduled event, or it's identifier.
+    
+    Returns
+    -------
+    guild : `None` or ``Guild``
+        The scheduled event's guild.
+    guild_id : `int`
+        The scheduled event's guild's identifier.
+    scheduled_event_id : `int`
+        The scheduled event's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `scheduled_event`'s type is incorrect.
+    """
+    if isinstance(scheduled_event, ScheduledEvent):
+        scheduled_event_id = scheduled_event.id
+        guild_id = scheduled_event.guild_id
+    else:
+        snowflake_pair = maybe_snowflake_pair(scheduled_event)
+        if snowflake_pair is None:
+            raise TypeError(f'`scheduled_event` should have be given as `{ScheduledEvent.__name__}` or as '
+                f'`tuple` of (`int`, `int`), got {scheduled_event.__class__.__name__}.')
+        
+        guild_id, scheduled_event_id = snowflake_pair
+    
+    guild = GUILDS.get(guild_id, None)
+    
+    return guild, guild_id, scheduled_event_id

@@ -1585,6 +1585,15 @@ class DiscordHTTPClient(HTTPClient):
             params = params,
         )
     
+    
+    async def scheduled_event_users_get_chunk(self, guild_id, scheduled_event_id, params):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_users_get_chunk, guild_id),
+            METHOD_GET,
+            f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users',
+            params = params,
+        )
+    
     # DiscordException Forbidden (403), code=20001: Bots cannot use this endpoint
     # data structure: {'sticker_ids': [sticker_id_1, ...]}
     async def greet(self, channel_id, data):

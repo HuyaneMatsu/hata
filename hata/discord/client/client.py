@@ -8560,7 +8560,7 @@ class Client(ClientUserPBase):
         return [ScheduledEvent(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
     
     
-    async def scheduled_event_users_get_chunk(self, scheduled_event, limit=100, *, before=None, after=None):
+    async def scheduled_event_user_get_chunk(self, scheduled_event, limit=100, *, before=None, after=None):
         """
         Requests a chunk user subscribed to a scheduled event.
         
@@ -8615,7 +8615,7 @@ class Client(ClientUserPBase):
         if (guild is not None):
             data['with_member'] = True
         
-        scheduled_event_user_datas = await self.http.scheduled_event_users_get_chunk(guild_id, scheduled_event_id, data)
+        scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(guild_id, scheduled_event_id, data)
         
         users = []
         for scheduled_event_user_data in scheduled_event_user_datas:

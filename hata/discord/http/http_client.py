@@ -1586,9 +1586,9 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def scheduled_event_users_get_chunk(self, guild_id, scheduled_event_id, params):
+    async def scheduled_event_user_get_chunk(self, guild_id, scheduled_event_id, params):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_users_get_chunk, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.scheduled_event_user_get_chunk, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/scheduled-events/{scheduled_event_id}/users',
             params = params,

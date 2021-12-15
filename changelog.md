@@ -84,9 +84,9 @@
 - Update `scheduled_event_delete` endpoint.
 - Add `reason` parameter to `Client.scheduled_event_edit`.
 - Add `reason` parameter to `Client.scheduled_event_create`.
-- Add `RATELIMIT_GROUPS.scheduled_event_users_get_chunk`
-- Add `DiscordHTTPClient.scheduled_event_users_get_chunk`.
-- Add `Client.scheduled_event_users_get_chunk`.
+- Add `RATELIMIT_GROUPS.scheduled_event_user_get_chunk`
+- Add `DiscordHTTPClient.scheduled_event_user_get_chunk`.
+- Add `Client.scheduled_event_user_get_chunk`.
 
 #### Bug Fixes
 

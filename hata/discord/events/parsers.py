@@ -4117,13 +4117,11 @@ del GUILD_APPLICATION_COMMAND_COUNTS_UPDATE
 
 
 def GUILD_SCHEDULED_EVENT_CREATE__CAL_SC(client, data):
-    print('3', data)
     scheduled_event = ScheduledEvent(data)
     
     Task(client.events.scheduled_event_create(client, scheduled_event), KOKORO)
 
 def GUILD_SCHEDULED_EVENT_CREATE__CAL_MC(client, data):
-    print('2', data)
     scheduled_event = ScheduledEvent(data)
     
     event_handler = client.events.scheduled_event_create
@@ -4131,7 +4129,6 @@ def GUILD_SCHEDULED_EVENT_CREATE__CAL_MC(client, data):
         Task(event_handler(client, scheduled_event), KOKORO)
 
 def GUILD_SCHEDULED_EVENT_CREATE__OPT(client, data):
-    print('1', data)
     ScheduledEvent(data)
 
 add_parser(

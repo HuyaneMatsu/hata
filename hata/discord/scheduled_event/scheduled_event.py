@@ -26,12 +26,12 @@ class ScheduledEvent(DiscordEntity):
         The event's entity's type.
         
         Defaults to `0`.
+    entity_metadata : `None` or ``ScheduledEventEntityMetadata`` instance
+        Metadata about the target entity.
     entity_type : ``ScheduledEventEntityType``
         To which type of entity the event is bound to.
     guild_id : `int`
         The respective event's identifier.
-    entity_metadata : `None` or ``ScheduledEventEntityMetadata`` instance
-        Metadata about the target entity.
     image_type : ``IconType``
         The event's image's type.
     image_hash : `int`
@@ -108,37 +108,7 @@ class ScheduledEvent(DiscordEntity):
         """
         self.user_count = data.get('user_count', 0)
         
-        entity_type = ScheduledEventEntityType.get(data['entity_type'])
-        self.entity_type = entity_type
-        self.privacy_level = PrivacyLevel.get(data['privacy_level'])
-        
-        channel_id = data.get('channel_id', None)
-        if channel_id is None:
-            channel_id = 0
-        else:
-            channel_id = int(channel_id)
-        self.channel_id = channel_id
-        
         self.guild_id = int(data['guild_id'])
-        
-        entity_metadata_data = data.get('entity_metadata', None)
-        if entity_metadata_data is None:
-            entity_metadata = None
-        else:
-            metadata_type = entity_type.metadata_type
-            if (metadata_type is None):
-                entity_metadata = None
-            else:
-                entity_metadata = metadata_type.from_data(entity_metadata_data)
-        
-        self.entity_metadata = entity_metadata
-        
-        entity_id = data.get('entity_id', None)
-        if entity_id is None:
-            entity_id = 0
-        else:
-            entity_id = int(entity_id)
-        self.entity_id = entity_id
         
         creator_data = data.get('creator', None)
         if creator_data is None:
@@ -146,6 +116,7 @@ class ScheduledEvent(DiscordEntity):
         else:
             creator = User(creator_data)
         self.creator = creator
+        
         
         self._update_attributes(data)
     
@@ -189,6 +160,38 @@ class ScheduledEvent(DiscordEntity):
         self.sku_ids = sku_ids
         
         self.send_start_notification = data.get('send_start_notification', False)
+        
+        entity_type = ScheduledEventEntityType.get(data['entity_type'])
+        
+        self.entity_type = entity_type
+        
+        self.privacy_level = PrivacyLevel.get(data['privacy_level'])
+        
+        channel_id = data.get('channel_id', None)
+        if channel_id is None:
+            channel_id = 0
+        else:
+            channel_id = int(channel_id)
+        self.channel_id = channel_id
+        
+        entity_metadata_data = data.get('entity_metadata', None)
+        if entity_metadata_data is None:
+            entity_metadata = None
+        else:
+            metadata_type = entity_type.metadata_type
+            if (metadata_type is None):
+                entity_metadata = None
+            else:
+                entity_metadata = metadata_type.from_data(entity_metadata_data)
+        
+        self.entity_metadata = entity_metadata
+        
+        entity_id = data.get('entity_id', None)
+        if entity_id is None:
+            entity_id = 0
+        else:
+            entity_id = int(entity_id)
+        self.entity_id = entity_id
     
     
     def _difference_update_attributes(self, data):
@@ -208,25 +211,35 @@ class ScheduledEvent(DiscordEntity):
             
             The returned dictionary might contain the following items:
             
-            +---------------------------+-------------------------------+
-            | Key                       | Value                         |
-            +===========================+===============================+
-            | description               | `None` or `str`               |
-            +---------------------------+-------------------------------+
-            | image                     | ``Icon``                      |
-            +---------------------------+-------------------------------+
-            | name                      | `str`                         |
-            +---------------------------+-------------------------------+
-            | send_start_notification   | `bool`                        |
-            +---------------------------+-------------------------------+
-            | end                       | `None` or `datetime`          |
-            +---------------------------+-------------------------------+
-            | start                     | `None` or `datetime`          |
-            +---------------------------+-------------------------------+
-            | sku_ids                   | `None` or `tuple` of `int`    |
-            +---------------------------+-------------------------------+
-            | status                    | ``ScheduledEventStatus``      |
-            +---------------------------+-------------------------------+
+            +---------------------------+-----------------------------------------------+
+            | Key                       | Value                                         |
+            +===========================+===============================================+
+            | channel_id                | `int`                                         |
+            +---------------------------+-----------------------------------------------+
+            | description               | `None` or `str`                               |
+            +---------------------------+-----------------------------------------------+
+            | entity_id                 | `int`                                         |
+            +---------------------------+-----------------------------------------------+
+            | entity_metadata           | `None` or ``ScheduledEventEntityMetadata``    |
+            +---------------------------+-----------------------------------------------+
+            | entity_type               | ``ScheduledEventEntityType``                  |
+            +---------------------------+-----------------------------------------------+
+            | image                     | ``Icon``                                      |
+            +---------------------------+-----------------------------------------------+
+            | name                      | `str`                                         |
+            +---------------------------+-----------------------------------------------+
+            | privacy_level             | ``PrivacyLevel``                              |
+            +---------------------------+-----------------------------------------------+
+            | send_start_notification   | `bool`                                        |
+            +---------------------------+-----------------------------------------------+
+            | end                       | `None` or `datetime`                          |
+            +---------------------------+-----------------------------------------------+
+            | start                     | `None` or `datetime`                          |
+            +---------------------------+-----------------------------------------------+
+            | sku_ids                   | `None` or `tuple` of `int`                    |
+            +---------------------------+-----------------------------------------------+
+            | status                    | ``ScheduledEventStatus``                      |
+            +---------------------------+-----------------------------------------------+
         """
         old_attributes = {}
         
@@ -277,7 +290,51 @@ class ScheduledEvent(DiscordEntity):
             old_attributes['send_start_notification'] = self.send_start_notification
             self.send_start_notification = send_start_notification
         
+        entity_type = ScheduledEventEntityType.get(data['entity_type'])
+        self.entity_type = entity_type
+        if self.entity_type is not entity_type:
+            old_attributes['entity_type'] = self.entity_type
+            self.entity_type = entity_type
+        
+        privacy_level = PrivacyLevel.get(data['privacy_level'])
+        if self.privacy_level is not privacy_level:
+            old_attributes['privacy_level'] = self.privacy_level
+            self.privacy_level = privacy_level
+        
+        channel_id = data.get('channel_id', None)
+        if channel_id is None:
+            channel_id = 0
+        else:
+            channel_id = int(channel_id)
+        if self.channel_id != channel_id:
+            old_attributes['channel_id'] = self.channel_id
+            self.channel_id = channel_id
+        
+        entity_metadata_data = data.get('entity_metadata', None)
+        if entity_metadata_data is None:
+            entity_metadata = None
+        else:
+            metadata_type = entity_type.metadata_type
+            if (metadata_type is None):
+                entity_metadata = None
+            else:
+                entity_metadata = metadata_type.from_data(entity_metadata_data)
+        if self.entity_metadata is not entity_metadata:
+            old_attributes['entity_metadata'] = self.entity_metadata
+            self.entity_metadata = entity_metadata
+        
+        entity_id = data.get('entity_id', None)
+        if entity_id is None:
+            entity_id = 0
+        else:
+            entity_id = int(entity_id)
+        
+        if self.entity_id != entity_id:
+            old_attributes['entity_id'] = self.entity_id
+            self.entity_id = entity_id
+        
         return old_attributes
+    
     
     def _update_counts_only(self, data):
         """

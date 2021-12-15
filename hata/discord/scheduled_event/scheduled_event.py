@@ -61,7 +61,7 @@ class ScheduledEvent(DiscordEntity):
         'entity_type', 'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status',
         'user_count' )
     
-    image = IconSlot('image', 'image', None, None, add_updater=False)
+    image = IconSlot('image', 'image', None, None)
     
     def __new__(cls, data):
         """
@@ -291,7 +291,6 @@ class ScheduledEvent(DiscordEntity):
             self.send_start_notification = send_start_notification
         
         entity_type = ScheduledEventEntityType.get(data['entity_type'])
-        self.entity_type = entity_type
         if self.entity_type is not entity_type:
             old_attributes['entity_type'] = self.entity_type
             self.entity_type = entity_type

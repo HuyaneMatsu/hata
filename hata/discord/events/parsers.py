@@ -4151,11 +4151,12 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_SC(client, data):
         pass
     else:
         try:
-            del guild[scheduled_event.id]
+            del guild.scheduled_events[scheduled_event.id]
         except KeyError:
             pass
     
     Task(client.events.scheduled_event_delete(client, scheduled_event), KOKORO)
+
 
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -4175,11 +4176,18 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
         event_handler = client.events.scheduled_event_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, scheduled_event), KOKORO)
+    
     else:
+        try:
+            del guild.scheduled_events[scheduled_event.id]
+        except KeyError:
+            pass
+        
         for client in clients:
             event_handler = client.events.scheduled_event_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client, scheduled_event), KOKORO)
+
 
 def GUILD_SCHEDULED_EVENT_DELETE__OPT(client, data):
     guild_id = int(data['guild_id'])
@@ -4192,7 +4200,7 @@ def GUILD_SCHEDULED_EVENT_DELETE__OPT(client, data):
         scheduled_event_id = int(data['id'])
         
         try:
-            del guild[scheduled_event_id]
+            del guild.scheduled_events[scheduled_event_id]
         except KeyError:
             pass
 

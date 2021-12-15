@@ -46,6 +46,14 @@ class ScheduledEventEntityMetadata:
         data : `dict` of (`str`, `Any`) items
         """
         return {}
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two entity metadatas equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return True
 
 
 class StageEntityMetadata(ScheduledEventEntityMetadata):
@@ -146,6 +154,17 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         return data
     
     
+    @copy_docs(ScheduledEventEntityMetadata.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.speaker_ids != other.speaker_ids:
+            return False
+        
+        return True
+    
+    
     @property
     def speakers(self):
         """
@@ -158,7 +177,8 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         speaker_ids = self.speaker_ids
         if (speaker_ids is not None):
             return tuple(create_partial_user_from_id(speaker_id) for speaker_id in speaker_ids)
-
+    
+    
 
 class LocationEntityMetadata(ScheduledEventEntityMetadata):
     """
@@ -214,3 +234,14 @@ class LocationEntityMetadata(ScheduledEventEntityMetadata):
         return {
             'location': self.location,
         }
+    
+    
+    @copy_docs(ScheduledEventEntityMetadata.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.location != other.location:
+            return False
+        
+        return True

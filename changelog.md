@@ -95,6 +95,9 @@
 - Add `Client.scheduled_event_user_get_chunk`.
 - Add `Client.scheduled_event_user_get_all`.
 - Add `IntentFlag.guild_scheduled_events`.
+- Add missing `ScheduledEventEntityMetadata.__eq__`.
+- Add missing `StageEntityMetadata.__eq__`.
+- Add missing `LocationEntityMetadata.__eq__`.
 
 #### Bug Fixes
 

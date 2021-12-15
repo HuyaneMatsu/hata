@@ -319,7 +319,7 @@ class ScheduledEvent(DiscordEntity):
                 entity_metadata = None
             else:
                 entity_metadata = metadata_type.from_data(entity_metadata_data)
-        if self.entity_metadata is not entity_metadata:
+        if self.entity_metadata != entity_metadata:
             old_attributes['entity_metadata'] = self.entity_metadata
             self.entity_metadata = entity_metadata
         

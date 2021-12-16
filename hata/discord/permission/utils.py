@@ -50,19 +50,6 @@ else:
         return int(data['type'])
 
 
-def cr_p_overwrite_object(target, allow, deny):
-    """
-    `cr_p_overwrite_object` is deprecated, and will be removed in 2021 November. Please use '
-    ``cr_p_permission_overwrite_object`` instead.
-    """
-    warnings.warn(
-        f'`cr_p_overwrite_object`\'s is deprecated, and will be removed in 2021 November. '
-        f'Please use `cr_p_permission_overwrite_object` instead.',
-        FutureWarning)
-
-    return cr_p_permission_overwrite_object(target, allow, deny)
-
-
 def cr_p_permission_overwrite_object(target, allow, deny):
     """
     Creates a json serializable object representing a ``PermissionOverwrite``.

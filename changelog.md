@@ -1,3 +1,14 @@
+## 1.1.129 *\[2021-12-??\]*
+
+#### Improvements
+
+- Add `bind`. (Forest#2913)
+- Add `ERROR_CODES.invalid_json`.
+
+#### Bug Fixes
+
+- Another `KeyError` in `DiscordGateway._received_message` when using fosscord. (Forest#2913)
+
 ## 1.1.128 *\[2021-12-15\]*
 
 ### Scheduled event checklist:

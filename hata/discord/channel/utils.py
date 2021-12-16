@@ -201,14 +201,6 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         - If `default_auto_archive_after` was not given neither as `None` or `int` instance.
         - If `default_auto_archive_after` is not any of the expected values.
     """
-    if (overwrites is not None):
-        warnings.warn(
-            f'`cr_pg_channel_object`\'s `overwrites` parameter is deprecated, and will be removed in 2021 November. '
-            f'Please use `permission_overwrites` instead.',
-            FutureWarning)
-        
-        permission_overwrites = overwrites
-    
     if __debug__:
         if (guild is not None) and (not isinstance(guild, Guild)):
             raise AssertionError('`guild` is given, but not as `None` nor `Guild` instance, got '

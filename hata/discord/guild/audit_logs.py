@@ -1517,12 +1517,3 @@ class AuditLogChange:
                 f'after={self.after!r}'
             f')'
         )
-    
-    @property
-    def attr(self):
-        warnings.warn(
-            f'`{self.__class__.__name__}.attr` attribute is deprecated, and will be removed in 2021 November. '
-            f'Please use `.attribute_name` instead.',
-            FutureWarning)
-        
-        return self.attribute_name

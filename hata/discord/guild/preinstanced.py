@@ -649,64 +649,6 @@ class GuildFeature(PreinstancedBase):
     verified = P('VERIFIED', 'verified')
     vip_voice_regions = P('VIP_REGIONS', 'vip_voice_regions')
     welcome_screen_enabled = P('WELCOME_SCREEN_ENABLED', 'welcome screen enabled')
-    
-    
-    @class_property
-    def welcome_screen(cls):
-        """
-        ``.welcome_screen`` is deprecated, please use ``.welcome_screen_enabled`` instead. Will be removed in 2021
-        November.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.welcome_screen` is deprecated, and will be removed in 2021 November. '
-            f'Please use `{cls.__name__}.welcome_screen_enabled` instead.',
-            FutureWarning)
-        
-        return cls.welcome_screen_enabled
-    
-    
-    @class_property
-    def verification_screen(cls):
-        """
-        ``.verification_screen`` is deprecated, please use ``.verification_screen_enabled`` instead. Will be removed in
-        2021 November.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.verification_screen` is deprecated, and will be removed in 2021 November. '
-            f'Please use `{cls.__name__}.verification_screen_enabled` instead.',
-            FutureWarning)
-        
-        return cls.verification_screen_enabled
-    
-    
-    @class_property
-    def vip(cls):
-        """
-        ``.vip`` is deprecated, please use ``.vip_voice_regions`` instead. Will be removed in 2021
-        November.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.vip` is deprecated, and will be removed in 2021 November. '
-            f'Please use `{cls.__name__}.vip_voice_regions` instead.',
-            FutureWarning)
-        
-        return cls.vip_voice_regions
-    
-    
-    @class_property
-    def news(cls):
-        """
-        ``.news`` is deprecated, please use ``.announcement_channels`` instead. Will be removed in 2021
-        November.
-        """
-        warnings.warn(
-            f'`{cls.__name__}.news` is deprecated, and will be removed in 2021 November. '
-            f'Please use `{cls.__name__}.announcement_channels` instead.',
-            FutureWarning)
-        
-        return cls.announcement_channels
-
-
 
 
 class NsfwLevel(PreinstancedBase):

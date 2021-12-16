@@ -201,18 +201,6 @@ def datetime_to_timestamp(date_time):
 
 
 @export
-def id_to_time(id_):
-    """
-    `id_to_time`\'s is deprecated, and will be removed in 2021 November. Please use ``id_to_datetime`` instead.
-    """
-    warnings.warn(
-        f'`id_to_time`\'s is deprecated, and will be removed in 2021 November. '
-        f'Please use `id_to_datetime` instead.',
-        FutureWarning)
-    return id_to_datetime(id_)
-
-
-@export
 def id_to_datetime(id_):
     """
     Converts the given id to datetime.
@@ -284,17 +272,6 @@ def unix_time_to_datetime(unix_time):
             return DATETIME_MAX
         else:
             return DATETIME_MIN
-
-
-def time_to_id(time):
-    """
-    `time_to_id`\'s is deprecated, and will be removed in 2021 November. Please use ``id_to_datetime`` instead.
-    """
-    warnings.warn(
-        f'`time_to_id`\'s is deprecated, and will be removed in 2021 November. '
-        f'Please use `id_to_datetime` instead.',
-        FutureWarning)
-    return datetime_to_id(time)
 
 
 def datetime_to_id(date_time):

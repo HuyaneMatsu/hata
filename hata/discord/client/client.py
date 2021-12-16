@@ -9113,17 +9113,6 @@ class Client(ClientUserPBase):
         
         return users
     
-    async def thread_get_all_active(self, channel):
-        """
-        Deprecated, please use ``.channel_thread_get_all_active`` instead.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.thread_get_all_active` is deprecated, and will be removed in 2021 November. '
-            f'Please use `.thread_get_all_active` instead.',
-            FutureWarning)
-        
-        return await self.channel_thread_get_all_active(channel)
-    
     
     async def channel_thread_get_all_active(self, channel):
         """
@@ -9150,18 +9139,6 @@ class Client(ClientUserPBase):
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
         return await request_channel_thread_channels(self, guild, channel_id,
             type(self.http).channel_thread_get_chunk_active)
-    
-    
-    async def thread_get_all_archived_private(self, channel):
-        """
-        Deprecated, please use ``.channel_thread_get_all_archived_private`` instead.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.thread_get_all_archived_private` is deprecated, and will be removed in '
-            f'2021 November. Please use `.channel_thread_get_all_archived_private` instead.',
-            FutureWarning)
-        
-        return await self.channel_thread_get_all_archived_private(channel)
     
     
     async def channel_thread_get_all_archived_private(self, channel):
@@ -9191,18 +9168,6 @@ class Client(ClientUserPBase):
             type(self.http).channel_thread_get_chunk_archived_private)
     
     
-    async def thread_get_all_archived_public(self, channel):
-        """
-        Deprecated, please use ``.channel_thread_get_all_archived_public`` instead.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.thread_get_all_archived_public` is deprecated, and will be removed in '
-            f'2021 November. Please use `.channel_thread_get_all_archived_public` instead.',
-            FutureWarning)
-        
-        return await self.channel_thread_get_all_archived_public(channel)
-    
-    
     async def channel_thread_get_all_archived_public(self, channel):
         """
         Requests all the archived public threads of the given channel.
@@ -9228,18 +9193,6 @@ class Client(ClientUserPBase):
         guild, channel_id = get_guild_and_guild_text_channel_id(channel)
         return await request_channel_thread_channels(self, guild, channel_id,
             type(self.http).channel_thread_get_chunk_archived_public)
-    
-    
-    async def thread_get_all_self_archived(self, channel):
-        """
-        Deprecated, please use ``.thread_get_all_self_archived`` instead.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.thread_get_all_self_archived` is deprecated, and will be removed in '
-            f'2021 November. Please use `.channel_thread_get_all_self_archived` instead.',
-            FutureWarning)
-        
-        return await self.channel_thread_get_all_self_archived(channel)
     
     
     async def channel_thread_get_all_self_archived(self, channel):

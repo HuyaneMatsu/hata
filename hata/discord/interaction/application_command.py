@@ -1648,15 +1648,6 @@ class ApplicationCommandPermission:
             - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
             - If `permission_overwrites` length is over `10`.
         """
-        if (overwrites is not None):
-            warnings.warn(
-                f'`ApplicationCommandPermission.__new__`\'s `overwrites` parameter is deprecated, '
-                f'and will be removed in 2021 November. '
-                f'Please use `permission_overwrites` instead.',
-                FutureWarning)
-            
-            permission_overwrites = overwrites
-        
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
         else:

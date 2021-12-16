@@ -325,7 +325,7 @@ class DiscordGateway:
         message = from_json(message)
         
         operation = message['op']
-        data = message['d']
+        data = message.get('d', None)
         sequence = message.get('s', None)
         
         if sequence is not None:
@@ -342,14 +342,17 @@ class DiscordGateway:
         except KeyError:
             Task(
                 client.events.error(
-                        client,
-                        f'{self.__class__.__name__}._received_message',
-                        f'Unknown dispatch event {event}\nData: {data!r}'
-                    ),
-                    KOKORO,
+                    client,
+                    f'{self.__class__.__name__}._received_message',
+                    f'Unknown dispatch event {event}\nData: {data!r}'
+                ),
+                KOKORO,
             )
             
             return False
+        
+        if data is None:
+            return
         
         try:
             if parser(client, data) is None:
@@ -360,11 +363,13 @@ class DiscordGateway:
         
         if event == 'READY':
             self.session_id = data['session_id']
-        #elif event=='RESUMED':
-            #pass
+        
+        # elif event == 'RESUMED':
+            # pass
         
         return False
-
+    
+    
     async def _special_operation(self, operation, data):
         """
         Handles special operations (so everything except `DISPATCH`). Returns `True` if the gateway should reconnect.
@@ -375,7 +380,7 @@ class DiscordGateway:
         ----------
         operation : `int`
             The gateway operation's code what the function will handle.
-        data : `dict` of (`str`, `Any`) items
+        data : `None` or `dict` of (`str`, `Any`) items
             Deserialized json data.
         
         Returns
@@ -392,9 +397,11 @@ class DiscordGateway:
             kokoro = await Kokoro(self)
         
         if operation == HELLO:
-            interval = data['heartbeat_interval']/1000.0
-            #send a heartbeat immediately
-            kokoro.interval = interval
+            if (data is not None):
+                interval = data['heartbeat_interval']/1000.0
+                # send a heartbeat immediately
+                kokoro.interval = interval
+            
             await kokoro.beat_now()
             return False
         
@@ -414,7 +421,7 @@ class DiscordGateway:
             return True
         
         if operation == INVALIDATE_SESSION:
-            if data:
+            if (data is not None) and data:
                 await sleep(5.0, KOKORO)
                 await self.close()
                 return True

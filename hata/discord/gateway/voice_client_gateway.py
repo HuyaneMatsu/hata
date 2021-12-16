@@ -198,12 +198,12 @@ class DiscordGatewayVoice:
         message = from_json(message)
         
         operation = message['op']
-        try:
-            data = message['d']
-        except KeyError:
-            data = None
+        data = message.get('d', None)
         
         if operation == CLIENT_CONNECT:
+            if data is None:
+                return
+            
             user_id = int(data['user_id'])
             try:
                 audio_source = data['audio_ssrc']
@@ -222,12 +222,18 @@ class DiscordGatewayVoice:
             return
         
         if operation == SPEAKING:
+            if data is None:
+                return
+            
             user_id = int(data['user_id'])
             audio_source = data['ssrc']
             self.client._update_audio_source(user_id, audio_source)
             return
         
         if operation == CLIENT_DISCONNECT:
+            if data is None:
+                return
+            
             user_id = int(data['user_id'])
             self.client._remove_source(user_id)
             return
@@ -248,6 +254,9 @@ class DiscordGatewayVoice:
             return
         
         if operation == SESSION_DESCRIPTION:
+            if data is None:
+                return
+            
             # data['mode'] is same as our default every time?
             self.client._secret_box = SecretBox(bytes(data['secret_key']))
             if kokoro.beater is None: # Discord order bug ?

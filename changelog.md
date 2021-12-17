@@ -4,6 +4,7 @@
 
 - Add `bind`. (Forest#2913)
 - Add `ERROR_CODES.invalid_json`.
+- Add `format_loop_time`.
 
 #### Bug Fixes
 

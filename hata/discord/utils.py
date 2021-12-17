@@ -1,10 +1,11 @@
 ﻿__all__ = ('CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
-    'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'USER_MENTION_RP', 'Unknown', 'cchunkify',
-    'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time', 'escape_markdown',
-    'filter_content', 'id_to_datetime', 'id_to_time', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention',
-    'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id', 'mention_role_by_id',
-    'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference', 'parse_rdelta',
-    'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'time_to_id', 'unix_time_to_id')
+    'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'TIMESTAMP_STYLES', 'USER_MENTION_RP', 'Unknown',
+    'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time',
+    'escape_markdown', 'filter_content', 'format_datetime', 'format_id', 'format_loop_time', 'format_unix_time',
+    'id_to_datetime', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url',
+    'is_user_mention', 'mention_channel_by_id', 'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id',
+    'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content',
+    'sanitize_mentions', 'unix_time_to_id')
 
 import sys, warnings
 from random import random
@@ -21,7 +22,7 @@ try:
 except ImportError:
     relativedelta = None
 
-from scarletio import export, include, modulize, IS_UNIX, set_docs
+from scarletio import export, include, modulize, IS_UNIX, set_docs, LOOP_TIME
 
 from .bases import DiscordEntity
 from .core import USERS, CHANNELS, ROLES
@@ -1471,7 +1472,7 @@ def is_url(url):
 class TIMESTAMP_STYLES:
     """
     Contains timestamp format styles, which can be used within Discord's markdown format.
-    You may be use these styles at ``format_datetime``, ``format_id`` and at ``format_unix_time``.
+    You may be use these styles at ``format_datetime``, ``format_id``, ``format_unix_time``and at  ``format_loop_time``.
     
     The style formats are the following:
     
@@ -1566,6 +1567,26 @@ def format_id(id_, style=None):
     formatted_string : `str`
     """
     return format_unix_time(id_to_unix_time(id_), style)
+
+
+def format_loop_time(loop_time, style=None):
+    """
+    Formats monotonic event loop time to Discord's timestamp markdown format.
+    
+    For formatting details please check out ``TIMESTAMP_STYLES``, which contains the usable styles.
+    
+    Parameters
+    ----------
+    loop_time : `float`
+        Monotonic loop time.
+    style : `None` or `str`, `optional
+        Format code to use. They are listed within ``TIMESTAMP_STYLES``.
+    
+    Returns
+    -------
+    formatted_string : `str`
+    """
+    return format_unix_time(id_to_unix_time(loop_time-LOOP_TIME()+time_now()), style)
 
 
 def format_unix_time(unix_time, style=None):

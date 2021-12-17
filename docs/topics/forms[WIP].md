@@ -1,6 +1,6 @@
 # Forms \[Work in progress\]
 
-> Forms are implemented on wrapper side, but waiting for Discord release
+> Forms are currently implemented on wrapper side, waiting for Discord to fully release them
 
 ### Introduction
 
@@ -9,9 +9,9 @@ not intuitive enough. This is when multi-field forms / model interactions come i
 
 ## Building Forms
 
-Forms are standalone components, with sub-components as fields.
+Forms are standalone components, with subcomponents as fields.
 
-For now, forms are limited to 5 sub-components. And the only accepted sub-component are `TextInput`-s. (Basically rows
+For now forms are limited to 5 subcomponents. And the only accepted subcomponents are `TextInput`-s (basically rows
 of text inputs, but rows are inserted automatically if not defined.)
 
 ## Limitations
@@ -24,13 +24,13 @@ of text inputs, but rows are inserted automatically if not defined.)
 
 ## Form commands
 
-To send a form response to the user, just return the form from a slash or a component command, or use the
+To send a form response to the user just return the form from a slash or a component command, or use the
 `Client.interaction_form_send` method.
 
 ```py
 from hata.ext.slash import Form, TextInput, TextInputStyle
 
-INRTODUCTION_FORM = Form(
+INTRODUCTION_FORM = Form(
     'Introduce yourself'
     [
         TextInput(
@@ -40,7 +40,7 @@ INRTODUCTION_FORM = Form(
             custom_id = 'name',
         ),
         TextInput(
-            'Something about you?'
+            'Something about you?',
             style = TextInputStyle.paragraph,
             min_length = 64,
             max_length = 1024,
@@ -50,16 +50,16 @@ INRTODUCTION_FORM = Form(
     custom_id = 'introduction',
 )
  
-@Nitori.interactions(guild=TEST_GUILD):
+@Nitori.interactions(guild=TEST_GUILD)
 def introduce_myself():
     """Creates an introduction embed after filling a form."""
-    return INRTODUCTION_FORM
+    return INTRODUCTION_FORM
 ```
 
-Defining `custom_id` to each component is not required, but highly recommended, since each received field is matched by
-it's `custom_id`.
+Defining `custom_id` for each component is not required, but its highly recommended since each received field is matched by
+its `custom_id`.
 
-You may add form commands to slasher by specifying what forms they should capture based on their `custom_id`. Also
+You may add form commands to slasher by specifying what forms they should capture based on their `custom_id`. Also, you can
 specify that you want to match forms submit interaction and not component interactions by passing `target=` either as
 `'form'` or `'form_submit'`.
 
@@ -79,10 +79,10 @@ async def introduction_form_submit(event, *, name, bio):
 
 ### Parameters
 
-Positional parameters of form submit commands work on the same way as component commands'. This means regex
-`custom_id`-s, as multiple `custom_id`-s are both supported.
+Positional parameters of form submit commands work in the same way as component commands'. This means single and 
+multiple regex `custom_id`-s are both supported.
 
-Additionally form submit commands support keyword parameters as well. These are matched from the fields of the
+Additionally, form submit commands support keyword parameters as well. These are matched from the fields of the
 submitted form.
 
 ```py
@@ -94,7 +94,7 @@ ADD_ROLE_FORM = Form(
     'Add role', # Any dummie title does it
     [
         TextInput(
-            'Additional message to send?'
+            'Additional message to send?',
             style = TextInputStyle.paragraph,
             max_length = 512,
             custom_id = 'message',
@@ -103,7 +103,7 @@ ADD_ROLE_FORM = Form(
 )
 
 
-@Nitori.interactions(guild=TEST_GUILD):
+@Nitori.interactions(guild=TEST_GUILD)
 def add_role(
     user: ('user', 'User to add role to'),
     role: ('role', 'The role to give'),
@@ -117,10 +117,10 @@ def add_role(
         abort('I need `manage roles` permission to execute this command.')
     
     if not event.user.has_higher_role_than(role):
-        abort('You must have higher role than the role to be given.')
+        abort('You must have higher role than the role you are trying to give.')
     
     if not client.has_higher_role_than(role):
-        abort('I must have higher role than the role to be given.')
+        abort('I must have higher role than the role you are trying to give.')
     
     # Using `.copy_to` on forms works as well.
     return ADD_ROLE_FORM.copy_with(
@@ -139,7 +139,7 @@ async def add_role(client, event, user_id, role_id, *, message):
     await client.role_add(user, (event.guild_id, role_id), reason=message)
     
     # Try to send DM to the poor being.
-    channel = await.channel_private_create(user_id)
+    channel = await channel_private_create(user_id)
     
     guild = event.guild
     role = guild.roles[role_id]
@@ -148,7 +148,7 @@ async def add_role(client, event, user_id, role_id, *, message):
         description = 'You have received role {role.name} in {guild.name}.',
     )
     
-    # Since message has no `required`, nor `min_length` passed, it can be `None`.
+    # Since message doesn't have `required` nor `min_length` passed it can be `None`.
     if (message is not None):
         embed.add_field(
             'Message',
@@ -159,11 +159,11 @@ async def add_role(client, event, user_id, role_id, *, message):
         await client.message_create(channel, embed=embed) 
     except DiscordException as err:
         # Ignore the exception if the user has dm-s disabled.
-        if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disallowed
+        if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disabled
             raise
     
     # Note: The user might not be cached at this point. Request it. If you have user caching enabled + intent, it will
-    do nothing.
+    # do nothing.
     user = await client.user_get(user_id)
     
     embed = Embed(
@@ -182,7 +182,7 @@ async def add_role(client, event, user_id, role_id, *, message):
 By annotating keyword parameters with string or with regex, you can customize what `custom_id`-s they are matching.
 If the annotation is neither string nor regex pattern, it is ignored.
 
-> Annotating a parameter with "regular" regex is pretty pointless. Could be good when updating old code,
+> Annotating a parameter with "regular" regex is pretty pointless. Could be good when updating old code
 > and you want to support multiple `custom_id`-s.
 
 ```py
@@ -233,7 +233,7 @@ class Waifu:
 # We will need these 3 in an example later
 
 TEXT_INPUT_WAIFU_BIO = TextInput(
-    'Bio'
+    'Bio',
     style = TextInputStyle.bio,
     min_length = 64,
     max_length = 1024,
@@ -241,24 +241,24 @@ TEXT_INPUT_WAIFU_BIO = TextInput(
 )
 
 TEXT_INPUT_WAIFU_AGE = TextInput(
-    'Age'
+    'Age',
     min_length = 1,
     max_length = 1024,
     custom_id = CUSTOM_ID_WAIFU_AGE,
 )
 
 TEXT_INPUT_WAIFU_HAIR = TextInput(
-    'hair'
+    'hair',
     min_length = 1,
     max_length = 1024,
     custom_id = CUSTOM_ID_WAIFU_HAIR,
 )
 
 WAIFU_FORM = Form(
-    'Describe your waifu'
+    'Describe your waifu',
     [
         TextInput(
-            'Name'
+            'Name',
             min_length = 2,
             max_length = 64,
             custom_id = CUSTOM_ID_WAIFU_NAME,
@@ -272,7 +272,7 @@ WAIFU_FORM = Form(
  
 # Add command
 
-@Nitori.interactions(guild=TEST_GUILD):
+@Nitori.interactions(guild=TEST_GUILD)
 def add_waifu():
     """Add a new waifu to the database!"""
     return WAIFU_FORM
@@ -313,7 +313,7 @@ def get_waifu(
 @get_waifu.autocomplete('name')
 async def autocomplete_waifu_name(value):
     if (value is None):
-        # Return the 20 newest oldest
+        # Return the 20 newest
         return [waifu.name for waifu, _ in zip(WAIFUS.values(), range(20))]
     
     value = value.casefold()
@@ -321,7 +321,7 @@ async def autocomplete_waifu_name(value):
 ```
 
 When using capturing groups or named capturing groups, you will get the captured values back as well. This can be
-useful, when dynamically generating form fields.
+useful when dynamically generating form fields.
 
 ```py
 CUSTOM_ID_WAIFU_EDIT_BASE = 'waifu.edit.'
@@ -331,7 +331,7 @@ CUSTOM_ID_WAIFU_FIELD_ALL = 'waifu\.(?P<field>age|bio|hair)'
 FIELD_TO_TEXT_INPUT = {
     'age': TEXT_INPUT_WAIFU_AGE,
     'bio': TEXT_INPUT_WAIFU_BIO,
-    'hair': TEXT_INPUT_WAIFU_HAIR',
+    'hair': TEXT_INPUT_WAIFU_HAIR,
 }
 
 FIELD_TO_ATTRIBUTE = {
@@ -395,9 +395,9 @@ async def waifu_edit_form_submit(
     return waifu.embed
 ```
 
-To capture multiple fields in one parameter, you might use `*args`.
+To capture multiple fields in one parameter you can use `*args`.
 
-When using capturing groups in regex, each element will be a tuple, familiarly to the the keyword parameters above.
+When using capturing groups in regex, each element will be a tuple, similar to the keyword parameters above.
 
 ```py
 import re
@@ -423,10 +423,10 @@ async def rate_cakes(
 ):
     """Rate cakes."""
     # Filter 
-    cakes = {cake for cake in (cake_1, cake_2, cake_3, cake_4, cake_5) if (cake is no None)}
+    cakes = {cake for cake in (cake_1, cake_2, cake_3, cake_4, cake_5) if (cake is not None)}
     
     return Form(
-        'Rate your cakes'
+        'Rate your cakes',
         [
             TextInput(
                 f'Please rate {cake}',

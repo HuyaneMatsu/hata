@@ -68,7 +68,7 @@ def bind(bind_to, bind_with, name):
     Descriptor binders are familiar ot normal descriptors, except, they are created per object and not per class.
     
     """
-    if not issubclass(bind_to, type):
+    if not isinstance(bind_to, type):
         raise TypeError(f'`bind_to` to must be a type, got {bind_to.__class__.__name__}; {bind_to!r}.')
     
     if hasattr(bind_to, '__weakref__') or (not hasattr(bind_to, '__slots__')):

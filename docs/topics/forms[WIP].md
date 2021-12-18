@@ -455,7 +455,7 @@ async def rate_cake_form_submit(
     user = event.user
     embed = Embed(f'{user:f}\'s cake ratings').add_thumbnail(user.avatar_url)
     
-    for ((cake, ), rating in cakes:
+    for (cake, ), rating in cakes:
         embed.add_field(cake, rating)
     
     return embed

@@ -71,7 +71,8 @@ def bind(bind_to, bind_with, name):
     if not isinstance(bind_to, type):
         raise TypeError(f'`bind_to` to must be a type, got {bind_to.__class__.__name__}; {bind_to!r}.')
     
-    if hasattr(bind_to, '__weakref__') or (not hasattr(bind_to, '__slots__')):
+    name_space = bind_to.__dict__
+    if ('__weakref__' in name_space) or ('__slots__' not in name_space):
         raise TypeError(f'`bind_to` instances must support weakreferencing, got {bind_to!r}.')
     
     if hasattr(bind_to, name):
@@ -215,9 +216,9 @@ class DescriptorObjectBinder(ObjectBinderBase):
     @copy_docs(ObjectBinderBase.__new__)
     def __new__(cls, name, type_):
         self = ObjectBinderBase.__new__(cls, name, type_)
-        self.fdel = getattr(type_, '__delete__')
+        self.fdel = getattr(type_, '__delete__', None)
         self.fget = getattr(type_, '__get__')
-        self.fset = getattr(type_, '__set__')
+        self.fset = getattr(type_, '__set__', None)
         return self
     
     

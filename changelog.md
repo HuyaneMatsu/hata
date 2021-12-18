@@ -7,6 +7,10 @@
 - Add `format_loop_time`.
 - Add `ApplicationFlag.embedded_released`.
 - Add `ApplicationFlag.embedded_first_party`.
+- Add `ApplicationCommandOptionType.attachment`.
+
+##### ext.asyncio
+- Add attachment converter to slash commands.
 
 #### Bug Fixes
 

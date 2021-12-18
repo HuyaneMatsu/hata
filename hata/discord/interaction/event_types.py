@@ -12,7 +12,7 @@ from ..bases import EventBase, DiscordEntity
 from ..core import KOKORO, INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS, CHANNELS, GUILDS, \
     APPLICATION_ID_TO_CLIENT
 from ..channel import create_partial_channel_from_data
-from ..message import Message
+from ..message import Message, Attachment
 from ..permission import Permission
 from ..permission.permission import PERMISSION_PRIVATE
 from ..guild import create_partial_guild_from_id
@@ -427,8 +427,8 @@ class ApplicationCommandInteractionOption:
     type : ``ApplicationCommandOptionType``
         The option's type.
     
-    value : `None`, `str`
-        The given value by the user. Should be always converted to the expected type.
+    value : `None`, `str`, `bool`, `float`, `int`, `Attachment``
+        The given value by the user.
         
         Mutually exclusive with the `options` field,
     
@@ -460,7 +460,9 @@ class ApplicationCommandInteractionOption:
         # value
         value = data.get('value', None)
         if (value is not None):
-            value = str(value)
+            # Check conversions / type
+            if type_ is ApplicationCommandOptionType.attachment:
+                value = Attachment(value)
         
         self = object.__new__(cls)
         

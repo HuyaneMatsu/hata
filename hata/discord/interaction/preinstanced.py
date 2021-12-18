@@ -55,6 +55,8 @@ class ApplicationCommandOptionType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | float                 | float             | 10    |
     +-----------------------+-------------------+-------+
+    | attachment            | attachment        | 11    |
+    +-----------------------+-------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -73,6 +75,7 @@ class ApplicationCommandOptionType(PreinstancedBase):
     role = P(8, 'role',)
     mentionable = P(9, 'mentionable',)
     float = P(10, 'float',)
+    attachment = P(10, 'attachment',)
 
 
 @export

@@ -23,6 +23,7 @@ from ...discord.interaction import ApplicationCommandOption, ApplicationCommandO
     ApplicationCommandOptionType, InteractionEvent
 from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+from ...discord.message import Attachment
 
 from .utils import raw_name_to_display, normalize_description
 from .exceptions import SlasherApplicationCommandParameterConversionError
@@ -141,10 +142,11 @@ async def converter_int(client, interaction_event, value):
     value : `None` or `int`
         If conversion fails, then returns `None`.
     """
-    try:
-        value = int(value)
-    except ValueError:
-        value = None
+    if not isinstance(value, int):
+        try:
+            value = int(value)
+        except ValueError:
+            value = None
     
     return value
 
@@ -161,7 +163,7 @@ async def converter_float(client, interaction_event, value):
         The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received application command interaction.
-    value : `str`
+    value : `float` or `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
@@ -169,10 +171,11 @@ async def converter_float(client, interaction_event, value):
     value : `None` or `float`
         If conversion fails, then returns `None`.
     """
-    try:
-        value = float(value)
-    except ValueError:
-        value = None
+    if not isinstance(value, float):
+        try:
+            value = float(value)
+        except ValueError:
+            value = None
     
     return value
 
@@ -200,8 +203,8 @@ async def converter_str(client, interaction_event, value):
     return value
 
 BOOL_TABLE = {
-    str(True): True,
-    str(False): False,
+    'true': True,
+    'false': False,
 }
 
 async def converter_bool(client, interaction_event, value):
@@ -224,7 +227,33 @@ async def converter_bool(client, interaction_event, value):
     value : `None` or `bool`
         If conversion fails, then returns `None`.
     """
-    return BOOL_TABLE.get(value, None)
+    if not isinstance(value, bool):
+        value =  BOOL_TABLE.get(value, None)
+    
+    return value
+
+
+async def converter_attachment(client, interaction_event, value):
+    """
+    Converter for ``ApplicationCommandInteractionOption`` value to ``Attachment``.
+    
+    This function is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who received the respective ``InteractionEvent``.
+    interaction_event : ``InteractionEvent``
+        The received application command interaction.
+    value : ``Attachment``
+        ``ApplicationCommandInteractionOption.value``.
+    
+    Returns
+    -------
+    value : ``Attachment``
+        If conversion fails, then returns `None`.
+    """
+    return value
 
 
 async def converter_snowflake(client, interaction_event, value):
@@ -473,6 +502,7 @@ ANNOTATION_TYPE_EXPRESSION = 15
 ANNOTATION_TYPE_FLOAT = 16
 ANNOTATION_TYPE_SELF_TARGET = 17
 ANNOTATION_TYPE_SELF_VALUE = 18
+ANNOTATION_TYPE_ATTACHMENT = 19
 
 ANNOTATION_NAMES_CLIENT = frozenset((
     'c',
@@ -537,6 +567,7 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'mentionable_id': (ANNOTATION_TYPE_MENTIONABLE_ID, None),
     'expression': (ANNOTATION_TYPE_EXPRESSION, None),
     'float': (ANNOTATION_TYPE_FLOAT, None),
+    'attachment': (ANNOTATION_TYPE_ATTACHMENT, None),
     
     # Channel type specific
     # - by channel name
@@ -636,6 +667,7 @@ ANNOTATION_TYPE_TO_STR_ANNOTATION = {
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable_id',
     ANNOTATION_TYPE_EXPRESSION: 'expression',
     ANNOTATION_TYPE_FLOAT: 'float',
+    ANNOTATION_TYPE_ATTACHMENT : 'attachment',
     
     ANNOTATION_TYPE_SELF_CLIENT: 'client',
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: 'interaction_event',
@@ -653,6 +685,7 @@ TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
     Role: (ANNOTATION_TYPE_ROLE, None),
     ChannelBase: (ANNOTATION_TYPE_CHANNEL, None),
     float: (ANNOTATION_TYPE_FLOAT, None),
+    Attachment: (ANNOTATION_TYPE_ATTACHMENT, None),
     
     # Channel type specific
     ChannelGuildBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
@@ -689,6 +722,7 @@ ANNOTATION_TYPE_TO_CONVERTER = {
     ANNOTATION_TYPE_MENTIONABLE_ID: (converter_snowflake, False),
     ANNOTATION_TYPE_EXPRESSION: (converter_expression, False),
     ANNOTATION_TYPE_FLOAT: (converter_float, False),
+    ANNOTATION_TYPE_ATTACHMENT: (converter_attachment, False),
     
     ANNOTATION_TYPE_SELF_CLIENT: (converter_self_client, True),
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: (converter_self_interaction_event, True),
@@ -718,6 +752,7 @@ ANNOTATION_TYPE_TO_OPTION_TYPE = {
     ANNOTATION_TYPE_MENTIONABLE_ID: ApplicationCommandOptionType.mentionable,
     ANNOTATION_TYPE_EXPRESSION: ApplicationCommandOptionType.string,
     ANNOTATION_TYPE_FLOAT: ApplicationCommandOptionType.float,
+    ANNOTATION_TYPE_ATTACHMENT: ApplicationCommandOptionType.attachment,
     
     ANNOTATION_TYPE_SELF_CLIENT: ApplicationCommandOptionType.none,
     ANNOTATION_TYPE_SELF_INTERACTION_EVENT: ApplicationCommandOptionType.none,
@@ -740,6 +775,7 @@ ANNOTATION_TYPE_TO_REPRESENTATION = {
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable',
     ANNOTATION_TYPE_EXPRESSION: 'expression',
     ANNOTATION_TYPE_FLOAT: 'float',
+    ANNOTATION_TYPE_ATTACHMENT : 'attachment',
 }
 
 

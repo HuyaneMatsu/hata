@@ -1725,7 +1725,7 @@ def channel_banner_url(channel):
     
     Parameters
     ----------
-    channel : `object`
+    channel : ``ChannelText`
         The respective channel.
     
     Returns
@@ -1752,7 +1752,7 @@ def channel_banner_url_as(channel, ext=None, size=None):
     
     Parameters
     ----------
-    channel : `object`
+    channel : ``ChannelText``
         The respective channel.
     ext : `str`, Optional
         The extension of the banner's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.

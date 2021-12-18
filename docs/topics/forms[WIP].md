@@ -313,7 +313,7 @@ def get_waifu(
 @get_waifu.autocomplete('name')
 async def autocomplete_waifu_name(value):
     if (value is None):
-        # Return the 20 newest
+        # Return the 20 oldest
         return [waifu.name for waifu, _ in zip(WAIFUS.values(), range(20))]
     
     value = value.casefold()

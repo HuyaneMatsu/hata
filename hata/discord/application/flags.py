@@ -11,6 +11,8 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | Respective name                   | Bitwise position  |
     +===================================+===================+
+    | embedded_released                 | 1                 |
+    +-----------------------------------+-------------------+
     | managed_emoji                     | 2                 |
     +-----------------------------------+-------------------+
     | group_dm_create                   | 4                 |
@@ -33,8 +35,11 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | gateway_message_content_limited   | 19                |
     +-----------------------------------+-------------------+
+    | embedded_first_party              | 20                |
+    +-----------------------------------+-------------------+
     """
     __keys__ = {
+        'embedded_released': 1,
         'managed_emoji': 2,
         'group_dm_create': 4,
         'rpc_has_connected': 11,
@@ -46,6 +51,7 @@ class ApplicationFlag(FlagBase):
         'embedded': 17,
         'gateway_message_content': 18,
         'gateway_message_content_limited': 19,
+        'embedded_first_party': 20,
     }
 
 

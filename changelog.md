@@ -5,6 +5,8 @@
 - Add `bind`. (Forest#2913)
 - Add `ERROR_CODES.invalid_json`.
 - Add `format_loop_time`.
+- Add `ApplicationFlag.embedded_released`.
+- Add `ApplicationFlag.embedded_first_party`.
 
 #### Bug Fixes
 

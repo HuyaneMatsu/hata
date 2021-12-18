@@ -1,6 +1,7 @@
 __all__ = ('EvaluationError', 'evaluate_text', )
 
 import math
+import warnings
 
 from scarletio import copy_docs
 from ...discord.utils import sanitize_content
@@ -344,7 +345,13 @@ def get_numeric_postfix_multiplier(array, start, end):
         try:
             multiplier = NUMERIC_POSTFIX_MULTIPLIERS[bytes(array[index:end])]
         except KeyError:
-            raise EvaluationError(array, index, end, 'Unknown decimal integer postfix.') from None
+            raise EvaluationError(
+                array,
+                [
+                    HighlightGroup(index, end, True)
+                ],
+                'Unknown decimal integer postfix.',
+            ) from None
     
     return index, multiplier
 
@@ -397,8 +404,11 @@ def evaluate_numeric_decimal(array, start, end):
     """
     if end-start > LIMIT_INTEGER_DECIMAL_MAX:
         raise EvaluationError(
-            array, start, end,
-            f'Decimal integer conversion over limit is disallowed: {LIMIT_INTEGER_DECIMAL_MAX}.'
+            array,
+            [
+                HighlightGroup(start, end, True),
+            ],
+            f'Decimal integer conversion over limit is disallowed: {LIMIT_INTEGER_DECIMAL_MAX}.',
         )
     
     end, multiplier = get_numeric_postfix_multiplier(array, start, end)
@@ -440,8 +450,11 @@ def evaluate_numeric_hexadecimal(array, start, end):
     """
     if end-start > LIMIT_INTEGER_HEXADECIMAL_MAX:
         raise EvaluationError(
-            array, start, end,
-            f'Hexadecimal integer conversion over limit is disallowed: {LIMIT_INTEGER_HEXADECIMAL_MAX}.'
+            array,
+            [
+                HighlightGroup(start, end, True),
+            ],
+            f'Hexadecimal integer conversion over limit is disallowed: {LIMIT_INTEGER_HEXADECIMAL_MAX}.',
         )
     
     raw_value = bytes(array[start:end])
@@ -476,8 +489,11 @@ def evaluate_numeric_octal(array, start, end):
     """
     if end-start > LIMIT_INTEGER_OCTAL_MAX:
         raise EvaluationError(
-            array, start, end,
-            f'Octal integer conversion over limit is disallowed: {LIMIT_INTEGER_OCTAL_MAX}.'
+            array,
+            [
+                HighlightGroup(start, end, True),
+            ],
+            f'Octal integer conversion over limit is disallowed: {LIMIT_INTEGER_OCTAL_MAX}.',
         )
     
     raw_value = bytes(array[start:end])
@@ -511,8 +527,11 @@ def evaluate_numeric_binary(array, start, end):
     """
     if end-start > LIMIT_INTEGER_BINARY_MAX:
         raise EvaluationError(
-            array, start, end,
-            f'Binary integer conversion over limit is disallowed: {LIMIT_INTEGER_BINARY_MAX}.'
+            array,
+            [
+                HighlightGroup(start, end, True),
+            ],
+            f'Binary integer conversion over limit is disallowed: {LIMIT_INTEGER_BINARY_MAX}.',
         )
     
     raw_value = bytes(array[start:end])
@@ -540,19 +559,28 @@ def check_factorial_validity(token, value):
     """
     if (not isinstance(value, int)) and (not value.is_integer()):
         raise EvaluationError(
-            token.array, token.start, token.end,
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
             f'Factorial only accepts integral values: factorial({value!r})',
         )
     
     if value < 0:
         raise EvaluationError(
-            token.array, token.start, token.end,
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
             f'Factorial is not defined for negative values: factorial({value!r})',
         )
     
     if value > LIMIT_FACTORIAL_MAX:
         raise EvaluationError(
-            token.array, token.start, token.end,
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
             f'Factorial over {LIMIT_INTEGER_BIT_LENGTH} is disallowed: factorial({value!r})',
         )
 
@@ -703,7 +731,7 @@ def check_2_sided_integer_limit(token_1, token_2, token_3):
     token_2 :  ``Token``
         The operation's token.
     token_3 : ``Token``
-        The first value to check.
+        The second value to check.
     
     Raises
     ------
@@ -715,13 +743,23 @@ def check_2_sided_integer_limit(token_1, token_2, token_3):
     if isinstance(value_1, int) and isinstance(value_2, int):
         if (value_1 >= LIMIT_INTEGER_MAX) or (value_1 <= LIMIT_INTEGER_MIN):
             raise EvaluationError(
-                token_2.array, token_1.start, token_2.end,
+                token_2.array,
+                [
+                    HighlightGroup(token_1.start, token_1.end, False),
+                    HighlightGroup(token_2.start, token_2.end, True),
+                    HighlightGroup(token_3.start, token_3.end, False),
+                ],
                 f'Integer operation over {LIMIT_INTEGER_BIT_LENGTH} bit limit is disallowed.',
             )
         
         if (value_2 >= LIMIT_INTEGER_MAX) or (value_2 <= LIMIT_INTEGER_MIN):
             raise EvaluationError(
-                token_2.array, token_2.start, token_3.end,
+                token_2.array,
+                [
+                    HighlightGroup(token_1.start, token_1.end, False),
+                    HighlightGroup(token_2.start, token_2.end, True),
+                    HighlightGroup(token_3.start, token_3.end, False),
+                ],
                 f'Integer operation over {LIMIT_INTEGER_BIT_LENGTH} bit limit is disallowed.',
             )
 
@@ -843,11 +881,11 @@ def evaluate_2_sided_true_division(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -865,8 +903,15 @@ def evaluate_2_sided_true_division(token_1, token_2, token_3):
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 == 0:
-        raise EvaluationError(token_2.array, token_2.start, token_2.end,
-            f'True division by zero disallowed: {value_1} / {value_2}.')
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
+            f'True division by zero disallowed: {value_1} / {value_2}.',
+        )
     
     value = value_1 / value_2
     return merge_2_tokens(token_1, token_3, value)
@@ -879,11 +924,11 @@ def evaluate_2_sided_full_division(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -901,8 +946,15 @@ def evaluate_2_sided_full_division(token_1, token_2, token_3):
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 == 0:
-        raise EvaluationError(token_2.array, token_2.start, token_2.end,
-            f'Full division by zero disallowed: {value_1} // {value_2}.')
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
+            f'Full division by zero disallowed: {value_1} // {value_2}.',
+        )
     
     value = value_1 // value_2
     return merge_2_tokens(token_1, token_3, value)
@@ -915,11 +967,11 @@ def evaluate_2_sided_multiply(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -944,11 +996,11 @@ def evaluate_2_sided_remainder(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -966,8 +1018,15 @@ def evaluate_2_sided_remainder(token_1, token_2, token_3):
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 == 0:
-        raise EvaluationError(token_2.array, token_2.start, token_2.end,
-            f'Remainder by zero disallowed: {value_1} % {value_2}.')
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
+            f'Remainder by zero disallowed: {value_1} % {value_2}.',
+        )
     
     value = value_1 % value_2
     return merge_2_tokens(token_1, token_3, value)
@@ -980,11 +1039,11 @@ def evaluate_2_sided_add(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1010,11 +1069,11 @@ def evaluate_2_sided_subtraction(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1039,11 +1098,11 @@ def evaluate_2_sided_binary_left_shift(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1061,7 +1120,13 @@ def evaluate_2_sided_binary_left_shift(token_1, token_2, token_3):
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 > LIMIT_LEFT_SHIFT_MAX:
-        raise EvaluationError(token_2.array, token_2.start, token_2.end,
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
             f'Left shift over {LIMIT_LEFT_SHIFT_MAX} disallowed: {value_1} << {value_2}.')
     
     value = token_1.value << token_3.value
@@ -1075,11 +1140,11 @@ def evaluate_2_sided_binary_right_shift(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1097,8 +1162,15 @@ def evaluate_2_sided_binary_right_shift(token_1, token_2, token_3):
     value_1 = token_1.value
     value_2 = token_3.value
     if value_2 < LIMIT_RIGHT_SHIFT_MIN:
-        raise EvaluationError(token_2.array, token_2.start, token_2.end,
-            f'Left shift under {LIMIT_RIGHT_SHIFT_MIN} disallowed: {value_1} >> {value_2}.')
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
+            f'Left shift under {LIMIT_RIGHT_SHIFT_MIN} disallowed: {value_1} >> {value_2}.',
+        )
     
     value = token_1.value >> token_3.value
     return merge_2_tokens(token_1, token_3, value)
@@ -1111,11 +1183,11 @@ def evaluate_2_sided_binary_and(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1136,11 +1208,11 @@ def evaluate_2_sided_binary_xor(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1161,11 +1233,11 @@ def evaluate_2_sided_binary_or(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1186,11 +1258,11 @@ def evaluate_2_sided_power(token_1, token_2, token_3):
     Attributes
     ----------
     token_1 : ``Token``
-        The first token.
+        The first token with the first value.
     token_2 : ``Token``
-        The second token with the value.
+        The operation's token.
     token_3 : ``Token``
-        The third token with the value.
+        The third token with the second value.
     
     Returns
     -------
@@ -1209,14 +1281,24 @@ def evaluate_2_sided_power(token_1, token_2, token_3):
     value_2 = token_3.value
     if value_2 > LIMIT_POWER_MAX:
         raise EvaluationError(
-            token_2.array, token_2.start, token_3.end,
-            f'Power over {LIMIT_POWER_MAX} disallowed: {value_1} ** {value_2}.'
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
+            f'Power over {LIMIT_POWER_MAX} disallowed: {value_1} ** {value_2}.',
         )
     
     if isinstance(value_1, int) and isinstance(value_2, int) and \
             value_1.bit_length()*value_2.bit_length() > LIMIT_INTEGER_BIT_LENGTH:
         raise EvaluationError(
-            token_1.array, token_1.start, token_3.end,
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, False),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, False),
+            ],
             f'Power over possible {LIMIT_INTEGER_BIT_LENGTH} bit length disallowed: {value_1} ** {value_2}.'
         )
     
@@ -1331,6 +1413,7 @@ class ParserPostfixCheck(ParserBase):
         Message of the error.
     """
     __slots__ = ('parser', 'message')
+    
     def __new__(cls, parser, message):
         """
         Creates a new ``ParserPostfixCheck`` instance.
@@ -1357,7 +1440,13 @@ class ParserPostfixCheck(ParserBase):
             state.index = index
             return True
         
-        raise EvaluationError(state.array, index, index+1, self.message)
+        raise EvaluationError(
+            state.array,
+            [
+                HighlightGroup(index, index+1, True),
+            ],
+            self.message,
+        )
     
     @copy_docs(ParserBase.__repr__)
     def __repr__(self):
@@ -1983,6 +2072,154 @@ JUST_PARSE = ParserAny([
 ])
 
 
+class HighlightGroup:
+    """
+    Highlight group to mention a part of a text inside of exception.
+    
+    Attributes
+    ----------
+    end : `int`
+        The end of the highlight
+    start : `int`
+        The start of the highlight
+    is_primary : `bool`
+        Whether the target is primary.
+    """
+    def __init__(self, start, end, is_primary):
+        """
+        Creates a new highlight group.
+        
+        Parameters
+        ----------
+        end : `int`
+            The end of the highlight
+        start : `int`
+            The start of the highlight
+        is_primary : `bool`
+            Whether the target is primary.
+        """
+        self.end = end
+        self.start = start
+        self.is_primary = is_primary
+    
+    def __repr__(self):
+        """Returns the highlight group's representation."""
+        repr_parts = [
+            '<', self.__class__.__name__,
+            ' start=', repr(self.start),
+            ', end=', repr(self.end),
+            ', is_primary=', repr(self.is_primary),
+        ]
+        
+        return ''.join(repr_parts)
+
+
+def get_highlight_group_range(highlight_groups):
+    """
+    Gets the lower and the maximal indexes of highlight groups.
+    
+    Parameters
+    ----------
+    highlight_groups : `list` of ``HighlightGroup``
+        Highlight groups.
+    
+    Returns
+    -------
+    lowest_value : `int`
+    highest_value : `int`
+    """
+    lowest_value = -1
+    highest_value = -1
+    
+    for highlight_group in highlight_groups:
+        start = highlight_group.start
+        if lowest_value == -1:
+            lowest_value = start
+        else:
+            if start < lowest_value:
+                lowest_value = start
+        
+        end = highlight_group.end
+        if highest_value == -1:
+            highest_value = end
+        else:
+            if end < highest_value:
+                highest_value = end
+    
+    if lowest_value == -1:
+        lowest_value = 0
+    
+    if highest_value == -1:
+        highest_value = lowest_value
+    
+    return lowest_value, highest_value
+
+
+HIGHLIGHT_POINTER_PRIMARY = '^'
+HIGHLIGHT_POINTER_SECONDARY = '~'
+
+def render_highlight_groups_within_range_into(highlight_groups, start_at, end_at, into):
+    """
+    Renders the highlight groups the within range into the given list.
+    
+    Parameters
+    ----------
+    highlight_groups : `list` of ``HighlightGroup``
+        Highlight groups.
+    start_at : `int`
+        The lowest character index to render.
+    end_at : `int`
+        The highest character index to render.
+    """
+    if start_at < 0:
+        space_at_start = -start_at
+        start_at = 0
+    else:
+        space_at_start = 0
+    
+    if end_at <= start_at:
+        return
+    
+    last_end = start_at
+    
+    for highlight_group in highlight_groups:
+        start = highlight_group.start
+        end = highlight_group.end
+        
+        if start >= end_at:
+            break
+        
+        if end <= start_at:
+            continue
+        
+        if start < start_at:
+            start = start_at
+        
+        if end > end_at:
+            end = end_at
+        
+        space_count = start-last_end
+        
+        # Add extra start space if applicable
+        if space_at_start:
+            space_count += space_at_start
+            space_at_start = 0
+        
+        if highlight_group.is_primary:
+            pointer = HIGHLIGHT_POINTER_PRIMARY
+        else:
+            pointer = HIGHLIGHT_POINTER_SECONDARY
+        
+        pointer_count = end-start
+        if pointer_count > 0:
+            if space_count:
+                into.append(' '*space_count)
+            
+            into.append(pointer*pointer_count)
+        
+        last_end = end
+
+
 class EvaluationError(SlasherCommandError):
     """
     Exception raised in any parsing related issue.
@@ -1995,14 +2232,12 @@ class EvaluationError(SlasherCommandError):
         The generated error message.
     array : `tuple` of `int`
         Source parsed array.
-    end : `int`
-        The end of the errored part.
-    start : `int`
-        The start of the errored part.
+    highlight_groups : `list` of ``HighlightGroup``
+        Highlight groups.
     message : `str`
         Additional message to forward.
     """
-    def __init__(self, array, start, end, message):
+    def __init__(self, array, highlight_groups, message):
         """
         Creates a new ``EvaluationError`` instance from the given parameters.
         
@@ -2010,20 +2245,64 @@ class EvaluationError(SlasherCommandError):
         ----------
         array : `tuple` of `int`
             Source parsed array.
-        start : `int`
-            The start of the errored part.
-        end : `int`
-            The end of the errored part.
+        highlight_groups : `list` of ``HighlightGroup``
+            Highlight groups.
         message : `str`
             Additional message to forward.
         """
         self.array = array
-        self.start = start
-        self.end = end
+        self.highlight_groups = highlight_groups
         self.message = message
         self._repr = None
         self._pretty_repr = None
-        Exception.__init__(self, array, start, end, message)
+        Exception.__init__(self, array, highlight_groups, message)
+    
+    
+    @property
+    def start_(self):
+        warnings.warn(f'{self.__class__.__name__}.start is deprecated.', FutureWarning)
+        
+        lowest_value = -1
+        for highlight_group in self.highlight_groups:
+            if lowest_value == -1:
+                lowest_value = highlight_group.start
+                continue
+            
+            start = highlight_group.start
+            if start < lowest_value:
+                lowest_value = start
+                continue
+            
+            # No other cases
+        
+        if lowest_value == -1:
+            lowest_value = 0
+        
+        return lowest_value
+    
+    
+    @property
+    def end_(self):
+        warnings.warn(f'{self.__class__.__name__}.end is deprecated.', FutureWarning)
+        
+        highest_value = -1
+        for highlight_group in self.highlight_groups:
+            if highest_value == -1:
+                highest_value = highlight_group.start
+                continue
+            
+            start = highlight_group.start
+            if start < highest_value:
+                highest_value = start
+                continue
+            
+            # No other cases
+        
+        if highest_value == -1:
+            highest_value = len(self.array)
+        
+        return highest_value
+    
     
     def __repr__(self):
         """Returns the representation of the syntax error."""
@@ -2032,6 +2311,7 @@ class EvaluationError(SlasherCommandError):
             repr_ = self._create_repr()
         
         return repr_
+    
     
     def _create_repr(self):
         """
@@ -2047,14 +2327,15 @@ class EvaluationError(SlasherCommandError):
             repr_parts.append(chr(character))
         
         repr_parts.append('\n')
-        start = self.start
-        repr_parts.append(' '*self.start)
-        repr_parts.append('^'*(self.end-start))
+        
+        render_highlight_groups_within_range_into(self.highlight_groups, 0, len(self.array), repr_parts)
+        
         repr_parts.append('\n')
         repr_parts.append(self.message)
         repr_ = ''.join(repr_parts)
         self._repr = repr_
         return repr_
+    
     
     @property
     @copy_docs(SlasherCommandError.pretty_repr)
@@ -2064,6 +2345,7 @@ class EvaluationError(SlasherCommandError):
             pretty_repr = self._create_pretty_repr()
         
         return pretty_repr
+    
     
     def _create_pretty_repr(self):
         """
@@ -2076,20 +2358,23 @@ class EvaluationError(SlasherCommandError):
         """
         repr_parts = ['Evaluation failed: ', sanitize_content(self.message), '\n```\n']
         
-        start = self.start
-        end = self.end
-        middle = end-start
+        start, end = get_highlight_group_range(self.highlight_groups)
         array = self.array
         length = len(array)
-        if middle <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
+        if (end-start) <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
             if length <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
+                # cakes are great
+                #       ^^^
                 for character in array:
                     repr_parts.append(chr(character))
+                
                 repr_parts.append('\n')
-                repr_parts.append(' '*start)
-                repr_parts.append('^'*middle)
+                render_highlight_groups_within_range_into(self.highlight_groups, 0, end, repr_parts)
+            
             else:
-                cut_over = (EXCEPTION_MESSAGE_MAX_LINE_LENGTH-middle)>>1
+                # ... cakes are great ...
+                #           ^^^
+                cut_over = (EXCEPTION_MESSAGE_MAX_LINE_LENGTH-(end-start))>>1
                 
                 start_at = start-cut_over
                 if start_at > 0:
@@ -2117,33 +2402,51 @@ class EvaluationError(SlasherCommandError):
                     repr_parts.append('...')
                 
                 repr_parts.append('\n')
-                repr_parts.append(' '*(start-start_at))
-                repr_parts.append('^'*middle)
+                render_highlight_groups_within_range_into(self.highlight_groups, start_at-start_cut, end, repr_parts)
         
         elif length < (EXCEPTION_MESSAGE_MAX_LINE_LENGTH<<1)-6:
-            for character in array[:EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3]:
+            # cakes are great ...
+            #       ^^^
+            # ... cakes are great
+            #           ^^^
+            chunk_start = 0
+            chunk_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3
+            for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
             repr_parts.append('...\n')
-            repr_parts.append(' '*start)
-            repr_parts.append('^'*(EXCEPTION_MESSAGE_MAX_LINE_LENGTH-start-3))
-            
+            render_highlight_groups_within_range_into(
+                self.highlight_groups,
+                chunk_start,
+                chunk_end+3,
+                repr_parts,
+            )
             repr_parts.append('\n...')
-            for character in array[EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3:]:
+            
+            chunk_start = EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3
+            chunk_end = end
+            for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
             repr_parts.append('\n')
-            repr_parts.append(' '*3)
-            repr_parts.append('^'*(middle-EXCEPTION_MESSAGE_MAX_LINE_LENGTH+start+3))
+            render_highlight_groups_within_range_into(
+                self.highlight_groups,
+                chunk_start-3,
+                chunk_end,
+                repr_parts,
+            )
+            
         else:
+            #  ... cakes are great ...
+            #            ^^^^^^^^^^^^^
+            # ... cakes are great ...
+            # ^^^^^^^^^^^^^
             start_start = start-(EXCEPTION_MESSAGE_MAX_LINE_LENGTH>>1)
             if start_start <= 0:
                 start_start = 0
-                mark_start = start
                 start_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH
                 start_cut = 0
             else:
-                mark_start = start-start_start
                 start_end = start_start+EXCEPTION_MESSAGE_MAX_LINE_LENGTH
                 start_cut = 3
             
@@ -2151,33 +2454,46 @@ class EvaluationError(SlasherCommandError):
             if end_end > length:
                 end_end = length
                 end_start = length - EXCEPTION_MESSAGE_MAX_LINE_LENGTH
-                mark_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH-length+end
                 end_cut = 0
             else:
                 end_start = end_end-EXCEPTION_MESSAGE_MAX_LINE_LENGTH
-                mark_end = end-end_start
                 end_cut = 3
             
             if start_cut:
                 repr_parts.append('...')
             
-            for character in array[start_start+start_cut:start_end-3]:
+            chunk_start = start_start+start_cut
+            chunk_end = start_end-3
+            for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
             repr_parts.append('...\n')
             
-            repr_parts.append(' '*(mark_start))
-            repr_parts.append('^'*(EXCEPTION_MESSAGE_MAX_LINE_LENGTH-mark_start))
+            render_highlight_groups_within_range_into(
+                self.highlight_groups,
+                chunk_start-start_cut*3,
+                chunk_end,
+                repr_parts,
+            )
             
             repr_parts.append('\n...')
-            for character in array[end_start+3:end_end-end_cut]:
+            
+            chunk_start = end_start+3
+            chunk_end = end_end-end_cut
+            for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
             if end_cut:
                 repr_parts.append('...')
             
             repr_parts.append('\n')
-            repr_parts.append('^'*mark_end)
+            
+            render_highlight_groups_within_range_into(
+                self.highlight_groups,
+                chunk_start-3,
+                chunk_end,
+                repr_parts,
+            )
         
         repr_parts.append('\n```')
         
@@ -2334,7 +2650,13 @@ class ParsingState:
         else:
             value, identifier = evaluator(array, start, end)
             if identifier == STATIC_NONE_ID:
-                raise EvaluationError(self.array, start, end, 'Unknown identifier.')
+                raise EvaluationError(
+                    self.array,
+                    [
+                        HighlightGroup(start, end, True),
+                    ],
+                    'Unknown identifier.',
+                )
         
         token = Token(self.array, start, end, identifier, None, value)
         self.tokens.append(token)
@@ -2359,7 +2681,13 @@ def parse_cycle(state):
             break
         
         if not JUST_PARSE(state):
-            raise EvaluationError(state.array, state.index, state.index+1, 'Unexpected character.')
+            raise EvaluationError(
+                state.array,
+                [
+                    HighlightGroup(state.index, state.index+1, True),
+                ],
+                'Unexpected character.',
+            )
 
 
 def remove_space(state):
@@ -2412,11 +2740,23 @@ def check_parentheses(state):
                 del parentheses_starts[-1]
                 continue
             
-            raise EvaluationError(token.array, token.start, token.end, 'Never opened parentheses.')
+            raise EvaluationError(
+                token.array,
+                [
+                    HighlightGroup(token.start, token.end, True),
+                ],
+                'Never opened parentheses.',
+            )
     
     if parentheses_starts:
         token = parentheses_starts[-1]
-        raise EvaluationError(token.array, token.start, state.end, 'Never closed parentheses.')
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            'Never closed parentheses.',
+        )
 
     
 
@@ -2507,15 +2847,23 @@ def check_followance(state):
     token = tokens[0]
     token_id = token.id
     if token_id in CANT_START:
-        raise EvaluationError(token.array, token.start, token.end,
-            f'Expression cannot start with {TOKEN_NAMES[token_id]}.'
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            f'Expression cannot start with {TOKEN_NAMES[token_id]}.',
         )
     
     token = tokens[-1]
     token_id = token.id
     if token_id in CANT_END:
-        raise EvaluationError(token.array, token.start, token.end,
-            f'Expression cannot end with {TOKEN_NAMES[token_id]}.'
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
+            f'Expression cannot end with {TOKEN_NAMES[token_id]}.',
         )
     
     
@@ -2531,8 +2879,13 @@ def check_followance(state):
         token_id = token.id
         if token_id in unrepeatable_ids:
             last_token = tokens[index-1]
-            raise EvaluationError(token.array, last_token.start, token.end,
-                f'{TOKEN_NAMES[last_token_id]} cannot be followed by {TOKEN_NAMES[token_id]}.'
+            raise EvaluationError(
+                token.array,
+                [
+                    HighlightGroup(token.start, token.end, True),
+                    HighlightGroup(last_token.start, last_token.end, True),
+                ],
+                f'{TOKEN_NAMES[last_token_id]} cannot be followed by {TOKEN_NAMES[token_id]}.',
             )
         
         last_token_id = token_id
@@ -2766,7 +3119,11 @@ def evaluate_function_call(token):
     try:
         value = function(value)
     except BaseException as err:
-        raise EvaluationError(token.array, token.start, token.end,
+        raise EvaluationError(
+            token.array,
+            [
+                HighlightGroup(token.start, token.end, True),
+            ],
             f'{function.__name__}({value!r}) raised: {err!r}',
         ) from None
     
